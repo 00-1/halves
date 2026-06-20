@@ -4,10 +4,11 @@
 invariants hold). **A batch of owner-requested UI polish jumps ahead of the rest of
 Phase 3.** Order: **`T37`** (Best-Times rank dot — kill the AI-smell rounded
 left-border — + Inventory topic progress bars/heatmap) → **`T38`** (start screen
-fits the viewport; the picker is the flexible scroll region) → **`T35`** (diverse
-item names from DESIGN-names.md + fix the inventory name truncation) → then resume
-Phase 3 at **`T24` (Arena)** so the 668 loot items become winnable → then **`T36`**
-(50 icon categories + variation) → `T25`/`T26` → Phase 4. Do **T37 next.** Specs in
+fits the viewport; the picker is the flexible scroll region) → **`T39`** (floating/
+always-visible Back on Inventory + Best Times + Heroes) → **`T35`** (diverse item
+names from DESIGN-names.md + fix the inventory name truncation) → then resume Phase
+3 at **`T24` (Arena)** so the 668 loot items become winnable → then **`T36`** (50
+icon categories + variation) → `T25`/`T26` → Phase 4. Do **T37 next.** Specs in
 BACKLOG. Keep the rank/heatmap colour-coding; just change the *form*.
 
 When you (Builder) hand off a task, I will replace this with one of:

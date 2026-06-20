@@ -479,6 +479,19 @@ the scroll-cue (▾) working with the picker's own scroll.
   with **no page overflow**; only the picker scrolls; scroll cue still toggles;
   360px-safe; other screens unaffected; no regressions; deploy green.
 
+### T39 — Floating Back on the Inventory (and other long-scroll screens) · status: OPEN
+Owner: on the Inventory you must scroll all the way to the bottom to reach Back.
+Give it an **always-visible Back** — a floating/sticky control that stays put while
+the list scrolls (e.g. a sticky top bar with Back, or a fixed button pinned to a
+screen corner, positioned within the app frame, 360px-safe, not overlapping the
+"INVENTORY 143/1443" count or the first tiles). Keep it reachable without
+scrolling; the existing bottom Back can stay or be removed. **Apply the same
+pattern to any other scroll-long screen with a bottom-only Back — Best Times and
+the Heroes screen** — so they're consistent.
+- **DoD:** Back is reachable on the Inventory without scrolling; same for Best
+  Times + Heroes; doesn't overlap their headers/content at 360px; tapping it
+  returns to the menu/prev screen as before; no regressions; deploy green.
+
 ### T35 — Diverse item names + fix inventory truncation · status: BLOCKED (spec ready: DESIGN-names.md; after T23 + CSS polish)
 Owner: item names are too samey (today: **14 adjectives, ~36 nouns → only 167
 unique names for 775 items**; "Whispering" used 68×) and **get cut off on the
