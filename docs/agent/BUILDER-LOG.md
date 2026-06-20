@@ -946,3 +946,63 @@ how I verified:
     T34 CHECKS PASSED.
 notes / questions: done ahead of T23 per the hotfix queue. Content swap only — no
   structural change; the unified `pvItem` keeps decimal answers float-exact.
+
+## T23 — Enemy tiers + battle logic + tier loot  [HANDOFF]
+commit: 9eceb07 (on main)
+changed:
+  - enemies.js (NEW) — window.Enemies. A **100-tier** ladder (bump TIER_COUNT to
+    extend) generated programmatically: RPS `type` cycles Brawn→Arcane→Cunning;
+    themed name bands of 10 (Goblin Warren → … → Dragon's Roost → The Void Throne),
+    each tier an archetype, tier 100 = "The Void Sovereign".
+    - **Loot:** every tier drops a batch `loot:<n>:<k>` — size `3 + floor((n-1)/12)`
+      (3 early → 11 deep), rarer with depth (epic/legendary at the bottom). They're
+      **full catalogue items** registered via `C.registerItem`, so each gets the
+      T20 style/flavour/hero-boost — beating a tier directly upgrades heroes.
+    - **Battle (pure):** `resolveBattle(hero, tier, perf, collected)` →
+      `battlePower = round(rating(H,collected) × matchup × (0.4 + 0.6·perf))`, win
+      if `≥ tier.def`. `computePerf(score,total,avgTime,target?)` = clamp(clean ×
+      pace) with pace∈[0.5,1.3] vs a calm 3.0s baseline. Plus `byTier`, `tierLoot`,
+      `canAttempt` (needs `tier:n-1`), `currentTier`.
+    - **def calibration (no circular dep):** for each tier I compute the honest
+      beatability cap = (best ADVANTAGE-type hero's rating with all drill items +
+      loot from tiers 1..n-1) × 1.5. `def_n = round(min(gentle geometric ramp
+      DEF_BASE=11·1.062^(n-1), capEnv×0.92))`. The raw cap wobbles as types cycle
+      (different advantage-hero set each tier), so I take a **suffix-min envelope**
+      `capEnv[n]=min(cap[n..N])` — still ≤ each tier's own cap (so never gated
+      behind its own loot) but non-decreasing, giving a **monotonic** curve
+      (0 dips; was 24).
+    - **Final boss:** owned-set = every drill item + loot 1..99 (NOT tier-100 loot);
+      pick the strongest hero there, set the boss's `type` so that hero holds the
+      advantage, `def100 = round(bestRating × 1.5)`. Falls only at ~full collection.
+  - collectibles.js — add **"Loot"** to CATS; add **`registerItem(it)`** (idempotent:
+    re-registering an id is a no-op; stamps style/flavour/boost + appends to
+    CATALOG/byIdMap) and export it. Loot items carry `test:()=>false` so they're
+    **never** earned via drills — only by winning a battle (T24).
+  - index.html — load `enemies.js` after `heroes.js`.
+how I verified:
+  - node -c on modes/collectibles/heroes/enemies/fx/sound/main — all OK. No
+    TODO/FIXME/placeholder. main.js untouched (DOM-id cross-check trivially clean;
+    only added a `<script>` tag). enemies.js is DOM-free and guards on missing deps.
+  - **DoD Node test (128 checks, ALL PASSED):**
+    (a) tiers 1–5 winnable by the **base starter hero (bram), zero items**, at good
+        perf 0.85 — including bram's worst (Arcane) matchups.
+    (b) **every** tier 1–100: its `def` is beatable with **pre-tier items only**
+        (best advantage hero, perfect perf, drill catalogue + loot 1..n-1) — proves
+        no tier is gated behind its own loot.
+    (c) tier 100: **winnable** by the champion at full-minus-final-loot collection
+        (advantage + perfect perf), **not** winnable by any hero with no items, and
+        **not** winnable if even one champion-boost is missing; boss `def` ≥ tier-99
+        `def`; boss type gives the champion the advantage.
+    Plus: loot stamped (style∈[0,10)/flavour/valid boost), registerItem idempotent,
+    "Loot" in categories, computePerf/matchup sanity, catalogue intact + grown.
+  - Regression check (separate Node pass, PASSED): `evaluate()` never returns loot
+    (and still earns normal drill items); `modeItems` excludes loot; hero rating
+    grows only with OWNED loot; `canAttempt`/`currentTier` gating correct.
+  - Curve (sample defs): 1:11  10:19  20:34  40:115  60:249  80:314  99:389  100:551.
+    Catalogue grew 775 → **1443** (668 loot items) — intended ("generate liberally;
+    no cap"); inventory already shows hundreds of locked "?" tiles for Solved/Spark,
+    so the new Loot category follows the established progressive-disclosure pattern.
+notes / questions: T23 is pure logic per its DoD — Arena UI, loot granting on win,
+  and any inventory polish are **T24**. Champion at full collection is **Roon the
+  Sly** (Cunning, rating 367.5) → boss type **Arcane**, def **551**. The suffix-min
+  smoothing is a light touch; the full balance pass is **T25** as planned.
