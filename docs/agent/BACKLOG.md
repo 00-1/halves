@@ -80,25 +80,25 @@ stable set across rounds). Slot each into the chain at its importance position.
 ### T5 — Add / Subtract  · status: DONE (superseded by T5b — convert to fixed)
 P1: 2-digit ± within 100. P2: 3-digit ± 2-digit.
 
-### T5b — Convert Add/Subtract to fixed sets · status: OPEN
-The T5 build used infinite generators; per the design rule above, convert both
-modes to **fixed curated sets**.
-- Replace `addsub`/`addsub2` `build()` with shuffles of fixed `*_SRC` arrays
-  (~21 each): P1 a representative spread of 2-digit ± within 100 (mix of bridging
-  and non-bridging, varied magnitudes); P2 a spread of 3-digit ± 2-digit.
-- Remove the now-dead `gen` flag on these modes plus `genRound`, `randInt`,
-  `addSubP1`, `addSubP2`, and (if no `gen` modes remain) the `if(m.gen) return`
-  guard in collectibles.js. No dead code.
-- With `gen` gone, addsub/addsub2 now get per-question Beat/Spark — confirm they
+### T5b — Convert ALL generated modes to fixed sets · status: OPEN
+T5 (Add/Subtract) and T6 (Number bonds) were built with infinite generators;
+per the design rule above, convert **all four** modes to **fixed curated sets**:
+`addsub`, `addsub2`, `bonds`, `bonds2`.
+- Replace each `build()` with shuffles of fixed `*_SRC` arrays (~21 each):
+  addsub P1 = 2-digit ± within 100 (mix of bridging/non-bridging); addsub2 P2 =
+  3-digit ± 2-digit; bonds P1 = to 100; bonds2 P2 = to 1000 + decimal bonds to 1.
+- Remove every `gen` flag plus `genRound`, `randInt`, `addSubP1/P2`, the bonds
+  generators, and the `if(m.gen) return` guard in collectibles.js. No dead code.
+- With `gen` gone, all four modes now get per-question Beat/Spark — confirm they
   appear in the catalogue.
 - Update `docs/research-11plus.md` to drop the generated/fixed distinction (all
   fixed).
-- **DoD:** Node — both build() return fixed shuffled sets (~21), prompts stable
-  across rounds, answers correct/numeric/non-negative/numpad-safe; catalogue now
-  contains `solve:addsub*`/`spark:addsub*`; no `gen`/`genRound` left anywhere; no
-  regressions; deploy green.
+- **DoD:** Node — all four build() return fixed shuffled sets (~21), prompts
+  stable across rounds, answers correct/numeric/non-negative/numpad-safe;
+  catalogue contains solve/spark for addsub*, bonds*; no `gen`/`genRound` left
+  anywhere; no regressions; deploy green.
 
-### T6 — Number bonds · status: OPEN
+### T6 — Number bonds · status: DONE (wiring; fixed conversion in T5b)
 P1: to 100. P2: to 1000 + decimal bonds to 1. **Fixed set** (curated array,
 shuffled — not generated).
 

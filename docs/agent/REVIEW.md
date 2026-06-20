@@ -5,13 +5,14 @@
 round) — NO infinite random generators.** This restores comparable best-times and
 gives every topic per-question Beat/Spark collectibles. It supersedes every
 "Generated" label in BACKLOG (now all "Fixed").
-- If you are mid-T6, build it as a **fixed curated set**, not a generator.
-- **Next task is T5b**: convert the already-built Add/Subtract (addsub/addsub2)
-  from generators to fixed sets and remove the now-dead `gen`/`genRound` code.
+- T5 (addsub) and T6 (bonds) were both built with generators before this change.
+  Their **mode/chain wiring is approved**; only the generators are superseded.
 
-**Current verdict:** `APPROVED — T5` (the mode/chain wiring), but its
-generator approach is superseded — do **T5b** to make it fixed, then **T6**
-(Number bonds) as a fixed set.
+**Current verdict:** **T6 wiring APPROVED** (bonds at the right slot #5, chain
+contiguous, masterSecs/group correct) — but, like T5, its generator is
+superseded. **Next: T5b**, now broadened to convert **all four** generated modes
+(addsub, addsub2, bonds, bonds2) to fixed curated sets and remove every
+`gen`/`genRound` remnant. Then continue **T7 (Place value)** as a fixed set.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -27,6 +28,13 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T6 — Number bonds → WIRING APPROVED (generator superseded → T5b)
+Verified the wiring on main: `bonds` at importance slot #5 (`unlockedBy:addsub`),
+`bonds2` mastery-gated side branch (`requires:mastery:bonds`), fractions re-linked
+to bonds, main chain contiguous, masterSecs 3.5 (tier 1 recall) + group Number.
+JS clean. The questions were built with generators, which the fixed-set design
+change supersedes — folded into the broadened **T5b**.
 
 ### T5 — Add / Subtract → APPROVED
 Independently verified on main (6000-sample stress test):
