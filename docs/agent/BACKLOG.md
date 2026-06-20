@@ -425,6 +425,30 @@ stressful."** Two distinct causes; **fix both**:
   style; (c) music still loops/varies/switches and respects mute. No regressions;
   deploy green.
 
+### T34 — Place Value: bring decimals into Part 1 · status: OPEN
+Owner: *"shouldn't the Place Value topic include decimals?"* — correct. Right now
+**Part 1 (`placevalue`, `PV_P1_SRC`) is whole-numbers only**; decimals live solely
+in **Part 2 (`placevalue2`)**, which is mastery-gated — so a typical player who
+hasn't mastered P1 **never sees decimal place value at all**, even though it's core
+11+ content. Fix: **blend decimals into Part 1** so the base topic covers both,
+keeping the harder cases as the Part-2 stretch.
+- **Part 1 (`PV_P1_SRC`)** = a mix of whole-number AND **simple decimal** ×/÷ by
+  10/100 — e.g. `3.5 × 10 = 35`, `4.2 × 10 = 42`, `60 ÷ 100 = 0.6`, `7 ÷ 10 = 0.7`,
+  alongside the existing whole-number items. Keep ~21 items, balanced across × and
+  ÷ and across whole/decimal. All answers **exact, numpad-enterable, stored as
+  literals** (no float drift — the existing P2 pattern), non-negative.
+- **Part 2 (`PV_P2_SRC`)** keeps the harder material: ÷1000, answers < 1 (0.06,
+  0.08…), `×1000`, 3-decimal-place results — i.e. the genuine stretch.
+- Keep the chain/links and `masterSecs` as-is; this is a content swap of the P1
+  set, not a structural change.
+- **DoD:** Node logic check — P1 now contains **both** whole and decimal items
+  (assert ≥ ~6 decimal prompts and ≥ ~6 whole prompts); every P1 answer correct
+  (recompute = stored, within 1e-9), whole-or-terminating, round-trips on the numpad
+  (`parseFloat(String(a))===a`), non-negative; set is ~21, fixed (stable prompts
+  across rounds), no `gen`; P2 still all-decimal and within its harder range; Beat/
+  Spark regenerate; no regression to the chain or other topics; deploy green.
+  (Babysitter re-verifies the P1 arithmetic and the whole/decimal balance.)
+
 ---
 
 ## Phase 3 — Hero / Enemy metagame
@@ -489,12 +513,13 @@ the engagement layer.
 - **DoD:** Node test of the full progression curve; milestones evaluate
   correctly; final-tier ⇔ full-collection invariant holds.
 
-### T26 — Currency (Gold Stars): fun accumulation · status: BLOCKED
+### T26 — Currency: fun accumulation · status: BLOCKED
 Implement the currency per `DESIGN-heroes.md` §"Currency & economy" — **earn,
-display, persist; NO spending (build no spend mechanic yet).** **Display label is
-"Gold Stars" (⭐)** (owner-chosen; internal `gold`/`fmtGold`/`halves.gold` keys are
-fine — only the user-facing text says Gold Stars). Make the accumulation itself fun
-and able to reach **billions/trillions+**:
+display, persist; NO spending (build no spend mechanic yet).** **Display name is
+still being decided with the owner** ("Gold Stars" was rejected) — keep the
+user-facing label in ONE constant (internal `gold`/`fmtGold`/`halves.gold` keys are
+fine) so the final name is a one-line change. Make the accumulation itself fun and
+able to reach **billions/trillions+**:
 - Base earn hooks (per clean question scaled by speed; per round; first Mastery;
   first topic 100%; enemy-tier depth — skipped = 0), all multiplied by the
   **escalating global multiplier** + in-round **combo streak** from the design.
@@ -526,32 +551,34 @@ the Babysitter; both are deploy-safe, self-contained, and respect the doc's red
 lines (no purchases, no public leaderboards, no guilt/loss-aversion dark
 patterns, no push notifications).
 
-### T31 — Gentle daily-practice streak · status: BLOCKED (spec CONFIRMED by owner)
-The best-evidenced retention lever in education (Duolingo) — implemented as the
-**ethical** version. Track **days practised** (≥1 finished round bumps the day's
-count) in localStorage (`halves.streak`: `{ count, lastDay, best, freezes }`,
-`lastDay` = local calendar day). Show a small streak indicator on the start screen
-(e.g. `🔥 5`) + a celebratory **non-blocking** acknowledgement on return when the
-streak advances. **No guilt, no countdowns, no "about to lose it" pressure, no
-notifications.** Migration-safe (absent state = streak 0, no crash).
-- **Reducer rules** (pure, given today's local day):
+### T31 — Daily-practice momentum counter · status: BLOCKED (spec CONFIRMED by owner)
+A forgiving habit signal — **not** a fragile streak with freezes (owner redesign).
+A single number that **goes up 1 for each day you play and down 1 for each day you
+don't**, floored at 0. So a week of play (7) minus two missed days = 5; you only
+reach 0 after missing as many days as you'd banked (≈ a week off). No guilt, no
+countdowns, no "about to lose it" pressure, no notifications — it just drifts.
+Store `halves.streak`: `{ count, lastDay, best }`, `lastDay` = local calendar day.
+Small indicator on the start screen + a **non-blocking** acknowledgement when it
+goes up. Migration-safe (absent = 0, no crash).
+- **Reducer rules** (pure, given today's local day vs `lastDay`):
+  - first ever play → `count = 1`.
   - same day (gap 0) → no change.
-  - gap 1 → `count++`.
-  - gap 2 (one day missed) → if `freezes > 0`: `count++`, `freezes--` (the miss is
-    absorbed); else `count = 1`.
-  - gap ≥ 3 (2+ days missed) → `count = 1`.
-  - **Freeze regen:** `freezes` starts at 1, **cap 2**, +1 each time `count`
-    crosses a multiple of 5 (so it stays forgiving without being free).
+  - gap N ≥ 1 (N days since last play; N−1 of them missed) → subtract the missed
+    days then add today: `count = max(0, count − (N − 1)) + 1`. (gap 1 → +1; gap 3
+    → −2 then +1 = net −1; a 7-day-then-miss-2 example: 7 → on return `max(0,7−2)+1`
+    = 6 the day you come back, i.e. you kept ~5 plus today.)
   - `best = max(best, count)`.
-- **Item unlocks (owner-confirmed):** day-milestone collectibles at **3 / 7 / 14 /
-  30 / 100** practised-day streaks, generated through the existing catalogue/
-  milestone system (their own small set; rarity climbs with the milestone) — not a
-  separate pressure economy.
-- **DoD:** Node test of the pure reducer covering every branch above (increment;
-  same-day no double-count; gap-2 absorbed by a freeze then reset when none; gap≥3
-  reset; freeze cap/regen; `best` monotonic) AND that each day-milestone collectible
-  fires at exactly its threshold and not before. No timers/notifications; no
-  regressions; deploy green.
+- **Item unlocks (owner-confirmed):** milestone collectibles at **3 / 7 / 14 / 30 /
+  100**, fired off the **high-water mark `best`** (so dipping and re-climbing never
+  re-awards or revokes them), through the existing catalogue/milestone system
+  (their own small set; rarity climbs with the milestone).
+- **Display name:** this isn't really a "streak" anymore — pick a calm label with
+  the owner (e.g. "rhythm", "momentum", "day count"); keep it in one constant.
+- **DoD:** Node test of the pure reducer — first play =1; same-day no change; each
+  gap computes `max(0,count−(N−1))+1` (incl. the worked examples above and the
+  floor at 0 after a long absence); `best` monotonic; milestones fire off `best`
+  exactly at threshold, once each, and never revoke on a dip. No timers/
+  notifications; no regressions; deploy green.
 
 ### T32 — Per-question Practice / Review view · status: BLOCKED (spec CONFIRMED by owner)
 Replaces the old "relaxed mode" idea (owner-chosen). Mitigates the one
