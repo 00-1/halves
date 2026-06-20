@@ -210,7 +210,7 @@ Upgrade it to a real confetti/spark **explosion**.
   canvas/RAF; no constant RAF when idle; reduced-motion respected; no input/timer
   interference; works at 360px; no regressions; deploy green.
 
-### T12 — Fix Speed-achievement skip exploit · status: OPEN
+### T12 — Fix Speed-achievement skip exploit · status: DONE
 Exploit: the **Speed** bracket collectibles (Quick/Swift/Blazing/Lightning) test
 only `ctx.avg < lv.avg`, so skipping every question (which advances fast) earns
 them without solving anything. Fix: require **zero skips** too — change each Speed

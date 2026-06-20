@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T19`. **Next: T12** (Speed-achievement skip-exploit fix), then T11 (entry screen).
+**Current verdict:** `APPROVED — T12`. **Next: T11** (entry / tap-to-begin screen). After T11, I will open T16 (audio core).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,12 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T12 — Speed-achievement skip exploit → APPROVED
+Speed bracket test is now `mistakes === 0 && avg < lv.avg` (desc → "clean round").
+Node-verified: skip-spam (21 skips, avg 0.3) earns 0 brackets; 1 skip earns 0;
+clean avg 1.0 earns all four incl Lightning; clean avg 2.0 earns Quick only. No
+other collectible touched.
 
 ### T19 — Juicy unlock celebration → APPROVED
 Canvas confetti engine (fx.js): single full-screen overlay (pointer-events:none,
