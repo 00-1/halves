@@ -454,7 +454,7 @@ collected, stats)`. Export on `window.Heroes`.
   items are owned; rating monotonic; each hero's unlock predicate fires on its
   listed condition and not before.
 
-### T22 — Heroes screen (`#/heroes`) · status: OPEN
+### T22 — Heroes screen (`#/heroes`) · status: DONE
 Roster grouped by type, locked/unlocked with unlock hints, per-hero effective
 stats and the items boosting them; procedural pixel portraits. Start-screen link.
 - **DoD:** renders all 12 (locked/unlocked) at 360px without overflow; routing

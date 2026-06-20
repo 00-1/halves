@@ -1,19 +1,13 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T21`. **Next is T22 (Heroes screen `#/heroes`)** —
-full spec in `docs/agent/DESIGN-heroes.md`. Roster grouped by type (Brawn/Cunning/
-Arcane), locked/unlocked with the unlock hint, each hero's procedural pixel
-portrait + **effective** stats (via `Heroes.effectiveStats`) and the items boosting
-them; start-screen link + hash route. Use the `window.Heroes` API from T21 and the
-menu music style. DoD: renders all 12 (locked + unlocked) at 360px without
-overflow; routing + back work; no regressions; deploy green. **Display note:** the
-currency is labelled **"Gold Stars" (⭐)** anywhere it appears.
-
-> ⚠ **LIVE HOTFIX QUEUED — `T33` (music tempo / fast-burst).** Owner reports the
-> music sometimes races and it's stressful. After you finish & push T22, do **T33
-> next** (it jumps ahead of T23). If you'd rather, you may even push T33 *before*
-> T22 — your call — but T33 must ship before any further Phase-3 work. Spec in
-> BACKLOG under "Hotfixes".
+**Current verdict:** `APPROVED — T22`. **Next is `T33` — the live music hotfix
+(jumps ahead of T23).** Owner reports the generative music **sometimes races and
+it's stressful**. Fix BOTH causes per the spec in BACKLOG "Hotfixes": (1) the
+look-ahead scheduler floods a backlog of notes when the 25 ms timer stalls (heavy
+render/GC/refocus) — resync `mNext` to ≈`ctx.currentTime` and drop missed steps,
+cap steps/tick; (2) cap every style's bpm to a calm ceiling (≤ 116) and rescale
+the over-ceiling styles down. DoD includes a Node test of both the anti-burst
+resync and the tempo ceiling. **Ship T33 before resuming T23 (enemy tiers).**
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -29,6 +23,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T22 — Heroes screen (`#/heroes`) → APPROVED
+Independently verified: node -c (collectibles/main) OK; no TODO/stub; new ids present in index.html (`heroes`,`heroList`,`heroesBtn`,`heroesBack`) and main.js id cross-check clean (50, 0 missing); 13 heroes-screen CSS rules present. `drawIcon` gained an optional `styleOverride` (4th arg) for forced sprite portraits — **backward-compatible**: T20 item layer still fully valid against the new collectibles.js (0 bad, all 12 heroes + 10 styles, 775), default `drawIcon` renders all 10 styles with a real palette (0 errors), and the override path renders (0 errors). Builder's DOM render harness: 12 heroes grouped by type, unlocked card shows effective stats + boosting-item chips (capped 12 + "N more"), locked heroes show 🔒 + hint, meta reads "/ 12"; `#/heroes` routing + back wired; flex cards + wrapping chips + screen scroll for 360px. Heroes screen uses menu music via existing `show()`. No regressions.
 
 ### T21 — Heroes module + stats → APPROVED
 New `heroes.js`→`window.Heroes`. Independently verified (Node, real catalogue): node -c OK; no TODO/stub; loaded in index.html after collectibles.js. **All 12 heroes match the DESIGN-heroes table exactly** — type + base power/guard/speed/focus, ids bram…roon; names sourced from collectibles `HERO_NAMES` (in sync). `effectiveStats` = base when nothing owned, **grows for every hero** with the full collection; `rating`/`ratingOf` **monotonic non-decreasing** as boost items are added (weights power1/focus.8/speed.5/guard.3). **Every one of the 12 unlock predicates fires exactly on its listed condition and is locked just below it** — bram(1st init), greta(≥3 init), tovar(any mastery), mo(rank:darkwizard), wisp(collector:25), mira(≥3 flawless), nim(topics:one100), zeph(rank:archmage), pip(speed:*:3 Lightning), vex(meta:allmodes), sela(collector:75), roon(tier:10). RPS `matchup` correct (Brawn>Cunning ×1.5, reverse ×0.6, same ×1.0). Pure, no DOM. No regressions.
