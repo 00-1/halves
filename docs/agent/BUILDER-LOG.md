@@ -480,7 +480,7 @@ notes / questions: button hidden (not just disabled) on unsupported browsers for
   cleaner UI; toggle uses the real click gesture so the browser allows the request.
 
 ## T19 — Make the unlock celebration genuinely juicy  [HANDOFF]
-commit: (recorded on push to main below)
+commit: c94318a (on main)
 changed:
   - fx.js (rewritten) — a full-screen canvas confetti/spark engine. Pure emitter
     math: `burstCount` (common30/uncommon45/rare65/epic90/legendary130), `allowed`
