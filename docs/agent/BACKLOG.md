@@ -210,6 +210,18 @@ Upgrade it to a real confetti/spark **explosion**.
   canvas/RAF; no constant RAF when idle; reduced-motion respected; no input/timer
   interference; works at 360px; no regressions; deploy green.
 
+### T12 — Fix Speed-achievement skip exploit · status: OPEN
+Exploit: the **Speed** bracket collectibles (Quick/Swift/Blazing/Lightning) test
+only `ctx.avg < lv.avg`, so skipping every question (which advances fast) earns
+them without solving anything. Fix: require **zero skips** too — change each Speed
+item's test from `ctx => ctx.avg < lv.avg` to
+`ctx => ctx.mistakes === 0 && ctx.avg < lv.avg` (in collectibles.js; `mistakes`
+is the skip count in the current model). Mastery already does this; ranks are
+already safe (speed ranks need a perfect score).
+- **DoD:** Node test — a round with ≥1 skip earns **0** Speed brackets regardless
+  of how low its avg is; a clean (0-skip) round under a threshold still earns the
+  appropriate brackets; no other collectible affected; no regressions; deploy green.
+
 ### T11 — Entry / "tap to begin" screen (fullscreen + audio gesture) · status: OPEN
 A first splash screen that gives the best experience from the start and provides
 the single user gesture both fullscreen and Web Audio require.
