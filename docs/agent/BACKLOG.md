@@ -185,6 +185,31 @@ vendor-prefixed fallbacks if present.
   on unsupported browsers it's hidden/disabled with no console error; works at
   360px; no regressions; deploy green.
 
+### T19 — Make the unlock celebration genuinely juicy · status: OPEN
+The current burst (a handful of small squares) is nowhere near celebratory enough.
+Upgrade it to a real confetti/spark **explosion**.
+- Move the effect to a single full-screen **`<canvas>` overlay** (pointer-events:
+  none, above content), with a RAF particle engine that **idles (stops the RAF)
+  when no particles are alive** — never a constant loop.
+- On an item unlock, emit a **rarity-scaled** burst (e.g. common ~30 → uncommon
+  ~45 → rare ~65 → epic ~90 → legendary ~130 particles), with **variety**: mixed
+  shapes (squares + sparkle/star + streamers), sizes ~2–9px, the rarity palette +
+  white/gold sparkles; **physics**: outward velocity + gravity + drag so they arc
+  and fall like confetti, with rotation and twinkle (opacity flicker), ~1.0–1.6 s
+  life with fade.
+- Add a **radial shockwave ring** + a brief glow/flash behind the toast, and a
+  stronger pop/scale on the toast itself.
+- **Rarity flair**: epic/legendary add extra (a second delayed pop, golden
+  sparkles, a few screen-edge confetti, a subtle vignette glow).
+- **Performance & safety**: a global cap on live particles (~250, reuse/coalesce
+  when many unlocks land at once — no jank); fully **non-blocking** (overlay never
+  intercepts taps, no game-timer/input impact); keep the **prefers-reduced-motion**
+  opt-out (minimal/no particles). Self-cleaning (no leaks; RAF stops at idle).
+- **DoD:** visibly dramatic, clearly rarity-scaled celebration; Node-test the pure
+  emitter math (per-rarity counts, global cap, idle/teardown) with stubbed
+  canvas/RAF; no constant RAF when idle; reduced-motion respected; no input/timer
+  interference; works at 360px; no regressions; deploy green.
+
 ---
 
 ## Phase 2.6 — Content quality
