@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T28`. **Next: T29** (scroll indicator), then topics (T7 Place value).
+**Current verdict:** `APPROVED — T29`. **Topics begin now: next is T7 (Place value ×/÷)** — a FIXED curated set per docs/agent/QUESTION-SETS.md; log your rationale.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T29 — Scroll indicator → APPROVED
+.picker wrapped in .picker-wrap; edge-fade ::before/::after + bobbing ▾ cue toggled by updateScrollCues() (scroll geometry), wired to render + passive scroll + resize. pointer-events:none; hidden when it fits; reduced-motion opt-out. JS ok, ids ok, no stubs.
 
 ### T28 — Remove start blurb → APPROVED
 .hint block + .hint/.hint kbd CSS removed; no <kbd> refs left; clean small diff; JS ok.

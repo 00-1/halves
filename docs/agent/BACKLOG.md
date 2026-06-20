@@ -110,7 +110,7 @@ per the design rule above, convert **all four** modes to **fixed curated sets**:
 P1: to 100. P2: to 1000 + decimal bonds to 1. **Fixed set** (curated array,
 shuffled — not generated).
 
-### T7 — Place value ×/÷ · status: BLOCKED
+### T7 — Place value ×/÷ · status: OPEN
 P1: whole ×÷ 10·100. P2: decimals ×÷ 10·100·1000. **Fixed set.**
 
 ### T8 — Fractions of · status: BLOCKED
@@ -260,7 +260,7 @@ the single user gesture both fullscreen and Web Audio require.
 > Babysitter note: open **T16 (audio core)** soon after T11 so the entry screen's
 > sound toggle/unlock are backed by real audio.
 
-### T29 — Scroll indicator on the topic picker · status: OPEN
+### T29 — Scroll indicator on the topic picker · status: DONE
 It isn't obvious the topic list scrolls (the `.picker` is `max-height:42vh;
 overflow-y:auto`, but mobile scrollbars are hidden). Add a clear affordance.
 - A **bottom fade gradient** over the picker when there's more content below, and
