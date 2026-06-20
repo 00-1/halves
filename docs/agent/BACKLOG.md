@@ -173,6 +173,18 @@ Make the Best Times (`#/best-times`) page read at a glance and act as a launchpa
   distinct; tapping an unlocked topic launches its round; locked topics don't
   start; routing/back still work; no regressions; deploy green.
 
+### T18 — Fullscreen toggle · status: OPEN
+Add a fullscreen toggle button (Fullscreen API) on the start screen, near the
+existing links/controls. Tapping requests fullscreen on the document element;
+tapping again exits. Update its icon (⛶ enter / ⛶ exit) from a `fullscreenchange`
+listener. Use a user gesture (the click). **Handle unsupported browsers
+gracefully** (e.g. iOS Safari has no element fullscreen) — feature-detect and hide
+or disable the button rather than erroring; wrap calls in try/catch and use the
+vendor-prefixed fallbacks if present.
+- **DoD:** button enters/exits fullscreen where supported; icon reflects state;
+  on unsupported browsers it's hidden/disabled with no console error; works at
+  360px; no regressions; deploy green.
+
 ---
 
 ## Phase 2.6 — Content quality
