@@ -422,3 +422,34 @@ how I verified:
   - no TODO/placeholder; no dead code.
 notes / questions: none — single-player cleanup only; board persistence retained
   for Best Times / ranks / picker.
+
+## T15 — Best Times heat-map + tap-to-retry  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - main.js — `renderSummary()` redesigned into a colour-coded heat-map with three
+    distinct states: **played** rows get a left-edge accent + a subtle background
+    tint (the rank colour at ~12% alpha, `rk.color+"1f"`) + the rank label in the
+    rank's colour; **not-played** (unlocked) rows are muted with a dashed accent
+    and "Not played"; **locked** rows are de-emphasised, show 🔒 + their unlock
+    requirement, and carry NO `data-mode` so they can't start. New `#sumList`
+    click handler: tapping an unlocked row `selectMode(id)` + `start()` launches
+    that topic immediately (double-guarded by `isUnlocked`).
+  - styles.css — `.sum-row` is now a flex row with `min-height:44px` tap targets,
+    `cursor:pointer` + `:active` scale affordance, a `.go` ▶ chevron, and
+    `.played`/`.notplayed`(dashed)/`.locked`(dimmed) state styles. Removed the
+    dead `.sum-row.blank` rule.
+  - index.html — best-times subtitle now reads "tap one to play it".
+how I verified:
+  - node -c main.js OK; id cross-check clean; new classes all have CSS; no `.blank`
+    refs left; no TODO.
+  - render check (Node + DOM shim, seeded localStorage): drove `renderSummary` via
+    the `#/best-times` route with a great Halves board and init:halves/init:times —
+    output confirmed: Halves → `played` with a `border-left-color`+`…1f` tint and
+    `data-mode`; Times/Doubles → `notplayed` + `data-mode`; locked topics carry NO
+    `data-mode` (not startable) and show 🔒 + requirement; exactly the 3 unlocked
+    topics are tappable. ALL T15 RENDER CHECKS PASSED.
+  - runtime: full app loads under the shim with no init error; routing/back
+    unchanged (renderSummary still called from `applyRoute`'s best-times branch).
+notes / questions: tapping launches via the existing `selectMode`+`start()` path,
+  so the played topic also becomes the active selection on the start screen; ≥44px
+  rows + ellipsised sublines keep it readable at 360px with the existing scroll.

@@ -79,14 +79,22 @@ body{
 #summary{justify-content:flex-start;align-items:center;text-align:center;padding:32px 8px;overflow-y:auto}
 .sum-sub{font-family:var(--mono);color:var(--muted);font-size:12px;margin-top:10px;letter-spacing:.03em;max-width:300px}
 .sumlist{margin-top:24px;width:100%;max-width:340px;text-align:left}
-.sum-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;
-  font-family:var(--mono);font-size:14px;padding:13px 14px;background:var(--surface);
-  border:1px solid var(--line);border-radius:12px;margin-bottom:8px;font-variant-numeric:tabular-nums}
-.sum-row .md{color:var(--text);font-weight:700}
-.sum-row .md .holder{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:3px;letter-spacing:.02em}
-.sum-row .sc{color:var(--mint);font-weight:700;text-align:right}
-.sum-row .tm{color:var(--amber);font-weight:700;min-width:56px;text-align:right}
-.sum-row.blank .sc,.sum-row.blank .tm{color:var(--muted)}
+.sum-row{display:flex;align-items:center;gap:12px;min-height:44px;
+  font-family:var(--mono);font-size:14px;padding:11px 14px;background:var(--surface);
+  border:1px solid var(--line);border-left:4px solid var(--line);border-radius:12px;margin-bottom:8px;
+  font-variant-numeric:tabular-nums;transition:transform .1s ease}
+.sum-row .md{flex:1 1 auto;min-width:0;color:var(--text);font-weight:700}
+.sum-row .md .holder{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:3px;
+  letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum-row .sc{flex:0 0 auto;color:var(--mint);font-weight:700;text-align:right}
+.sum-row .tm{flex:0 0 auto;color:var(--amber);font-weight:700;min-width:56px;text-align:right}
+.sum-row .go{flex:0 0 auto;width:14px;text-align:center;color:var(--muted);font-size:12px}
+/* states: played (heat-map tint, set inline) · not-played · locked */
+.sum-row.played,.sum-row.notplayed{cursor:pointer}
+.sum-row.played:active,.sum-row.notplayed:active{transform:scale(.99)}
+.sum-row.notplayed{border-left-style:dashed}
+.sum-row.notplayed .sc,.sum-row.notplayed .tm{color:var(--muted)}
+.sum-row.locked{opacity:.5}
 
 /* ---------- GAME ---------- */
 #game{padding-top:12px}

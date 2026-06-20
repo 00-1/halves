@@ -190,20 +190,30 @@
       (t.name ? ' · '+esc(t.name) : '');
   }
 
-  // ---- summary: best time in every mode (read from localStorage) ----------
+  // ---- summary: best time per topic, colour-coded by rank; tap to play -----
   function renderSummary(){
     $("sumList").innerHTML = MODES.map(m => {
-      const best = loadBoard(m.id).slice().sort(rank)[0];
-      if(!best){
-        return '<div class="sum-row blank"><span class="md">'+esc(m.name)+'</span>'+
-          '<span class="sc">—</span><span class="tm">—</span></div>';
+      // Locked: de-emphasised, shows the unlock requirement, not startable.
+      if(!isUnlocked(m)){
+        return '<div class="sum-row locked"><span class="md">'+esc(m.name)+
+          '<span class="holder">🔒 '+unlockReq(m)+'</span></span>'+
+          '<span class="go">🔒</span></div>';
       }
+      const best = loadBoard(m.id).slice().sort(rank)[0];
+      // Unlocked but never played: muted/dashed, still tappable to play.
+      if(!best){
+        return '<div class="sum-row notplayed" data-mode="'+esc(m.id)+'">'+
+          '<span class="md">'+esc(m.name)+'<span class="holder">Not played</span></span>'+
+          '<span class="sc">—</span><span class="tm">—</span><span class="go">▶</span></div>';
+      }
+      // Played: heat-map tint + left accent + rank label in the rank's colour.
       const rk = C.RANKS[C.rankIndex(best.score, best.total, best.time)];
-      const sub = '<span class="holder" style="color:'+rk.color+'">'+esc(rk.name)+
-        (best.name ? ' · '+esc(best.name) : '')+'</span>';
-      return '<div class="sum-row"><span class="md">'+esc(m.name)+sub+'</span>'+
+      return '<div class="sum-row played" data-mode="'+esc(m.id)+'" '+
+        'style="border-left-color:'+rk.color+';background:'+rk.color+'1f">'+
+        '<span class="md">'+esc(m.name)+
+          '<span class="holder" style="color:'+rk.color+'">'+esc(rk.name)+'</span></span>'+
         '<span class="sc">'+best.score+'/'+(best.total||"?")+'</span>'+
-        '<span class="tm">'+fmt(best.time)+'s</span></div>';
+        '<span class="tm">'+fmt(best.time)+'s</span><span class="go">▶</span></div>';
     }).join("");
   }
 
@@ -570,6 +580,14 @@
 
   $("statsBtn").addEventListener("click", () => { location.hash = "#/best-times"; });
   $("sumBack").addEventListener("click", navStart);
+  // Tap an unlocked topic on Best Times to play it right away (locked rows
+  // carry no data-mode, so they aren't startable).
+  $("sumList").addEventListener("click", e => {
+    const row = e.target.closest(".sum-row[data-mode]"); if(!row) return;
+    const m = byId(row.dataset.mode); if(!m || !isUnlocked(m)) return;
+    selectMode(m.id);
+    start();
+  });
 
   $("invBtn").addEventListener("click", () => { location.hash = "#/inventory"; });
   $("invBack").addEventListener("click", navStart);
