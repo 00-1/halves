@@ -554,31 +554,37 @@ patterns, no push notifications).
 ### T31 — Daily-practice momentum counter · status: BLOCKED (spec CONFIRMED by owner)
 A forgiving habit signal — **not** a fragile streak with freezes (owner redesign).
 A single number that **goes up 1 for each day you play and down 1 for each day you
-don't**, floored at 0. So a week of play (7) minus two missed days = 5; you only
-reach 0 after missing as many days as you'd banked (≈ a week off). No guilt, no
-countdowns, no "about to lose it" pressure, no notifications — it just drifts.
-Store `halves.streak`: `{ count, lastDay, best }`, `lastDay` = local calendar day.
-Small indicator on the start screen + a **non-blocking** acknowledgement when it
-goes up. Migration-safe (absent = 0, no crash).
+don't**, floored at 0 and **capped at 75** (owner: 100 is unrealistic to reach).
+So a week of play (7) minus two missed days = 5; you only reach 0 after missing as
+many days as you'd banked (≈ a week off). No guilt, no countdowns, no "about to
+lose it" pressure, no notifications — it just drifts. Store `halves.streak`:
+`{ count, lastDay, best }`, `lastDay` = local calendar day. Small indicator on the
+start screen + a **non-blocking** acknowledgement when it goes up. Migration-safe
+(absent = 0, no crash).
 - **Reducer rules** (pure, given today's local day vs `lastDay`):
   - first ever play → `count = 1`.
   - same day (gap 0) → no change.
   - gap N ≥ 1 (N days since last play; N−1 of them missed) → subtract the missed
-    days then add today: `count = max(0, count − (N − 1)) + 1`. (gap 1 → +1; gap 3
-    → −2 then +1 = net −1; a 7-day-then-miss-2 example: 7 → on return `max(0,7−2)+1`
-    = 6 the day you come back, i.e. you kept ~5 plus today.)
-  - `best = max(best, count)`.
+    days then add today, then clamp: `count = min(75, max(0, count − (N − 1)) + 1)`.
+    (gap 1 → +1; gap 3 → −2 then +1 = net −1; a 7-day-then-miss-2 example: 7 → on
+    return `min(75, max(0,7−2)+1)` = 6 the day you come back, i.e. you kept ~5 plus
+    today.)
+  - `best = min(75, max(best, count))`.
+- **Cap = 75.** `count` and `best` never exceed 75; reaching 75 is the ceiling
+  (the top milestone is the "maxed" reward).
 - **Item unlocks (owner-confirmed):** milestone collectibles at **3 / 7 / 14 / 30 /
-  100**, fired off the **high-water mark `best`** (so dipping and re-climbing never
-  re-awards or revokes them), through the existing catalogue/milestone system
-  (their own small set; rarity climbs with the milestone).
+  50 / 75** (the unreachable 100 replaced; **75 = the cap / "maxed" item**), fired
+  off the **high-water mark `best`** (so dipping and re-climbing never re-awards or
+  revokes them), through the existing catalogue/milestone system (their own small
+  set; rarity climbs with the milestone — 75 the rarest).
 - **Display name:** this isn't really a "streak" anymore — pick a calm label with
   the owner (e.g. "rhythm", "momentum", "day count"); keep it in one constant.
 - **DoD:** Node test of the pure reducer — first play =1; same-day no change; each
-  gap computes `max(0,count−(N−1))+1` (incl. the worked examples above and the
-  floor at 0 after a long absence); `best` monotonic; milestones fire off `best`
-  exactly at threshold, once each, and never revoke on a dip. No timers/
-  notifications; no regressions; deploy green.
+  gap computes `min(75, max(0,count−(N−1))+1)` (incl. the worked examples above, the
+  floor at 0 after a long absence, AND the **clamp at 75** — many consecutive play
+  days never exceed 75); `best` monotonic and ≤ 75; milestones fire off `best`
+  exactly at threshold, once each, including 75 at the cap, and never revoke on a
+  dip. No timers/notifications; no regressions; deploy green.
 
 ### T32 — Per-question Practice / Review view · status: BLOCKED (spec CONFIRMED by owner)
 Replaces the old "relaxed mode" idea (owner-chosen). Mitigates the one
