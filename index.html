@@ -13,8 +13,19 @@
 <body>
 <div class="app">
 
+  <!-- ENTRY / TAP TO BEGIN (provides the fullscreen + audio user gesture) -->
+  <section id="entry" class="screen active">
+    <div class="mark">x<span class="slash">/</span>2</div>
+    <div class="tag">Fast mental-maths drills</div>
+    <div class="entry-actions">
+      <button class="btn" id="entryFs">Play in fullscreen</button>
+      <button class="linkbtn" id="entryPlay">Play</button>
+    </div>
+    <button class="linkbtn" id="soundBtn">🔊 Sound on</button>
+  </section>
+
   <!-- START -->
-  <section id="start" class="screen active">
+  <section id="start" class="screen">
     <div class="mark" id="mark">x<span class="slash">/</span>2</div>
     <div class="tag" id="tag">Halve it. Fast.</div>
     <div class="picker" id="modeTabs"></div>

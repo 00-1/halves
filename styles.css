@@ -27,6 +27,13 @@ body{
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .screen.active{opacity:1;pointer-events:auto}
 
+/* ---------- ENTRY ---------- */
+#entry{justify-content:center;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:20px 8px}
+.entry-actions{display:flex;flex-direction:column;align-items:center;margin-top:30px}
+.entry-actions .btn{margin-top:0}
+.entry-actions .linkbtn{margin-top:14px}
+#soundBtn{margin-top:28px}
+
 /* ---------- START ---------- */
 #start{justify-content:center;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:20px 8px}
 .mark{font-family:var(--mono);font-weight:800;letter-spacing:-.04em;line-height:.9;

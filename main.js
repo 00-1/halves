@@ -58,7 +58,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory") };
+  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -601,30 +601,68 @@
   $("unlockClose").addEventListener("click", closeModal);
   $("unlockModal").addEventListener("click", e => { if(e.target === $("unlockModal")) closeModal(); });
 
-  // ---- fullscreen toggle (feature-detected; graceful where unsupported) ----
-  (function setupFullscreen(){
-    const btn = $("fsBtn"); if(!btn) return;
-    const docEl = document.documentElement;
-    const canFS = !!(docEl && (docEl.requestFullscreen || docEl.webkitRequestFullscreen ||
-      docEl.mozRequestFullScreen || docEl.msRequestFullscreen));
-    if(!canFS){ btn.classList.add("hidden"); return; }   // e.g. iOS Safari — hide it
-    const isFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement ||
+  // ---- fullscreen helpers (feature-detected, vendor-prefixed, try/catch) ----
+  function fsSupported(){
+    const el = document.documentElement;
+    return !!(el && (el.requestFullscreen || el.webkitRequestFullscreen ||
+      el.mozRequestFullScreen || el.msRequestFullscreen));
+  }
+  function fsActive(){
+    return !!(document.fullscreenElement || document.webkitFullscreenElement ||
       document.mozFullScreenElement || document.msFullscreenElement);
-    function enter(){
-      const fn = docEl.requestFullscreen || docEl.webkitRequestFullscreen ||
-        docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
-      try{ const p = fn.call(docEl); if(p && p.catch) p.catch(()=>{}); }catch(e){}
-    }
-    function exit(){
-      const fn = document.exitFullscreen || document.webkitExitFullscreen ||
-        document.mozCancelFullScreen || document.msExitFullscreen;
-      try{ const p = fn.call(document); if(p && p.catch) p.catch(()=>{}); }catch(e){}
-    }
-    function sync(){ btn.innerHTML = isFS() ? '⛶ Exit' : '⛶ Fullscreen'; }
-    btn.addEventListener("click", () => { isFS() ? exit() : enter(); });   // user gesture
+  }
+  function fsEnter(){
+    const el = document.documentElement;
+    const fn = el.requestFullscreen || el.webkitRequestFullscreen ||
+      el.mozRequestFullScreen || el.msRequestFullscreen;
+    if(fn){ try{ const p = fn.call(el); if(p && p.catch) p.catch(()=>{}); }catch(e){} }
+  }
+  function fsExit(){
+    const fn = document.exitFullscreen || document.webkitExitFullscreen ||
+      document.mozCancelFullScreen || document.msExitFullscreen;
+    if(fn){ try{ const p = fn.call(document); if(p && p.catch) p.catch(()=>{}); }catch(e){} }
+  }
+
+  // In-menu fullscreen toggle (T18) — hidden where unsupported.
+  (function setupFullscreenBtn(){
+    const btn = $("fsBtn"); if(!btn) return;
+    if(!fsSupported()){ btn.classList.add("hidden"); return; }
+    const sync = () => { btn.innerHTML = fsActive() ? '⛶ Exit' : '⛶ Fullscreen'; };
+    btn.addEventListener("click", () => { fsActive() ? fsExit() : fsEnter(); });
     ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
       .forEach(ev => document.addEventListener(ev, sync));
     sync();
+  })();
+
+  // ---- sound preference (persisted; engine arrives in T16) ----------------
+  function soundOn(){ try{ return localStorage.getItem("halves.sound") !== "off"; }catch(e){ return true; } }
+  function saveSound(on){ try{ localStorage.setItem("halves.sound", on ? "on" : "off"); }catch(e){} }
+  // Guarded — no-ops until the audio engine (window.Sound) ships in T16.
+  function audioUnlock(){ if(window.Sound && window.Sound.unlock) window.Sound.unlock(); }
+  function applySoundPref(){ if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!soundOn()); }
+
+  // ---- entry / "tap to begin" screen (the fullscreen + audio gesture) -----
+  (function setupEntry(){
+    const fsBtn = $("entryFs"), playBtn = $("entryPlay"), soundBtn = $("soundBtn");
+    if(!playBtn) return;
+    function syncSound(){ soundBtn.innerHTML = soundOn() ? '🔊 Sound on' : '🔇 Sound off'; }
+    syncSound();
+    soundBtn.addEventListener("click", () => { saveSound(!soundOn()); syncSound(); applySoundPref(); });
+    // The single user gesture that unlocks audio (and optionally fullscreen),
+    // then reveals the menu / honours any deep-link hash route.
+    function enter(useFs){
+      audioUnlock();
+      applySoundPref();
+      if(useFs) fsEnter();
+      applyRoute();
+    }
+    if(!fsSupported()){           // iOS Safari etc. — single "Play", no fullscreen
+      fsBtn.classList.add("hidden");
+      playBtn.className = "btn";
+      playBtn.textContent = "Play";
+    }
+    fsBtn.addEventListener("click", () => enter(true));
+    playBtn.addEventListener("click", () => enter(false));
   })();
 
   // ---- build info (sha + "ago"), written at deploy time -------------------
@@ -657,5 +695,6 @@
   renderBest();
   renderStartState();
   renderBuild();
-  applyRoute();   // honour a deep link (e.g. #/inventory) on load
+  applySoundPref();   // honour the saved mute pref on load (no-op until T16)
+  show("entry");      // splash first; entry buttons reveal the menu via applyRoute()
 })();

@@ -539,3 +539,37 @@ how I verified:
   - no TODO/placeholder; no DOM/id changes; no regressions.
 notes / questions: ranks were already safe (speed ranks require a perfect score)
   and Mastery already required 0 skips — this aligns Speed brackets with both.
+
+## T11 — Entry / "tap to begin" screen  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - index.html — new `#entry` splash screen (now the initial `active` screen;
+    `#start` no longer active): brand mark + tagline, a primary "Play in
+    fullscreen" (#entryFs), a secondary ghost "Play" (#entryPlay), and a sound
+    toggle (#soundBtn).
+  - main.js — refactored T18's fullscreen logic into shared module-level helpers
+    (`fsSupported/fsActive/fsEnter/fsExit`, all vendor-prefixed + try/catch); the
+    in-menu button reuses them. Added persisted sound prefs (`soundOn`/`saveSound`
+    on `halves.sound`, default ON) and guarded `audioUnlock()`/`applySoundPref()`
+    (no-ops until window.Sound ships in T16). `setupEntry()`: the sound toggle
+    persists + relabels; both play buttons run the single gesture — `audioUnlock()`
+    + `applySoundPref()` (+ `fsEnter()` for the fullscreen one) then `applyRoute()`
+    to reveal the menu / honour a deep link. If fullscreen is unsupported, #entryFs
+    is hidden and #entryPlay is promoted to the primary "Play". Init now ends with
+    `applySoundPref(); show("entry")` instead of routing immediately.
+  - styles.css — `#entry` layout + `.entry-actions` button stack.
+how I verified:
+  - node -c main.js OK; id cross-check clean (entry/entryFs/entryPlay/soundBtn).
+  - behaviour harness (Node + DOM shim, 16 assertions): on load #entry is active
+    and #start is not; sound defaults ON, toggling persists `halves.sound` and
+    (with a window.Sound spy) calls setMuted(true/false); "Play in fullscreen"
+    calls requestFullscreen + audio unlock + reveals the menu; plain "Play" reveals
+    the menu WITHOUT requesting fullscreen but still unlocks audio + applies the
+    pref; UNSUPPORTED fullscreen hides #entryFs, promotes Play to the primary
+    button, and still enters with no error; a deep-link (#/inventory) is honoured
+    after the gesture. ALL T11 CHECKS PASSED.
+  - no TODO/placeholder; no regressions (T18 menu button still wired via the shared
+    helpers; routing intact).
+notes / questions: the entry gesture is required every load (fullscreen + Web Audio
+  both need a fresh user gesture), so the splash shows each session. window.Sound
+  hooks are stubbed/guarded now and will light up in T16.
