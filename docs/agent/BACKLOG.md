@@ -231,7 +231,7 @@ start screen tidy and balanced after removal.
 - **DoD:** blurb gone; no dead CSS left; start screen still lays out cleanly at
   360px; no regressions; deploy green.
 
-### T11 — Entry / "tap to begin" screen (fullscreen + audio gesture) · status: OPEN
+### T11 — Entry / "tap to begin" screen (fullscreen + audio gesture) · status: DONE
 A first splash screen that gives the best experience from the start and provides
 the single user gesture both fullscreen and Web Audio require.
 - New `#entry` screen shown **on load**, before the menu: brand mark + tagline.

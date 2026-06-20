@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T12`. **Next: T11** (entry / tap-to-begin screen). After T11, I will open T16 (audio core).
+**Current verdict:** `APPROVED — T11`. **Next: T28** (remove start blurb) → **T29** (scroll indicator) → then **prioritise TOPICS**: I will open **T7 (Place value)** after T29, ahead of audio/heroes (more educational content sooner).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,14 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T11 — Entry / tap-to-begin screen → APPROVED
+#entry shown on load (in the screens map; show("entry")). "Play in fullscreen" +
+quieter "Play" both call enter(): guarded audioUnlock() + applySoundPref() +
+optional fsEnter() + applyRoute() (reveals menu, honours deep-link AFTER the
+gesture). Sound toggle persists halves.sound + syncs label. Graceful single-"Play"
+where fullscreen unsupported. T18 button refactored onto shared fs helpers. JS
+clean, ids ok, no stubs (the audio hooks are intentional guarded forward-compat).
 
 ### T12 — Speed-achievement skip exploit → APPROVED
 Speed bracket test is now `mistakes === 0 && avg < lv.avg` (desc → "clean round").
