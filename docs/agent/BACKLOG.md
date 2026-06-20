@@ -449,7 +449,37 @@ keeping the harder cases as the Part-2 stretch.
   Spark regenerate; no regression to the chain or other topics; deploy green.
   (Babysitter re-verifies the P1 arithmetic and the whole/decimal balance.)
 
-### T35 — Diverse item names + fix inventory truncation · status: BLOCKED (await DESIGN-names.md + after T23)
+### T37 — Visual polish: Best-Times rank indicator + Inventory topic progress · status: OPEN
+Two related "show it with colour, not an AI-smell border" fixes (owner screenshots).
+1. **Best Times rows (`.sum-row`).** Today each card has a rounded coloured
+   `border-left:4px` strip tinted by rank — the textbook "AI CSS" left-border-on-a-
+   rounded-card look. **Remove it**; convey rank colour with a small **filled
+   bullet/dot** before the rank/holder label (colour = rank colour) OR a crisp
+   **square (non-rounded) accent** — pick the cleaner result; keep the colour map.
+   Keep any subtle row tint (the "highlight" the owner likes). Update the
+   `.notplayed` dashed-left treatment to match. Locked rows: no/muted dot.
+2. **Inventory topic rows.** Each topic row (Halves 32/59 …) shows only a bare
+   fraction. Add a **coloured progress bar / heatmap** = owned/total fill, colour
+   graded by completeness (cool/low → warm/high, or an accent that deepens toward
+   100% with a distinct 100% colour). Keep the fraction text.
+- **DoD:** no rounded coloured left-border remains on `.sum-row`; rank colour shown
+  via a non-card-border element; inventory topic rows show a fill matching
+  owned/total with sensible colour grading; both 360px-safe; no regressions; deploy
+  green.
+
+### T38 — Start screen fits the viewport (picker is the flexible scroll region) · status: OPEN
+Owner: the topic-selection (start) screen slightly overflows the bottom (build info
+clipped). Make `#start` a flex **column** bounded by the app/viewport height so the
+header (mark/tag), best-line, **Start**, link row, sound/exit and build info always
+stay on-screen; the **picker** (`.picker-wrap`/`.picker`) becomes the flexible
+region (`flex:1 1 auto; min-height:0; overflow-y:auto`) that shrinks and scrolls
+when the column is too tall — the *topic list* scrolls, not the whole page. Keep
+the scroll-cue (▾) working with the picker's own scroll.
+- **DoD:** at a short viewport the start screen shows Start + links + build info
+  with **no page overflow**; only the picker scrolls; scroll cue still toggles;
+  360px-safe; other screens unaffected; no regressions; deploy green.
+
+### T35 — Diverse item names + fix inventory truncation · status: BLOCKED (spec ready: DESIGN-names.md; after T23 + CSS polish)
 Owner: item names are too samey (today: **14 adjectives, ~36 nouns → only 167
 unique names for 775 items**; "Whispering" used 68×) and **get cut off on the
 inventory screen**; they should NOT all follow the rigid `<Adj> <Noun>` mould (cf.
@@ -458,9 +488,12 @@ the lost "Cooked Goblin Leg"). Replace the naming system and fix the layout.
   from the research output): multiple **name templates** (varied grammar — `{adj}
   {noun}`, `{noun} of {epithet}`, `The {adj} {noun}`, `{creature}'s {noun}`,
   `{cookadj} {creature} {part}` e.g. "Cooked Goblin Leg", plus whole **fixed**
-  funny names) + large deduped word banks (600+ adjectives, 25-40 nouns/style,
+  funny names) + large deduped word banks (600+ adjectives, big shared noun pool,
   epithets, creatures, places, cook-words, fixed names). Pick the template + words
   **deterministically from the item id** (stable across reloads).
+- **Decoupled from icon category.** Names are generated independently of the
+  T36 icon category (so the two scale separately); a category's theme may *lightly*
+  bias noun choice but names are not locked to 50 per-category pools.
 - **Diversity guarantees:** every item's full name is **unique**; **no adjective
   repeats** while the adjective bank exceeds the catalogue (size the bank for the
   post-loot catalogue; when exceeded, the templates' epithet/creature/place tails
@@ -477,6 +510,23 @@ the lost "Cooked Goblin Leg"). Replace the naming system and fix the layout.
   across reloads; no offensive/inappropriate words (Babysitter audits a sample).
   DOM/CSS check: inventory captions render the full name without ellipsis clipping
   at 360px; no regressions; deploy green.
+
+### T36 — Pixel icons: ~50 categories + per-item variation · status: BLOCKED (spec ready: DESIGN-icons.md; after T23)
+Owner: more icon categories (~50, same chunky 16-bit look) AND **stronger variation
+within a category** (the old mirrored-sprite generator varied a lot; T20 made items
+look templated). Full spec: **`docs/agent/DESIGN-icons.md`** — 12 parameterized
+archetype renderers → ~50 category presets; grid `G` 12→16; per-item variation
+(structural jitter + 6 generic levers: palette hue/lum shift within rarity, accent
+scatter, silhouette jitter, symmetry-break, decorative marks, internal-line
+rotation) capped + `locked` identity cells so categories stay recognizable; a Node
+`icon-variation` test (stub-canvas role-grid: cross-category distinct ≥0.18,
+within-category combined ≥0.22, no duplicates, identity ≥95%, determinism) wired
+into the Pages workflow. **Run after T23 (loot)**; then remap name nouns to the
+archetype family (12) per the DESIGN-names coupling note (add Tool + Garment pools).
+- **DoD:** ~50 categories registered; all render; the `icon-variation` Node test
+  passes every threshold; determinism holds; inventory/modal/toasts render the new
+  icons; collectible earning unaffected; 360px-safe; no regressions; deploy green.
+  (Babysitter re-runs the variation test + eyeballs a montage.)
 
 ---
 
