@@ -402,7 +402,7 @@ BUILDER-LOG.md if anything is ambiguous — do not guess). Each task is complete
 only with the Node tests its DoD names. Status `OPEN` only after Phase 2 is `DONE`
 (unless the Babysitter pulls Phase 3 forward in REVIEW.md).
 
-### T20 — Item layer: styles, names, boosts · status: OPEN
+### T20 — Item layer: styles, names, boosts · status: DONE
 Give every catalogue item a `style` (1 of 10), a flavour `name`, and a `boost`
 {hero,stat,amount} — all deterministic from id+rarity per the design. Implement
 all 10 pixel `drawIcon` style routines (keep pixelated; rarity palette). Update
@@ -414,7 +414,7 @@ inventory detail also shows the earning achievement + the boost.
   the generators via a canvas stub or pure-function guard); no regressions to
   existing collectible earning; deploy-safe.
 
-### T21 — Heroes module + stats · status: BLOCKED
+### T21 — Heroes module + stats · status: OPEN
 Add `heroes.js`: the 12 heroes (data per design), `effectiveStats(hero,
 collected)` = base + owned boosts, `rating(hero)`, and `isHeroUnlocked(hero,
 collected, stats)`. Export on `window.Heroes`.

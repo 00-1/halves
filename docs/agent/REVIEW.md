@@ -1,19 +1,17 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T17`. Audio phase (2.7) **complete**. **Next is
-T20 (Item layer: styles, names, boosts)** — first task of the Phase-3 hero
-metagame; full spec in `docs/agent/DESIGN-heroes.md` (read it fully first; ask in
-BUILDER-LOG.md if anything is ambiguous — don't guess). Give every catalogue item
-a deterministic `style` (1 of 10), flavour `name`, and `boost` {hero,stat,amount}
-from id+rarity; implement all 10 pixel `drawIcon` style routines (pixelated;
-rarity palette); show the flavour name in inventory tiles / unlock modal / toasts,
-and the earning achievement + boost in the inventory detail. DoD: every item has
-style∈[0,10), non-empty name, valid boost (real hero+stat); boosts cover all 12
-heroes (Node: each hero targeted by ≥1 item); all 10 styles render (Node-smoke via
-canvas stub / pure-function guard); no regression to existing collectible earning;
-deploy-safe. **Note:** the metagame is now research-informed — see
-`docs/agent/RESEARCH-metagame.md` (rewards stay mastery-/earn-contingent; nothing
-ever purchasable; no public leaderboards; honest drop odds).
+**Current verdict:** `APPROVED — T20`. **Next is T21 (Heroes module + stats)** —
+full spec in `docs/agent/DESIGN-heroes.md`. Add `heroes.js`→`window.Heroes`: the
+12 heroes (data per design — reuse the `HERO_IDS`/`HERO_NAMES` already exported
+from collectibles.js so they stay in sync; add each hero's type + base
+power/guard/speed/focus + unlock predicate), `effectiveStats(hero, collected)` =
+base + summed boosts from owned items, `rating(hero)`, and `isHeroUnlocked(hero,
+collected, stats)`. DoD: Node test — bram unlocks on first `init:*`; effective
+stats grow as boost items are owned; rating monotonic in stats; each hero's unlock
+predicate fires on its listed condition and not before. Pure logic, no DOM.
+**Note:** metagame is research-informed — see `RESEARCH-metagame.md` (rewards stay
+mastery-/earn-contingent; no student-facing real-money spend; no public
+leaderboards; honest drop odds).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -29,6 +27,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T20 — Item layer: styles, names, boosts → APPROVED
+First Phase-3 task. Independently verified (Node, stub canvas): node -c (collectibles/main) OK; main.js id cross-check clean (45, 0 missing); `.u-boost`/`.inv-name` CSS present; no TODO/stub; catalogue unchanged (775). Over **every** catalogue item: `style` is an integer in [0,10); `name` non-empty; `boost` references a real hero + real stat with rarity-correct amount (common1/unc2/rare3/epic5/leg8) — 0 violations. Boosts **spread across all 12 heroes** (per-hero 57–77 items) and **all 10 styles** used (69–88 each). **Deterministic across fresh reloads** (0 drift in style/name/boost per id). `drawIcon` runs for all 10 style routines without error; `boostLabel` formats ("+1 Guard · Pip Quickfingers"). HERO_IDS/STAT_NAMES match DESIGN-heroes exactly (bram…roon; power/guard/speed/focus). Additive fields — no regression to collectible earning. UI: toasts/modal/inventory show flavour names + boost line + earning achievement.
 
 ### T17 — Generative chiptune music (12 styles + menu) → APPROVED
 Extends `window.Sound` with a look-ahead scheduler. Independently verified (stub AudioContext + captured timer + controllable clock): node -c (sound/modes/main) OK; main.js id cross-check clean (45, 0 missing); catalogue unchanged (775); no TODO/stub. **STYLES = exactly 13** (12 topic + menu@12), distinct names, all params present (bpm>0, non-empty scale, arp/bass/drums/density/waves). `styleIndexFor`: number→mod13, "menu"→12, any string→deterministic hash%12 **always in [0,12)**. `degMidi` **in-scale** for every style across degrees −3..15 × octaves −1..1. `stepVoices` **deterministic given a seed, varies across seeds**, all voices valid (f>0, d>0, type, g>0). Scheduler: does NOT start before `unlock()`; starts on unlock+setMusic; schedules oscillators across look-ahead ticks; keeps scheduling after a topic-style switch; **`setMuted(true)` stops it (no oscillators), unmute resumes**; suspends/stops when hidden; own low gain (0.07) off the shared master; only-timer-while-playing (low CPU). `show()` follows the screen (topic style in-game via `mode.music`/`mode.id`, menu elsewhere), guarded. All 15 modes carry an explicit `music` index. No game-clock impact. No regressions.
