@@ -216,7 +216,7 @@ notes / questions: `gen:true` marks the generated modes; Part-2 `addsub2` lives 
   at the top of Tier 2 rather than Tier 3 — flag me if you'd prefer 9.
 
 ## T6 — Number bonds  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 8304411 (on main)
 changed:
   - modes.js — two generators and two modes spliced into the chain at importance
     position 5 (after Add&Subtract): `bonds` (Part 1, complement to 100, shown as
