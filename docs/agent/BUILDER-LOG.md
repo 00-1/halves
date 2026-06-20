@@ -591,3 +591,28 @@ how I verified:
     laying out cleanly (Start's margin + `.linkrow` margin-top:14px keep spacing).
   - node -c main.js OK (JS untouched); no regressions.
 notes / questions: none — pure cleanup; no dead CSS left.
+
+## T29 — Scroll indicator on the topic picker  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - index.html — wrapped `#modeTabs` in a `.picker-wrap` (position context) and
+    added a `.scroll-cue` ▾ inside it.
+  - styles.css — moved the picker's outer sizing (max-width/margin) to
+    `.picker-wrap`; added `::before` (top fade) / `::after` (bottom fade) overlays
+    + the bobbing `.scroll-cue`, all `pointer-events:none`, shown only via
+    `.can-scroll-up` / `.can-scroll-down` on the wrap. Reduced-motion stops the bob.
+  - main.js — `updateScrollCues()` toggles those classes from the picker's
+    `scrollTop`/`scrollHeight`/`clientHeight`. Called at the end of `renderTabs()`
+    (re-render), plus a **passive** `scroll` listener on the picker and the window
+    `resize` handler. Guarded against a missing wrapper.
+how I verified:
+  - node -c main.js OK; id cross-check clean (cues are classes, no new ids); the
+    `.picker-wrap`/`can-scroll-*`/`.scroll-cue` classes all have CSS; no TODO.
+  - behaviour harness (Node + DOM shim) firing the REAL scroll handler: list fits
+    → no cues; overflow @top → can-scroll-down only ("more below"); @middle →
+    both fades; @bottom → can-scroll-up only (the down indicator disappears at the
+    end); shrinking the list back to fitting → cues cleared. ALL T29 CHECKS PASSED.
+  - overlays/cue are pointer-events:none (never block taps); recomputed on
+    render/scroll/resize; full app loads with no init error.
+notes / questions: with 9 topics across 3 groups the picker now genuinely
+  overflows ~42vh on a phone, so the "more below" cue is real and useful.

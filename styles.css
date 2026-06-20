@@ -42,9 +42,23 @@ body{
   display:flex;align-items:baseline;gap:.04em;justify-content:center}
 .mark .slash{color:var(--amber);-webkit-text-fill-color:var(--amber);font-weight:400;transform:translateY(-.02em)}
 .tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:16px;font-weight:500}
-/* scrollable, grouped mode picker */
-.picker{width:100%;max-width:360px;margin-top:22px;max-height:42vh;overflow-y:auto;
+/* scrollable, grouped mode picker (wrapper carries the scroll-affordance fades) */
+.picker-wrap{position:relative;width:100%;max-width:360px;margin-top:22px}
+.picker{width:100%;max-height:42vh;overflow-y:auto;
   display:flex;flex-direction:column;gap:14px;text-align:left;padding:2px}
+/* edge fades + a bobbing cue, shown only when there is more to scroll to */
+.picker-wrap::before,.picker-wrap::after{content:"";position:absolute;left:0;right:0;height:26px;
+  pointer-events:none;opacity:0;transition:opacity .2s ease;z-index:1}
+.picker-wrap::before{top:0;background:linear-gradient(to bottom,var(--bg),transparent)}
+.picker-wrap::after{bottom:0;background:linear-gradient(to top,var(--bg),transparent)}
+.picker-wrap.can-scroll-up::before{opacity:1}
+.picker-wrap.can-scroll-down::after{opacity:1}
+.scroll-cue{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);color:var(--muted);
+  font-size:12px;pointer-events:none;opacity:0;transition:opacity .2s ease;z-index:2;
+  animation:cue-bob 1.4s ease-in-out infinite}
+.picker-wrap.can-scroll-down .scroll-cue{opacity:.85}
+@keyframes cue-bob{0%,100%{transform:translateX(-50%)}50%{transform:translateX(-50%) translateY(2px)}}
+@media (prefers-reduced-motion: reduce){ .scroll-cue{animation:none} }
 .mode-group h5{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
   color:var(--muted);margin:0 0 8px 2px}
 .mode-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;

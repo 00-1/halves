@@ -160,6 +160,16 @@
       if(!rows.length) return "";
       return '<div class="mode-group"><h5>'+esc(g)+'</h5>'+rows.map(modeRow).join("")+'</div>';
     }).join("");
+    updateScrollCues();
+  }
+
+  // Toggle the picker's scroll-affordance fades by comparing scroll geometry.
+  // Nothing shows when the list fits; recomputed on render/scroll/resize.
+  function updateScrollCues(){
+    const el = elModeTabs, wrap = el && el.parentElement;
+    if(!wrap || !wrap.classList) return;
+    wrap.classList.toggle("can-scroll-up", el.scrollTop > 1);
+    wrap.classList.toggle("can-scroll-down", el.scrollHeight - el.clientHeight - el.scrollTop > 1);
   }
   function renderMark(){ elMark.innerHTML = mode.glyph; elTag.textContent = mode.tag; }
 
@@ -177,6 +187,7 @@
     if(t.classList.contains("locked")) return;   // locked rows aren't selectable
     selectMode(t.dataset.mode);
   });
+  elModeTabs.addEventListener("scroll", updateScrollCues, { passive:true });
 
   function renderBest(){
     if(!isUnlocked(mode)){
@@ -562,6 +573,7 @@
   // Keep a wide prompt fitted if the viewport changes mid-round.
   window.addEventListener("resize", () => {
     if(screens.game.classList.contains("active")){ fitText(elPrompt); fitText(elGhost); }
+    updateScrollCues();
   });
 
   // ---- hash routing for the static screens --------------------------------
