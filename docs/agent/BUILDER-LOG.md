@@ -593,7 +593,7 @@ how I verified:
 notes / questions: none — pure cleanup; no dead CSS left.
 
 ## T29 — Scroll indicator on the topic picker  [HANDOFF]
-commit: (recorded on push to main below)
+commit: e27c9c8 (on main)
 changed:
   - index.html — wrapped `#modeTabs` in a `.picker-wrap` (position context) and
     added a `.scroll-cue` ▾ inside it.
