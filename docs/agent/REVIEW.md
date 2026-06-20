@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T10`. Particles are in. **Next: T14** (remove Hall of Fame + Clear-all), then T15 (Best Times heat-map + retry).
+**Current verdict:** `APPROVED — T14`. **Next: T15** (Best Times heat-map + tap-to-retry).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,13 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T14 — Remove Hall of Fame + Clear-all → APPROVED
+All 7 elements (nameEntry/nameInput/missNote/hof/hofList/hofMeta/sumClear) removed
+from HTML + JS + CSS; renderHOF/commitName/pendingEntry deleted (no dead code);
+id cross-check clean. Best Times still works: finish() unconditionally saves the
+round to the per-mode top-10 board, so new bests/ranks/picker update — just no
+name prompt. No stubs, no regressions.
 
 ### T10 — Celebratory particles → APPROVED (after 1 fix)
 The undeclared-`pal` ReferenceError in `showTopicToast` is fixed (now

@@ -139,7 +139,7 @@ a non-blocking floating "+N" style flourish. Rarity-tinted.
   cleanup path or a teardown function); works at 360px on a phone; no regressions;
   deploy green.
 
-### T14 — Remove Hall of Fame + Clear-all (single-player cleanup) · status: OPEN
+### T14 — Remove Hall of Fame + Clear-all (single-player cleanup) · status: DONE
 It's single-player (you only compete with yourself), and Best Times already covers
 records — so drop the per-round Hall of Fame and the Clear-all button.
 - Remove from the **results** screen: the name-entry (`#nameEntry`/`#nameInput`),
