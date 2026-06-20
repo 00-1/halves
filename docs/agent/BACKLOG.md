@@ -260,6 +260,20 @@ the single user gesture both fullscreen and Web Audio require.
 > Babysitter note: open **T16 (audio core)** soon after T11 so the entry screen's
 > sound toggle/unlock are backed by real audio.
 
+### T29 — Scroll indicator on the topic picker · status: OPEN
+It isn't obvious the topic list scrolls (the `.picker` is `max-height:42vh;
+overflow-y:auto`, but mobile scrollbars are hidden). Add a clear affordance.
+- A **bottom fade gradient** over the picker when there's more content below, and
+  a **top fade** once scrolled down — toggled dynamically from a (passive) scroll/
+  resize listener comparing `scrollTop` / `scrollHeight` / `clientHeight` (e.g.
+  `can-scroll-down` / `can-scroll-up` classes driving `::before`/`::after`
+  overlays). Optionally a small "▾" hint at the bottom edge.
+- No indicator when the list fits without scrolling. Overlays are
+  `pointer-events:none` (never block taps). Recompute when the list re-renders.
+- **DoD:** when the topic list overflows, a clear "more below" indicator shows and
+  disappears at the end; updates on scroll/resize/re-render; none when it fits;
+  works at 360px; no tap interference; no regressions; deploy green.
+
 ---
 
 ## Phase 2.6 — Content quality
