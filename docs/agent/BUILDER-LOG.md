@@ -834,7 +834,7 @@ notes / questions: hero ids/names live in collectibles.js for the item boosts +
   flavour/boost are additive fields stamped on each item.
 
 ## T21 — Heroes module + stats  [HANDOFF]
-commit: (recorded on push to main below)
+commit: fec6644 (on main)
 changed:
   - heroes.js (new) — `window.Heroes`: the **12 heroes** (id · type · base
     {power,guard,speed,focus} · unlock predicate) per the design table, with names
