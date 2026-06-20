@@ -139,7 +139,7 @@ notes / questions: Group assignment for the existing 5 — the four fact-recall
   tap-to-start if you prefer in review.
 
 ## T4 — Per-topic completion + new milestones  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 2e73138 (on main)
 changed:
   - collectibles.js — three new topic milestone families (cat "Milestone"):
     "unlock N topics" tiers (Explorer 3 / Pathfinder 8 / Trailblazer 16),
