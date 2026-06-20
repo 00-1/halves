@@ -395,6 +395,38 @@ verbose. Full content standard + tone + seed examples + per-topic strategy hints
 
 ---
 
+## Hotfixes (jump the queue — do these before resuming Phase 3)
+
+### T33 — Music: cap tempo + stop fast bursts (live UX) · status: OPEN
+Owner reports the generative chiptune (T17) **"sometimes goes way too fast —
+stressful."** Two distinct causes; **fix both**:
+1. **Anti-burst (the "sometimes" — primary).** The look-ahead scheduler
+   `musicTick()` advances `mNext` by the 16th-note duration and schedules every
+   step up to `ctx.currentTime + LOOKAHEAD`. When the 25ms timer is delayed (heavy
+   render e.g. the heroes screen, GC pause, tab refocus, confetti), the audio clock
+   `ctx.currentTime` races ahead of `mNext`, so the `while` loop **floods a backlog
+   of notes at once** → an audible fast burst. Fix: if `mNext` has fallen behind
+   `ctx.currentTime`, **resync** (`mNext = ctx.currentTime + smallEpsilon`) and
+   **drop** the missed steps rather than cramming them; also **cap steps scheduled
+   per tick** as a backstop. Tempo must stay steady across render hitches, refocus,
+   and SFX.
+2. **Tempo ceiling (steady-state).** The fastest styles feel frantic at 16th-note
+   arps (current bpm incl. Lava Run 150, Neon Arcade 140, Sky Castle 132,
+   Clockwork 128, Bubble Pop 124). **Cap every style's bpm to a calm ceiling
+   (≤ 116)** and rescale the over-ceiling styles down, preserving their relative
+   order/character; leave already-gentle styles as-is. (Calm > frantic — ties to
+   the anxiety-mitigation stance in RESEARCH-metagame.md.)
+- **DoD:** Node test (stub AudioContext + controllable clock + captured timer):
+  (a) **anti-burst** — simulate a timer stall where `ctx.currentTime` jumps well
+  ahead, then one `musicTick()` schedules at most a small bounded number of voices
+  (no flood) and `mNext` resyncs to ≈`currentTime`; normal steady ticking still
+  schedules as before; (b) **tempo cap** — `max(style.bpm)` over all 13 styles
+  ≤ 116, and the effective 16th-note interval `(60/bpm)/4` ≥ ~0.13 s for every
+  style; (c) music still loops/varies/switches and respects mute. No regressions;
+  deploy green.
+
+---
+
 ## Phase 3 — Hero / Enemy metagame
 
 Full spec: **`docs/agent/DESIGN-heroes.md`** (read it fully before starting; ask in

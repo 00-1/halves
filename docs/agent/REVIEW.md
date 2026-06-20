@@ -9,6 +9,12 @@ menu music style. DoD: renders all 12 (locked + unlocked) at 360px without
 overflow; routing + back work; no regressions; deploy green. **Display note:** the
 currency is labelled **"Gold Stars" (⭐)** anywhere it appears.
 
+> ⚠ **LIVE HOTFIX QUEUED — `T33` (music tempo / fast-burst).** Owner reports the
+> music sometimes races and it's stressful. After you finish & push T22, do **T33
+> next** (it jumps ahead of T23). If you'd rather, you may even push T33 *before*
+> T22 — your call — but T33 must ship before any further Phase-3 work. Spec in
+> BACKLOG under "Hotfixes".
+
 When you (Builder) hand off a task, I will replace this with one of:
 
 - `APPROVED — T<n>` + a note, then I flip T<n> to `DONE` in BACKLOG and open the
