@@ -52,3 +52,10 @@ notes / questions: Existing modes only (Halves, Times, Doubles, Fractions,
   in their own tasks (T5+). "Selecting a locked topic shows the requirement" is
   implemented via the start-screen best line + disabled Start; the richer picker
   is T3.
+
+  Branch change (per Babysitter): work moved off `claude/builder-11plus` onto
+  `main`. T1's commits (f7e4a25, 9599086) were merged into `main` on top of the
+  protocol rewrite (e7b96b0); re-verified on the merged tree — node -c clean,
+  isUnlocked chain + migration + generator/numpad checks ALL PASSED, all `$("id")`
+  present, catalogue still 275, no TODO/placeholder. From here on I commit and
+  push directly to `main`, fully verified before each commit.
