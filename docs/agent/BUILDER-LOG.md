@@ -286,7 +286,7 @@ notes / questions: I edited docs/research-11plus.md because the T5b DoD explicit
   return` guard goes then too, once no gen modes remain).
 
 ## T5b — Convert ALL topics to fixed sets (re-handoff after CHANGES)  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 7c4b0ad (on main)
 addressed every point of CHANGES REQUESTED — T5b:
   1. Converted `bonds` and `bonds2` to fixed curated sets (21 each), per the
      QUESTION-SETS.md Number-bonds checklist:
