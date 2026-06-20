@@ -19,7 +19,7 @@ Use `BLOCKED:` (not a handoff) if the task is underspecified or wrong — then w
 ---
 
 ## T1 — Topic-chain unlock  [HANDOFF]
-commit: (see push below)
+commit: f7e4a25
 changed:
   - modes.js — reordered MODES to importance order (Halves → Times → Doubles →
     Fractions → Squares) and added `unlockedBy` to each non-first mode
