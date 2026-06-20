@@ -457,10 +457,12 @@ the engagement layer.
 - **DoD:** Node test of the full progression curve; milestones evaluate
   correctly; final-tier ⇔ full-collection invariant holds.
 
-### T26 — Currency (Gold): fun accumulation · status: BLOCKED
-Implement the Gold economy per `DESIGN-heroes.md` §"Currency & economy" — **earn,
-display, persist; NO spending (build no spend mechanic yet).** Make the
-accumulation itself fun and able to reach **billions/trillions+**:
+### T26 — Currency (Gold Stars): fun accumulation · status: BLOCKED
+Implement the currency per `DESIGN-heroes.md` §"Currency & economy" — **earn,
+display, persist; NO spending (build no spend mechanic yet).** **Display label is
+"Gold Stars" (⭐)** (owner-chosen; internal `gold`/`fmtGold`/`halves.gold` keys are
+fine — only the user-facing text says Gold Stars). Make the accumulation itself fun
+and able to reach **billions/trillions+**:
 - Base earn hooks (per clean question scaled by speed; per round; first Mastery;
   first topic 100%; enemy-tier depth — skipped = 0), all multiplied by the
   **escalating global multiplier** + in-round **combo streak** from the design.

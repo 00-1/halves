@@ -147,10 +147,13 @@ advantage + perfect perf).
   per-hero effective stats and which items boost them.
 - Start-screen links to Arena & Heroes alongside Best times / Inventory.
 
-## Currency & economy (Gold)
+## Currency & economy (Gold Stars)
 
-A soft currency, **Gold**, that only goes up from play. Stored locally
-(`halves.gold`).
+A soft currency displayed to the player as **"Gold Stars" (⭐)** — owner-chosen,
+deliberately comedic at absurd scale (the classic schoolroom reward, climbing into
+the trillions). Internal keys/functions may stay `gold`/`fmtGold`/`halves.gold`;
+only the **display label** is "Gold Stars". It only goes up from play. Stored
+locally (`halves.gold`).
 
 **Base earn** (per event, before the multiplier):
 - per cleanly-solved question: `2 + speedBonus` (faster vs the mode's `masterSecs`
