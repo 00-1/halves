@@ -95,7 +95,7 @@ notes / questions: No Part-2 modes ship in this task by design — T2 is plumbin
   additive to the existing end-of-round collectible modal, not a replacement.
 
 ## T3 — Mode-picker redesign  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 2d39d91 (on main)
 changed:
   - modes.js — added a `group` field to every mode (halves/times/doubles/squares
     → "Core"; fractions → "Fractions & %") and exported `MODE_GROUPS`
