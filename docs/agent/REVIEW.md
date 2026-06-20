@@ -1,16 +1,14 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T34` (Place-value decimals in P1 verified). Both
-queue-jumping hotfixes (music, place-value) are done — **resume Phase 3. Next is
-`T23` — Enemy tiers + battle logic + tier loot.** Spec in DESIGN-heroes.md / BACKLOG:
-the **100-tier** list (generated, extendable) + RPS matchup + pure
-`resolveBattle(hero, tier, perf)`; each tier's **loot batch** as catalogue items
-(`loot:<n>:<k>`) with style/name/boost (batches grow & rarer with depth, no cap);
-compute `def_n` so a tier is beatable only with items obtainable *before* tier n
-(never gate a tier behind its own loot); `def100` from max rating excluding
-tier-100 loot. DoD: Node test proves (a) early tiers winnable with the starter
-hero at good perf; (b) no tier gated behind its own loot; (c) tier 100 unwinnable
-until every non-final-loot boost is owned, winnable once it is. Pure logic, no DOM.
+**Current verdict:** `APPROVED — T23` (enemy tiers/battle/loot verified — all
+invariants hold). **A batch of owner-requested UI polish jumps ahead of the rest of
+Phase 3.** Order: **`T37`** (Best-Times rank dot — kill the AI-smell rounded
+left-border — + Inventory topic progress bars/heatmap) → **`T38`** (start screen
+fits the viewport; the picker is the flexible scroll region) → **`T35`** (diverse
+item names from DESIGN-names.md + fix the inventory name truncation) → then resume
+Phase 3 at **`T24` (Arena)** so the 668 loot items become winnable → then **`T36`**
+(50 icon categories + variation) → `T25`/`T26` → Phase 4. Do **T37 next.** Specs in
+BACKLOG. Keep the rank/heatmap colour-coding; just change the *form*.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -26,6 +24,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T23 — Enemy tiers + battle logic + tier loot → APPROVED
+New `enemies.js` (window.Enemies), loaded after heroes.js. Independently verified (Node, real modes/collectibles/heroes/enemies): node -c all OK; no TODO/stub; loot never earned via drills. **100 tiers**, def 11→551, **monotonic non-decreasing (0 dips)**. Battle invariants over the real data: **(b) no tier gated behind its own loot** — every tier's def beatable with the best advantage hero on drill-items + loot 1..n−1 at perfect perf (0 failures); **(a)** tiers 1–5 winnable by starter bram with 0 items at perf 0.85; **(c)** tier 100 **not** winnable by any hero with 0 items, **winnable** at full-minus-final-loot collection. **668 loot items** all `test()===false` (drill-unearnable), all T20-stamped (style∈[0,10), flavour, valid hero+stat boost) with boosts covering **all 12 heroes**; `registerItem` idempotent; "Loot" added to CATS. Catalogue 775→**1443**. `evaluate()` excludes loot (regression-checked). Pure logic, no DOM. (Arena UI + loot-granting = T24.)
 
 ### T34 — Place Value: bring decimals into Part 1 → APPROVED
 Owner-raised content fix. Independently verified (Node): node -c (modes/collectibles/main) OK; no TODO/stub; clean rename to one `pvItem` builder, no dead `pvP1Item`/`pvP2Item` refs; catalogue unchanged (775); chain/masterSecs unchanged (bonds→placevalue→fractionsof→percentages; placevalue2 requires mastery:placevalue). **P1** = 21 fixed, stable; **7 decimal-operand prompts + 14 whole** (both ≥6), plus whole÷10/100 yielding decimal answers (0.6/0.7) — decimals now visible in the base topic; targets only 10/100; every answer correct (recompute=stored within 1e-9), literal/round-trips on numpad, non-negative. **P2** = 21 fixed, stable; targets only **100/1000 (no bare ×/÷10)**, answers <1 present (10 of them) incl. 3-dp (0.006); all correct/safe. Beat/Spark regenerated. No regressions.

@@ -563,7 +563,7 @@ stats and the items boosting them; procedural pixel portraits. Start-screen link
 - **DoD:** renders all 12 (locked/unlocked) at 360px without overflow; routing
   + back work; deploy green.
 
-### T23 — Enemy tiers + battle logic + tier loot · status: OPEN
+### T23 — Enemy tiers + battle logic + tier loot · status: DONE
 Add the **100-tier** list (generated programmatically, extendable) + RPS matchup
 + pure `resolveBattle(hero, tier, perf)` per design. Generate each tier's **loot
 batch** as catalogue items (`loot:<n>:<k>`) with style/name/boost (batches grow &
