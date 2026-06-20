@@ -127,14 +127,14 @@ stats and the items boosting them; procedural pixel portraits. Start-screen link
   + back work; deploy green.
 
 ### T23 — Enemy tiers + battle logic + tier loot · status: BLOCKED
-Add the 24-tier list + RPS matchup + pure `resolveBattle(hero, tier, perf)` per
-design. Generate each tier's **loot batch** as catalogue items (`loot:<n>:<k>`)
-with style/name/boost (batches grow & rarer with depth — generate liberally, no
-cap). Compute `def_n` so it is beatable only with items obtainable before tier
-`n` (never gate a tier behind its own loot); `def24` from max rating excluding
-tier-24 loot.
+Add the **100-tier** list (generated programmatically, extendable) + RPS matchup
++ pure `resolveBattle(hero, tier, perf)` per design. Generate each tier's **loot
+batch** as catalogue items (`loot:<n>:<k>`) with style/name/boost (batches grow &
+rarer with depth — generate liberally, no cap). Compute `def_n` so it is beatable
+only with items obtainable before tier `n` (never gate a tier behind its own
+loot); `def100` from max rating excluding tier-100 loot.
 - **DoD:** Node test proves (a) early tiers winnable with the starter hero at
-  good perf; (b) **no tier is gated behind its own loot**; (c) tier 24 is
+  good perf; (b) **no tier is gated behind its own loot**; (c) tier 100 is
   unwinnable until every non-final-loot boost is owned and winnable once it is.
   Pure logic, no DOM.
 

@@ -89,8 +89,11 @@ deterministically by id. Pools (extend freely, keep family-friendly):
 
 ## Enemy tiers
 
-An ordered list of **24 tiers**: `{n, name, type, def}`. `type` cycles
-Brawn→Arcane→Cunning→… You may only attempt tier `n` after `tier:n-1`.
+An ordered list of **100 tiers** (`{n, name, type, def}`), generated
+programmatically so the count is trivially extendable beyond 100. `type` cycles
+Brawn→Arcane→Cunning→… and names escalate (give flavour, e.g. themed bands of
+~10: Goblin Warren → … → the final boss). You may only attempt tier `n` after
+`tier:n-1`.
 
 **Defeating a tier unlocks loot — a batch of new inventory items, not just one.**
 Each tier `n` grants:
@@ -110,9 +113,9 @@ progressive disclosure (locked "?" tiles, category grouping) already scales.
 **Difficulty / no circular dependency.** `def` escalates smoothly (e.g. geometric
 from a low, starter-beatable value). A tier's `def` must be beatable using only
 items obtainable **before** defeating it — never gate a tier behind its own loot.
-The **final tier (24)** is calibrated to require essentially **everything else**:
-`def24 = round( maxRatingExclFinalLoot × 1.5 )` where `maxRatingExclFinalLoot` =
-the best hero's rating with **all boosts owned except tier-24's own loot**, at
+The **final tier (100)** is calibrated to require essentially **everything else**:
+`def100 = round( maxRatingExclFinalLoot × 1.5 )` where `maxRatingExclFinalLoot` =
+the best hero's rating with **all boosts owned except tier-100's own loot**, at
 advantage matchup and perfect perf. So the last boss falls only at ~100%
 collection, and not before.
 
@@ -131,7 +134,7 @@ collection, and not before.
 
 Provide a Node test proving: (a) early tiers winnable with the starter hero at
 good perf; (b) **no tier is gated behind its own loot** (each `def_n` is beatable
-with items obtainable before tier `n`); (c) tier 24 is **not** winnable until
+with items obtainable before tier `n`); (c) tier 100 is **not** winnable until
 every non-final-tier-loot boost is owned, and **is** winnable once it is (with
 advantage + perfect perf).
 
