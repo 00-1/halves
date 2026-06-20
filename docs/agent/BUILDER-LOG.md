@@ -758,3 +758,43 @@ non-blocking/safety (DoD): SFX are fire-and-forget on the Web Audio timeline and
   no-op. T17 (music) is the next audio task.
 notes / questions: gold SFX method exists but isn't triggered yet (Gold economy is
   T26); all other listed events are wired. Combo resets on skip and round start.
+
+## T17 — Generative chiptune music (12 styles + menu)  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - sound.js — extended `window.Sound` (shares the T16 AudioContext) with a
+    generative chiptune engine: a **look-ahead scheduler** (25ms timer scheduling
+    ~100ms ahead) driving bass/arp/lead/percussion off a per-style seeded PRNG.
+    `STYLES` = **12 topic styles + 1 menu** (13), each `{name,bpm,root,scale,arp,
+    bass,drums,density,waves}`. Pure helpers: `styleIndexFor(key)` (explicit
+    number · "menu"→12 · hash(id)%12 fallback), `degMidi` (scale-degree→MIDI),
+    `stepVoices(style,step,rnd)` (the deterministic per-step note generator).
+    `setMusic(key)`/`stopMusic()`/`musicPlaying()` manage the scheduler; music
+    swaps style cleanly on a loop boundary, has its own quieter gain, stops on
+    mute and when the tab is hidden, and resumes on unmute/visible/unlock.
+  - modes.js — gave every mode an explicit thematic `music` field (index into
+    STYLES) via a TOPIC_MUSIC map; topics without one fall back to hash%12.
+  - main.js — `show()` now follows the screen: in-game uses the topic's style
+    (`mode.music` or its id), every other screen uses the menu style.
+how I verified:
+  - node -c (sound/modes/main) OK; id cross-check clean; catalogue unchanged (775);
+    no TODO.
+  - music test (Node): STYLES is exactly **13** (12 + menu) with all required
+    params and distinct names; `styleIndexFor` honours explicit index, "menu",
+    and a deterministic hash%12 fallback (always a topic style); `degMidi` notes
+    are **in-scale** for every style across degrees/octaves; `stepVoices` yields
+    voices over a loop, is **deterministic given a seed and varies with different
+    seeds** (in-style). Scheduler/mute (stub AudioContext + timers): setMusic
+    before unlock doesn’t start; unlock starts the requested music; driving the
+    look-ahead **schedules oscillators** (loops produce sound); switching to a
+    topic keeps it playing on a different style; **mute stops the scheduler and
+    unmute resumes it**. 15/15 modes carry an explicit music style. ALL T17 CHECKS
+    PASSED.
+  - init harness: full app loads with the music engine; `Sound.setMusic` wired to
+    screen changes.
+non-blocking/CPU (DoD): the scheduler is the only timer, runs only while playing,
+  stops on mute/hidden; music has its own low gain off the shared master; nothing
+  touches the game clock/input. Arena will pick a style in its own task.
+notes / questions: explicit thematic styles per topic (e.g. Halves→Pixel Forest,
+  Times→Clockwork, Victory-flavoured for Number Bonds II); the menu/results/best-
+  times/inventory screens use the Title Theme.

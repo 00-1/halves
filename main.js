@@ -67,6 +67,11 @@
   function show(name){
     Object.values(screens).forEach(s => s.classList.remove("active"));
     screens[name].classList.add("active");
+    // music follows the screen: the topic's style in-game, the menu style elsewhere
+    if(window.Sound && window.Sound.setMusic){
+      if(name === "game") window.Sound.setMusic(typeof mode.music === "number" ? mode.music : mode.id);
+      else window.Sound.setMusic("menu");
+    }
   }
   function fmt(t){ return t.toFixed(1); }
   function numStr(n){ return String(n); }

@@ -278,6 +278,16 @@
   // Mode-picker section order. Empty sections are skipped by the picker.
   const MODE_GROUPS = ["Core", "Number", "Fractions & %", "Measures", "Reasoning"];
 
+  // Thematic chiptune style per topic — an explicit `music` field on each mode
+  // (index into Sound.STYLES 0..11; see T17). Any topic without an entry falls
+  // back to a deterministic hash(id)%12 in sound.js, so new topics always have one.
+  const TOPIC_MUSIC = {
+    halves:2, times:10, doubles:6, squares:7, fractions:8,
+    addsub:3, addsub2:5, bonds:1, bonds2:11, placevalue:9, placevalue2:0,
+    fractionsof:4, fractionsof2:2, percentages:6, percentages2:1
+  };
+  MODES.forEach(m => { if(TOPIC_MUSIC[m.id] != null) m.music = TOPIC_MUSIC[m.id]; });
+
   window.MODES = MODES;
   window.MODE_GROUPS = MODE_GROUPS;
 })();
