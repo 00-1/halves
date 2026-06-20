@@ -58,7 +58,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory") };
+  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -370,6 +370,50 @@
     });
   }
 
+  // ---- heroes screen ------------------------------------------------------
+  const HERO_PAL = {
+    Brawn:   { body:"#d05a4a", accent:"#ff8a6e", outline:"#3a1410" },
+    Arcane:  { body:"#8a5cf6", accent:"#cda9ff", outline:"#1f1340" },
+    Cunning: { body:"#3fce8c", accent:"#8ef0bf", outline:"#0f3324" }
+  };
+  function statChip(k, v){ return '<span class="hero-stat"><b>'+v+'</b>'+k+'</span>'; }
+  function heroCard(h, col){
+    const Hs = window.Heroes;
+    if(!Hs.isHeroUnlocked(h, col)){
+      return '<div class="hero-card locked t-'+h.type.toLowerCase()+'">'+
+        '<div class="hero-port"><span class="q">?</span></div>'+
+        '<div class="hero-info"><div class="hero-name">'+esc(h.name)+'</div>'+
+        '<div class="hero-hint">🔒 '+esc(h.unlockHint)+'</div></div></div>';
+    }
+    const st = Hs.effectiveStats(h, col), rating = Math.round(Hs.rating(h, col));
+    const items = C.CATALOG.filter(it => col[it.id] && it.boost && it.boost.hero === h.id);
+    const shown = items.slice(0, 12);
+    const chips = shown.map(it => '<span class="hero-chip r-'+it.rarity+'">'+esc(it.flavour)+'</span>').join("") +
+      (items.length > shown.length ? '<span class="hero-chip more">+'+(items.length - shown.length)+' more</span>' : '');
+    return '<div class="hero-card unlocked t-'+h.type.toLowerCase()+'" data-hero="'+esc(h.id)+'">'+
+      '<div class="hero-port"><canvas class="pix" width="48" height="48"></canvas></div>'+
+      '<div class="hero-info">'+
+        '<div class="hero-name">'+esc(h.name)+'<span class="hero-rating">★ '+rating+'</span></div>'+
+        '<div class="hero-stats">'+statChip("PWR",st.power)+statChip("GRD",st.guard)+statChip("SPD",st.speed)+statChip("FOC",st.focus)+'</div>'+
+        '<div class="hero-items">'+(items.length ? '<span class="hero-il">Boosted by '+items.length+':</span> '+chips
+                                                  : '<span class="hero-none">No items yet — collect to boost.</span>')+'</div>'+
+      '</div></div>';
+  }
+  function renderHeroes(){
+    const Hs = window.Heroes; if(!Hs){ $("heroList").innerHTML = ""; return; }
+    const col = loadCollected();
+    const unlocked = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col)).length;
+    $("heroMeta").textContent = unlocked + " / " + Hs.HEROES.length;
+    $("heroList").innerHTML = ["Brawn","Arcane","Cunning"].map(tp => {
+      const hs = Hs.HEROES.filter(h => h.type === tp);
+      return '<div class="hero-group"><h4>'+esc(tp)+'</h4>'+hs.map(h => heroCard(h, col)).join("")+'</div>';
+    }).join("");
+    $("heroList").querySelectorAll(".hero-card.unlocked canvas").forEach(cv => {
+      const card = cv.closest(".hero-card"); const h = card && Hs.byId(card.dataset.hero);
+      if(h) C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], 0);   // style 0 = sprite portrait
+    });
+  }
+
   // ---- game state ---------------------------------------------------------
   let order=[], idx=0, input="", mistakes=0, qMiss=0, combo=0,
       startTime=0, qStart=0, times=[], raf=0, locked=false;
@@ -599,6 +643,7 @@
     const h = (location.hash || "").replace(/^#\/?/, "");
     if(h === "inventory"){ renderInventory(); show("inventory"); }
     else if(h === "best-times"){ renderSummary(); show("summary"); }
+    else if(h === "heroes"){ renderHeroes(); show("heroes"); }
     else { renderTabs(); renderBest(); renderStartState(); show("start"); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
@@ -621,6 +666,8 @@
 
   $("invBtn").addEventListener("click", () => { location.hash = "#/inventory"; });
   $("invBack").addEventListener("click", navStart);
+  $("heroesBtn").addEventListener("click", () => { location.hash = "#/heroes"; });
+  $("heroesBack").addEventListener("click", navStart);
   // Tap a collectible to inspect it (owned shows detail; locked teases).
   $("invList").addEventListener("click", e => {
     const cell = e.target.closest(".inv-cell"); if(!cell) return;

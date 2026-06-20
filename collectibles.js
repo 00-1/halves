@@ -298,15 +298,17 @@
     for(let y=0;y<G;y++) for(let x=0;x<G;x++)
       if(g[y][x]){ cx.fillStyle = a[y][x] ? pal.accent : pal.body; cx.fillRect(off+x*scale, off+y*scale, scale, scale); }
   }
-  // Draws the pixel icon for `seed` (style = hash(seed) % 10) using palette `pal`.
-  function drawIcon(canvas, seed, pal){
+  // Draws the pixel icon for `seed` (style = hash(seed) % 10, or `styleOverride`
+  // when given — heroes force the creature-sprite style) using palette `pal`.
+  function drawIcon(canvas, seed, pal, styleOverride){
     const cx = canvas.getContext("2d");
     const scale = Math.max(1, Math.floor(canvas.width / G));
     cx.clearRect(0,0,canvas.width,canvas.height);
     const off = Math.floor((canvas.width - scale*G) / 2);
     const grid = [], acc = [];
     for(let y=0;y<G;y++){ grid[y] = new Array(G).fill(0); acc[y] = new Array(G).fill(0); }
-    ICON_STYLES[hashStr(seed) % ICON_STYLES.length](grid, acc, mulberry32(hashStr(seed)));
+    const style = (styleOverride != null) ? (styleOverride % ICON_STYLES.length) : (hashStr(seed) % ICON_STYLES.length);
+    ICON_STYLES[style](grid, acc, mulberry32(hashStr(seed)));
     paintGrid(cx, grid, acc, pal, scale, off);
   }
 

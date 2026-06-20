@@ -859,3 +859,34 @@ notes / questions: unlock predicates read `collected` (counts of init:/flawless:
   speed:*:3 and specific ids), so they evaluate from the same store the rest of the
   game uses. `tier:10` (Roon) and `rank:*` predicates will light up once Arena
   (T23/24) and deep ranks are reachable. The Heroes screen is T22.
+
+## T22 — Heroes screen (#/heroes)  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - index.html — new `#heroes` screen (`#heroList` + back) and a "Heroes" link in
+    the start-screen link row.
+  - main.js — `renderHeroes()` groups the 12 `window.Heroes` by type
+    (Brawn/Arcane/Cunning); each card shows the hero's procedural pixel portrait
+    (forced sprite style, type-tinted palette), name + ★ rating, **effective
+    stats** (via `Heroes.effectiveStats`), and the owned items boosting them
+    (flavour chips, capped at 12 + "+N more"). Locked heroes show a "?" portrait +
+    🔒 unlock hint and are de-emphasised. Wired `#/heroes` into `applyRoute`, the
+    Heroes button, and back→menu. (Heroes screen uses the menu music style via the
+    existing `show()` rule.)
+  - collectibles.js — `drawIcon` gains an optional `styleOverride` so hero
+    portraits force the creature-sprite style.
+  - styles.css — heroes screen styles (scrollable, type-tinted cards, stat chips,
+    boost chips), 360px-friendly (flex cards + wrapping chips + screen scroll).
+how I verified:
+  - node -c (collectibles/main) OK; id cross-check clean (heroes/heroList/heroMeta/
+    heroesBtn/heroesBack); new classes have CSS; no TODO.
+  - render harness (DOM shim, seeded: bram unlocked + 3 bram-boosting items, route
+    #/heroes): **all 12 hero names render, grouped by type**; bram's unlocked card
+    present with **effective stats** and its **boosting items** listed; locked
+    heroes show 🔒 + hint; the meta count reads "/ 12". ALL T22 CHECKS PASSED.
+  - routing/back: `applyRoute` handles `#/heroes`; back returns to the menu;
+    hashchange re-renders. Cards are flex with wrapping chips and the screen
+    scrolls → no overflow at 360px.
+notes / questions: the boosting-items list is capped at 12 chips (+"N more") so a
+  fully-collected hero's card stays manageable; the full set is reflected in the
+  "Boosted by N" count and the effective stats.
