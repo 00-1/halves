@@ -1,16 +1,19 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T16`. **Next is T17 (Generative chiptune music —
-12 styles + menu)** — full spec in `docs/agent/DESIGN-audio.md`. Build on the
-existing `window.Sound`/AudioContext from T16: a look-ahead scheduler driving
-lead/bass/arp/percussion; **exactly 12 topic styles + 1 menu style**, generative
-within each style's scale/patterns (seeded PRNG). Assign a style per topic
-(explicit `music` field, deterministic `hash(id)%12` fallback); menu/best-times/
-inventory/heroes use the menu style; switch cleanly on screen/topic change;
-honour the same mute; stop when hidden. DoD: Node-test the style table (exactly
-12 + menu, each with required params) and the note/scale helpers (no real
-AudioContext); music loops, varies in-style, switches with the topic, respects
-mute; low CPU; no regressions; deploy green.
+**Current verdict:** `APPROVED — T17`. Audio phase (2.7) **complete**. **Next is
+T20 (Item layer: styles, names, boosts)** — first task of the Phase-3 hero
+metagame; full spec in `docs/agent/DESIGN-heroes.md` (read it fully first; ask in
+BUILDER-LOG.md if anything is ambiguous — don't guess). Give every catalogue item
+a deterministic `style` (1 of 10), flavour `name`, and `boost` {hero,stat,amount}
+from id+rarity; implement all 10 pixel `drawIcon` style routines (pixelated;
+rarity palette); show the flavour name in inventory tiles / unlock modal / toasts,
+and the earning achievement + boost in the inventory detail. DoD: every item has
+style∈[0,10), non-empty name, valid boost (real hero+stat); boosts cover all 12
+heroes (Node: each hero targeted by ≥1 item); all 10 styles render (Node-smoke via
+canvas stub / pure-function guard); no regression to existing collectible earning;
+deploy-safe. **Note:** the metagame is now research-informed — see
+`docs/agent/RESEARCH-metagame.md` (rewards stay mastery-/earn-contingent; nothing
+ever purchasable; no public leaderboards; honest drop odds).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -26,6 +29,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T17 — Generative chiptune music (12 styles + menu) → APPROVED
+Extends `window.Sound` with a look-ahead scheduler. Independently verified (stub AudioContext + captured timer + controllable clock): node -c (sound/modes/main) OK; main.js id cross-check clean (45, 0 missing); catalogue unchanged (775); no TODO/stub. **STYLES = exactly 13** (12 topic + menu@12), distinct names, all params present (bpm>0, non-empty scale, arp/bass/drums/density/waves). `styleIndexFor`: number→mod13, "menu"→12, any string→deterministic hash%12 **always in [0,12)**. `degMidi` **in-scale** for every style across degrees −3..15 × octaves −1..1. `stepVoices` **deterministic given a seed, varies across seeds**, all voices valid (f>0, d>0, type, g>0). Scheduler: does NOT start before `unlock()`; starts on unlock+setMusic; schedules oscillators across look-ahead ticks; keeps scheduling after a topic-style switch; **`setMuted(true)` stops it (no oscillators), unmute resumes**; suspends/stops when hidden; own low gain (0.07) off the shared master; only-timer-while-playing (low CPU). `show()` follows the screen (topic style in-game via `mode.music`/`mode.id`, menu elsewhere), guarded. All 15 modes carry an explicit `music` index. No game-clock impact. No regressions.
 
 ### T16 — Audio core + 8-bit SFX → APPROVED
 New `sound.js`→`window.Sound`. Independently verified (stubbed AudioContext that counts oscillators): node -c (sound.js, main.js) OK; id cross-check clean incl new `#soundBtnMenu`; no TODO/stub. All 9 SFX specs (+unknown→empty) are pure and **bounded** (every voice f>0 finite, d>0, t≥0, known waveform, gain>0, end<0.6s). `correct` pitch **rises with combo and caps at +12**; `item` note count **scales 3→7 by rarity** (monotonic). **Gesture-gated**: 0 oscillators before `unlock()`; 7 for legendary item after. **Mute silences everything** (0 oscillators across all events while muted) and `isMuted` tracks; unmute resumes. Integration: `combo` resets on skip AND round start (does NOT reopen the T12 speed-skip exploit — speed brackets still require mistakes===0), single shared button-sync path (entry + menu, no double-binding), `halves.sound` persisted, all SFX fire-and-forget on the Web Audio timeline (never touches the `performance.now()` game clock/input), context suspends when hidden. Round-end stinger references real ids/cats (`topics:one100|all100`, `cat:"Mastery"`) → topic100>mastery>roundComplete. `gold` method exists but unwired = documented forward-hook for T26 (system not built yet), not an in-scope stub. No regressions.

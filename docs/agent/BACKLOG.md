@@ -359,7 +359,7 @@ win/loss later). Non-blocking; respects mute; stops when hidden.
   the context); audio never affects game timing/input; first gesture unlocks
   sound; mute persists and silences everything; no regressions; deploy green.
 
-### T17 — Generative chiptune music (12 styles + menu) · status: OPEN
+### T17 — Generative chiptune music (12 styles + menu) · status: DONE
 Look-ahead scheduler driving lead/bass/arp/percussion; **12 topic styles + 1 menu
 style**, generative within each style's scale/patterns (seeded PRNG). Assign a
 style per topic (explicit `music` field, deterministic `hash(id)%12` fallback);
@@ -402,7 +402,7 @@ BUILDER-LOG.md if anything is ambiguous — do not guess). Each task is complete
 only with the Node tests its DoD names. Status `OPEN` only after Phase 2 is `DONE`
 (unless the Babysitter pulls Phase 3 forward in REVIEW.md).
 
-### T20 — Item layer: styles, names, boosts · status: BLOCKED (await Phase 2)
+### T20 — Item layer: styles, names, boosts · status: OPEN
 Give every catalogue item a `style` (1 of 10), a flavour `name`, and a `boost`
 {hero,stat,amount} — all deterministic from id+rarity per the design. Implement
 all 10 pixel `drawIcon` style routines (keep pixelated; rarity palette). Update
