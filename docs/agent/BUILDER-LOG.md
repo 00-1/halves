@@ -249,3 +249,38 @@ notes / questions: masterSecs 3.5 (Tier 1) for both parts — the BACKLOG tier
   table explicitly lists "bonds" under Tier 1 (single-fact recall), and decimal
   bonds to 1 are recall too; flag me if P2 should be Tier 2 (5). Decimal bonds are
   tenths only (matches the "0.3→0.7" spec and stays float-exact).
+
+## T5b — Convert Add/Subtract to fixed sets  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - modes.js — added fixed curated arrays `ADDSUB_P1_SRC` and `ADDSUB_P2_SRC`
+    (21 entries each, format [a,b,sub]: sub=0 "a + b", sub=1 "a − b"). P1 is a
+    representative spread of 2-digit ± within 100 (bridging + non-bridging, varied
+    magnitudes); P2 spans 3-digit ± 2-digit incl. a carry past 1000 (965+78=1043).
+    `addsub`/`addsub2` `build()` now `shuffle(SRC).map(addSubItem)`; removed
+    `gen:true` from both. Deleted the dead generators `addSubP1`/`addSubP2`.
+    Kept `genRound`/`randInt`/`ROUND_N` (still used by the Number Bonds modes,
+    converted in T6) and the `if(m.gen) return` guard (bonds/bonds2 still gen).
+  - docs/research-11plus.md — dropped the gen/fix distinction (per the T5b DoD):
+    the catalogue note now states every topic is a fixed pre-generated set, and
+    both Wave tables lost their `type` column.
+how I verified:
+  - node -c: modes.js, collectibles.js, main.js all OK.
+  - id cross-check: every `$("id")` in main.js present in index.html (no new ids).
+  - logic check (Node, real modes/collectibles): addsub/addsub2 are no longer
+    gen; each build() returns 21 questions, and the prompt SET is stable across
+    rounds (only the order shuffles); every answer matches its prompt arithmetic,
+    is integer/non-negative/numpad-safe, with operands at the right widths (P1
+    both 2-digit, sum ≤100; P2 3-digit ± 2-digit). Catalogue now contains
+    `solve:addsub*`/`spark:addsub*` (each addsub mode = 49 items: 7 + 21 Beat +
+    21 Spark); bonds/bonds2 still carry no Beat/Spark; catalogue 313→397. Subtraction
+    Beat/Spark keys use the same "−" as play (verified "82 − 18" is catalogued).
+    ALL T5b CHECKS PASSED.
+  - no TODO/placeholder introduced; no `addSubP1`/`addSubP2`/`gen:true` left on
+    Add/Subtract. (genRound/randInt deliberately retained for Number Bonds → T6.)
+  - no regressions: chain/groups/masterSecs unchanged; only the build() source
+    and the gen flag changed for these two modes.
+notes / questions: I edited docs/research-11plus.md because the T5b DoD explicitly
+  requires it; flag me if you'd rather own that file. The remaining generator
+  helpers exist solely for Number Bonds and are removed in T6 (the `if(m.gen)
+  return` guard goes then too, once no gen modes remain).

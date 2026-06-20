@@ -66,39 +66,41 @@ positive distances, times as elapsed minutes, so no minus/colon keys).
 
 ## Final mode catalogue
 
-`type`: *gen* = generated (infinite random questions, mode-level collectibles
-only) · *fix* = curated set (also awards per-question Beat/Spark). All answers
-numeric & numpad-enterable.
+**Every topic is a FIXED, pre-generated question set** — a curated array
+(~21 representative entries) that `build()` shuffles each round, exactly like
+Halves/Times/Squares/Fractions. No infinite random generators: fixed sets keep
+best-times comparable and give every topic its per-question Beat/Spark
+collectibles. All answers are numeric & numpad-enterable.
 
 ### Wave 1 — highest GL value (recommended first build)
 
-| Topic | Part 1 | Part 2 (locked) | type |
-|---|---|---|---|
-| Number bonds | to 100 (63→37) | to 1000 (740→260) + decimal bonds to 1 (0.3→0.7) | gen |
-| Add / Subtract | 2-digit within 100 (47+35, 82−18) | 3-digit ± 2-digit (240+85, 312−47) | gen |
-| Percentages of | 10/25/50% of ≤400 (25% of 160=40) | 1/5/20/75% of ≤200 (75% of 60=45) | gen |
-| Fractions of | ½ ¼ ⅓ ⅕ of (¼ of 20=5) | ⅔ ¾ ⅗ ⅝ of (¾ of 20=15) | gen |
-| Place value ×/÷ | whole ×÷ 10·100 (35×100=3500) | decimals ×÷ 10·100·1000 (3.5×100=350) | gen |
-| Rounding | nearest 10/100/1000 (6832→6800) | decimals to 1–2 dp (4.67→4.7) | gen |
-| F↔% equivalences | recall set → % or decimal (¾→75) | eighths/1-20 (⅜→37.5, 1/20→5) | fix |
-| Metric convert | whole units (3 km→3000 m) | decimals (250 cm→2.5 m) | gen |
-| Time | unit convert (3 h→180 min) | elapsed minutes (10:45→11:20=35) | gen |
-| Money | change from £5/£10 (£5−£3.40=1.60) | totals + change from £20 | gen |
-| Ratio | share 2-part ≤100 (share 20 in 1:3) | bigger / 3-part biggest share | gen |
+| Topic | Part 1 | Part 2 (locked) |
+|---|---|---|
+| Number bonds | to 100 (63→37) | to 1000 (740→260) + decimal bonds to 1 (0.3→0.7) |
+| Add / Subtract | 2-digit within 100 (47+35, 82−18) | 3-digit ± 2-digit (240+85, 312−47) |
+| Percentages of | 10/25/50% of ≤400 (25% of 160=40) | 1/5/20/75% of ≤200 (75% of 60=45) |
+| Fractions of | ½ ¼ ⅓ ⅕ of (¼ of 20=5) | ⅔ ¾ ⅗ ⅝ of (¾ of 20=15) |
+| Place value ×/÷ | whole ×÷ 10·100 (35×100=3500) | decimals ×÷ 10·100·1000 (3.5×100=350) |
+| Rounding | nearest 10/100/1000 (6832→6800) | decimals to 1–2 dp (4.67→4.7) |
+| F↔% equivalences | recall set → % or decimal (¾→75) | eighths/1-20 (⅜→37.5, 1/20→5) |
+| Metric convert | whole units (3 km→3000 m) | decimals (250 cm→2.5 m) |
+| Time | unit convert (3 h→180 min) | elapsed minutes (10:45→11:20=35) |
+| Money | change from £5/£10 (£5−£3.40=1.60) | totals + change from £20 |
+| Ratio | share 2-part ≤100 (share 20 in 1:3) | bigger / 3-part biggest share |
 
 ### Wave 2 — medium / low frequency (iterate after)
 
-| Topic | Part 1 | Part 2 (locked) | type |
-|---|---|---|---|
-| Multiply (big) | 2-digit × 1-digit (14×7) | 2-digit × 2-digit (24×15) | gen |
-| Multiply tricks | ×11 of 2-digit (23×11=253) | ×25, ×9, ×99 | gen |
-| Sequences | term-to-term next (2,5,8,11→14) | linear nth-term (3n+2: 10th=32) | gen |
-| Mean | of 3 numbers (4,8,6→6) | of 4–5 numbers | gen |
-| Cubes & roots | cubes 1³–10³ (4³=64) | √ ≤225 and ∛ ≤1000 | fix |
-| Factors & primes | smallest prime factor / next prime | HCF of two (≤60) | gen |
-| Negatives | difference across zero (−6→2 = 8) | range ±50 | gen |
-| BODMAS | two ops (2+3×4=14) | brackets & ÷ (2×(3+4)=14) | gen |
-| Roman numerals | →number ≤100 (XLVII=47) | →number ≤1000 / years (MCMXCIV=1994) | fix |
+| Topic | Part 1 | Part 2 (locked) |
+|---|---|---|
+| Multiply (big) | 2-digit × 1-digit (14×7) | 2-digit × 2-digit (24×15) |
+| Multiply tricks | ×11 of 2-digit (23×11=253) | ×25, ×9, ×99 |
+| Sequences | term-to-term next (2,5,8,11→14) | linear nth-term (3n+2: 10th=32) |
+| Mean | of 3 numbers (4,8,6→6) | of 4–5 numbers |
+| Cubes & roots | cubes 1³–10³ (4³=64) | √ ≤225 and ∛ ≤1000 |
+| Factors & primes | smallest prime factor / next prime | HCF of two (≤60) |
+| Negatives | difference across zero (−6→2 = 8) | range ±50 |
+| BODMAS | two ops (2+3×4=14) | brackets & ÷ (2×(3+4)=14) |
+| Roman numerals | →number ≤100 (XLVII=47) | →number ≤1000 / years (MCMXCIV=1994) |
 
 (Existing modes: Halves, Doubles, Times, Squares, Fraction→decimal.)
 

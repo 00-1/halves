@@ -69,12 +69,30 @@
     ["1/10",0.1], ["3/10",0.3], ["7/10",0.7], ["9/10",0.9],
     ["1/20",0.05],["3/20",0.15],["1/16",0.0625]
   ];
+  // Add/Subtract fixed sets — each entry [a, b, sub]: sub=0 → "a + b", sub=1 →
+  // "a − b". Part 1: 2-digit ± within 100 (non-negative), a representative spread
+  // of bridging and non-bridging sums/differences and varied magnitudes.
+  const ADDSUB_P1_SRC = [
+    [47,35,0],[28,46,0],[53,39,0],[64,27,0],[19,45,0],[56,17,0],[72,18,0],[84,16,0],[36,29,0],[41,58,0],
+    [82,18,1],[91,37,1],[64,29,1],[75,46,1],[53,27,1],[60,24,1],[88,19,1],[47,23,1],[99,45,1],[70,35,1],[56,38,1]
+  ];
+  // Part 2: 3-digit ± 2-digit (subtraction always non-negative), spread across
+  // the range incl. a carry past 1000 (965 + 78).
+  const ADDSUB_P2_SRC = [
+    [240,85,0],[167,48,0],[320,67,0],[453,29,0],[581,76,0],[724,38,0],[199,55,0],[965,78,0],[675,88,0],[138,92,0],
+    [312,47,1],[205,38,1],[430,72,1],[684,59,1],[517,28,1],[760,85,1],[143,57,1],[928,49,1],[350,66,1],[601,93,1],[274,88,1]
+  ];
 
-  // ---- generated-mode helpers --------------------------------------------
-  // `gen:true` modes draw infinite random questions, so they carry mode-level
-  // collectibles only (no per-question Beat/Spark). Answers are always whole
-  // and non-negative so they stay numpad-enterable.
-  const MINUS = "−";                 // proper minus sign (matches "×")
+  // The proper minus sign (matches the "×" used by Times), for ± prompts.
+  const MINUS = "−";
+  // Map a fixed Add/Subtract entry [a, b, sub] to a { p, a } question.
+  function addSubItem(e){
+    const a = e[0], b = e[1];
+    return e[2] ? { p: a + " " + MINUS + " " + b, a: a - b }
+                : { p: a + " + " + b, a: a + b };
+  }
+
+  // ---- Number Bonds generators (to be converted to fixed sets in T6) ------
   const ROUND_N = 20;                     // questions per generated round
   function randInt(lo, hi){ return lo + Math.floor(Math.random() * (hi - lo + 1)); }
 
@@ -88,28 +106,6 @@
       seen.add(q.p); out.push(q);
     }
     return out;
-  }
-
-  // Add/Subtract Part 1 — two-digit ± with the result kept within 100 and
-  // never negative (e.g. 47 + 35 = 82, 82 − 18 = 64).
-  function addSubP1(){
-    if(Math.random() < 0.5){
-      const a = randInt(10, 90);
-      const b = randInt(10, 100 - a);     // a,b both 2-digit; a + b ≤ 100
-      return { p: a + " + " + b, a: a + b };
-    }
-    const a = randInt(11, 99);
-    const b = randInt(10, a - 1);         // a > b, both 2-digit; result ≥ 1
-    return { p: a + " " + MINUS + " " + b, a: a - b };
-  }
-
-  // Add/Subtract Part 2 — three-digit ± two-digit (e.g. 240 + 85 = 325,
-  // 312 − 47 = 265). Subtraction is always non-negative (3-digit − 2-digit).
-  function addSubP2(){
-    const a = randInt(100, 999);
-    const b = randInt(10, 99);
-    if(Math.random() < 0.5) return { p: a + " + " + b, a: a + b };
-    return { p: a + " " + MINUS + " " + b, a: a - b };
   }
 
   // Number bonds Part 1 — complement to 100 (e.g. 63 + ? = 100 → 37). Shown as
@@ -159,14 +155,14 @@
     {
       id:"addsub", name:"Add & Subtract", tag:"2-digit, within 100.",
       glyph:'a<span class="slash">+</span>b',
-      eyebrow:'solve <b>↓</b>', expr:true, unlockedBy:"doubles", masterSecs:5, group:"Number", gen:true,
-      build(){ return genRound(addSubP1); }
+      eyebrow:'solve <b>↓</b>', expr:true, unlockedBy:"doubles", masterSecs:5, group:"Number",
+      build(){ return shuffle(ADDSUB_P1_SRC).map(addSubItem); }
     },
     {
       id:"addsub2", name:"Add & Subtract II", tag:"3-digit ± 2-digit.",
       glyph:'a<span class="slash">±</span>b',
-      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:addsub", masterSecs:5, group:"Number", gen:true,
-      build(){ return genRound(addSubP2); }
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:addsub", masterSecs:5, group:"Number",
+      build(){ return shuffle(ADDSUB_P2_SRC).map(addSubItem); }
     },
     {
       id:"bonds", name:"Number Bonds", tag:"Make 100.",
