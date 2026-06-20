@@ -91,7 +91,7 @@
     { name:"Blazing",   avg:1.4, rarity:"rare" },
     { name:"Lightning", avg:1.1, rarity:"epic" }
   ];
-  const CATS = ["Rank","Initiation","Flawless","Speed","Mastery","Solved","Spark","Milestone","Collector"];
+  const CATS = ["Rank","Initiation","Flawless","Speed","Mastery","Solved","Spark","Milestone","Collector","Loot"];
 
   const CATALOG = [];
   const byIdMap = {};
@@ -359,6 +359,20 @@
     it.boost = itemBoost(it.id, it.rarity);
   });
 
+  // Register a catalogue item added AFTER the initial build (e.g. enemy-tier
+  // loot in enemies.js / T23). Stamps the same deterministic style/flavour/boost
+  // layer, appends it to the catalogue + lookup, and is idempotent — calling it
+  // twice with the same id returns the already-registered item unchanged.
+  function registerItem(it){
+    const existing = byIdMap[it.id];
+    if(existing) return existing;
+    it.style = itemStyle(it.id);
+    it.flavour = itemFlavour(it.id);
+    it.boost = itemBoost(it.id, it.rarity);
+    add(it);
+    return it;
+  }
+
   window.Collectibles = {
     RANKS, RARITY, paletteFor, rankIndex,
     CATALOG, byId: id => byIdMap[id], modeItems,
@@ -366,6 +380,8 @@
     evaluate, evaluateCollector, evaluateTopics, evaluateQuestion, drawIcon,
     // item layer (T20)
     HERO_IDS, HERO_NAMES, STAT_NAMES, boostLabel, ICON_STYLES,
+    // post-build registration (T23 loot)
+    registerItem,
     SPARK, SPEED
   };
 })();
