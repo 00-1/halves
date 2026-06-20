@@ -300,6 +300,7 @@
       '<span class="t-plus" style="color:'+pal.accent+'">+1</span>';
     $("toasts").appendChild(t);
     C.drawIcon(t.querySelector("canvas"), it.id, pal);
+    sfx("item", it.rarity);   // sparkle arpeggio, scaled by rarity
     requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, it.rarity, [pal.accent, pal.body]); });
     dismissToast(t, 2000);
   }
@@ -315,6 +316,7 @@
       '<div class="t-txt"><span class="t-tag">'+(part2 ? "Part 2 unlocked" : "Topic unlocked")+'</span>'+
       '<span class="t-name">'+esc(m.name)+'</span></div>';
     $("toasts").appendChild(t);
+    sfx("topicUnlock");   // short fanfare
     requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, "epic", [pal.accent, pal.body]); });
     dismissToast(t, 2600);
   }
@@ -361,15 +363,16 @@
   }
 
   // ---- game state ---------------------------------------------------------
-  let order=[], idx=0, input="", mistakes=0, qMiss=0,
+  let order=[], idx=0, input="", mistakes=0, qMiss=0, combo=0,
       startTime=0, qStart=0, times=[], raf=0, locked=false;
 
   function start(){
     if(!isUnlocked(mode)) return;   // locked topics aren't playable
-    order = mode.build(); idx=0; mistakes=0; times=[];
+    order = mode.build(); idx=0; mistakes=0; times=[]; combo=0;
     elEyebrow.innerHTML = mode.eyebrow;
     startTime = performance.now();
     show("game");
+    sfx("roundStart");
     loop();
     nextQuestion();
   }
@@ -443,7 +446,8 @@
   function skip(){
     if(locked) return;
     locked = true;
-    mistakes++;
+    mistakes++; combo = 0;
+    sfx("skip");
     elStage.classList.add("wrong");
     elAnswer.classList.remove("empty");
     elAnswer.innerHTML = '<span class="skipans">= '+esc(numStr(currentAnswer()))+'</span>';
@@ -456,6 +460,7 @@
     const dt = (performance.now()-qStart)/1000;
     const it = order[idx];
     times.push({ p:it.p, h:numStr(it.a), t:dt, miss:qMiss });
+    combo++; sfx("correct", combo);   // bright blip; pitch rises with the streak
 
     // live, non-blocking unlocks for nailing this question (first time / fast)
     const col = loadCollected();
@@ -535,6 +540,11 @@
     more.forEach(it => collected[it.id] = { ts: Date.now() });
     saveCollected(collected);
     const unlocked = newly.concat(topics).concat(more);
+
+    // round-end stinger — play the most triumphant thing earned this round
+    if(unlocked.some(it => /^topics:(one|all)100$/.test(it.id))) sfx("topic100");
+    else if(unlocked.some(it => it.cat === "Mastery")) sfx("mastery");
+    else sfx("roundComplete");
 
     // celebratory toast for any topic this round newly opened (chain or Part-2)
     MODES.forEach(m => { if(!wasUnlocked[m.id] && isUnlocked(m)) showTopicToast(m); });
@@ -646,20 +656,27 @@
     sync();
   })();
 
-  // ---- sound preference (persisted; engine arrives in T16) ----------------
+  // ---- sound preference (persisted) + SFX engine (window.Sound) -----------
   function soundOn(){ try{ return localStorage.getItem("halves.sound") !== "off"; }catch(e){ return true; } }
   function saveSound(on){ try{ localStorage.setItem("halves.sound", on ? "on" : "off"); }catch(e){} }
-  // Guarded — no-ops until the audio engine (window.Sound) ships in T16.
   function audioUnlock(){ if(window.Sound && window.Sound.unlock) window.Sound.unlock(); }
   function applySoundPref(){ if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!soundOn()); }
+  // Guarded SFX trigger — a no-op if the engine is absent or muted.
+  function sfx(name, arg){ const S = window.Sound; if(S && S[name]) S[name](arg); }
+  // Keep every 🔊/🔇 button (entry + start menu) in sync, and toggle the pref.
+  const SOUND_BTNS = ["soundBtn", "soundBtnMenu"];
+  function syncSoundButtons(){
+    const on = soundOn();
+    SOUND_BTNS.forEach(id => { const b = $(id); if(b) b.innerHTML = on ? '🔊 Sound on' : '🔇 Sound off'; });
+  }
+  function toggleSound(){ saveSound(!soundOn()); syncSoundButtons(); applySoundPref(); }
+  SOUND_BTNS.forEach(id => { const b = $(id); if(b) b.addEventListener("click", toggleSound); });
 
   // ---- entry / "tap to begin" screen (the fullscreen + audio gesture) -----
   (function setupEntry(){
-    const fsBtn = $("entryFs"), playBtn = $("entryPlay"), soundBtn = $("soundBtn");
+    const fsBtn = $("entryFs"), playBtn = $("entryPlay");
     if(!playBtn) return;
-    function syncSound(){ soundBtn.innerHTML = soundOn() ? '🔊 Sound on' : '🔇 Sound off'; }
-    syncSound();
-    soundBtn.addEventListener("click", () => { saveSound(!soundOn()); syncSound(); applySoundPref(); });
+    syncSoundButtons();
     // The single user gesture that unlocks audio (and optionally fullscreen),
     // then reveals the menu / honours any deep-link hash route.
     function enter(useFs){

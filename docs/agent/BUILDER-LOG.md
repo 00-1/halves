@@ -720,3 +720,41 @@ how I verified:
 notes / questions: masterSecs 9 (Tier 3, "% of"). This completes the originally
   specced Phase-2 topics (T5–T9); the remaining `*_SRC` sets all meet the
   QUESTION-SETS standard and use literal answers wherever division could drift.
+
+## T16 — Audio core + 8-bit SFX  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - sound.js (new) — `window.Sound`: a single AudioContext created/resumed on the
+    first gesture via `unlock()` (wired into T11's existing entry-screen
+    `audioUnlock()` — no second gesture added); a master gain + `setMuted/isMuted`
+    that gate playback; pure `sfxSpec(event,opts)` voice builders; a fire-and-forget
+    `play()` scheduler (oscillator + gain envelope, all <0.6s) that no-ops without a
+    context or when muted; suspends the context on `visibilitychange` (hidden).
+    SFX methods: correct(combo)/skip/item(rarity)/gold(big)/topicUnlock/mastery/
+    topic100/roundStart/roundComplete.
+  - index.html — load sound.js before main.js; added a 🔊/🔇 `#soundBtnMenu` to the
+    start-screen link row (the design wants the toggle on the start screen, in
+    addition to the entry one).
+  - main.js — shared sound-toggle (`syncSoundButtons`/`toggleSound`) keeps BOTH the
+    entry and start buttons in sync and persists `halves.sound`; `applySoundPref()`
+    already drives `Sound.setMuted`. New guarded `sfx(name,arg)` trigger. Wired
+    events: `start()`→roundStart; `correct()`→correct(combo) (new `combo` streak,
+    reset on skip/start, pitch rises with it); `skip()`→skip; `showToast`→item(rarity);
+    `showTopicToast`→topicUnlock; `finish()`→ the most triumphant earned (topic100 →
+    mastery → roundComplete).
+how I verified:
+  - node -c sound.js & main.js OK; id cross-check clean (incl soundBtnMenu); no TODO.
+  - SFX engine test (Node, stubbed AudioContext): every event yields a valid,
+    bounded (<0.6s) voice list (finite f>0, d>0, known waveform, gain>0); **correct
+    pitch rises with combo**; **item scales by rarity** (legendary 7 notes vs common
+    3); before unlock nothing plays; first gesture unlocks; **muted silences ALL
+    events** (0 oscillators); unmuted item(legendary) schedules 7 oscillators.
+  - init harness (full app incl sound.js): loads with no error; both 🔊 buttons
+    show "Sound on" by default; toggling the menu button persists
+    `halves.sound="off"` and updates BOTH labels (mute persistence).
+non-blocking/safety (DoD): SFX are fire-and-forget on the Web Audio timeline and
+  never touch the game clock (its own performance.now loop), input, or focus;
+  context suspends when hidden; mute (or absent Web Audio) makes every call a
+  no-op. T17 (music) is the next audio task.
+notes / questions: gold SFX method exists but isn't triggered yet (Gold economy is
+  T26); all other listed events are wired. Combo resets on skip and round start.
