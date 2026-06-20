@@ -191,6 +191,35 @@ modes too (Halves is the benchmark; sanity-check Times/Doubles/Squares/Fractions
 
 ---
 
+## Phase 2.7 — Generative 8-bit audio
+
+Full spec: **`docs/agent/DESIGN-audio.md`** (Web Audio API, all synthesised — no
+audio files). Queued; Babysitter will open when sequenced.
+
+### T16 — Audio core + 8-bit SFX · status: BLOCKED
+`sound.js` → `window.Sound`: single `AudioContext` resumed on first user gesture;
+master gain + **mute toggle persisted (`halves.sound`, default ON)** with a 🔊/🔇
+button on the start screen; procedural SFX (<300 ms) wired to events per the
+design (correct — pitch rises with combo; skip; item unlock scaled by rarity;
+gold; topic/Part-2 unlock; mastery; topic 100%; round start/complete; Arena
+win/loss later). Non-blocking; respects mute; stops when hidden.
+- **DoD:** Node-test the pure SFX-spec builders + mute persistence logic (stub
+  the context); audio never affects game timing/input; first gesture unlocks
+  sound; mute persists and silences everything; no regressions; deploy green.
+
+### T17 — Generative chiptune music (12 styles + menu) · status: BLOCKED
+Look-ahead scheduler driving lead/bass/arp/percussion; **12 topic styles + 1 menu
+style**, generative within each style's scale/patterns (seeded PRNG). Assign a
+style per topic (explicit `music` field, deterministic `hash(id)%12` fallback);
+menu/best-times/inventory/heroes use the menu style; switch cleanly on
+screen/topic change. Honour mute; stop when hidden.
+- **DoD:** Node-test the style table (exactly 12 + menu, each with required
+  params) and the note/scale helpers (no real AudioContext); music loops, varies
+  in-style, switches with the topic, and respects mute; low CPU; no regressions;
+  deploy green.
+
+---
+
 ## Phase 3 — Hero / Enemy metagame
 
 Full spec: **`docs/agent/DESIGN-heroes.md`** (read it fully before starting; ask in
