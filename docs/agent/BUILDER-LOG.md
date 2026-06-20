@@ -616,3 +616,39 @@ how I verified:
     render/scroll/resize; full app loads with no init error.
 notes / questions: with 9 topics across 3 groups the picker now genuinely
   overflows ~42vh on a phone, so the "more below" cue is real and useful.
+
+## T7 — Place value ×/÷  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - modes.js — fixed sets + two modes spliced into the chain at importance
+    position 6 (after Number Bonds): `placevalue` (Part 1, whole × or ÷ 10/100,
+    e.g. 35×100=3500, 4500÷10=450; unlockedBy "bonds", masterSecs 5, group
+    "Number") and `placevalue2` (Part 2, decimals ×÷ 10/100/1000, e.g. 3.5×100=350,
+    25÷100=0.25; requires "mastery:placevalue", off-chain, masterSecs 5). Re-linked
+    `fractions.unlockedBy` "bonds"→"placevalue" so the chain stays contiguous
+    Halves→Times→Doubles→Add&Subtract→Number Bonds→Place Value→Fractions→Squares.
+curation rationale (per QUESTION-SETS.md Place-value checklist):
+  - P1 (`PV_P1_SRC`, 21): ×10/×100 and ÷10/÷100; values WITH trailing zeros (60,
+    250, 90, 350, 4500, 800, 9000, 1200) and WITHOUT (35, 7, 128, 4, 8, 24); all
+    answers whole and ≤4 digits. ÷ entries use exact multiples so answers stay
+    whole.
+  - P2 (`PV_P2_SRC`, 21): decimals × and ÷ 10/100/1000 incl. the checklist's
+    flavours (3.5×100, 0.4×1000, 25÷100) and **answers < 1** (0.25, 0.08, 0.09,
+    0.06, 0.12, 0.9, 0.45, 0.6, 0.35…). Each entry stores the ANSWER as a literal
+    so it round-trips exactly on the numpad — never computed as value×/÷target
+    (which would drift, e.g. 2.7×10 → 27.000000000000004).
+how I verified:
+  - node -c (modes/collectibles/main) OK; id cross-check clean (no new ids); no TODO.
+  - logic check (Node): field set + chain re-link + unlock steps (…Number Bonds→
+    Place Value→Fractions…) + the pv2 mastery gate. P1 over its set: prompt
+    arithmetic correct (× / ÷ 10/100), whole, numpad-ok; fixed 21 with a stable
+    prompt set across rounds. P2: fixed 21 stable; **every decimal answer is
+    mathematically correct (computed ≈ stored within 1e-9) AND round-trips through
+    the numpad (`parseFloat(String(a))===a`)**, with answers <1 present. Both modes
+    are fixed (no gen) and now carry per-question Beat/Spark (49 items each);
+    catalogue 481→579. Number group now lists all six arithmetic modes; widest
+    prompt "0.35 × 1000" (11 chars) fits via fitText. ALL T7 CHECKS PASSED.
+  - no regressions: only the intended fractions re-link changed in the chain.
+notes / questions: masterSecs 5 (Tier 2) for both parts — the tier table lists
+  "×÷ powers of 10, place value" under Tier 2; P2 decimals are the same operation
+  class, so 5 for both (flag me if P2 should be Tier 3 / 9).
