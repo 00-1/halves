@@ -27,6 +27,10 @@
  * difficulty tier — deliberately at the relaxed end so a 10-year-old can reach
  * it. A harder Part-2 mode declares `requires:"mastery:<part1Id>"` so it stays
  * locked until its Part-1 mastery is earned (see docs/agent/BACKLOG.md T2).
+ *
+ * `group` places the mode in a section of the mode picker. Sections render in
+ * `MODE_GROUPS` order; empty sections are skipped, so groups that only future
+ * topics will fill (Number, Measures, Reasoning) simply don't show yet.
  */
 (function(){
   "use strict";
@@ -74,34 +78,38 @@
     {
       id:"halves", name:"Halves", tag:"Halve it. Fast.",
       glyph:'x<span class="slash">/</span>2',
-      eyebrow:'half of <b>↓</b>', expr:false, masterSecs:4,
+      eyebrow:'half of <b>↓</b>', expr:false, masterSecs:4, group:"Core",
       build(){ return shuffle(HALVES_SRC).map(n => ({ p:String(n), a:n/2 })); }
     },
     {
       id:"times", name:"Times", tag:"Know your tables.",
       glyph:'a<span class="slash">×</span>b',
-      eyebrow:'product of <b>↓</b>', expr:true, unlockedBy:"halves", masterSecs:3.5,
+      eyebrow:'product of <b>↓</b>', expr:true, unlockedBy:"halves", masterSecs:3.5, group:"Core",
       build(){ return shuffle(TIMES_SRC).map(([a,b]) => ({ p:a+" × "+b, a:a*b })); }
     },
     {
       id:"doubles", name:"Doubles", tag:"Double it. Fast.",
       glyph:'2<span class="slash">×</span>x',
-      eyebrow:'double <b>↓</b>', expr:false, unlockedBy:"times", masterSecs:4,
+      eyebrow:'double <b>↓</b>', expr:false, unlockedBy:"times", masterSecs:4, group:"Core",
       build(){ return shuffle(DOUBLES_SRC).map(n => ({ p:String(n), a:n*2 })); }
     },
     {
       id:"fractions", name:"Fractions", tag:"As a decimal.",
       glyph:'<span class="slash">¾</span>',
-      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"doubles", masterSecs:3.5,
+      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"doubles", masterSecs:3.5, group:"Fractions & %",
       build(){ return shuffle(FRACTIONS_SRC).map(([f,d]) => ({ p:f, a:d })); }
     },
     {
       id:"squares", name:"Squares", tag:"Square it.",
       glyph:'x<span class="slash">²</span>',
-      eyebrow:'square of <b>↓</b>', expr:false, unlockedBy:"fractions", masterSecs:3.5,
+      eyebrow:'square of <b>↓</b>', expr:false, unlockedBy:"fractions", masterSecs:3.5, group:"Core",
       build(){ return shuffle(SQUARES_SRC).map(n => ({ p:n+"²", a:n*n })); }
     }
   ];
 
+  // Mode-picker section order. Empty sections are skipped by the picker.
+  const MODE_GROUPS = ["Core", "Number", "Fractions & %", "Measures", "Reasoning"];
+
   window.MODES = MODES;
+  window.MODE_GROUPS = MODE_GROUPS;
 })();

@@ -10,6 +10,7 @@
   "use strict";
 
   const MODES = window.MODES;
+  const GROUPS = window.MODE_GROUPS || ["Core"];
   const byId  = id => MODES.find(m => m.id === id);
 
   // ---- safe storage (per-mode board + last-played mode) -------------------
@@ -101,12 +102,57 @@
   let mode = byId(loadLastMode()) || MODES[0];
   if(!isUnlocked(mode)) mode = MODES.find(isUnlocked) || MODES[0];
 
+  // A locked topic's compact requirement, for a picker row subline.
+  function unlockReq(m){
+    if(m.requires){
+      const req = byId(m.requires.replace(/^mastery:/, ""));
+      return 'Master '+esc(req ? req.name : "Part 1")+' first';
+    }
+    const prev = byId(m.unlockedBy);
+    return 'Finish '+esc(prev ? prev.name : "the previous topic")+' first';
+  }
+
+  // How much of a mode's collectible set the player owns.
+  function modeProgress(m){
+    const col = loadCollected();
+    const items = C.modeItems(m.id);
+    return { have: items.filter(it => col[it.id]).length, total: items.length };
+  }
+
   // ---- start screen: mode picker + brand ---------------------------------
+  // One picker row: name, a subline (best rank / "no best" / unlock hint),
+  // collectible progress `have/total`, and a state glyph (▶ play · 🔒 · ✓ 100%).
+  function modeRow(m){
+    const locked = !isUnlocked(m);
+    const { have, total } = modeProgress(m);
+    const done = !locked && total > 0 && have === total;
+    let sub, state;
+    if(locked){
+      sub = unlockReq(m);
+      state = '🔒';
+    }else{
+      const best = loadBoard(m.id).slice().sort(rank)[0];
+      if(best){
+        const rk = C.RANKS[C.rankIndex(best.score, best.total, best.time)];
+        sub = '<span style="color:'+rk.color+'">'+esc(rk.name)+'</span> · '+best.score+'/'+(best.total||"?");
+      }else{
+        sub = 'No best yet';
+      }
+      state = done ? '✓' : '▶';
+    }
+    const cls = "mode-row" + (m.id===mode.id ? " active" : "") +
+                (locked ? " locked" : "") + (done ? " done" : "");
+    return '<div class="'+cls+'" data-mode="'+esc(m.id)+'"'+(locked?' aria-disabled="true"':'')+'>'+
+      '<span class="mr-main"><span class="mr-name">'+esc(m.name)+'</span>'+
+        '<span class="mr-sub">'+sub+'</span></span>'+
+      '<span class="mr-side"><span class="mr-prog">'+have+'/'+total+'</span>'+
+        '<span class="mr-state">'+state+'</span></span></div>';
+  }
   function renderTabs(){
-    elModeTabs.innerHTML = MODES.map(m => {
-      const locked = !isUnlocked(m);
-      return '<button class="mode-tab'+(m.id===mode.id?' active':'')+(locked?' locked':'')+
-        '" data-mode="'+m.id+'">'+(locked?'<span class="lk">🔒</span>':'')+esc(m.name)+'</button>';
+    elModeTabs.innerHTML = GROUPS.map(g => {
+      const rows = MODES.filter(m => (m.group || "Core") === g);
+      if(!rows.length) return "";
+      return '<div class="mode-group"><h5>'+esc(g)+'</h5>'+rows.map(modeRow).join("")+'</div>';
     }).join("");
   }
   function renderMark(){ elMark.innerHTML = mode.glyph; elTag.textContent = mode.tag; }
@@ -121,7 +167,8 @@
   // Enable Start only for an unlocked topic.
   function renderStartState(){ $("startBtn").disabled = !isUnlocked(mode); }
   elModeTabs.addEventListener("click", e => {
-    const t = e.target.closest(".mode-tab"); if(!t) return;
+    const t = e.target.closest(".mode-row"); if(!t) return;
+    if(t.classList.contains("locked")) return;   // locked rows aren't selectable
     selectMode(t.dataset.mode);
   });
 

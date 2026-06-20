@@ -242,9 +242,14 @@
     }
   }
 
+  // Every catalogue item belonging to one mode (init / flawless / speed /
+  // mastery / per-question Beat & Spark) — the basis for that mode's
+  // collectible-completion count on the picker and inventory.
+  function modeItems(modeId){ return CATALOG.filter(it => it.modeId === modeId); }
+
   window.Collectibles = {
     RANKS, RARITY, paletteFor, rankIndex,
-    CATALOG, byId: id => byIdMap[id],
+    CATALOG, byId: id => byIdMap[id], modeItems,
     categories: () => CATS.slice(),
     evaluate, evaluateCollector, evaluateQuestion, drawIcon,
     SPARK, SPEED

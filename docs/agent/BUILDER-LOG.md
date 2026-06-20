@@ -93,3 +93,47 @@ notes / questions: No Part-2 modes ship in this task by design — T2 is plumbin
   proven by the Node gate test. The unlock toast fires for BOTH chain and Part-2
   unlocks (matches research §Mechanics "Unlocks fire a celebratory toast"); it is
   additive to the existing end-of-round collectible modal, not a replacement.
+
+## T3 — Mode-picker redesign  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - modes.js — added a `group` field to every mode (halves/times/doubles/squares
+    → "Core"; fractions → "Fractions & %") and exported `MODE_GROUPS`
+    ("Core · Number · Fractions & % · Measures · Reasoning") as the section order.
+  - collectibles.js — exposed `modeItems(modeId)` (all catalogue items for one
+    mode: init/flawless/4×speed/mastery/per-question Beat+Spark) — the basis for
+    a mode's collectible `have/total`.
+  - index.html — start-screen container `#modeTabs` re-classed `modes`→`picker`.
+  - main.js — replaced the wrapping pills with a scrollable, grouped list:
+    `renderTabs()` now iterates `MODE_GROUPS`, skips empty sections, and renders
+    a `modeRow` per mode showing name, a subline (best rank + score · "No best
+    yet" · locked requirement), collectible progress `have/total`, and a state
+    glyph (▶ play · 🔒 locked · ✓ when 100%). Locked rows carry `.locked` and the
+    click handler ignores them (not selectable). New helpers `modeProgress(m)`
+    and `unlockReq(m)`; select-then-Start flow unchanged.
+  - styles.css — removed the dead `.modes`/`.mode-tab*` pill rules; added the
+    `.picker` (max-height 42vh, `overflow-y:auto`) + `.mode-group`/`.mode-row`
+    styles. Row is `justify-content:space-between` with `.mr-main{min-width:0}`
+    and `.mr-sub{overflow:hidden;text-overflow:ellipsis}` so long sublines
+    truncate rather than overflow at 360px.
+how I verified:
+  - node -c: modes.js, collectibles.js, main.js all OK.
+  - id cross-check: every `$("id")` in main.js present in index.html; 0 missing.
+  - no dangling refs: grep finds no remaining `mode-tab`/`class="modes"`/`.lk`;
+    every picker class used in JS has a CSS rule (dropped the unused `mr-locked`
+    wrapper).
+  - logic check (Node, real modes/collectibles): all modes have a valid group;
+    non-empty sections render in order (Core | Fractions & %), Core holds the 4
+    fact modes in importance order; `modeItems` totals correct per mode
+    (halves 59, times/doubles/squares 49, fractions 43); row-state logic — fresh
+    profile → first mode ▶, rest 🔒; owning a mode's full set → ✓ and unlocks the
+    next (▶). ALL PICKER CHECKS PASSED.
+  - no TODO/placeholder introduced (only the pre-existing `nameInput` HTML
+    placeholder attribute, untouched).
+  - no regressions: inventory/summary/results/routing/build-info untouched; the
+    start screen and picker both scroll, so no overflow at 360px.
+notes / questions: Group assignment for the existing 5 — the four fact-recall
+  modes (Halves/Times/Doubles/Squares) in "Core", Fraction→decimal in
+  "Fractions & %". "Number", "Measures", "Reasoning" stay hidden until T5+ topics
+  fill them. Kept select-then-Start (per the DoD's default); happy to switch to
+  tap-to-start if you prefer in review.
