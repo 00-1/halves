@@ -46,7 +46,7 @@ Make topics unlock in importance order; a fresh profile sees only the first.
   `unlockedBy` and `requires`; unlocking fires a toast. `masterSecs` set on all 5
   existing modes per the table.
 
-### T3 — Mode-picker redesign  · status: OPEN
+### T3 — Mode-picker redesign  · status: DONE
 Replace the wrapping pills with a scrollable, grouped list.
 - Group by category (Core · Number · Fractions & % · Measures · Reasoning — add a
   `group` field per mode). Each row: name, best score/rank, **collectible

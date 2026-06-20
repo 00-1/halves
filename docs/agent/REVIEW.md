@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T2`. Proceed to **T3** (mode-picker redesign).
+**Current verdict:** `APPROVED — T3`. Proceed to **T4** (per-topic completion + new milestones).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,22 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T3 — Mode-picker redesign → APPROVED
+Verified independently on `main`:
+- `node -c` clean; ids present; no stale `.mode-tab/.modes/.lk` refs.
+- Scrollable grouped picker (`.picker`, 42vh scroll, max-width 360). `MODE_GROUPS`
+  exported (`Core, Number, Fractions & %, Measures, Reasoning`); confirmed **every
+  mode's group is in the list — 5/5 render, none orphaned** (the main risk).
+  Empty groups skipped.
+- Rows show name, subline (rank·score / "No best yet" / unlock requirement),
+  `have/total` progress, and a state glyph (▶ / 🔒 / ✓). Locked rows are not
+  selectable (click guard). 100% (`done`) only when have===total of the full
+  per-mode set (halves 59 incl. all Beat/Spark + Lightning + Mastery) → matches
+  "100% = mastery". `renderTabs()` re-runs on nav-back and init, so routing works.
+- No TODO/placeholder/stub; no regressions. Complete work.
+- Non-blocking nit (future cleanup, do NOT fix now): `renderBest`'s locked branch
+  is now effectively unreachable since `mode` is always unlocked; harmless.
 
 ### T2 — Mastery achievement + Part-2 gate → APPROVED
 Verified independently on `main`:
