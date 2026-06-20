@@ -251,17 +251,36 @@
     openModal(title, items, n > 4);
   }
 
+  // Slide a toast out and remove it after `hold` ms on screen (non-blocking).
+  function dismissToast(t, hold){
+    setTimeout(() => {
+      t.classList.remove("show");
+      t.classList.add("hide");
+      setTimeout(() => t.remove(), 300);
+    }, hold);
+  }
+  // Fire a self-cleaning, rarity-tinted pixel burst from a toast's centre. Pure
+  // celebration: pointer-events off, no focus/timer/input interaction.
+  function toastBurst(t, pal){
+    if(!window.FX) return;
+    const r = t.getBoundingClientRect();
+    window.FX.burst($("toasts"), r.left + r.width / 2, r.top + r.height / 2,
+      [pal.accent, pal.body, pal.accent], window.FX.CAP);
+  }
+
   // Lightweight, non-blocking toast shown mid-round when an item is unlocked.
   function showToast(it){
+    const pal = C.paletteFor(it.rarity);
     const t = document.createElement("div");
     t.className = "toast r-" + it.rarity;
     t.innerHTML = '<canvas class="pix" width="36" height="36"></canvas>'+
       '<div class="t-txt"><span class="t-tag">Unlocked</span>'+
-      '<span class="t-name">'+esc(it.name)+'</span></div>';
+      '<span class="t-name">'+esc(it.name)+'</span></div>'+
+      '<span class="t-plus" style="color:'+pal.accent+'">+1</span>';
     $("toasts").appendChild(t);
-    C.drawIcon(t.querySelector("canvas"), it.id, C.paletteFor(it.rarity));
-    requestAnimationFrame(() => t.classList.add("show"));
-    setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2000);
+    C.drawIcon(t.querySelector("canvas"), it.id, pal);
+    requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, pal); });
+    dismissToast(t, 2000);
   }
 
   // Celebratory toast when a whole topic becomes newly playable — fired both for
@@ -274,8 +293,8 @@
       '<div class="t-txt"><span class="t-tag">'+(part2 ? "Part 2 unlocked" : "Topic unlocked")+'</span>'+
       '<span class="t-name">'+esc(m.name)+'</span></div>';
     $("toasts").appendChild(t);
-    requestAnimationFrame(() => t.classList.add("show"));
-    setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2600);
+    requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, pal); });
+    dismissToast(t, 2600);
   }
 
   function renderInventory(){

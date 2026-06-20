@@ -267,11 +267,41 @@ canvas.pix{image-rendering:pixelated}
 /* ---------- IN-GAME TOASTS ---------- */
 .toasts{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top) + 10px);z-index:60;
   display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 12px;pointer-events:none}
-.toast{display:flex;align-items:center;gap:10px;max-width:320px;
+.toast{position:relative;display:flex;align-items:center;gap:10px;max-width:320px;
   background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:8px 16px 8px 8px;
-  box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transform:translateY(-12px);
-  transition:opacity .25s ease, transform .25s ease}
-.toast.show{opacity:1;transform:translateY(0)}
+  box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transform:translateY(-12px) scale(.92);will-change:transform,opacity}
+/* entrance with a subtle scale pop; exit slides back out */
+.toast.show{animation:toast-in 320ms cubic-bezier(.2,.9,.3,1.25) forwards}
+.toast.hide{animation:toast-out 280ms ease forwards}
+@keyframes toast-in{
+  0%{opacity:0;transform:translateY(-12px) scale(.92)}
+  60%{opacity:1;transform:translateY(0) scale(1.05)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes toast-out{
+  from{opacity:1;transform:translateY(0) scale(1)}
+  to{opacity:0;transform:translateY(-8px) scale(.95)}
+}
+@media (prefers-reduced-motion: reduce){
+  .toast.show{animation:none;opacity:1;transform:none}
+  .toast.hide{animation:none;opacity:0}
+  .toast .t-plus,.particle{display:none}
+}
+/* floating "+1" flourish on a collectible unlock */
+.toast .t-plus{position:absolute;top:-7px;right:12px;font-family:var(--mono);font-weight:800;font-size:13px;
+  opacity:0;pointer-events:none;animation:plus-float 1100ms ease-out forwards}
+@keyframes plus-float{
+  0%{opacity:0;transform:translateY(5px)}
+  18%{opacity:1}
+  100%{opacity:0;transform:translateY(-18px)}
+}
+/* pixel particle burst (created by fx.js, positioned in viewport coords) */
+.particle{position:fixed;z-index:61;border-radius:1px;pointer-events:none;image-rendering:pixelated;
+  animation:particle-fly 700ms ease-out forwards}
+@keyframes particle-fly{
+  0%{opacity:1;transform:translate(0,0) scale(1)}
+  100%{opacity:0;transform:translate(var(--dx,0),var(--dy,0)) scale(.4)}
+}
 .toast canvas{image-rendering:pixelated;border-radius:6px;background:var(--surface);flex:0 0 auto}
 .toast .t-txt{display:flex;flex-direction:column;line-height:1.15}
 .toast .t-tag{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}

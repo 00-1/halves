@@ -328,3 +328,43 @@ how I verified:
 notes / questions: bonds prompts stay in the explicit "X + ? = T" equation form
   (target shown per question, since P2 mixes targets 1000 and 1). All topics are
   now fixed sets — no generator code remains in the codebase.
+
+## T10 — Celebratory in-play unlock particles  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - fx.js (new) — `window.FX` effects module. `particleSpecs(colors,count)` is a
+    pure, capped (CAP=14) generator of pixel-square descriptors (random outward
+    angle biased upward, size 3–5px, rarity colours cycled). `burst(layer,x,y,
+    colors,count,opts)` spawns them and returns a `teardown()`; it also schedules
+    its own teardown after the particles finish, so there is never a DOM leak.
+    `opts.doc`/`opts.schedule` are injectable (default document/setTimeout) so the
+    cleanup path is Node-testable. Guards null layer/doc → safe no-op.
+  - index.html — load fx.js before main.js.
+  - main.js — refactored the toasts: new `dismissToast(t,hold)` (slide-out via a
+    `.hide` class) and `toastBurst(t,pal)` (fires `FX.burst` from the toast centre
+    in viewport coords). `showToast` now adds a rarity-tinted "+1" flourish and a
+    burst; `showTopicToast` gets an epic-tinted burst. Both are fire-and-forget —
+    `window.FX` is feature-guarded.
+  - styles.css — toast entrance is now a subtle scale **pop** (`toast-in`
+    keyframe) with a matching `toast-out` exit; `.t-plus` floating "+1"; `.particle`
+    fly-out/fade keyframe; a `prefers-reduced-motion` fallback that disables the
+    animations and hides particles/"+1" (toast still shows).
+how I verified:
+  - node -c: fx.js, modes.js, collectibles.js, main.js all OK.
+  - id cross-check: every `$("id")` in main.js present in index.html (burst uses
+    the existing `#toasts`); 0 missing. New classes (.t-plus, .particle,
+    .toast.hide) all have CSS.
+  - logic + CLEANUP check (Node, real fx.js with a stubbed DOM + injected
+    schedule): particleSpecs caps at 14, clamps negatives to 0, cycles colours,
+    and yields valid finite specs; burst creates ≤CAP nodes and the scheduled
+    teardown removes **all** of them (no leak), is idempotent, and manual
+    teardown() also clears the layer; null-layer is a safe no-op. ALL T10 CHECKS
+    PASSED. Catalogue still 481 (no collectible regression).
+  - no TODO/placeholder introduced (only the pre-existing answer/name placeholders).
+non-blocking guarantees (DoD): particles are `position:fixed; pointer-events:none`
+  and animate purely in CSS; fx.js never touches the game clock (rAF loop), the
+  keydown handler, focus, or input state — so typing/timer are unaffected and the
+  round never pauses. Capped at 14/burst, auto-cleaned. Toast width 320 < 360px and
+  particles are small fixed squares, so no overflow on a phone.
+notes / questions: "+N" is rendered as "+1" per collectible unlock (each in-play
+  toast = one new item). Reduced-motion users get the toast without particles/pop.
