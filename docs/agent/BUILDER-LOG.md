@@ -892,7 +892,7 @@ notes / questions: the boosting-items list is capped at 12 chips (+"N more") so 
   "Boosted by N" count and the effective stats.
 
 ## T33 — Music: cap tempo + stop fast bursts (live hotfix)  [HANDOFF]
-commit: (recorded on push to main below)
+commit: c33367b (on main)
 changed:
   - sound.js — TWO fixes for the "music sometimes races / stressful" report:
     1. ANTI-BURST in `musicTick()`: if the 25ms timer stalls (heavy render e.g.
