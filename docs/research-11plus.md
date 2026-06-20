@@ -102,32 +102,72 @@ numeric & numpad-enterable.
 
 (Existing modes: Halves, Doubles, Times, Squares, Fraction→decimal.)
 
+## Progression model (v3 — agreed)
+
+Two layers of gating so a beginner isn't overwhelmed but depth remains:
+
+1. **Topic chain (easy).** Players start with **one** topic unlocked. Completing
+   a topic **once** (its "Initiate" achievement — just finish a round) unlocks
+   the **next** topic in the ordered path. So content reveals gradually.
+2. **Part 2 (hard, optional).** Each topic's harder Part 2 is a side-branch
+   gated by **Mastery** of Part 1 (no skips + gentle time). Not required to
+   advance the main chain.
+
+**Completion visibility.** Every topic row shows its collectible progress
+(e.g. `Halves 7/24`) with a clear "incomplete" marker, so it's obvious which
+already-played topics still have items worth returning for.
+
+**100% requires real mastery.** A topic's full set deliberately includes its
+hardest items — Spark on *every* question (fact modes), **all four speed
+brackets up to Lightning (avg < 1.1s)**, Flawless, and Mastery — so a topic
+can't be fully collected without genuinely mastering it. Generated modes (no
+per-question Spark) still cap on Lightning + Mastery + Flawless.
+
+### Unlock chain — ordered by importance (GL value)
+
+Topics unlock in **importance order** (most foundational / highest-frequency
+first). Start unlocked: **Halves**.
+
+1. Halves *(exists)* — 2. Times *(exists)* — 3. Doubles *(exists)* —
+4. Add/Subtract — 5. Number bonds — 6. Place value ×/÷ — 7. Fractions of —
+8. Percentages of — 9. F↔% equivalences — 10. Fraction→decimal *(exists)* —
+11. Rounding — 12. Money — 13. Time — 14. Metric — 15. Ratio —
+16. Multiply (big) — 17. Mean — 18. Sequences — 19. Squares *(exists)* —
+20. Cubes & roots — 21. Factors & primes — 22. ×-tricks — 23. Negatives —
+24. BODMAS — 25. Roman numerals.
+
+(Top trio Halves/Times/Doubles are all "very high" importance; Halves opens as
+the gentlest on-ramp and app namesake. Order is data — trivially reshuffled.)
+
 ## Mechanics to build
 
-1. **Mastery gate + locking.** New per-mode **Mastery** achievement = finish
-   Part 1 **with no skips AND under a gentle target time** (tunable per mode).
-   Each Part-2 mode declares `requires: "mastery:<part1Id>"`; it's playable only
-   once that collectible is owned. Locked modes show 🔒 + the requirement;
-   unlocking fires a special celebratory toast.
-2. **Mode-picker redesign.** ~40 modes won't fit as wrapping pills → scrollable
-   list grouped by category (Core · Number · Fractions & % · Measures ·
-   Reasoning), each row showing best/rank; locked rows greyed with the unlock hint.
-3. **Collectibles auto-extend.** Generator already builds init/flawless/speed/
-   rank per mode. Add: a **Mastery** item per Part-1 mode (the gate); per-question
-   **Beat/Spark** for *fix* modes; new **milestones** ("unlock N Part-2 topics",
-   "clear every topic", "all-flawless").
+1. **Topic-chain unlock.** Each mode declares `unlockedBy: "<prevTopicInitiate>"`
+   (or none for the first). A topic is playable once that achievement is owned.
+   Auto-unlock anything the player has already played (migration).
+2. **Mastery gate for Part 2.** New per-mode **Mastery** achievement = finish
+   Part 1 **with no skips AND under a gentle target time** (tunable). Part-2
+   modes `requires: "mastery:<part1Id>"`. Unlocks fire a celebratory toast.
+3. **Mode-picker redesign.** Scrollable list grouped by category, each row
+   showing best/rank **and collectible progress**; locked rows greyed with the
+   unlock hint; incomplete (played) topics flagged.
+4. **Collectibles auto-extend.** Generator already builds init/flawless/speed/
+   rank per mode. Add a **Mastery** item per Part-1 mode; per-question
+   **Beat/Spark** for *fact* modes; new **milestones** ("unlock N topics",
+   "clear every topic", "all-flawless", "100% a topic").
 
 ## Decisions locked
 
-- **Part-2 unlock gate:** Mastery = **no skips + under a gentle time bar** (per
-  mode, tunable, deliberately not punishing).
-- Keep the Hall of Fame **device-local** (no public leaderboard).
-- Collectibles keep **progressive disclosure**; 100% completion never required.
+- **Topic chain:** start with one topic; **one playthrough unlocks the next**.
+- **Part-2 gate:** Mastery = **no skips + under a gentle time bar** (per mode).
+- **Completion is visible** per topic; **100% requires mastery** (Lightning etc.).
+- Hall of Fame stays **device-local** (no public leaderboard).
 
-## Open scope question
+## Build approach
 
-Build **Wave 1 (11 topics) + the engine (mastery/locking/picker)** first and
-iterate to Wave 2? Or a tighter first batch, or everything at once?
+Because topics unlock gradually, they can ship incrementally without a new
+player noticing gaps. Plan: build the **engine** (chain unlock, Part-2 mastery
+gate, picker redesign, completion display) + the **first ~8 topics** of the
+path, then add the rest in follow-up commits.
 
 ## Sources
 
