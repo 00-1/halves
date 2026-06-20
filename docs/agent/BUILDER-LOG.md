@@ -19,7 +19,7 @@ Use `BLOCKED:` (not a handoff) if the task is underspecified or wrong — then w
 ---
 
 ## T1 — Topic-chain unlock  [HANDOFF]
-commit: 5b54666 (on main)
+commit: f7e4a25
 changed:
   - modes.js — reordered MODES to importance order (Halves → Times → Doubles →
     Fractions → Squares) and added `unlockedBy` to each non-first mode
@@ -52,10 +52,3 @@ notes / questions: Existing modes only (Halves, Times, Doubles, Fractions,
   in their own tasks (T5+). "Selecting a locked topic shows the requirement" is
   implemented via the start-screen best line + disabled Start; the richer picker
   is T3.
-
-  Branch change (per Babysitter): work moved off `claude/builder-11plus` onto
-  `main`. T1's commits were replayed onto `main` on top of the protocol rewrite
-  (e7b96b0) — now 5b54666 (feature) + 0cd69a3 (sha log); re-verified on the tree — node -c clean,
-  isUnlocked chain + migration + generator/numpad checks ALL PASSED, all `$("id")`
-  present, catalogue still 275, no TODO/placeholder. From here on I commit and
-  push directly to `main`, fully verified before each commit.

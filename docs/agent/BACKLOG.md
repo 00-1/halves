@@ -11,7 +11,7 @@ Status legend: `OPEN` → ready to build · `IN-REVIEW` → awaiting Babysitter 
 
 ## Phase 1 — Engine (on the existing 5 modes)
 
-### T1 — Topic-chain unlock  · status: OPEN
+### T1 — Topic-chain unlock  · status: DONE
 Make topics unlock in importance order; a fresh profile sees only the first.
 - Reorder `MODES` to the importance order in research doc §"Unlock chain":
   Halves, Times, Doubles, (then new ones appended later).
