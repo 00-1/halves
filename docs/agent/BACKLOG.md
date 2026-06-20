@@ -93,6 +93,23 @@ P1: 10/25/50% of ≤400. P2: 1/5/20/75% of ≤200. Generated.
 
 ---
 
+## Phase 2.5 — Engagement polish
+
+### T10 — Celebratory in-play unlock effects (particles) · status: BLOCKED
+> Babysitter intends to open this **right after T6** (high-impact, low-risk polish
+> to the everyday loop), ahead of the remaining topics.
+Make the existing non-blocking in-play unlock toast (`showToast`) more celebratory
+with a **pixel particle burst** (a handful of small coloured squares that fly out
+and fade, matching the pixel aesthetic) plus a subtle pop/scale on the toast, and
+a non-blocking floating "+N" style flourish. Rarity-tinted.
+- **DoD:** particles fire on each in-play unlock **without** interrupting the
+  round — no pause, no stolen input/focus, timer/typing unaffected; capped
+  particle count; auto-clean (no DOM/canvas leak, verified by node-checking the
+  cleanup path or a teardown function); works at 360px on a phone; no regressions;
+  deploy green.
+
+---
+
 ## Phase 3 — Hero / Enemy metagame
 
 Full spec: **`docs/agent/DESIGN-heroes.md`** (read it fully before starting; ask in
@@ -154,3 +171,14 @@ matches "needs ~everything". Update docs/research-11plus.md note that Phase 3 is
 the engagement layer.
 - **DoD:** Node test of the full progression curve; milestones evaluate
   correctly; final-tier ⇔ full-collection invariant holds.
+
+### T26 — Currency (Gold) + hero level-ups · status: BLOCKED
+Implement the Gold economy per `DESIGN-heroes.md` §"Currency & economy": earn
+hooks (per clean question scaled by speed; per round; first Mastery; first topic
+100%; enemy-tier defeat scaled by depth — skipped questions earn 0), a persisted
+Gold total with a non-blocking "+N" flourish, Gold shown on start + results, and
+**spending Gold to level heroes** (cost curve + per-level stat growth; effective
+stat = base + level-growth + item boosts) surfaced on the Heroes screen.
+- **DoD:** Node test of earn amounts (skipped=0; faster→more; depth scaling), the
+  `cost(level)` curve, and that leveling raises hero rating monotonically; Gold
+  persists locally; no regressions; deploy green.

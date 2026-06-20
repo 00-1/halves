@@ -147,6 +147,28 @@ advantage + perfect perf).
   per-hero effective stats and which items boost them.
 - Start-screen links to Arena & Heroes alongside Best times / Inventory.
 
+## Currency & economy (Gold)
+
+A soft currency, **Gold**, that only goes up from play and is **spent on hero
+level-ups** (an upgrade lever alongside item boosts, so Gold has a clear purpose).
+Stored locally (`halves.gold`).
+
+**Earn** (always scaled by achievement level — speed / accuracy / rank / depth):
+- per cleanly-solved question: `2 + speedBonus` (faster vs the mode's `masterSecs`
+  → more; a skipped question earns 0);
+- per finished round: `+ round(score + rankIndex × 2)`;
+- first-time per-mode Mastery `+50`; first-time topic 100% `+100`;
+- defeating enemy tier `n`: `+ round(10 × (1 + n/10))` (deeper = more).
+Show a running Gold total on start + results; a non-blocking floating **"+N"** on
+earn (same spirit as the celebratory FX).
+
+**Spend — hero level-ups:** each hero has `level` (start 1, stored per hero).
+Leveling costs `cost(level) = round(50 × level^1.5)` Gold and adds flat stat growth
+(e.g. +2 to each stat per level, or a per-hero growth profile). **Effective stat =
+base + level-growth + item boosts.** Surface on the Heroes screen (level, next
+cost, Level-Up button). Node-test the cost curve and that leveling raises rating
+monotonically.
+
 ## Non-negotiables
 
 - Keep it **numeric-answer / numpad** (battles reuse the drill engine).
