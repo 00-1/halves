@@ -1,28 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `CHANGES REQUESTED — T5b` (partial: only Add/Subtract was
-converted; bonds were left as generators).
-
-`addsub`/`addsub2` are done well — fixed 21-item curated sets (bridging +
-non-bridging, complements to 100, both ops, good spread), Beat/Spark now present.
-**Keep those as-is.** Finish the rest:
-
-1. **Convert `bonds` and `bonds2` to fixed curated sets** (~21 each) per
-   `docs/agent/QUESTION-SETS.md` Number-bonds checklist: P1 to 100 — round
-   (20+80), near-round (45+55), awkward (37+63), small & large partners; P2 to
-   1000 (multiples of 50/100) **plus decimal bonds to 1** (0.3, 0.25, 0.05…).
-   They are still `gen:true` with unstable `build()`.
-2. **Remove ALL remaining generator code**: `genRound`, `randInt`, `bondP1`,
-   `bondP2`, the `gen:true` flags on bonds/bonds2, and the now-unneeded
-   `if(m.gen) return` guard in collectibles.js (no `gen` modes will remain). No
-   dead code anywhere.
-3. **Confirm `bonds`/`bonds2` now get per-question Beat/Spark** (currently 0).
-4. **Fix the stale doc**: `docs/research-11plus.md` still says "Generated modes
-   (no per-question Spark)…" — update it; there are no generated modes.
-5. Log the bonds curation rationale in BUILDER-LOG.
-
-Re-verify the addsub work is untouched. Then `git fetch origin claude/agent` for
-this verdict and re-handoff.
+**Current verdict:** `APPROVED — T5b`. All four modes are now fixed curated sets. **Next: T10** (celebratory in-play unlock particles), then resume topics at T7.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -38,6 +16,15 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T5b — Convert all generated modes to fixed → APPROVED
+Re-verified on main: zero gen modes remain; genRound/randInt/addSubP1·P2/bond
+generators + the `if(m.gen) return` guard all removed (the `bondP1Item/P2Item`
+left are fixed-set mappers, not generators). addsub/addsub2/bonds/bonds2 each = a
+fixed 21-item shuffled set with 21 Beat + 21 Spark. Number-bonds curation hits the
+checklist (round/near-round/awkward/quarters/small-large for P1; to-1000 + exact
+decimal-bonds-to-1 for P2). All answers numeric, ≥0, ≤5 digits, exact. Doc’s
+stale "Generated modes" wording fixed. addsub work intact. Complete.
 
 ### T6 — Number bonds → WIRING APPROVED (generator superseded → T5b)
 Verified the wiring on main: `bonds` at importance slot #5 (`unlockedBy:addsub`),

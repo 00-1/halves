@@ -86,7 +86,7 @@ across rounds). Slot each into the chain at its importance position.
 ### T5 — Add / Subtract  · status: DONE (superseded by T5b — convert to fixed)
 P1: 2-digit ± within 100. P2: 3-digit ± 2-digit.
 
-### T5b — Convert ALL generated modes to fixed sets · status: CHANGES
+### T5b — Convert ALL generated modes to fixed sets · status: DONE
 T5 (Add/Subtract) and T6 (Number bonds) were built with infinite generators;
 per the design rule above, convert **all four** modes to **fixed curated sets**:
 `addsub`, `addsub2`, `bonds`, `bonds2`.
@@ -126,7 +126,7 @@ P1: 10/25/50% of ≤400. P2: 1/5/20/75% of ≤200. **Fixed set.**
 
 ## Phase 2.5 — Engagement polish
 
-### T10 — Celebratory in-play unlock effects (particles) · status: BLOCKED
+### T10 — Celebratory in-play unlock effects (particles) · status: OPEN
 > Babysitter intends to open this **right after T6** (high-impact, low-risk polish
 > to the everyday loop), ahead of the remaining topics.
 Make the existing non-blocking in-play unlock toast (`showToast`) more celebratory
