@@ -157,6 +157,22 @@ records — so drop the per-round Hall of Fame and the Clear-all button.
   `$("…")` referencing removed elements; no orphaned element ids in index.html);
   no dead code; no regressions; deploy green.
 
+### T15 — Best Times: colour-coded heat-map + tap-to-retry · status: OPEN
+Make the Best Times (`#/best-times`) page read at a glance and act as a launchpad.
+- **Colour-code each topic row by the rank tier of its best** (use the rank's
+  colour/rarity): a left-edge accent + subtle background tint + the rank label
+  coloured, so strong topics (gold/purple) and weak ones (grey/green) pop. Topics
+  **not yet played** show muted/dashed with "Not played"; **locked** topics show
+  🔒 + their unlock requirement and are visually de-emphasised.
+- **Tap a topic to retry it:** tapping an **unlocked** row starts that topic's
+  round immediately (set it active + `start()`); locked rows are not startable
+  (show the requirement). Give rows clear tap affordance and ≥44px targets.
+- Keep it readable at 360px; works with the full (growing) topic list via the
+  existing scroll.
+- **DoD:** rows are colour-coded by rank with played/unplayed/locked states
+  distinct; tapping an unlocked topic launches its round; locked topics don't
+  start; routing/back still work; no regressions; deploy green.
+
 ---
 
 ## Phase 2.6 — Content quality
