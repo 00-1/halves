@@ -1,18 +1,28 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-### ⚠ DESIGN CHANGE (read first)
-**ALL topics use FIXED, pre-generated question sets (curated arrays, shuffled per
-round) — NO infinite random generators.** This restores comparable best-times and
-gives every topic per-question Beat/Spark collectibles. It supersedes every
-"Generated" label in BACKLOG (now all "Fixed").
-- T5 (addsub) and T6 (bonds) were both built with generators before this change.
-  Their **mode/chain wiring is approved**; only the generators are superseded.
+**Current verdict:** `CHANGES REQUESTED — T5b` (partial: only Add/Subtract was
+converted; bonds were left as generators).
 
-**Current verdict:** **T6 wiring APPROVED** (bonds at the right slot #5, chain
-contiguous, masterSecs/group correct) — but, like T5, its generator is
-superseded. **Next: T5b**, now broadened to convert **all four** generated modes
-(addsub, addsub2, bonds, bonds2) to fixed curated sets and remove every
-`gen`/`genRound` remnant. Then continue **T7 (Place value)** as a fixed set.
+`addsub`/`addsub2` are done well — fixed 21-item curated sets (bridging +
+non-bridging, complements to 100, both ops, good spread), Beat/Spark now present.
+**Keep those as-is.** Finish the rest:
+
+1. **Convert `bonds` and `bonds2` to fixed curated sets** (~21 each) per
+   `docs/agent/QUESTION-SETS.md` Number-bonds checklist: P1 to 100 — round
+   (20+80), near-round (45+55), awkward (37+63), small & large partners; P2 to
+   1000 (multiples of 50/100) **plus decimal bonds to 1** (0.3, 0.25, 0.05…).
+   They are still `gen:true` with unstable `build()`.
+2. **Remove ALL remaining generator code**: `genRound`, `randInt`, `bondP1`,
+   `bondP2`, the `gen:true` flags on bonds/bonds2, and the now-unneeded
+   `if(m.gen) return` guard in collectibles.js (no `gen` modes will remain). No
+   dead code anywhere.
+3. **Confirm `bonds`/`bonds2` now get per-question Beat/Spark** (currently 0).
+4. **Fix the stale doc**: `docs/research-11plus.md` still says "Generated modes
+   (no per-question Spark)…" — update it; there are no generated modes.
+5. Log the bonds curation rationale in BUILDER-LOG.
+
+Re-verify the addsub work is untouched. Then `git fetch origin claude/agent` for
+this verdict and re-handoff.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
