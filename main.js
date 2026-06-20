@@ -601,6 +601,32 @@
   $("unlockClose").addEventListener("click", closeModal);
   $("unlockModal").addEventListener("click", e => { if(e.target === $("unlockModal")) closeModal(); });
 
+  // ---- fullscreen toggle (feature-detected; graceful where unsupported) ----
+  (function setupFullscreen(){
+    const btn = $("fsBtn"); if(!btn) return;
+    const docEl = document.documentElement;
+    const canFS = !!(docEl && (docEl.requestFullscreen || docEl.webkitRequestFullscreen ||
+      docEl.mozRequestFullScreen || docEl.msRequestFullscreen));
+    if(!canFS){ btn.classList.add("hidden"); return; }   // e.g. iOS Safari — hide it
+    const isFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement ||
+      document.mozFullScreenElement || document.msFullscreenElement);
+    function enter(){
+      const fn = docEl.requestFullscreen || docEl.webkitRequestFullscreen ||
+        docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+      try{ const p = fn.call(docEl); if(p && p.catch) p.catch(()=>{}); }catch(e){}
+    }
+    function exit(){
+      const fn = document.exitFullscreen || document.webkitExitFullscreen ||
+        document.mozCancelFullScreen || document.msExitFullscreen;
+      try{ const p = fn.call(document); if(p && p.catch) p.catch(()=>{}); }catch(e){}
+    }
+    function sync(){ btn.innerHTML = isFS() ? '⛶ Exit' : '⛶ Fullscreen'; }
+    btn.addEventListener("click", () => { isFS() ? exit() : enter(); });   // user gesture
+    ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
+      .forEach(ev => document.addEventListener(ev, sync));
+    sync();
+  })();
+
   // ---- build info (sha + "ago"), written at deploy time -------------------
   function relAgo(ts){
     if(!ts || isNaN(ts)) return "";

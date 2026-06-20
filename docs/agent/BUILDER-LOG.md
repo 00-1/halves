@@ -453,3 +453,28 @@ how I verified:
 notes / questions: tapping launches via the existing `selectMode`+`start()` path,
   so the played topic also becomes the active selection on the start screen; ≥44px
   rows + ellipsised sublines keep it readable at 360px with the existing scroll.
+
+## T18 — Fullscreen toggle  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - index.html — added `#fsBtn` (⛶ Fullscreen) to the start-screen `.linkrow`,
+    with an aria-label.
+  - styles.css — `.linkrow` now `flex-wrap:wrap; justify-content:center` so the
+    third link wraps cleanly at 360px (reuses `.linkbtn`).
+  - main.js — `setupFullscreen()` IIFE: feature-detects the Fullscreen API
+    (standard + webkit/moz/ms prefixes) on `document.documentElement`; if absent
+    (e.g. iOS Safari) it hides the button and binds nothing. Where supported, the
+    click (a user gesture) toggles enter/exit via the prefixed methods (each
+    wrapped in try/catch with promise `.catch`), and prefixed `*fullscreenchange`
+    listeners drive `sync()` to flip the label ⛶ Fullscreen ⇄ ⛶ Exit.
+how I verified:
+  - node -c main.js OK; id cross-check clean (fsBtn referenced + present); no TODO.
+  - behaviour harness (Node + DOM shim), two scenarios:
+    * UNSUPPORTED (no requestFullscreen): button gets `hidden`, no
+      fullscreenchange listener bound, no error.
+    * SUPPORTED (stubbed requestFullscreen/exitFullscreen + fullscreenElement +
+      fullscreenchange dispatch): button visible, initial label "Fullscreen";
+      click→enter (label "Exit"); click→exit (label "Fullscreen") — icon reflects
+      state both ways. ALL T18 CHECKS PASSED.
+notes / questions: button hidden (not just disabled) on unsupported browsers for a
+  cleaner UI; toggle uses the real click gesture so the browser allows the request.

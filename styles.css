@@ -168,7 +168,7 @@ body{
 .res-actions .btn{margin-top:0;padding:16px 32px;font-size:16px}
 
 /* ---------- LINK ROW ---------- */
-.linkrow{display:flex;gap:18px;margin-top:14px;align-items:center}
+.linkrow{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 18px;margin-top:14px;align-items:center}
 .build{margin-top:18px;font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.06em;opacity:.7;min-height:14px}
 .build b{color:var(--text);font-weight:700}
 
