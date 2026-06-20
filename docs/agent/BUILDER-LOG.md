@@ -330,7 +330,7 @@ notes / questions: bonds prompts stay in the explicit "X + ? = T" equation form
   now fixed sets — no generator code remains in the codebase.
 
 ## T10 — Celebratory in-play unlock particles  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 34ae7db (on main)
 changed:
   - fx.js (new) — `window.FX` effects module. `particleSpecs(colors,count)` is a
     pure, capped (CAP=14) generator of pixel-square descriptors (random outward
