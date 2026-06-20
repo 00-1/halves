@@ -70,10 +70,53 @@
     ["1/20",0.05],["3/20",0.15],["1/16",0.0625]
   ];
 
+  // ---- generated-mode helpers --------------------------------------------
+  // `gen:true` modes draw infinite random questions, so they carry mode-level
+  // collectibles only (no per-question Beat/Spark). Answers are always whole
+  // and non-negative so they stay numpad-enterable.
+  const MINUS = "−";                 // proper minus sign (matches "×")
+  const ROUND_N = 20;                     // questions per generated round
+  function randInt(lo, hi){ return lo + Math.floor(Math.random() * (hi - lo + 1)); }
+
+  // Build a round of unique prompts from a single-question generator.
+  function genRound(one){
+    const out = [], seen = new Set();
+    let guard = 0;
+    while(out.length < ROUND_N && guard < ROUND_N * 40){
+      const q = one(); guard++;
+      if(seen.has(q.p)) continue;
+      seen.add(q.p); out.push(q);
+    }
+    return out;
+  }
+
+  // Add/Subtract Part 1 — two-digit ± with the result kept within 100 and
+  // never negative (e.g. 47 + 35 = 82, 82 − 18 = 64).
+  function addSubP1(){
+    if(Math.random() < 0.5){
+      const a = randInt(10, 90);
+      const b = randInt(10, 100 - a);     // a,b both 2-digit; a + b ≤ 100
+      return { p: a + " + " + b, a: a + b };
+    }
+    const a = randInt(11, 99);
+    const b = randInt(10, a - 1);         // a > b, both 2-digit; result ≥ 1
+    return { p: a + " " + MINUS + " " + b, a: a - b };
+  }
+
+  // Add/Subtract Part 2 — three-digit ± two-digit (e.g. 240 + 85 = 325,
+  // 312 − 47 = 265). Subtraction is always non-negative (3-digit − 2-digit).
+  function addSubP2(){
+    const a = randInt(100, 999);
+    const b = randInt(10, 99);
+    if(Math.random() < 0.5) return { p: a + " + " + b, a: a + b };
+    return { p: a + " " + MINUS + " " + b, a: a - b };
+  }
+
   // Listed in importance / unlock order: Halves → Times → Doubles →
-  // Fractions → Squares. `unlockedBy` points at the previous topic; the first
-  // topic (Halves) has none and is always open. New topics are spliced into
-  // this chain at their importance position as the catalogue grows.
+  // Add&Subtract → Fractions → Squares. `unlockedBy` points at the previous
+  // topic; the first topic (Halves) has none and is always open. A Part-2 mode
+  // (e.g. Add & Subtract II) sits off the chain with `requires` instead. New
+  // topics are spliced in at their importance position as the catalogue grows.
   const MODES = [
     {
       id:"halves", name:"Halves", tag:"Halve it. Fast.",
@@ -94,9 +137,21 @@
       build(){ return shuffle(DOUBLES_SRC).map(n => ({ p:String(n), a:n*2 })); }
     },
     {
+      id:"addsub", name:"Add & Subtract", tag:"2-digit, within 100.",
+      glyph:'a<span class="slash">+</span>b',
+      eyebrow:'solve <b>↓</b>', expr:true, unlockedBy:"doubles", masterSecs:5, group:"Number", gen:true,
+      build(){ return genRound(addSubP1); }
+    },
+    {
+      id:"addsub2", name:"Add & Subtract II", tag:"3-digit ± 2-digit.",
+      glyph:'a<span class="slash">±</span>b',
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:addsub", masterSecs:5, group:"Number", gen:true,
+      build(){ return genRound(addSubP2); }
+    },
+    {
       id:"fractions", name:"Fractions", tag:"As a decimal.",
       glyph:'<span class="slash">¾</span>',
-      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"doubles", masterSecs:3.5, group:"Fractions & %",
+      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"addsub", masterSecs:3.5, group:"Fractions & %",
       build(){ return shuffle(FRACTIONS_SRC).map(([f,d]) => ({ p:f, a:d })); }
     },
     {

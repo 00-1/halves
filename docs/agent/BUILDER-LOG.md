@@ -178,3 +178,39 @@ notes / questions: Interpretation flag for "clear every topic" — I read the th
   with the existing Pentamind (finish a round in every mode, which stays). If you
   intended "clear every topic" = merely play/finish each topic once, say so and
   I'll repoint it at the initiated-all condition.
+
+## T5 — Add / Subtract  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - modes.js — generated-mode helpers (`randInt`, `genRound` → 20 unique prompts,
+    `MINUS` = U+2212) and two generators. New modes spliced into the chain at
+    importance position 4: `addsub` (Part 1, 2-digit ± within 100, e.g. 47+35=82 /
+    82−18=64; unlockedBy "doubles", masterSecs 5, group "Number", gen) and
+    `addsub2` (Part 2, 3-digit ± 2-digit, e.g. 240+85 / 312−47; requires
+    "mastery:addsub", off the chain, masterSecs 5, group "Number", gen). Re-linked
+    `fractions.unlockedBy` "doubles"→"addsub" so the chain stays contiguous:
+    Halves→Times→Doubles→Add&Subtract→Fractions→Squares.
+  - collectibles.js — the per-question Beat/Spark loop now skips `gen` modes, so
+    generated modes carry mode-level collectibles only (init/flawless/4×speed/
+    mastery = 7 items; 100% still caps on Lightning+Mastery+Flawless).
+how I verified:
+  - node -c: modes.js, collectibles.js, main.js all OK.
+  - id cross-check: every `$("id")` in main.js present in index.html (no new ids).
+  - logic check (Node, real modes/collectibles): P1/P2 field set correct; chain
+    re-links and unlocks step exactly Halves→…→Add&Subtract→Fractions→Squares;
+    the P2 mastery gate locks addsub2 until `mastery:addsub` is owned (P1 init is
+    not enough). Generators over 2000 full rounds each: **P1 answers integer,
+    0..100, numpad-ok; P2 strictly 3-digit ± 2-digit, non-negative, numpad-ok**
+    (max 999+99=1098, ≤5-digit guard). Rounds are 20 unique prompts. Gen modes
+    expose NO Beat/Spark and exactly the 7 mode-level items incl Lightning+Mastery;
+    fixed modes keep Beat/Spark; catalogue 285→299 (+14). The "Number" picker
+    group now renders (addsub, addsub2); `evaluateQuestion` returns [] for gen
+    modes (no live-toast errors). ALL T5 CHECKS PASSED.
+  - no TODO/placeholder introduced: grep clean.
+  - no regressions: existing 5 modes/groups/chain untouched except the intended
+    fractions re-link; migration (own `init:`) still keeps any played topic open.
+notes / questions: `gen:true` marks the generated modes; Part-2 `addsub2` lives in
+  the same "Number" group as P1 and shows locked (🔒 "Master Add & Subtract first")
+  until P1 mastery. masterSecs 5 for both = Tier 2 ("simple multi-digit") per the
+  BACKLOG table; P2 (3-digit±2-digit) is a single op (not multi-step), so it sits
+  at the top of Tier 2 rather than Tier 3 — flag me if you'd prefer 9.

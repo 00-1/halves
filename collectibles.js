@@ -125,7 +125,9 @@
   });
 
   // per-question: "Beat" (first clean solve) and "Spark" (first fast clean solve)
+  // — only for fixed-set modes; generated modes have mode-level collectibles only.
   MODES.forEach(m => {
+    if(m.gen) return;
     const qs = m.build().slice().sort((a,b) =>
       String(a.p).localeCompare(String(b.p), undefined, { numeric:true }));
     qs.forEach(q => {
