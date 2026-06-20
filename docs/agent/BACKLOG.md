@@ -210,6 +210,35 @@ Upgrade it to a real confetti/spark **explosion**.
   canvas/RAF; no constant RAF when idle; reduced-motion respected; no input/timer
   interference; works at 360px; no regressions; deploy green.
 
+### T11 — Entry / "tap to begin" screen (fullscreen + audio gesture) · status: OPEN
+A first splash screen that gives the best experience from the start and provides
+the single user gesture both fullscreen and Web Audio require.
+- New `#entry` screen shown **on load**, before the menu: brand mark + tagline.
+- **Primary button "Play in fullscreen"** (prominent) → request fullscreen on the
+  document element (reuse T18's feature-detected/vendor-prefixed/try-catch
+  helpers), then reveal the menu (start screen).
+- **Secondary, less prominent "Play"** (small/ghost link) → reveal the menu
+  **without** fullscreen.
+- **Both buttons are the audio-unlock gesture**: call `window.Sound &&
+  window.Sound.unlock && window.Sound.unlock()` (guarded — a no-op until the audio
+  phase T16 ships) and apply the saved mute pref.
+- **Audio on/off toggle** on this screen (🔊/🔇) that reads/writes the persisted
+  `halves.sound` key (default ON) so the user can disable sound before entering.
+  (Until T16 it just persists the preference; T16's engine will respect it and
+  the same gesture will resume the AudioContext.)
+- If fullscreen is unsupported (iOS Safari), show a single "Play" (no fullscreen
+  variant) — no error.
+- After entering, the rest of the session uses the menu; honour any deep-link
+  hash route after the gesture. The existing in-menu fullscreen button (T18) and
+  this stay consistent.
+- **DoD:** entry shows on load; "Play in fullscreen" enters fullscreen where
+  supported + reveals the menu; "Play" reveals it without; both call the guarded
+  audio-unlock and apply the mute pref; the audio toggle persists `halves.sound`;
+  graceful where fullscreen unsupported; routing works after entry; 360px; no
+  regressions; deploy green.
+> Babysitter note: open **T16 (audio core)** soon after T11 so the entry screen's
+> sound toggle/unlock are backed by real audio.
+
 ---
 
 ## Phase 2.6 — Content quality
