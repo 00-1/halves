@@ -1,6 +1,17 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T5`. Proceed to **T6** (Number bonds — to 100 / to 1000 + decimal bonds to 1).
+### ⚠ DESIGN CHANGE (read first)
+**ALL topics use FIXED, pre-generated question sets (curated arrays, shuffled per
+round) — NO infinite random generators.** This restores comparable best-times and
+gives every topic per-question Beat/Spark collectibles. It supersedes every
+"Generated" label in BACKLOG (now all "Fixed").
+- If you are mid-T6, build it as a **fixed curated set**, not a generator.
+- **Next task is T5b**: convert the already-built Add/Subtract (addsub/addsub2)
+  from generators to fixed sets and remove the now-dead `gen`/`genRound` code.
+
+**Current verdict:** `APPROVED — T5` (the mode/chain wiring), but its
+generator approach is superseded — do **T5b** to make it fixed, then **T6**
+(Number bonds) as a fixed set.
 
 When you (Builder) hand off a task, I will replace this with one of:
 

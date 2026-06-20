@@ -69,24 +69,47 @@ Replace the wrapping pills with a scrollable, grouped list.
 
 ## Phase 2 — Topics (importance order; each = Part 1 + Part 2, P2 `requires` P1 mastery)
 
-Build one topic per task, fully (both parts), with generators verified in Node
-against the calibrated ranges in the research doc. Slot each into the chain at
-its importance position. Status starts `OPEN` only after Phase 1 is `DONE`.
+**Design rule: every topic is a FIXED, pre-generated question set** — a curated
+`*_SRC` array (~21 entries, representative of the range) that `build()` shuffles
+each round, exactly like Halves/Times/Squares/Fractions. **No infinite random
+generators.** Fixed sets keep best-times comparable and give every topic its
+per-question Beat/Spark collectibles. Build one topic per task, fully (both
+parts), each verified in Node (answers correct/numeric/non-negative/numpad-safe;
+stable set across rounds). Slot each into the chain at its importance position.
 
-### T5 — Add / Subtract  · status: DONE
-P1: 2-digit ± within 100. P2: 3-digit ± 2-digit. Generated.
+### T5 — Add / Subtract  · status: DONE (superseded by T5b — convert to fixed)
+P1: 2-digit ± within 100. P2: 3-digit ± 2-digit.
+
+### T5b — Convert Add/Subtract to fixed sets · status: OPEN
+The T5 build used infinite generators; per the design rule above, convert both
+modes to **fixed curated sets**.
+- Replace `addsub`/`addsub2` `build()` with shuffles of fixed `*_SRC` arrays
+  (~21 each): P1 a representative spread of 2-digit ± within 100 (mix of bridging
+  and non-bridging, varied magnitudes); P2 a spread of 3-digit ± 2-digit.
+- Remove the now-dead `gen` flag on these modes plus `genRound`, `randInt`,
+  `addSubP1`, `addSubP2`, and (if no `gen` modes remain) the `if(m.gen) return`
+  guard in collectibles.js. No dead code.
+- With `gen` gone, addsub/addsub2 now get per-question Beat/Spark — confirm they
+  appear in the catalogue.
+- Update `docs/research-11plus.md` to drop the generated/fixed distinction (all
+  fixed).
+- **DoD:** Node — both build() return fixed shuffled sets (~21), prompts stable
+  across rounds, answers correct/numeric/non-negative/numpad-safe; catalogue now
+  contains `solve:addsub*`/`spark:addsub*`; no `gen`/`genRound` left anywhere; no
+  regressions; deploy green.
 
 ### T6 — Number bonds · status: OPEN
-P1: to 100. P2: to 1000 + decimal bonds to 1. Generated.
+P1: to 100. P2: to 1000 + decimal bonds to 1. **Fixed set** (curated array,
+shuffled — not generated).
 
 ### T7 — Place value ×/÷ · status: BLOCKED
-P1: whole ×÷ 10·100. P2: decimals ×÷ 10·100·1000. Generated.
+P1: whole ×÷ 10·100. P2: decimals ×÷ 10·100·1000. **Fixed set.**
 
 ### T8 — Fractions of · status: BLOCKED
-P1: ½ ¼ ⅓ ⅕ of. P2: ⅔ ¾ ⅗ ⅝ of. Generated.
+P1: ½ ¼ ⅓ ⅕ of. P2: ⅔ ¾ ⅗ ⅝ of. **Fixed set.**
 
 ### T9 — Percentages of · status: BLOCKED
-P1: 10/25/50% of ≤400. P2: 1/5/20/75% of ≤200. Generated.
+P1: 10/25/50% of ≤400. P2: 1/5/20/75% of ≤200. **Fixed set.**
 
 > Further topics (equivalences, rounding, money, time, metric, ratio, …) will be
 > appended by the Babysitter once T5–T9 are `DONE`. Do not invent them early.
