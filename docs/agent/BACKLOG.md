@@ -126,19 +126,26 @@ stats and the items boosting them; procedural pixel portraits. Start-screen link
 - **DoD:** renders all 12 (locked/unlocked) at 360px without overflow; routing
   + back work; deploy green.
 
-### T23 — Enemy tiers + battle logic · status: BLOCKED
+### T23 — Enemy tiers + battle logic + tier loot · status: BLOCKED
 Add the 24-tier list + RPS matchup + pure `resolveBattle(hero, tier, perf)` per
-design; compute `tier24.def` from max-possible rating at load.
-- **DoD:** Node test proves early tiers winnable with the starter hero at good
-  perf, and **tier 24 is unwinnable unless all boosts are owned** (and winnable
-  when they are, with advantage + perfect perf). Pure logic, no DOM.
+design. Generate each tier's **loot batch** as catalogue items (`loot:<n>:<k>`)
+with style/name/boost (batches grow & rarer with depth — generate liberally, no
+cap). Compute `def_n` so it is beatable only with items obtainable before tier
+`n` (never gate a tier behind its own loot); `def24` from max rating excluding
+tier-24 loot.
+- **DoD:** Node test proves (a) early tiers winnable with the starter hero at
+  good perf; (b) **no tier is gated behind its own loot**; (c) tier 24 is
+  unwinnable until every non-final-loot boost is owned and winnable once it is.
+  Pure logic, no DOM.
 
 ### T24 — Arena mode (`#/arena`) · status: BLOCKED
 Pick an unlocked hero → see tier + matchup hint → play a battle round (reuse the
 drill engine over unlocked topics) → resolve → show the result maths → on win
-grant `tier:n` + trophy item + advance (+ any hero unlock). Start-screen link.
+grant `tier:n` + its **loot batch** (in the unlock modal) + advance (+ any hero
+unlock). Start-screen link.
 - **DoD:** full flow works on existing content; win/loss correct vs the logic;
-  trophies/tier ownership persist locally; no regressions; deploy green.
+  tier ownership + loot persist locally; loot appears in inventory and boosts
+  heroes; no regressions; deploy green.
 
 ### T25 — Balance + milestone wiring · status: BLOCKED
 Hero-unlock collectibles/milestones for "unlock all heroes", "defeat tier N",

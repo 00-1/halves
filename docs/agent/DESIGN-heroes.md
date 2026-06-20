@@ -90,14 +90,31 @@ deterministically by id. Pools (extend freely, keep family-friendly):
 ## Enemy tiers
 
 An ordered list of **24 tiers**: `{n, name, type, def}`. `type` cycles
-Brawn→Arcane→Cunning→… `def` escalates smoothly from beatable-early to a final
-value **computed at load** so the last tier needs essentially everything:
-`tier24.def = round( maxRating × 1.5 × 1.0 )` where `maxRating` = best hero's
-rating with **all** catalogue boosts applied (advantage matchup, perfect perf).
-Earlier tiers interpolate (e.g. geometric from a low start to `tier24.def`).
-Beating tier `n` grants `tier:n` (own-able), a **trophy** item (legendary-ish
-boost), and may unlock a hero (see table). You may only attempt tier `n` after
-`tier:n-1`.
+Brawn→Arcane→Cunning→… You may only attempt tier `n` after `tier:n-1`.
+
+**Defeating a tier unlocks loot — a batch of new inventory items, not just one.**
+Each tier `n` grants:
+- `tier:n` (own-able marker),
+- a **themed loot batch** of new collectibles (e.g. ~3–6 early, scaling to more
+  and rarer deeper; deeper tiers drop epic/legendary loot). These are full
+  catalogue items: each has a style, a flavour name, and a hero/stat **boost**,
+  so loot directly upgrades your heroes — closing the loop (beat tier → loot →
+  stronger heroes → next tier). Generate them programmatically as their own
+  catalogue category (e.g. `loot:<n>:<k>`).
+- possibly a hero unlock (see table).
+
+**The catalogue can be very large — that is fine and desired. Generate items
+liberally; there is no cap or concern about too many.** The inventory's
+progressive disclosure (locked "?" tiles, category grouping) already scales.
+
+**Difficulty / no circular dependency.** `def` escalates smoothly (e.g. geometric
+from a low, starter-beatable value). A tier's `def` must be beatable using only
+items obtainable **before** defeating it — never gate a tier behind its own loot.
+The **final tier (24)** is calibrated to require essentially **everything else**:
+`def24 = round( maxRatingExclFinalLoot × 1.5 )` where `maxRatingExclFinalLoot` =
+the best hero's rating with **all boosts owned except tier-24's own loot**, at
+advantage matchup and perfect perf. So the last boss falls only at ~100%
+collection, and not before.
 
 ## Battle resolution (pure, Node-testable)
 
@@ -108,12 +125,15 @@ boost), and may unlock a hero (see table). You may only attempt tier `n` after
    1.3)`; `perf = clamp(clean * pace, 0, 1)`.
 3. `matchup` = 1.5 / 1.0 / 0.6 from RPS(H.type, tier.type).
 4. `battlePower = round( rating(H) × matchup × (0.4 + 0.6*perf) )`.
-5. **Win if `battlePower ≥ tier.def`.** Win → grant `tier:n` + trophy + advance;
-   loss → no progress (keep items; replay). Show the maths of the result.
+5. **Win if `battlePower ≥ tier.def`.** Win → grant `tier:n` + its **loot batch**
+   (shown in the unlock modal) + advance (+ any hero unlock); loss → no progress
+   (keep items; replay). Show the maths of the result.
 
 Provide a Node test proving: (a) early tiers winnable with the starter hero at
-good perf; (b) tier 24 is **not** winnable unless all boosts are owned (i.e.
-`rating(bestHero, allItems) × 1.5 ≥ def24` but `× <full` falls short).
+good perf; (b) **no tier is gated behind its own loot** (each `def_n` is beatable
+with items obtainable before tier `n`); (c) tier 24 is **not** winnable until
+every non-final-tier-loot boost is owned, and **is** winnable once it is (with
+advantage + perfect perf).
 
 ## Screens / routing
 
