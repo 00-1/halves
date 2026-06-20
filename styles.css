@@ -168,6 +168,8 @@ body{
 
 /* ---------- LINK ROW ---------- */
 .linkrow{display:flex;gap:18px;margin-top:14px;align-items:center}
+.build{margin-top:18px;font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.06em;opacity:.7;min-height:14px}
+.build b{color:var(--text);font-weight:700}
 
 /* ---------- RANK (results) ---------- */
 .rankline{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:16px}

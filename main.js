@@ -458,8 +458,32 @@
   nameInput.addEventListener("input", e => commitName(e.target.value));
   nameInput.addEventListener("keydown", e => { if(e.key==="Enter"){ e.preventDefault(); nameInput.blur(); } });
 
+  // ---- build info (sha + "ago"), written at deploy time -------------------
+  function relAgo(ts){
+    if(!ts || isNaN(ts)) return "";
+    let s = Math.max(0, (Date.now()-ts)/1000);
+    if(s < 60)   return Math.floor(s)+"s ago";
+    if(s < 3600) return Math.floor(s/60)+"m ago";
+    if(s < 86400)return Math.floor(s/3600)+"h ago";
+    return Math.floor(s/86400)+"d ago";
+  }
+  let buildInfo = null;
+  function renderBuild(){
+    const el = $("buildInfo");
+    if(!buildInfo){ el.textContent = "local build"; return; }
+    const sha = buildInfo.shortSha || (buildInfo.sha || "").slice(0,7) || "—";
+    const ago = relAgo(Date.parse(buildInfo.time));
+    el.innerHTML = 'build <b>'+esc(sha)+'</b>' + (ago ? ' · '+ago : '');
+  }
+  fetch("build.json", { cache:"no-store" })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { buildInfo = j; renderBuild(); })
+    .catch(() => renderBuild());
+  setInterval(renderBuild, 30000);   // keep the "ago" fresh
+
   // ---- init ---------------------------------------------------------------
   renderTabs();
   renderMark();
   renderBest();
+  renderBuild();
 })();
