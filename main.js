@@ -451,9 +451,7 @@
     setTimeout(()=>{ idx++; nextQuestion(); },300);
   }
 
-  // ---- results + hall of fame --------------------------------------------
-  let pendingEntry = null;
-
+  // ---- results -----------------------------------------------------------
   function finish(){
     cancelAnimationFrame(raf);
     const total = (performance.now()-startTime)/1000;
@@ -520,64 +518,13 @@
     // celebratory toast for any topic this round newly opened (chain or Part-2)
     MODES.forEach(m => { if(!wasUnlocked[m.id] && isUnlocked(m)) showTopicToast(m); });
 
-    // ----- hall of fame -----
-    const board = loadBoard(mode.id);
+    // ----- best time: keep the per-mode top-10 board (no names, single-player)
     const entry = { name:"", score:score, time:total, total:order.length, ts:Date.now() };
-    const cutoff = board.concat([entry]).sort(rank).slice(0, MAX);
-    const qualifies = cutoff.indexOf(entry) !== -1;
-
-    const nameEntry = $("nameEntry"), missNote = $("missNote");
-    if(qualifies){
-      pendingEntry = entry;
-      saveBoard(mode.id, cutoff);
-      nameEntry.classList.remove("hidden");
-      missNote.classList.add("hidden");
-      const inp = $("nameInput");
-      inp.value = "";
-      renderHOF();
-      setTimeout(()=>inp.focus(),350);
-    }else{
-      pendingEntry = null;
-      nameEntry.classList.add("hidden");
-      missNote.classList.remove("hidden");
-      missNote.textContent = "Scored "+score+"/"+order.length+" in "+fmt(total)+"s — short of the board.";
-      renderHOF();
-    }
+    saveBoard(mode.id, loadBoard(mode.id).concat([entry]).sort(rank).slice(0, MAX));
 
     show("results");
     renderBest();
     if(unlocked.length) setTimeout(() => showUnlocks(unlocked), 650);
-  }
-
-  function renderHOF(){
-    const board = loadBoard(mode.id).slice().sort(rank);
-    $("hofMeta").textContent = "score · time";
-    if(board.length === 0){
-      $("hofList").innerHTML = '<div class="hof-empty">Empty. Be the first.</div>';
-      return;
-    }
-    const medals = ["①","②","③"];
-    $("hofList").innerHTML = board.map((e,i)=>{
-      const you = pendingEntry && e.ts === pendingEntry.ts;
-      const rk = i<3 ? '<span class="rank medal">'+medals[i]+'</span>'
-                     : '<span class="rank">'+(i+1)+'</span>';
-      const nm = e.name ? esc(e.name) : (you ? '…' : '—');
-      return '<div class="hof-row'+(you?' you':'')+'">'+rk+
-        '<span class="nm">'+nm+'</span>'+
-        '<span class="sc">'+e.score+'/'+(e.total||"?")+'</span>'+
-        '<span class="tm">'+fmt(e.time)+'s</span></div>';
-    }).join("");
-  }
-
-  function commitName(v){
-    if(!pendingEntry) return;
-    pendingEntry.name = v.slice(0,12);
-    const board = loadBoard(mode.id);
-    const found = board.find(e => e.ts === pendingEntry.ts);
-    if(found) found.name = pendingEntry.name;
-    saveBoard(mode.id, board);
-    renderHOF();
-    renderBest();
   }
 
   // ---- input wiring -------------------------------------------------------
@@ -623,11 +570,6 @@
 
   $("statsBtn").addEventListener("click", () => { location.hash = "#/best-times"; });
   $("sumBack").addEventListener("click", navStart);
-  $("sumClear").addEventListener("click", () => {
-    if(!confirm("Clear all best times saved on this device?")) return;
-    MODES.forEach(m => saveBoard(m.id, []));
-    renderSummary(); renderBest();
-  });
 
   $("invBtn").addEventListener("click", () => { location.hash = "#/inventory"; });
   $("invBack").addEventListener("click", navStart);
@@ -640,10 +582,6 @@
   });
   $("unlockClose").addEventListener("click", closeModal);
   $("unlockModal").addEventListener("click", e => { if(e.target === $("unlockModal")) closeModal(); });
-
-  const nameInput = $("nameInput");
-  nameInput.addEventListener("input", e => commitName(e.target.value));
-  nameInput.addEventListener("keydown", e => { if(e.key==="Enter"){ e.preventDefault(); nameInput.blur(); } });
 
   // ---- build info (sha + "ago"), written at deploy time -------------------
   function relAgo(ts){

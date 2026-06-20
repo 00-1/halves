@@ -159,34 +159,6 @@ body{
 .res-actions{display:flex;gap:12px;margin-top:26px}
 .res-actions .btn{margin-top:0;padding:16px 32px;font-size:16px}
 
-/* name entry */
-.nameentry{margin-top:22px;width:100%;max-width:300px;text-align:left}
-.nameentry.hidden{display:none}
-.nameentry label{font-family:var(--mono);color:var(--mint);font-size:11px;letter-spacing:.14em;
-  text-transform:uppercase;font-weight:700;display:block;margin-bottom:8px;padding-left:2px}
-.nameentry input{width:100%;font-family:var(--mono);font-weight:700;font-size:18px;color:var(--text);
-  background:var(--surface);border:1px solid var(--mint);border-radius:10px;padding:13px 14px;
-  letter-spacing:.06em;outline:none}
-.nameentry input::placeholder{color:var(--muted);font-weight:400}
-
-/* hall of fame */
-.hof{margin-top:26px;width:100%;max-width:320px;text-align:left}
-.hof h4{font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
-  font-weight:700;margin-bottom:12px;padding-left:2px;display:flex;justify-content:space-between}
-.hof h4 span{color:var(--line)}
-.hof-row{display:grid;grid-template-columns:26px 1fr auto auto;gap:10px;align-items:center;
-  font-family:var(--mono);font-size:14px;padding:10px 12px;background:var(--surface);
-  border:1px solid var(--line);border-radius:10px;margin-bottom:7px;font-variant-numeric:tabular-nums}
-.hof-row .rank{color:var(--muted);font-weight:700;text-align:center}
-.hof-row .nm{color:var(--text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hof-row .sc{color:var(--mint);font-weight:700}
-.hof-row .tm{color:var(--amber);font-weight:700;min-width:54px;text-align:right}
-.hof-row.you{border-color:var(--amber);background:var(--surface-2)}
-.hof-row.you .rank{color:var(--amber)}
-.hof-row .rank.medal{font-size:15px}
-.hof-empty{font-family:var(--mono);color:var(--muted);font-size:13px;padding:14px 4px;text-align:center}
-.missnote{margin-top:14px;font-family:var(--mono);color:var(--muted);font-size:12px;letter-spacing:.04em}
-
 /* ---------- LINK ROW ---------- */
 .linkrow{display:flex;gap:18px;margin-top:14px;align-items:center}
 .build{margin-top:18px;font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.06em;opacity:.7;min-height:14px}

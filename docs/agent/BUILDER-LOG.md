@@ -390,3 +390,35 @@ how I verified:
   - so on a topic unlock / Part-2 unlock, `toastBurst` runs with a valid epic
     palette → particles fire, no console error.
 notes / questions: none — only the missing declaration changed.
+
+## T14 — Remove Hall of Fame + Clear-all  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - index.html — results screen: removed the name-entry (`#nameEntry`/`#nameInput`),
+    `#missNote`, and the Hall of Fame block (`#hof`/`#hofMeta`/`#hofList`).
+    Best-times screen: removed the **Clear all** button (`#sumClear`).
+  - main.js — replaced the qualify/name HOF logic in `finish()` with a single
+    `saveBoard(mode.id, loadBoard(mode.id).concat([entry]).sort(rank).slice(0,MAX))`
+    so the per-mode top-10 board still records every finished round (nameless).
+    Deleted `renderHOF`, `commitName`, the `pendingEntry` state, the `#nameInput`
+    listeners, and the `#sumClear` handler.
+  - styles.css — removed the now-dead `.nameentry*`, `.hof*`, `.hof-row*`,
+    `.hof-empty`, `.missnote` rules.
+how I verified:
+  - node -c main.js OK.
+  - removals: grep confirms zero references to renderHOF/commitName/pendingEntry/
+    nameInput/nameEntry/missNote/hofList/hofMeta/sumClear/`hof-` in main.js, and
+    none of those ids remain in index.html; no `.hof/.nameentry/.missnote` CSS left.
+  - id cross-check BOTH directions: every `$("id")` in main.js exists in
+    index.html (0 missing), AND no orphaned ids in index.html (every id is
+    referenced; screen ids via the `screens` map).
+  - runtime: full app (modes+collectibles+fx+main) loads under the DOM shim with
+    NO init error after the removals.
+  - best-times still works: `finish()` saves the top-10 board, and
+    `renderSummary`/`renderBest`/the picker subline read `loadBoard` (unchanged),
+    so a better round updates the best time + rank; entries simply carry no name.
+  - kept on results: final time, rank, accuracy, skipped, slowest answers, Play
+    again / Modes, the unlock modal + toasts (all untouched).
+  - no TODO/placeholder; no dead code.
+notes / questions: none — single-player cleanup only; board persistence retained
+  for Best Times / ranks / picker.
