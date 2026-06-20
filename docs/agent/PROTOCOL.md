@@ -9,45 +9,64 @@ Two agents collaborate on this repo over git.
   code and `BUILDER-LOG.md`. **Never edits `BACKLOG.md` or `REVIEW.md`** (read
   only).
 
-## Branch & deploy
+## Branches & deploy (single writer per branch)
 
-- All work happens **directly on `main`**. `main` is the live site and
-  auto-deploys via GitHub Pages on every push.
-- Because of that, **every task must be fully complete and deploy-verified
-  BEFORE you commit** — `main` must never be left broken, half-built, or with a
-  reachable-but-unfinished feature. No partial commits, no "I'll finish next
-  commit".
-- The Babysitter reviews each pushed task post-hoc and may request changes; you
-  forward-fix on `main`. Since tasks are atomic and verified, the live site
-  keeps working between review and fix.
+- **`main`** — product code + `docs/agent/BUILDER-LOG.md` + `docs/agent/PROTOCOL.md`
+  + `docs/research-11plus.md`. The live site; auto-deploys on every push.
+  **Only the Builder pushes to `main`**, and only fully-complete, deploy-verified
+  tasks. Every `main` push must be a real, deploy-worthy change (no doc-only
+  churn). `main` must never be left broken or half-built.
+- **`claude/agent`** — coordination only: `docs/agent/BACKLOG.md` +
+  `docs/agent/REVIEW.md`. **Only the Babysitter pushes to `claude/agent`.** It
+  does not deploy. Ignore any code on it — never check it out for code.
 
-## File ownership (to avoid conflicts)
+Single writer per branch ⇒ no push collisions, and review notes don't trigger
+Pages builds.
 
-| File | Writer | Reader |
-|---|---|---|
-| `docs/agent/BACKLOG.md` | Babysitter | Builder |
-| `docs/agent/REVIEW.md` | Babysitter | Builder |
-| `docs/agent/BUILDER-LOG.md` | Builder | Babysitter |
-| product code (`*.js`, `*.html`, `*.css`) | Builder | Babysitter |
+## How each side reads the other
 
-Always `git pull --rebase origin main` before committing.
-Because writers touch disjoint files, rebases should not conflict.
+- **Builder reads tasks/verdicts** (do this at the start of every task and after
+  every push):
+  `git fetch origin claude/agent` then
+  `git show origin/claude/agent:docs/agent/BACKLOG.md` and `…:REVIEW.md`.
+- **Builder writes** only product code + `docs/agent/BUILDER-LOG.md`, committed to
+  `main` (`git pull --rebase origin main` first, though the Builder is the sole
+  `main` writer so this rarely matters).
+- **Babysitter reads the build**: `git fetch origin main` then inspect the diff
+  and `docs/agent/BUILDER-LOG.md`.
+- **Babysitter writes** only `BACKLOG.md` + `REVIEW.md`, committed to
+  `claude/agent`.
+
+The Builder reviews after the fact and fixes forward on `main`; since tasks are
+atomic and verified, the live site keeps working between review and fix.
+
+## File ownership
+
+| File | Branch | Writer | Reader |
+|---|---|---|---|
+| `docs/agent/BACKLOG.md` | `claude/agent` | Babysitter | Builder |
+| `docs/agent/REVIEW.md` | `claude/agent` | Babysitter | Builder |
+| `docs/agent/BUILDER-LOG.md` | `main` | Builder | Babysitter |
+| product code (`*.js`, `*.html`, `*.css`) | `main` | Builder | Babysitter |
 
 ## The loop
 
-1. **Builder** picks the **topmost task in `BACKLOG.md` whose status is `OPEN`**
-   (never skip or reorder). It implements the task **completely**.
-2. Builder self-verifies (see Quality bar), commits, appends a handoff entry to
-   `BUILDER-LOG.md` (task id, commit sha, what changed, how verified), pushes,
-   and sets that task's status to `IN-REVIEW` is **not** its job — it just logs.
-3. **Babysitter** reviews the diff against the task's Definition of Done. It
-   writes a verdict in `REVIEW.md`: either `APPROVED` (and flips the task to
-   `DONE` in `BACKLOG.md`, opens the next) or `CHANGES REQUESTED` with a precise,
-   numbered list.
-4. **Builder** polls `REVIEW.md` (via `git pull --rebase`). On `CHANGES
-   REQUESTED` it addresses **every** point fully (no deferrals), re-verifies,
-   commits, logs, pushes. On `APPROVED` it moves to the next `OPEN` task.
-5. Repeat until `BACKLOG.md` has no `OPEN`/`IN-REVIEW` tasks.
+1. **Builder** reads `BACKLOG.md` from `claude/agent` and picks the **topmost
+   task whose status is `OPEN`** (never skip or reorder). It implements the task
+   **completely** on `main`.
+2. Builder self-verifies (see Quality bar), commits to `main`, appends a handoff
+   entry to `BUILDER-LOG.md` (task id, commit sha, what changed, how verified),
+   and pushes `main`.
+3. **Babysitter** fetches `main`, reviews the diff against the task's Definition
+   of Done, and writes a verdict in `REVIEW.md` on `claude/agent`: either
+   `APPROVED` (and flips the task to `DONE` in `BACKLOG.md`, opens the next) or
+   `CHANGES REQUESTED` with a precise, numbered list.
+4. **Builder** polls `REVIEW.md` from `claude/agent` (`git fetch origin
+   claude/agent && git show origin/claude/agent:docs/agent/REVIEW.md`). On
+   `CHANGES REQUESTED` it addresses **every** point fully (no deferrals),
+   re-verifies, commits, logs, pushes `main`. On `APPROVED` it moves to the next
+   `OPEN` task.
+5. Repeat until `BACKLOG.md` has no `OPEN` tasks.
 
 ## Quality bar (non-negotiable)
 
