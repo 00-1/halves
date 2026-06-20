@@ -75,8 +75,6 @@ body{
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn:disabled:active{transform:none}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
-.hint{margin-top:20px;color:var(--muted);font-size:12px;line-height:1.6;max-width:280px;letter-spacing:.01em}
-.hint kbd{font-family:var(--mono);background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:11px;color:var(--text)}
 .linkbtn{margin-top:18px;background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:12px;
   letter-spacing:.08em;text-transform:uppercase;font-weight:700;cursor:pointer;padding:6px;
   border-bottom:1px solid transparent;transition:color .15s ease,border-color .15s ease}

@@ -573,3 +573,21 @@ how I verified:
 notes / questions: the entry gesture is required every load (fullscreen + Web Audio
   both need a fresh user gesture), so the splash shows each session. window.Sound
   hooks are stubbed/guarded now and will light up in T16.
+
+## T28 — Remove the how-to-play blurb on the start screen  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - index.html — removed the `.hint` block (the "One round of quick-fire
+    questions… Tap skip…" instructions, incl. its `<kbd>skip</kbd>`) from the
+    start screen. The game is self-explanatory (answers auto-advance; the skip key
+    is labelled).
+  - styles.css — removed the now-unused `.hint` and `.hint kbd` rules (the only
+    `<kbd>` usage in the app).
+how I verified:
+  - grep: no `hint`/`kbd` class or element references remain in index.html /
+    styles.css / main.js (the two main.js "hint" hits are unrelated comments about
+    the unlock-hint text).
+  - start screen still has mark → tag → picker → best → Start → linkrow → build,
+    laying out cleanly (Start's margin + `.linkrow` margin-top:14px keep spacing).
+  - node -c main.js OK (JS untouched); no regressions.
+notes / questions: none — pure cleanup; no dead CSS left.
