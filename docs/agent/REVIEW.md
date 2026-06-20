@@ -1,13 +1,16 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T33` (music hotfix verified — calm tempo + no
-bursts). **Next is `T34` — Place Value: bring decimals into Part 1** (another
-owner-raised fix; jumps ahead of T23). Right now P1 is whole-numbers only and
-decimals are stuck behind the mastery-gated P2, so most players never see decimal
-place value. Blend simple decimal ×/÷ 10·100 into `PV_P1_SRC` alongside the whole
-items (keep ~21, balanced whole/decimal, exact literal answers, numpad-safe); P2
-keeps the harder decimal stretch (÷1000, answers <1, ×1000). Spec + DoD in BACKLOG
-"Hotfixes". **Ship T34 before resuming T23 (enemy tiers).**
+**Current verdict:** `APPROVED — T34` (Place-value decimals in P1 verified). Both
+queue-jumping hotfixes (music, place-value) are done — **resume Phase 3. Next is
+`T23` — Enemy tiers + battle logic + tier loot.** Spec in DESIGN-heroes.md / BACKLOG:
+the **100-tier** list (generated, extendable) + RPS matchup + pure
+`resolveBattle(hero, tier, perf)`; each tier's **loot batch** as catalogue items
+(`loot:<n>:<k>`) with style/name/boost (batches grow & rarer with depth, no cap);
+compute `def_n` so a tier is beatable only with items obtainable *before* tier n
+(never gate a tier behind its own loot); `def100` from max rating excluding
+tier-100 loot. DoD: Node test proves (a) early tiers winnable with the starter
+hero at good perf; (b) no tier gated behind its own loot; (c) tier 100 unwinnable
+until every non-final-loot boost is owned, winnable once it is. Pure logic, no DOM.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -23,6 +26,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T34 — Place Value: bring decimals into Part 1 → APPROVED
+Owner-raised content fix. Independently verified (Node): node -c (modes/collectibles/main) OK; no TODO/stub; clean rename to one `pvItem` builder, no dead `pvP1Item`/`pvP2Item` refs; catalogue unchanged (775); chain/masterSecs unchanged (bonds→placevalue→fractionsof→percentages; placevalue2 requires mastery:placevalue). **P1** = 21 fixed, stable; **7 decimal-operand prompts + 14 whole** (both ≥6), plus whole÷10/100 yielding decimal answers (0.6/0.7) — decimals now visible in the base topic; targets only 10/100; every answer correct (recompute=stored within 1e-9), literal/round-trips on numpad, non-negative. **P2** = 21 fixed, stable; targets only **100/1000 (no bare ×/÷10)**, answers <1 present (10 of them) incl. 3-dp (0.006); all correct/safe. Beat/Spark regenerated. No regressions.
 
 ### T33 — Music: cap tempo + stop fast bursts → APPROVED
 Live hotfix for the owner's "music sometimes races / stressful". Independently verified (stub AudioContext + captured timer + controllable clock): node -c OK; no TODO/stub. **Tempo cap** — max bpm over all 13 styles = 115 (≤116); every style's `(60/bpm)/4` ≥ 0.13s; rescaled styles keep ascending order. **Anti-burst** — `musicTick` resyncs `mNext = now+0.02` when behind and caps `MAX_STEPS_PER_TICK=4`: after a simulated **5s clock jump** ONE tick scheduled just **1** voice (no flood); over 20 random multi-second jumps the **max voices in any single tick was 4** (cap holds); normal ticking still schedules a few; music loops/switches and mute stops/resumes. The fast-burst path is closed and even the fastest style is now calm.
