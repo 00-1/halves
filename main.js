@@ -38,7 +38,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { start:$("start"), game:$("game"), results:$("results") };
+  const screens = { start:$("start"), game:$("game"), results:$("results"), summary:$("summary") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -78,6 +78,21 @@
     const t = b[0];
     $("bestLine").innerHTML = 'Top <b>'+t.score+'/'+(t.total||"?")+'</b> · <b>'+fmt(t.time)+'s</b>'+
       (t.name ? ' · '+esc(t.name) : '');
+  }
+
+  // ---- summary: best time in every mode (read from localStorage) ----------
+  function renderSummary(){
+    $("sumList").innerHTML = MODES.map(m => {
+      const best = loadBoard(m.id).slice().sort(rank)[0];
+      if(!best){
+        return '<div class="sum-row blank"><span class="md">'+esc(m.name)+'</span>'+
+          '<span class="sc">—</span><span class="tm">—</span></div>';
+      }
+      const holder = best.name ? '<span class="holder">'+esc(best.name)+'</span>' : '';
+      return '<div class="sum-row"><span class="md">'+esc(m.name)+holder+'</span>'+
+        '<span class="sc">'+best.score+'/'+(best.total||"?")+'</span>'+
+        '<span class="tm">'+fmt(best.time)+'s</span></div>';
+    }).join("");
   }
 
   // ---- game state ---------------------------------------------------------
@@ -297,6 +312,14 @@
   $("startBtn").addEventListener("click", start);
   $("againBtn").addEventListener("click", start);
   $("menuBtn").addEventListener("click", () => { show("start"); renderTabs(); renderBest(); });
+
+  $("statsBtn").addEventListener("click", () => { renderSummary(); show("summary"); });
+  $("sumBack").addEventListener("click", () => { show("start"); renderBest(); });
+  $("sumClear").addEventListener("click", () => {
+    if(!confirm("Clear all best times saved on this device?")) return;
+    MODES.forEach(m => saveBoard(m.id, []));
+    renderSummary(); renderBest();
+  });
 
   const nameInput = $("nameInput");
   nameInput.addEventListener("input", e => commitName(e.target.value));

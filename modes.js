@@ -24,12 +24,24 @@
     for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
     return a;
   }
-  function sample(a,n){ return shuffle(a).slice(0,n); }
 
-  // Numbers whose halves are worth knowing cold.
-  const HALVES_SRC   = [30,90,60,24,7,25,50,20,12,144,16,1000,500,250,360,180,9,15,45,5,3];
-  // Numbers whose doubles come up constantly.
+  // Numbers whose halves come up in the wild: clock/time (30, 60, 90, 24,
+  // 12, 120), money & percentages (50, 100, 200, 1000, 500, 250), angles
+  // (360, 180), bytes (16, 64), plus a few odd values for ".5" practice.
+  const HALVES_SRC   = [30,60,90,24,12,50,100,200,20,40,80,1000,500,250,360,180,16,64,7,25,5];
+  // Numbers whose doubles come up constantly (recipes, prices, money chains).
   const DOUBLES_SRC  = [6,7,8,9,12,15,16,18,25,35,45,50,60,75,120,125,250,11,13,14,17];
+  // The multiplication facts actually worth memorising: the tricky 6/7/8/9
+  // core, plus a few 12s (dozens, feet & inches). Trivial x1/x2/x5/x10 rows
+  // are left out — doubling already has its own mode.
+  const TIMES_SRC = [
+    [3,7],[3,8],[3,9],
+    [4,6],[4,7],[4,8],[4,9],
+    [6,6],[6,7],[6,8],[6,9],
+    [7,7],[7,8],[7,9],
+    [8,8],[8,9],[9,9],
+    [7,12],[8,12],[11,12],[12,12]
+  ];
   // Squares worth memorising.
   const SQUARES_SRC  = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30];
   // Common fractions and their (terminating) decimal forms.
@@ -58,11 +70,7 @@
       id:"times", name:"Times", tag:"Know your tables.",
       glyph:'a<span class="slash">×</span>b',
       eyebrow:'product of <b>↓</b>', expr:true,
-      build(){
-        const all=[];
-        for(let a=2;a<=12;a++) for(let b=a;b<=12;b++) all.push([a,b]);
-        return sample(all,21).map(([a,b]) => ({ p:a+" × "+b, a:a*b }));
-      }
+      build(){ return shuffle(TIMES_SRC).map(([a,b]) => ({ p:a+" × "+b, a:a*b })); }
     },
     {
       id:"squares", name:"Squares", tag:"Square it.",
