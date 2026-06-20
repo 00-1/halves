@@ -112,11 +112,31 @@
     return { p: a + " " + MINUS + " " + b, a: a - b };
   }
 
+  // Number bonds Part 1 — complement to 100 (e.g. 63 + ? = 100 → 37). Shown as
+  // an equation so the target is explicit; the answer is the missing part.
+  function bondP1(){
+    const x = randInt(1, 99);
+    return { p: x + " + ? = 100", a: 100 - x };
+  }
+
+  // Number bonds Part 2 — complement to 1000 (tens, e.g. 740 + ? = 1000 → 260)
+  // or to 1 (tenths, e.g. 0.3 + ? = 1 → 0.7). Decimal answers are built as
+  // clean tenths (k/10), never `1 - d`, so they match exactly on the numpad.
+  function bondP2(){
+    if(Math.random() < 0.5){
+      const x = randInt(1, 99) * 10;          // 10..990, multiple of 10
+      return { p: x + " + ? = 1000", a: 1000 - x };
+    }
+    const n = randInt(1, 9);                   // tenths 0.1..0.9
+    return { p: (n / 10) + " + ? = 1", a: (10 - n) / 10 };
+  }
+
   // Listed in importance / unlock order: Halves → Times → Doubles →
-  // Add&Subtract → Fractions → Squares. `unlockedBy` points at the previous
-  // topic; the first topic (Halves) has none and is always open. A Part-2 mode
-  // (e.g. Add & Subtract II) sits off the chain with `requires` instead. New
-  // topics are spliced in at their importance position as the catalogue grows.
+  // Add&Subtract → Number Bonds → Fractions → Squares. `unlockedBy` points at
+  // the previous topic; the first topic (Halves) has none and is always open. A
+  // Part-2 mode (e.g. Add & Subtract II, Number Bonds II) sits off the chain
+  // with `requires` instead. New topics are spliced in at their importance
+  // position as the catalogue grows.
   const MODES = [
     {
       id:"halves", name:"Halves", tag:"Halve it. Fast.",
@@ -149,9 +169,21 @@
       build(){ return genRound(addSubP2); }
     },
     {
+      id:"bonds", name:"Number Bonds", tag:"Make 100.",
+      glyph:'+<span class="slash">100</span>',
+      eyebrow:'fill the gap <b>↓</b>', expr:true, unlockedBy:"addsub", masterSecs:3.5, group:"Number", gen:true,
+      build(){ return genRound(bondP1); }
+    },
+    {
+      id:"bonds2", name:"Number Bonds II", tag:"To 1000 & to 1.",
+      glyph:'+<span class="slash">1k</span>',
+      eyebrow:'fill the gap <b>↓</b>', expr:true, requires:"mastery:bonds", masterSecs:3.5, group:"Number", gen:true,
+      build(){ return genRound(bondP2); }
+    },
+    {
       id:"fractions", name:"Fractions", tag:"As a decimal.",
       glyph:'<span class="slash">¾</span>',
-      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"addsub", masterSecs:3.5, group:"Fractions & %",
+      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"bonds", masterSecs:3.5, group:"Fractions & %",
       build(){ return shuffle(FRACTIONS_SRC).map(([f,d]) => ({ p:f, a:d })); }
     },
     {

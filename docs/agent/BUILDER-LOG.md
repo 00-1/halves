@@ -214,3 +214,38 @@ notes / questions: `gen:true` marks the generated modes; Part-2 `addsub2` lives 
   until P1 mastery. masterSecs 5 for both = Tier 2 ("simple multi-digit") per the
   BACKLOG table; P2 (3-digit±2-digit) is a single op (not multi-step), so it sits
   at the top of Tier 2 rather than Tier 3 — flag me if you'd prefer 9.
+
+## T6 — Number bonds  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - modes.js — two generators and two modes spliced into the chain at importance
+    position 5 (after Add&Subtract): `bonds` (Part 1, complement to 100, shown as
+    "63 + ? = 100" → 37; unlockedBy "addsub", masterSecs 3.5, group "Number",
+    gen) and `bonds2` (Part 2, complement to 1000 in tens — "740 + ? = 1000" →
+    260 — OR to 1 in tenths — "0.3 + ? = 1" → 0.7; requires "mastery:bonds",
+    off-chain, masterSecs 3.5, group "Number", gen). Re-linked
+    `fractions.unlockedBy` "addsub"→"bonds": chain stays contiguous
+    Halves→Times→Doubles→Add&Subtract→Number Bonds→Fractions→Squares.
+  - Bonds are shown as equations so the target (100 / 1000 / 1) is explicit per
+    question; the answer is the missing part.
+how I verified:
+  - node -c: modes.js, collectibles.js, main.js all OK.
+  - id cross-check: every `$("id")` in main.js present in index.html (no new ids).
+  - logic check (Node, real modes/collectibles): field set + chain re-link +
+    unlock steps (…Add&Subtract→Number Bonds→Fractions…) + the bonds2 mastery
+    gate all correct. Generators stress-tested — P1 over 3000 rounds: prompt
+    well-formed, answer = 100−X, integer 1..99, numpad-ok. P2 over 4000 rounds:
+    1000-bonds are multiples of 10 with integer answers; **decimal bonds verified
+    EXACT — prompt+answer === 1 (within 1e-12), answer round-trips through the
+    numpad (`parseFloat(String(a))===a`), and is always a clean single tenth**
+    (built as k/10, never 1−d). Both P2 branches produced. Gen modes carry only
+    the 7 mode-level items (no Beat/Spark); catalogue 299→313 (+14). Number group
+    now has 4 modes; widest prompt "300 + ? = 1000" (14 chars) fits via fitText.
+    ALL T6 CHECKS PASSED.
+  - no TODO/placeholder introduced: grep clean.
+  - no regressions: only the intended fractions re-link changed in the chain;
+    everything else untouched.
+notes / questions: masterSecs 3.5 (Tier 1) for both parts — the BACKLOG tier
+  table explicitly lists "bonds" under Tier 1 (single-fact recall), and decimal
+  bonds to 1 are recall too; flag me if P2 should be Tier 2 (5). Decimal bonds are
+  tenths only (matches the "0.3→0.7" spec and stays float-exact).
