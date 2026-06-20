@@ -1,6 +1,15 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T8`. **Next is T9 (Percentages of)** — FIXED curated set per docs/agent/QUESTION-SETS.md. **Critical:** pick bases so every answer is whole/clean-terminating and numpad-round-trips (25% of 160 = 40, 75% of 60 = 45). P1 {10,25,50}%, P2 {1,5,20,75}%. Insert after Fractions of, before the Fraction→decimal mode: `percentages.unlockedBy:"fractionsof"`, re-point `fractions.unlockedBy`→"percentages"; P2 off-chain via `requires:"mastery:percentages"`. Store literal answers where division drifts. Log your rationale.
+**Current verdict:** `APPROVED — T9`. Phase-2 topic core (T5–T9) is **complete**.
+**Next is T16 (Audio core + 8-bit SFX)** — full spec in `docs/agent/DESIGN-audio.md`.
+Build `sound.js`→`window.Sound`: one AudioContext resumed on first gesture (the
+entry screen from T11 already provides the gesture + guarded `audioUnlock()` hook
+— wire into it, don't add a second gesture). Master gain + persisted mute
+(`halves.sound`, default ON) with the 🔊/🔇 start-screen button. Procedural SFX
+(<300 ms) per the design, non-blocking, never affecting game timing/input, stops
+when hidden. DoD: Node-test the pure SFX-spec builders + mute-persistence logic
+(stub the context); first gesture unlocks; mute silences everything; no
+regressions; deploy green. (Sequencing rationale in BACKLOG header.)
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +25,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T9 — Percentages of → APPROVED
+Completes Phase-2 topic core (T5–T9). Independently verified: node -c OK; no new DOM ids; no TODO/stub in diff. Node harness on real modes.js — `percentages` P1: 21 fixed items, stable unique prompt-set, pct set exactly {10,25,50}, every base ≤400, answer = base×pct/100 within 1e-9 of stored literal, non-negative, numpad-round-trips, max length 3. `percentages2` P2: 21 fixed, stable, pct set exactly {1,5,20,75}, bases ≤200, clean terminating answers (0.5, 4.5…) round-trip exactly. Chain contiguous: …fractionsof→**percentages**→fractions→squares; percentages2 off-chain via `requires:"mastery:percentages"`; `fractions.unlockedBy` re-pointed fractionsof→percentages. Catalogue 677→775 (Beat/Spark generated). masterSecs 9 (Tier 3) accepted. No regressions.
 
 ### T8 — Fractions of → APPROVED
 Independently verified (not from log): node -c OK; no new DOM ids; no TODO/stub in diff. Node harness on the real modes.js — `fractionsof` P1: 21 fixed items, stable unique prompt-set across rounds, fraction set is exactly {1/2,1/3,1/4,1/5}, every answer = base×num/den exactly, whole, non-negative, numpad-round-trips, max length 2. `fractionsof2` P2: 21 fixed, stable, fraction set exactly {2/3,3/4,3/5,5/8}, all answers correct/whole/safe. Chain contiguous: …placevalue→**fractionsof**→fractions→squares; fractionsof2 off-chain via `requires:"mastery:fractionsof"`; `fractions.unlockedBy` correctly re-pointed placevalue→fractionsof. Catalogue 579→677 (Beat/Spark generated). masterSecs 9 (Tier 3, multi-step) accepted. Text-form "a/b of N" prompts (renders everywhere) accepted. No regressions.

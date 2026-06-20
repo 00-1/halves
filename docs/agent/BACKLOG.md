@@ -128,7 +128,7 @@ of" between Place Value and the existing `fractions` mode: set
 `requires:"mastery:fractionsof"`. Store answers as literals where division would
 drift. Log curation rationale.
 
-### T9 — Percentages of · status: OPEN
+### T9 — Percentages of · status: DONE
 P1: 10/25/50% of ≤400. P2: 1/5/20/75% of ≤200. **Fixed set.**
 Curate per QUESTION-SETS.md. **Numpad/terminating rule:** choose bases so every
 answer is whole or a clean terminating decimal that round-trips (e.g. 25% of 160
@@ -141,8 +141,15 @@ mode): set `percentages.unlockedBy:"fractionsof"` and re-point
 answers where division would drift. masterSecs: Tier 3 (≈9) — multi-step. Log
 curation rationale.
 
-> Further topics (equivalences, rounding, money, time, metric, ratio, …) will be
-> appended by the Babysitter once T5–T9 are `DONE`. Do not invent them early.
+> Phase-2 core topics (T5–T9) are **all DONE**. Drills and metagame are **equal
+> priority** (owner's call). Babysitter-chosen order from here:
+> **T16→T17 (audio)** — ready & independent, big feel/retention win, runs while a
+> metagame-engagement research pass lands → then fold that research into the
+> Phase-3 design docs → **T20–T26 (hero metagame)**, research-informed.
+> Interleaved after: **T27 (guides)**, **T13/T30 (content audit/review)**, and a
+> **Wave-2 topic block** (equivalences, rounding, money, time, metric, ratio,
+> mean, sequences, multiply-big, …) appended as its own phase. Do not invent
+> topics early — wait for the appended phase.
 
 ---
 
@@ -341,7 +348,7 @@ expectations (`docs/research-11plus.md`, `docs/agent/QUESTION-SETS.md`):
 Full spec: **`docs/agent/DESIGN-audio.md`** (Web Audio API, all synthesised — no
 audio files). Queued; Babysitter will open when sequenced.
 
-### T16 — Audio core + 8-bit SFX · status: BLOCKED
+### T16 — Audio core + 8-bit SFX · status: OPEN
 `sound.js` → `window.Sound`: single `AudioContext` resumed on first user gesture;
 master gain + **mute toggle persisted (`halves.sound`, default ON)** with a 🔊/🔇
 button on the start screen; procedural SFX (<300 ms) wired to events per the
