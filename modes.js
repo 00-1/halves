@@ -95,24 +95,27 @@
     [0.1,1,0.9],[0.2,1,0.8],[0.3,1,0.7],[0.4,1,0.6],[0.5,1,0.5],
     [0.7,1,0.3],[0.25,1,0.75],[0.75,1,0.25],[0.05,1,0.95],[0.95,1,0.05]
   ];
-  // Place value ×/÷ fixed sets. Part 1 — whole numbers × or ÷ 10/100 (values
-  // with and without trailing zeros); each entry [value, op] with op one of
-  // "*10","*100","/10","/100". Answers are whole (÷ entries are exact multiples).
+  // Place value ×/÷ fixed sets. Each entry is [value, op, target, answer] — the
+  // ANSWER is stored as a literal (never computed as value×/÷target) so it is
+  // exactly numpad-matchable despite IEEE float error (e.g. 4.2 × 10 must read 42,
+  // not 42.00000000000001). Part 1 blends whole AND simple decimal ×/÷ 10·100 so
+  // the base topic covers decimals too (the harder stretch stays in Part 2).
   const PV_P1_SRC = [
-    [35,"*10"],[7,"*10"],[60,"*10"],[128,"*10"],[4,"*10"],[250,"*10"],[90,"*10"],
-    [35,"*100"],[8,"*100"],[60,"*100"],[7,"*100"],[24,"*100"],
-    [350,"/10"],[80,"/10"],[4500,"/10"],[700,"/10"],[90,"/10"],
-    [3500,"/100"],[800,"/100"],[9000,"/100"],[1200,"/100"]
+    // whole-number ×/÷ 10·100
+    [35,"×",10,350],[60,"×",10,600],[128,"×",10,1280],[250,"×",10,2500],
+    [35,"×",100,3500],[8,"×",100,800],[24,"×",100,2400],
+    [4500,"÷",10,450],[700,"÷",10,70],[3500,"÷",100,35],[9000,"÷",100,90],
+    // simple decimal ×/÷ 10·100
+    [3.5,"×",10,35],[4.2,"×",10,42],[0.6,"×",10,6],[1.5,"×",10,15],[2.5,"×",10,25],
+    [3.5,"×",100,350],[0.4,"×",100,40],[7,"÷",10,0.7],[35,"÷",10,3.5],[60,"÷",100,0.6]
   ];
-  // Part 2 — decimals × or ÷ 10/100/1000 (incl. answers < 1). Each entry is
-  // [value, op, target, answer]; the ANSWER is stored as a literal (never
-  // computed as value×/÷target) so it is exactly numpad-matchable despite IEEE
-  // float error (e.g. 2.7 × 10 must read 27, not 27.000000000000004).
+  // Part 2 — the harder decimal stretch: ×100/×1000 and ÷100/÷1000, answers < 1
+  // and 3-decimal-place results.
   const PV_P2_SRC = [
-    [3.5,"×",100,350],[0.4,"×",1000,400],[2.7,"×",10,27],[0.06,"×",100,6],[1.25,"×",10,12.5],
-    [0.8,"×",100,80],[5.2,"×",10,52],[0.35,"×",1000,350],[4.5,"×",100,450],[0.09,"×",10,0.9],
-    [25,"÷",100,0.25],[7,"÷",10,0.7],[350,"÷",1000,0.35],[8,"÷",100,0.08],[45,"÷",100,0.45],
-    [6,"÷",10,0.6],[120,"÷",1000,0.12],[9,"÷",100,0.09],[3.5,"÷",10,0.35],[250,"÷",100,2.5],[60,"÷",1000,0.06]
+    [3.5,"×",100,350],[0.4,"×",1000,400],[0.06,"×",100,6],[0.8,"×",100,80],[0.35,"×",1000,350],
+    [4.5,"×",100,450],[2.7,"×",100,270],[0.125,"×",1000,125],[1.5,"×",1000,1500],[0.04,"×",100,4],
+    [25,"÷",100,0.25],[350,"÷",1000,0.35],[8,"÷",100,0.08],[45,"÷",100,0.45],[120,"÷",1000,0.12],
+    [9,"÷",100,0.09],[250,"÷",100,2.5],[60,"÷",1000,0.06],[6,"÷",1000,0.006],[12,"÷",1000,0.012],[450,"÷",1000,0.45]
   ];
   // Fractions-of fixed sets. Shown as "a/b of N" (text form so every glyph
   // renders). Each entry [num, den, base, answer]; bases are chosen so the answer
@@ -159,16 +162,9 @@
   function bondP1Item(x){ return { p: x + " + ? = 100", a: 100 - x }; }
   function bondP2Item(e){ return { p: e[0] + " + ? = " + e[1], a: e[2] }; }
 
-  // Map a fixed Place-value entry to a { p, a } question.
-  function pvP1Item(e){
-    const a = e[0], op = e[1];
-    if(op === "*10")  return { p: a + " × 10",  a: a * 10 };
-    if(op === "*100") return { p: a + " × 100", a: a * 100 };
-    if(op === "/10")  return { p: a + " ÷ 10",  a: a / 10 };
-    return { p: a + " ÷ 100", a: a / 100 };           // "/100"
-  }
-  // Part 2 uses a stored literal answer (no float ×/÷ on decimals).
-  function pvP2Item(e){ return { p: e[0] + " " + e[1] + " " + e[2], a: e[3] }; }
+  // Map a fixed Place-value entry [value, op, target, answer] to a { p, a }
+  // question, using the stored literal answer (no float ×/÷ on decimals).
+  function pvItem(e){ return { p: e[0] + " " + e[1] + " " + e[2], a: e[3] }; }
 
   // Map a fixed Fractions-of entry [num, den, base, answer] to a question.
   function fractionsOfItem(e){ return { p: e[0] + "/" + e[1] + " of " + e[2], a: e[3] }; }
@@ -229,13 +225,13 @@
       id:"placevalue", name:"Place Value", tag:"Whole ×÷ 10·100.",
       glyph:'×<span class="slash">÷</span>',
       eyebrow:'solve <b>↓</b>', expr:true, unlockedBy:"bonds", masterSecs:5, group:"Number",
-      build(){ return shuffle(PV_P1_SRC).map(pvP1Item); }
+      build(){ return shuffle(PV_P1_SRC).map(pvItem); }
     },
     {
       id:"placevalue2", name:"Place Value II", tag:"Decimals ×÷ powers of 10.",
       glyph:'<span class="slash">×</span>÷',
       eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:placevalue", masterSecs:5, group:"Number",
-      build(){ return shuffle(PV_P2_SRC).map(pvP2Item); }
+      build(){ return shuffle(PV_P2_SRC).map(pvItem); }
     },
     {
       id:"fractionsof", name:"Fractions of", tag:"½ ¼ ⅓ ⅕ of an amount.",

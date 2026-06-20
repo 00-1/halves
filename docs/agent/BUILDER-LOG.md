@@ -918,3 +918,31 @@ how I verified:
 notes / questions: done ahead of T23 per the hotfix queue; pushed after T22. The
   anti-burst keeps tempo steady across render hitches/refocus/SFX; the ceiling
   makes even the fastest styles calm (ties to the anxiety-mitigation stance).
+
+## T34 — Place Value: bring decimals into Part 1 (hotfix)  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - modes.js — rebalanced the Place-value sets (content swap only; chain/links/
+    masterSecs unchanged). Unified both sets to the literal-answer format
+    `[value, op, target, answer]` and a single `pvItem` builder (dropped the
+    computing `pvP1Item`, renamed `pvP2Item`→`pvItem`) so decimals never drift.
+    - **P1 (`PV_P1_SRC`, 21)** now blends whole AND simple decimal ×/÷ 10·100:
+      11 whole (35×10, 4500÷10, 9000÷100…) + 10 decimal (3.5×10=35, 4.2×10=42,
+      0.4×100=40, 7÷10=0.7, 60÷100=0.6…). So a player sees decimal place value in
+      the base topic, not just the mastery-gated P2.
+    - **P2 (`PV_P2_SRC`, 21)** keeps the genuine stretch — only ×100/×1000 and
+      ÷100/÷1000, answers < 1 and 3-decimal-place results (6÷1000=0.006,
+      12÷1000=0.012, 0.125×1000=125, 0.04×100=4…); the simple bare ×10/÷10 cases
+      moved out to P1.
+how I verified:
+  - node -c (modes/collectibles/main) OK; no dead pvP1Item/pvP2Item refs; no TODO;
+    catalogue still 775.
+  - logic check (Node): chain/masterSecs unchanged. P1 fixed 21 with a stable
+    prompt set; **every answer correct (recompute=stored within 1e-9), literal/
+    round-trips on the numpad, non-negative**; balance = **10 decimal + 11 whole
+    prompts** (each ≥6). P2 fixed 21, **all-decimal**, harder range (only 100/1000
+    targets — NO bare ×/÷10), answers<1 present incl 3-dp; new decimal P1 prompt
+    "3.5 × 10" is catalogued (Beat); Beat/Spark regenerated (49 items each). ALL
+    T34 CHECKS PASSED.
+notes / questions: done ahead of T23 per the hotfix queue. Content swap only — no
+  structural change; the unified `pvItem` keeps decimal answers float-exact.
