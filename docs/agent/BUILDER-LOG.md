@@ -618,7 +618,7 @@ notes / questions: with 9 topics across 3 groups the picker now genuinely
   overflows ~42vh on a phone, so the "more below" cue is real and useful.
 
 ## T7 — Place value ×/÷  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 08e9356 (on main)
 changed:
   - modes.js — fixed sets + two modes spliced into the chain at importance
     position 6 (after Number Bonds): `placevalue` (Part 1, whole × or ÷ 10/100,
