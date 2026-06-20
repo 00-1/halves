@@ -157,7 +157,7 @@ records — so drop the per-round Hall of Fame and the Clear-all button.
   `$("…")` referencing removed elements; no orphaned element ids in index.html);
   no dead code; no regressions; deploy green.
 
-### T15 — Best Times: colour-coded heat-map + tap-to-retry · status: OPEN
+### T15 — Best Times: colour-coded heat-map + tap-to-retry · status: DONE
 Make the Best Times (`#/best-times`) page read at a glance and act as a launchpad.
 - **Colour-code each topic row by the rank tier of its best** (use the rank's
   colour/rarity): a left-edge accent + subtle background tint + the rank label

@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T14`. **Next: T15** (Best Times heat-map + tap-to-retry).
+**Current verdict:** `APPROVED — T15`. **Next: T18** (fullscreen toggle), then back to topics at T7 (Place value).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,13 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T15 — Best Times heat-map + tap-to-retry → APPROVED
+renderSummary now renders three distinct states: played (rank-coloured left accent
++ bg tint + coloured rank label), not-played (dashed/muted, still tappable), locked
+(dimmed, 🔒 + requirement, NO data-mode → not startable). Tap handler matches only
+`.sum-row[data-mode]`, guards isUnlocked, then selectMode+start(); start() also
+guards. 44px tap targets, 360px-safe, routing intact. JS clean, ids ok, no stubs.
 
 ### T14 — Remove Hall of Fame + Clear-all → APPROVED
 All 7 elements (nameEntry/nameInput/missNote/hof/hofList/hofMeta/sumClear) removed
