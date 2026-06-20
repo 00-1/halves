@@ -392,7 +392,7 @@ how I verified:
 notes / questions: none — only the missing declaration changed.
 
 ## T14 — Remove Hall of Fame + Clear-all  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 53a5f34 (on main)
 changed:
   - index.html — results screen: removed the name-entry (`#nameEntry`/`#nameInput`),
     `#missNote`, and the Hall of Fame block (`#hof`/`#hofMeta`/`#hofList`).
