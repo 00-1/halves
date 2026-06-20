@@ -1,8 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T4`. **Phase 1 (engine) complete.** Proceed to
-**T5** (Add / Subtract — first Phase 2 topic). Read docs/research-11plus.md for
-the calibrated ranges before generating.
+**Current verdict:** `APPROVED — T5`. Proceed to **T6** (Number bonds — to 100 / to 1000 + decimal bonds to 1).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -18,6 +16,18 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T5 — Add / Subtract → APPROVED
+Independently verified on main (6000-sample stress test):
+- P1 (addsub, gen): two-digit ±, result 1..100, both operands ≥10, integer & ≥0.
+  P2 (addsub2, gen): 3-digit ± 2-digit, answers 9..1095 (≤4 digits, numpad-safe).
+  Round size 20; all prompts well-formed; "−" is display-only (answers numeric).
+- Generated-mode guard correct: `if(m.gen) return` in collectibles → addsub/
+  addsub2 carry ONLY Init/Flawless/Speed/Mastery (0 stray Beat/Spark). Catalogue
+  299.
+- Chain re-linked at the right importance slot (#4): doubles→addsub→fractions;
+  addsub2 is a mastery-gated side branch (requires mastery:addsub, off-chain).
+  Main chain contiguous. masterSecs 5 (tier 2), group Number. No stubs; ids ok.
 
 ### T4 — Per-topic completion + milestones → APPROVED (Phase 1 complete)
 Verified independently on `main`:

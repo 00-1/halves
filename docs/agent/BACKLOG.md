@@ -73,10 +73,10 @@ Build one topic per task, fully (both parts), with generators verified in Node
 against the calibrated ranges in the research doc. Slot each into the chain at
 its importance position. Status starts `OPEN` only after Phase 1 is `DONE`.
 
-### T5 — Add / Subtract  · status: OPEN
+### T5 — Add / Subtract  · status: DONE
 P1: 2-digit ± within 100. P2: 3-digit ± 2-digit. Generated.
 
-### T6 — Number bonds · status: BLOCKED
+### T6 — Number bonds · status: OPEN
 P1: to 100. P2: to 1000 + decimal bonds to 1. Generated.
 
 ### T7 — Place value ×/÷ · status: BLOCKED
