@@ -15,6 +15,12 @@
  * To add a mode, add an object here — main.js picks them up automatically.
  * Answers must be exact numbers; for the Fractions mode keep decimals
  * terminating so they can be matched exactly as the player types.
+ *
+ * Topic-chain unlock: modes are listed in importance order (most foundational
+ * first). Each mode (except the first) declares `unlockedBy` — the id of the
+ * previous topic in the chain. A topic becomes playable once the player has
+ * finished that previous topic once (its `init:` achievement). See
+ * docs/research-11plus.md §"Unlock chain".
  */
 (function(){
   "use strict";
@@ -54,6 +60,10 @@
     ["1/20",0.05],["3/20",0.15],["1/16",0.0625]
   ];
 
+  // Listed in importance / unlock order: Halves → Times → Doubles →
+  // Fractions → Squares. `unlockedBy` points at the previous topic; the first
+  // topic (Halves) has none and is always open. New topics are spliced into
+  // this chain at their importance position as the catalogue grows.
   const MODES = [
     {
       id:"halves", name:"Halves", tag:"Halve it. Fast.",
@@ -62,28 +72,28 @@
       build(){ return shuffle(HALVES_SRC).map(n => ({ p:String(n), a:n/2 })); }
     },
     {
-      id:"doubles", name:"Doubles", tag:"Double it. Fast.",
-      glyph:'2<span class="slash">×</span>x',
-      eyebrow:'double <b>↓</b>', expr:false,
-      build(){ return shuffle(DOUBLES_SRC).map(n => ({ p:String(n), a:n*2 })); }
-    },
-    {
       id:"times", name:"Times", tag:"Know your tables.",
       glyph:'a<span class="slash">×</span>b',
-      eyebrow:'product of <b>↓</b>', expr:true,
+      eyebrow:'product of <b>↓</b>', expr:true, unlockedBy:"halves",
       build(){ return shuffle(TIMES_SRC).map(([a,b]) => ({ p:a+" × "+b, a:a*b })); }
     },
     {
-      id:"squares", name:"Squares", tag:"Square it.",
-      glyph:'x<span class="slash">²</span>',
-      eyebrow:'square of <b>↓</b>', expr:false,
-      build(){ return shuffle(SQUARES_SRC).map(n => ({ p:n+"²", a:n*n })); }
+      id:"doubles", name:"Doubles", tag:"Double it. Fast.",
+      glyph:'2<span class="slash">×</span>x',
+      eyebrow:'double <b>↓</b>', expr:false, unlockedBy:"times",
+      build(){ return shuffle(DOUBLES_SRC).map(n => ({ p:String(n), a:n*2 })); }
     },
     {
       id:"fractions", name:"Fractions", tag:"As a decimal.",
       glyph:'<span class="slash">¾</span>',
-      eyebrow:'as a decimal <b>↓</b>', expr:false,
+      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"doubles",
       build(){ return shuffle(FRACTIONS_SRC).map(([f,d]) => ({ p:f, a:d })); }
+    },
+    {
+      id:"squares", name:"Squares", tag:"Square it.",
+      glyph:'x<span class="slash">²</span>',
+      eyebrow:'square of <b>↓</b>', expr:false, unlockedBy:"fractions",
+      build(){ return shuffle(SQUARES_SRC).map(n => ({ p:n+"²", a:n*n })); }
     }
   ];
 

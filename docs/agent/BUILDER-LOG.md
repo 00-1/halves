@@ -18,4 +18,37 @@ Use `BLOCKED:` (not a handoff) if the task is underspecified or wrong — then w
 
 ---
 
-(no entries yet — start with T1)
+## T1 — Topic-chain unlock  [HANDOFF]
+commit: (see push below)
+changed:
+  - modes.js — reordered MODES to importance order (Halves → Times → Doubles →
+    Fractions → Squares) and added `unlockedBy` to each non-first mode
+    (times←halves, doubles←times, fractions←doubles, squares←fractions).
+  - main.js — added `isUnlocked(m)` (first-in-chain OR prev topic's `init:`
+    owned OR own `init:` owned for migration); default mode falls back to the
+    first unlocked topic if a saved last-mode is locked; renderTabs marks locked
+    topics (🔒 + `.locked`); selectMode previews a locked topic's requirement
+    without persisting it as default; renderBest shows the unlock requirement
+    for a locked topic; new renderStartState() disables Start when locked;
+    start() guards against locked play; route + init wire renderStartState.
+  - styles.css — `.mode-tab.locked`, `.mode-tab .lk`, and `.btn:disabled` styles.
+how I verified:
+  - node -c: modes.js OK, main.js OK, collectibles.js OK.
+  - id cross-check: every `$("id")` in main.js exists in index.html (incl.
+    startBtn used by renderStartState); 0 missing.
+  - logic check: Node harness loading the real modes.js asserts — fresh profile
+    → only Halves playable; finishing each topic unlocks exactly the next
+    (Halves→Times→Doubles→Fractions→Squares); migration (owning `init:squares`
+    keeps Squares unlocked while Fractions stays locked). Also re-verified every
+    generator’s answers are numeric, non-negative and numpad-enterable (≤5
+    digits, digits + "."). ALL CHECKS PASSED.
+  - no TODO/placeholder introduced: grep of changed files clean (only pre-existing
+    `.placeholder` CSS class / DOM hook, not introduced here).
+  - regressions: only `MODES[0]` fallbacks remain (no hardcoded order assumptions);
+    collectible catalogue unchanged at 275 items with all `init:` ids present;
+    routing/summary/inventory/build-info untouched.
+notes / questions: Existing modes only (Halves, Times, Doubles, Fractions,
+  Squares) — new topics will splice into the chain at their importance position
+  in their own tasks (T5+). "Selecting a locked topic shows the requirement" is
+  implemented via the start-screen best line + disabled Start; the richer picker
+  is T3.

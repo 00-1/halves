@@ -71,27 +71,52 @@
   function numStr(n){ return String(n); }
   function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 
+  // ---- topic-chain unlock -------------------------------------------------
+  // A topic is playable if it is first in the chain (no `unlockedBy`), or the
+  // previous topic has been finished once (its `init:` achievement is owned),
+  // or this topic itself has already been played (migration: anything a
+  // returning player has an `init` for stays unlocked).
+  function isUnlocked(m){
+    if(!m.unlockedBy) return true;
+    const col = loadCollected();
+    if(col["init:"+m.id]) return true;
+    return !!col["init:"+m.unlockedBy];
+  }
+
   let mode = byId(loadLastMode()) || MODES[0];
+  if(!isUnlocked(mode)) mode = MODES.find(isUnlocked) || MODES[0];
 
   // ---- start screen: mode picker + brand ---------------------------------
   function renderTabs(){
-    elModeTabs.innerHTML = MODES.map(m =>
-      '<button class="mode-tab'+(m.id===mode.id?' active':'')+'" data-mode="'+m.id+'">'+esc(m.name)+'</button>'
-    ).join("");
+    elModeTabs.innerHTML = MODES.map(m => {
+      const locked = !isUnlocked(m);
+      return '<button class="mode-tab'+(m.id===mode.id?' active':'')+(locked?' locked':'')+
+        '" data-mode="'+m.id+'">'+(locked?'<span class="lk">🔒</span>':'')+esc(m.name)+'</button>';
+    }).join("");
   }
   function renderMark(){ elMark.innerHTML = mode.glyph; elTag.textContent = mode.tag; }
 
   function selectMode(id){
     const m = byId(id); if(!m) return;
-    mode = m; saveLastMode(id);
-    renderTabs(); renderMark(); renderBest();
+    mode = m;
+    if(isUnlocked(m)) saveLastMode(id);   // don't make a locked topic the default
+    renderTabs(); renderMark(); renderBest(); renderStartState();
   }
+
+  // Enable Start only for an unlocked topic.
+  function renderStartState(){ $("startBtn").disabled = !isUnlocked(mode); }
   elModeTabs.addEventListener("click", e => {
     const t = e.target.closest(".mode-tab"); if(!t) return;
     selectMode(t.dataset.mode);
   });
 
   function renderBest(){
+    if(!isUnlocked(mode)){
+      const prev = byId(mode.unlockedBy);
+      $("bestLine").innerHTML = '🔒 Finish <b>'+esc(prev ? prev.name : "the previous topic")+
+        '</b> to unlock '+esc(mode.name)+'.';
+      return;
+    }
     const b = loadBoard(mode.id).slice().sort(rank);
     if(b.length === 0){ $("bestLine").innerHTML = "No best time yet"; return; }
     const t = b[0];
@@ -203,6 +228,7 @@
       startTime=0, qStart=0, times=[], raf=0, locked=false;
 
   function start(){
+    if(!isUnlocked(mode)) return;   // locked topics aren't playable
     order = mode.build(); idx=0; mistakes=0; times=[];
     elEyebrow.innerHTML = mode.eyebrow;
     startTime = performance.now();
@@ -455,7 +481,7 @@
     const h = (location.hash || "").replace(/^#\/?/, "");
     if(h === "inventory"){ renderInventory(); show("inventory"); }
     else if(h === "best-times"){ renderSummary(); show("summary"); }
-    else { renderTabs(); renderBest(); show("start"); }
+    else { renderTabs(); renderBest(); renderStartState(); show("start"); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
@@ -515,6 +541,7 @@
   renderTabs();
   renderMark();
   renderBest();
+  renderStartState();
   renderBuild();
   applyRoute();   // honour a deep link (e.g. #/inventory) on load
 })();
