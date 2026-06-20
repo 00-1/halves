@@ -800,7 +800,7 @@ notes / questions: explicit thematic styles per topic (e.g. Halves→Pixel Fores
   times/inventory screens use the Title Theme.
 
 ## T20 — Item layer: styles, names, boosts  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 45902a4 (on main)
 changed:
   - collectibles.js — every catalogue item now gets a deterministic `style`
     (hash(id)%10), a flavour `name` (`<adj> <noun>` from the style's pools), and a
