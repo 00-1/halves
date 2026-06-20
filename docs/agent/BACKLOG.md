@@ -298,6 +298,29 @@ screen/topic change. Honour mute; stop when hidden.
 
 ---
 
+## Phase 2.8 — Topic guides
+
+### T27 — Per-topic "how to beat it" guides · status: BLOCKED
+Add a short, friendly guide for **every** topic (incl. Part-2 variants), reachable
+from the **topic-selection screen**, aimed at a British 10-year-old — concise, not
+verbose. Full content standard + tone + seed examples + per-topic strategy hints:
+**`docs/agent/DESIGN-guides.md`** (read it fully).
+- **Content as data**: a `guides.js` (or a `guide` field per mode) holding
+  `{ intro, tips:[2–4], example }` per mode — so it's easy to audit/edit. Draft
+  every guide in the seed style; **British English; mathematically correct;
+  punchy**.
+- **UI**: a clear help affordance on the picker (e.g. a "?"/"Guide" control on
+  each topic row, or a Guide button by Start for the selected topic) opens a guide
+  panel/modal for that topic. Viewable for **locked** topics too (a preview of
+  what's coming). Readable at 360px; back/close returns cleanly; routing intact.
+- **DoD:** every mode (including Part-2s) has a guide in the seed structure;
+  guides are concise, British-English, **mathematically correct**, and
+  10-yr-old-appropriate; openable from topic selection for locked & unlocked
+  topics; 360px-safe; no regressions; deploy green. (Babysitter audits every
+  guide's wording + correctness before approval.)
+
+---
+
 ## Phase 3 — Hero / Enemy metagame
 
 Full spec: **`docs/agent/DESIGN-heroes.md`** (read it fully before starting; ask in
