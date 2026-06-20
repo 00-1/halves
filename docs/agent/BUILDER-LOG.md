@@ -760,7 +760,7 @@ notes / questions: gold SFX method exists but isn't triggered yet (Gold economy 
   T26); all other listed events are wired. Combo resets on skip and round start.
 
 ## T17 — Generative chiptune music (12 styles + menu)  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 7dd1625 (on main)
 changed:
   - sound.js — extended `window.Sound` (shares the T16 AudioContext) with a
     generative chiptune engine: a **look-ahead scheduler** (25ms timer scheduling
