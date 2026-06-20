@@ -152,18 +152,38 @@ advantage + perfect perf).
 A soft currency, **Gold**, that only goes up from play. Stored locally
 (`halves.gold`).
 
-**Earn** (always scaled by achievement level — speed / accuracy / rank / depth):
+**Base earn** (per event, before the multiplier):
 - per cleanly-solved question: `2 + speedBonus` (faster vs the mode's `masterSecs`
   → more; a skipped question earns 0);
-- per finished round: `+ round(score + rankIndex × 2)`;
+- per finished round: `score + rankIndex × 2`;
 - first-time per-mode Mastery `+50`; first-time topic 100% `+100`;
-- defeating enemy tier `n`: `+ round(10 × (1 + n/10))` (deeper = more).
-Show a running Gold total on start + results; a non-blocking floating **"+N"** on
-earn (same spirit as the celebratory FX).
+- defeating enemy tier `n`: `round(10 × (1 + n/10))` (deeper = more).
 
-**Spending: ON HOLD.** For now Gold is just an accumulating number — earn,
-display, persist. The spend sink (e.g. hero level-ups, a shop) will be designed
-later; do **not** build any spend mechanic yet.
+**Make the accumulation FUN — the number should take off into billions+.**
+
+- **Escalating global multiplier.** All earnings are multiplied by a Gold
+  multiplier that grows with progress, so per-question Gold climbs from a couple
+  early to thousands+ deep:
+  `mult = (1 + itemsOwned×0.05 + topicsMastered×0.5 + heroesUnlocked×0.5 +
+  tiersBeaten×1)`. Add an in-round **combo**: each consecutive clean answer bumps
+  a streak `×(1 + streak×0.1)` (resets on a skip). Compounding these gets totals
+  into the millions/billions/trillions over time — that's the point.
+- **Robust big-number formatting** `fmtGold(n)`: plain grouped digits under 1,000
+  (e.g. `940`), then 3-sig-fig suffixes: `K`(1e3) `M`(1e6) `B`(1e9) `T`(1e12)
+  `Qa`(1e15) `Qi`(1e18) `Sx`(1e21) `Sp`(1e24) `Oc`(1e27) `No`(1e30) `Dc`(1e33) …
+  e.g. `1.23B`, `45.6T`. Must **never** show `NaN`/`Infinity`; handle absurd
+  magnitudes gracefully (store as a Number — exact to ~9 quadrillion, abbreviated
+  beyond). Node-test it across the whole ladder.
+- **Animated ticking counter.** The Gold display rolls/ticks up when earned
+  (juicy, non-blocking) with the floating **"+N"** flourish.
+- **Wealth milestones (collectibles).** Crossing 1K / 10K / 100K / 1M / 10M /
+  100M / 1B / 10B / 100B / 1T / 1Qa Gold each grants a milestone collectible with
+  a fun name (e.g. Coin Purse → Money Bags → Tycoon → Croesus → Dragon Hoard →
+  …), auto-evaluated against the Gold total. These give the climb goals (and feed
+  the item/boost layer).
+
+**Spending: ON HOLD.** No spend mechanic yet — Gold only accumulates. The sink
+(hero level-ups, a shop) is designed later.
 
 ## Non-negotiables
 

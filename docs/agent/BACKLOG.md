@@ -219,11 +219,20 @@ the engagement layer.
 - **DoD:** Node test of the full progression curve; milestones evaluate
   correctly; final-tier ⇔ full-collection invariant holds.
 
-### T26 — Currency (Gold) + hero level-ups · status: BLOCKED
+### T26 — Currency (Gold): fun accumulation · status: BLOCKED
 Implement the Gold economy per `DESIGN-heroes.md` §"Currency & economy" — **earn,
-display, and persist only; spending is ON HOLD (build no spend mechanic yet).**
-Earn hooks: per clean question scaled by speed; per round; first Mastery; first
-topic 100%; enemy-tier defeat scaled by depth — skipped questions earn 0. Persist
-a Gold total with a non-blocking "+N" flourish; show Gold on start + results.
-- **DoD:** Node test of earn amounts (skipped=0; faster→more; depth scaling); Gold
-  persists locally; no spend mechanic present; no regressions; deploy green.
+display, persist; NO spending (build no spend mechanic yet).** Make the
+accumulation itself fun and able to reach **billions/trillions+**:
+- Base earn hooks (per clean question scaled by speed; per round; first Mastery;
+  first topic 100%; enemy-tier depth — skipped = 0), all multiplied by the
+  **escalating global multiplier** + in-round **combo streak** from the design.
+- **`fmtGold(n)`** big-number formatter with the full suffix ladder
+  (K/M/B/T/Qa/Qi/Sx/Sp/Oc/No/Dc…), 3 sig figs, never NaN/Infinity.
+- **Animated ticking Gold counter** + non-blocking "+N" flourish; Gold shown on
+  start + results.
+- **Wealth-milestone collectibles** at 1K…1T…1Qa (auto-evaluated vs the total).
+- **DoD:** Node tests — earn/multiplier/combo (skipped=0; faster→more; multiplier
+  grows with progress) AND `fmtGold` across the whole ladder (1, 999, 1e3, 1.23e6,
+  1e9, 1e12, 1e15, 1e21, 1e33 → correct suffixes, no NaN/Infinity); wealth
+  milestones fire at the right thresholds; Gold persists; no spend mechanic; no
+  regressions; deploy green.
