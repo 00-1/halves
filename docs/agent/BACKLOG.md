@@ -348,7 +348,7 @@ expectations (`docs/research-11plus.md`, `docs/agent/QUESTION-SETS.md`):
 Full spec: **`docs/agent/DESIGN-audio.md`** (Web Audio API, all synthesised — no
 audio files). Queued; Babysitter will open when sequenced.
 
-### T16 — Audio core + 8-bit SFX · status: OPEN
+### T16 — Audio core + 8-bit SFX · status: DONE
 `sound.js` → `window.Sound`: single `AudioContext` resumed on first user gesture;
 master gain + **mute toggle persisted (`halves.sound`, default ON)** with a 🔊/🔇
 button on the start screen; procedural SFX (<300 ms) wired to events per the
@@ -359,7 +359,7 @@ win/loss later). Non-blocking; respects mute; stops when hidden.
   the context); audio never affects game timing/input; first gesture unlocks
   sound; mute persists and silences everything; no regressions; deploy green.
 
-### T17 — Generative chiptune music (12 styles + menu) · status: BLOCKED
+### T17 — Generative chiptune music (12 styles + menu) · status: OPEN
 Look-ahead scheduler driving lead/bass/arp/percussion; **12 topic styles + 1 menu
 style**, generative within each style's scale/patterns (seeded PRNG). Assign a
 style per topic (explicit `music` field, deterministic `hash(id)%12` fallback);

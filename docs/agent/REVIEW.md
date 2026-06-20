@@ -1,15 +1,16 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T9`. Phase-2 topic core (T5–T9) is **complete**.
-**Next is T16 (Audio core + 8-bit SFX)** — full spec in `docs/agent/DESIGN-audio.md`.
-Build `sound.js`→`window.Sound`: one AudioContext resumed on first gesture (the
-entry screen from T11 already provides the gesture + guarded `audioUnlock()` hook
-— wire into it, don't add a second gesture). Master gain + persisted mute
-(`halves.sound`, default ON) with the 🔊/🔇 start-screen button. Procedural SFX
-(<300 ms) per the design, non-blocking, never affecting game timing/input, stops
-when hidden. DoD: Node-test the pure SFX-spec builders + mute-persistence logic
-(stub the context); first gesture unlocks; mute silences everything; no
-regressions; deploy green. (Sequencing rationale in BACKLOG header.)
+**Current verdict:** `APPROVED — T16`. **Next is T17 (Generative chiptune music —
+12 styles + menu)** — full spec in `docs/agent/DESIGN-audio.md`. Build on the
+existing `window.Sound`/AudioContext from T16: a look-ahead scheduler driving
+lead/bass/arp/percussion; **exactly 12 topic styles + 1 menu style**, generative
+within each style's scale/patterns (seeded PRNG). Assign a style per topic
+(explicit `music` field, deterministic `hash(id)%12` fallback); menu/best-times/
+inventory/heroes use the menu style; switch cleanly on screen/topic change;
+honour the same mute; stop when hidden. DoD: Node-test the style table (exactly
+12 + menu, each with required params) and the note/scale helpers (no real
+AudioContext); music loops, varies in-style, switches with the topic, respects
+mute; low CPU; no regressions; deploy green.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -25,6 +26,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T16 — Audio core + 8-bit SFX → APPROVED
+New `sound.js`→`window.Sound`. Independently verified (stubbed AudioContext that counts oscillators): node -c (sound.js, main.js) OK; id cross-check clean incl new `#soundBtnMenu`; no TODO/stub. All 9 SFX specs (+unknown→empty) are pure and **bounded** (every voice f>0 finite, d>0, t≥0, known waveform, gain>0, end<0.6s). `correct` pitch **rises with combo and caps at +12**; `item` note count **scales 3→7 by rarity** (monotonic). **Gesture-gated**: 0 oscillators before `unlock()`; 7 for legendary item after. **Mute silences everything** (0 oscillators across all events while muted) and `isMuted` tracks; unmute resumes. Integration: `combo` resets on skip AND round start (does NOT reopen the T12 speed-skip exploit — speed brackets still require mistakes===0), single shared button-sync path (entry + menu, no double-binding), `halves.sound` persisted, all SFX fire-and-forget on the Web Audio timeline (never touches the `performance.now()` game clock/input), context suspends when hidden. Round-end stinger references real ids/cats (`topics:one100|all100`, `cat:"Mastery"`) → topic100>mastery>roundComplete. `gold` method exists but unwired = documented forward-hook for T26 (system not built yet), not an in-scope stub. No regressions.
 
 ### T9 — Percentages of → APPROVED
 Completes Phase-2 topic core (T5–T9). Independently verified: node -c OK; no new DOM ids; no TODO/stub in diff. Node harness on real modes.js — `percentages` P1: 21 fixed items, stable unique prompt-set, pct set exactly {10,25,50}, every base ≤400, answer = base×pct/100 within 1e-9 of stored literal, non-negative, numpad-round-trips, max length 3. `percentages2` P2: 21 fixed, stable, pct set exactly {1,5,20,75}, bases ≤200, clean terminating answers (0.5, 4.5…) round-trip exactly. Chain contiguous: …fractionsof→**percentages**→fractions→squares; percentages2 off-chain via `requires:"mastery:percentages"`; `fractions.unlockedBy` re-pointed fractionsof→percentages. Catalogue 677→775 (Beat/Spark generated). masterSecs 9 (Tier 3) accepted. No regressions.
