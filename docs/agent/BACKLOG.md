@@ -222,7 +222,7 @@ already safe (speed ranks need a perfect score).
   of how low its avg is; a clean (0-skip) round under a threshold still earns the
   appropriate brackets; no other collectible affected; no regressions; deploy green.
 
-### T28 — Remove the how-to-play blurb on the start screen · status: OPEN
+### T28 — Remove the how-to-play blurb on the start screen · status: DONE
 The game is self-explanatory (auto-advancing answers + a labelled "skip" key), so
 the instructional blurb on the topic-selection screen isn't needed. Remove the
 `.hint` block from the start screen in index.html, and remove the now-unused

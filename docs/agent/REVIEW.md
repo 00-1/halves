@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T11`. **Next: T28** (remove start blurb) → **T29** (scroll indicator) → then **prioritise TOPICS**: I will open **T7 (Place value)** after T29, ahead of audio/heroes (more educational content sooner).
+**Current verdict:** `APPROVED — T28`. **Next: T29** (scroll indicator), then topics (T7 Place value).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T28 — Remove start blurb → APPROVED
+.hint block + .hint/.hint kbd CSS removed; no <kbd> refs left; clean small diff; JS ok.
 
 ### T11 — Entry / tap-to-begin screen → APPROVED
 #entry shown on load (in the screens map; show("entry")). "Play in fullscreen" +
