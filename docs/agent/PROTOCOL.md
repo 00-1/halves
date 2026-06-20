@@ -11,10 +11,15 @@ Two agents collaborate on this repo over git.
 
 ## Branch & deploy
 
-- All work happens on **`claude/builder-11plus`**.
-- `main` is the live site (auto-deploys via GitHub Pages). **Do not push to
-  `main`.** A wave reaches `main` only when the Babysitter explicitly marks it
-  `APPROVED FOR MERGE` in `REVIEW.md`.
+- All work happens **directly on `main`**. `main` is the live site and
+  auto-deploys via GitHub Pages on every push.
+- Because of that, **every task must be fully complete and deploy-verified
+  BEFORE you commit** — `main` must never be left broken, half-built, or with a
+  reachable-but-unfinished feature. No partial commits, no "I'll finish next
+  commit".
+- The Babysitter reviews each pushed task post-hoc and may request changes; you
+  forward-fix on `main`. Since tasks are atomic and verified, the live site
+  keeps working between review and fix.
 
 ## File ownership (to avoid conflicts)
 
@@ -25,7 +30,7 @@ Two agents collaborate on this repo over git.
 | `docs/agent/BUILDER-LOG.md` | Builder | Babysitter |
 | product code (`*.js`, `*.html`, `*.css`) | Builder | Babysitter |
 
-Always `git pull --rebase origin claude/builder-11plus` before committing.
+Always `git pull --rebase origin main` before committing.
 Because writers touch disjoint files, rebases should not conflict.
 
 ## The loop

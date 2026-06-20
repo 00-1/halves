@@ -26,14 +26,25 @@ Make topics unlock in importance order; a fresh profile sees only the first.
 
 ### T2 — Mastery achievement + Part-2 gate plumbing  · status: OPEN
 - Add a `mastery:<id>` collectible per mode (category "Mastery"): earned when a
-  round is finished with **0 skips AND total time ≤ target**, target =
-  `mode.masterSecs` if set else `2.6 × questions` (gentle; tunable). Evaluate in
-  `finish()`.
+  round is finished with **0 skips AND total time ≤ `mode.masterSecs ×
+  questions`**. Evaluate in `finish()`. (We intentionally show only an elapsed
+  clock, never a per-question countdown — keep it that way; accuracy-first.)
+- `masterSecs` = a gentle per-answer target chosen by the mode's difficulty tier
+  (evidence-based for a 10yo; deliberately at the relaxed end so it's attainable):
+  - **Tier 1 — single facts** (tables, doubles, halves, bonds, recall): `3.5`
+  - **Tier 2 — simple multi-digit** (2-digit ±, ×÷ powers of 10, place value): `5`
+  - **Tier 3 — multi-step** (% of, fractions of, rounding, ratio, mean, metric,
+    time, money): `9`
+  - **Tier 4 — complex multi-step**: `14`
+  - Existing modes: halves `4`, doubles `4`, times `3.5`, squares `3.5`,
+    fractions `3.5`.
 - Support `requires:"mastery:<id>"` on a mode; fold into `isUnlocked` (a Part-2
   mode is locked until its Part-1 mastery is owned). No Part-2 modes exist yet —
   this is plumbing + a Node test proving the gate.
-- **DoD:** mastery awarded exactly per rule (verify boundary cases in Node);
-  `isUnlocked` honors both `unlockedBy` and `requires`; unlocking fires a toast.
+- **DoD:** mastery awarded exactly per rule (verify boundary cases in Node — at,
+  just under, and just over the target, and with 1 skip); `isUnlocked` honors both
+  `unlockedBy` and `requires`; unlocking fires a toast. `masterSecs` set on all 5
+  existing modes per the table.
 
 ### T3 — Mode-picker redesign  · status: OPEN
 Replace the wrapping pills with a scrollable, grouped list.
