@@ -688,7 +688,7 @@ notes / questions: masterSecs 9 (Tier 3) for both — the tier table lists
   pretty glyphs for flavour.
 
 ## T9 — Percentages of  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 855d95a (on main)
 changed:
   - modes.js — fixed sets + two modes spliced into the chain at importance
     position 8 (after Fractions of, before the existing Fraction→decimal):
