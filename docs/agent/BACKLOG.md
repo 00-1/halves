@@ -139,6 +139,24 @@ a non-blocking floating "+N" style flourish. Rarity-tinted.
   cleanup path or a teardown function); works at 360px on a phone; no regressions;
   deploy green.
 
+### T14 — Remove Hall of Fame + Clear-all (single-player cleanup) · status: OPEN
+It's single-player (you only compete with yourself), and Best Times already covers
+records — so drop the per-round Hall of Fame and the Clear-all button.
+- Remove from the **results** screen: the name-entry (`#nameEntry`/`#nameInput`),
+  the `#missNote`, and the Hall of Fame block (`#hof`/`#hofList`/`#hofMeta`).
+- Remove from the **best-times** screen: the **Clear all** button (`#sumClear`).
+- Remove the now-dead JS: `renderHOF`, `commitName`, the `nameInput` listeners,
+  the `sumClear` handler, `pendingEntry`, and the qualify/name logic in `finish()`.
+- **Keep best-times working**: still save each finished round to the per-mode
+  board (top-10, `saveBoard`) so Best Times / ranks / the picker subline update on
+  a new record — entries simply have no name now.
+- Keep everything else on results (final time, rank, accuracy, skipped count,
+  slowest answers, Play again / Modes, the unlock modal + toasts).
+- **DoD:** results shows no HOF/name-entry; best-times has no Clear-all; finishing
+  a better round still updates the best time/rank; id cross-check clean (no
+  `$("…")` referencing removed elements; no orphaned element ids in index.html);
+  no dead code; no regressions; deploy green.
+
 ---
 
 ## Phase 2.6 — Content quality
