@@ -112,8 +112,10 @@
       desc:"Finish "+m.name+" without skipping a question.", test: ctx => ctx.mistakes === 0 });
     SPEED.forEach((lv,i) => add({
       id:"speed:"+m.id+":"+i, name:lv.name+" "+m.name, rarity:lv.rarity, cat:"Speed", modeId:m.id,
-      desc:"Average under "+lv.avg+"s per answer across a "+m.name+" round.",
-      test: ctx => ctx.avg < lv.avg
+      desc:"Average under "+lv.avg+"s per answer across a clean "+m.name+" round.",
+      // zero skips required too, else skipping every question (which advances
+      // fast) would farm Speed brackets without solving anything.
+      test: ctx => ctx.mistakes === 0 && ctx.avg < lv.avg
     }));
     // Mastery — finish with no skips AND total time within the mode's gentle
     // target (masterSecs × questions). This is the gate that opens a Part-2 mode.

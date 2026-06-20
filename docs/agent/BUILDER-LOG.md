@@ -519,3 +519,23 @@ non-blocking/safety (DoD): the canvas is pointer-events:none (never intercepts
   (RAF stops + canvas cleared at idle; particles culled by life/offscreen).
 notes / questions: topic/Part-2 unlocks use the "epic" tier for a big celebration;
   collectible unlocks scale by their own rarity (legendary is the most dramatic).
+
+## T12 — Fix Speed-achievement skip exploit  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - collectibles.js — each Speed bracket's test now requires zero skips too:
+    `ctx => ctx.mistakes === 0 && ctx.avg < lv.avg` (was just `ctx.avg < lv.avg`).
+    Skipping advances fast, so the old test let a skip-everything round farm
+    Quick/Swift/Blazing/Lightning without solving anything. Desc updated to
+    "across a clean … round".
+how I verified:
+  - node -c collectibles.js OK.
+  - logic check (Node, real catalogue, halves): a round with ≥1 skip earns **0**
+    Speed brackets even at avg 0.0 (and at 5 skips / fast avg); a clean 0-skip
+    round earns the correct brackets by threshold (avg 1.0 → all four; avg 1.5 →
+    Quick+Swift only; avg 3.0 → none). No other collectible affected: the skipped
+    round still earns init but not flawless; the clean fast round keeps flawless +
+    mastery. ALL T12 CHECKS PASSED.
+  - no TODO/placeholder; no DOM/id changes; no regressions.
+notes / questions: ranks were already safe (speed ranks require a perfect score)
+  and Mastery already required 0 skips — this aligns Speed brackets with both.
