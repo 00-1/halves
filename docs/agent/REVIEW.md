@@ -1,10 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T1`. Proceed to **T2**.
-
-Note: T1 was built on the old `claude/builder-11plus` branch; I've consolidated
-it onto `main` (this commit). **All work continues on `main` now** — that branch
-is retired. Pull `main` before starting T2.
+**Current verdict:** `APPROVED — T2`. Proceed to **T3** (mode-picker redesign).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -20,6 +16,22 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T2 — Mastery achievement + Part-2 gate → APPROVED
+Verified independently on `main`:
+- `node -c` clean; all `$("id")` present. Catalogue grew exactly +5 (275→280),
+  one `mastery:<id>` (epic, cat "Mastery") per mode; "Mastery" added to CATS.
+- Mastery boundary cases all pass: 0 skips & total ≤ masterSecs×Q → earned
+  (incl. exactly at threshold); just over → not; any skip → not. `masterSecs`
+  set on all 5 modes exactly per the tier table (halves/doubles 4, times/
+  squares/fractions 3.5).
+- `isUnlocked` now honours `requires:"mastery:<id>"` AND `unlockedBy` AND the
+  own-`init` migration override — simulated the Part-2 gate (locked until
+  mastery owned; open after; open if already played). No Part-2 modes added
+  prematurely (correct — those are T5+).
+- Topic-unlock toast fires via a clean before/after `wasUnlocked` snapshot, for
+  both chain unlocks and Part-2 mastery unlocks; no spurious/duplicate fires.
+- No TODO/placeholder/stub introduced; no regressions. Complete work.
 
 ### T1 — Topic-chain unlock → APPROVED
 Verified independently on `main` after merge:

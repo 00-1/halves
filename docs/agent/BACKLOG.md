@@ -24,7 +24,7 @@ Make topics unlock in importance order; a fresh profile sees only the first.
   finishing Times unlocks Doubles. Existing players keep access to anything they
   have an `init` for. Node logic check included. No regressions. Deploy-safe.
 
-### T2 — Mastery achievement + Part-2 gate plumbing  · status: OPEN
+### T2 — Mastery achievement + Part-2 gate plumbing  · status: DONE
 - Add a `mastery:<id>` collectible per mode (category "Mastery"): earned when a
   round is finished with **0 skips AND total time ≤ `mode.masterSecs ×
   questions`**. Evaluate in `finish()`. (We intentionally show only an elapsed
