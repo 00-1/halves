@@ -449,6 +449,35 @@ keeping the harder cases as the Part-2 stretch.
   Spark regenerate; no regression to the chain or other topics; deploy green.
   (Babysitter re-verifies the P1 arithmetic and the whole/decimal balance.)
 
+### T35 — Diverse item names + fix inventory truncation · status: BLOCKED (await DESIGN-names.md + after T23)
+Owner: item names are too samey (today: **14 adjectives, ~36 nouns → only 167
+unique names for 775 items**; "Whispering" used 68×) and **get cut off on the
+inventory screen**; they should NOT all follow the rigid `<Adj> <Noun>` mould (cf.
+the lost "Cooked Goblin Leg"). Replace the naming system and fix the layout.
+- **New naming system** from `docs/agent/DESIGN-names.md` (Babysitter will write it
+  from the research output): multiple **name templates** (varied grammar — `{adj}
+  {noun}`, `{noun} of {epithet}`, `The {adj} {noun}`, `{creature}'s {noun}`,
+  `{cookadj} {creature} {part}` e.g. "Cooked Goblin Leg", plus whole **fixed**
+  funny names) + large deduped word banks (600+ adjectives, 25-40 nouns/style,
+  epithets, creatures, places, cook-words, fixed names). Pick the template + words
+  **deterministically from the item id** (stable across reloads).
+- **Diversity guarantees:** every item's full name is **unique**; **no adjective
+  repeats** while the adjective bank exceeds the catalogue (size the bank for the
+  post-loot catalogue; when exceeded, the templates' epithet/creature/place tails
+  keep names unique and adjective reuse minimal). Names stay kid-appropriate,
+  British, title-case.
+- **Truncation fix:** owned-item names must **not be cut off** in the inventory —
+  allow the tile caption to wrap (e.g. 2 lines) and/or size tiles so the full name
+  shows; the unlock modal + detail already show the full name — keep that. 360px-safe.
+- **Run AFTER T23** so the tier loot items are named by the new system too.
+- **DoD:** Node test over the FULL catalogue (incl. T23 loot): every item name
+  non-empty + **globally unique**; adjective-position words do not repeat across the
+  catalogue (or, if catalogue > adjective bank, document the exact overflow and show
+  names still unique); template usage is spread (not one structure); deterministic
+  across reloads; no offensive/inappropriate words (Babysitter audits a sample).
+  DOM/CSS check: inventory captions render the full name without ellipsis clipping
+  at 360px; no regressions; deploy green.
+
 ---
 
 ## Phase 3 — Hero / Enemy metagame
