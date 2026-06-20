@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T15`. **Next: T18** (fullscreen toggle), then back to topics at T7 (Place value).
+**Current verdict:** `APPROVED — T18`. **Next: T19** (juice up the unlock celebration).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,12 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T18 — Fullscreen toggle → APPROVED
+Feature-detected (requestFullscreen + webkit/moz/ms); hides the button where
+unsupported (iOS Safari) — no error. enter/exit wrapped in try/catch with promise
+.catch; fullscreenchange (all vendor events) syncs the label; click is the user
+gesture. linkrow wraps/centres so it fits 360px. JS clean, ids ok, no stubs.
 
 ### T15 — Best Times heat-map + tap-to-retry → APPROVED
 renderSummary now renders three distinct states: played (rank-coloured left accent

@@ -173,7 +173,7 @@ Make the Best Times (`#/best-times`) page read at a glance and act as a launchpa
   distinct; tapping an unlocked topic launches its round; locked topics don't
   start; routing/back still work; no regressions; deploy green.
 
-### T18 — Fullscreen toggle · status: OPEN
+### T18 — Fullscreen toggle · status: DONE
 Add a fullscreen toggle button (Fullscreen API) on the start screen, near the
 existing links/controls. Tapping requests fullscreen on the document element;
 tapping again exits. Update its icon (⛶ enter / ⛶ exit) from a `fullscreenchange`
