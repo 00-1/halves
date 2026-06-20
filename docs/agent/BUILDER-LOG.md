@@ -832,3 +832,30 @@ notes / questions: hero ids/names live in collectibles.js for the item boosts +
   labels now; the full heroes.js (stats/types/unlocks, effectiveStats, rating) is
   T21 and can build on these ids. No regression to collectible earning — style/
   flavour/boost are additive fields stamped on each item.
+
+## T21 — Heroes module + stats  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - heroes.js (new) — `window.Heroes`: the **12 heroes** (id · type · base
+    {power,guard,speed,focus} · unlock predicate) per the design table, with names
+    pulled from collectibles.js `HERO_NAMES` so they stay in sync. Pure functions:
+    `effectiveStats(hero, collected)` = base + Σ owned-item boosts targeting that
+    hero/stat; `rating`/`ratingOf` (power×1 + focus×0.8 + speed×0.5 + guard×0.3);
+    `isHeroUnlocked(hero, collected)`; plus the RPS `matchup`/`beats` helpers
+    (Brawn>Cunning>Arcane>Brawn, ×1.5/×1.0/×0.6) for the battle tasks. No DOM.
+  - index.html — load heroes.js after collectibles.js.
+how I verified:
+  - node -c heroes.js OK; no TODO; full app loads with heroes.js (window.Heroes
+    wired, 12 heroes).
+  - heroes test (Node, real catalogue): 12 heroes with names synced + valid
+    type/base; **bram unlocks on the first `init:` and not before**; effective
+    stats equal base with nothing owned and **grow** as boosting items are owned;
+    **rating is monotonic non-decreasing** as items are added (and higher with the
+    full collection); `ratingOf` uses the right weights; **each hero's unlock
+    predicate fires exactly on its listed condition and not before** (init counts,
+    mastery, ranks, collector tiers, flawless count, one100, Lightning bracket,
+    meta:allmodes, tier:10); RPS matchup multipliers correct. ALL T21 CHECKS PASSED.
+notes / questions: unlock predicates read `collected` (counts of init:/flawless:/
+  speed:*:3 and specific ids), so they evaluate from the same store the rest of the
+  game uses. `tier:10` (Roon) and `rank:*` predicates will light up once Arena
+  (T23/24) and deep ranks are reachable. The Heroes screen is T22.
