@@ -2,8 +2,9 @@
 
 Fast mental-math drills — the kind of facts it's worth having memorised.
 One round of 21-ish quick-fire questions; type the answer on the on-screen
-pad. Correct answers advance on their own; press **enter** to lock in a
-wrong guess and move on. Each mode keeps its own Hall of Fame, and every
+pad. Correct answers advance on their own; tap **skip** to reveal the
+answer and move on (it counts against your score). Each mode keeps its own
+Hall of Fame, and every
 mode draws from a **fixed question set** (only the order is shuffled) so
 best times are comparable round to round. The start screen's **View best
 times** page summarises your personal best in each mode, all saved locally.

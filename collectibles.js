@@ -24,29 +24,63 @@
   function paletteFor(r){ return RARITY[r] || RARITY.common; }
 
   // ---- fantasy rank ladder (per finished round) ---------------------------
+  // A long ladder (low index = lowest). Ranks 0–6 are for imperfect rounds and
+  // sort by accuracy; ranks 7+ require a perfect round and sort by speed
+  // (average seconds per answer), so there's always somewhere higher to climb.
   const RANKS = [
-    { key:"goblin",     name:"Goblin Whelp", color:"#8a9bb0", rarity:"common" },
-    { key:"apprentice", name:"Apprentice",   color:"#aeb9c4", rarity:"common" },
-    { key:"squire",     name:"Squire",       color:"#3fce8c", rarity:"uncommon" },
-    { key:"knight",     name:"Knight",       color:"#5bb4e8", rarity:"uncommon" },
-    { key:"mage",       name:"Battle Mage",  color:"#5bb4e8", rarity:"rare" },
-    { key:"sorcerer",   name:"Sorcerer",     color:"#b98bff", rarity:"epic" },
-    { key:"darkwizard", name:"Dark Wizard",  color:"#cda9ff", rarity:"epic" },
-    { key:"archmage",   name:"Archmage",     color:"#f5b544", rarity:"legendary" }
+    { key:"goblin",       name:"Goblin Whelp",  color:"#8a9bb0", rarity:"common" },
+    { key:"kobold",       name:"Kobold",        color:"#97a4b1", rarity:"common" },
+    { key:"urchin",       name:"Street Urchin", color:"#aeb9c4", rarity:"common" },
+    { key:"apprentice",   name:"Apprentice",    color:"#c2ccd6", rarity:"common" },
+    { key:"squire",       name:"Squire",        color:"#3fce8c", rarity:"uncommon" },
+    { key:"journeyman",   name:"Journeyman",    color:"#5bd6a0", rarity:"uncommon" },
+    { key:"adept",        name:"Adept",         color:"#7ee0b6", rarity:"uncommon" },
+    { key:"knight",       name:"Knight",        color:"#8ef0bf", rarity:"uncommon" },
+    { key:"battlemage",   name:"Battle Mage",   color:"#5bb4e8", rarity:"rare" },
+    { key:"warlock",      name:"Warlock",       color:"#6fc0ee", rarity:"rare" },
+    { key:"enchanter",    name:"Enchanter",     color:"#8ecbf0", rarity:"rare" },
+    { key:"sorcerer",     name:"Sorcerer",      color:"#a36bff", rarity:"epic" },
+    { key:"darkwizard",   name:"Dark Wizard",   color:"#cda9ff", rarity:"epic" },
+    { key:"shadowmancer", name:"Shadowmancer",  color:"#b98bff", rarity:"epic" },
+    { key:"necromancer",  name:"Necromancer",   color:"#d0b3ff", rarity:"epic" },
+    { key:"archmage",     name:"Archmage",      color:"#f5b544", rarity:"legendary" },
+    { key:"runelord",     name:"Runelord",      color:"#f6c062", rarity:"legendary" },
+    { key:"sage",         name:"Sage",          color:"#ffd98a", rarity:"legendary" },
+    { key:"grandmaster",  name:"Grandmaster",   color:"#ffe07a", rarity:"legendary" },
+    { key:"celestial",    name:"Celestial",     color:"#bfe6ff", rarity:"legendary" },
+    { key:"ascendant",    name:"Ascendant",     color:"#d8c4ff", rarity:"legendary" },
+    { key:"transcendent", name:"Transcendent",  color:"#7ef0ff", rarity:"legendary" },
+    { key:"godhand",      name:"God-Hand",      color:"#ffe9a8", rarity:"legendary" }
   ];
-  // Rank from clean-score fraction, with the top two tiers needing a perfect
-  // round (and Archmage also needing real speed).
   function rankIndex(score, total, time){
     const f = total ? score/total : 0;
     const avg = total ? time/total : 99;
-    if(f >= 1 && avg < 1.3) return 7;
-    if(f >= 1)    return 6;
-    if(f >= 0.9)  return 5;
-    if(f >= 0.8)  return 4;
-    if(f >= 0.68) return 3;
-    if(f >= 0.55) return 2;
-    if(f >= 0.4)  return 1;
-    return 0;
+    if(f < 1){                         // imperfect: rank by accuracy
+      if(f < 0.35) return 0;
+      if(f < 0.5)  return 1;
+      if(f < 0.62) return 2;
+      if(f < 0.74) return 3;
+      if(f < 0.85) return 4;
+      if(f < 0.95) return 5;
+      return 6;
+    }
+    // perfect: rank by average seconds per answer (faster → higher)
+    if(avg > 6.5)  return 7;
+    if(avg > 5.5)  return 8;
+    if(avg > 4.8)  return 9;
+    if(avg > 4.2)  return 10;
+    if(avg > 3.7)  return 11;
+    if(avg > 3.2)  return 12;   // Dark Wizard
+    if(avg > 2.8)  return 13;
+    if(avg > 2.4)  return 14;
+    if(avg > 2.1)  return 15;
+    if(avg > 1.8)  return 16;
+    if(avg > 1.55) return 17;
+    if(avg > 1.35) return 18;
+    if(avg > 1.18) return 19;
+    if(avg > 1.02) return 20;
+    if(avg > 0.88) return 21;
+    return 22;
   }
 
   // ---- catalogue ----------------------------------------------------------
@@ -75,7 +109,7 @@
     add({ id:"init:"+m.id, name:m.name+" Initiate", rarity:"uncommon", cat:"Initiation", modeId:m.id,
       desc:"Finish your first "+m.name+" round.", test: () => true });
     add({ id:"flawless:"+m.id, name:"Flawless "+m.name, rarity:"rare", cat:"Flawless", modeId:m.id,
-      desc:"Finish "+m.name+" with zero mistakes.", test: ctx => ctx.mistakes === 0 });
+      desc:"Finish "+m.name+" without skipping a question.", test: ctx => ctx.mistakes === 0 });
     SPEED.forEach((lv,i) => add({
       id:"speed:"+m.id+":"+i, name:lv.name+" "+m.name, rarity:lv.rarity, cat:"Speed", modeId:m.id,
       desc:"Average under "+lv.avg+"s per answer across a "+m.name+" round.",
@@ -129,6 +163,17 @@
     }
     return sortItems(out);
   }
+  // The per-question items (Beat / Spark) earned by solving one prompt,
+  // for live in-game toasts. `t` is the solve time in seconds.
+  function evaluateQuestion(modeId, prompt, t, has){
+    const out = [];
+    const solve = byIdMap["solve:"+modeId+":"+prompt];
+    if(solve && !has(solve.id)) out.push(solve);
+    const spark = byIdMap["spark:"+modeId+":"+prompt];
+    if(spark && !has(spark.id) && t < SPARK) out.push(spark);
+    return out;
+  }
+
   // Collector items, given the current owned count.
   function evaluateCollector(count, has){
     const out = [];
@@ -194,7 +239,7 @@
     RANKS, RARITY, paletteFor, rankIndex,
     CATALOG, byId: id => byIdMap[id],
     categories: () => CATS.slice(),
-    evaluate, evaluateCollector, drawIcon,
+    evaluate, evaluateCollector, evaluateQuestion, drawIcon,
     SPARK, SPEED
   };
 })();

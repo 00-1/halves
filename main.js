@@ -57,7 +57,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { start:$("start"), game:$("game"), results:$("results"), summary:$("summary") };
+  const screens = { start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -160,6 +160,19 @@
     openModal(title, items, n > 4);
   }
 
+  // Lightweight, non-blocking toast shown mid-round when an item is unlocked.
+  function showToast(it){
+    const t = document.createElement("div");
+    t.className = "toast r-" + it.rarity;
+    t.innerHTML = '<canvas class="pix" width="36" height="36"></canvas>'+
+      '<div class="t-txt"><span class="t-tag">Unlocked</span>'+
+      '<span class="t-name">'+esc(it.name)+'</span></div>';
+    $("toasts").appendChild(t);
+    C.drawIcon(t.querySelector("canvas"), it.id, C.paletteFor(it.rarity));
+    requestAnimationFrame(() => t.classList.add("show"));
+    setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2000);
+  }
+
   function renderInventory(){
     const collected = loadCollected();
     const cat = C.categories();
@@ -244,7 +257,7 @@
   function press(k){
     if(locked) return;
     if(k === "back"){ input = input.slice(0,-1); renderInput(); return; }
-    if(k === "enter"){ submitWrongOrIgnore(); return; }
+    if(k === "skip"){ skip(); return; }
     if(k === "."){
       if(input.includes(".")) return;
       input = (input === "") ? "0." : input + ".";
@@ -263,18 +276,16 @@
     if(!isNaN(v) && v === currentAnswer()) correct();
   }
 
-  // Enter commits a non-empty wrong guess as a mistake and moves on.
-  function submitWrongOrIgnore(){
-    if(input === "") return;
-    if(parseFloat(input) === currentAnswer()){ correct(); return; }
-    registerMiss();
-    input=""; renderInput();
-  }
-
-  function registerMiss(){
-    mistakes++; qMiss++;
+  // Skip reveals the answer, counts against your score, and moves on.
+  function skip(){
+    if(locked) return;
+    locked = true;
+    mistakes++;
     elStage.classList.add("wrong");
-    setTimeout(()=>elStage.classList.remove("wrong"),320);
+    elAnswer.classList.remove("empty");
+    elAnswer.innerHTML = '<span class="skipans">= '+esc(numStr(currentAnswer()))+'</span>';
+    elProgress.style.width = ((idx+1)/order.length*100)+"%";
+    setTimeout(() => { idx++; nextQuestion(); }, 750);
   }
 
   function correct(){
@@ -282,6 +293,16 @@
     const dt = (performance.now()-qStart)/1000;
     const it = order[idx];
     times.push({ p:it.p, h:numStr(it.a), t:dt, miss:qMiss });
+
+    // live, non-blocking unlocks for nailing this question (first time / fast)
+    const col = loadCollected();
+    const fresh = C.evaluateQuestion(mode.id, it.p, dt, id => !!col[id]);
+    if(fresh.length){
+      fresh.forEach(c => col[c.id] = { ts: Date.now() });
+      saveCollected(col);
+      fresh.forEach(showToast);
+    }
+
     elPrompt.classList.add("split");
     elGhost.classList.add("go");
     elProgress.style.width = ((idx+1)/order.length*100)+"%";
@@ -298,8 +319,7 @@
 
     $("resMode").textContent = mode.name;
     $("resTime").innerHTML = fmt(total)+'<small>s</small>';
-    const attempts = order.length + mistakes;
-    const acc = Math.round(order.length/attempts*100);
+    const acc = order.length ? Math.round(score/order.length*100) : 100;
     const accEl = $("resAcc");
     accEl.textContent = acc+"%";
     accEl.classList.toggle("clean", mistakes === 0);
@@ -421,7 +441,7 @@
     if(e.key>="0" && e.key<="9") k=e.key;
     else if(e.key===".") k=".";
     else if(e.key==="Backspace") k="back";
-    else if(e.key==="Enter") k="enter";
+    else if(e.key==="Enter") k="skip";
     if(k!==null){ e.preventDefault(); flash(k); press(k); }
   });
 
@@ -430,20 +450,30 @@
     if(screens.game.classList.contains("active")){ fitText(elPrompt); fitText(elGhost); }
   });
 
+  // ---- hash routing for the static screens --------------------------------
+  function applyRoute(){
+    const h = (location.hash || "").replace(/^#\/?/, "");
+    if(h === "inventory"){ renderInventory(); show("inventory"); }
+    else if(h === "best-times"){ renderSummary(); show("summary"); }
+    else { renderTabs(); renderBest(); show("start"); }
+  }
+  function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
+  window.addEventListener("hashchange", applyRoute);
+
   $("startBtn").addEventListener("click", start);
   $("againBtn").addEventListener("click", start);
-  $("menuBtn").addEventListener("click", () => { show("start"); renderTabs(); renderBest(); });
+  $("menuBtn").addEventListener("click", navStart);
 
-  $("statsBtn").addEventListener("click", () => { renderSummary(); show("summary"); });
-  $("sumBack").addEventListener("click", () => { show("start"); renderBest(); });
+  $("statsBtn").addEventListener("click", () => { location.hash = "#/best-times"; });
+  $("sumBack").addEventListener("click", navStart);
   $("sumClear").addEventListener("click", () => {
     if(!confirm("Clear all best times saved on this device?")) return;
     MODES.forEach(m => saveBoard(m.id, []));
     renderSummary(); renderBest();
   });
 
-  $("invBtn").addEventListener("click", () => { renderInventory(); show("inventory"); });
-  $("invBack").addEventListener("click", () => show("start"));
+  $("invBtn").addEventListener("click", () => { location.hash = "#/inventory"; });
+  $("invBack").addEventListener("click", navStart);
   // Tap a collectible to inspect it (owned shows detail; locked teases).
   $("invList").addEventListener("click", e => {
     const cell = e.target.closest(".inv-cell"); if(!cell) return;
@@ -486,4 +516,5 @@
   renderMark();
   renderBest();
   renderBuild();
+  applyRoute();   // honour a deep link (e.g. #/inventory) on load
 })();
