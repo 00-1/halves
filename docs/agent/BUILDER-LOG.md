@@ -686,3 +686,37 @@ notes / questions: masterSecs 9 (Tier 3) for both — the tier table lists
   "fractions of" under Tier 3 (multi-step). Prompts are text "a/b of N" (not the
   ⅓/⅗/⅝ glyphs) to guarantee rendering everywhere; the topic tags still show the
   pretty glyphs for flavour.
+
+## T9 — Percentages of  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - modes.js — fixed sets + two modes spliced into the chain at importance
+    position 8 (after Fractions of, before the existing Fraction→decimal):
+    `percentages` (Part 1, 10/25/50% of an amount ≤400; unlockedBy "fractionsof",
+    masterSecs 9, group "Fractions & %") and `percentages2` (Part 2, 1/5/20/75%
+    of an amount ≤200; requires "mastery:percentages", off-chain, masterSecs 9).
+    Re-pointed `fractions.unlockedBy` "fractionsof"→"percentages". Chain is now
+    Halves→…→Fractions of→Percentages of→Fraction→decimal→Squares. Prompts "p% of N".
+curation rationale (per QUESTION-SETS.md Percentages-of checklist):
+  - P1 (`PERCENT_P1_SRC`, 21): 10/25/50% across round/money bases ≤400 (80, 250,
+    400, 160, 200, 360, 240…), all answers whole (25% of 160 = 40, 50% of 250 =
+    125). Bases for 10% are ×10, for 25% are ×4, for 50% even — so every answer is
+    whole; stored as literals.
+  - P2 (`PERCENT_P2_SRC`, 21): 1/5/20/75% of bases ≤200, answers whole OR clean
+    terminating decimals (75% of 60 = 45, 1% of 50 = 0.5, 5% of 90 = 4.5) — all
+    stored as literals so they round-trip exactly on the numpad.
+how I verified:
+  - node -c (modes/collectibles/main) OK; id cross-check clean; no TODO.
+  - logic check (Node): field set + chain re-link + unlock steps (…Fractions of→
+    Percentages of→Fraction→decimal…) + the percentages2 mastery gate. For BOTH
+    parts: fixed 21-item sets with stable unique prompt sets; **base within range
+    (P1 ≤400, P2 ≤200), answer = base×pct/100 within 1e-9 of the stored literal,
+    and round-trips through the numpad** (`parseFloat(String(a))===a`); P1 uses
+    exactly {10,25,50}% and P2 exactly {1,5,20,75}%; P2 includes clean decimal
+    answers. Both fixed (no gen), 49 items each; catalogue 677→775. "Fractions & %"
+    group now has 5 modes; widest prompt "25% of 120" (10 chars) fits via fitText.
+    ALL T9 CHECKS PASSED.
+  - no regressions: only the intended fractions re-link changed in the chain.
+notes / questions: masterSecs 9 (Tier 3, "% of"). This completes the originally
+  specced Phase-2 topics (T5–T9); the remaining `*_SRC` sets all meet the
+  QUESTION-SETS standard and use literal answers wherever division could drift.

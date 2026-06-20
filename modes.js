@@ -130,6 +130,21 @@
     [3,5,25,15],[3,5,100,60],[3,5,20,12],[3,5,50,30],[3,5,35,21],
     [5,8,16,10],[5,8,80,50],[5,8,40,25],[5,8,24,15],[5,8,8,5]
   ];
+  // Percentages-of fixed sets, shown as "p% of N". Each entry [pct, base, answer];
+  // the answer is stored as a literal so it round-trips exactly on the numpad.
+  // Part 1: 10/25/50% of round bases ≤400 (answers whole).
+  const PERCENT_P1_SRC = [
+    [10,80,8],[10,250,25],[10,400,40],[10,60,6],[10,130,13],[10,200,20],
+    [25,160,40],[25,80,20],[25,200,50],[25,40,10],[25,360,90],[25,240,60],[25,120,30],
+    [50,60,30],[50,250,125],[50,400,200],[50,84,42],[50,36,18],[50,140,70],[50,90,45],[50,16,8]
+  ];
+  // Part 2: 1/5/20/75% of bases ≤200 (answers whole or clean-terminating decimals).
+  const PERCENT_P2_SRC = [
+    [1,200,2],[1,50,0.5],[1,80,0.8],[1,150,1.5],[1,60,0.6],
+    [5,80,4],[5,200,10],[5,60,3],[5,140,7],[5,90,4.5],
+    [20,80,16],[20,150,30],[20,200,40],[20,45,9],[20,60,12],
+    [75,60,45],[75,80,60],[75,200,150],[75,40,30],[75,120,90],[75,16,12]
+  ];
 
   // The proper minus sign (matches the "×" used by Times), for ± prompts.
   const MINUS = "−";
@@ -158,12 +173,15 @@
   // Map a fixed Fractions-of entry [num, den, base, answer] to a question.
   function fractionsOfItem(e){ return { p: e[0] + "/" + e[1] + " of " + e[2], a: e[3] }; }
 
+  // Map a fixed Percentages-of entry [pct, base, answer] to a question.
+  function percentItem(e){ return { p: e[0] + "% of " + e[1], a: e[2] }; }
+
   // Listed in importance / unlock order: Halves → Times → Doubles →
-  // Add&Subtract → Number Bonds → Place Value → Fractions of → Fraction→decimal
-  // → Squares. `unlockedBy` points at the previous topic; the first topic
-  // (Halves) has none and is always open. A Part-2 mode (e.g. Add & Subtract II,
-  // …, Fractions of II) sits off the chain with `requires` instead. New topics
-  // are spliced in at their importance position as the catalogue grows.
+  // Add&Subtract → Number Bonds → Place Value → Fractions of → Percentages of →
+  // Fraction→decimal → Squares. `unlockedBy` points at the previous topic; the
+  // first topic (Halves) has none and is always open. A Part-2 mode (e.g. Add &
+  // Subtract II, …, Percentages of II) sits off the chain with `requires`
+  // instead. New topics are spliced in at their importance position.
   const MODES = [
     {
       id:"halves", name:"Halves", tag:"Halve it. Fast.",
@@ -232,9 +250,21 @@
       build(){ return shuffle(FRACTIONSOF_P2_SRC).map(fractionsOfItem); }
     },
     {
+      id:"percentages", name:"Percentages of", tag:"10/25/50% of an amount.",
+      glyph:'<span class="slash">%</span>',
+      eyebrow:'solve <b>↓</b>', expr:true, unlockedBy:"fractionsof", masterSecs:9, group:"Fractions & %",
+      build(){ return shuffle(PERCENT_P1_SRC).map(percentItem); }
+    },
+    {
+      id:"percentages2", name:"Percentages of II", tag:"1/5/20/75% of an amount.",
+      glyph:'n<span class="slash">%</span>',
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:percentages", masterSecs:9, group:"Fractions & %",
+      build(){ return shuffle(PERCENT_P2_SRC).map(percentItem); }
+    },
+    {
       id:"fractions", name:"Fractions", tag:"As a decimal.",
       glyph:'<span class="slash">¾</span>',
-      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"fractionsof", masterSecs:3.5, group:"Fractions & %",
+      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"percentages", masterSecs:3.5, group:"Fractions & %",
       build(){ return shuffle(FRACTIONS_SRC).map(([f,d]) => ({ p:f, a:d })); }
     },
     {
