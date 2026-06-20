@@ -474,3 +474,50 @@ accumulation itself fun and able to reach **billions/trillions+**:
   1e9, 1e12, 1e15, 1e21, 1e33 → correct suffixes, no NaN/Infinity); wealth
   milestones fire at the right thresholds; Gold persists; no spend mechanic; no
   regressions; deploy green.
+- **Research constraint (RESEARCH-metagame.md):** earning stays
+  performance-scaled (never reward mere time/attempts) and the wealth milestones
+  are the *soft sink* that gives the rising number a purpose. When spending is
+  eventually unblocked it MUST be a **prestige-style multiplier that makes future
+  *drilling* earn faster** — never a cosmetic/pay shop, never real-money or
+  premium currency. A currency with no sink devalues itself; do not let "watch
+  Gold rise" become an activity decoupled from drills.
+
+---
+
+## Phase 4 — Retention (research-driven; see RESEARCH-metagame.md)
+
+Two tasks the metagame research surfaced as high-value-yet-missing. Sequenced by
+the Babysitter; both are deploy-safe, self-contained, and respect the doc's red
+lines (no purchases, no public leaderboards, no guilt/loss-aversion dark
+patterns, no push notifications).
+
+### T31 — Gentle daily-practice streak · status: BLOCKED
+The best-evidenced retention lever in education (Duolingo) — implemented as the
+**ethical** version. Track **days practised** (≥1 finished round bumps the day's
+count) in localStorage (`halves.streak`: count, lastDay, bestStreak, freezes).
+Show a small streak indicator on the start screen + a celebratory (non-blocking)
+acknowledgement on return when the streak advances. **Forgiving:** a built-in
+grace/"freeze" so a single missed day does NOT reset weeks (e.g. 1 auto-freeze,
+regenerating). **No guilt, no countdowns, no "about to lose it" pressure, no
+notifications.** Feed streak milestones into the existing collectible/milestone
+system (e.g. "3-day", "7-day", "30-day" streak items) — not a separate pressure
+economy. Migration-safe (absent state = streak 0, no crash).
+- **DoD:** Node test of the pure streak reducer — consecutive days increment;
+  same-day replays don't double-count; a 1-day gap is absorbed by the freeze
+  (streak preserved, freeze consumed) while a 2+-day gap resets to 1; bestStreak
+  monotonic; milestones fire at the right day counts. No timers/notifications; no
+  regressions; deploy green.
+
+### T32 — Relaxed / no-pressure practice option · status: BLOCKED
+Mitigates the one well-documented harm of timed drills (TTRS's main critique;
+Boaler on timed-test anxiety): a calmer way to build fluency before chasing
+speed. Add a **practice toggle** (per the smallest clean UI — e.g. a "Practice"
+switch on the start screen) that plays the current topic with the **clock/speed
+pressure de-emphasised**: timer hidden or non-scoring, no rank/best-time recorded,
+gentle "accuracy first" framing. Practice rounds **don't** award speed-bracket
+collectibles or best-times (so they can't game mastery) but **do** let a child
+rehearse the exact question set. Persist the preference. Keep the default
+experience exactly as-is for kids who want the timed game.
+- **DoD:** Node/logic check — practice mode records no best-time and awards no
+  speed/rank collectibles; normal mode is byte-for-byte unchanged; preference
+  persists; the same fixed question set is used; no regressions; deploy green.
