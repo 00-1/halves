@@ -541,7 +541,7 @@ notes / questions: ranks were already safe (speed ranks require a perfect score)
   and Mastery already required 0 skips — this aligns Speed brackets with both.
 
 ## T11 — Entry / "tap to begin" screen  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 544d386 (on main)
 changed:
   - index.html — new `#entry` splash screen (now the initial `active` screen;
     `#start` no longer active): brand mark + tagline, a primary "Play in
