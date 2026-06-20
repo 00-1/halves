@@ -1,18 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `CHANGES REQUESTED — T10` (one bug; everything else is great).
-
-1. **`showTopicToast` references an undeclared `pal`** (the only `pal` is local to
-   `showToast`). Under "use strict" this throws a **ReferenceError on every topic /
-   Part-2 unlock** — the toast still appears (the throw is after `add("show")`) but
-   it errors and gets **no particles**. Fix: in `showTopicToast` define a palette
-   (topic toasts are epic-tinted → `const pal = C.paletteFor("epic");`) and pass it
-   to `toastBurst(t, pal)`. Confirm a real topic-unlock and a Part-2 unlock both
-   burst particles with no console error.
-
-Nothing else to change — fx.js (pure `particleSpecs`, capped at 14, self-cleaning
-`burst` with no leak), the non-blocking `pointer-events:none` particles, the "+1"
-flourish, and the reduced-motion opt-out are all good. Re-handoff after the fix.
+**Current verdict:** `APPROVED — T10`. Particles are in. **Next: T14** (remove Hall of Fame + Clear-all), then T15 (Best Times heat-map + retry).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -28,6 +16,13 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T10 — Celebratory particles → APPROVED (after 1 fix)
+The undeclared-`pal` ReferenceError in `showTopicToast` is fixed (now
+`C.paletteFor("epic")`; epic palette resolves). fx.js is pure/capped/leak-free,
+particles are pointer-events:none (non-blocking), "+1" flourish + reduced-motion
+opt-out present. JS clean, ids ok, no stubs. Item AND topic/Part-2 unlocks now
+both burst without error.
 
 ### T5b — Convert all generated modes to fixed → APPROVED
 Re-verified on main: zero gen modes remain; genRound/randInt/addSubP1·P2/bond

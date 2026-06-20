@@ -126,7 +126,7 @@ P1: 10/25/50% of ≤400. P2: 1/5/20/75% of ≤200. **Fixed set.**
 
 ## Phase 2.5 — Engagement polish
 
-### T10 — Celebratory in-play unlock effects (particles) · status: CHANGES
+### T10 — Celebratory in-play unlock effects (particles) · status: DONE
 > Babysitter intends to open this **right after T6** (high-impact, low-risk polish
 > to the everyday loop), ahead of the remaining topics.
 Make the existing non-blocking in-play unlock toast (`showToast`) more celebratory
