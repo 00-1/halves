@@ -654,7 +654,7 @@ notes / questions: masterSecs 5 (Tier 2) for both parts — the tier table lists
   class, so 5 for both (flag me if P2 should be Tier 3 / 9).
 
 ## T8 — Fractions of  [HANDOFF]
-commit: (recorded on push to main below)
+commit: c0b3164 (on main)
 changed:
   - modes.js — fixed sets + two modes spliced into the chain at importance
     position 7 (between Place Value and the existing Fraction→decimal): `fractionsof`
