@@ -251,7 +251,7 @@ notes / questions: masterSecs 3.5 (Tier 1) for both parts — the BACKLOG tier
   tenths only (matches the "0.3→0.7" spec and stays float-exact).
 
 ## T5b — Convert Add/Subtract to fixed sets  [HANDOFF]
-commit: (recorded on push to main below)
+commit: e9e8d49 (on main)
 changed:
   - modes.js — added fixed curated arrays `ADDSUB_P1_SRC` and `ADDSUB_P2_SRC`
     (21 entries each, format [a,b,sub]: sub=0 "a + b", sub=1 "a − b"). P1 is a
