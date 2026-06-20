@@ -521,7 +521,7 @@ notes / questions: topic/Part-2 unlocks use the "epic" tier for a big celebratio
   collectible unlocks scale by their own rarity (legendary is the most dramatic).
 
 ## T12 — Fix Speed-achievement skip exploit  [HANDOFF]
-commit: (recorded on push to main below)
+commit: c5915e0 (on main)
 changed:
   - collectibles.js — each Speed bracket's test now requires zero skips too:
     `ctx => ctx.mistakes === 0 && ctx.avg < lv.avg` (was just `ctx.avg < lv.avg`).
