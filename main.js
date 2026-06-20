@@ -269,13 +269,13 @@
       setTimeout(() => t.remove(), 300);
     }, hold);
   }
-  // Fire a self-cleaning, rarity-tinted pixel burst from a toast's centre. Pure
-  // celebration: pointer-events off, no focus/timer/input interaction.
-  function toastBurst(t, pal){
-    if(!window.FX) return;
+  // Fire the canvas confetti/spark celebration from a toast's centre, scaled by
+  // rarity. Pure celebration: the overlay never intercepts taps and the engine
+  // never touches the game clock/input.
+  function toastBurst(t, rarity, colors){
+    if(!window.FX || !window.FX.celebrate) return;
     const r = t.getBoundingClientRect();
-    window.FX.burst($("toasts"), r.left + r.width / 2, r.top + r.height / 2,
-      [pal.accent, pal.body, pal.accent], window.FX.CAP);
+    window.FX.celebrate(r.left + r.width / 2, r.top + r.height / 2, rarity, colors);
   }
 
   // Lightweight, non-blocking toast shown mid-round when an item is unlocked.
@@ -289,7 +289,7 @@
       '<span class="t-plus" style="color:'+pal.accent+'">+1</span>';
     $("toasts").appendChild(t);
     C.drawIcon(t.querySelector("canvas"), it.id, pal);
-    requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, pal); });
+    requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, it.rarity, [pal.accent, pal.body]); });
     dismissToast(t, 2000);
   }
 
@@ -304,7 +304,7 @@
       '<div class="t-txt"><span class="t-tag">'+(part2 ? "Part 2 unlocked" : "Topic unlocked")+'</span>'+
       '<span class="t-name">'+esc(m.name)+'</span></div>';
     $("toasts").appendChild(t);
-    requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, pal); });
+    requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, "epic", [pal.accent, pal.body]); });
     dismissToast(t, 2600);
   }
 
@@ -651,6 +651,7 @@
   setInterval(renderBuild, 30000);   // keep the "ago" fresh
 
   // ---- init ---------------------------------------------------------------
+  if(window.FX && window.FX.init) window.FX.init($("fxCanvas"));
   renderTabs();
   renderMark();
   renderBest();

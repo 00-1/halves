@@ -478,3 +478,44 @@ how I verified:
       state both ways. ALL T18 CHECKS PASSED.
 notes / questions: button hidden (not just disabled) on unsupported browsers for a
   cleaner UI; toggle uses the real click gesture so the browser allows the request.
+
+## T19 — Make the unlock celebration genuinely juicy  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - fx.js (rewritten) — a full-screen canvas confetti/spark engine. Pure emitter
+    math: `burstCount` (common30/uncommon45/rare65/epic90/legendary130), `allowed`
+    (global CAP 250), `makeParticle`/`makeBurst` (mixed shapes square/streamer/star,
+    sizes 2–9, rarity palette + white/gold sparkles), `stepParticle` (gravity 760
+    + drag + spin + twinkle + 1.0–1.6s life). Engine: a RAF loop that **idles
+    (stops the RAF) whenever nothing is alive**; `celebrate(x,y,rarity,colors)`
+    emits a rarity-scaled burst + a shockwave ring, and for epic/legendary adds a
+    vignette glow, top-edge confetti and a delayed second pop. Honours
+    prefers-reduced-motion (emits nothing). raf/caf/ctx are injectable for tests.
+  - index.html — `#fxCanvas` full-screen overlay (pointer-events:none) before the
+    toasts; loaded by the existing fx.js script.
+  - main.js — `FX.init($("fxCanvas"))` on load; `toastBurst(t,rarity,colors)` now
+    calls `FX.celebrate` (collectible toasts pass their own rarity; topic/Part-2
+    toasts pass "epic"). Removed the old div-particle call.
+  - styles.css — `.fx-canvas` overlay (z-index 59, below toasts); stronger toast
+    pop (scale 1.09) with an amber glow flash via the toast-in keyframe; removed
+    the dead `.particle`/`particle-fly` rules; reduced-motion still flattens the
+    toast and hides the "+1".
+how I verified:
+  - node -c fx.js & main.js OK; id cross-check clean (fxCanvas present+referenced);
+    no leftover `FX.burst`/`particleSpecs`/`.particle` refs; no TODO.
+  - emitter/engine test (Node, stubbed canvas/RAF): per-rarity counts exact &
+    strictly increasing; `allowed` clamps to CAP; bursts cap-clamped (248→2,
+    250→0); particles valid (finite velocity, size 2–9, life 1–1.6, known shape,
+    colour); `stepParticle` applies gravity + ageing and dies at life≤0; engine
+    is **idle before any emit, starts the RAF on emit, and IDLES (stops the RAF)
+    once empty**; live particles **never exceed CAP under a 30× legendary
+    barrage** (=250); **prefers-reduced-motion → zero particles, no RAF**. ALL
+    T19 CHECKS PASSED.
+  - runtime: full app loads under the DOM shim with no error; FX engine idle at
+    rest (no constant loop).
+non-blocking/safety (DoD): the canvas is pointer-events:none (never intercepts
+  taps); the engine only runs while particles live and touches neither the game
+  clock (its own rAF, the drill loop is separate) nor input/focus; self-cleaning
+  (RAF stops + canvas cleared at idle; particles culled by life/offscreen).
+notes / questions: topic/Part-2 unlocks use the "epic" tier for a big celebration;
+  collectible unlocks scale by their own rarity (legendary is the most dramatic).

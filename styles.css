@@ -250,22 +250,22 @@ canvas.pix{image-rendering:pixelated}
 .toast{position:relative;display:flex;align-items:center;gap:10px;max-width:320px;
   background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:8px 16px 8px 8px;
   box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transform:translateY(-12px) scale(.92);will-change:transform,opacity}
-/* entrance with a subtle scale pop; exit slides back out */
-.toast.show{animation:toast-in 320ms cubic-bezier(.2,.9,.3,1.25) forwards}
+/* entrance: a strong scale pop with an amber glow flash behind the toast */
+.toast.show{animation:toast-in 360ms cubic-bezier(.18,.9,.28,1.35) forwards}
 .toast.hide{animation:toast-out 280ms ease forwards}
 @keyframes toast-in{
-  0%{opacity:0;transform:translateY(-12px) scale(.92)}
-  60%{opacity:1;transform:translateY(0) scale(1.05)}
-  100%{opacity:1;transform:translateY(0) scale(1)}
+  0%{opacity:0;transform:translateY(-12px) scale(.86);box-shadow:0 0 0 rgba(245,181,68,0)}
+  55%{opacity:1;transform:translateY(0) scale(1.09);box-shadow:0 0 30px rgba(245,181,68,.55)}
+  100%{opacity:1;transform:translateY(0) scale(1);box-shadow:0 6px 20px rgba(0,0,0,.4)}
 }
 @keyframes toast-out{
   from{opacity:1;transform:translateY(0) scale(1)}
   to{opacity:0;transform:translateY(-8px) scale(.95)}
 }
 @media (prefers-reduced-motion: reduce){
-  .toast.show{animation:none;opacity:1;transform:none}
+  .toast.show{animation:none;opacity:1;transform:none;box-shadow:0 6px 20px rgba(0,0,0,.4)}
   .toast.hide{animation:none;opacity:0}
-  .toast .t-plus,.particle{display:none}
+  .toast .t-plus{display:none}
 }
 /* floating "+1" flourish on a collectible unlock */
 .toast .t-plus{position:absolute;top:-7px;right:12px;font-family:var(--mono);font-weight:800;font-size:13px;
@@ -275,13 +275,8 @@ canvas.pix{image-rendering:pixelated}
   18%{opacity:1}
   100%{opacity:0;transform:translateY(-18px)}
 }
-/* pixel particle burst (created by fx.js, positioned in viewport coords) */
-.particle{position:fixed;z-index:61;border-radius:1px;pointer-events:none;image-rendering:pixelated;
-  animation:particle-fly 700ms ease-out forwards}
-@keyframes particle-fly{
-  0%{opacity:1;transform:translate(0,0) scale(1)}
-  100%{opacity:0;transform:translate(var(--dx,0),var(--dy,0)) scale(.4)}
-}
+/* full-screen celebration FX overlay (confetti/sparks drawn by fx.js) */
+.fx-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:59}
 .toast canvas{image-rendering:pixelated;border-radius:6px;background:var(--surface);flex:0 0 auto}
 .toast .t-txt{display:flex;flex-direction:column;line-height:1.15}
 .toast .t-tag{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
