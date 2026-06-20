@@ -70,12 +70,18 @@ Replace the wrapping pills with a scrollable, grouped list.
 ## Phase 2 — Topics (importance order; each = Part 1 + Part 2, P2 `requires` P1 mastery)
 
 **Design rule: every topic is a FIXED, pre-generated question set** — a curated
-`*_SRC` array (~21 entries, representative of the range) that `build()` shuffles
-each round, exactly like Halves/Times/Squares/Fractions. **No infinite random
-generators.** Fixed sets keep best-times comparable and give every topic its
-per-question Beat/Spark collectibles. Build one topic per task, fully (both
-parts), each verified in Node (answers correct/numeric/non-negative/numpad-safe;
-stable set across rounds). Slot each into the chain at its importance position.
+`*_SRC` array (~21 entries) that `build()` shuffles each round, exactly like
+Halves/Times/Squares/Fractions. **No infinite random generators.** Fixed sets keep
+best-times comparable and give every topic its per-question Beat/Spark
+collectibles.
+
+**Curate each set per `docs/agent/QUESTION-SETS.md`** — common real-world values
+first, representative coverage of the topic's concept cases, a spread of
+difficulty (Halves is the benchmark). Arbitrary or filler sets are a DoD failure.
+**In BUILDER-LOG, note the rationale** (which common values, which cases covered)
+for each set you build. Build one topic per task, fully (both parts), each
+verified in Node (answers correct/numeric/non-negative/numpad-safe; stable set
+across rounds). Slot each into the chain at its importance position.
 
 ### T5 — Add / Subtract  · status: DONE (superseded by T5b — convert to fixed)
 P1: 2-digit ± within 100. P2: 3-digit ± 2-digit.
@@ -93,10 +99,12 @@ per the design rule above, convert **all four** modes to **fixed curated sets**:
   appear in the catalogue.
 - Update `docs/research-11plus.md` to drop the generated/fixed distinction (all
   fixed).
+- **Curate the sets per docs/agent/QUESTION-SETS.md** (cover the Add/Subtract and
+  Number-bonds case checklists; common values first); log the rationale.
 - **DoD:** Node — all four build() return fixed shuffled sets (~21), prompts
   stable across rounds, answers correct/numeric/non-negative/numpad-safe;
   catalogue contains solve/spark for addsub*, bonds*; no `gen`/`genRound` left
-  anywhere; no regressions; deploy green.
+  anywhere; sets satisfy the curation checklist; no regressions; deploy green.
 
 ### T6 — Number bonds · status: DONE (wiring; fixed conversion in T5b)
 P1: to 100. P2: to 1000 + decimal bonds to 1. **Fixed set** (curated array,
@@ -130,6 +138,22 @@ a non-blocking floating "+N" style flourish. Rarity-tinted.
   particle count; auto-clean (no DOM/canvas leak, verified by node-checking the
   cleanup path or a teardown function); works at 360px on a phone; no regressions;
   deploy green.
+
+---
+
+## Phase 2.6 — Content quality
+
+### T13 — Question-set audit pass · status: BLOCKED
+> Babysitter will open this once a few topics exist (and may run a frequency/
+> curation research pass first to inform it). Goal: make every topic's set as
+> well-considered as Halves.
+Audit **every** topic's `*_SRC` set against `docs/agent/QUESTION-SETS.md`:
+common real-world values, representative concept-case coverage, sensible
+difficulty spread; fix weak/arbitrary/duplicate entries. Re-check the original
+modes too (Halves is the benchmark; sanity-check Times/Doubles/Squares/Fractions).
+- **DoD:** for each topic, BUILDER-LOG records the covered cases + key common
+  values; sets meet the checklist; answers still exact/numpad-safe; per-question
+  Beat/Spark counts updated accordingly; no regressions; deploy green.
 
 ---
 
@@ -196,12 +220,10 @@ the engagement layer.
   correctly; final-tier ⇔ full-collection invariant holds.
 
 ### T26 — Currency (Gold) + hero level-ups · status: BLOCKED
-Implement the Gold economy per `DESIGN-heroes.md` §"Currency & economy": earn
-hooks (per clean question scaled by speed; per round; first Mastery; first topic
-100%; enemy-tier defeat scaled by depth — skipped questions earn 0), a persisted
-Gold total with a non-blocking "+N" flourish, Gold shown on start + results, and
-**spending Gold to level heroes** (cost curve + per-level stat growth; effective
-stat = base + level-growth + item boosts) surfaced on the Heroes screen.
-- **DoD:** Node test of earn amounts (skipped=0; faster→more; depth scaling), the
-  `cost(level)` curve, and that leveling raises hero rating monotonically; Gold
-  persists locally; no regressions; deploy green.
+Implement the Gold economy per `DESIGN-heroes.md` §"Currency & economy" — **earn,
+display, and persist only; spending is ON HOLD (build no spend mechanic yet).**
+Earn hooks: per clean question scaled by speed; per round; first Mastery; first
+topic 100%; enemy-tier defeat scaled by depth — skipped questions earn 0. Persist
+a Gold total with a non-blocking "+N" flourish; show Gold on start + results.
+- **DoD:** Node test of earn amounts (skipped=0; faster→more; depth scaling); Gold
+  persists locally; no spend mechanic present; no regressions; deploy green.

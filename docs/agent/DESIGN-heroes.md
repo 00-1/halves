@@ -149,9 +149,8 @@ advantage + perfect perf).
 
 ## Currency & economy (Gold)
 
-A soft currency, **Gold**, that only goes up from play and is **spent on hero
-level-ups** (an upgrade lever alongside item boosts, so Gold has a clear purpose).
-Stored locally (`halves.gold`).
+A soft currency, **Gold**, that only goes up from play. Stored locally
+(`halves.gold`).
 
 **Earn** (always scaled by achievement level — speed / accuracy / rank / depth):
 - per cleanly-solved question: `2 + speedBonus` (faster vs the mode's `masterSecs`
@@ -162,12 +161,9 @@ Stored locally (`halves.gold`).
 Show a running Gold total on start + results; a non-blocking floating **"+N"** on
 earn (same spirit as the celebratory FX).
 
-**Spend — hero level-ups:** each hero has `level` (start 1, stored per hero).
-Leveling costs `cost(level) = round(50 × level^1.5)` Gold and adds flat stat growth
-(e.g. +2 to each stat per level, or a per-hero growth profile). **Effective stat =
-base + level-growth + item boosts.** Surface on the Heroes screen (level, next
-cost, Level-Up button). Node-test the cost curve and that leveling raises rating
-monotonically.
+**Spending: ON HOLD.** For now Gold is just an accumulating number — earn,
+display, persist. The spend sink (e.g. hero level-ups, a shop) will be designed
+later; do **not** build any spend mechanic yet.
 
 ## Non-negotiables
 
