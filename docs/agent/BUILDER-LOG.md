@@ -455,7 +455,7 @@ notes / questions: tapping launches via the existing `selectMode`+`start()` path
   rows + ellipsised sublines keep it readable at 360px with the existing scroll.
 
 ## T18 — Fullscreen toggle  [HANDOFF]
-commit: (recorded on push to main below)
+commit: ba1836e (on main)
 changed:
   - index.html — added `#fsBtn` (⛶ Fullscreen) to the start-screen `.linkrow`,
     with an aria-label.
