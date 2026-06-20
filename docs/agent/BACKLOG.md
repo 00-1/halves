@@ -474,13 +474,14 @@ accumulation itself fun and able to reach **billions/trillions+**:
   1e9, 1e12, 1e15, 1e21, 1e33 → correct suffixes, no NaN/Infinity); wealth
   milestones fire at the right thresholds; Gold persists; no spend mechanic; no
   regressions; deploy green.
-- **Research constraint (RESEARCH-metagame.md):** earning stays
-  performance-scaled (never reward mere time/attempts) and the wealth milestones
-  are the *soft sink* that gives the rising number a purpose. When spending is
-  eventually unblocked it MUST be a **prestige-style multiplier that makes future
-  *drilling* earn faster** — never a cosmetic/pay shop, never real-money or
-  premium currency. A currency with no sink devalues itself; do not let "watch
-  Gold rise" become an activity decoupled from drills.
+- **Owner decision (RESEARCH-metagame.md):** Gold is **deliberately** just a
+  number that goes up — a comedic nod to incremental games, climbing to absurd
+  quantities. **Heroes + inventory buffs are the real drivers; Gold is side fun**,
+  and that's exactly why it's safe (it can't crowd out the maths when progression
+  lives elsewhere). **No sink/spend is required or wanted right now** — keep T26 as
+  earn/display/persist only. The single rule: Gold **only grows by playing** and
+  earning is **performance-scaled** (skips=0, faster→more), so the number still
+  tracks doing maths well. **No student-facing real-money spending, ever.**
 
 ---
 
@@ -508,7 +509,15 @@ economy. Migration-safe (absent state = streak 0, no crash).
   monotonic; milestones fire at the right day counts. No timers/notifications; no
   regressions; deploy green.
 
-### T32 — Relaxed / no-pressure practice option · status: BLOCKED
+### T32 — Per-question Practice / Review view · status: BLOCKED (being redesigned)
+> **Under revision per owner feedback** — superseding the "relaxed mode" below
+> with a per-question Practice/Review view: a heat-mapped grid of a topic's fixed
+> questions, tap one to attempt it self-paced (still timed per question), earn its
+> Beat/Spark individually, with a short per-question "how to approach this" note.
+> Round-level achievements stay round-only. Depends on T27 (guides) + storing
+> per-question best times. Final spec lands here once confirmed; do not start.
+>
+> *(superseded draft)*
 Mitigates the one well-documented harm of timed drills (TTRS's main critique;
 Boaler on timed-test anxiety): a calmer way to build fluency before chasing
 speed. Add a **practice toggle** (per the smallest clean UI — e.g. a "Practice"

@@ -36,8 +36,12 @@ mechanics, tied to mastery, and avoid the social-comparison traps" is.
    "free" while upselling children; pay-gated loot boxes) and the loot-box ↔
    problem-gambling correlation (Zendle & Cairns; *stronger in adolescents*) is
    **entirely about spending money**. Variable-rarity loot is psychologically
-   potent **and** ethically fine *as long as nothing is ever purchasable*. This
-   is our single biggest advantage and the one line we must never cross.
+   potent **and** ethically fine *as long as a student can never spend money on
+   it*. This is our single biggest advantage and the one line we must never cross.
+   **(Owner decision):** there will **never** be a way for a student to spend real
+   money in the game. If it is ever monetised, that is an **ethical one-off** — a
+   parent buying the game outright, or similar — **never** student-facing
+   microtransactions, premium currency, or pay-to-open/loot purchases.
 
 ## What the evidence actually supports (condensed)
 
@@ -98,35 +102,44 @@ mechanics, tied to mastery, and avoid the social-comparison traps" is.
    - Framed as **competence/consistency** ("5 days practised — nice"), and it
      feeds the existing collectible/milestone system rather than a separate
      pressure economy. → **New backlog task (T31).**
-2. **Gold: give the rising number a *purpose* and a mastery-pointed sink.** The
-   idle-game literature is blunt: **a currency with no sink devalues itself** and
-   trains "watch the number go up" *decoupled from the activity*. Two protections:
-   - Our Gold only grows **by playing** (no offline/idle accrual) and earning is
-     **scaled by clean+fast performance, not time/attempts** — keep both; that
-     keeps the "tap" = doing maths, and avoids paying for mere participation.
-   - Even with spending **on hold**, give Gold *anticipated* purpose now: visible
-     **wealth milestones/ranks** act as a soft sink (a goal the pile is "for" —
-     the "pinch point" that makes accumulation feel meaningful). When a real sink
-     ships, make it **prestige-style and pointed back at drilling** (spend Gold →
-     future *drilling* earns faster, à la AdVenture Capitalist's Angels), **never**
-     a cosmetic/pay-to-win shop and **never** purchasable with real money.
-   - → fold into **T26**; documented in DESIGN-heroes.md Gold section.
-3. **Protect against timed-pressure anxiety — our biggest pedagogical risk.**
-   The single most-documented criticism of TTRS (our closest analog) is
-   timer-driven maths anxiety (Boaler: ~⅓ of students stressed by timed tests
-   *regardless of ability*; stress consumes working memory). We are a speed drill
-   by nature, so we mitigate rather than eliminate:
-   - Keep "**accuracy before speed**" framing; keep the mastery time-bar gentle
-     and never the source of shame.
-   - Offer a **relaxed/practice (no-pressure) way to play** (cf. TTRS's
-     timer-light "Jamming") so a nervous child can build fluency before chasing
-     speed brackets. → **New backlog task (T32), Wave-2 priority.**
+2. **Gold: keep it deliberately a "number that goes up" — that's the point.**
+   The idle-game literature warns that an unspent currency devalues itself and can
+   train "watch the number rise" *decoupled from the activity*. **(Owner decision,
+   weighing that:)** Gold stays exactly that — a comedic, intentional nod to
+   incremental "numbers-go-up" games, climbing to absurd quantities. The **heroes
+   and inventory buffs are the real drivers; Gold is side fun.** That mitigates the
+   risk on its own: because Gold is explicitly secondary and the actual progression
+   lives in heroes/collectibles/mastery, "watch Gold rise" can't crowd out the
+   maths. The one structural protection we keep is that Gold **only grows by
+   playing** (no idle accrual) and earning is **performance-scaled** (skips=0,
+   faster→more) — so the rising number still *tracks* doing maths well, which is
+   what makes it satisfying rather than hollow. **No sink is required**; if a
+   spend ever ships it must still be non-monetary and point back at play, but it is
+   explicitly *not* needed. → T26 stays "earn/display/persist, no spend."
+3. **Replace "relaxed mode" with a per-question Practice / Review view (better
+   idea, owner-led).** The risk it addresses is the same — timed-drill anxiety,
+   TTRS's main documented criticism (Boaler: ~⅓ of students stressed by timed
+   tests *regardless of ability*; stress consumes working memory) — but the
+   solution is stronger than a passive "hide the timer" mode. From a topic, open a
+   grid of all its fixed questions, **heat-mapped by your best solve time** (skips/
+   never-solved stand out); **tap one to attempt it on its own**, self-paced, no
+   flurry. Still timed per question (so it's honest), and you can **earn that
+   question's Beat/Spark individually** — a calm, precise way to mop up the exact
+   collectibles you're missing by targeting weak/skipped items (textbook targeted
+   retrieval practice). **Round-level** achievements (Flawless, the four Speed
+   brackets, Mastery) stay **round-only**, so this is a *training ground*, not a
+   shortcut — "100% still requires real mastery." Each question also surfaces a
+   short **"how to approach this"** note: the topic guide's general method (T27)
+   applied to the specific numbers. → reframes **T32**; depends on **T27** (guides)
+   for the method text and on storing **per-question best times**.
 
 **Hard red lines (never cross):**
 
-- **Nothing is ever purchasable** — no real-money anything, no premium currency,
-  no pay-to-open chests, no cosmetic shop behind money. This is what got Prodigy
-  an FTC complaint and is the entire loot-box/gambling-harm boundary.
+- **No student can ever spend real money** — no premium currency, no pay-to-open
+  chests, no microtransactions, no cosmetic shop behind money. This is what got
+  Prodigy an FTC complaint and is the entire loot-box/gambling-harm boundary. (Any
+  future monetisation is an ethical one-off — e.g. a parent buys the game outright
+  — never student-facing.)
 - **No public or social leaderboards / name-and-shame.** Self-comparison only.
 - **No guilt/loss-aversion dark patterns** (streak-shaming, fake "you're about to
   lose X", manipulative notifications).
