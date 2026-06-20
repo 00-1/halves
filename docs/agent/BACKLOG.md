@@ -110,11 +110,23 @@ per the design rule above, convert **all four** modes to **fixed curated sets**:
 P1: to 100. P2: to 1000 + decimal bonds to 1. **Fixed set** (curated array,
 shuffled — not generated).
 
-### T7 — Place value ×/÷ · status: OPEN
+### T7 — Place value ×/÷ · status: DONE
 P1: whole ×÷ 10·100. P2: decimals ×÷ 10·100·1000. **Fixed set.**
 
-### T8 — Fractions of · status: BLOCKED
+### T8 — Fractions of · status: OPEN
 P1: ½ ¼ ⅓ ⅕ of. P2: ⅔ ¾ ⅗ ⅝ of. **Fixed set.**
+Curate per QUESTION-SETS.md. **Numpad/terminating rule:** every answer must be a
+whole or terminating decimal that round-trips on the numpad — choose bases so
+each P1 answer is exact (e.g. ⅓ of 18 = 6, never ⅓ of 20). P1 unitless fractions
+(½ ¼ ⅓ ⅕) of curated amounts; P2 non-unit (⅔ ¾ ⅗ ⅝) of amounts whose answers stay
+exact. Splice at importance position 7 (after Place Value): re-link
+`percentages` later; for now `fractionsof.unlockedBy` = "placevalue"? **No** —
+Place Value already links to `fractions` (the F→decimal mode). Insert "Fractions
+of" between Place Value and the existing `fractions` mode: set
+`fractionsof.unlockedBy:"placevalue"` and re-point `fractions.unlockedBy` →
+"fractionsof" so the chain stays contiguous. P2 (`fractionsof2`) off-chain via
+`requires:"mastery:fractionsof"`. Store answers as literals where division would
+drift. Log curation rationale.
 
 ### T9 — Percentages of · status: BLOCKED
 P1: 10/25/50% of ≤400. P2: 1/5/20/75% of ≤200. **Fixed set.**

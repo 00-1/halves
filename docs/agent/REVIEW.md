@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T29`. **Topics begin now: next is T7 (Place value ×/÷)** — a FIXED curated set per docs/agent/QUESTION-SETS.md; log your rationale.
+**Current verdict:** `APPROVED — T7`. **Next is T8 (Fractions of)** — FIXED curated set per docs/agent/QUESTION-SETS.md. **Critical:** pick bases so every answer is exact/terminating and numpad-round-trips (e.g. ⅓ of 18 = 6, never ⅓ of 20); store literal answers where division drifts. Insert between Place Value and the existing Fraction→decimal mode: `fractionsof.unlockedBy:"placevalue"` and re-point `fractions.unlockedBy`→"fractionsof"; P2 off-chain via `requires:"mastery:fractionsof"`. Log your rationale.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T7 — Place value ×/÷ → APPROVED
+First educational topic of the chain. Independently verified (not from log): node -c OK; no new DOM ids; no TODO/stub in diff. Node logic harness loading the real modes.js — `placevalue` P1: 21 fixed items, stable prompt-set across rounds, every answer recomputed from prompt is correct, whole, non-negative, round-trips on numpad, max answer length 4. `placevalue2` P2: 21 fixed items, stable, every decimal answer correct within 1e-9 AND `parseFloat(String(a))===a` (literal-stored, no float drift), answers <1 present. Chain contiguous: halves→times→doubles→addsub→bonds→**placevalue**→fractions→squares; pv2 off-chain via `requires:"mastery:placevalue"`; `fractions.unlockedBy` correctly re-linked bonds→placevalue. Catalogue 481→579 (Beat/Spark per question generated). masterSecs 5 for both parts accepted (same operation class). No regressions.
 
 ### T29 — Scroll indicator → APPROVED
 .picker wrapped in .picker-wrap; edge-fade ::before/::after + bobbing ▾ cue toggled by updateScrollCues() (scroll geometry), wired to render + passive scroll + resize. pointer-events:none; hidden when it fits; reduced-motion opt-out. JS ok, ids ok, no stubs.
