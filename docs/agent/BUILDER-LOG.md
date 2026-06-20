@@ -52,3 +52,44 @@ notes / questions: Existing modes only (Halves, Times, Doubles, Fractions,
   in their own tasks (T5+). "Selecting a locked topic shows the requirement" is
   implemented via the start-screen best line + disabled Start; the richer picker
   is T3.
+
+## T2 — Mastery achievement + Part-2 gate plumbing  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - modes.js — added `masterSecs` to all 5 modes per the BACKLOG tier table
+    (halves 4, times 3.5, doubles 4, fractions 3.5, squares 3.5). Documented
+    `masterSecs` + the `requires:"mastery:<id>"` Part-2 convention in the header.
+  - collectibles.js — new "Mastery" category (added to CATS, slotted after
+    Speed) and a `mastery:<id>` item per mode (rarity epic). Its test = round
+    finished with 0 skips AND `totalTime ≤ mode.masterSecs × total` (i.e. avg ≤
+    masterSecs). Awarded automatically through the existing `evaluate()` path in
+    finish() (per-mode `modeId` filter keeps it scoped to the played mode).
+  - main.js — `isUnlocked()` now honours `requires:"mastery:<id>"` (Part-2 gate)
+    AND `unlockedBy` (chain), with own-`init:` migration overriding both; new
+    `unlockHint()` produces the right hint for chain vs Part-2 locks (used by the
+    locked best-line). New `showTopicToast(m)` fires a celebratory toast when a
+    topic becomes newly playable; finish() snapshots unlock state before awarding
+    collectibles and toasts any topic opened this round ("Topic unlocked" for
+    chain, "Part 2 unlocked" for mastery gates).
+  - styles.css — `.toast .t-glyph` badge styling for the topic-unlock toast.
+how I verified:
+  - node -c: modes.js, collectibles.js, main.js all OK.
+  - id cross-check: every `$("id")` in main.js present in index.html; 0 missing.
+  - logic check (Node, loading the real modes/collectibles): masterSecs correct
+    on all 5 modes; mastery item present per mode in category "Mastery";
+    boundary cases via the real catalogue test — AT target → mastered, just
+    under → mastered, just over → NOT, 1 skip (even if fast) → NOT; `evaluate()`
+    awards mastery only for the played mode and only when earned; the
+    `requires` gate locks a synthetic Part-2 mode until `mastery:<part1>` is
+    owned (mere Part-1 `init` is not enough), with migration via own `init`;
+    combined requires+unlockedBy needs both; T1 chain regression intact;
+    catalogue grew exactly 275→280. ALL CHECKS PASSED.
+  - no TODO/placeholder introduced: grep clean (only the pre-existing
+    `.placeholder` answer hint, untouched).
+  - no regressions: `m.glyph` in the toast is the same trusted mode HTML
+    `renderMark()` already injects; inventory skips empty categories so the new
+    Mastery section only shows with items; routing/build-info/HOF untouched.
+notes / questions: No Part-2 modes ship in this task by design — T2 is plumbing,
+  proven by the Node gate test. The unlock toast fires for BOTH chain and Part-2
+  unlocks (matches research §Mechanics "Unlocks fire a celebratory toast"); it is
+  additive to the existing end-of-round collectible modal, not a replacement.

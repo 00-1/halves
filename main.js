@@ -76,11 +76,26 @@
   // previous topic has been finished once (its `init:` achievement is owned),
   // or this topic itself has already been played (migration: anything a
   // returning player has an `init` for stays unlocked).
+  //
+  // A harder Part-2 mode adds `requires:"mastery:<part1Id>"`: it stays locked
+  // until that Mastery is earned. Both gates must pass; owning this mode's own
+  // `init:` (already played) overrides them (migration).
   function isUnlocked(m){
-    if(!m.unlockedBy) return true;
     const col = loadCollected();
-    if(col["init:"+m.id]) return true;
-    return !!col["init:"+m.unlockedBy];
+    if(col["init:"+m.id]) return true;                              // already played
+    if(m.requires && !col[m.requires]) return false;               // Part-2 mastery gate
+    if(m.unlockedBy && !col["init:"+m.unlockedBy]) return false;   // topic-chain gate
+    return true;                                                    // first topic / all gates passed
+  }
+
+  // What does a locked topic need? Used for the unlock hint on the start screen.
+  function unlockHint(m){
+    if(m.requires){
+      const req = byId(m.requires.replace(/^mastery:/, ""));
+      return 'Master <b>'+esc(req ? req.name : "its Part 1")+'</b> to unlock '+esc(m.name)+'.';
+    }
+    const prev = byId(m.unlockedBy);
+    return 'Finish <b>'+esc(prev ? prev.name : "the previous topic")+'</b> to unlock '+esc(m.name)+'.';
   }
 
   let mode = byId(loadLastMode()) || MODES[0];
@@ -112,9 +127,7 @@
 
   function renderBest(){
     if(!isUnlocked(mode)){
-      const prev = byId(mode.unlockedBy);
-      $("bestLine").innerHTML = '🔒 Finish <b>'+esc(prev ? prev.name : "the previous topic")+
-        '</b> to unlock '+esc(mode.name)+'.';
+      $("bestLine").innerHTML = '🔒 '+unlockHint(mode);
       return;
     }
     const b = loadBoard(mode.id).slice().sort(rank);
@@ -196,6 +209,20 @@
     C.drawIcon(t.querySelector("canvas"), it.id, C.paletteFor(it.rarity));
     requestAnimationFrame(() => t.classList.add("show"));
     setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2000);
+  }
+
+  // Celebratory toast when a whole topic becomes newly playable — fired both for
+  // chain unlocks (finishing the previous topic) and Part-2 mastery unlocks.
+  function showTopicToast(m){
+    const part2 = !!m.requires;
+    const t = document.createElement("div");
+    t.className = "toast r-epic topic";
+    t.innerHTML = '<span class="t-glyph">'+m.glyph+'</span>'+
+      '<div class="t-txt"><span class="t-tag">'+(part2 ? "Part 2 unlocked" : "Topic unlocked")+'</span>'+
+      '<span class="t-name">'+esc(m.name)+'</span></div>';
+    $("toasts").appendChild(t);
+    requestAnimationFrame(() => t.classList.add("show"));
+    setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2600);
   }
 
   function renderInventory(){
@@ -382,12 +409,18 @@
     };
     const collected = loadCollected();
     const has = id => !!collected[id];
+    // snapshot which topics were playable BEFORE this round's awards
+    const wasUnlocked = {};
+    MODES.forEach(m => wasUnlocked[m.id] = isUnlocked(m));
     const newly = C.evaluate(ctx, has);
     newly.forEach(it => collected[it.id] = { ts: Date.now() });
     const more = C.evaluateCollector(Object.keys(collected).length, has);
     more.forEach(it => collected[it.id] = { ts: Date.now() });
     saveCollected(collected);
     const unlocked = newly.concat(more);
+
+    // celebratory toast for any topic this round newly opened (chain or Part-2)
+    MODES.forEach(m => { if(!wasUnlocked[m.id] && isUnlocked(m)) showTopicToast(m); });
 
     // ----- hall of fame -----
     const board = loadBoard(mode.id);

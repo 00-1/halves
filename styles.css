@@ -252,6 +252,9 @@ canvas.pix{image-rendering:pixelated}
 .toast .t-txt{display:flex;flex-direction:column;line-height:1.15}
 .toast .t-tag{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .toast .t-name{font-family:var(--display);font-weight:700;font-size:14px;color:var(--text)}
+.toast .t-glyph{flex:0 0 auto;width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;background:var(--surface);font-family:var(--mono);font-weight:700;font-size:15px;color:var(--amber)}
+.toast .t-glyph .slash{color:var(--text)}
 .toast.r-uncommon{border-color:#3fce8c}
 .toast.r-rare{border-color:#5bb4e8}
 .toast.r-epic{border-color:#9a5cf6}

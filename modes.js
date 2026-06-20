@@ -21,6 +21,12 @@
  * previous topic in the chain. A topic becomes playable once the player has
  * finished that previous topic once (its `init:` achievement). See
  * docs/research-11plus.md §"Unlock chain".
+ *
+ * `masterSecs` is the gentle per-answer target time for the Mastery achievement
+ * (finish with no skips AND total time ≤ masterSecs × questions). It is set per
+ * difficulty tier — deliberately at the relaxed end so a 10-year-old can reach
+ * it. A harder Part-2 mode declares `requires:"mastery:<part1Id>"` so it stays
+ * locked until its Part-1 mastery is earned (see docs/agent/BACKLOG.md T2).
  */
 (function(){
   "use strict";
@@ -68,31 +74,31 @@
     {
       id:"halves", name:"Halves", tag:"Halve it. Fast.",
       glyph:'x<span class="slash">/</span>2',
-      eyebrow:'half of <b>↓</b>', expr:false,
+      eyebrow:'half of <b>↓</b>', expr:false, masterSecs:4,
       build(){ return shuffle(HALVES_SRC).map(n => ({ p:String(n), a:n/2 })); }
     },
     {
       id:"times", name:"Times", tag:"Know your tables.",
       glyph:'a<span class="slash">×</span>b',
-      eyebrow:'product of <b>↓</b>', expr:true, unlockedBy:"halves",
+      eyebrow:'product of <b>↓</b>', expr:true, unlockedBy:"halves", masterSecs:3.5,
       build(){ return shuffle(TIMES_SRC).map(([a,b]) => ({ p:a+" × "+b, a:a*b })); }
     },
     {
       id:"doubles", name:"Doubles", tag:"Double it. Fast.",
       glyph:'2<span class="slash">×</span>x',
-      eyebrow:'double <b>↓</b>', expr:false, unlockedBy:"times",
+      eyebrow:'double <b>↓</b>', expr:false, unlockedBy:"times", masterSecs:4,
       build(){ return shuffle(DOUBLES_SRC).map(n => ({ p:String(n), a:n*2 })); }
     },
     {
       id:"fractions", name:"Fractions", tag:"As a decimal.",
       glyph:'<span class="slash">¾</span>',
-      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"doubles",
+      eyebrow:'as a decimal <b>↓</b>', expr:false, unlockedBy:"doubles", masterSecs:3.5,
       build(){ return shuffle(FRACTIONS_SRC).map(([f,d]) => ({ p:f, a:d })); }
     },
     {
       id:"squares", name:"Squares", tag:"Square it.",
       glyph:'x<span class="slash">²</span>',
-      eyebrow:'square of <b>↓</b>', expr:false, unlockedBy:"fractions",
+      eyebrow:'square of <b>↓</b>', expr:false, unlockedBy:"fractions", masterSecs:3.5,
       build(){ return shuffle(SQUARES_SRC).map(n => ({ p:n+"²", a:n*n })); }
     }
   ];

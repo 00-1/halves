@@ -91,7 +91,7 @@
     { name:"Blazing",   avg:1.4, rarity:"rare" },
     { name:"Lightning", avg:1.1, rarity:"epic" }
   ];
-  const CATS = ["Rank","Initiation","Flawless","Speed","Solved","Spark","Milestone","Collector"];
+  const CATS = ["Rank","Initiation","Flawless","Speed","Mastery","Solved","Spark","Milestone","Collector"];
 
   const CATALOG = [];
   const byIdMap = {};
@@ -104,7 +104,7 @@
     test: ctx => ctx.rankIndex === i
   }));
 
-  // per-mode: initiation, flawless, speed brackets
+  // per-mode: initiation, flawless, speed brackets, mastery
   MODES.forEach(m => {
     add({ id:"init:"+m.id, name:m.name+" Initiate", rarity:"uncommon", cat:"Initiation", modeId:m.id,
       desc:"Finish your first "+m.name+" round.", test: () => true });
@@ -115,6 +115,13 @@
       desc:"Average under "+lv.avg+"s per answer across a "+m.name+" round.",
       test: ctx => ctx.avg < lv.avg
     }));
+    // Mastery — finish with no skips AND total time within the mode's gentle
+    // target (masterSecs × questions). This is the gate that opens a Part-2 mode.
+    add({ id:"mastery:"+m.id, name:"Mastery · "+m.name, rarity:"epic", cat:"Mastery", modeId:m.id,
+      desc:"Finish "+m.name+" with no skips, averaging "+(m.masterSecs)+"s per answer or faster.",
+      test: ctx => ctx.mistakes === 0 &&
+                   typeof ctx.mode.masterSecs === "number" &&
+                   ctx.totalTime <= ctx.mode.masterSecs * ctx.total });
   });
 
   // per-question: "Beat" (first clean solve) and "Spark" (first fast clean solve)
