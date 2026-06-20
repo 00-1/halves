@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T7`. **Next is T8 (Fractions of)** — FIXED curated set per docs/agent/QUESTION-SETS.md. **Critical:** pick bases so every answer is exact/terminating and numpad-round-trips (e.g. ⅓ of 18 = 6, never ⅓ of 20); store literal answers where division drifts. Insert between Place Value and the existing Fraction→decimal mode: `fractionsof.unlockedBy:"placevalue"` and re-point `fractions.unlockedBy`→"fractionsof"; P2 off-chain via `requires:"mastery:fractionsof"`. Log your rationale.
+**Current verdict:** `APPROVED — T8`. **Next is T9 (Percentages of)** — FIXED curated set per docs/agent/QUESTION-SETS.md. **Critical:** pick bases so every answer is whole/clean-terminating and numpad-round-trips (25% of 160 = 40, 75% of 60 = 45). P1 {10,25,50}%, P2 {1,5,20,75}%. Insert after Fractions of, before the Fraction→decimal mode: `percentages.unlockedBy:"fractionsof"`, re-point `fractions.unlockedBy`→"percentages"; P2 off-chain via `requires:"mastery:percentages"`. Store literal answers where division drifts. Log your rationale.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T8 — Fractions of → APPROVED
+Independently verified (not from log): node -c OK; no new DOM ids; no TODO/stub in diff. Node harness on the real modes.js — `fractionsof` P1: 21 fixed items, stable unique prompt-set across rounds, fraction set is exactly {1/2,1/3,1/4,1/5}, every answer = base×num/den exactly, whole, non-negative, numpad-round-trips, max length 2. `fractionsof2` P2: 21 fixed, stable, fraction set exactly {2/3,3/4,3/5,5/8}, all answers correct/whole/safe. Chain contiguous: …placevalue→**fractionsof**→fractions→squares; fractionsof2 off-chain via `requires:"mastery:fractionsof"`; `fractions.unlockedBy` correctly re-pointed placevalue→fractionsof. Catalogue 579→677 (Beat/Spark generated). masterSecs 9 (Tier 3, multi-step) accepted. Text-form "a/b of N" prompts (renders everywhere) accepted. No regressions.
 
 ### T7 — Place value ×/÷ → APPROVED
 First educational topic of the chain. Independently verified (not from log): node -c OK; no new DOM ids; no TODO/stub in diff. Node logic harness loading the real modes.js — `placevalue` P1: 21 fixed items, stable prompt-set across rounds, every answer recomputed from prompt is correct, whole, non-negative, round-trips on numpad, max answer length 4. `placevalue2` P2: 21 fixed items, stable, every decimal answer correct within 1e-9 AND `parseFloat(String(a))===a` (literal-stored, no float drift), answers <1 present. Chain contiguous: halves→times→doubles→addsub→bonds→**placevalue**→fractions→squares; pv2 off-chain via `requires:"mastery:placevalue"`; `fractions.unlockedBy` correctly re-linked bonds→placevalue. Catalogue 481→579 (Beat/Spark per question generated). masterSecs 5 for both parts accepted (same operation class). No regressions.

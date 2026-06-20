@@ -113,7 +113,7 @@ shuffled — not generated).
 ### T7 — Place value ×/÷ · status: DONE
 P1: whole ×÷ 10·100. P2: decimals ×÷ 10·100·1000. **Fixed set.**
 
-### T8 — Fractions of · status: OPEN
+### T8 — Fractions of · status: DONE
 P1: ½ ¼ ⅓ ⅕ of. P2: ⅔ ¾ ⅗ ⅝ of. **Fixed set.**
 Curate per QUESTION-SETS.md. **Numpad/terminating rule:** every answer must be a
 whole or terminating decimal that round-trips on the numpad — choose bases so
@@ -128,8 +128,18 @@ of" between Place Value and the existing `fractions` mode: set
 `requires:"mastery:fractionsof"`. Store answers as literals where division would
 drift. Log curation rationale.
 
-### T9 — Percentages of · status: BLOCKED
+### T9 — Percentages of · status: OPEN
 P1: 10/25/50% of ≤400. P2: 1/5/20/75% of ≤200. **Fixed set.**
+Curate per QUESTION-SETS.md. **Numpad/terminating rule:** choose bases so every
+answer is whole or a clean terminating decimal that round-trips (e.g. 25% of 160
+= 40, 75% of 60 = 45; avoid bases that yield ugly decimals like 20% of 25). Prompt
+text form "p% of N". P1 uses {10,25,50}% only; P2 uses {1,5,20,75}%. Splice at
+importance position 8 (after Fractions of, before the existing Fraction→decimal
+mode): set `percentages.unlockedBy:"fractionsof"` and re-point
+`fractions.unlockedBy`→"percentages" so the chain stays contiguous. P2
+(`percentages2`) off-chain via `requires:"mastery:percentages"`. Store literal
+answers where division would drift. masterSecs: Tier 3 (≈9) — multi-step. Log
+curation rationale.
 
 > Further topics (equivalences, rounding, money, time, metric, ratio, …) will be
 > appended by the Babysitter once T5–T9 are `DONE`. Do not invent them early.
