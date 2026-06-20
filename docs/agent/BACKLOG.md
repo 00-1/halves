@@ -492,41 +492,63 @@ the Babysitter; both are deploy-safe, self-contained, and respect the doc's red
 lines (no purchases, no public leaderboards, no guilt/loss-aversion dark
 patterns, no push notifications).
 
-### T31 — Gentle daily-practice streak · status: BLOCKED
+### T31 — Gentle daily-practice streak · status: BLOCKED (spec CONFIRMED by owner)
 The best-evidenced retention lever in education (Duolingo) — implemented as the
 **ethical** version. Track **days practised** (≥1 finished round bumps the day's
-count) in localStorage (`halves.streak`: count, lastDay, bestStreak, freezes).
-Show a small streak indicator on the start screen + a celebratory (non-blocking)
-acknowledgement on return when the streak advances. **Forgiving:** a built-in
-grace/"freeze" so a single missed day does NOT reset weeks (e.g. 1 auto-freeze,
-regenerating). **No guilt, no countdowns, no "about to lose it" pressure, no
-notifications.** Feed streak milestones into the existing collectible/milestone
-system (e.g. "3-day", "7-day", "30-day" streak items) — not a separate pressure
-economy. Migration-safe (absent state = streak 0, no crash).
-- **DoD:** Node test of the pure streak reducer — consecutive days increment;
-  same-day replays don't double-count; a 1-day gap is absorbed by the freeze
-  (streak preserved, freeze consumed) while a 2+-day gap resets to 1; bestStreak
-  monotonic; milestones fire at the right day counts. No timers/notifications; no
+count) in localStorage (`halves.streak`: `{ count, lastDay, best, freezes }`,
+`lastDay` = local calendar day). Show a small streak indicator on the start screen
+(e.g. `🔥 5`) + a celebratory **non-blocking** acknowledgement on return when the
+streak advances. **No guilt, no countdowns, no "about to lose it" pressure, no
+notifications.** Migration-safe (absent state = streak 0, no crash).
+- **Reducer rules** (pure, given today's local day):
+  - same day (gap 0) → no change.
+  - gap 1 → `count++`.
+  - gap 2 (one day missed) → if `freezes > 0`: `count++`, `freezes--` (the miss is
+    absorbed); else `count = 1`.
+  - gap ≥ 3 (2+ days missed) → `count = 1`.
+  - **Freeze regen:** `freezes` starts at 1, **cap 2**, +1 each time `count`
+    crosses a multiple of 5 (so it stays forgiving without being free).
+  - `best = max(best, count)`.
+- **Item unlocks (owner-confirmed):** day-milestone collectibles at **3 / 7 / 14 /
+  30 / 100** practised-day streaks, generated through the existing catalogue/
+  milestone system (their own small set; rarity climbs with the milestone) — not a
+  separate pressure economy.
+- **DoD:** Node test of the pure reducer covering every branch above (increment;
+  same-day no double-count; gap-2 absorbed by a freeze then reset when none; gap≥3
+  reset; freeze cap/regen; `best` monotonic) AND that each day-milestone collectible
+  fires at exactly its threshold and not before. No timers/notifications; no
   regressions; deploy green.
 
-### T32 — Per-question Practice / Review view · status: BLOCKED (being redesigned)
-> **Under revision per owner feedback** — superseding the "relaxed mode" below
-> with a per-question Practice/Review view: a heat-mapped grid of a topic's fixed
-> questions, tap one to attempt it self-paced (still timed per question), earn its
-> Beat/Spark individually, with a short per-question "how to approach this" note.
-> Round-level achievements stay round-only. Depends on T27 (guides) + storing
-> per-question best times. Final spec lands here once confirmed; do not start.
->
-> *(superseded draft)*
-Mitigates the one well-documented harm of timed drills (TTRS's main critique;
-Boaler on timed-test anxiety): a calmer way to build fluency before chasing
-speed. Add a **practice toggle** (per the smallest clean UI — e.g. a "Practice"
-switch on the start screen) that plays the current topic with the **clock/speed
-pressure de-emphasised**: timer hidden or non-scoring, no rank/best-time recorded,
-gentle "accuracy first" framing. Practice rounds **don't** award speed-bracket
-collectibles or best-times (so they can't game mastery) but **do** let a child
-rehearse the exact question set. Persist the preference. Keep the default
-experience exactly as-is for kids who want the timed game.
-- **DoD:** Node/logic check — practice mode records no best-time and awards no
-  speed/rank collectibles; normal mode is byte-for-byte unchanged; preference
-  persists; the same fixed question set is used; no regressions; deploy green.
+### T32 — Per-question Practice / Review view · status: BLOCKED (spec CONFIRMED by owner)
+Replaces the old "relaxed mode" idea (owner-chosen). Mitigates the one
+well-documented harm of timed drills (TTRS's main critique; Boaler on timed-test
+anxiety) **and** doubles as a precise mastery tool. **Depends on T27** (for the
+approach-note method text) and on **storing per-question best times** (see below) —
+sequence it **after T27**.
+- **Per-question best-time store.** Add `halves.qbest` (per `modeId` → per question
+  key → best solve time in seconds; a question is keyed by its prompt string, which
+  is stable within a fixed set). Update it at the end of every **normal** round
+  from that round's per-question times. Migration-safe (absent = empty).
+- **The view.** From a topic (e.g. a "Practice" button on the start screen for the
+  selected topic), open a grid of **all** that topic's fixed questions. Each tile
+  shows the prompt and is **heat-mapped by the player's best solve time** for that
+  question — reuse the Best Times palette; **skipped/never-solved tiles stand out**
+  (grey/red) so weak spots are obvious.
+- **Attempt one at a time.** Tap a tile → answer just that question, self-paced, no
+  flurry. It is **still timed per question** (so rewards stay honest). On a clean
+  solve, grant that question's **Beat**; on a fast clean solve, its **Spark** —
+  through the existing per-question collectible path — and update `qbest`.
+- **Round-level achievements stay round-only.** Flawless, the four Speed brackets,
+  and Mastery are **never** awarded here — this is a training ground, not a
+  shortcut; "100% still requires real mastery" via actual rounds.
+- **Approach note.** Each question surfaces a short **"how to approach this"** line:
+  the topic guide's general method (T27) applied to the specific numbers, produced
+  by a per-topic `explain(question)` helper (generated from the method + values —
+  NOT hand-written per item). British, 10-yo-appropriate, mathematically correct.
+- **DoD:** Node/logic checks — `qbest` reducer records/keeps the **min** time per
+  question and is migration-safe; the practice path awards **only** Beat/Spark for
+  the attempted question and **never** a best-time, Speed bracket, Flawless, rank,
+  or Mastery item; normal rounds are unchanged; `explain()` returns a correct,
+  non-empty note for every question in every topic (spot-checked across topics for
+  mathematical correctness by the Babysitter); the grid renders at 360px without
+  overflow; no regressions; deploy green.
