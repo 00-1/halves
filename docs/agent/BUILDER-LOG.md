@@ -180,7 +180,7 @@ notes / questions: Interpretation flag for "clear every topic" — I read the th
   I'll repoint it at the initiated-all condition.
 
 ## T5 — Add / Subtract  [HANDOFF]
-commit: (recorded on push to main below)
+commit: addf0b9 (on main)
 changed:
   - modes.js — generated-mode helpers (`randInt`, `genRound` → 20 unique prompts,
     `MINUS` = U+2212) and two generators. New modes spliced into the chain at
