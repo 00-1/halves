@@ -222,6 +222,15 @@ already safe (speed ranks need a perfect score).
   of how low its avg is; a clean (0-skip) round under a threshold still earns the
   appropriate brackets; no other collectible affected; no regressions; deploy green.
 
+### T28 — Remove the how-to-play blurb on the start screen · status: OPEN
+The game is self-explanatory (auto-advancing answers + a labelled "skip" key), so
+the instructional blurb on the topic-selection screen isn't needed. Remove the
+`.hint` block from the start screen in index.html, and remove the now-unused
+`.hint` / `.hint kbd` CSS (and the `<kbd>` styling if used nowhere else). Keep the
+start screen tidy and balanced after removal.
+- **DoD:** blurb gone; no dead CSS left; start screen still lays out cleanly at
+  360px; no regressions; deploy green.
+
 ### T11 — Entry / "tap to begin" screen (fullscreen + audio gesture) · status: OPEN
 A first splash screen that gives the best experience from the start and provides
 the single user gesture both fullscreen and Web Audio require.
