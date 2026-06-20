@@ -652,3 +652,37 @@ how I verified:
 notes / questions: masterSecs 5 (Tier 2) for both parts — the tier table lists
   "×÷ powers of 10, place value" under Tier 2; P2 decimals are the same operation
   class, so 5 for both (flag me if P2 should be Tier 3 / 9).
+
+## T8 — Fractions of  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - modes.js — fixed sets + two modes spliced into the chain at importance
+    position 7 (between Place Value and the existing Fraction→decimal): `fractionsof`
+    (Part 1, ½ ¼ ⅓ ⅕ of an amount; unlockedBy "placevalue", masterSecs 9, group
+    "Fractions & %") and `fractionsof2` (Part 2, ⅔ ¾ ⅗ ⅝ of an amount; requires
+    "mastery:fractionsof", off-chain, masterSecs 9). Re-pointed
+    `fractions.unlockedBy` "placevalue"→"fractionsof". Chain is now Halves→Times→
+    Doubles→Add&Subtract→Number Bonds→Place Value→Fractions of→Fraction→decimal→
+    Squares. Prompts use the text form "a/b of N" so every glyph renders.
+curation rationale (per QUESTION-SETS.md Fractions-of checklist):
+  - Bases chosen so EVERY answer is a whole number (the critical rule): e.g.
+    1/3 of 18 = 6 (never 1/3 of 20), 5/8 of 16 = 10, 3/5 of 25 = 15. Each entry
+    stores the literal whole answer.
+  - Coverage: P1 spans all four unit fractions (1/2, 1/4, 1/3, 1/5); P2 spans the
+    harder non-unit fractions (2/3, 3/4, 3/5, 5/8). Spread of bases incl.
+    money-flavoured amounts (20, 40, 50, 60, 100).
+how I verified:
+  - node -c (modes/collectibles/main) OK; id cross-check clean; no TODO.
+  - logic check (Node): field set + chain re-link + unlock steps (…Place Value→
+    Fractions of→Fraction→decimal…) + the fractionsof2 mastery gate. For BOTH
+    parts: fixed 21-item sets with stable unique prompt sets across rounds; **every
+    answer is whole, equals base×num/den exactly, and is numpad-safe**; P1 uses
+    exactly {1/2,1/4,1/3,1/5} and P2 exactly {2/3,3/4,3/5,5/8}. Both fixed (no gen),
+    49 catalogue items each; catalogue 579→677. "Fractions & %" group now lists
+    fractionsof, fractionsof2, fractions; widest prompt "1/5 of 100" (10 chars)
+    fits via fitText. ALL T8 CHECKS PASSED.
+  - no regressions: only the intended fractions re-link changed in the chain.
+notes / questions: masterSecs 9 (Tier 3) for both — the tier table lists
+  "fractions of" under Tier 3 (multi-step). Prompts are text "a/b of N" (not the
+  ⅓/⅗/⅝ glyphs) to guarantee rendering everywhere; the topic tags still show the
+  pretty glyphs for flavour.
