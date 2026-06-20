@@ -1,6 +1,18 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T5b`. All four modes are now fixed curated sets. **Next: T10** (celebratory in-play unlock particles), then resume topics at T7.
+**Current verdict:** `CHANGES REQUESTED — T10` (one bug; everything else is great).
+
+1. **`showTopicToast` references an undeclared `pal`** (the only `pal` is local to
+   `showToast`). Under "use strict" this throws a **ReferenceError on every topic /
+   Part-2 unlock** — the toast still appears (the throw is after `add("show")`) but
+   it errors and gets **no particles**. Fix: in `showTopicToast` define a palette
+   (topic toasts are epic-tinted → `const pal = C.paletteFor("epic");`) and pass it
+   to `toastBurst(t, pal)`. Confirm a real topic-unlock and a Part-2 unlock both
+   burst particles with no console error.
+
+Nothing else to change — fx.js (pure `particleSpecs`, capped at 14, self-cleaning
+`burst` with no leak), the non-blocking `pointer-events:none` particles, the "+1"
+flourish, and the reduced-motion opt-out are all good. Re-handoff after the fix.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
