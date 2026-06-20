@@ -255,10 +255,12 @@
     items.forEach(it => {
       const cell = document.createElement("div");
       cell.className = "u-cell r-" + it.rarity;
+      // flavour name (big), rarity, the boost it grants, then the earning achievement
       cell.innerHTML = '<canvas class="pix" width="'+csz+'" height="'+csz+'"></canvas>'+
-        '<div class="u-name">'+esc(it.name)+'</div>'+
+        '<div class="u-name">'+esc(it.flavour || it.name)+'</div>'+
         '<div class="u-rare">'+esc(it.rarity)+'</div>'+
-        '<div class="u-desc">'+esc(it.desc)+'</div>';
+        (it.boost ? '<div class="u-boost">'+esc(C.boostLabel(it.boost))+'</div>' : '')+
+        '<div class="u-desc">'+esc(it.desc || it.name || "")+'</div>';
       grid.appendChild(cell);
       C.drawIcon(cell.querySelector("canvas"), it.id, C.paletteFor(it.rarity));
     });
@@ -301,7 +303,7 @@
     t.className = "toast r-" + it.rarity;
     t.innerHTML = '<canvas class="pix" width="36" height="36"></canvas>'+
       '<div class="t-txt"><span class="t-tag">Unlocked</span>'+
-      '<span class="t-name">'+esc(it.name)+'</span></div>'+
+      '<span class="t-name">'+esc(it.flavour || it.name)+'</span></div>'+
       '<span class="t-plus" style="color:'+pal.accent+'">+1</span>';
     $("toasts").appendChild(t);
     C.drawIcon(t.querySelector("canvas"), it.id, pal);
@@ -355,7 +357,8 @@
       const cells = items.map(it => {
         const owned = !!collected[it.id];
         return '<div class="inv-cell '+(owned ? "owned r-"+it.rarity : "locked")+'" data-id="'+esc(it.id)+'">'+
-          (owned ? '<canvas class="pix" width="48" height="48"></canvas>' : '<span class="q">?</span>')+
+          (owned ? '<canvas class="pix" width="48" height="48"></canvas><span class="inv-name">'+esc(it.flavour)+'</span>'
+                 : '<span class="q">?</span>')+
           '</div>';
       }).join("");
       return '<div class="inv-cat"><h4>'+esc(name)+' <span>'+got+'/'+items.length+'</span></h4>'+

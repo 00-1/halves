@@ -237,41 +237,77 @@
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
-  // Draws a mirrored pixel sprite, seeded by `seed`, using palette `pal`.
+  // ---- 10 pixel-icon styles (G = 12 grid). Each fills `g` (1 = filled) and
+  // `a` (1 = accent cell); a shared painter draws outline + body/accent. -----
+  const G = 12;
+  function box(t, x0, y0, x1, y1){
+    for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) if(y>=0&&y<G&&x>=0&&x<G) t[y][x] = 1;
+  }
+  function s_sprite(g, a, rnd){                      // 0 — mirrored creature blob
+    const half = Math.floor(G/2);
+    for(let y=1;y<G-1;y++) for(let x=1;x<=half-1;x++){
+      const on = rnd() < (0.62 - Math.abs(y-(G-1)/2)/G*0.4) ? 1 : 0;
+      g[y][x] = on; g[y][G-1-x] = on;
+      if(on && rnd() < 0.3){ a[y][x] = 1; a[y][G-1-x] = 1; }
+    }
+  }
+  function s_potion(g, a){                            // 1 — flask + liquid + bubble
+    box(g,5,1,6,1); box(g,5,2,6,3); box(g,4,4,7,4); box(g,3,5,8,5); box(g,2,6,9,9); box(g,3,10,8,10);
+    box(a,3,7,8,9); box(a,4,10,7,10); a[6][6]=1; box(a,5,1,6,1);
+  }
+  function s_scroll(g, a){                            // 2 — parchment + ribbon + glyph lines
+    box(g,2,1,9,2); box(g,2,9,9,10); box(g,3,3,8,8);
+    box(a,2,1,9,1); box(a,2,10,9,10); box(a,4,4,7,4); box(a,4,6,7,6);
+  }
+  function s_blade(g, a){                             // 3 — dagger w/ glowing edge
+    box(g,5,1,6,7); box(g,3,8,8,8); box(g,5,9,6,10); box(g,4,11,7,11);
+    box(a,5,1,5,7); a[8][3]=1; a[8][8]=1; box(a,4,11,7,11);
+  }
+  function s_gem(g, a){                               // 4 — faceted crystal
+    box(g,4,2,7,2); box(g,3,3,8,3); box(g,2,4,9,5); box(g,3,6,8,6); box(g,4,7,7,7); box(g,5,8,6,8);
+    for(let y=2;y<=8;y++) for(let x=2;x<=5;x++) if(g[y][x] && (x+y)%2===0) a[y][x]=1;
+  }
+  function s_ring(g, a){                              // 5 — band + set stone
+    box(g,3,3,8,10);
+    for(let y=5;y<=8;y++) for(let x=4;x<=7;x++) g[y][x]=0;     // hollow
+    box(g,5,1,6,2); box(a,5,1,6,2); a[3][3]=1; a[3][8]=1; a[10][3]=1; a[10][8]=1;
+  }
+  function s_shield(g, a){                            // 6 — heater shield + boss + trim
+    box(g,2,2,9,2); box(g,2,3,9,5); box(g,3,6,8,7); box(g,4,8,7,8); box(g,5,9,6,10);
+    box(a,5,5,6,6); box(a,2,2,9,2);
+  }
+  function s_food(g, a, rnd){                         // 7 — drumstick (meat + bone)
+    box(g,3,1,8,1); box(g,2,2,9,5); box(g,3,6,8,6); box(g,5,7,6,9); box(g,4,10,7,11);
+    for(let y=1;y<=6;y++) for(let x=2;x<=9;x++) if(g[y][x] && rnd() < 0.3) a[y][x]=1;
+    box(a,5,7,6,8); box(a,4,10,7,10);
+  }
+  function s_rune(g, a){                              // 8 — symmetric sigil on a tablet
+    box(g,2,1,9,10); box(a,5,2,6,9); box(a,3,5,8,6); a[3][3]=1; a[3][8]=1; a[8][3]=1; a[8][8]=1;
+  }
+  function s_orb(g, a){                               // 9 — glowing sphere + highlight
+    box(g,4,1,7,1); box(g,3,2,8,2); box(g,2,3,9,8); box(g,3,9,8,9); box(g,4,10,7,10);
+    box(a,3,3,4,4); a[1][5]=1; a[1][6]=1; a[10][5]=1; a[10][6]=1;
+  }
+  const ICON_STYLES = [s_sprite, s_potion, s_scroll, s_blade, s_gem, s_ring, s_shield, s_food, s_rune, s_orb];
+
+  function paintGrid(cx, g, a, pal, scale, off){
+    const fl = (x,y) => x>=0 && y>=0 && x<G && y<G && g[y][x];
+    cx.fillStyle = pal.outline;
+    for(let y=0;y<G;y++) for(let x=0;x<G;x++)
+      if(!g[y][x] && (fl(x-1,y)||fl(x+1,y)||fl(x,y-1)||fl(x,y+1))) cx.fillRect(off+x*scale, off+y*scale, scale, scale);
+    for(let y=0;y<G;y++) for(let x=0;x<G;x++)
+      if(g[y][x]){ cx.fillStyle = a[y][x] ? pal.accent : pal.body; cx.fillRect(off+x*scale, off+y*scale, scale, scale); }
+  }
+  // Draws the pixel icon for `seed` (style = hash(seed) % 10) using palette `pal`.
   function drawIcon(canvas, seed, pal){
-    const G = 12;                                   // logical grid
     const cx = canvas.getContext("2d");
     const scale = Math.max(1, Math.floor(canvas.width / G));
     cx.clearRect(0,0,canvas.width,canvas.height);
     const off = Math.floor((canvas.width - scale*G) / 2);
-    const rnd = mulberry32(hashStr(seed));
-
-    const grid = [];
-    for(let y=0;y<G;y++){ grid[y] = new Array(G).fill(0); }
-    const half = Math.floor(G/2);
-    for(let y=1;y<G-1;y++){
-      for(let x=1;x<=half-1;x++){
-        // denser toward the vertical centre for a creature-ish silhouette
-        const bias = 0.62 - Math.abs(y-(G-1)/2)/G*0.4;
-        const on = rnd() < bias ? 1 : 0;
-        grid[y][x] = on; grid[y][G-1-x] = on;       // mirror left→right
-      }
-    }
-    const filled = (x,y) => x>=0 && y>=0 && x<G && y<G && grid[y][x];
-
-    // outline: empty cells touching a filled cell
-    cx.fillStyle = pal.outline;
-    for(let y=0;y<G;y++) for(let x=0;x<G;x++){
-      if(!grid[y][x] && (filled(x-1,y)||filled(x+1,y)||filled(x,y-1)||filled(x,y+1)))
-        cx.fillRect(off+x*scale, off+y*scale, scale, scale);
-    }
-    // body / accent
-    for(let y=0;y<G;y++) for(let x=0;x<G;x++){
-      if(grid[y][x]){
-        cx.fillStyle = rnd() < 0.28 ? pal.accent : pal.body;
-        cx.fillRect(off+x*scale, off+y*scale, scale, scale);
-      }
-    }
+    const grid = [], acc = [];
+    for(let y=0;y<G;y++){ grid[y] = new Array(G).fill(0); acc[y] = new Array(G).fill(0); }
+    ICON_STYLES[hashStr(seed) % ICON_STYLES.length](grid, acc, mulberry32(hashStr(seed)));
+    paintGrid(cx, grid, acc, pal, scale, off);
   }
 
   // Every catalogue item belonging to one mode (init / flawless / speed /
@@ -279,11 +315,55 @@
   // collectible-completion count on the picker and inventory.
   function modeItems(modeId){ return CATALOG.filter(it => it.modeId === modeId); }
 
+  // ---- item layer (T20): every item gains a flavour name + boost ----------
+  // The 12 heroes (ids in roster order) — full stats/types/unlocks live in
+  // heroes.js (T21); here we only need ids + names for boosts and their labels.
+  const HERO_IDS = ["bram","greta","tovar","mo","wisp","mira","nim","zeph","pip","vex","sela","roon"];
+  const HERO_NAMES = { bram:"Bram the Bold", greta:"Greta Stonefist", tovar:"Ser Tovar", mo:"Mauler Mo",
+    wisp:"Wisp", mira:"Mirabel the Mage", nim:"Old Nim", zeph:"Zephyrine",
+    pip:"Pip Quickfingers", vex:"Vex", sela:"Shadow Sela", roon:"Roon the Sly" };
+  const STAT_KEYS = ["power","guard","speed","focus"];
+  const STAT_NAMES = { power:"Power", guard:"Guard", speed:"Speed", focus:"Focus" };
+  const BOOST_AMOUNT = { common:1, uncommon:2, rare:3, epic:5, legendary:8 };
+  const ADJ = ["Effervescent","Cryptic","Glowing","Humming","Ancient","Cursed","Gilded","Frosted",
+    "Smouldering","Twinkling","Battered","Pristine","Whispering","Volatile"];
+  // Noun pools indexed by style (must match ICON_STYLES order 0..9).
+  const NOUNS = [
+    ["Familiar","Imp","Sprite","Critter"],                 // 0 sprite
+    ["Potion","Elixir","Tonic","Brew"],                    // 1 potion
+    ["Scroll","Tome","Codex","Rune-page"],                 // 2 scroll
+    ["Dagger","Dirk","Kris","Shortsword"],                 // 3 blade
+    ["Gem","Shard","Jewel","Geode"],                       // 4 gem
+    ["Ring","Band","Signet"],                              // 5 ring
+    ["Shield","Aegis","Buckler"],                          // 6 shield
+    ["Goblin Leg","Hearth-loaf","Cave Mushroom","Jerky"],  // 7 food
+    ["Rune","Sigil","Glyph"],                              // 8 rune
+    ["Orb","Globe","Bauble"]                               // 9 orb
+  ];
+  function itemStyle(id){ return hashStr(id) % 10; }
+  function itemBoost(id, rarity){
+    return { hero: HERO_IDS[hashStr(id) % 12], stat: STAT_KEYS[hashStr(id + "§") % 4],
+             amount: BOOST_AMOUNT[rarity] || 1 };
+  }
+  function itemFlavour(id){
+    const style = itemStyle(id), pool = NOUNS[style];
+    return ADJ[hashStr(id + "~adj") % ADJ.length] + " " + pool[hashStr(id + "~noun") % pool.length];
+  }
+  function boostLabel(b){ return b ? "+" + b.amount + " " + STAT_NAMES[b.stat] + " · " + (HERO_NAMES[b.hero] || b.hero) : ""; }
+  // Stamp every catalogue item with its deterministic style / flavour / boost.
+  CATALOG.forEach(it => {
+    it.style = itemStyle(it.id);
+    it.flavour = itemFlavour(it.id);
+    it.boost = itemBoost(it.id, it.rarity);
+  });
+
   window.Collectibles = {
     RANKS, RARITY, paletteFor, rankIndex,
     CATALOG, byId: id => byIdMap[id], modeItems,
     categories: () => CATS.slice(),
     evaluate, evaluateCollector, evaluateTopics, evaluateQuestion, drawIcon,
+    // item layer (T20)
+    HERO_IDS, HERO_NAMES, STAT_NAMES, boostLabel, ICON_STYLES,
     SPARK, SPEED
   };
 })();

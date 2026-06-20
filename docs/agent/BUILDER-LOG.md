@@ -798,3 +798,37 @@ non-blocking/CPU (DoD): the scheduler is the only timer, runs only while playing
 notes / questions: explicit thematic styles per topic (e.g. Halves→Pixel Forest,
   Times→Clockwork, Victory-flavoured for Number Bonds II); the menu/results/best-
   times/inventory screens use the Title Theme.
+
+## T20 — Item layer: styles, names, boosts  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - collectibles.js — every catalogue item now gets a deterministic `style`
+    (hash(id)%10), a flavour `name` (`<adj> <noun>` from the style's pools), and a
+    `boost` {hero, stat, amount} (hero=hash(id)%12 into the 12 hero ids,
+    stat=hash(id+"§")%4, amount={common1/uncommon2/rare3/epic5/legendary8}). Added
+    the 12 hero ids+names, stat names, adjective/noun pools, and a `boostLabel()`
+    ("+3 Focus · Mirabel the Mage"). Rewrote `drawIcon` to dispatch on style across
+    **10 pixel routines** (sprite/potion/scroll/blade/gem/ring/shield/food/rune/orb)
+    via a shared grid painter (outline + body/accent, still pixelated, rarity
+    palette). Exported HERO_IDS/HERO_NAMES/STAT_NAMES/boostLabel/ICON_STYLES.
+  - main.js — toasts show the flavour name; the unlock/detail modal shows the
+    flavour name (big) + rarity + the boost line + the earning achievement; owned
+    inventory tiles show a (truncated) flavour-name caption (tap → the detail modal
+    with the full name + achievement + boost).
+  - styles.css — `.u-boost` (modal boost line, amber); `.inv-name` tile caption +
+    inv-cell becomes a column (icon + name) with slightly wider grid columns.
+how I verified:
+  - node -c (collectibles/main) OK; id cross-check clean; `.u-boost`/`.inv-name`
+    have CSS; no TODO; catalogue unchanged (775).
+  - item-layer test (Node): **every item** has style∈[0,10), a non-empty flavour,
+    and a valid boost (real hero+stat, amount matching rarity); boosts **spread
+    across all 12 heroes** (each targeted by 57–77 items); deterministic across
+    reloads; **all 10 icon styles run and fill cells**; `drawIcon` renders real
+    catalogue ids (stub canvas) without error; `boostLabel` formats correctly.
+  - UI render harness (DOM shim, seeded owned items): the inventory renders
+    flavour-name captions and real names ("Volatile Scroll"), owned tiles present,
+    the topics overview still renders (no regression).
+notes / questions: hero ids/names live in collectibles.js for the item boosts +
+  labels now; the full heroes.js (stats/types/unlocks, effectiveStats, rating) is
+  T21 and can build on these ids. No regression to collectible earning — style/
+  flavour/boost are additive fields stamped on each item.
