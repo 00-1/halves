@@ -290,6 +290,28 @@ modes too (Halves is the benchmark; sanity-check Times/Doubles/Squares/Fractions
   values; sets meet the checklist; answers still exact/numpad-safe; per-question
   Beat/Spark counts updated accordingly; no regressions; deploy green.
 
+### T30 — Deep content review (do AFTER the educational core is built) · status: BLOCKED
+> Open only once the planned topics are all built (the educational core). The
+> Babysitter will run a research-backed 11+ difficulty pass first to inform the
+> concrete changes, then the Builder applies them.
+A holistic review of the **whole** topic catalogue against the real GL 11+
+expectations (`docs/research-11plus.md`, `docs/agent/QUESTION-SETS.md`):
+1. **Completeness — are we missing topics?** Compare built topics to the
+   researched catalogue + GL frequency; add any genuinely high-value gaps; drop or
+   demote anything that doesn't earn its place.
+2. **Question selection — is each topic's set good?** Representative, common
+   real-world values, full concept coverage (per the checklists); fix weak/
+   arbitrary/duplicate entries.
+3. **Difficulty calibration — is it right?** Every question must sit **within the
+   Year 5/6 11+ band**. **Remove questions too hard to plausibly appear on the 11+**
+   (and trivial padding); keep a realistic spread; ensure each Part 1 / Part 2
+   split lands at the right level (Part 2 = harder-but-still-11+, not beyond).
+- **DoD:** a written per-topic verdict (keep / trim / add, with reasoning) in
+  BUILDER-LOG; no question exceeds the 11+ difficulty band; no obvious topic gaps
+  vs the researched catalogue; all sets meet QUESTION-SETS.md; Node-verified answer
+  validity (exact/numeric/non-negative/numpad-safe); Beat/Spark counts updated; no
+  regressions; deploy green.
+
 ---
 
 ## Phase 2.7 — Generative 8-bit audio
