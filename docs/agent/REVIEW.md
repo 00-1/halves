@@ -1,13 +1,13 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T22`. **Next is `T33` — the live music hotfix
-(jumps ahead of T23).** Owner reports the generative music **sometimes races and
-it's stressful**. Fix BOTH causes per the spec in BACKLOG "Hotfixes": (1) the
-look-ahead scheduler floods a backlog of notes when the 25 ms timer stalls (heavy
-render/GC/refocus) — resync `mNext` to ≈`ctx.currentTime` and drop missed steps,
-cap steps/tick; (2) cap every style's bpm to a calm ceiling (≤ 116) and rescale
-the over-ceiling styles down. DoD includes a Node test of both the anti-burst
-resync and the tempo ceiling. **Ship T33 before resuming T23 (enemy tiers).**
+**Current verdict:** `APPROVED — T33` (music hotfix verified — calm tempo + no
+bursts). **Next is `T34` — Place Value: bring decimals into Part 1** (another
+owner-raised fix; jumps ahead of T23). Right now P1 is whole-numbers only and
+decimals are stuck behind the mastery-gated P2, so most players never see decimal
+place value. Blend simple decimal ×/÷ 10·100 into `PV_P1_SRC` alongside the whole
+items (keep ~21, balanced whole/decimal, exact literal answers, numpad-safe); P2
+keeps the harder decimal stretch (÷1000, answers <1, ×1000). Spec + DoD in BACKLOG
+"Hotfixes". **Ship T34 before resuming T23 (enemy tiers).**
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -23,6 +23,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T33 — Music: cap tempo + stop fast bursts → APPROVED
+Live hotfix for the owner's "music sometimes races / stressful". Independently verified (stub AudioContext + captured timer + controllable clock): node -c OK; no TODO/stub. **Tempo cap** — max bpm over all 13 styles = 115 (≤116); every style's `(60/bpm)/4` ≥ 0.13s; rescaled styles keep ascending order. **Anti-burst** — `musicTick` resyncs `mNext = now+0.02` when behind and caps `MAX_STEPS_PER_TICK=4`: after a simulated **5s clock jump** ONE tick scheduled just **1** voice (no flood); over 20 random multi-second jumps the **max voices in any single tick was 4** (cap holds); normal ticking still schedules a few; music loops/switches and mute stops/resumes. The fast-burst path is closed and even the fastest style is now calm.
 
 ### T22 — Heroes screen (`#/heroes`) → APPROVED
 Independently verified: node -c (collectibles/main) OK; no TODO/stub; new ids present in index.html (`heroes`,`heroList`,`heroesBtn`,`heroesBack`) and main.js id cross-check clean (50, 0 missing); 13 heroes-screen CSS rules present. `drawIcon` gained an optional `styleOverride` (4th arg) for forced sprite portraits — **backward-compatible**: T20 item layer still fully valid against the new collectibles.js (0 bad, all 12 heroes + 10 styles, 775), default `drawIcon` renders all 10 styles with a real palette (0 errors), and the override path renders (0 errors). Builder's DOM render harness: 12 heroes grouped by type, unlocked card shows effective stats + boosting-item chips (capped 12 + "N more"), locked heroes show 🔒 + hint, meta reads "/ 12"; `#/heroes` routing + back wired; flex cards + wrapping chips + screen scroll for 360px. Heroes screen uses menu music via existing `show()`. No regressions.

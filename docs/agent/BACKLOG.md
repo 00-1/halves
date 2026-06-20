@@ -397,7 +397,7 @@ verbose. Full content standard + tone + seed examples + per-topic strategy hints
 
 ## Hotfixes (jump the queue — do these before resuming Phase 3)
 
-### T33 — Music: cap tempo + stop fast bursts (live UX) · status: OPEN
+### T33 — Music: cap tempo + stop fast bursts (live UX) · status: DONE
 Owner reports the generative chiptune (T17) **"sometimes goes way too fast —
 stressful."** Two distinct causes; **fix both**:
 1. **Anti-burst (the "sometimes" — primary).** The look-ahead scheduler
