@@ -424,7 +424,7 @@ notes / questions: none — single-player cleanup only; board persistence retain
   for Best Times / ranks / picker.
 
 ## T15 — Best Times heat-map + tap-to-retry  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 38f9f1a (on main)
 changed:
   - main.js — `renderSummary()` redesigned into a colour-coded heat-map with three
     distinct states: **played** rows get a left-edge accent + a subtle background
