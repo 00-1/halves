@@ -414,7 +414,7 @@ inventory detail also shows the earning achievement + the boost.
   the generators via a canvas stub or pure-function guard); no regressions to
   existing collectible earning; deploy-safe.
 
-### T21 — Heroes module + stats · status: OPEN
+### T21 — Heroes module + stats · status: DONE
 Add `heroes.js`: the 12 heroes (data per design), `effectiveStats(hero,
 collected)` = base + owned boosts, `rating(hero)`, and `isHeroUnlocked(hero,
 collected, stats)`. Export on `window.Heroes`.
@@ -422,7 +422,7 @@ collected, stats)`. Export on `window.Heroes`.
   items are owned; rating monotonic; each hero's unlock predicate fires on its
   listed condition and not before.
 
-### T22 — Heroes screen (`#/heroes`) · status: BLOCKED
+### T22 — Heroes screen (`#/heroes`) · status: OPEN
 Roster grouped by type, locked/unlocked with unlock hints, per-hero effective
 stats and the items boosting them; procedural pixel portraits. Start-screen link.
 - **DoD:** renders all 12 (locked/unlocked) at 360px without overflow; routing

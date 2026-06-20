@@ -1,17 +1,13 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T20`. **Next is T21 (Heroes module + stats)** —
-full spec in `docs/agent/DESIGN-heroes.md`. Add `heroes.js`→`window.Heroes`: the
-12 heroes (data per design — reuse the `HERO_IDS`/`HERO_NAMES` already exported
-from collectibles.js so they stay in sync; add each hero's type + base
-power/guard/speed/focus + unlock predicate), `effectiveStats(hero, collected)` =
-base + summed boosts from owned items, `rating(hero)`, and `isHeroUnlocked(hero,
-collected, stats)`. DoD: Node test — bram unlocks on first `init:*`; effective
-stats grow as boost items are owned; rating monotonic in stats; each hero's unlock
-predicate fires on its listed condition and not before. Pure logic, no DOM.
-**Note:** metagame is research-informed — see `RESEARCH-metagame.md` (rewards stay
-mastery-/earn-contingent; no student-facing real-money spend; no public
-leaderboards; honest drop odds).
+**Current verdict:** `APPROVED — T21`. **Next is T22 (Heroes screen `#/heroes`)** —
+full spec in `docs/agent/DESIGN-heroes.md`. Roster grouped by type (Brawn/Cunning/
+Arcane), locked/unlocked with the unlock hint, each hero's procedural pixel
+portrait + **effective** stats (via `Heroes.effectiveStats`) and the items boosting
+them; start-screen link + hash route. Use the `window.Heroes` API from T21 and the
+menu music style. DoD: renders all 12 (locked + unlocked) at 360px without
+overflow; routing + back work; no regressions; deploy green. **Display note:** the
+currency is labelled **"Gold Stars" (⭐)** anywhere it appears.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -27,6 +23,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T21 — Heroes module + stats → APPROVED
+New `heroes.js`→`window.Heroes`. Independently verified (Node, real catalogue): node -c OK; no TODO/stub; loaded in index.html after collectibles.js. **All 12 heroes match the DESIGN-heroes table exactly** — type + base power/guard/speed/focus, ids bram…roon; names sourced from collectibles `HERO_NAMES` (in sync). `effectiveStats` = base when nothing owned, **grows for every hero** with the full collection; `rating`/`ratingOf` **monotonic non-decreasing** as boost items are added (weights power1/focus.8/speed.5/guard.3). **Every one of the 12 unlock predicates fires exactly on its listed condition and is locked just below it** — bram(1st init), greta(≥3 init), tovar(any mastery), mo(rank:darkwizard), wisp(collector:25), mira(≥3 flawless), nim(topics:one100), zeph(rank:archmage), pip(speed:*:3 Lightning), vex(meta:allmodes), sela(collector:75), roon(tier:10). RPS `matchup` correct (Brawn>Cunning ×1.5, reverse ×0.6, same ×1.0). Pure, no DOM. No regressions.
 
 ### T20 — Item layer: styles, names, boosts → APPROVED
 First Phase-3 task. Independently verified (Node, stub canvas): node -c (collectibles/main) OK; main.js id cross-check clean (45, 0 missing); `.u-boost`/`.inv-name` CSS present; no TODO/stub; catalogue unchanged (775). Over **every** catalogue item: `style` is an integer in [0,10); `name` non-empty; `boost` references a real hero + real stat with rarity-correct amount (common1/unc2/rare3/epic5/leg8) — 0 violations. Boosts **spread across all 12 heroes** (per-hero 57–77 items) and **all 10 styles** used (69–88 each). **Deterministic across fresh reloads** (0 drift in style/name/boost per id). `drawIcon` runs for all 10 style routines without error; `boostLabel` formats ("+1 Guard · Pip Quickfingers"). HERO_IDS/STAT_NAMES match DESIGN-heroes exactly (bram…roon; power/guard/speed/focus). Additive fields — no regression to collectible earning. UI: toasts/modal/inventory show flavour names + boost line + earning achievement.
