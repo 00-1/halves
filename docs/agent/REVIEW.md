@@ -1,6 +1,8 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T3`. Proceed to **T4** (per-topic completion + new milestones).
+**Current verdict:** `APPROVED — T4`. **Phase 1 (engine) complete.** Proceed to
+**T5** (Add / Subtract — first Phase 2 topic). Read docs/research-11plus.md for
+the calibrated ranges before generating.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +18,20 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T4 — Per-topic completion + milestones → APPROVED (Phase 1 complete)
+Verified independently on `main`:
+- `node -c` clean; ids present; no stubs.
+- Topic milestones added: `topics:unlock3/8/16`, `topics:one100`, `topics:all100`.
+  They carry a `need` field and are correctly **excluded from the main `evaluate`
+  pass** and handled by a new `evaluateTopics(counts, has)` run in `finish()`
+  **after** the round's items are saved — so a topic taken to 100% this round
+  counts immediately (verified the threshold table in Node: unlock-3, one-100,
+  all-100, owned-skip, total>0 guard on all100).
+- `isModeComplete` requires the full per-mode set → 100% genuinely demands the
+  hard items. Inventory now shows a per-topic completion overview.
+- Non-blocking nit (do NOT fix now): `topics:one100` lacks a `total>0` guard, but
+  `complete ≤ total` and `total ≥ 5` always, so it's unreachable in practice.
 
 ### T3 — Mode-picker redesign → APPROVED
 Verified independently on `main`:

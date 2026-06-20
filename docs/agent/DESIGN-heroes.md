@@ -41,7 +41,7 @@ of effective stats.
 | mo    | Mauler Mo         | Brawn   | 18 | 8  | 7  | 5  | `rank:darkwizard` |
 | wisp  | Wisp              | Arcane  | 7  | 6  | 10 | 15 | `collector:25` |
 | mira  | Mirabel the Mage  | Arcane  | 6  | 8  | 9  | 17 | flawless in ≥3 modes (≥3 `flawless:*`) |
-| nim   | Old Nim           | Arcane  | 8  | 10 | 7  | 14 | any `topic100:*` (100% a topic, see T4) |
+| nim   | Old Nim           | Arcane  | 8  | 10 | 7  | 14 | `topics:one100` (100% a topic) |
 | zeph  | Zephyrine         | Arcane  | 9  | 6  | 13 | 13 | `rank:archmage` |
 | pip   | Pip Quickfingers  | Cunning | 8  | 6  | 16 | 9  | any Lightning bracket (`speed:*:3`) |
 | vex   | Vex               | Cunning | 10 | 7  | 15 | 8  | `meta:allmodes` |

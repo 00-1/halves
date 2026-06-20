@@ -57,7 +57,7 @@ Replace the wrapping pills with a scrollable, grouped list.
 - **DoD:** renders all unlocked/locked states correctly with the 5 modes; no
   layout overflow at 360px wide; routing/back still work; deploy green.
 
-### T4 — Per-topic completion + new milestones  · status: OPEN
+### T4 — Per-topic completion + new milestones  · status: DONE
 - Helper for per-mode collected/total; surface on the picker (T3) and inventory.
 - New milestone collectibles: "unlock N topics", "clear every topic",
   "100% a topic" (all auto-evaluated). Ensure a topic's 100% genuinely requires
@@ -73,7 +73,7 @@ Build one topic per task, fully (both parts), with generators verified in Node
 against the calibrated ranges in the research doc. Slot each into the chain at
 its importance position. Status starts `OPEN` only after Phase 1 is `DONE`.
 
-### T5 — Add / Subtract  · status: BLOCKED (await Phase 1)
+### T5 — Add / Subtract  · status: OPEN
 P1: 2-digit ± within 100. P2: 3-digit ± 2-digit. Generated.
 
 ### T6 — Number bonds · status: BLOCKED
