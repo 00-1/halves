@@ -861,7 +861,7 @@ notes / questions: unlock predicates read `collected` (counts of init:/flawless:
   (T23/24) and deep ranks are reachable. The Heroes screen is T22.
 
 ## T22 — Heroes screen (#/heroes)  [HANDOFF]
-commit: (recorded on push to main below)
+commit: b317006 (on main)
 changed:
   - index.html — new `#heroes` screen (`#heroList` + back) and a "Heroes" link in
     the start-screen link row.
