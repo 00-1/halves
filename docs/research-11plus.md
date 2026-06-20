@@ -1,112 +1,139 @@
-# Halves — 11+ Drill Topics: Research & Design
+# Halves — 11+ Drill Topics: Research & Design (v2)
 
-> Working design doc. Captures the research synthesis and the proposed expansion
-> of the game into many timed mental-maths "sub-operation" drills aimed at UK
-> 11+ prep (Bishop Wordsworth's School & South Wilts Grammar, Salisbury).
-> Status: **researched, not yet built** — pending a second clarifying research
-> pass and scope sign-off.
+> Canonical design doc after two research passes. Expands the game into many
+> timed mental-maths "sub-operation" drills for UK 11+ prep (Bishop Wordsworth's
+> School & South Wilts Grammar, Salisbury). **Status: researched & specced — not
+> yet built. Awaiting scope sign-off.**
 
 ## Goal
 
-Not to reproduce 11+ questions, but to make pupils **fast at the small recurring
-sub-operations** that appear inside questions. Each drill = one atomic operation,
-short timed rounds, numeric answers only (fits the existing numpad).
+Make pupils **fast at the small recurring sub-operations inside questions**, not
+reproduce whole 11+ questions. Each drill = one atomic operation, short timed
+rounds, **numeric answers only** (fits the existing numpad — negatives framed as
+positive distances, times as elapsed minutes, so no minus/colon keys).
 
-## Exam context (research pass 1)
+## Exam context
 
-- **Bishop Wordsworth's** and **South Wilts Grammar** both use **GL Assessment**
-  (switched from CEM in 2023).
-- Format: four papers (Verbal Reasoning, English, Maths, Non-Verbal Reasoning),
-  **multiple-choice**. Maths paper ≈ **50 questions / 50 minutes**, **no
-  calculator**.
-- Content: full **Key Stage 2** curriculum, pushed slightly beyond Year 6.
-  Majority "number" questions. Strong emphasis on quick mental arithmetic.
+- **Bishop Wordsworth's** & **South Wilts Grammar** both use **GL Assessment**
+  (switched from CEM in 2023). Maths paper ≈ **50 questions / 50 min**,
+  multiple-choice, **no calculator** (~1 min/question, multi-step).
+- **≈70% of the paper is number/arithmetic**; the rest geometry (~10–14%), data
+  (~6–8%), algebra/sequences (~4–6%), measures embedded throughout.
+- Mix of **direct computation** (~30–40%) and **worded** problems (~60–70%) that
+  still require real arithmetic. Halving/doubling, fractions, %, and ×/÷ by
+  powers of 10 are explicitly "hidden inside word problems".
 
-## Facts pupils must know cold (Years 5–6)
+## GL frequency ranking (drives build order)
 
-- **Number bonds**: to 10, 20, 100, 1000, and decimal bonds to 1.
-- **Times tables** 1–12 (+ division inverses).
-- **Squares** 1²–12²; **cubes** 1³–10³ (min 1³–5³).
-- **Primes** to 19 (recall) / to 100 (identify); **divisibility** rules 2,3,4,5,6,10.
-- **Fraction ↔ decimal ↔ percentage** equivalences: ½, ¼, ¾, ⅕, ⅖, ⅘, 1/10, 3/10,
-  1/100; Year 6 adds ⅓, ⅔, ⅛, ⅜, ⅝.
-- **Doubling/halving** into 3 digits and 1-dp decimals.
-- **Rounding** to 10/100/1000 and decimal places; **BODMAS** (Year 6 only).
-- **Roman numerals** to 1000 (Year 5).
-- **Metric** conversions (km/m/cm/mm, kg/g, l/ml); **time** (s/min/h, day/week).
+- **High:** four operations; fractions (of amounts, equivalence); decimals
+  (place value, ordering); percentages of amounts; halving/doubling; ×/÷ by
+  10/100/1000; rounding/estimation; ratio; money; time; metric conversions;
+  2-digit mental ± and 2-digit × 2-digit.
+- **Medium:** sequences (term-to-term > nth-term); mean/median/mode; geometry
+  (angles, area/perimeter); coordinates; volume; data interpretation.
+- **Low:** negative numbers; BODMAS; primes/factors/HCF/LCM; Roman numerals;
+  probability.
 
-## Speed sub-skills worth drilling (research pass 1)
+## Calibrated value ranges (pass 2)
 
-Percentages of amounts (10/25/50 → 1/5/20/75%); ratio sharing; complements to
-10/100/1000; near-multiple compensation (+9/+99); ×/÷ by 10/100/1000 incl.
-decimals; ×5/×25/×9/×11 tricks; negative numbers crossing zero; sequences
-(term-to-term); mean of small sets; 12h↔24h & elapsed time; money change &
-totals; fractions of amounts.
+- **Fraction↔dec↔% recall set** (Year 6): ½ ¼ ¾ ⅕ ⅖ ⅘ 1/10 (+ ⅓ as recurring).
+  **⅛, 3/8, 1/20 are 11+ stretch** → Part-2 material. (Keep answers terminating;
+  thirds excluded from exact-answer modes.)
+- **Ratio:** 2-part, amounts ≤100, parts ≤10 (≤200 / parts ≤20 stretch; 3-part is
+  KS3 → Part-2 stretch).
+- **Sequences:** term-to-term foundational; **linear nth-term (an+b)** in scope →
+  Part 2. Quadratic/geometric not expected (geometric ok as a fun Part-2).
+- **Negatives:** ±20 foundational, ±50 stretch; add/subtract across zero,
+  difference between a negative & positive (no ×/÷ of negatives — KS3).
+- **Rounding:** to 10/100/1000 and 1–2 dp. **No significant figures at KS2.**
+- **Percentages:** 50/10/25 first, then 1/5/20/75; bases ≤100 (≤500 stretch).
+- **Roman numerals:** I–M (to 1000) + years — *is* curriculum but GL-rare → keep
+  as a low-priority fun mode.
+- **Mult. tricks:** ×11 (2-digit) is the real payoff; ×25/×9/×5 are enrichment.
+  Times-table fluency matters more than exotic tricks.
 
-## Proposed mode catalogue (16 topics → ~32 modes)
+## Design principles (pass 2 — apps & pedagogy)
 
-Each topic has a foundational **Part 1** and a harder **Part 2** that is locked
-until an achievement is earned in Part 1. `type`: *generated* (infinite random
-questions) vs *fixed* (a curated set, so it can also award per-question
-Beat/Spark collectibles).
+- **Accuracy before speed; keep the timed bar gentle.** Timed pressure is a known
+  driver of maths anxiety in 9–11s. The game is a speed drill by nature, but the
+  **Part-2 unlock bar stays relaxed** and the unlock is celebratory, not punishing.
+- **Progressive disclosure for collectibles** (Pokédex pattern): we already show
+  locked items as "?" tiles and group by category — keep that; don't require 100%.
+- **No public leaderboards** (they demotivate slower kids). Ours is **local-only**
+  Hall of Fame — fine. Keep it device-local.
+- **Mastery gate** to open the next level (cf. Komodo/Khan/TTRS), framed with
+  mastery praise ("you mastered Part 1 — Part 2 unlocked").
 
-| # | Topic | Part 1 | Part 2 (locked) | Type |
-|---|---|---|---|---|
-| 1 | Number bonds | to 100 | to 1000 + decimal bonds to 1 | generated |
-| 2 | Percentages of | 10/25/50% | 1/5/20/75% | generated |
-| 3 | Fractions of | ½ ¼ ⅓ ⅕ of | ⅔ ¾ ⅗ ⅝ of | generated |
-| 4 | Place value ×/÷ | ×÷ 10·100 (whole) | decimals & ÷1000 | generated |
-| 5 | Multiply tricks | ×5, ×11 | ×9, ×25, ×99 | generated |
-| 6 | Cubes & roots | cubes 1³–10³ | √ and ∛ | fixed |
-| 7 | Rounding | nearest 10/100 | nearest 1000 + 1 dp | generated |
-| 8 | Order of ops (BODMAS) | 2 operations | brackets & ÷ | generated |
-| 9 | Roman numerals | to 100 | to 1000 + years | fixed |
-| 10 | Metric convert | whole units | decimals | generated |
-| 11 | Sequences | arithmetic next term | geometric / decreasing | generated |
-| 12 | Mean (average) | of 3 numbers | of 4–5 numbers | generated |
-| 13 | Factors & primes | smallest prime factor / next prime | HCF of two | generated |
-| 14 | Time | unit convert | elapsed minutes | generated |
-| 15 | Money | change from £5/£10 | totalling + change from £20 | generated |
-| 16 | F↔% equivalences | fraction → % | % → fraction / decimal | fixed |
+## Final mode catalogue
 
-All answers numeric: negatives are framed as positive distances; times as
-elapsed minutes (no colon/minus keys needed).
+`type`: *gen* = generated (infinite random questions, mode-level collectibles
+only) · *fix* = curated set (also awards per-question Beat/Spark). All answers
+numeric & numpad-enterable.
 
-## Mechanics to add
+### Wave 1 — highest GL value (recommended first build)
 
-1. **Mode locking** — each Part 2 declares `requires: <collectibleId>`. The gate
-   is a new per-mode **"Mastery"** achievement = finish Part 1 **with no skips
-   AND under a modest target time** (a relaxed pace — "nothing too crazy" — set
-   per mode and easy to tune; not an elite-speed bar). Earning Mastery both
-   awards a collectible and unlocks that topic's Part 2. Locked modes show 🔒 +
-   the requirement; unlocking fires a special toast.
-2. **Mode picker redesign** — ~37 modes won't fit as wrapping pills. Move to a
-   scrollable list grouped by category (Core · Number · Fractions & % · Measures
-   · Reasoning), each row showing best/rank; locked rows greyed with hint.
-3. **Collectibles auto-extend** — the generator already builds init/flawless/
-   speed/rank items per mode. Add a **Mastery** item per Part-1 mode (the gate
-   above). Fixed-fact modes also get per-question Beat/Spark. Add new milestones:
-   "unlock N Part-2 topics", "clear every topic", "all-flawless".
+| Topic | Part 1 | Part 2 (locked) | type |
+|---|---|---|---|
+| Number bonds | to 100 (63→37) | to 1000 (740→260) + decimal bonds to 1 (0.3→0.7) | gen |
+| Add / Subtract | 2-digit within 100 (47+35, 82−18) | 3-digit ± 2-digit (240+85, 312−47) | gen |
+| Percentages of | 10/25/50% of ≤400 (25% of 160=40) | 1/5/20/75% of ≤200 (75% of 60=45) | gen |
+| Fractions of | ½ ¼ ⅓ ⅕ of (¼ of 20=5) | ⅔ ¾ ⅗ ⅝ of (¾ of 20=15) | gen |
+| Place value ×/÷ | whole ×÷ 10·100 (35×100=3500) | decimals ×÷ 10·100·1000 (3.5×100=350) | gen |
+| Rounding | nearest 10/100/1000 (6832→6800) | decimals to 1–2 dp (4.67→4.7) | gen |
+| F↔% equivalences | recall set → % or decimal (¾→75) | eighths/1-20 (⅜→37.5, 1/20→5) | fix |
+| Metric convert | whole units (3 km→3000 m) | decimals (250 cm→2.5 m) | gen |
+| Time | unit convert (3 h→180 min) | elapsed minutes (10:45→11:20=35) | gen |
+| Money | change from £5/£10 (£5−£3.40=1.60) | totals + change from £20 | gen |
+| Ratio | share 2-part ≤100 (share 20 in 1:3) | bigger / 3-part biggest share | gen |
+
+### Wave 2 — medium / low frequency (iterate after)
+
+| Topic | Part 1 | Part 2 (locked) | type |
+|---|---|---|---|
+| Multiply (big) | 2-digit × 1-digit (14×7) | 2-digit × 2-digit (24×15) | gen |
+| Multiply tricks | ×11 of 2-digit (23×11=253) | ×25, ×9, ×99 | gen |
+| Sequences | term-to-term next (2,5,8,11→14) | linear nth-term (3n+2: 10th=32) | gen |
+| Mean | of 3 numbers (4,8,6→6) | of 4–5 numbers | gen |
+| Cubes & roots | cubes 1³–10³ (4³=64) | √ ≤225 and ∛ ≤1000 | fix |
+| Factors & primes | smallest prime factor / next prime | HCF of two (≤60) | gen |
+| Negatives | difference across zero (−6→2 = 8) | range ±50 | gen |
+| BODMAS | two ops (2+3×4=14) | brackets & ÷ (2×(3+4)=14) | gen |
+| Roman numerals | →number ≤100 (XLVII=47) | →number ≤1000 / years (MCMXCIV=1994) | fix |
+
+(Existing modes: Halves, Doubles, Times, Squares, Fraction→decimal.)
+
+## Mechanics to build
+
+1. **Mastery gate + locking.** New per-mode **Mastery** achievement = finish
+   Part 1 **with no skips AND under a gentle target time** (tunable per mode).
+   Each Part-2 mode declares `requires: "mastery:<part1Id>"`; it's playable only
+   once that collectible is owned. Locked modes show 🔒 + the requirement;
+   unlocking fires a special celebratory toast.
+2. **Mode-picker redesign.** ~40 modes won't fit as wrapping pills → scrollable
+   list grouped by category (Core · Number · Fractions & % · Measures ·
+   Reasoning), each row showing best/rank; locked rows greyed with the unlock hint.
+3. **Collectibles auto-extend.** Generator already builds init/flawless/speed/
+   rank per mode. Add: a **Mastery** item per Part-1 mode (the gate); per-question
+   **Beat/Spark** for *fix* modes; new **milestones** ("unlock N Part-2 topics",
+   "clear every topic", "all-flawless").
 
 ## Decisions locked
 
 - **Part-2 unlock gate:** Mastery = **no skips + under a gentle time bar** (per
   mode, tunable, deliberately not punishing).
+- Keep the Hall of Fame **device-local** (no public leaderboard).
+- Collectibles keep **progressive disclosure**; 100% completion never required.
 
-## Open questions (for research pass 2)
+## Open scope question
 
-- Which of these topics actually appear (and how often) in **GL** 11+ maths vs
-  being generic KS2? Calibrate priority.
-- Correct **value ranges / difficulty** per topic so drills are pitched right.
-- Resolve flagged uncertainties: ratio scope at 11+; sequences term-to-term vs
-  nth-term; negative-number ranges; significant figures; importance of eighths/
-  thirds equivalences.
-- Good **Part 1 → Part 2 progression** design (and patterns from existing apps
-  like TT Rock Stars / Komodo / Doodle for unlock/progression).
+Build **Wave 1 (11 topics) + the engine (mastery/locking/picker)** first and
+iterate to Wave 2? Or a tighter first batch, or everything at once?
 
-## Sources (pass 1)
+## Sources
 
-GOV.UK National Curriculum (Maths PoS); Third Space Learning (number bonds,
-percentages, primes, squares, BODMAS, decimals, ratio, fractions, mean); Atom
-Learning & Exam Papers Plus & Pass Eleven Plus (GL format, Wiltshire schools);
-Oak National Academy; NCETM; PlanBee; Bond 11+; STA KS2 arithmetic paper.
+Pass 1 & 2: GOV.UK National Curriculum (Maths PoS); GL Assessment familiarisation;
+Atom Learning, Exam Papers Plus, Pass Eleven Plus, PiAcademy, CGP, Bond 11+
+(GL format & topic frequency); Third Space Learning, Oak National Academy, NCETM,
+BBC Bitesize, Oxford Owl (curriculum & value ranges); TTRS, Komodo, DoodleMaths,
+Prodigy, Sumdog, Mathletics, Khan Academy (progression/reward design); SDT (Deci/
+Koestner/Ryan), Ed Week & leaderboard/anxiety studies (motivation cautions).
