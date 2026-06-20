@@ -74,16 +74,24 @@ elapsed minutes (no colon/minus keys needed).
 
 ## Mechanics to add
 
-1. **Mode locking** — each Part 2 declares `requires: <collectibleId>`. Default
-   gate: finish Part 1 with no skips ("Flawless"). Locked modes show 🔒 + the
-   requirement; unlocking fires a special toast.
+1. **Mode locking** — each Part 2 declares `requires: <collectibleId>`. The gate
+   is a new per-mode **"Mastery"** achievement = finish Part 1 **with no skips
+   AND under a modest target time** (a relaxed pace — "nothing too crazy" — set
+   per mode and easy to tune; not an elite-speed bar). Earning Mastery both
+   awards a collectible and unlocks that topic's Part 2. Locked modes show 🔒 +
+   the requirement; unlocking fires a special toast.
 2. **Mode picker redesign** — ~37 modes won't fit as wrapping pills. Move to a
    scrollable list grouped by category (Core · Number · Fractions & % · Measures
    · Reasoning), each row showing best/rank; locked rows greyed with hint.
 3. **Collectibles auto-extend** — the generator already builds init/flawless/
-   speed/rank items per mode. Fixed-fact modes also get per-question Beat/Spark.
-   Add new milestones: "unlock N Part-2 topics", "clear every topic",
-   "all-flawless".
+   speed/rank items per mode. Add a **Mastery** item per Part-1 mode (the gate
+   above). Fixed-fact modes also get per-question Beat/Spark. Add new milestones:
+   "unlock N Part-2 topics", "clear every topic", "all-flawless".
+
+## Decisions locked
+
+- **Part-2 unlock gate:** Mastery = **no skips + under a gentle time bar** (per
+  mode, tunable, deliberately not punishing).
 
 ## Open questions (for research pass 2)
 
