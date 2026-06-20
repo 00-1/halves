@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T18`. **Next: T19** (juice up the unlock celebration).
+**Current verdict:** `APPROVED — T19`. **Next: T12** (Speed-achievement skip-exploit fix), then T11 (entry screen).
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -16,6 +16,15 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T19 — Juicy unlock celebration → APPROVED
+Canvas confetti engine (fx.js): single full-screen overlay (pointer-events:none,
+z-index 59), FX.init wired at startup, toastBurst→FX.celebrate(rarity,colors).
+Node-verified: rarity counts 30→130, allowed() clamps to CAP, gravity/aging in
+stepParticle, **global cap holds at 250 under burst-spam**, and the **RAF idles**
+(after ~100 frames: running:false, live:0, no pending raf — no constant loop/leak).
+Shockwave ring + vignette glow + epic/legendary flair (edge confetti + 2nd pop);
+prefers-reduced-motion opt-out. JS clean, ids ok, no stubs.
 
 ### T18 — Fullscreen toggle → APPROVED
 Feature-detected (requestFullscreen + webkit/moz/ms); hides the button where

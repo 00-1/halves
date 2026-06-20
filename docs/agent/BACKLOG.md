@@ -185,7 +185,7 @@ vendor-prefixed fallbacks if present.
   on unsupported browsers it's hidden/disabled with no console error; works at
   360px; no regressions; deploy green.
 
-### T19 — Make the unlock celebration genuinely juicy · status: OPEN
+### T19 — Make the unlock celebration genuinely juicy · status: DONE
 The current burst (a handful of small squares) is nowhere near celebratory enough.
 Upgrade it to a real confetti/spark **explosion**.
 - Move the effect to a single full-screen **`<canvas>` overlay** (pointer-events:
