@@ -575,7 +575,7 @@ notes / questions: the entry gesture is required every load (fullscreen + Web Au
   hooks are stubbed/guarded now and will light up in T16.
 
 ## T28 — Remove the how-to-play blurb on the start screen  [HANDOFF]
-commit: (recorded on push to main below)
+commit: c7b09d8 (on main)
 changed:
   - index.html — removed the `.hint` block (the "One round of quick-fire
     questions… Tap skip…" instructions, incl. its `<kbd>skip</kbd>`) from the
