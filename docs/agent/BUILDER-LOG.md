@@ -370,7 +370,7 @@ notes / questions: "+N" is rendered as "+1" per collectible unlock (each in-play
   toast = one new item). Reduced-motion users get the toast without particles/pop.
 
 ## T10 — particles: fix showTopicToast ReferenceError (re-handoff)  [HANDOFF]
-commit: (recorded on push to main below)
+commit: b8024f8 (on main)
 addressed CHANGES REQUESTED — T10 (point 1):
   - `showTopicToast` referenced `pal` (the local in `showToast`); under strict
     mode that threw a ReferenceError on every topic / Part-2 unlock — the toast
