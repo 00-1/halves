@@ -137,3 +137,44 @@ notes / questions: Group assignment for the existing 5 — the four fact-recall
   "Fractions & %". "Number", "Measures", "Reasoning" stay hidden until T5+ topics
   fill them. Kept select-then-Start (per the DoD's default); happy to switch to
   tap-to-start if you prefer in review.
+
+## T4 — Per-topic completion + new milestones  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - collectibles.js — three new topic milestone families (cat "Milestone"):
+    "unlock N topics" tiers (Explorer 3 / Pathfinder 8 / Trailblazer 16),
+    "Topic Master" (one topic at 100%) and "Topic Conqueror" (every topic at
+    100%). These carry a `need:{...}` descriptor and are evaluated by a new
+    `evaluateTopics(counts, has)` (counts = {unlocked, complete, total}); the
+    normal `evaluate()` now skips `need` items so they're only awarded post-round
+    with the updated collected state. +5 catalogue items (280→285).
+  - main.js — `finish()` now computes `topicsUnlocked` (MODES.filter(isUnlocked))
+    and `topicsComplete` (MODES.filter(isModeComplete)) AFTER the round's per-mode
+    items are applied, then runs `evaluateTopics` before the collector pass so a
+    topic finished to 100% this round counts immediately. New `isModeComplete(m)`
+    helper (100% of the per-mode set). Inventory gains a "Topics" overview at the
+    top: one row per topic with name, `have/total`, and a ✓ at 100%, plus an
+    "N/total at 100%" header.
+  - styles.css — `.topic-prog` / `.tp-row` (+ `.done`) styles for that overview.
+how I verified:
+  - node -c: modes.js, collectibles.js, main.js all OK.
+  - id cross-check: every `$("id")` in main.js present in index.html; 0 missing.
+    New inventory classes (topic-prog, tp-row/name/prog/state) all have CSS.
+  - logic check (Node, real modes/collectibles): catalogue grew exactly +5;
+    `evaluate()` never awards topic milestones; unlock tiers fire exactly at 3/8/
+    16; one100 at ≥1 complete; all100 only when every topic complete (guarded at
+    total 0); a topic completed THIS round counts toward one100; and crucially
+    every mode's 100% set provably contains Lightning (speed:*:3) + Mastery +
+    Flawless + all Beat/Spark, so "100% a topic" can't fire without the hard
+    items. ALL T4 CHECKS PASSED. Regression check (groups/masterSecs/unlockedBy,
+    Mastery category, new exports) OK.
+  - no TODO/placeholder introduced: grep clean.
+  - no regressions: topic rows aren't `.inv-cell`, so the inventory canvas-draw
+    and click handler are unaffected; picker/results/routing/build-info untouched.
+notes / questions: Interpretation flag for "clear every topic" — I read the three
+  milestones as a coherent family using the per-topic 100% metric the task asks me
+  to surface: "100% a topic" = one topic complete, "clear every topic" (Topic
+  Conqueror) = every topic at 100%. This keeps all three new and non-redundant
+  with the existing Pentamind (finish a round in every mode, which stays). If you
+  intended "clear every topic" = merely play/finish each topic once, say so and
+  I'll repoint it at the initiated-all condition.

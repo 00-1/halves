@@ -148,6 +148,19 @@
     add({ id:"meta:games"+n, name:nm, rarity:r, cat:"Milestone", modeId:null,
       desc:"Play "+n+" rounds in total.", test: ctx => ctx.stats.games >= n }));
 
+  // topic-completion milestones — evaluated after a round's items are saved
+  // (via evaluateTopics), against per-topic unlock/100% counts rather than ctx.
+  // "unlock N topics" tiers scale toward the full roadmap; the two completion
+  // tiers reuse the per-mode collectible set, so 100% genuinely demands the hard
+  // items (Lightning + Mastery + Flawless + every Beat/Spark).
+  [[3,"uncommon","Explorer"],[8,"rare","Pathfinder"],[16,"epic","Trailblazer"]].forEach(([n,r,nm]) =>
+    add({ id:"topics:unlock"+n, name:nm, rarity:r, cat:"Milestone", modeId:null, need:{ unlock:n },
+      desc:"Unlock "+n+" topics." }));
+  add({ id:"topics:one100", name:"Topic Master", rarity:"epic", cat:"Milestone", modeId:null, need:{ complete:1 },
+    desc:"Reach 100% on a topic — every collectible, mastery included." });
+  add({ id:"topics:all100", name:"Topic Conqueror", rarity:"legendary", cat:"Milestone", modeId:null, need:{ completeAll:true },
+    desc:"Reach 100% on every topic." });
+
   // collector (evaluated against how much you've collected; handled separately)
   [[25,"rare","Curator"],[75,"epic","Hoarder"],[150,"legendary","Completionist"]].forEach(([n,r,nm]) =>
     add({ id:"collector:"+n, name:nm, rarity:r, cat:"Collector", modeId:null, n:n,
@@ -162,6 +175,7 @@
     const out = [];
     for(const it of CATALOG){
       if(it.cat === "Collector") continue;
+      if(it.need) continue;                          // topic milestones: see evaluateTopics
       if(has(it.id)) continue;
       if(it.modeId && it.modeId !== ctx.mode.id) continue;
       let ok = false;
@@ -187,6 +201,22 @@
     for(const it of CATALOG){
       if(it.cat !== "Collector" || has(it.id)) continue;
       if(count >= it.n) out.push(it);
+    }
+    return sortItems(out);
+  }
+
+  // Topic-completion milestones, given per-topic counts computed by main.js
+  // *after* a round's items are saved: { unlocked, complete, total }.
+  function evaluateTopics(counts, has){
+    const out = [];
+    for(const it of CATALOG){
+      if(!it.need || has(it.id)) continue;
+      const nd = it.need;
+      let ok = true;
+      if(nd.unlock != null   && counts.unlocked < nd.unlock) ok = false;
+      if(nd.complete != null && counts.complete < nd.complete) ok = false;
+      if(nd.completeAll      && !(counts.total > 0 && counts.complete >= counts.total)) ok = false;
+      if(ok) out.push(it);
     }
     return sortItems(out);
   }
@@ -251,7 +281,7 @@
     RANKS, RARITY, paletteFor, rankIndex,
     CATALOG, byId: id => byIdMap[id], modeItems,
     categories: () => CATS.slice(),
-    evaluate, evaluateCollector, evaluateQuestion, drawIcon,
+    evaluate, evaluateCollector, evaluateTopics, evaluateQuestion, drawIcon,
     SPARK, SPEED
   };
 })();

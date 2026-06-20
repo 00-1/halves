@@ -118,6 +118,12 @@
     const items = C.modeItems(m.id);
     return { have: items.filter(it => col[it.id]).length, total: items.length };
   }
+  // A topic is "complete" only at 100% of its set (which includes the hard
+  // items: Lightning, Mastery, Flawless and every Beat/Spark).
+  function isModeComplete(m){
+    const p = modeProgress(m);
+    return p.total > 0 && p.have === p.total;
+  }
 
   // ---- start screen: mode picker + brand ---------------------------------
   // One picker row: name, a subline (best rank / "no best" / unlock hint),
@@ -278,7 +284,23 @@
     const total = C.CATALOG.length;
     const have = C.CATALOG.filter(it => collected[it.id]).length;
     $("invMeta").textContent = have + " / " + total;
-    $("invList").innerHTML = cat.map(name => {
+
+    // per-topic completion overview (mirrors the picker's have/total)
+    let topicsDone = 0;
+    const topicRows = MODES.map(m => {
+      const items = C.modeItems(m.id);
+      const got = items.filter(it => collected[it.id]).length;
+      const done = items.length > 0 && got === items.length;
+      if(done) topicsDone++;
+      return '<div class="tp-row'+(done ? " done" : "")+'">'+
+        '<span class="tp-name">'+esc(m.name)+'</span>'+
+        '<span class="tp-prog">'+got+'/'+items.length+'</span>'+
+        '<span class="tp-state">'+(done ? "✓" : "")+'</span></div>';
+    }).join("");
+    const topicsHtml = '<div class="inv-cat"><h4>Topics <span>'+topicsDone+'/'+MODES.length+' at 100%</span></h4>'+
+      '<div class="topic-prog">'+topicRows+'</div></div>';
+
+    $("invList").innerHTML = topicsHtml + cat.map(name => {
       const items = C.CATALOG.filter(it => it.cat === name);
       if(!items.length) return "";
       const got = items.filter(it => collected[it.id]).length;
@@ -461,10 +483,19 @@
     MODES.forEach(m => wasUnlocked[m.id] = isUnlocked(m));
     const newly = C.evaluate(ctx, has);
     newly.forEach(it => collected[it.id] = { ts: Date.now() });
+
+    // per-topic completion milestones, against the post-award collected state so
+    // a topic finished to 100% this round counts immediately.
+    const topicsUnlocked = MODES.filter(isUnlocked).length;
+    const topicsComplete = MODES.filter(isModeComplete).length;
+    const topics = C.evaluateTopics(
+      { unlocked: topicsUnlocked, complete: topicsComplete, total: MODES.length }, has);
+    topics.forEach(it => collected[it.id] = { ts: Date.now() });
+
     const more = C.evaluateCollector(Object.keys(collected).length, has);
     more.forEach(it => collected[it.id] = { ts: Date.now() });
     saveCollected(collected);
-    const unlocked = newly.concat(more);
+    const unlocked = newly.concat(topics).concat(more);
 
     // celebratory toast for any topic this round newly opened (chain or Part-2)
     MODES.forEach(m => { if(!wasUnlocked[m.id] && isUnlocked(m)) showTopicToast(m); });
