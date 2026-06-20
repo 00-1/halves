@@ -119,11 +119,10 @@ Two layers of gating so a beginner isn't overwhelmed but depth remains:
 (e.g. `Halves 7/24`) with a clear "incomplete" marker, so it's obvious which
 already-played topics still have items worth returning for.
 
-**100% requires real mastery.** A topic's full set deliberately includes its
-hardest items — Spark on *every* question (fact modes), **all four speed
-brackets up to Lightning (avg < 1.1s)**, Flawless, and Mastery — so a topic
-can't be fully collected without genuinely mastering it. Generated modes (no
-per-question Spark) still cap on Lightning + Mastery + Flawless.
+**100% requires real mastery.** Every topic is a fixed set, so its full set
+deliberately includes its hardest items — Spark on *every* question, **all four
+speed brackets up to Lightning (avg < 1.1s)**, Flawless, and Mastery — so a topic
+can't be fully collected without genuinely mastering it.
 
 ### Unlock chain — ordered by importance (GL value)
 

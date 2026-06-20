@@ -82,6 +82,19 @@
     [240,85,0],[167,48,0],[320,67,0],[453,29,0],[581,76,0],[724,38,0],[199,55,0],[965,78,0],[675,88,0],[138,92,0],
     [312,47,1],[205,38,1],[430,72,1],[684,59,1],[517,28,1],[760,85,1],[143,57,1],[928,49,1],[350,66,1],[601,93,1],[274,88,1]
   ];
+  // Number-bond fixed sets, shown as "X + ? = T" (answer = the missing part).
+  // Part 1 — complements to 100: round (20/80), near-round (45/55), quarters
+  // (25/75), awkward non-fives (37/63, 28/72, 49/81), and small/large partners.
+  const BONDS_P1_SRC = [20,80,30,70,40,60,50,10,90,45,55,25,75,37,63,28,72,49,81,8,92];
+  // Part 2 — to 1000 (multiples of 50/100) and decimal bonds to 1. Each entry is
+  // [value, target, answer]; decimal answers are stored as literals so they are
+  // exactly numpad-matchable (never computed as target − value).
+  const BONDS_P2_SRC = [
+    [100,1000,900],[250,1000,750],[300,1000,700],[450,1000,550],[500,1000,500],
+    [600,1000,400],[650,1000,350],[750,1000,250],[800,1000,200],[900,1000,100],[950,1000,50],
+    [0.1,1,0.9],[0.2,1,0.8],[0.3,1,0.7],[0.4,1,0.6],[0.5,1,0.5],
+    [0.7,1,0.3],[0.25,1,0.75],[0.75,1,0.25],[0.05,1,0.95],[0.95,1,0.05]
+  ];
 
   // The proper minus sign (matches the "×" used by Times), for ± prompts.
   const MINUS = "−";
@@ -92,40 +105,9 @@
                 : { p: a + " + " + b, a: a + b };
   }
 
-  // ---- Number Bonds generators (to be converted to fixed sets in T6) ------
-  const ROUND_N = 20;                     // questions per generated round
-  function randInt(lo, hi){ return lo + Math.floor(Math.random() * (hi - lo + 1)); }
-
-  // Build a round of unique prompts from a single-question generator.
-  function genRound(one){
-    const out = [], seen = new Set();
-    let guard = 0;
-    while(out.length < ROUND_N && guard < ROUND_N * 40){
-      const q = one(); guard++;
-      if(seen.has(q.p)) continue;
-      seen.add(q.p); out.push(q);
-    }
-    return out;
-  }
-
-  // Number bonds Part 1 — complement to 100 (e.g. 63 + ? = 100 → 37). Shown as
-  // an equation so the target is explicit; the answer is the missing part.
-  function bondP1(){
-    const x = randInt(1, 99);
-    return { p: x + " + ? = 100", a: 100 - x };
-  }
-
-  // Number bonds Part 2 — complement to 1000 (tens, e.g. 740 + ? = 1000 → 260)
-  // or to 1 (tenths, e.g. 0.3 + ? = 1 → 0.7). Decimal answers are built as
-  // clean tenths (k/10), never `1 - d`, so they match exactly on the numpad.
-  function bondP2(){
-    if(Math.random() < 0.5){
-      const x = randInt(1, 99) * 10;          // 10..990, multiple of 10
-      return { p: x + " + ? = 1000", a: 1000 - x };
-    }
-    const n = randInt(1, 9);                   // tenths 0.1..0.9
-    return { p: (n / 10) + " + ? = 1", a: (10 - n) / 10 };
-  }
+  // Map a fixed Number-bond entry to a { p, a } question.
+  function bondP1Item(x){ return { p: x + " + ? = 100", a: 100 - x }; }
+  function bondP2Item(e){ return { p: e[0] + " + ? = " + e[1], a: e[2] }; }
 
   // Listed in importance / unlock order: Halves → Times → Doubles →
   // Add&Subtract → Number Bonds → Fractions → Squares. `unlockedBy` points at
@@ -167,14 +149,14 @@
     {
       id:"bonds", name:"Number Bonds", tag:"Make 100.",
       glyph:'+<span class="slash">100</span>',
-      eyebrow:'fill the gap <b>↓</b>', expr:true, unlockedBy:"addsub", masterSecs:3.5, group:"Number", gen:true,
-      build(){ return genRound(bondP1); }
+      eyebrow:'fill the gap <b>↓</b>', expr:true, unlockedBy:"addsub", masterSecs:3.5, group:"Number",
+      build(){ return shuffle(BONDS_P1_SRC).map(bondP1Item); }
     },
     {
       id:"bonds2", name:"Number Bonds II", tag:"To 1000 & to 1.",
       glyph:'+<span class="slash">1k</span>',
-      eyebrow:'fill the gap <b>↓</b>', expr:true, requires:"mastery:bonds", masterSecs:3.5, group:"Number", gen:true,
-      build(){ return genRound(bondP2); }
+      eyebrow:'fill the gap <b>↓</b>', expr:true, requires:"mastery:bonds", masterSecs:3.5, group:"Number",
+      build(){ return shuffle(BONDS_P2_SRC).map(bondP2Item); }
     },
     {
       id:"fractions", name:"Fractions", tag:"As a decimal.",

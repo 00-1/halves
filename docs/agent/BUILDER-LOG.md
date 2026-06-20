@@ -284,3 +284,47 @@ notes / questions: I edited docs/research-11plus.md because the T5b DoD explicit
   requires it; flag me if you'd rather own that file. The remaining generator
   helpers exist solely for Number Bonds and are removed in T6 (the `if(m.gen)
   return` guard goes then too, once no gen modes remain).
+
+## T5b — Convert ALL topics to fixed sets (re-handoff after CHANGES)  [HANDOFF]
+commit: (recorded on push to main below)
+addressed every point of CHANGES REQUESTED — T5b:
+  1. Converted `bonds` and `bonds2` to fixed curated sets (21 each), per the
+     QUESTION-SETS.md Number-bonds checklist:
+     - bonds P1 (`BONDS_P1_SRC`, complements to 100): round/tens (20,30,40,50,
+       10,70,90 → 80…), near-round (45/55), quarters (25/75), awkward non-fives
+       (37/63, 28/72, 49/81), and small↔large partners (8/92).
+     - bonds2 P2 (`BONDS_P2_SRC` = [value,target,answer]): to 1000 in multiples of
+       50/100 (100,250,300,450,500,600,650,750,800,900,950) AND decimal bonds to 1
+       incl. the awkward ones the checklist names — tenths (0.1–0.7), the half
+       (0.5), quarters (0.25/0.75) and twentieths (0.05/0.95).
+  2. Removed ALL generator code: `genRound`, `randInt`, `ROUND_N`, `bondP1`,
+     `bondP2`, the `gen:true` flags, and the `if(m.gen) return` guard in
+     collectibles.js. (addSubP1/P2 were already gone.) grep confirms zero
+     generator references remain across modes/collectibles/main.
+  3. `bonds`/`bonds2` now get per-question Beat/Spark (49 items each).
+  4. Fixed the stale `docs/research-11plus.md` line ("Generated modes (no
+     per-question Spark)…") — there are no generated modes now.
+  5. Curation rationale (below).
+why these sets (rationale):
+  - Decimal-bond answers are stored as LITERALS in BONDS_P2_SRC (e.g. 0.05→0.95),
+    never computed as target−value, so each answer round-trips exactly through the
+    numpad (`parseFloat(String(a))===a`) — avoiding the IEEE error 1−0.05 would
+    introduce. Verified in Node for every entry.
+  - bonds P1 spans the real sub-cases of "make 100": round tens, near-round,
+    quarters, genuinely awkward pairs, and both small- and large-partner ends.
+  - bonds2 keeps to the checklist's clean bases (multiples of 50/100 to 1000) and
+    a representative decimal spread to 1 (tenths/half/quarters/twentieths).
+how I verified:
+  - node -c clean (modes/collectibles/main); all `$("id")` present.
+  - Node logic: addsub/addsub2 untouched (still fixed 21); bonds P1/P2 are fixed
+    21-item sets with **stable prompt sets across rounds**; P1 answers = 100−X
+    (integer 1..99); P2 to-1000 are multiples of 50 with integer answers, and
+    **every decimal answer is mathematically correct (v+a≈1), numpad round-trips,
+    and is a clean terminating decimal** (0.25 and 0.05 cases present). All four
+    Number modes now carry Beat/Spark; catalogue 397→481. No generator code; no
+    TODO/placeholder. ALL T5b CHECKS PASSED.
+  - no regressions: chain/groups/masterSecs unchanged; only build() sources + the
+    removed gen plumbing changed.
+notes / questions: bonds prompts stay in the explicit "X + ? = T" equation form
+  (target shown per question, since P2 mixes targets 1000 and 1). All topics are
+  now fixed sets — no generator code remains in the codebase.
