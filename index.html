@@ -24,7 +24,10 @@
       One round of quick-fire questions. Type the answer on the pad.<br>
       Correct answers advance on their own. Press <kbd>enter</kbd> to lock in a wrong guess and move on.
     </div>
-    <button class="linkbtn" id="statsBtn">View best times</button>
+    <div class="linkrow">
+      <button class="linkbtn" id="statsBtn">Best times</button>
+      <button class="linkbtn" id="invBtn">Inventory</button>
+    </div>
   </section>
 
   <!-- SUMMARY -->
@@ -76,6 +79,7 @@
   <section id="results" class="screen">
     <div class="res-label">Final time <span class="res-mode" id="resMode"></span></div>
     <div class="res-time" id="resTime">—<small>s</small></div>
+    <div class="rankline" id="rankLine"></div>
     <div class="res-row">
       <div class="res-stat"><span class="n" id="resAcc">100%</span><span class="l">accuracy</span></div>
       <div class="res-stat"><span class="n" id="resMiss">0</span><span class="l">mistakes</span></div>
@@ -102,9 +106,28 @@
     </div>
   </section>
 
+  <!-- INVENTORY -->
+  <section id="inventory" class="screen">
+    <div class="res-label">Inventory <span class="inv-meta" id="invMeta"></span></div>
+    <div class="invlist" id="invList"></div>
+    <div class="res-actions">
+      <button class="btn ghost" id="invBack">Back</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- UNLOCK / DETAIL MODAL -->
+<div class="modal hidden" id="unlockModal">
+  <div class="modal-card">
+    <div class="modal-title" id="unlockTitle">New collectible!</div>
+    <div class="unlock-grid" id="unlockGrid"></div>
+    <button class="btn" id="unlockClose">Nice</button>
+  </div>
 </div>
 
 <script src="modes.js"></script>
+<script src="collectibles.js"></script>
 <script src="main.js"></script>
 </body>
 </html>

@@ -36,6 +36,25 @@
   // ranking: higher score first, then shorter time, then earlier entry
   function rank(a,b){ return b.score - a.score || a.time - b.time || a.ts - b.ts; }
 
+  // collectibles + cumulative stats (also degrade to in-memory)
+  let memCollected = null, memStats = null;
+  function loadCollected(){
+    if(memCollected) return memCollected;
+    try{ const v = localStorage.getItem("halves.collected"); memCollected = v ? JSON.parse(v) : {}; }
+    catch(e){ memCollected = {}; }
+    if(!memCollected || typeof memCollected !== "object") memCollected = {};
+    return memCollected;
+  }
+  function saveCollected(o){ memCollected = o; try{ localStorage.setItem("halves.collected", JSON.stringify(o)); }catch(e){} }
+  function loadStats(){
+    if(memStats) return memStats;
+    let s; try{ s = JSON.parse(localStorage.getItem("halves.stats")); }catch(e){ s = null; }
+    if(!s || typeof s !== "object") s = {};
+    s.games = s.games || 0; s.byMode = s.byMode || {}; s.flawless = s.flawless || {};
+    memStats = s; return s;
+  }
+  function saveStats(s){ memStats = s; try{ localStorage.setItem("halves.stats", JSON.stringify(s)); }catch(e){} }
+
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
   const screens = { start:$("start"), game:$("game"), results:$("results"), summary:$("summary") };
@@ -88,11 +107,82 @@
         return '<div class="sum-row blank"><span class="md">'+esc(m.name)+'</span>'+
           '<span class="sc">—</span><span class="tm">—</span></div>';
       }
-      const holder = best.name ? '<span class="holder">'+esc(best.name)+'</span>' : '';
-      return '<div class="sum-row"><span class="md">'+esc(m.name)+holder+'</span>'+
+      const rk = C.RANKS[C.rankIndex(best.score, best.total, best.time)];
+      const sub = '<span class="holder" style="color:'+rk.color+'">'+esc(rk.name)+
+        (best.name ? ' · '+esc(best.name) : '')+'</span>';
+      return '<div class="sum-row"><span class="md">'+esc(m.name)+sub+'</span>'+
         '<span class="sc">'+best.score+'/'+(best.total||"?")+'</span>'+
         '<span class="tm">'+fmt(best.time)+'s</span></div>';
     }).join("");
+  }
+
+  // ---- ranks, collectible modal & inventory -------------------------------
+  const C = window.Collectibles;
+
+  function renderResultRank(idx){
+    const rk = C.RANKS[idx];
+    const el = $("rankLine");
+    el.innerHTML = '<canvas class="pix" width="48" height="48"></canvas>'+
+      '<div class="rank-txt"><span class="rank-k">Rank earned</span>'+
+      '<span class="rank-n" style="color:'+rk.color+'">'+esc(rk.name)+'</span></div>';
+    C.drawIcon(el.querySelector("canvas"), "rank:"+rk.key, C.paletteFor(rk.rarity));
+  }
+
+  // Modal — shows a set of collectible items (unlock celebration or detail).
+  function openModal(title, items, compact){
+    $("unlockTitle").textContent = title;
+    const grid = $("unlockGrid");
+    grid.className = "unlock-grid" + (compact ? " compact" : "");
+    grid.innerHTML = "";
+    const csz = compact ? 40 : 56;
+    items.forEach(it => {
+      const cell = document.createElement("div");
+      cell.className = "u-cell r-" + it.rarity;
+      cell.innerHTML = '<canvas class="pix" width="'+csz+'" height="'+csz+'"></canvas>'+
+        '<div class="u-name">'+esc(it.name)+'</div>'+
+        '<div class="u-rare">'+esc(it.rarity)+'</div>'+
+        '<div class="u-desc">'+esc(it.desc)+'</div>';
+      grid.appendChild(cell);
+      C.drawIcon(cell.querySelector("canvas"), it.id, C.paletteFor(it.rarity));
+    });
+    const m = $("unlockModal");
+    m.classList.remove("hidden");
+    requestAnimationFrame(() => m.classList.add("show"));
+  }
+  function closeModal(){
+    const m = $("unlockModal");
+    m.classList.remove("show");
+    setTimeout(() => m.classList.add("hidden"), 220);
+  }
+  function showUnlocks(items){
+    const n = items.length;
+    const title = n === 1 ? "New collectible!" : n + " new collectibles!";
+    openModal(title, items, n > 4);
+  }
+
+  function renderInventory(){
+    const collected = loadCollected();
+    const cat = C.categories();
+    const total = C.CATALOG.length;
+    const have = C.CATALOG.filter(it => collected[it.id]).length;
+    $("invMeta").textContent = have + " / " + total;
+    $("invList").innerHTML = cat.map(name => {
+      const items = C.CATALOG.filter(it => it.cat === name);
+      if(!items.length) return "";
+      const got = items.filter(it => collected[it.id]).length;
+      const cells = items.map(it => {
+        const owned = !!collected[it.id];
+        return '<div class="inv-cell '+(owned ? "owned r-"+it.rarity : "locked")+'" data-id="'+esc(it.id)+'">'+
+          (owned ? '<canvas class="pix" width="48" height="48"></canvas>' : '<span class="q">?</span>')+
+          '</div>';
+      }).join("");
+      return '<div class="inv-cat"><h4>'+esc(name)+' <span>'+got+'/'+items.length+'</span></h4>'+
+        '<div class="inv-grid">'+cells+'</div></div>';
+    }).join("");
+    $("invList").querySelectorAll(".inv-cell.owned canvas").forEach(cv => {
+      const it = C.byId(cv.parentElement.dataset.id);
+      if(it) C.drawIcon(cv, it.id, C.paletteFor(it.rarity));
+    });
   }
 
   // ---- game state ---------------------------------------------------------
@@ -223,6 +313,36 @@
       '</span><span class="t">'+fmt(s.t)+'s</span></div>'
     ).join("");
 
+    // ----- rank + collectibles -----
+    const rankIdx = C.rankIndex(score, order.length, total);
+    renderResultRank(rankIdx);
+
+    const stats = loadStats();
+    stats.games += 1;
+    stats.byMode[mode.id] = (stats.byMode[mode.id] || 0) + 1;
+    if(mistakes === 0) stats.flawless[mode.id] = true;
+    saveStats(stats);
+
+    const qmap = {};
+    times.forEach(t => { qmap[t.p] = { t:t.t, miss:t.miss }; });
+    const ctx = {
+      mode: mode, mistakes: mistakes, score: score, total: order.length,
+      totalTime: total, avg: total/order.length, rankIndex: rankIdx, qmap: qmap,
+      stats: {
+        games: stats.games,
+        modesCleared: Object.keys(stats.byMode).length,
+        flawless: Object.keys(stats.flawless).length
+      }
+    };
+    const collected = loadCollected();
+    const has = id => !!collected[id];
+    const newly = C.evaluate(ctx, has);
+    newly.forEach(it => collected[it.id] = { ts: Date.now() });
+    const more = C.evaluateCollector(Object.keys(collected).length, has);
+    more.forEach(it => collected[it.id] = { ts: Date.now() });
+    saveCollected(collected);
+    const unlocked = newly.concat(more);
+
     // ----- hall of fame -----
     const board = loadBoard(mode.id);
     const entry = { name:"", score:score, time:total, total:order.length, ts:Date.now() };
@@ -249,6 +369,7 @@
 
     show("results");
     renderBest();
+    if(unlocked.length) setTimeout(() => showUnlocks(unlocked), 650);
   }
 
   function renderHOF(){
@@ -320,6 +441,18 @@
     MODES.forEach(m => saveBoard(m.id, []));
     renderSummary(); renderBest();
   });
+
+  $("invBtn").addEventListener("click", () => { renderInventory(); show("inventory"); });
+  $("invBack").addEventListener("click", () => show("start"));
+  // Tap a collectible to inspect it (owned shows detail; locked teases).
+  $("invList").addEventListener("click", e => {
+    const cell = e.target.closest(".inv-cell"); if(!cell) return;
+    const it = C.byId(cell.dataset.id); if(!it) return;
+    if(cell.classList.contains("owned")) openModal(it.cat, [it], false);
+    else openModal("Locked", [{ id:"locked-mystery", name:"???", rarity:"common", desc:"Keep playing to discover this collectible." }], false);
+  });
+  $("unlockClose").addEventListener("click", closeModal);
+  $("unlockModal").addEventListener("click", e => { if(e.target === $("unlockModal")) closeModal(); });
 
   const nameInput = $("nameInput");
   nameInput.addEventListener("input", e => commitName(e.target.value));

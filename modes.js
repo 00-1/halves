@@ -26,9 +26,10 @@
   }
 
   // Numbers whose halves come up in the wild: clock/time (30, 60, 90, 24,
-  // 12, 120), money & percentages (50, 100, 200, 1000, 500, 250), angles
-  // (360, 180), bytes (16, 64), plus a few odd values for ".5" practice.
-  const HALVES_SRC   = [30,60,90,24,12,50,100,200,20,40,80,1000,500,250,360,180,16,64,7,25,5];
+  // 12), money & percentages (50, 100, 200, 1000, 500, 250), angles
+  // (360, 180), a gross (144), bytes (16, 64), plus odd values for the
+  // ".5" practice (9, 15, 45, 7, 25, 5, 3).
+  const HALVES_SRC   = [30,60,90,24,12,50,100,200,20,40,80,1000,500,250,360,180,144,16,64,9,15,45,7,25,5,3];
   // Numbers whose doubles come up constantly (recipes, prices, money chains).
   const DOUBLES_SRC  = [6,7,8,9,12,15,16,18,25,35,45,50,60,75,120,125,250,11,13,14,17];
   // The multiplication facts actually worth memorising: the tricky 6/7/8/9

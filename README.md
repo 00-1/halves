@@ -18,6 +18,20 @@ times** page summarises your personal best in each mode, all saved locally.
 | Squares   | `12²`     | `144`             |
 | Fractions | `3/8`     | `0.375`           |
 
+### Ranks & collectibles
+
+Every finished round earns a **fantasy rank** (Goblin Whelp → Apprentice →
+Squire → Knight → Battle Mage → Sorcerer → Dark Wizard → Archmage) based on
+your clean score and speed; it shows on the results and best-times pages.
+
+There's also a large **collectible inventory** (260+ items) earned for
+things like clearing a mode, flawless rounds, speed brackets, beating each
+individual question cleanly ("Beat"), beating it fast ("Spark"), climbing the
+rank ladder, and cumulative milestones. Unlocks pop up after a round, and the
+**Inventory** page (from the start screen) shows everything, locked and
+unlocked. Each item's **16-bit icon is generated programmatically** as a
+deterministic mirrored pixel sprite seeded from its id — no image assets.
+
 ## Project layout
 
 No build step — plain static files:
@@ -25,6 +39,7 @@ No build step — plain static files:
 - `index.html` — markup / screens
 - `styles.css` — all styling
 - `modes.js` — the math content; each mode is a small config object
+- `collectibles.js` — ranks, the collectible catalogue, and the icon generator
 - `main.js` — the game engine (mode-agnostic)
 
 ### Adding or editing a mode
