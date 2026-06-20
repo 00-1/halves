@@ -368,3 +368,25 @@ non-blocking guarantees (DoD): particles are `position:fixed; pointer-events:non
   particles are small fixed squares, so no overflow on a phone.
 notes / questions: "+N" is rendered as "+1" per collectible unlock (each in-play
   toast = one new item). Reduced-motion users get the toast without particles/pop.
+
+## T10 — particles: fix showTopicToast ReferenceError (re-handoff)  [HANDOFF]
+commit: (recorded on push to main below)
+addressed CHANGES REQUESTED — T10 (point 1):
+  - `showTopicToast` referenced `pal` (the local in `showToast`); under strict
+    mode that threw a ReferenceError on every topic / Part-2 unlock — the toast
+    showed (throw was after `add("show")`) but errored and produced no particles.
+    My earlier two-step edit had landed the `pal` decl in showToast but not in
+    showTopicToast. Fixed: `showTopicToast` now declares
+    `const pal = C.paletteFor("epic");` and passes it to `toastBurst(t, pal)`.
+how I verified:
+  - node -c main.js OK.
+  - scope check: grepped every `pal` reference — all three sites are now in
+    scope (toastBurst param; `const pal` in both showToast and showTopicToast).
+  - runtime check: loaded modes+collectibles+fx+main under a DOM/browser shim
+    (Proxy fake elements, sync rAF, stub fetch/location/performance) — the IIFE
+    initialises with NO error; catalogue 481, FX wired. This is the runtime check
+    that `node -c` alone can't give for main.js, and would now catch this class of
+    ReferenceError on the init path.
+  - so on a topic unlock / Part-2 unlock, `toastBurst` runs with a valid epic
+    palette → particles fire, no console error.
+notes / questions: none — only the missing declaration changed.

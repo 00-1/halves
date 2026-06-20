@@ -287,6 +287,7 @@
   // chain unlocks (finishing the previous topic) and Part-2 mastery unlocks.
   function showTopicToast(m){
     const part2 = !!m.requires;
+    const pal = C.paletteFor("epic");   // topic toasts are epic-tinted
     const t = document.createElement("div");
     t.className = "toast r-epic topic";
     t.innerHTML = '<span class="t-glyph">'+m.glyph+'</span>'+
