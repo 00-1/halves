@@ -722,7 +722,7 @@ notes / questions: masterSecs 9 (Tier 3, "% of"). This completes the originally
   QUESTION-SETS standard and use literal answers wherever division could drift.
 
 ## T16 — Audio core + 8-bit SFX  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 0692712 (on main)
 changed:
   - sound.js (new) — `window.Sound`: a single AudioContext created/resumed on the
     first gesture via `unlock()` (wired into T11's existing entry-screen
