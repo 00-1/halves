@@ -920,7 +920,7 @@ notes / questions: done ahead of T23 per the hotfix queue; pushed after T22. The
   makes even the fastest styles calm (ties to the anxiety-mitigation stance).
 
 ## T34 — Place Value: bring decimals into Part 1 (hotfix)  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 439ab44 (on main)
 changed:
   - modes.js — rebalanced the Place-value sets (content swap only; chain/links/
     masterSecs unchanged). Unified both sets to the literal-answer format
