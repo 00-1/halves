@@ -54,7 +54,7 @@ notes / questions: Existing modes only (Halves, Times, Doubles, Fractions,
   is T3.
 
 ## T2 — Mastery achievement + Part-2 gate plumbing  [HANDOFF]
-commit: (recorded on push to main below)
+commit: 1f5dedb (on main)
 changed:
   - modes.js — added `masterSecs` to all 5 modes per the BACKLOG tier table
     (halves 4, times 3.5, doubles 4, fractions 3.5, squares 3.5). Documented
