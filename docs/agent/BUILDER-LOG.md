@@ -890,3 +890,31 @@ how I verified:
 notes / questions: the boosting-items list is capped at 12 chips (+"N more") so a
   fully-collected hero's card stays manageable; the full set is reflected in the
   "Boosted by N" count and the effective stats.
+
+## T33 — Music: cap tempo + stop fast bursts (live hotfix)  [HANDOFF]
+commit: (recorded on push to main below)
+changed:
+  - sound.js — TWO fixes for the "music sometimes races / stressful" report:
+    1. ANTI-BURST in `musicTick()`: if the 25ms timer stalls (heavy render e.g.
+       the heroes screen, GC, tab refocus, confetti) the audio clock races ahead of
+       `mNext`, so the old `while` loop flooded a backlog of notes at once. Now: if
+       `mNext < ctx.currentTime` we **resync** (`mNext = now + 0.02`) and **drop**
+       the missed steps, plus a **`MAX_STEPS_PER_TICK = 4`** backstop cap.
+    2. TEMPO CEILING: rescaled every over-116 style down (max bpm now **115**),
+       preserving their relative order/character; already-gentle styles unchanged.
+       New bpms: Sky Castle 132→113, Neon Arcade 140→114, Lava Run 150→115,
+       Bubble Pop 124→110, Goblin Market 118→108, Clockwork 128→112, Victory Hall
+       120→109. (115 keeps the 16th-note interval ≥0.13s.)
+how I verified:
+  - node -c sound.js OK.
+  - Node test (stub AudioContext + captured timer + controllable clock):
+    (a) ANTI-BURST — normal ticking schedules a few voices; after a **5s clock
+        jump**, ONE `musicTick()` schedules just **3 voices (no flood)** and `mNext`
+        resyncs near `currentTime` so subsequent ticks stay bounded.
+    (b) TEMPO CAP — `max(bpm)` over all 13 styles = **115 (≤116)**; every style's
+        `(60/bpm)/4 ≥ 0.13s`; the rescaled styles keep ascending order.
+    (c) music still loops, **switches** styles, and **respects mute** (stop/resume).
+    ALL T33 CHECKS PASSED.
+notes / questions: done ahead of T23 per the hotfix queue; pushed after T22. The
+  anti-burst keeps tempo steady across render hitches/refocus/SFX; the ceiling
+  makes even the fastest styles calm (ties to the anxiety-mitigation stance).

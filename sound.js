@@ -112,17 +112,17 @@
   // 12 topic styles (indices 0..11) + the menu style (index 12) = 13 total.
   const STYLES = [
     St("Dungeon Crawl", 88,45,MIN,    [0,2,4,2],          [0,null,0,5,null,0,null,5], [1,0,2,0],            0.35),
-    St("Sky Castle",   132,60,MAJ,    [0,2,4,7,4,2],      [0,null,4,null],            [1,0,2,0,1,0,2,0],    0.40),
+    St("Sky Castle",   113,60,MAJ,    [0,2,4,7,4,2],      [0,null,4,null],            [1,0,2,0,1,0,2,0],    0.40),
     St("Pixel Forest", 108,57,PENT,   [0,1,2,4],          [0,null,2,null],            [1,0,2,0],            0.35),
-    St("Neon Arcade",  140,60,MAJ,    [0,2,4,5,7],        [0,0,5,5],                  [1,3,2,3],            0.45),
+    St("Neon Arcade",  114,60,MAJ,    [0,2,4,5,7],        [0,0,5,5],                  [1,3,2,3],            0.45),
     St("Frost Cavern",  80,50,DORIAN, [0,3,5],            [0,null,null,5],            [0,0,2,0],            0.25, TRI),
-    St("Lava Run",     150,43,PENTMIN,[0,2,3,4],          [0,0,0,3],                  [1,2,3,2,1,2,3,2],    0.50),
-    St("Bubble Pop",   124,64,MAJ,    [0,4,2,5],          [0,null,4,null],            [1,0,3,2],            0.40),
+    St("Lava Run",     115,43,PENTMIN,[0,2,3,4],          [0,0,0,3],                  [1,2,3,2,1,2,3,2],    0.50),
+    St("Bubble Pop",   110,64,MAJ,    [0,4,2,5],          [0,null,4,null],            [1,0,3,2],            0.40),
     St("Mecha March",  112,48,MIN,    [0,2,4],            [0,0,5,5],                  [1,2,3,2],            0.30),
     St("Starlight",     76,60,LYD,    [0,4,7],            [0,null,null,null],         [0,0,0,2],            0.20, TRI),
-    St("Goblin Market",118,52,DORIAN, [0,2,5,3],          [0,null,3,5,null,0],        [1,0,2,0,1,3],        0.40),
-    St("Clockwork",    128,55,MAJ,    [0,2,4,7,4,2,0,2],  [0,null,0,null],            [2,2,2,2],            0.35),
-    St("Victory Hall", 120,60,MAJ,    [0,4,7,12,7,4],     [0,0,4,4,5,5],              [1,3,2,3],            0.45),
+    St("Goblin Market",108,52,DORIAN, [0,2,5,3],          [0,null,3,5,null,0],        [1,0,2,0,1,3],        0.40),
+    St("Clockwork",    112,55,MAJ,    [0,2,4,7,4,2,0,2],  [0,null,0,null],            [2,2,2,2],            0.35),
+    St("Victory Hall", 109,60,MAJ,    [0,4,7,12,7,4],     [0,0,4,4,5,5],              [1,3,2,3],            0.45),
     St("Title Theme",   96,57,MAJ,    [0,2,4,2],          [0,null,4,null],            [0,0,2,0],            0.30)   // menu
   ];
   const MENU_STYLE = 12;
@@ -170,15 +170,23 @@
       o.start(t); o.stop(t + v.d + 0.03);
     }catch(e){}
   }
+  const MAX_STEPS_PER_TICK = 4;   // backstop: never flood notes in one tick
   function musicTick(){
     if(!ctx) return;
-    while(mNext < ctx.currentTime + LOOKAHEAD){
+    const now = ctx.currentTime;
+    // Anti-burst: if the 25ms timer stalled (heavy render, GC, tab refocus) the
+    // audio clock races ahead of mNext; resync and DROP the missed steps instead
+    // of cramming a backlog of notes (which sounded like a fast burst).
+    if(mNext < now) mNext = now + 0.02;
+    let scheduled = 0;
+    while(mNext < now + LOOKAHEAD && scheduled < MAX_STEPS_PER_TICK){
       if(mStep % LOOP_STEPS === 0 && mCur !== mWant){ mCur = mWant; reseed(); }   // clean swap on loop boundary
       const style = STYLES[mCur];
       const voices = stepVoices(style, mStep, mRnd);
       for(const v of voices) musicVoice(v, mNext);
       mNext += (60 / style.bpm) / 4;
       mStep++;
+      scheduled++;
     }
   }
   function startScheduler(){
