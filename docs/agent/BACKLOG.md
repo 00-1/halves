@@ -90,3 +90,60 @@ P1: 10/25/50% of ≤400. P2: 1/5/20/75% of ≤200. Generated.
 
 > Further topics (equivalences, rounding, money, time, metric, ratio, …) will be
 > appended by the Babysitter once T5–T9 are `DONE`. Do not invent them early.
+
+---
+
+## Phase 3 — Hero / Enemy metagame
+
+Full spec: **`docs/agent/DESIGN-heroes.md`** (read it fully before starting; ask in
+BUILDER-LOG.md if anything is ambiguous — do not guess). Each task is complete
+only with the Node tests its DoD names. Status `OPEN` only after Phase 2 is `DONE`
+(unless the Babysitter pulls Phase 3 forward in REVIEW.md).
+
+### T20 — Item layer: styles, names, boosts · status: BLOCKED (await Phase 2)
+Give every catalogue item a `style` (1 of 10), a flavour `name`, and a `boost`
+{hero,stat,amount} — all deterministic from id+rarity per the design. Implement
+all 10 pixel `drawIcon` style routines (keep pixelated; rarity palette). Update
+inventory tiles, the unlock modal, and toasts to show the flavour name; the
+inventory detail also shows the earning achievement + the boost.
+- **DoD:** every item has style∈[0,10), a non-empty name, and a valid boost
+  referencing a real hero+stat; boosts spread across all 12 heroes (Node: each
+  hero is targeted by ≥1 item); all 10 styles render without error (Node-smoke
+  the generators via a canvas stub or pure-function guard); no regressions to
+  existing collectible earning; deploy-safe.
+
+### T21 — Heroes module + stats · status: BLOCKED
+Add `heroes.js`: the 12 heroes (data per design), `effectiveStats(hero,
+collected)` = base + owned boosts, `rating(hero)`, and `isHeroUnlocked(hero,
+collected, stats)`. Export on `window.Heroes`.
+- **DoD:** Node test — bram unlocks on first `init`; effective stats grow as
+  items are owned; rating monotonic; each hero's unlock predicate fires on its
+  listed condition and not before.
+
+### T22 — Heroes screen (`#/heroes`) · status: BLOCKED
+Roster grouped by type, locked/unlocked with unlock hints, per-hero effective
+stats and the items boosting them; procedural pixel portraits. Start-screen link.
+- **DoD:** renders all 12 (locked/unlocked) at 360px without overflow; routing
+  + back work; deploy green.
+
+### T23 — Enemy tiers + battle logic · status: BLOCKED
+Add the 24-tier list + RPS matchup + pure `resolveBattle(hero, tier, perf)` per
+design; compute `tier24.def` from max-possible rating at load.
+- **DoD:** Node test proves early tiers winnable with the starter hero at good
+  perf, and **tier 24 is unwinnable unless all boosts are owned** (and winnable
+  when they are, with advantage + perfect perf). Pure logic, no DOM.
+
+### T24 — Arena mode (`#/arena`) · status: BLOCKED
+Pick an unlocked hero → see tier + matchup hint → play a battle round (reuse the
+drill engine over unlocked topics) → resolve → show the result maths → on win
+grant `tier:n` + trophy item + advance (+ any hero unlock). Start-screen link.
+- **DoD:** full flow works on existing content; win/loss correct vs the logic;
+  trophies/tier ownership persist locally; no regressions; deploy green.
+
+### T25 — Balance + milestone wiring · status: BLOCKED
+Hero-unlock collectibles/milestones for "unlock all heroes", "defeat tier N",
+"defeat the final tier". Balance pass so the curve is fair and the final tier
+matches "needs ~everything". Update docs/research-11plus.md note that Phase 3 is
+the engagement layer.
+- **DoD:** Node test of the full progression curve; milestones evaluate
+  correctly; final-tier ⇔ full-collection invariant holds.
