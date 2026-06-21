@@ -1889,6 +1889,29 @@ inset:0` screen. Reclaim it; pin the event banner to the very top of `#start`; t
   `events.test.js` banner + `tech-tree` checks). (Babysitter: verify on the live build that the top
   band is gone across screens, the banner is pinned top, the tree breathes, and the nav is tidy.)
 
+### T104 — [A] Fix unreadable fraction glyphs (½, ¾) in the pixel font · status: OPEN
+Owner (screenshot): the **fraction topic icons are hard to read** — esp. **`¾`** (the Fractions
+node) which reads as a pixel blob, and the **`½`** in **`½n`** (Fractions of). Cause: the T56
+`glyphs.js` **stacked vulgar-fraction** tokens (`f12`/`f34` → 3×4 SMALL numerator · bar ·
+denominator) are illegible at the tree-node size (~22px). The operator glyphs and the **slashed
+`a/b`** (Fractions of II) read fine — it's specifically the **stacked** fractions.
+- **Make the fraction glyphs legible at small sizes.** Prefer the approach that already works — a
+  **slashed/diagonal fraction** (like `a/b`): e.g. render `½` as a small `1⁄2` and `¾` as `3⁄4`
+  using the legible BIG digits + the slash, **or** redesign the stacked form to be clearly readable
+  (taller, more separation, a clear bar). Whatever reads cleanly. Keep the **amber-accent** on the
+  fraction (the operator role) consistent with today.
+- **Check every size the glyph appears at:** the **tree node** (~22px, the worst case), the
+  **`#topicInfo` row**, the **start mark / guide / practice title**, and the **toast**. It must be
+  unambiguously readable as the right fraction at all of them.
+- **Scope:** `glyphs.js` (+ the `TOPIC_GLYPHS` tokens in `modes.js` if the representation changes,
+  e.g. `½n` → a slashed half + `n`). Keep the favicon/marks working.
+- **DoD:** the `¾` (Fractions) and `½n` (Fractions of) marks are **clearly readable** at the
+  tree-node size (and the other sizes); the chosen representation is legible + consistent (amber
+  accent kept); `glyphs.test.js` still passes (font covers every symbol; if tokens change, update
+  it) + a check that the fraction glyphs render distinctly; `node -c` clean; no console errors; all
+  gates green. (Babysitter: eyeball/compare the fraction marks at node size — they must read as the
+  right fraction, not a blob — and confirm the favicon/other marks are unaffected.)
+
 ### T100 — [A] Gamey UI restyle, buttons-first (pixel-bevel, reversible) · status: OPEN
 Owner: "go with your leans." Implement **T97's recommendation** (`docs/UI-DIRECTION-RESEARCH.md`):
 a **gamey, less-web-2.0** look — **pixel-bevel low-radius buttons + squared panels/cards, body text

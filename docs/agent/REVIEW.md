@@ -329,8 +329,9 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   flagged these): **`T98`** raise the too-quiet audio (`VOL 0.30`→~0.8, no clip) → **`T99`** reclaim
   the wasted top band on ALL screens (`.app max-height:780px` cap) + pin the event banner to the
   top + tidy the nav (label Sound/Settings, fullscreen inline) so the tree expands → **`T100`**
-  gamey UI restyle, buttons-first (pixel-bevel + squared panels, clean text, reversible `data-ui`
-  tokens — owner approved my T97 leans). **Then the shipping/perf block (Phase 6.16, owner: launch
+  **`T104`** (fix the unreadable stacked fraction glyphs ½/¾ — slashed/clearer, legible at node
+  size) → **`T100`** gamey UI restyle, buttons-first (pixel-bevel + squared panels, clean text,
+  reversible `data-ui` tokens — owner approved my T97 leans). **Then the shipping/perf block (Phase 6.16, owner: launch
   ASAP + parity):** **`T101`** (remove/mask the Start→fullscreen delay) → **`T102`** (installable
   Android **PWA+TWA** build for web↔Android parity — pulled forward from `T72`) → **`T103`**
   (deep **Android-inclusive perf research**, doc). **Then** `T88`–`T90` (Arena 3v3) → content
