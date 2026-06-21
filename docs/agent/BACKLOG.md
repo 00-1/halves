@@ -1271,14 +1271,15 @@ keeping each operator clearly recognisable.**
   toasts; deploy green. (Babysitter checks each topic's pixel mark encodes the right
   operator, the favicon is set, and the draw is static/contrast-safe.)
 
-### T57 — Scrub specific school/location references from the docs · status: OPEN
-Owner: "remove references to Salisbury, Wiltshire, Bishop Wordsworth's, etc. from the
-codebase — keep 11+ and the exam board." Babysitter sweep: the only occurrences are in
-**`docs/research-11plus.md`** (lines ~4–5 and ~17) — no user-facing/code references
-exist. Generalise the framing without losing the design rationale.
-- **Remove the named-school / place identifiers:** "Bishop Wordsworth's (School)",
-  "South Wilts Grammar", "Salisbury", "Wiltshire", and any equivalent local
-  identifiers. Replace with neutral phrasing, e.g. "UK 11+ grammar-school prep".
+### T57 — Scrub the specific school/town/county references from the docs · status: OPEN
+Owner: remove the named-school and place references from the codebase, keeping only the
+generic "11+" and the exam board. Babysitter sweep: the only occurrences are in
+**`docs/research-11plus.md`** — the **parenthetical at lines ~4–5** (two named grammar
+schools + a town/county) and the **first "Exam context" bullet (~line 17)** (the same two
+named schools). No user-facing/code references exist. (NB: this spec deliberately does
+**not** spell the names out — see the verification note below.)
+- **Remove** the two named grammar schools and the town/county name wherever they appear
+  in that doc; replace with neutral phrasing such as "UK 11+ grammar-school prep".
 - **Keep** the generic context: **"11+"** and the **exam board ("GL Assessment")** —
   including the line that the relevant 11+ maths paper uses GL Assessment (≈50 q/50 min,
   no calculator). The "switched from CEM in 2023" provenance may stay (exam-board
@@ -1286,8 +1287,11 @@ exist. Generalise the framing without losing the design rationale.
   named school.
 - **Scope:** doc-only edit; **no code/UX change**. Don't alter the design content,
   calibrations, or topic specs — only the identifying school/place names.
-- **DoD:** a fresh `git grep -iE "salisbury|wiltshire|wordsworth|bishop|south wilts|sarum"`
-  across the whole repo returns **zero** matches; "11+" and "GL Assessment" remain; the
-  doc still reads coherently (no dangling "both", broken sentences); no other file
-  changed; deploy green. (Babysitter re-greps the repo for the identifiers and confirms
-  the exam-board/11+ context survived.)
+- **DoD:** after the edit, grep the **whole repo** (working tree) for the removed
+  school/town/county identifiers → **zero** matches **in every tracked file, including
+  `docs/agent/*`** (do not reintroduce the names into BACKLOG/REVIEW — refer to them
+  obliquely, as this task does); "11+" and "GL Assessment" remain; the doc still reads
+  coherently (no dangling "both"/broken sentences); no other file changed; deploy green.
+  (Babysitter re-greps the repo and confirms the exam-board/11+ context survived. Note:
+  earlier commit *messages* in history may still contain the names — see REVIEW for the
+  history-rewrite decision; this task only cleans the working tree.)
