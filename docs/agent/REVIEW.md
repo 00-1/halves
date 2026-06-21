@@ -1,18 +1,32 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T149` [A] (THE celebration fix — `#fxBurst` moved out of the `display:none`
-reset modal) · live build **`9c211a3`**. **CI green; collision-clean** ([A]-owned: `index.html`,
-`test/fx-wiring.test.js`, `BUILDER-LOG.md`). The end of the 6-round celebration saga: `<canvas id="fxBurst">`
-was the last child of `#resetModal` (`.modal.hidden{display:none}`) → the shower painted into a
-never-displayed `0×0` canvas. A moved it **top-level** (body sibling of `.app`, position:fixed z59), so it's
-always rendered; `fx-wiring.test` +9 asserts `#fxBurst` is NOT inside a modal. **🌐 BROWSER-VERIFIED by the
-Babysitter (the new rule, first use):** headless Chromium at the Poco-X3 viewport (393×852 @ dpr 2.75) — on
-load `#fxBurst`'s parent is `BODY` and `clientSize = 393×852` (was `0×0`), and **clicking the REAL "Item"
-tester button through the app UI paints 21.8% lit coverage**, no page/console errors. Also `node -c` clean;
-`fx-wiring.test` 77; full suite + CI green. T149 → DONE. **🎆 OWNER: celebrations now render for real (wins /
-runs / items / the tester) — confirmed in-browser, not asking you to test.** The engine work (T133/T138) was
-correct all along; this one misplaced `<canvas>` was the whole bug. *(Pending review: `T140` 12-style picker
-`9e706f3`, `T146`+`T148` `8a2b1a9` — Babysitter reviewing next, browser-verifying the UI ones.)*
+**Current verdict:** `CHANGES REQUESTED — T101` [A] (defer the audio-graph off first paint) · live build
+**`d795031`**. **CI green, but a real regression the gates can't see: MUSIC NO LONGER STARTS AFTER START.**
+The jank-defer idea is good — keep it — but it **dropped the music-start call**. T101 replaced the Start
+handler's `audioUnlock()` with `Sound.unlock()` (sync) + a deferred `warmAudio = () => { setupSynth();
+applySoundPref(); }`. But: **(1)** `setupSynth` only mounts the synth (`synthWired = true`) — it does NOT call
+`musicForScreen`; **(2)** the old `audioUnlock()` it replaced did `ensureAudioReady(); if(!playing)
+musicForScreen(curScreen)` — i.e. it **started the music**; **(3)** the Start handler's `applyRoute()`/
+`startIntro()` runs `show()` → `musicForScreen()` **before** the deferred `setupSynth`, so that call early-
+returns on the `!synthWired` guard (`main.js:350`). Net: after Start the synth gets wired a frame later but
+**nothing ever calls `musicForScreen` again** → **the first round / menu is silent** (SFX work; music doesn't
+start until the next screen change). The code comment even claims "music starts a frame later" — but the code
+doesn't do it. **Confirmed by static trace** (`setupSynth` has no `musicForScreen`; old `audioUnlock` did;
+the `show→musicForScreen` runs pre-wire). *(I attempted a live browser check too — the harness hit transient
+zombie-Chromium flakiness this session; the code path is unambiguous, so I'm not blocking on the live read.)*
+**FIX (small):** make the deferred work actually start the music — `warmAudio = () => { setupSynth();
+applySoundPref(); musicForScreen(curScreen); }` (or call `audioUnlock()` in the RAF). Keep the sync
+unlock+fullscreen + the defer. **Add a guard** if feasible (assert the post-Start deferred path calls
+`musicForScreen`). Re-push; I'll browser-verify `Synth.musicState().playing === true` after Start. T101 stays
+OPEN.
+
+> **Previously approved (done):** `T149` [A] (THE celebration fix — `#fxBurst` moved out of the `display:none`
+> reset modal) · live build **`9c211a3`**. **CI green; collision-clean** ([A]-owned: `index.html`,
+> `test/fx-wiring.test.js`, `BUILDER-LOG.md`). `<canvas id="fxBurst">` was the last child of `#resetModal`
+> (`.modal.hidden{display:none}`) → painted into a never-displayed `0×0` canvas. Moved **top-level**;
+> `fx-wiring.test` +9 asserts it's not inside a modal. **🌐 BROWSER-VERIFIED:** parent=`BODY`, `clientSize
+> 393×852` (was `0×0`), real "Item" tester click → 21.8% lit coverage, no errors. T149 → DONE. *(Engine
+> T133/T138 was correct all along; one misplaced `<canvas>` was the bug.)*
 
 > **Previously approved (done):** `T143` [A] (dedicated scrollable Audio menu + separate Music/SFX volumes —
 > nav-trap fix) · live build **`59e2c28`** (in green HEAD `daa64f5`). **CI green; collision-clean** ([A]-owned:

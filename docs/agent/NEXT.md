@@ -10,14 +10,19 @@
 
 ---
 
-**Builder A → `T124` (fraction glyphs) → `T152[A]` (celebration: emit from source point + small size — after B's engine part) → roadmap (`T101` → Android → Arena 3v3 → content → `T72`)**
-Audio/FX/menu block cleared + **browser-verified** (T149 celebration, T140 picker, T146 declutter, T147
-graphics, T148 SFX, T142 backdrop, T143 nav-trap — all APPROVED). **`T124`** — fraction tree-glyphs bigger/
-clearer using node width. **`T152[A]`** (owner-planned celebration polish; do after B adds the small-size
-engine option): replace the fixed `x:0.5,y:0.55` at each `fxCelebrate*` call site with the **source element's
+**Builder A → `T101` FIX (BUG: music no longer starts after Start) → `T124` (fraction glyphs) → `T152[A]` (celebration point-emission) → roadmap (Android → Arena 3v3 → content → `T72`)**
+**⚠ `T101` CHANGES REQUESTED — fix the regression you shipped.** The jank-defer is good, but it **dropped the
+music-start**: the deferred `warmAudio = () => { setupSynth(); applySoundPref(); }` wires the synth but never
+calls `musicForScreen`, and the old `audioUnlock()` you replaced DID (`if(!playing) musicForScreen(curScreen)`).
+The Start handler's `applyRoute()`/`startIntro()` runs `show→musicForScreen` BEFORE the deferred `setupSynth`,
+so it early-returns on the `!synthWired` guard (`main.js:350`) → **music never starts after Start** (first
+round/menu is silent; SFX work). **Fix:** `warmAudio = () => { setupSynth(); applySoundPref();
+musicForScreen(curScreen); }` (or call `audioUnlock()` in the RAF); keep the sync unlock+fullscreen + the
+defer; add a guard if feasible. **Then `T124`** (fraction tree-glyphs bigger/clearer using node width). **Then
+`T152[A]`** (after B's small-size engine option): fire each `fxCelebrate*` from the **source element's
 normalized centre** (`getBoundingClientRect()`) — inventory→toast, run→rank badge, mastery→topic node,
-arena-win→enemy portrait — passing the existing rarity/rank/topic palette + the small-size option (see
-BACKLOG T152 table). Then → `T101` → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
+arena-win→enemy portrait — with the existing rarity/rank/topic palette + small size (BACKLOG T152 table).
+Then → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
 **Builder B → `T151` (synth output DIVERGES — the real "audio sounds bad") → `T150` (browser-render harness) → `T152[B]` (small-particle engine option)**
 **⚠ `T151` FIRST — Babysitter BROWSER-MEASURED it** (AnalyserNode on `Synth.output()`): the master output
