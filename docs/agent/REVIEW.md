@@ -311,11 +311,14 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T88`** [A] (Arena 3v3 battle model + calibration — the crux; design in IDEAS
-  I5). Then `T89`/`T90` → content `T58`–`T61` → `T72`, **+ the gamey-UI restyle** (pending the
-  owner's direction pick from T97's 4 questions) **+ FX wiring tasks** (mount `FXGL`) once B's
-  engine + the surfaces exist. Owns ALL existing Halves files; log = `BUILDER-LOG.md`. *(T96, T97
-  DONE.)*
+- **Builder A — next: `T98`** [A] (front-end polish, prioritised ahead of the Arena — owner just
+  flagged these): **`T98`** raise the too-quiet audio (`VOL 0.30`→~0.8, no clip) → **`T99`** reclaim
+  the wasted top band on ALL screens (`.app max-height:780px` cap) + pin the event banner to the
+  top + tidy the nav (label Sound/Settings, fullscreen inline) so the tree expands → **`T100`**
+  gamey UI restyle, buttons-first (pixel-bevel + squared panels, clean text, reversible `data-ui`
+  tokens — owner approved my T97 leans). **Then** `T88`–`T90` (Arena 3v3) → content `T58`–`T61` →
+  `T72`, **+ FX wiring tasks** (mount `FXGL`) once B's engine + surfaces exist. Owns ALL existing
+  Halves files; log = `BUILDER-LOG.md`. *(If A is already mid-`T88`, finish it, then take `T98`.)*
 - **Builder B — next: `T93`** [B] (`fxgl.js` FX engine — standalone, brickmap-borrowed,
   headless-tested, `window.FXGL`). Then the engine sides of `T94`/`T95`. Creates NEW files only +
   brickmap; **never edits existing Halves files**; log = `BUILDER-LOG-FX.md`.

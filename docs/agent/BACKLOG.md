@@ -1845,6 +1845,78 @@ Keep an easy **participation** reward, but add **two more performance-gated tier
 
 ---
 
+## Phase 6.15 — Front-end polish: audio, wasted top space, gamey UI (owner-reported, 2026-06-21)
+
+> All **[A]** (Builder A; existing files). Prioritised ahead of the Arena 3v3 — these are live
+> annoyances the owner just flagged. Order: **`T98` (audio) → `T99` (reclaim top space + nav) →
+> `T100` (gamey UI restyle)**.
+
+### T98 — [A] BUGFIX: audio is far too quiet (raise the volume) · status: OPEN
+Owner: "the audio is insanely low, barely audible." Live levels (`sound.js`): **`VOL = 0.30`**
+master, SFX voices peak ~`0.16`, `musicGain 0.09` — the master is the bottleneck (≈0.048 effective
+per SFX voice). **Raise it to clearly audible.**
+- Raise master **`VOL`** substantially (e.g. **~0.8**) and re-balance SFX/music so the game is
+  comfortably loud, **without clipping** — the worst-case simultaneous-voice sum at the master
+  input must stay **≤ 1.0** (the T69/T33 headroom math: bump VOL, and trim per-voice gains only if
+  the worst-case sum would exceed 1.0). Mute/unmute still works.
+- **DoD:** the game is clearly audible (master raised, e.g. ~0.8); **no clipping** (worst-case
+  voice sum × VOL ≤ 1.0 — prove it in the sound gate); mute/unmute restores the new VOL;
+  `sound.test.js` updated for the new VOL + the no-clip bound; `node -c` clean; all gates green.
+  (Babysitter: recompute the worst-case voice sum × VOL ≤ 1.0 and confirm the new VOL is much
+  higher than 0.30.)
+
+### T99 — [A] Reclaim the wasted top space on ALL screens + tidy the home nav · status: OPEN
+Owner (screenshot): **every screen wastes a band at the top.** Cause: `.app{height:100dvh;
+max-height:780px}` — on a tall phone (Poco-X3 floor) the app is **capped at 780px** and the
+leftover (+ `env(safe-area-inset-top)`) becomes a dead band at the top of every `position:absolute;
+inset:0` screen. Reclaim it; pin the event banner to the very top of `#start`; tidy the nav.
+- **Reclaim top space globally.** Let `.app` use the **full viewport height on phones** so screens
+  start at the very top (e.g. raise/drop the `max-height:780px` cap for phone widths, or top-align
+  the app so any leftover falls to the bottom, not the top). Account for `env(safe-area-inset-top)`.
+  All screens (esp. `#start`'s tree and the event banner) gain the reclaimed height.
+- **Pin the event banner to the top** of `#start` (in the band the owner circled) — flush to the
+  top, no gap above it.
+- **Tidy the home nav (`#navRow`).** Today Best/Items/Heroes/Arena have icon+label but **Sound
+  (🔊) and Settings (⚙) are icon-only (look weird)** and the **fullscreen "Exit" button sits on its
+  own wrapped row.** Make the row **consistent**: give Sound + Settings the same **icon+label**
+  treatment, and bring **fullscreen inline** with the rest (one coherent set; tidy wrap into ≤2
+  balanced rows is fine — the reclaimed top space more than pays for it). Keep gating-hide working.
+- **DoD:** no dead band at the top of **any** screen (verify `#start`, `#game`, `#inventory`, etc.
+  start at the top); the event banner is **pinned to the top** of `#start`; the **tree visibly
+  expands** into the reclaimed space; the nav is **consistent** (Sound/Settings labelled like the
+  rest, fullscreen inline, no orphan row) and still **degrades under gating**; fits the Poco-X3
+  viewport without a wasted band; 360px-safe; `node -c` clean; all gates green (keep the
+  `events.test.js` banner + `tech-tree` checks). (Babysitter: verify on the live build that the top
+  band is gone across screens, the banner is pinned top, the tree breathes, and the nav is tidy.)
+
+### T100 — [A] Gamey UI restyle, buttons-first (pixel-bevel, reversible) · status: OPEN
+Owner: "go with your leans." Implement **T97's recommendation** (`docs/UI-DIRECTION-RESEARCH.md`):
+a **gamey, less-web-2.0** look — **pixel-bevel low-radius buttons + squared panels/cards, body text
+kept clean**, all **reversible via `data-ui` CSS tokens**. (JRPG window-framing on big RPG screens
+is deferred to a later step.)
+- **Token system + switch.** Add `:root` UI tokens (`--ui-radius`, `--ui-border`, `--ui-bevel-hi/
+  -lo`, `--focus`) with a `:root[data-ui="pixel"]` override; `data-ui="classic"` = today. One
+  attribute flip reverts the whole restyle.
+- **Buttons-first (the owner's gripe).** Restyle `.btn`/`.btn.alt`/`.btn.ghost`/`.navbtn`/`.eb-play`/
+  `.key`: **low/zero radius**, **bevel** (`inset` light-top-left + dark-bottom-right; **invert on
+  `:active`** for a real press), a **visible 2px amber focus ring** (`:focus-visible`), keep the
+  amber-primary / outlined-secondary distinction.
+- **Panels/cards** (`.inv-cat`/`.hero-card`/`.sum-row`/`.topic-info`/`.event-banner`/`.tnode`):
+  radius → token (0–3), **hard 1–2px frame instead of the blur drop-shadow**, keep the dark fill.
+- **Clean text rule (owner-confirmed).** **No pixel font for labels/numbers** — keep `--display`/
+  `--mono` for all text; the bitmap `Glyphs` font stays **decorative marks only**.
+- **No-build + a11y.** CSS (+ the procedural canvas we already use) only; **keep `contrast.test.js`
+  AA**, **≥44px** tap targets, **visible focus**, and never state-by-colour-only (keep ✓/🔒/▶ badges).
+- **DoD:** a `data-ui` token system where **`"classic"` = today and `"pixel"` = the new look**, one
+  flip reverts everything; buttons + panels read **gamey/low-radius/beveled** with a **real press
+  state + a visible focus ring**; **body text stays clean** (no pixel-font labels/numbers); **AA
+  contrast holds** (gate green), ≥44px targets, 360px-safe; `node -c` clean; no console errors; all
+  gates green (add a small test asserting the `data-ui` tokens exist + classic-vs-pixel differs, as
+  far as headless allows). (Babysitter: confirm it reads "game not web-app", the focus ring +
+  contrast + tap targets survive, body text is unaffected, and `data-ui="classic"` restores today.)
+
+---
+
 ## Phase 6.10 — Arena 3v3: party battles (promoted from IDEAS I5, 2026-06-21)
 
 > Owner: deepen the Arena — pick **1–3 heroes** vs a **3-foe team** (the tier foe + 2 weaker
