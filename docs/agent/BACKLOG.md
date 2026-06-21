@@ -1168,7 +1168,7 @@ each location feels distinct. Build on T52 (enemy sprites land first).
   to the Arena flow; deploy green. (Babysitter checks the 10 region grids differ, the
   draw is static/idle, and text contrast over the backdrop is preserved.)
 
-### T54 — Version check + "Update" button (poll build.json) · status: OPEN
+### T54 — Version check + "Update" button (poll build.json) · status: OPEN ⭐ NEXT (owner-elevated ASAP)
 Owner: "add a version check — poll a version.json and give the user a button to update
 (refresh) when we see a new version." **Reuse the existing `build.json`** (already
 written at deploy time with `{sha, shortSha, time}` and fetched once at load,

@@ -33,12 +33,14 @@ to `.85`.)
 - `T57` — scrubbed the school/town/county names (repo-wide grep zero); doc-only.
 - `T50` — procedural icons on the 4 menu buttons + Arena hero portraits; 16 checks.
 
-**Next-task order:** **`T53` → `T73` → `T54` → `T55` → `T56`**, then content extension
+**Next-task order:** **`T54` → `T53` → `T73` → `T55` → `T56`**, then content extension
 (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness).
-**Do `T53` next** — procedural region scenery (backdrop behind the tier card, dimmed so AA
-contrast holds; static). **`T73`** = replace the AI-smell coloured **left-border** accents on
-`.hd-boost` (hero detail) + `.map-row` (journey map) with a small coloured **square** swatch
-(owner-flagged, recurring). Specs in BACKLOG; this line is the authoritative sequence.
+**Do `T54` next — ELEVATED (owner): land the version-check/Update button ASAP** — it only
+pays off *during* active development, so it must come before the rest. Poll `build.json`
+(`cache:"no-store"`) on an interval; when the fetched sha ≠ the booted sha, show an
+unobtrusive "Update available — Refresh" control (user-tap reload only, never auto-reload
+mid-drill); offline-safe; AA-legible. Then **`T53`** (region scenery), **`T73`** (replace the
+coloured left-border accents with a square). Specs in BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**
