@@ -1,6 +1,32 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T95` [B] (semantic home backdrop on `fxgl.js`) · live build
+**Current verdict:** `APPROVED — T100` [A] (gamey pixel-bevel restyle, reversible) · live build
+**`6fc8f99`**. **CI green.** Implements the T97-researched, owner-approved direction. `<html
+data-ui="pixel">` ships the look **on**; **every** new rule is gated on `[data-ui="pixel"]` (the
+classic CSS above is the untouched fallback) so **one attribute flip → `"classic"` fully reverts** —
+verified: no ungated selector was added (grep), classic `.btn`/`.event-banner` rules intact, and the
+only `index.html` change is the attribute. Token block `:root[data-ui="pixel"]{--ui-radius:2px;
+--ui-bevel-hi/-lo; --focus}`. Buttons (`.btn/.eb-play/.el-play/.key/.navbtn/.ub-refresh/.set-row`):
+squared radius + **pixel-bevel** inset shadows + **invert-on-`:active`** (a real press) + a **2px amber
+`:focus-visible` ring** (a11y). Panels (`.event-banner/.topic-info/.tnode/.sum-row/.inv-cat/
+.hero-card/.arena-*/.modal-card/.u-cell`): squared + `box-shadow:none` hard frame. **Clean-text rule
+honoured** — no `font-family` in the block, so labels/numerals stay `--display`/`--mono` (kid
+legibility); the bitmap font stays decorative-only. Verified **independently**: **full 28-gate suite
+green** incl. **`contrast.test.js` AA still green** (bevels are inset shadows — text/bg contrast
+unchanged) and the new **`ui-restyle.test.js` (18 checks)** asserting ships-on, the token block,
+reversibility (every selector gated; classic intact), bevel+invert-press+focus-ring, squared
+hard-framed panels, and the clean-text rule. All **[A]-owned files**. T100 → DONE. *(Owner: eyeball
+that it reads "game, not web-app"; `data-ui="classic"` restores today if you dislike it.)*
+
+> **⚠⚠ SEQUENCING — A has now skipped `T107` TWICE** (built `T104`, then `T100`, each time the
+> pointer's #1 item was `T107`). Likely A picks the lowest-numbered / most-visible OPEN task and
+> `T107` (infra, higher id) keeps losing. Both builds were correct so approved on merits — **but the
+> cache-busting SHIPPING BLOCKER is still undone.** Re-pointed below as the SOLE next item; owner also
+> offered a direct one-line prompt to enforce it. (See owner note.)
+
+---
+
+**Previously approved (done):** `T95` [B] (semantic home backdrop on `fxgl.js`) · live build
 **`beedfd8`**. **CI green.** Third Builder-B handoff, and **picked up with NO human nudge** (the
 self-continue is working). **Collision rule honoured** (only `fxgl.js`, `test/fxgl.test.js`,
 `BUILDER-LOG-FX.md`). Adds `deriveHomeScene(state)` → a `setScene`-shaped ambient backdrop **driven by
@@ -456,27 +482,27 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T107`** [A] (**`T104` DONE — legible slashed fraction glyphs; `T99` DONE**).
-  **⚠ A skipped T107 once (built T104 instead) — do `T107` NOW, it's the priority.** **`T107` FIRST —
-  asset cache-busting (SHIPPING BLOCKER).** The owner's `a3608c0` screenshot still showed the OLD
-  layout + OLD banner tag because the browser served **stale cached `styles.css`/`main.js`** while
-  `build.json` (no-store) reported the new SHA — so deploys silently look unchanged and **every owner
-  review is untrustworthy** until fixed. Make a deploy ship fresh assets deterministically: e.g.
-  CI rewrites the asset refs in `index.html` to carry the build SHA (`main.js?v=<sha>`,
-  `styles.css?v=<sha>`, and every module `<script>`), or an equivalent reliable bust. Keep no-build
-  + Node-verify. Cooperate with the T54 version-check (the manual-refresh bar should land users on
-  fresh assets). Add a gate asserting the deployed `index.html` asset refs are versioned. **Then**
-  **`T100`** gamey UI restyle, buttons-first (pixel-bevel + squared panels, clean text,
-  reversible `data-ui` tokens — owner approved my T97 leans) → **`T106`** (tech-tree v2: use the
-  full width ~3-abreast + a clearer node-relationship visual language). **Then the shipping/perf block (Phase 6.16, owner: launch
-  ASAP + parity):** **`T101`** (remove/mask the Start→fullscreen delay) → **`T102`** (installable
-  Android **PWA+TWA** build for web↔Android parity — pulled forward from `T72`) → **`T103`**
-  (deep **Android-inclusive perf research**, doc). **Then** `T89`/`T90` (rest of Arena 3v3 — team
-  UI + playout; **`T88` DONE**) → content `T58`–`T61` → **`T72`** (now just the Play-Store-
-  *submission* prep doc; its PWA foundation moved to `T102`), **+ FX wiring tasks** (mount `FXGL`)
-  — home backdrop after `T100`, Arena biome after `T89`/`T90`. Owns ALL existing Halves files; log
-  = `BUILDER-LOG.md`. *(If A is mid-task, finish it
-  first.)*
+- **Builder A — BUILD ONLY `T107` NEXT. 🛑 STOP — do NOT pull any other task.** (`T100` DONE;
+  `T104` DONE; `T99` DONE.) **You have skipped `T107` TWICE** by grabbing a lower-numbered / more-
+  visible task (T104, then T100). **Ignore task-number order and ignore everything in the "later"
+  line below — your single next task is `T107`.** Do not start T106 or anything else until `T107` is
+  pushed and approved.
+  - **`T107` — asset cache-busting (SHIPPING BLOCKER).** The owner's `a3608c0`/`6fc8f99` screenshots
+    showed OLD layout/banner because the browser served **stale cached `styles.css`/`main.js`** while
+    `build.json` (no-store) reported the new SHA — so **deploys silently look unchanged** and **every
+    owner review needs a hard-refresh / is untrustworthy** until this is fixed. Make a deploy ship
+    fresh assets deterministically: CI rewrites the asset refs in `index.html` to carry the build SHA
+    (`styles.css?v=<sha>`, `main.js?v=<sha>`, **and every module `<script>`**), or an equivalent
+    reliable bust. Keep no-build + Node-verify. Cooperate with the T54 version-check (the manual-
+    refresh bar must land users on fresh assets). Add a **CI gate** asserting the built `index.html`
+    asset refs are all versioned (no bare ref ships). Full DoD in BACKLOG `T107`.
+  - **LATER (do NOT start until T107 is done + approved):** `T106` (tech-tree v2 — full width +
+    clearer connectors + absorb the bottom slack) → shipping/perf block `T101` (Start→fullscreen
+    delay) → `T102` (Android PWA+TWA parity) → `T103` (Android-inclusive perf research) → `T89`/`T90`
+    (rest of Arena 3v3) → content `T58`–`T61` → `T72` (Play-Store submission) → **FX [A] wiring**
+    (mount `FXGL`; `setHomeState`; `FXGL.burst()` on wins/gains = `T94w`; Arena biome via
+    `deriveArenaScene` after `T89`/`T90`). Owns ALL existing Halves files; log = `BUILDER-LOG.md`.
+    *(If A is genuinely mid-task on something, finish that, then `T107` — nothing else.)*
 - **Builder B — next: `T108` [B]** (semantic **Arena-biome** derivation — the Arena sibling of T95).
   A new engine API `deriveArenaScene(state)` that maps **live Arena state** (region 1–10, tier, boss-
   proximity, win/defeat mood) → a `setScene`-shaped backdrop: **region** sets the palette/scenery

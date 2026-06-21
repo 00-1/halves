@@ -1951,7 +1951,7 @@ denominator) are illegible at the tree-node size (~22px). The operator glyphs an
   gates green. (Babysitter: eyeball/compare the fraction marks at node size — they must read as the
   right fraction, not a blob — and confirm the favicon/other marks are unaffected.)
 
-### T100 — [A] Gamey UI restyle, buttons-first (pixel-bevel, reversible) · status: OPEN
+### T100 — [A] Gamey UI restyle, buttons-first (pixel-bevel, reversible) · status: DONE (`6fc8f99`)
 Owner: "go with your leans." Implement **T97's recommendation** (`docs/UI-DIRECTION-RESEARCH.md`):
 a **gamey, less-web-2.0** look — **pixel-bevel low-radius buttons + squared panels/cards, body text
 kept clean**, all **reversible via `data-ui` CSS tokens**. (JRPG window-framing on big RPG screens
