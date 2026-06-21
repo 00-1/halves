@@ -2665,6 +2665,23 @@ overlay to it.
   the engine side); only [A]-owned files touched. (Babysitter: confirm against the owner's live "I finally
   see celebrations.")
 
+### T135 — [A] Volume recalibration for the louder synth engine (default 0.05×, max 0.10×) · status: OPEN · OWNER-PRIORITY · UNBLOCKED
+Owner: "volume is much higher now that we have the new audio. that's good, but let's move the default to
+0.05× and adjust the volume slider range to make the new max." **Owner confirmed the new MAX = `0.10×`**
+(2026-06-21). The new synth engine is intrinsically far louder than the old SFX-calibrated scale, so the
+3.0× default is now too hot.
+- **New numbers** (master gain stays `vol/100`; `fmtVol` = `(v/100).toFixed(2)+"×"` already shows
+  `0.05×`/`0.10×` fine): `index.html` `#volRange` → **`min=0 max=10 step=1 value=5`** (range 0.00×–0.10×
+  in 0.01× steps; default 0.05× sits mid-slider). `loadVol()` default → **5** (was 300).
+- **⚠ Migration (don't skip):** existing players have `halves.vol` = old-scale values (e.g. `300` = 3.0×)
+  in localStorage. On load, **clamp a stored value above the new max down to the new default** (treat any
+  `vol > 10` as the old scale → reset to 5, or clamp into `[0,10]`) so a returning user is NOT hit with a
+  deafening 3.0×, and the slider (max 10) isn't fed an out-of-range value. Persist the migrated value.
+- **DoD (LIVE-verified — output feature):** default volume is 0.05× on a fresh load AND for a user who had
+  the old 3.0× stored (migrated, not deafening); the slider runs 0.00×–0.10× in fine steps and the readout
+  matches; `node -c` clean; all gates green; add/adjust a check for the new default + the migration clamp;
+  only [A]-owned files. (Babysitter: confirm the migration actually clamps a pre-seeded `halves.vol=300`.)
+
 ### T133 — [B] FXGL: make the overlay CELEBRATION actually render on-device (the z-58 burst) · status: DONE (`3e7da28`, CI green)
 **DONE 2026-06-21** — APPROVED (REVIEW.md). Route (b): `FXGL.mount(canvas, {backend:"2d"})` forces the
 Canvas2D backend (no per-document GL-context-count limit → always inits + presents), sidestepping the 2nd

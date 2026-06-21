@@ -966,11 +966,11 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   context, always presents) instead of the default WebGL path that silently fails on-device. Change ONLY
   the burst-overlay mount (leave the backdrop `#fxBg` on its WebGL path); keep the T125 resize-before-fire;
   **live-verify a visible particle shower on a real win / topic-run / new item** (the bar is on-device
-  visibility — the long-standing "nothing renders" bug). Then **`T135`** — owner: the new (louder) synth
-  engine makes the 3.0× volume default too hot → set default `0.05×` and rescale the slider to the new max
-  (`volRange` `min=0 max=400 step=5 value=300`; `halves.vol` default 300 → `/100` master gain; `fmtVol` =
-  `(v/100)×`). **HOLD T135 until I post the owner's chosen MAX** (asked) — then update default + slider
-  `max`/`step`/`value` + stored default together, live-verify the feel. Then → **`T123`** (a11y contrast
+  visibility — the long-standing "nothing renders" bug). Then **`T135`** — UNBLOCKED (owner confirmed
+  **MAX = 0.10×**): the new (louder) synth engine makes the 3.0× volume default too hot → `#volRange`
+  `min=0 max=10 step=1 value=5` (0.00×–0.10×, default 0.05× mid-slider); `loadVol()` default → 5; **migrate
+  stored old-scale values** (`halves.vol=300` = old 3.0×) by clamping any `vol>10` down to 5 so returning
+  users aren't deafened. Live-verify default + migration. Then → **`T123`** (a11y contrast
   floor) → **`T124`** (fraction glyphs) → **`T101`** (Start delay) → **`T102`/`T103`** (Android) →
   **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own

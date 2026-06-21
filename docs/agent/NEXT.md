@@ -15,11 +15,12 @@
 T133 shipped the engine fix; mount `#fxBurst` with **`{backend:"2d"}`** (Canvas2D — no 2nd-GL-context,
 always presents) instead of the default WebGL path that fails silently on-device. Change ONLY the
 burst-overlay mount (leave the backdrop `#fxBg` on WebGL); keep the T125 resize-before-fire;
-**live-verify a visible shower on a real win / topic-run / new item**. Then **T135 — owner: the new (louder)
-synth engine makes the 3.0× volume default too hot. Set default `0.05×` and rescale the slider to the new
-max** (`volRange` `min=0 max=400 step=5 value=300`; `halves.vol` default 300; master gain `vol/100`;
-`fmtVol` `(v/100)×`). **⚠ HOLD T135 until the Babysitter posts the owner's chosen MAX** (asked) — don't
-guess the range. Then → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` (Start delay) →
+**live-verify a visible shower on a real win / topic-run / new item**. Then **T135 — UNBLOCKED (owner confirmed MAX
+= 0.10×): the new (louder) synth engine makes the 3.0× volume default too hot.** Set `#volRange` →
+`min=0 max=10 step=1 value=5` (range 0.00×–0.10×, default 0.05× mid-slider); `loadVol()` default → 5.
+**⚠ Migrate:** existing users have `halves.vol=300` (old 3.0×) stored — on load clamp any `vol>10` down to
+the new default 5 so a returning user isn't deafened / the slider isn't fed out-of-range. Live-verify the
+default + migration. Then → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` (Start delay) →
 `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
 **Builder B → `T134` (clean swap + distinctness — OWNER on it now)** · *(T133 celebration DONE `3e7da28`)*
