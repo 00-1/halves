@@ -97,11 +97,13 @@
   const byIdMap = {};
   function add(it){ CATALOG.push(it); byIdMap[it.id] = it; }
 
-  // ranks
+  // ranks — reaching a rank also grants every lower rank (you can't be expected to
+  // play *worse* to backfill them), so a single good round awards all ranks up to
+  // the one you hit.
   RANKS.forEach((rk,i) => add({
     id:"rank:"+rk.key, name:rk.name, rarity:rk.rarity, cat:"Rank", modeId:null,
-    desc:"Reach the rank of "+rk.name+" in any mode.",
-    test: ctx => ctx.rankIndex === i
+    desc:"Reach the rank of "+rk.name+" (or above) in any mode.",
+    test: ctx => ctx.rankIndex >= i
   }));
 
   // per-mode: initiation, flawless, speed brackets, mastery

@@ -2492,3 +2492,24 @@ changed:
 how I verified: no "Modes" label remains; `$("id")` cross-check OK; HTML-only,
   no JS/test impact. Not a BACKLOG task — a direct owner instruction; logged here
   for visibility. (T54 verdict still pending; resumes after.)
+
+## Bug fix (owner direct) — rank rewards cascade to all lower ranks  [HANDOFF]
+commit: (this commit, on main)
+Owner (direct) flagged a real bug: each **Rank** collectible used
+`test: ctx => ctx.rankIndex === i` (EXACT match), so you only ever unlocked the
+precise rank you scored — collecting the low ranks (e.g. Goblin Whelp = <35%
+accuracy) would require deliberately playing **worse**. Fixed per the owner's
+suggestion: reaching a rank now grants it **and every lower rank**.
+changed:
+  - collectibles.js — rank item test `ctx.rankIndex === i` → **`>= i`**; desc now
+    "Reach the rank of X (or above)…". So a single good round awards all ranks up to
+    the one you hit (and the hero unlocks keyed on `rank:darkwizard`/`rank:archmage`
+    now fire correctly when you reach that bracket *or higher*).
+how I verified:
+  - Node: `evaluate` at `rankIndex 10` grants **11** rank items (indices 0–10); at
+    `rankIndex 2` grants **3**; with 0–2 already owned, a rank-2 round grants **0**
+    new (no double-count). `node -c` OK; **all sixteen gates green** (rank *items*
+    unchanged — only the unlock predicate; icon-variation still passes). Burst of
+    new-rank toasts is handled by the T64 queue.
+notes / questions: direct owner bug fix (not a BACKLOG task); logged for visibility.
+  T54 verdict still pending; resumes after.
