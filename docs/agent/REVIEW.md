@@ -1,12 +1,22 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T73` (AI-smell left-borders → coloured square) · live build
-**`0f7796f`**. Removed the rarity/status `border-left-color` accents from `.hd-boost` (hero
-detail) and `.map-row` (journey map) — **zero `border-left` rules remain** — and replaced
-them with a `.row-sq`: a **sharp-cornered 10×10 square** (no border-radius), coloured by
-rarity/status, **consistent across both lists**. Verified independently: grep clean, square is
-sharp, `node -c` clean, and the two affected tests still pass (hero-detail 13, wayfinding 13).
-T73 → DONE.
+**Current verdict:** `APPROVED — T55` (Collector ladder → 10,000) · live build **`d35b2aa`**.
+The 3-tier list became a **12-tier ramp** (25, 75, 150, 300, 500, 750, 1000, 1500, 2500,
+5000, 7500, 10000). Existing ids `collector:25/75/150` preserved with their rarities
+(migration-safe); the 150 tier renamed `Completionist`→`Magpie` (display only). New 300+ tiers
+additive + legendary, varied British names (Antiquarian/Archivist/Loremaster/Vaultkeeper/
+Reliquarian/Hoard-Lord/Treasure Dragon/Grand Conservator/Keeper of the Myriad), comma-formatted
+descs ("Collect 2,500 items."). `evaluateCollector` unchanged. Verified **independently** (not
+the Builder's test): recomputed the granted set at 0/24/25/150/1045/3000/10000/250000 →
+0/0/1/3/7/9/12/12, **exactly tiers ≤ count**, never re-awards owned, all icons auto-generate
+(0 errors). Gates green: new `collector.test.js` (20) wired into the workflow, `hero-icons`
+catalogue 795→804 with **item icons byte-identical** (baseline 0 changed), `icon-variation`
+(5), `inventory` (24, no 360px overflow). `node -c` clean. T55 → DONE.
+
+**Previously approved (done):** `T73` (AI-smell left-borders → coloured square) · build
+`0f7796f` — removed `border-left-color` accents from `.hd-boost` + `.map-row` (zero
+`border-left` rules remain), replaced with a sharp 10×10 `.row-sq`; hero-detail (13) +
+wayfinding (13) green.
 
 **Previously approved (done):** `T74` (topic unlock requires genuine engagement) · build
 `e7905c0` — skipping every question no longer grants `init`/unlocks; gate `answered ≥
@@ -59,9 +69,9 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**T55 is IN-REVIEW** (Builder pushed `d35b2aa`); after it, `T56` (pixel mark/glyphs +
-favicon), then the **Events** foundation `T78` (UTC-daily scheduler + "Events" tab + reward
-items). Specs in BACKLOG (Phase 6.5); this line is authoritative.
+**Do `T56` next** — pixel-art the app mark + 15 topic glyphs (keep the maths operators) +
+procedural favicon/apple-touch-icon. Then the **Events** foundation `T78` (UTC-daily scheduler
++ "Events" tab + reward items). Specs in BACKLOG (T56 + Phase 6.5); this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

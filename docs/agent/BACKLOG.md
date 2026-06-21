@@ -1194,7 +1194,7 @@ written at deploy time with `{sha, shortSha, time}` and fetched once at load,
   regressions to the existing build-info line; deploy green. (Babysitter verifies the
   sha-compare logic, that reload is user-initiated only, and that failures are swallowed.)
 
-### T55 — Extend the Collector award ladder to 10,000 items · status: OPEN
+### T55 — Extend the Collector award ladder to 10,000 items · status: DONE
 Owner: "the Collector awards category only goes up to 150 items — it needs to go up to
 10× that; actually go up to **10k**, since we'll add more over time." Today the
 `Collector` category has just **3** tiers — `collector:25` (Curator), `collector:75`
