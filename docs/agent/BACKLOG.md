@@ -1271,7 +1271,7 @@ keeping each operator clearly recognisable.**
   toasts; deploy green. (Babysitter checks each topic's pixel mark encodes the right
   operator, the favicon is set, and the draw is static/contrast-safe.)
 
-### T57 — Scrub the specific school/town/county references from the docs · status: OPEN ⭐ NEXT (owner-elevated ahead of T50)
+### T57 — Scrub the specific school/town/county references from the docs · status: DONE
 Owner: remove the named-school and place references from the codebase, keeping only the
 generic "11+" and the exam board. Babysitter sweep: the only occurrences are in
 **`docs/research-11plus.md`** — the **parenthetical at lines ~4–5** (two named grammar
