@@ -75,8 +75,23 @@ was broken (T118 layout, T125 invisible burst, T128 music/wub/celebration). **Fo
 result is rendered pixels or audible sound, "all gates green" is NECESSARY-NOT-SUFFICIENT** — the
 Builder must **verify on the live build** (and say which device / how) and, where feasible, add a check
 stronger than a source-grep (e.g. assert the controller is `ready`+sized before it draws; assert
-distinct per-context specs, not just that a setter is called). The Babysitter does not mark an
-output-feature task DONE on green gates alone — it confirms against the owner's live observation.
+distinct per-context specs, not just that a setter is called).
+
+**BROWSER-VERIFY rule (codified from the celebration saga T125→T138→T149; owner mandate 2026-06-21 "going
+forward you can test fixes autonomously").** The celebration was patched **six times** and stayed broken
+because every gate was **Node-only** and could not see a rendered pixel, layout, or `display:none` — the
+real bug (T149) was `#fxBurst` trapped in a `display:none` modal (`clientWidth:0`), invisible to all of
+them. **A real headless browser is now part of review.** It runs in-env: global `playwright`
+(`/opt/node22/lib/node_modules/playwright`) + Chromium at `/opt/pw-browsers`
+(`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`); serve the app via a local `http.server`, load at a phone
+viewport @ **dpr 2.75**, fail on console/page errors, drive the real UI, and read canvas pixels /
+`clientWidth` / screenshots. **The Babysitter independently browser-verifies any RENDER/LAYOUT/visible-UI
+task (FX, celebrations, canvases, home/menu layout, a11y-over-backdrop) before marking it DONE** — it no
+longer relies on the owner as the renderer, and no longer accepts "drawn/sized" as proof of "visible"
+(check `clientWidth>0` + real lit coverage, not just the backing buffer). **`T150`** makes this a
+committed, B-owned browser-render gate (skips cleanly with no browser so Node-only CI still passes);
+until then the Babysitter uses ad-hoc Playwright probes. Audible-only features still fall back to the
+owner's ear; everything visible is now ours to confirm.
 
 ## brickmap
 
