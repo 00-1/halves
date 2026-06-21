@@ -514,7 +514,7 @@ in `HERO_NAMES`** in `collectibles.js` (the single source `heroes.js` reads). **
 NOT touch `DESIGN-heroes.md`** (babysitter-owned; already updated).
 - **FINAL MAPPING (apply exactly):**
   `bram→Brannon · greta→Valeska · tovar→Ser Aldric · mo→Magnar · wisp→Wisp ·
-  mira→Maerwen · nim→Emrys · zeph→Aerin · pip→Fenn · vex→Vesh · sela→Selwen ·
+  mira→Maerwen · nim→Emrys · zeph→Aerin · pip→Pocket · vex→Vesh · sela→Selwen ·
   roon→Rendel`.
 - **DoD:** `HERO_NAMES` has exactly these 12 names against the **unchanged** ids;
   ids untouched everywhere (boosts / heroes.js / unlock predicates); Node check:

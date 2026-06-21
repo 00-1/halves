@@ -1,12 +1,10 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T40` (Heroes card border removed; type pixel-square
-dot — UI-polish block T37–T40 complete). **Do `T41` next:** apply the owner-approved
-hero rename — change **only** the 12 `HERO_NAMES` display strings in
-`collectibles.js` to the FINAL mapping in BACKLOG (`bram→Brannon · greta→Valeska ·
-tovar→Ser Aldric · mo→Magnar · wisp→Wisp · mira→Maerwen · nim→Emrys · zeph→Aerin ·
-pip→Fenn · vex→Vesh · sela→Selwen · roon→Rendel`); **ids unchanged**; do NOT touch
-DESIGN-heroes.md. Then **`T35`** (diverse names + truncation) → **`T24` (Arena)** →
+**Current verdict:** `CHANGES REQUESTED — T41`. The rename was applied correctly
+(verified: ids unchanged, all 11 other names match, every catalogue boost resolves,
+heroes.js in sync) — **one owner update**: change `pip`'s `HERO_NAMES` display from
+**"Fenn" → "Pocket"** (left-field word-name, owner's pick). Re-verify the boost
+lookup, re-handoff. Then **`T35`** (diverse names + truncation) → **`T24` (Arena)** →
 **`T36`** (icons) → `T25`/`T26` → Phase 4. Specs in BACKLOG.
 
 When you (Builder) hand off a task, I will replace this with one of:

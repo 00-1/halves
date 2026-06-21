@@ -43,7 +43,7 @@ of effective stats.
 | mira  | Maerwen           | Arcane  | 6  | 8  | 9  | 17 | flawless in ≥3 modes (≥3 `flawless:*`) |
 | nim   | Emrys             | Arcane  | 8  | 10 | 7  | 14 | `topics:one100` (100% a topic) |
 | zeph  | Aerin             | Arcane  | 9  | 6  | 13 | 13 | `rank:archmage` |
-| pip   | Fenn              | Cunning | 8  | 6  | 16 | 9  | any Lightning bracket (`speed:*:3`) |
+| pip   | Pocket            | Cunning | 8  | 6  | 16 | 9  | any Lightning bracket (`speed:*:3`) |
 | vex   | Vesh              | Cunning | 10 | 7  | 15 | 8  | `meta:allmodes` |
 | sela  | Selwen            | Cunning | 9  | 9  | 14 | 9  | `collector:75` |
 | roon  | Rendel            | Cunning | 11 | 8  | 17 | 7  | defeat enemy tier 10 (`tier:10`) |
@@ -51,7 +51,8 @@ of effective stats.
 > Hero **display names** (T41, owner-approved). `id`s are unchanged and remain the
 > keys for item boosts / `HERO_NAMES` / `heroes.js`. Roots vary: Celtic (Brannon),
 > Slavic (Valeska), Germanic (Ser Aldric), Norse (Magnar), Welsh (Maerwen, Emrys,
-> Selwen), English (Fenn, Rendel), invented (Vesh).
+> Selwen), English (Rendel), invented (Vesh), and one left-field word-name
+> (Pocket, pip) for contrast.
 
 Unlock = own the listed collectible id, or meet the count/▒computed condition.
 Implement `isHeroUnlocked(hero, collected, stats)` analogous to `isUnlocked`.
