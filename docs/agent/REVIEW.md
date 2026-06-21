@@ -1,36 +1,34 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T47` (Arena is now a pure stat check, no maths drill).
-Babysitter re-verified independently: `statBattle` = `round(rating×matchup) ≥ def`
-with **no perf** — exactly the old `resolveBattle` at `perf=1` (factor `0.4+0.6·1=1`),
-and I confirmed the **def arrays are byte-identical** across all 100 tiers (t1=11,
-t99=289, t100=410) so the T43 calibration didn't move. `BATTLE_MODE`, `battleCtx`,
-`resolveBattle`, `computePerf`, `clamp` all removed (only explanatory comments mention
-perf). Fight resolves instantly (`startBattle`→`statBattle`→`finishBattle`), never
-calls `beginRound`; `finish()` no longer routes to the Arena. The pick-card uses the
-**identical** `round(rating×mu) ≥ def`, so the predicted ⚔ result can't disagree with
-the fight. Ran the new `test/arena.test.js` on `origin/main` — **all 24 checks pass**:
-tiers 1–5 winnable at 0 items, **no tier gated behind its own loot**, tier 100
-unbeatable at 0 items / beatable at full-minus-final-loot (410≥410) / **removing one
-champion boost flips it to a loss**, `canAttempt` still needs `tier:n-1`, def
-monotonic, Arena never starts a question round. Wired as the **fifth Pages gate**.
-Intentional (non-defect) change: the Arena no longer bumps daily momentum or grants
-per-question gold on a loss — correct now that it isn't a drill. `node -c` clean; no
-regressions. T47 → DONE.
+**Current verdict:** `CHANGES REQUESTED — T49`. The rework is **95% excellent** — the
+button promotion, the tap-to-reveal aside, the guide-under-the-list, and almost the
+entire `explain()` rewrite are exactly right and well-tested (all 12 practice + 8 hint
+checks pass; the "half of 5" regression is fixed → *"5 is an odd single digit, so
+halving it lands on a half."*). But a Babysitter pass over **every real question** found
+**four text-quality defects, all in the `fractions` topic**, that the token-based gate
+can't see (they leak in *words*, or are grammar slips). The owner asked for "a deep
+detailed pass to make sure the individual hint text is **actually high quality**", so
+these block approval:
 
-**Do `T49` next — Practice mode: promote the button, fix the hints, surface the guide
-(owner-reported).** Owner hit "half of **5**" in Practice and the hint said *"Halve
-the tens and ones… half of 5 is 2.5"* — it **gave the answer** and **talked about tens
-when 5 has none**. Four parts: (1) make **Practice a primary button beside Start** on
-`#start`, acting on the selected topic and unlock-gated; (2) the practice hint becomes
-a **tap-to-reveal "How to approach this" aside** (hidden by default; normal rounds show
-none); (3) **rewrite every topic's `explain()` branch — method only, never the answer,
-specific to the actual number's structure** (single vs multi-digit, odd/even/decimal,
-the right ×/%/fraction trick); delete the answer-revealing fallback; (4) **show the
-topic guide under the practice list** and **audit all 15 GUIDES** for coverage, keeping
-them concise. Babysitter gate: a Node assertion over every question in every topic that
-the hint never contains the answer and never names absent structure (no "tens" on a
-single-digit halves/doubles). Full spec in BACKLOG "T49".
+1. **Answer revealed in words — `1/2 → "One half as a decimal is five tenths."`** "Five
+   tenths" *is* the answer (0.5). This violates the core method-only rule (same spirit as
+   the original `2.5` leak, just spelled out). Reword so it teaches the method without
+   stating the value — e.g. ask how many tenths make a half and have them write the
+   decimal — **without** naming "five tenths"/0.5.
+2. **Grammar (singular/plural) — `1/10 → "1 tenths…"`** should read "1 tenth".
+3. **Grammar — `1/4 → "…count 1 quarters."`** should read "1 quarter".
+4. **Grammar — `1/8 → "…count 1 eighths."`** should read "1 eighth". (i.e. the `nu === 1`
+   case in the `fractions` branch must use the **singular** denominator word; check the
+   whole branch for "1 <plural>".)
+
+Also (so the gate actually protects this class going forward): **extend
+`test/hints.test.js`** to catch (a) any `"1 <plural-noun>"` singular/plural mismatch in a
+hint, and (b) an **answer-in-words** leak (a "<word-number> <denominator-word>" phrase
+whose value equals `q.a`) — both currently pass through. The rest of `explain()` is
+approved as-is; **do not** churn the other topics. Re-verify the full hint dump across
+every fractions question reads cleanly, re-run all gates, and re-handoff. (Everything
+else in T49 — parts 1, 2, 4, and the non-fraction branches of part 3 — met the DoD on
+my independent check; only these four lines + the test gap need fixing.)
 
 **Then `T51` — restore the varied hero portraits (owner-reported regression).** "The
 hero icons used to look like weird faces, now they're all the same turtle creature —
