@@ -1528,7 +1528,7 @@ two first-class buttons (`startBtn` + `practiceBtn`, `index.html` ~39–40).
   (Babysitter: confirm the guide is now a peer action, the `?`-removal left no dangling refs, and
   locked-preview guides still open.)
 
-### T84 — Tech-tree view for the topic selector (data-driven, icon-node, 360px-safe) · status: OPEN
+### T84 — Tech-tree view for the topic selector (data-driven, icon-node, 360px-safe) · status: DONE
 Render the existing unlock chain as a **visual tech tree** — a new view of data we already
 compute, **never a hand-maintained parallel edge list** (it must not drift as Phase-7 topics are
 added). Built in the current idiom (DOM + our canvas icons); coordinated with T82 for feel.

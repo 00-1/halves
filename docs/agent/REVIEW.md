@@ -1,6 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T83` (guide → first-class Play·Practice·Guide action) · live
+**Current verdict:** `APPROVED — T84` (tech-tree view) · live build **`82cf48a`**. **🎉 Completes
+the Phase 6.8 tech-tree block (T83+T84).** A toggleable, **data-driven** tech tree on the picker:
+`techGraph()` derives the spine from `unlockedBy` and Part-2 branches from `requires:"mastery:<id>"`
+(live mode fields, graceful on orphans — **no parallel edge list**); `nodeState()` =
+locked/unlocked/mastered/done from `isUnlocked()`+progress. Nodes are **focusable `<button
+role=tab>`** with the topic icon via a **single swappable `nodeIcon()` hook** (T56 glyph today,
+richer T82 art later), a badge, and `have/total`; a selected-node detail panel reuses the shared
+T83 Play/Practice/Guide actions. **Locked nodes select-for-preview but never start.**
+`setPickerView()` toggles **List⇆Tree and persists** (`halves.pickerView`); the grouped **list
+stays the default a11y fallback**. Verified **independently**: data carries the edges (15 modes,
+single `halves` root, 9 `unlockedBy`, 5 `requires:mastery`, none dangling); `node -c` clean; **full
+22-gate suite green** incl. new `tech-tree.test.js` (20 checks: spine/branch edges = live data,
+every mode once, fresh-profile states, toggle+persist, **locked-not-startable**, list-fallback
+restored, `nodeIcon` hook). 360px-safe (≤2-wide rows, 84px nodes). T84 → DONE.
+
+**Previously approved (done):** `T83` (guide → first-class Play·Practice·Guide action) · live
 build **`fdd9313`**. A third **"Guide"** button joins Start + Practice in `.start-actions`;
 `renderStartState` gates it on `Guides.has(mode.id)` (enabled even for **locked** topics so
 their guide can still be previewed — Start/Practice stay lock-gated). The per-row **`?`**
@@ -187,17 +202,14 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T84` next** (tech-tree view, Phase 6.8) — data-driven, icon-node, 360px-safe tech-tree on
-the picker + a selected-node panel; renders from live `unlockedBy`/`requires`/`isUnlocked`/
-`have-total` (**never a parallel edge list**); swappable `nodeIcon()` so richer T82 art drops in
-later; keep the scrollable list as the a11y fallback. Then the **Settings + gating block**
-(Phase 6.9): **`T85`** (Settings screen + Clear-all-data behind a serious countdown + numpad-code
-confirm — also the QA reset) → **`T86`** (onboarding engine: unlock-state model + first-run
-single-question intro + Inventory gate + one-time highlight; **migration-safe**) → **`T87`** (wire
-the remaining gates: Practice/Heroes/Arena/Event-banner/Gold). Then content extension
-`T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store; folds in the T82 TWA/manifest/SW plan).
-*(Owner may move the T85–T87 gating block ahead of T84 on request.)* Specs in BACKLOG; this line
-is authoritative.
+**Tech-tree block (T83+T84) COMPLETE.** **Do `T85` next** (Settings + gating block, Phase 6.9) —
+a Settings screen + **Clear-all-data** behind a serious **countdown + numpad-code** confirm (wipes
+every `halves.*` key → genuine first-run; also the QA reset for the gating). Then **`T86`**
+(onboarding engine: unlock-state model + first-run single-question intro + Inventory gate +
+one-time highlight; **migration-safe — never re-gate existing players**) → **`T87`** (wire the
+remaining gates: Practice/Heroes/Arena/Event-banner/Gold). Then content extension
+`T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store; folds in the T82 TWA/manifest/SW plan). Specs
+in BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**
