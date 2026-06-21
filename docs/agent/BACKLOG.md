@@ -2342,6 +2342,35 @@ it). Mirror the FX-wiring pattern; consume `Synth`'s API only (never edit `synth
   (Babysitter: confirm on the live build there's ONE music engine = Synth, solves are calm, Arena drives,
   a win wubs, ducking works, and the sliders/mute still rule it — then it's owner ear-check time.)
 
+### T123 — [A] Accessibility pass: text legibility over the FX backdrop (AA floor + honest gate) · status: OPEN · OWNER-PRIORITY
+Owner: "we may need another accessibility pass — we have light grey text on light purple now." **Root
+cause (the recurring backdrop theme):** T112's full-bleed FX backdrop replaced the near-black
+background behind text with a **light purple** scene, but all `--muted`/grey text was tuned for AA
+against the dark `--bg`, and **`contrast.test.js` still tests against `--bg` (dark) — so it passes while
+the *rendered* contrast fails**. (Same class as the black scroll-fade: the backdrop invalidated the
+dark-bg assumption; see ORCHESTRATION's "shared quality rule".) Do a real pass.
+- **Audit every text element that renders directly over the backdrop** (not on an opaque panel) — esp.
+  `--muted` text: the gold-bar labels ("Goblin Gold"/"Momentum"), the `build` stamp, topic-info
+  subline, node sublabels/`tn-prog`, the `#game` eyebrow, any `--muted` row on `#start`/`#arena`. List
+  which fail AA against the backdrop's *brightest* state.
+- **Guarantee a contrast FLOOR behind text while KEEPING the atmosphere.** Preferred: a **dark scrim**
+  between the backdrop and the DOM content — e.g. dim/darken the backdrop behind the central content
+  column (a semi-opaque dark gradient/vignette, or cap the backdrop's luminance, or lower
+  `.fx-backdrop opacity` where text sits) so muted text clears **AA (≥4.5:1 body / 3:1 large)** over the
+  worst-case backdrop. The backdrop should still read at the edges/behind non-text. Don't flatten it to
+  solid black. (Alternative per-element: give text-bearing rows a subtle dark backing.) Keep the gamey
+  look + `data-ui="pixel"`.
+- **Make the contrast gate HONEST (so this can't silently regress).** Update `contrast.test.js` to test
+  the at-risk text colours against the **worst-case backdrop luminance** (the brightest the home/Arena
+  backdrop can render — derive it, don't hardcode dark `--bg`), asserting AA; and/or assert the scrim
+  exists with enough opacity to pull any backdrop pixel under text below the AA threshold. The gate must
+  *fail* on today's grey-on-purple and *pass* after the fix.
+- **DoD:** all body/muted text over the backdrop clears **AA** on the Poco-X3 backdrop (home AND Arena,
+  brightest state); the atmosphere is still visible (not blacked out); ≥44px targets + focus rings
+  unaffected; the **`contrast` gate now reflects the real rendered condition** (would have caught this);
+  `node -c` clean; all gates green; 360-safe. (Babysitter: eyeball the home/Arena text is readable over
+  the backdrop, and confirm the contrast gate genuinely tests against the backdrop, not the dark token.)
+
 ### T121 — [A] Small visual polish: scroll-fade reveals the backdrop + the coin icon is gold · status: OPEN
 **(b) Coin icon → gold (owner).** The T117 pixel icons all render in the muted/grey inherited colour,
 which the owner is happy with **except the coin** — "keep that gold like the text." The coin appears
