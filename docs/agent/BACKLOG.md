@@ -2305,6 +2305,27 @@ applied to the tree. It's now obvious because T112/T106 make the tree taller/mor
   `node -c` clean; all gates green (a small check that `updateTreeScroll` toggles the classes from
   scroll metrics). (Babysitter: confirm the fade/cue appears only when scrollable and tracks scroll.)
 
+### T121 — [A] Tree scroll-fade: reveal the backdrop, don't paint black · status: OPEN
+Owner (screenshot): the T116 scroll-fade is back but it's a **black band** over the new purple FX
+backdrop — "should either fade to transparent (if possible) or be light purple matching the bg."
+**Cause:** `.picker-wrap::before/::after` paint `linear-gradient(var(--bg), transparent)` and `--bg` is
+`#0E1116` (near-black); the tree/`#start` are transparent so the FX backdrop shows through everywhere
+*except* the fade, which reads as a black smear.
+- **Preferred fix — fade the CONTENT to transparent (reveal the backdrop).** Use a **CSS mask** on the
+  scroll container `.tree` (`-webkit-mask-image`/`mask-image: linear-gradient(...)`) so the tree's own
+  pixels alpha-fade at the scrollable edge and the **purple backdrop shows through** — no coloured
+  overlay at all. Tie it to the existing **`can-scroll-up`/`can-scroll-down`** state (fade only the edge
+  that has more content; fade both when both; none when it fits). Replace/!disable the black
+  `::before/::after` colour-overlays (keep the `.scroll-cue ▾`).
+- **Fallback (if a mask is problematic):** recolour the gradient from `var(--bg)` to a transparent→
+  **light-purple** that matches the backdrop, so it blends instead of going black. (The mask is better —
+  it tracks the live backdrop colour; a fixed purple only approximates the dithered/animated scene.)
+- **DoD:** when the tree scrolls, the top/bottom edge **fades into the purple backdrop (no black band)**,
+  appears only where there's more to scroll, and tracks scroll state; taps still hit nodes; the cue still
+  shows; reduced-motion safe; 360px-safe; works under `data-ui="pixel"`; `node -c` clean; all gates green
+  (keep `tech-tree.test`'s scroll-toggle check; assert the fade no longer uses the opaque `--bg` overlay
+  / uses a mask). (Babysitter: confirm on the live build the fade blends into the backdrop, not black.)
+
 ### T117 — [A] Replace ALL chrome emoji with house generative pixel icons · status: OPEN · OWNER-PRIORITY
 Owner: "do a pass where we replace all the emojis we're using with our own icons, in the style of our
 existing generative icons … padlock, audio, settings cog, coin, calendar … do a pass to pick up

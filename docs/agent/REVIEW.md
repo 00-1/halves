@@ -733,7 +733,8 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   — canonical.)* **`T117`** — replace ALL chrome emoji with **house generative pixel icons** (padlock/
   speaker/cog/coin/calendar + the full swept set per the audit; KEEP the `→` answer-arrows + hint
   `↑/↓`; icons `aria-hidden`, controls keep `aria-label`, node-state badges keep state; new gate: no
-  targeted emoji remain). Full DoD `T117`. **Then → `T101`** (Start delay) → **`T102`/`T103`** (Android
+  targeted emoji remain). Full DoD `T117`. **Then → `T121`** (tree scroll-fade: mask content to reveal
+  the purple backdrop, not a black band — owner) → **`T101`** (Start delay) → **`T102`/`T103`** (Android
   PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**. *(The deeper
   principled audio rebuild is the **B** track — `T120` synth engine — below.)*
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own

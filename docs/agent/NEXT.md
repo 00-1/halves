@@ -16,8 +16,10 @@ generative pixel icons for every chrome emoji (padlock, speaker on/off, cog, coi
 calendar, swords, flag, map, star, sparkles, fullscreen, backspace, close, check,
 play — sweep for more). KEEP the `→` answer-arrows + hint `↑/↓` (content). Icons
 `aria-hidden`; controls keep `aria-label`; node-state badges keep state semantics.
-New gate: no targeted emoji remain. Full DoD: `BACKLOG.md` T117. Then → `T101`
-(Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
+New gate: no targeted emoji remain. Full DoD: `BACKLOG.md` T117. Then → `T121`
+(tree scroll-fade: mask the content to reveal the purple backdrop, not a black
+band — owner) → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` →
+content → `T72`.
 
 **Builder B → `T120`  · build `synth.js` — RUN CONTINUOUSLY through phases 1→5 (owner: "keep pushing B ahead")**
 New standalone `window.Synth` per the approved `T119` research (§8 phased path).
