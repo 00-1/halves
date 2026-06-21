@@ -1,36 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `CHANGES REQUESTED — T49`. The rework is **95% excellent** — the
-button promotion, the tap-to-reveal aside, the guide-under-the-list, and almost the
-entire `explain()` rewrite are exactly right and well-tested (all 12 practice + 8 hint
-checks pass; the "half of 5" regression is fixed → *"5 is an odd single digit, so
-halving it lands on a half."*). But a Babysitter pass over **every real question** found
-**four text-quality defects, all in the `fractions` topic**, that the token-based gate
-can't see (they leak in *words*, or are grammar slips). The owner asked for "a deep
-detailed pass to make sure the individual hint text is **actually high quality**", so
-these block approval:
+**Current verdict:** `APPROVED — T49` (Practice — promote button, fix hints, surface
+guide; follow-up resolved the four fraction defects). The earlier CHANGES REQUESTED
+flagged four `fractions` text defects the token gate couldn't see; the follow-up
+(`28fe3cc`) fixed all four — `1/2` is now method-only (*"It sits exactly halfway between
+0 and 1 — write that midpoint as a decimal."*, no 0.5/"five tenths"), and the `nu===1`
+cases read singular (`1 tenth` / `1 quarter` / `1 eighth`). Babysitter re-verified
+**independently across every question in every topic**: zero answer-as-token leaks,
+zero answer-in-words leaks, zero `"1 <plural>"` slips; the full fractions dump reads
+cleanly; the fix touched **only** the fractions branch (no churn). The gate
+(`hints.test.js`) was extended with a word-leak scan + a plural check — all **10**
+checks pass, plus **12** practice-flow checks (button promoted beside Start & disabled in
+lockstep, guide-under-list, tap-to-reveal hidden-by-default, normal rounds show no hint).
+`node -c` clean; wired as the 6th/7th Pages gates. T49 → DONE.
 
-1. **Answer revealed in words — `1/2 → "One half as a decimal is five tenths."`** "Five
-   tenths" *is* the answer (0.5). This violates the core method-only rule (same spirit as
-   the original `2.5` leak, just spelled out). Reword so it teaches the method without
-   stating the value — e.g. ask how many tenths make a half and have them write the
-   decimal — **without** naming "five tenths"/0.5.
-2. **Grammar (singular/plural) — `1/10 → "1 tenths…"`** should read "1 tenth".
-3. **Grammar — `1/4 → "…count 1 quarters."`** should read "1 quarter".
-4. **Grammar — `1/8 → "…count 1 eighths."`** should read "1 eighth". (i.e. the `nu === 1`
-   case in the `fractions` branch must use the **singular** denominator word; check the
-   whole branch for "1 <plural>".)
-
-Also (so the gate actually protects this class going forward): **extend
-`test/hints.test.js`** to catch (a) any `"1 <plural-noun>"` singular/plural mismatch in a
-hint, and (b) an **answer-in-words** leak (a "<word-number> <denominator-word>" phrase
-whose value equals `q.a`) — both currently pass through. The rest of `explain()` is
-approved as-is; **do not** churn the other topics. Re-verify the full hint dump across
-every fractions question reads cleanly, re-run all gates, and re-handoff. (Everything
-else in T49 — parts 1, 2, 4, and the non-fraction branches of part 3 — met the DoD on
-my independent check; only these four lines + the test gap need fixing.)
-
-**Then `T51` — restore the varied hero portraits (owner-reported regression).** "The
+**Do `T51` next — restore the varied hero portraits (owner-reported regression).** "The
 hero icons used to look like weird faces, now they're all the same turtle creature —
 bring the old ones back." Root cause (confirmed in git history): pre-T36 heroes used
 `s_sprite`, a per-hero **mirrored creature blob** (varied "weird faces"); the T36 icon

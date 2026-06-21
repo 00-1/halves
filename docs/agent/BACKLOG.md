@@ -978,7 +978,7 @@ into one block at the top of the tab.
   verifies every `$("id")` still exists, tiles render on all three tabs, the bar
   block sits above the tiles, and no per-section bar remains beside tiles.)
 
-### T49 — Practice mode: promote the button, fix the hints, surface the guide · status: CHANGES
+### T49 — Practice mode: promote the button, fix the hints, surface the guide · status: DONE
 Owner played Practice and found three problems (screenshot: "half of **5**" showed
 the hint *"Halve the tens and ones separately, then add — half of 5 is 2.5 (odd…)"*).
 The hint **gave away the answer** (`2.5`) and **talked about tens when 5 has none**.
