@@ -2677,11 +2677,21 @@ is visible because **the particles are far too small for that backing buffer**:
   it stayed green while invisible. Add a check that asserts **actual visible coverage**: a non-trivial number
   of drawn particles are **in-bounds** with an on-screen size **≥ a real threshold** (e.g. ≥ ~0.4% of canvas
   height, so it can't regress to sub-pixel) and alpha>0. This is the structural guard.
-- **DoD (LIVE-verified):** tapping a celebration tester button shows a **clearly visible** particle shower on
-  the owner's phone; the new visibility golden fails on too-small/zero-coverage frames; `node -c` clean; all
-  gates green; **B-owned only** (`fxgl.js` + tests/goldens + `BUILDER-LOG-FX.md`). (Babysitter: bar = the owner
-  SEEING it — this has hidden behind green gates three times.) *(The tester's music-restart side-effect is a
-  separate [A] fix in T143.)*
+- **⚠ Don't tunnel on the size theory.** The owner (fairly) is skeptical 3px particles would be *fully*
+  invisible — "I feel like I would see 3px particles." So size is the **leading** hypothesis (and the
+  bolder-particle fix is worth it regardless), but **also verify, on a real device/headless, that the render
+  loop ACTUALLY runs and presents for the full burst** — not just one frame. Concretely confirm: after
+  `celebrate()`, `_pump()` schedules `_frame`, `_needsFrame()` stays true while `burst_.active`, the RAF keeps
+  firing for the burst lifetime, and each frame `clearRect`+`fillRect`s onto the SAME context that's on
+  screen; check `globalAlpha`/colour aren't washing them out, the burst lifetime isn't a sub-second blink, and
+  particles aren't all expiring on frame 1. **If bolder particles STILL show nothing live, the cause is the
+  loop/present/lifetime — fix that, not size.** Instrument if needed (the tester can surface burst-active /
+  frame-count alongside `dimensions()`).
+- **DoD (LIVE-verified):** tapping a celebration tester button shows a **clearly visible, animating** particle
+  shower on the owner's phone (size AND a running loop confirmed); the new visibility golden fails on
+  too-small/zero-coverage frames; `node -c` clean; all gates green; **B-owned only** (`fxgl.js` + tests/goldens
+  + `BUILDER-LOG-FX.md`). (Babysitter: bar = the owner SEEING it — this has hidden behind green gates three
+  times.) *(The tester's music-restart side-effect is a separate [A] fix in T143.)*
 
 ### T139 — [B] Music styles: keep menu+arena, replace solve/event, cut to 12 DISTINCT styles incl. a dubstep VICTORY (implements T141) · status: OPEN · OWNER-PRIORITY · PALETTE APPROVED (build the 12 from T141's table)
 **Owner approved the T141 palette (2026-06-21): "move ahead with those music styles, and add them to the
