@@ -221,14 +221,16 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
 a **compact strip** (keep it prominent + art/name/Play-CTA/UTC-countdown; drop/clamp the
 home-banner blurb, inline Play, bounded height), **fit `#start` to one screen** (360×640 & 390×844),
 keep the **picker ≥3 rows** (min-height), and **reorder the banner above the `#mark`**. Then
-resume the gating block: **`T86`**
-(onboarding engine: unlock-state model + first-run single-question intro + Inventory gate +
-one-time highlight; **migration-safe — never re-gate existing players**) → **`T87`** (wire the
-remaining gates: Practice/Heroes/Arena/Event-banner/Gold). Then the **Arena 3v3 block** (Phase
-6.10): **`T88`** (deterministic 1–3 vs 3 battle model + enemy teams + re-calibration + invariant
-sim-proofs — the crux; design in IDEAS I5) → **`T89`** (team-selection UI, 1–3 heroes) → **`T90`**
-(watchable turn playout). Then content extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play
-Store; folds in the T82 TWA/manifest/SW plan). Specs in BACKLOG; this line is authoritative.
+resume the gating block: **`T86`** (onboarding engine: unlock-state model + first-run
+single-question intro + Inventory gate + one-time highlight; **migration-safe — never re-gate
+existing players**) → **`T87`** (wire the remaining gates: Practice/Heroes/Arena/Event-banner/
+Gold). Then **`T92`** (event reward tiers: keep an easy participation reward but add **skip-proof**
+"did well" + "extremely well" tiers — **sequenced before the Arena** so its re-calibration sees the
+full reward set). Then the **Arena 3v3 block** (Phase 6.10): **`T88`** (deterministic 1–3 vs 3
+battle model + enemy teams + re-calibration + invariant sim-proofs — the crux; design in IDEAS I5)
+→ **`T89`** (team-selection UI, 1–3 heroes) → **`T90`** (watchable turn playout). Then content
+extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store; folds in the T82 TWA/manifest/SW
+plan). Specs in BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

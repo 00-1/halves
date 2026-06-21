@@ -1708,6 +1708,50 @@ point**. Draft ladder (owner delegated "add good points"; confirm/adjust in revi
 
 ---
 
+## Phase 6.11 — Event reward tiers (owner-reported, 2026-06-21)
+
+### T92 — Events: tier the reward by performance (participation · did well · did extremely well) · status: OPEN
+Owner-reported: today **completing** an event grants its reward **regardless of performance** — so
+**skipping through most of it still pays out the full reward** (same exploit class as T74's
+all-skipped topic unlock). `finishEvent` grants `event:<id>` on completion with no score check.
+Keep an easy **participation** reward, but add **two more performance-gated tiers**.
+- **Three reward tiers per event (each a real buff / collection member):**
+  1. **Participation** — **keep the existing `event:<id>`** id (migration-safe) for **completing**
+     the live event (owner: this low bar is fine — "a participation reward like that").
+  2. **Did well** (NEW, e.g. `event:<id>:well`) — gated on a genuine performance threshold.
+  3. **Did extremely well** (NEW, e.g. `event:<id>:ace`) — gated on a high threshold.
+- **Skip-proof metric.** Gate the two new tiers on **clean-score fraction `score/total`** where
+  `score = times.filter(miss===0).length` (clean first-try answers) and `total = order.length` —
+  **skips never enter `times`** (T74), so skipping *lowers* the fraction and **cannot** reach the
+  higher tiers. Suggested thresholds (Babysitter's call; owner may tune): **well ≥ ~0.7**,
+  **extremely well = flawless / `score===total`** (optionally + a speed bracket). Reuse the
+  existing rank machinery (`C.rankIndex`) if cleaner.
+- **Progressive rarity + real buffs.** participation ≈ rare/epic, well ≈ epic, extremely well ≈
+  **legendary** — all **full collection members** carrying hero buffs that **feed Arena power**
+  (consistent with the owner's "event buffs are full collection members" decision). So each event
+  now contributes **3** collectibles (14×3 = 42).
+- **Grant logic.** In `finishEvent`, evaluate performance and grant **every tier earned this run**,
+  **only while live**, **idempotent per tier** (own-once). **Improving on a replay (still live) or
+  on the 14-day recurrence earns the higher tiers** you hadn't reached — never downgrades/removes.
+  Participation is still granted on completion.
+- **Surfacing.** The Events inventory tab shows the **3 tiers per event** (owned/locked); the
+  home banner / results can hint which tiers you earned.
+- **Arena.** The 28 new reward collectibles join the collection the Arena reads → **re-prove the
+  buff-gating invariants on the grown pool** (`arena.test.js`): tiers 1–5 winnable at 0 items, def
+  monotonic, no tier behind own loot, top ⇔ near-full (now including the hardest event rewards).
+  *(This is why T92 is sequenced BEFORE the Arena 3v3 re-calibration in T88 — so T88 calibrates
+  against the full event-reward set.)*
+- **DoD:** three reward tiers per event; **participation = complete** (low bar, kept id);
+  **well/extremely-well gated on `score/total`** (skip-proof — a Node test proves a **skip-through
+  earns ONLY participation**, a **good run adds `well`**, a **flawless run adds `ace`**); grants
+  are **live-only + idempotent per tier**; improving on replay/recurrence earns higher tiers
+  without removing earned ones; the Events tab shows 3/event; the new items are real buffs;
+  **Arena invariants re-proved on the grown pool**; `node -c` clean; all gates green (`events.test.js`
+  + `arena.test.js` extended). (Babysitter: verify skip-through → participation only, the two
+  thresholds, per-tier idempotency, recurrence upgrades, and zero Arena-invariant regression.)
+
+---
+
 ## Phase 6.10 — Arena 3v3: party battles (promoted from IDEAS I5, 2026-06-21)
 
 > Owner: deepen the Arena — pick **1–3 heroes** vs a **3-foe team** (the tier foe + 2 weaker
