@@ -1640,7 +1640,7 @@ attenuated via `musicGain.gain.value = 0.07` (effective ≈ 0.011 — very quiet
   deploy green. (Babysitter checks the new `VOL`/`musicGain` values, the worst-case
   headroom, and that the mute/visibility + balance logic is unchanged.)
 
-### T70 — Hint clarity pass: make every explanation actually helpful · status: OPEN
+### T70 — Hint clarity pass: make every explanation actually helpful · status: DONE
 Owner: "tidy [the twentieths] if it's not useful or clear. **Try to explain everything in
 a way that's actually helpful.**" T62 made every hint correct + method-only; this pass
 raises the bar from *correct* to *genuinely clear & useful to a 10-year-old*.

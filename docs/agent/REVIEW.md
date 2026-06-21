@@ -1,20 +1,18 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T64` (mid-round toasts capped + queued so they never
-obscure the question). Verified independently: the `.toasts` band is bounded **two ways** —
-`max-height:30vh; overflow:hidden` **and** a 2-toast visible cap (`enqueueToast`/`pumpToasts`,
-backlog drains briskly, "+N more" chip) — so the real stack (~130px) is nowhere near the
-`#prompt`. All three producers (item/topic/momentum) route through the queue (no bypass);
-`onGone` frees slots; **no item dropped**. `test/toasts.test.js` (7 checks) proves cap=2,
-peak-occupied ≤2, all 6 queued toasts built, queue fully drains, no node leak; wired as the
-10th Pages gate; `node -c` clean. T64 → DONE.
+**Current verdict:** `APPROVED — T70` (hint clarity pass — explanations now genuinely
+helpful, not just correct). Verified independently: the gate passes (13 checks) and my full
+cross-topic scan is clean (no token/word answer-leaks, no plural slips). The twentieths now
+use **"Scale 11/20 up to hundredths (×5 top and bottom), then read off two decimal places"**
+(no improper fractions, works for all n incl. 11/20·17/20); fifths scale to tenths;
+quarters/eighths/sixteenths explain reaching the unit then "add up N quarter(s)/eighth(s)";
+times' fallback is now "add one more lot to a nearby fact you know"; 75% is "add half of N
+and a quarter of N". Read the full fractions dump — all clear + correct + method-only.
+`node -c` clean; no regressions. T70 → DONE.
 
-**⚠️ Sequencing note:** `T70` (hint clarity pass) was **skipped** — the Builder pulled the
-queue before T70 was inserted and went straight to T64. **`T70` is still OPEN and is the
-next task** (the twentieths "find 11/10" awkwardness is still live). Do **`T70` next**, then
-continue the order below.
-
-**Previously approved (done):** `T63` (tap-to-reveal hint now shown in normal rounds too).
+**Previously approved (done):** `T64` — mid-round toasts capped (2 visible) + queued + band
+height-bounded so they never cover the `#prompt`; no item dropped; `toasts.test.js` (7) green
+as the 10th gate. `T63` — tap-to-reveal hint now shown in normal rounds too.
 Babysitter verified independently: the `practiceCtx` gate is removed so the toggle +
 method note appear in **both** normal drills and Practice; the note is **hidden by default,
 reset per question**, and holds the correct method via `explain(qm.id, it)` — `qm` is the
@@ -52,20 +50,19 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T70` → `T65` → `T69` → `T71` → `T67` → `T66` → `T68` →
-`T52` → `T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2
-batches `T59`/`T60`/`T61`). **`T71`** = calmer music (cap bpm ~95, soften busy styles) +
-distinct style per topic + a dedicated Arena theme (Arena currently plays the menu style).
-Clustered right after `T69` (both audio, both in `sound.js`). **Do `T70` next** — hint *clarity* pass (owner: "explain everything in a
-way that's actually helpful"): fix the twentieths to the clean scale-to-hundredths method
-(×5 top and bottom, read two decimal places — leak-free), and re-read every hint for
-genuine clarity, not just correctness (vague/cute/knowledge-assuming phrasings). **`T69`** = tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep
-music balanced, no clipping). **Do `T63` next** — surface the tap-to-reveal hint in normal
-rounds too (hidden by default; the T62 hint standard now applies everywhere). (`T66` 120-tier
-change before the arena work; **`T68` Arena wayfinding** — region progress, boss
-anticipation, a simple journey map — sits right after T66 so it's built on the final
-12-per-region structure; then the arena art T52/T53; `T67` hero detail rides with the UX
-cluster.)
+**Next-task order:** **`T65` → `T69` → `T71` → `T67` → `T66` → `T68` → `T52` → `T53` →
+`T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
+`T59`/`T60`/`T61`). **Do `T65` next** — tiny fix: reset `#arenaBody.scrollTop = 0` in
+`finishBattle` (win or loss; NOT on hero-pick re-renders) so the result/tier shows after a
+fight. Then:
+- **`T69`** — tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep music balanced, no
+  clipping). **`T71`** — calmer music (cap bpm ~95, soften busy styles) + a distinct style
+  per topic + a dedicated Arena theme (Arena currently plays the menu style). Both audio,
+  both in `sound.js` — clustered.
+- **`T66`** (120 tiers) sits before the arena work; **`T68`** (Arena wayfinding — region
+  progress, boss anticipation, a simple journey map) right after T66 so it's built on the
+  final 12-per-region structure; then the arena art `T52`/`T53`. **`T67`** (hero detail)
+  rides with the UX cluster.
 - **`T62` — methodical, question-by-question hint audit across ALL topics.** Owner: "not
   only halves — fix every bit of advice across all topics… an agent needs to go through
   them one by one. I don't mind burning time." A deliberate per-question pass on **every**
