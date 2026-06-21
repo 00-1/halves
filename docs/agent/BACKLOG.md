@@ -506,7 +506,7 @@ the card's curved left border.)
   type shown via a non-card-border square dot in the type colours; 360px-safe; no
   regressions to the heroes layout; deploy green.
 
-### T41 — Rename heroes to more authentic names (display-only) · status: OPEN
+### T41 — Rename heroes to more authentic names (display-only) · status: DONE
 Owner-approved rename — **display names only**. The hero `id`s
 (`bram,greta,tovar,mo,wisp,mira,nim,zeph,pip,vex,sela,roon`) **MUST NOT change** —
 they key item boosts, `HERO_NAMES`, and `heroes.js`. Change **only the display names

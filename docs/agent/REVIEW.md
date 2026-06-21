@@ -1,11 +1,13 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `CHANGES REQUESTED — T41`. The rename was applied correctly
-(verified: ids unchanged, all 11 other names match, every catalogue boost resolves,
-heroes.js in sync) — **one owner update**: change `pip`'s `HERO_NAMES` display from
-**"Fenn" → "Pocket"** (left-field word-name, owner's pick). Re-verify the boost
-lookup, re-handoff. Then **`T35`** (diverse names + truncation) → **`T24` (Arena)** →
-**`T36`** (icons) → `T25`/`T26` → Phase 4. Specs in BACKLOG.
+**Current verdict:** `APPROVED — T41` (hero rename complete; pip→Pocket applied —
+all 12 `HERO_NAMES` match the final mapping, ids unchanged, every boost resolves,
+heroes.js in sync). **Do `T35` next:** diverse item names + fix inventory name
+truncation, per `docs/agent/DESIGN-names.md` (drop-in templates + 612 adjectives +
+124 fixed funny names incl. "Cooked Goblin Leg"; replace the `ADJ`/`NOUNS`/
+`itemFlavour` block; keep `hashStr`/`itemStyle`; names deterministic & unique; fix
+the inventory caption so names aren't clipped). Then **`T24` (Arena)** → **`T36`**
+(icons) → `T25`/`T26` → Phase 4. Specs in BACKLOG.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -21,6 +23,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T41 — Rename heroes (display-only) → APPROVED
+Owner-approved cast applied. Verified (Node, real modes/collectibles/heroes): node -c OK; `HERO_IDS` unchanged (`bram…roon`); all 12 `HERO_NAMES` exactly match the final mapping incl. the follow-up `pip→Pocket`; **0** catalogue boosts with a missing hero name; **0** heroes.js↔HERO_NAMES mismatches. Display-only — no logic touched. Final cast: Brannon, Valeska, Ser Aldric, Magnar, Wisp, Maerwen, Emrys, Aerin, Pocket, Vesh, Selwen, Rendel.
 
 ### T40 — Heroes cards: kill the AI-smell coloured left border → APPROVED
 Visual-only. Verified: node -c main.js OK; CSS brace-balance OK; no TODO/stub; grep confirms **no `border-left` on `.hero-card`** (now uniform 1px) and the three `.hero-card.t-*{border-left-color}` rules deleted. Type now shown via `.hero-name .typedot` — a **9px square** (no border-radius, mirrors T37 `.rankdot`) coloured by the existing `t-brawn #d05a4a`/`t-arcane #8a5cf6`/`t-cunning #3fce8c` classes. main.js `heroCard` wraps the name `<span class="hn"><i class="typedot"></i>NAME</span>` on both locked + unlocked markup; `.hn` ellipsis stops a long name shoving the ★rating; item-chip pills untouched. Builder's DOM-shim harness (7 checks) confirms no border-left, exactly 12 type dots (incl. locked cards), all three type classes, rating shown. 360px-safe; no regressions. Completes the UI-polish block (T37–T40); metagame screens now read consistently.
