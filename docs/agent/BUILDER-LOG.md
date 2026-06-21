@@ -3083,3 +3083,39 @@ notes / questions: I can't measure pixel viewport fit headlessly, so the one-scr
   360×640 / 390×844 is best-effort via the compact strip + picker min-height + tightened
   margins (please eyeball the live build). Back on sequence — next per REVIEW order: **T87**
   (wire the remaining onboarding gates), then content extension.
+
+## T87 — Onboarding gating II: wire the remaining feature gates + reveals  [HANDOFF]
+commit: (this commit, on main) — completes the Phase 6.9 settings/gating block (T85–T87)
+Goal: hang the rest of the features on the T86 engine, each revealed + highlighted at
+a sensible progress milestone. Migration-safe; never traps; access layer only.
+changed:
+  - **main.js** — extended `GATED` with `cond` milestones + multi-element `el`:
+    **Practice** ← `hasInit` (first finished round, any `init:`); **Heroes** ←
+    `hasLootOrMastery` (first loot/mastery item); **Arena** ← `hasHero` (any hero
+    owned — bram unlocks on the first init); **earnings** (Gold + Momentum readouts)
+    ← `hasEarned` (Gold>0 or momentum>0); **event banner** ← `enoughRuns` (`stats.games
+    ≥ 3` — a few runs in). New **`checkGates()`** evaluates the conditions on returning
+    home / at init and unlocks + queues a highlight for any newly met; `applyGates()`
+    now hides each feature's control(s). The highlight is a **queue** (`highlightQ`)
+    fired through the existing toast cap so several unlocks **never spam**. The
+    **event banner is withheld** in `renderEventBanner()` until unlocked (the live/
+    countdown logic is unchanged once shown). **Deep-link guards** added for
+    `#/heroes`, `#/arena`, `#/hero/*` (Inventory already guarded). `finishIntro` now
+    uses `queueHighlight("inventory")`.
+how I verified:
+  - **`onboarding.test.js` extended** → **ALL 50 PASS** (was 23): a **brand-new**
+    (post-intro) profile has Practice/Heroes/Arena/earnings/event-banner **all gated**
+    (controls hidden; **event banner withheld**); **Practice** unlocks on first `init:`,
+    **Arena** once a hero is owned, **Heroes** on first mastery/loot (+ nav revealed),
+    **Gold/Momentum** once earned, the **event banner only after games ≥ 3** (still
+    withheld at 2) and it **keeps its Play CTA + countdown** once shown; **deep-link
+    `#/heroes` / `#/arena` bounce home while gated**; a **LEGACY** profile sees
+    **everything** (no re-gate).
+  - **Arena invariants untouched** — `arena.test.js` green (access layer; no
+    enemies/heroes/collectibles change). `node -c` clean; **full 24-gate suite green**;
+    no regressions.
+notes / questions: ladder per the spec's draft (owner delegated "add good points");
+  the event-banner threshold is **3 runs** (owner's "a few"). Highlights are paced via
+  the toast queue (calm). **Phase 6.9 (T85–T87) is complete.** Next per REVIEW order:
+  **T92** (event reward tiers — skip-proof "did well"/"extremely well" tiers, sequenced
+  before the Arena 3v3 re-calibration), then the content-extension wave.

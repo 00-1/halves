@@ -110,5 +110,56 @@ const press = (els, k) => (els.pad._h.click||[]).forEach(f => f({ target:{ close
   ok(!b.els.invBtn.classList.contains("hidden"), "Inventory stays revealed after a reload");
 })();
 
+// ===================== (d) T87 — the remaining feature gates =====================
+// Each boots a fresh profile seeded to a specific milestone; checkGates runs at init,
+// so isFeatureUnlocked + nav visibility reflect the seed. (`introDone` is set so the
+// boot doesn't force the intro, isolating the milestone gates.)
+function seedFresh(extra){ return Object.assign({ "halves.unlocked": JSON.stringify({ introDone:1, inventory:1 }) }, extra); }
+(function gates(){
+  // brand-new (post-intro, no further progress): everything else still gated
+  const n = boot(seedFresh({}));
+  const O = n.win.Onboard;
+  ["practice","heroes","arena","earnings","eventbanner"].forEach(f => ok(O.isFeatureUnlocked(f) === false, "brand-new: " + f + " is gated"));
+  ok(n.els.practiceBtn.classList.contains("hidden"), "brand-new: Practice button hidden");
+  ok(n.els.heroesBtn.classList.contains("hidden") && n.els.arenaBtn.classList.contains("hidden"), "brand-new: Heroes + Arena nav hidden");
+  ok(n.els.eventBanner.classList.contains("hidden"), "brand-new: the event banner is WITHHELD (not shown before a few runs)");
+  ok(n.els.goldBar.classList.contains("hidden") && n.els.momentumBar.classList.contains("hidden"), "brand-new: Gold/Momentum readouts hidden");
+
+  // Practice ← first init (a finished topic round)
+  ok(boot(seedFresh({ "halves.collected": JSON.stringify({ "init:halves":{ts:1} }) })).win.Onboard.isFeatureUnlocked("practice") === true,
+     "Practice unlocks on the first finished round (init:)");
+  // Arena ← a hero owned (bram unlocks on first init)
+  ok(boot(seedFresh({ "halves.collected": JSON.stringify({ "init:halves":{ts:1} }) })).win.Onboard.isFeatureUnlocked("arena") === true,
+     "Arena unlocks once a hero is owned");
+  // Heroes ← first loot/mastery earned
+  const hm = boot(seedFresh({ "halves.collected": JSON.stringify({ "init:halves":{ts:1}, "mastery:halves":{ts:1} }) }));
+  ok(hm.win.Onboard.isFeatureUnlocked("heroes") === true, "Heroes unlocks on the first mastery/loot");
+  ok(!hm.els.heroesBtn.classList.contains("hidden"), "Heroes nav revealed once unlocked");
+  // Earnings ← first Gold earned
+  ok(boot(seedFresh({ "halves.gold": "120" })).win.Onboard.isFeatureUnlocked("earnings") === true, "Gold/Momentum readouts unlock once earned");
+  // Event banner ← a few topic runs in (games ≥ 3)
+  ok(boot(seedFresh({ "halves.stats": JSON.stringify({ games:2, byMode:{}, flawless:{} }) })).win.Onboard.isFeatureUnlocked("eventbanner") === false,
+     "event banner still withheld at 2 runs");
+  const e3 = boot(seedFresh({ "halves.stats": JSON.stringify({ games:3, byMode:{}, flawless:{} }) }));
+  ok(e3.win.Onboard.isFeatureUnlocked("eventbanner") === true, "event banner unlocks after a few runs (games ≥ 3)");
+  ok(!e3.els.eventBanner.classList.contains("hidden"), "the event banner shows once unlocked");
+  // …and the live/countdown behaviour survives the gate (Play CTA + countdown present)
+  ok(/eb-play/.test(e3.els.eventBanner._html) && e3.els.ebCount, "the ungated banner still carries the Play CTA + countdown");
+
+  // deep-link guards: gated routes bounce home
+  const g = boot(seedFresh({}));
+  ["#/heroes","#/arena"].forEach(h => { g.win.location.hash = h; (g.winH.hashchange||[]).forEach(f=>f());
+    ok(!g.els[h.slice(2)].classList.contains("active"), "deep-link " + h + " is blocked while gated"); });
+})();
+
+// LEGACY bypass — a profile with progress sees EVERYTHING (no re-gate)
+(function legacyAll(){
+  const L = boot({ "halves.collected": JSON.stringify({ "init:halves":{ts:1} }), "halves.stats": JSON.stringify({ games:9, byMode:{}, flawless:{} }) });
+  const O = L.win.Onboard;
+  ["inventory","practice","heroes","arena","earnings","eventbanner"].forEach(f => ok(O.isFeatureUnlocked(f) === true, "legacy: " + f + " is unlocked (never re-gated)"));
+  ok(!L.els.heroesBtn.classList.contains("hidden") && !L.els.arenaBtn.classList.contains("hidden") && !L.els.eventBanner.classList.contains("hidden"),
+     "legacy: all nav + the event banner are visible");
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " ONBOARDING CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

@@ -241,29 +241,53 @@
   function unlockFeature(id){ if(isFeatureUnlocked(id)) return false; unlocked[id] = 1; saveUnlocked(unlocked); return true; }
   function needsIntro(){ return !unlocked.legacy && !unlocked.introDone; }   // fresh profile still owes the intro
 
-  // Gated nav controls (T86 wires the Inventory; the rest land in T87).
-  const GATED = [{ feature:"inventory", btn:"invBtn", msg:"Inventory unlocked — your rewards live here" }];
+  // Gated features + the milestone that ungates each (T86 = Inventory via the intro;
+  // T87 = the rest). `el` = the nav/readout control(s) hidden until unlocked; `cond`
+  // = the progress milestone (checked on returning home). Inventory has no cond —
+  // it's unlocked explicitly by finishing the intro. Legacy profiles are all-unlocked
+  // so no cond ever fires for them. Each ungate raises a one-time coachmark.
+  function hasInit(){ const c = loadCollected(); return Object.keys(c).some(k => k.indexOf("init:") === 0); }
+  function hasLootOrMastery(){ const c = loadCollected(); return Object.keys(c).some(k => { const it = C.byId(k); return it && (it.cat === "Loot" || it.cat === "Mastery"); }); }
+  function hasHero(){ const Hs = window.Heroes, c = loadCollected(); return !!(Hs && Hs.HEROES.some(h => Hs.isHeroUnlocked(h, c))); }
+  function hasEarned(){ return loadGold() > 0 || (loadMomentum().count || 0) > 0; }
+  function enoughRuns(){ const s = loadStats(); return (s.games || 0) >= 3; }
+  const GATED = [
+    { feature:"inventory",   el:["invBtn"],                msg:"Inventory unlocked — your rewards live here" },
+    { feature:"practice",    el:["practiceBtn"],           msg:"Practice unlocked — drill any question, at your pace", cond:hasInit },
+    { feature:"heroes",      el:["heroesBtn"],             msg:"Heroes unlocked — assemble your roster",        cond:hasLootOrMastery },
+    { feature:"arena",       el:["arenaBtn"],              msg:"Arena unlocked — send a hero into battle",      cond:hasHero },
+    { feature:"earnings",    el:["goldBar","momentumBar"], msg:"Goblin Gold & Momentum are now tracking",       cond:hasEarned },
+    { feature:"eventbanner", el:[],                         msg:"Daily Events unlocked — a new challenge each day", cond:enoughRuns }
+  ];
   function applyGates(){
-    GATED.forEach(g => { const b = $(g.btn); if(b) b.classList.toggle("hidden", !isFeatureUnlocked(g.feature)); });
+    GATED.forEach(g => { const on = isFeatureUnlocked(g.feature); g.el.forEach(id => { const b = $(id); if(b) b.classList.toggle("hidden", !on); }); });
   }
-  // One-time spotlight + coachmark toast when a feature ungates (persisted → fires once).
-  let pendingHighlight = null;
+  // Evaluate the milestone conditions; unlock + queue a highlight for any newly met.
+  function checkGates(){
+    GATED.forEach(g => { if(g.cond && !isFeatureUnlocked(g.feature) && g.cond()){ unlockFeature(g.feature); queueHighlight(g.feature); } });
+  }
+  // One-time spotlight + coachmark toast when a feature ungates (persisted → fires
+  // once; the toast queue paces them so several unlocks never spam).
+  let highlightQ = [];
+  function queueHighlight(id){ if(!unlocked[id + "Hi"] && highlightQ.indexOf(id) < 0) highlightQ.push(id); }
   function firePendingHighlight(){
-    const id = pendingHighlight; pendingHighlight = null;
-    if(!id || unlocked[id + "Hi"]) return;
-    const cfg = GATED.find(g => g.feature === id); if(!cfg) return;
-    unlocked[id + "Hi"] = 1; saveUnlocked(unlocked);
-    const b = $(cfg.btn);
-    if(b){ b.classList.add("pulse"); setTimeout(() => { if(b.classList) b.classList.remove("pulse"); }, 2600); }
-    enqueueToast(() => {
-      const t = document.createElement("div");
-      t.className = "toast coach";
-      t.innerHTML = '<span class="t-glyph">✨</span><div class="t-txt"><span class="t-tag">Unlocked</span>'+
-        '<span class="t-name">'+esc(cfg.msg)+'</span></div>';
-      $("toasts").appendChild(t);
-      requestAnimationFrame(() => t.classList.add("show"));
-      return t;
-    }, 2800, 1600);
+    while(highlightQ.length){
+      const id = highlightQ.shift();
+      if(unlocked[id + "Hi"]) continue;
+      const cfg = GATED.find(g => g.feature === id); if(!cfg) continue;
+      unlocked[id + "Hi"] = 1; saveUnlocked(unlocked);
+      const b = cfg.el[0] ? $(cfg.el[0]) : null;
+      if(b){ b.classList.add("pulse"); setTimeout(() => { if(b.classList) b.classList.remove("pulse"); }, 2600); }
+      enqueueToast(() => {
+        const t = document.createElement("div");
+        t.className = "toast coach";
+        t.innerHTML = '<span class="t-glyph">✨</span><div class="t-txt"><span class="t-tag">Unlocked</span>'+
+          '<span class="t-name">'+esc(cfg.msg)+'</span></div>';
+        $("toasts").appendChild(t);
+        requestAnimationFrame(() => t.classList.add("show"));
+        return t;
+      }, 2800, 1600);
+    }
   }
 
   // A locked topic's compact requirement, for a picker row subline.
@@ -1228,7 +1252,7 @@
     // granted in correct(); now flag the intro done + ungate the Inventory and
     // queue its one-time highlight. Skipping still completes it (never trap).
     unlocked.introDone = 1; saveUnlocked(unlocked);
-    if(unlockFeature("inventory")) pendingHighlight = "inventory";
+    if(unlockFeature("inventory")) queueHighlight("inventory");
     location.hash = "#/"; applyRoute();
   }
   // ---- Practice / Review (T32): attempt one question at a time, self-paced but
@@ -1560,6 +1584,8 @@
     const Ev = window.Events, ev = (Ev && Ev.today) ? Ev.today() : null;
     bannerDay = (Ev && Ev.epochDaysUTC) ? Ev.epochDaysUTC(Date.now()) : null;
     if(!ev){ el.classList.add("hidden"); el.innerHTML = ""; return; }
+    // T87: withhold the daily event from brand-new players until a few runs in.
+    if(!isFeatureUnlocked("eventbanner")){ el.classList.add("hidden"); el.innerHTML = ""; return; }
     const owned = !!loadCollected()["event:" + ev.id];
     el.classList.remove("hidden");
     // Compact strip (T91): small emblem · tag+name+countdown · an inline Play CTA.
@@ -1655,6 +1681,9 @@
     const h = (location.hash || "").replace(/^#\/?/, "");
     // gated features can't be deep-linked into until unlocked (access layer)
     if(h === "inventory" && !isFeatureUnlocked("inventory")){ location.hash = "#/"; return; }
+    if(h === "heroes" && !isFeatureUnlocked("heroes")){ location.hash = "#/"; return; }
+    if(h === "arena" && !isFeatureUnlocked("arena")){ location.hash = "#/"; return; }
+    if(h.indexOf("hero/") === 0 && !isFeatureUnlocked("heroes")){ location.hash = "#/"; return; }
     if(h === "inventory"){ renderInventory(); show("inventory"); }
     else if(h === "best-times"){ renderSummary(); show("summary"); }
     else if(h === "heroes"){ renderHeroes(); show("heroes"); }
@@ -1664,7 +1693,7 @@
     }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
     else if(h === "settings"){ renderSettings(); show("settings"); }
-    else { renderPicker(); renderBest(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); applyGates(); show("start"); firePendingHighlight(); }
+    else { checkGates(); renderPicker(); renderBest(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); applyGates(); show("start"); firePendingHighlight(); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
@@ -1924,8 +1953,9 @@
   renderBuild();
   renderGold();
   renderMomentum();
+  checkGates();                         // T87: reveal any already-earned feature gates
   renderEventBanner();                  // T81: today's event front-and-centre
-  applyGates();                         // T86: hide gated features on a fresh profile
+  applyGates();                         // T86/T87: hide still-gated features on a fresh profile
   setInterval(tickEventBanner, 1000);   // live UTC countdown (only ticks on home)
   applySoundPref();   // honour the saved mute pref on load (no-op until T16)
   // Goblin Gold module API (also used by the Node tests).
