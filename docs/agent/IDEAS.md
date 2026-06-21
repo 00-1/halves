@@ -311,3 +311,60 @@ decision (the table above, finalised with the owner).
 
 *(Status: captured, NOT queued. Promote to BACKLOG when the owner says go — starting with the
 agreed unlock ladder + migration policy.)*
+
+---
+
+## I5 — Arena 3v3: party of heroes vs a team of foes (owner musing, 2026-06-21)
+
+**The idea (owner).** Deepen the Arena: pick **3 heroes**, fight **3 enemies** — the tier's
+current foe **plus two weaker "assistant" enemies pulled from lower levels**. Resolution leans
+**turn-based**: each side takes turns hitting an enemy until one team is wiped. Owner is **unsure
+how the win is decided** (open).
+
+**Why it's appealing.** Party building + type-matchup tactics across 3v3 is a classic, engaging
+RPG mechanic. It makes the **12 heroes** and the **whole collection** matter far more than today's
+single-hero check, and the enemy-team idea reuses existing lower-tier enemy defs (scales for free).
+Genuinely additive and in-domain — worth doing well.
+
+**What it changes (and the care it needs).** Today a battle is a **pure, deterministic stat check**
+(`statBattle`: win iff `round(rating×matchup) ≥ def`, T47) — and *that determinism is exactly what
+lets the Arena invariants be PROVEN in `arena.test.js`*. A 3v3 turn-based fight must preserve that
+provability. Key decisions to resolve **before queuing**:
+
+1. **Win condition (the open question) — recommend deterministic turn-based attrition.** Give each
+   combatant an HP-like stat; **turn order by `speed`**; on a turn, attacker hits a target for
+   `damage = f(power, type-matchup, target guard)`; repeat until one team has no survivors. Win =
+   your team has ≥1 survivor. Needs a **fixed targeting rule** (e.g. focus the type-disadvantaged
+   or lowest-HP foe) so the sim is reproducible. *(Alternatives: a simple aggregate-power compare
+   — closest to today, least drama; or simultaneous-damage rounds.)*
+2. **Keep it DETERMINISTIC (or seeded).** **No unseeded RNG** — crits/misses/random targeting would
+   break the Node-verifiable gate model. If randomness is wanted, it must be **seeded** (per
+   battle, like our other generators) so outcomes are reproducible and the invariants stay testable.
+3. **Re-express + re-prove the invariants for TEAMS.** They must still hold, now over a fight sim:
+   **tiers 1–5 winnable with a STARTER team at 0 items**; **difficulty curve monotonic**; **no tier
+   gated behind its own loot**; **final tier ⇔ near-full collection** (one missing boost flips it).
+   Calibration is no longer a scalar compare — it's a **fight-sim outcome** over 3v3, so the curve
+   (enemy team HP/power vs achievable team power) must be **re-derived** and `arena.test.js`
+   extended to simulate and assert the invariants. This is the hard part, not the UI.
+4. **Auto-resolve vs interactive.** *Team-building puzzle* (you pick 3, the fight auto-resolves,
+   strategy is in composition/matchup) vs *active turn-by-turn* (player chooses targets/abilities
+   each turn — much more scope + UI). For a 10–11yo audience + the calm design, **lean auto-resolve
+   with a watchable playout** (the strategy is the team you bring); owner's call.
+5. **Fewer than 3 heroes early game.** Hero unlocks are progressive, so a new player may own 1–2.
+   Options: allow 1–3, auto-fill, or **gate 3v3 until 3 heroes are owned** (ties to hero-unlock
+   progression + the I4 onboarding gating). Don't soft-lock early players out of the Arena.
+6. **Enemy team composition.** Tier foe + 2 lower-tier "adds" (weaker) — reuse existing
+   `enemies.js` defs; define the rule for *which* lower tiers (e.g. tier−k) so it scales 1→120.
+7. **Migration.** Existing Arena progress (`tier:N`) must carry over; the mode shift can't
+   invalidate past wins.
+
+**Synergy.** The turn playout is a natural showcase for the **T82** FX layer; it raises the stakes
+of **hero detail/unlocks** and the **I4** gating; loot/buffs become team-wide power.
+
+**Scope.** Substantial. When queued, likely several tasks behind a **design doc** that nails the
+win condition + determinism first: (1) the deterministic 3v3 battle model + re-calibration +
+invariant proofs (the crux); (2) team-selection UI; (3) the watchable turn playout/FX; (4) the
+<3-heroes / early-game handling. Don't queue until 1–7 above are decided.
+
+*(Status: captured, NOT queued. The gating crux is #3 — keep it deterministic and re-prove the
+invariants, or the whole calibrated-Arena guarantee is at risk.)*
