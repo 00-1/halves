@@ -1296,6 +1296,8 @@ keeping each operator clearly recognisable.**
 >   explicit: an event is live *every day*, so daily buffs are obviously available — do
 >   **not** add that explanatory UI (earlier Babysitter note to add it is **withdrawn**).
 > - Each event needs **compelling unique graphics + text** and **new event music**.
+> - **An attractive event banner, prominent on the home screen — NOT hidden in menus**
+>   (owner, 2026-06-21). It's a top-level call-to-action, the first thing you see. (T81.)
 > - The game played is a **predetermined mix of questions from across the topics**.
 > - Events appear on the **best-attempt board**; retry only during the live window;
 >   **outside the live window the entry is locked** on the best-of screen (visible, not
@@ -1385,15 +1387,24 @@ existing art).
   engine, honouring the **calm + volume** rules (T69/T71 — ≤95 BPM band, master/music
   levels, no clipping). Per-event variation is welcome but **at least one distinct event
   theme** is required.
-- **Home-screen "event live" entry/banner:** surfaces **today's** event with its art +
-  copy and a **countdown to the 00:00 UTC rollover**. **Do NOT** add any Arena
+- **Prominent home-screen event banner (owner requirement — NOT hidden in menus).** The
+  banner is a **front-and-centre element on the main/home screen** — the first thing a
+  player sees, **not** tucked behind a tab, the inventory, or a sub-menu. It must be
+  **attractive**: today's event art + name/blurb, an obvious **call-to-action to play**
+  (routes straight into the live event), and a **countdown to the 00:00 UTC rollover**.
+  When the player already owns today's reward, the banner stays but reads as
+  done/come-back-tomorrow (still visible, not nagging). **Do NOT** add any Arena
   event-gate-explanation UI (owner: unnecessary — see phase note).
 - **DoD:** the per-event art is **distinct across all 14** (assert variation, e.g. ≥90%
   pairwise-distinct grids) and **static/deterministic**; the event music **passes the sound
-  gate** (calm/volume invariants hold; extend `sound.test.js` or the music gate); the home
-  banner renders at **360px** with a working UTC countdown; **no Arena explanatory UI was
-  added**; `node -c` clean; no console errors; contrast AA on the new surfaces; **all gates
-  green**. (Babysitter: confirm 14 distinct event marks, the event theme is calm + in the
+  gate** (calm/volume invariants hold; extend `sound.test.js` or the music gate); the
+  **event banner is a prominent home/main-screen element (top-level, not inside a tab or
+  menu)** — verify in code that it renders on the home screen container, carries the
+  event's art + copy + a play CTA + a live UTC countdown, and **routes into the live event**
+  on tap; it renders cleanly at **360px**; **no Arena explanatory UI was added**; `node -c`
+  clean; no console errors; contrast AA on the new surfaces; **all gates green**.
+  (Babysitter: confirm the banner is genuinely on the home screen — not buried — is
+  attractive + actionable, the 14 event marks are distinct, the event theme is calm + in the
   volume envelope, the countdown targets 00:00 **UTC**, and no event-gate UI crept in.)
 
 ---
