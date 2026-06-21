@@ -148,3 +148,48 @@ brickmap's menu system *for brickmap*"), never an open-ended "port Halves into t
 
 *(Status: captured, NOT queued. If the owner wants to proceed, the recommended first step is the
 hybrid canvas FX layer — a small, reversible Halves task — NOT an engine port.)*
+
+---
+
+## I3 — Tech-tree view for the topic selector (owner idea, 2026-06-21)
+
+**The idea (owner).** Give the topic selector a **tech-tree / skill-tree visual**, reminiscent of
+game unlock paths. We **already have a tech-tree-shaped unlock structure** — it's just not
+*exposed* visually; today the only signal is the unlock text on a locked row.
+
+**Why this is a good fit (and cheap-ish): the graph already exists in data.** The dependency
+edges are already modelled, so a tree would *visualise existing truth*, not invent mechanics:
+- each topic's **`unlockedBy`** = the previous topic in the importance chain (the trunk path);
+- Part-2 topics carry **`requires: "mastery:<id>"`** = the gate from their Part-1 (a second kind
+  of edge — "master P1 to branch into P2");
+- `isUnlocked(mode)` already resolves both, and we already compute **per-topic `have/total`** and
+  states (▶ playable · 🔒 locked + hint · ✓ 100%). A tree view is a **new render of this data.**
+
+**Sketch.** Nodes = the 15 topics (grouped by the existing `group`/category: Core · Number ·
+Fractions & % · Measures · Reasoning), edges = `unlockedBy` (chain) + `requires` (P1→P2 mastery
+gate). Node shows the topic's pixel glyph (T56) + state (locked/unlocked/mastered/100%) +
+progress. Tapping an unlocked node selects/starts it (preserve the current select→Start / tap
+flow); locked nodes show the requirement. Could be an **alternative view toggle** on the picker
+rather than a replacement (keep the scrollable grouped list — it's the accessible, 360px-proven
+fallback).
+
+**Constraints / watch-outs.**
+- **360px phone-first.** A sprawling desktop tech-tree doesn't fit; needs a layout that reads on a
+  narrow screen (vertical trunk with short branches? horizontal scroll? zoom/pan?). This is the
+  main design risk.
+- **Accessibility.** The current list is screen-reader / focus friendly; a canvas/SVG tree must
+  not regress that — keep the list as the a11y path, or build the tree from focusable DOM nodes.
+- **Don't fork the unlock logic.** Render from `isUnlocked`/`unlockedBy`/`requires`/`have-total` —
+  never hand-maintain a parallel edge list (it would drift as topics are added in Phase 7).
+- **Scales with Wave-2 topics.** After T59–T61 the tree grows to ~23 topics — the layout must
+  cope (another reason to render from data, not a hardcoded diagram).
+
+**Strong synergy with I2 / T82 (visual direction).** A tech tree is a prime surface for the
+richer rendered aesthetic under research in **T82** (dithered backdrops, glyph nodes, animated
+unlock "paths lighting up"). Natural to design the two together — the tree could be the first
+real showcase of the new visual character, reusing our seeded generators (per the
+build-on-existing-art guardrail). If both proceed, sequence the tree **with/after** the T82
+direction so it's built once, in the chosen style.
+
+*(Status: captured, NOT queued. When promoted: likely one task — a data-driven, 360px-safe tree
+view toggle on the picker — ideally coordinated with the T82 visual direction.)*
