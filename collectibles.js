@@ -321,9 +321,9 @@
   // The 12 heroes (ids in roster order) — full stats/types/unlocks live in
   // heroes.js (T21); here we only need ids + names for boosts and their labels.
   const HERO_IDS = ["bram","greta","tovar","mo","wisp","mira","nim","zeph","pip","vex","sela","roon"];
-  const HERO_NAMES = { bram:"Bram the Bold", greta:"Greta Stonefist", tovar:"Ser Tovar", mo:"Mauler Mo",
-    wisp:"Wisp", mira:"Mirabel the Mage", nim:"Old Nim", zeph:"Zephyrine",
-    pip:"Pip Quickfingers", vex:"Vex", sela:"Shadow Sela", roon:"Roon the Sly" };
+  const HERO_NAMES = { bram:"Brannon", greta:"Valeska", tovar:"Ser Aldric", mo:"Magnar",
+    wisp:"Wisp", mira:"Maerwen", nim:"Emrys", zeph:"Aerin",
+    pip:"Fenn", vex:"Vesh", sela:"Selwen", roon:"Rendel" };
   const STAT_KEYS = ["power","guard","speed","focus"];
   const STAT_NAMES = { power:"Power", guard:"Guard", speed:"Speed", focus:"Focus" };
   const BOOST_AMOUNT = { common:1, uncommon:2, rare:3, epic:5, legendary:8 };
