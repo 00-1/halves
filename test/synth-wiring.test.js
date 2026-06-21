@@ -66,7 +66,11 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   const sy = { mounts: [], musics: [], starts: 0, stops: 0, intensities: [], plays: [], ducks: 0, muted: null, routedTo: null, contexts: [], reverbs: [], stings: [], swaps: 0 };
   global.window = {};
   const masterNode = { _isMaster: true };
-  const stubCtx = { _isCtx: true, currentTime: 0, state: "running", resume(){}, suspend(){} };
+  // T143 — model createGain so the [A] wire's MUSIC gain (Synth → musicGain → master)
+  // is exercised (not the no-createGain fallback).
+  const gainNodes = [];
+  function gnode(){ const n = { _gain: true, gain: { value: 0 }, _to: [], connect(t){ this._to.push(t); }, disconnect(){} }; gainNodes.push(n); return n; }
+  const stubCtx = { _isCtx: true, currentTime: 0, state: "running", resume(){}, suspend(){}, createGain: gnode };
   // the engine's DISTINCT built-in contexts (mirrors synth.js CONTEXTS shape — each
   // a different mode/progression/reverb, incl. Arena's wub bass patch).
   const CTX = {
@@ -88,7 +92,7 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   };
   let store = {};
   global.window.Sound = {
-    unlock(){}, ctx(){ return stubCtx; }, master(){ return masterNode; }, setMuted(){}, setVolume(){}, getVolume(){ return 0.8; }, VOL_MAX: 4, isMuted(){ return false; },
+    unlock(){}, ctx(){ return stubCtx; }, master(){ return masterNode; }, setMuted(){}, setVolume(){}, setSfxVolume(v){ sy.sfxVol = v; }, getVolume(){ return 0.8; }, VOL_MAX: 4, SFX_MAX: 1, isMuted(){ return false; },
     correct(){}, skip(){}, item(){}, gold(){}, topicUnlock(){}, mastery(){}, topic100(){}, roundStart(){}, roundComplete(){}, play(){}, sfxSpec(){ return { v: [] }; }
   };
   let els = {}, winH = {};
@@ -125,7 +129,9 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   // the entry "Play" gesture unlocks audio → setupSynth mounts + routes
   (els.entryPlay._h.click||[]).forEach(f=>f({}));
   ok(sy.mounts.length === 1 && sy.mounts[0].ctx === stubCtx, "boot: the entry gesture mounts Synth on sound.js's ctx");
-  ok(sy.routedTo === masterNode, "boot: Synth's output is routed into sound.js's master (one chain)");
+  // T143 — Synth → a MUSIC gain → sound.js master (so music has its OWN volume,
+  // independent of the SFX bus); the limiter still governs the summed master.
+  ok(sy.routedTo && sy.routedTo._gain && sy.routedTo._to.includes(masterNode), "boot: T143 — Synth's output routes through a music GAIN into sound.js's master (independent music volume)");
   ok(sy.musics.length >= 1 && sy.starts >= 1, "boot: music starts on entering the app");
 
   // Arena → the DISTINCT arena context (setContext) + a boss-proximity intensity

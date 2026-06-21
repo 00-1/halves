@@ -91,11 +91,12 @@ ok(/querySelector\("\.nav-lbl"\)[\s\S]{0,200}'Exit'[\s\S]{0,20}'Screen'/.test(ma
   // (T117: a px-ic soundOn/soundOff pixel icon), the text label untouched.
   const emoji = sm._kids[".nav-emoji"];
   ok(emoji && /sound(On|Off)/.test(emoji.className), "boot: the sound icon span is a px-ic soundOn/soundOff (" + (emoji && emoji.className) + "), not the whole button");
-  // flip it via the click handler and confirm the icon class flipped, label stub never written
-  const before = emoji.className;
+  // T143 — the home Sound button now OPENS the dedicated Audio menu (the mute toggle
+  // moved INSIDE it); clicking it routes to #/audio rather than toggling.
+  global.window.location.hash = "";
   (sm._h.click||[]).forEach(f => f({}));
-  ok(emoji.className !== before && /sound(On|Off)/.test(emoji.className), "boot: toggling sound flips the icon span class (" + before + " → " + emoji.className + ")");
-  ok(!(".nav-lbl" in sm._kids) || sm._kids[".nav-lbl"]._t === "", "boot: the sound button's text label is never overwritten by the toggle");
+  ok(global.window.location.hash === "#/audio", "boot: T143 — the home Sound button opens the Audio menu (#/audio), not an inline mute toggle");
+  ok(!(".nav-lbl" in sm._kids) || sm._kids[".nav-lbl"]._t === "", "boot: the sound button's text label is never overwritten");
 })();
 
 // ---- (4) the event banner shows N/3 reward PROGRESS, not a premature binary ---

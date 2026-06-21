@@ -29,24 +29,25 @@ new Function(read("sound.js"))();
 const S = global.window.Sound;
 const ssrc = read("sound.js"), msrc = read("main.js"), hsrc = read("index.html");
 
-// ---- master volume + brickwall limiter (T98/T113/T114) ----------------------
-const VOL = 0.80;   // the bare-engine default (the app sets the calibrated default on boot)
+// ---- shared MUTE master + separate SFX bus + brickwall limiter (T143) --------
 S.unlock();
-const master = gains[0];
-ok(master && Math.abs(master.gain.value - VOL) < 1e-9, "master gain = the bare default VOL (" + (master && master.gain.value) + ")");
+const master = gains[0], sfxBus = gains[1];   // unlock() creates master then the SFX bus
+ok(master && master.gain.value === 1, "master is a MUTE-only shared bus (gain 1 when unmuted) — " + (master && master.gain.value));
+ok(sfxBus && Math.abs(sfxBus.gain.value - 0.16) < 1e-9, "the SFX bus has its OWN gain, independent of music (" + (sfxBus && sfxBus.gain.value) + ")");
 ok(comps.length === 1, "exactly one DynamicsCompressor (the safety limiter)");
 const lim = comps[0];
-ok(master._to.includes(lim) && lim._to.some(t => t && t._isDest), "master → limiter → destination (one shared chain; music routes in here too)");
+ok(sfxBus._to.includes(master) && master._to.includes(lim) && lim._to.some(t => t && t._isDest), "SFX bus → master → limiter → destination (music routes into master too; limiter governs the sum)");
 ok(lim.ratio.value >= 20 && lim.knee.value === 0 && lim.threshold.value < 0, "the limiter is a brickwall (ratio ≥ 20, hard knee, sub-0-dBFS)");
 
-// ---- live wide-range volume (T113/T114) -------------------------------------
-ok(S.VOL_MAX === 4, "T114: VOL_MAX = 4.0 (the slider reaches genuinely loud) — " + S.VOL_MAX);
-S.setVolume(1.6); ok(Math.abs(master.gain.value - 1.6) < 1e-9, "setVolume(1.6) sets the master gain LIVE to 1.6 (> 0.80)");
-S.setVolume(99);  ok(Math.abs(master.gain.value - S.VOL_MAX) < 1e-9, "setVolume clamps to VOL_MAX (" + master.gain.value + ") — limiter keeps it clip-safe");
-S.setVolume(0.80);
-// mute zeroes the master; unmute restores
-S.setMuted(true);  ok(master.gain.value === 0, "mute sets master gain to 0");
-S.setMuted(false); ok(Math.abs(master.gain.value - 0.80) < 1e-9, "unmute restores the master gain");
+// ---- separate, live SFX volume (T143) ---------------------------------------
+ok(S.SFX_MAX === 1 && typeof S.setSfxVolume === "function", "T143: SFX has its OWN clamped volume (SFX_MAX = 1.0)");
+S.setSfxVolume(0.30); ok(Math.abs(sfxBus.gain.value - 0.30) < 1e-9, "setSfxVolume(0.30) sets the SFX bus gain LIVE (not the master)");
+ok(master.gain.value === 1, "the SFX volume does NOT touch the master (music volume stays independent)");
+S.setSfxVolume(99);   ok(Math.abs(sfxBus.gain.value - S.SFX_MAX) < 1e-9, "setSfxVolume clamps to SFX_MAX (" + sfxBus.gain.value + ") — limiter keeps it clip-safe");
+S.setSfxVolume(0.16);
+// mute zeroes the shared master (silences BOTH SFX + music); unmute restores unity
+S.setMuted(true);  ok(master.gain.value === 0, "mute sets the shared master to 0 (silences SFX + music)");
+S.setMuted(false); ok(master.gain.value === 1, "unmute restores the master to unity");
 
 // ---- the SFX engine is intact (pure specs) ----------------------------------
 ok(typeof S.sfxSpec === "function" && typeof S.play === "function", "the SFX engine (sfxSpec/play) is intact");
@@ -65,12 +66,27 @@ ok(!/setTempo|tempoMult|TEMPO_MIN/.test(ssrc), "T122: sound.js no longer owns te
 hidden = true; visHandler && visHandler(); ok(S.ctx().state === "suspended", "tab hidden suspends the shared AudioContext");
 hidden = false; visHandler && visHandler(); ok(S.ctx().state === "running", "tab visible resumes the shared AudioContext");
 
-// ---- T135/T114: the owner-calibrated DEFAULTS live in main.js (saved prefs win) ---
-// T135 — recalibrated for the louder synth: fresh volume = 5 (0.05×), and a stale
-// OLD-scale value (>10, e.g. 300) migrates DOWN to 5 so a returning user isn't blasted.
-ok(/function loadVol\(\)\{[\s\S]{0,240}return 5;/.test(msrc) && /v > 10\) return 5/.test(msrc), "T135: fresh/over-range volume = 5 (0.05×) — old-scale values migrate down");
+// ---- T143/T135: separate Music + SFX volume DEFAULTS in main.js (saved prefs win) --
+// Fresh music vol = 5 (0.05×, the loud synth); SFX vol = 8 (louder, so blips aren't
+// lost under the music). The old single `halves.vol` migrates (in-range → music level).
+ok(/function loadMusicVol\(\)[\s\S]{0,220}\? 5 :/.test(msrc) && /halves\.musicVol/.test(msrc), "T143: fresh-profile music volume = 5 (0.05×)");
+ok(/function loadSfxVol\(\)[\s\S]{0,160}return 8/.test(msrc) && /halves\.sfxVol/.test(msrc), "T143: fresh-profile SFX volume = 8 (louder than music — blips aren't lost)");
+ok(/function migVol\(\)[\s\S]{0,160}v <= 10\)/.test(msrc), "T143: the old single halves.vol migrates (in-range → the music level)");
 ok(/function loadTempo\(\)\{[\s\S]{0,90}: 50;/.test(msrc), "T114: fresh-profile default tempo = 50 (0.5×)");
-ok(/id="volRange"[^>]*max="10"/.test(hsrc) && /id="volRange"[^>]*step="1"/.test(hsrc) && /id="volRange"[^>]*value="5"/.test(hsrc) && /id="tempoRange"[^>]*value="50"/.test(hsrc), "T135: the volume slider is 0–10 (0.00×–0.10×), default 5 (0.05×); tempo default 50");
+ok(/id="musicVolRange"[^>]*max="10"/.test(hsrc) && /id="sfxVolRange"[^>]*max="10"/.test(hsrc) && /id="tempoRange"[^>]*value="50"/.test(hsrc), "T143: separate Music + SFX volume sliders (0–10); tempo default 50");
+
+// ---- T143: the dedicated Audio menu + the navigation-trap (scroll) fix --------
+const css143 = read("styles.css");
+ok(/<section id="audio" class="screen">/.test(hsrc), "T143: a dedicated Audio menu screen exists");
+ok(/sm\.addEventListener\("click", \(\) => \{ location\.hash = "#\/audio"; \}\)/.test(msrc), "T143: the home Sound button OPENS the Audio menu (#/audio), not an inline toggle");
+ok(/h === "audio"\)\{ renderAudio\(\); show\("audio"\); \}/.test(msrc), "T143: #/audio routes to the Audio menu");
+ok(/id="setSound"/.test(hsrc.slice(hsrc.indexOf('id="audio"'))), "T143: the mute toggle (#setSound) lives INSIDE the Audio menu");
+// the navigation-trap fix: both menus' bodies SCROLL within the safe-area height
+ok((hsrc.match(/class="settings-body scroll-body"/g) || []).length >= 2, "T143: both the Settings + Audio bodies are scrollable (.scroll-body) — Back stays reachable");
+ok(/\.scroll-body\{[^}]*overflow-y:auto/.test(css143) && /\.scroll-body\{[^}]*min-height:0/.test(css143), "T143: .scroll-body scrolls within the screen (overflow-y:auto, min-height:0) so .res-actions/Back can't be pushed off");
+// the celebration tester unlocks audio WITHOUT restarting the music
+ok(/function fireCelebrationTest\([\s\S]{0,80}ensureAudioReady\(\)/.test(msrc) && /function ensureAudioReady\(\)\{[\s\S]{0,260}setupSynth\(\)/.test(msrc) && !/function ensureAudioReady\(\)\{[\s\S]{0,260}musicForScreen/.test(msrc), "T143(4): the celebration tester unlocks audio via ensureAudioReady (setupSynth, NO musicForScreen → no music restart)");
+ok(/function audioUnlock\(\)\{[\s\S]{0,160}musicPlaying[\s\S]{0,40}musicForScreen/.test(msrc), "T143: audioUnlock only STARTS music if it isn't already playing (no restart on drag/tap)");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SOUND CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

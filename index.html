@@ -195,11 +195,33 @@
   <!-- SETTINGS (T85) -->
   <section id="settings" class="screen">
     <div class="res-label">Settings</div>
-    <div class="settings-body">
+    <div class="settings-body scroll-body">
+      <button class="set-row" id="openAudio"><span>Audio</span><span class="set-val"><span class="px-ic soundOn"></span> Open</span></button>
+      <div class="set-danger">
+        <h4>Danger zone</h4>
+        <p>Clear all data wipes every bit of progress saved on this device — heroes, items,
+          scores, events, settings — and returns the app to a fresh start. This cannot be undone.</p>
+        <button class="btn danger" id="clearDataBtn">Clear all data</button>
+      </div>
+    </div>
+    <div class="res-actions">
+      <button class="btn ghost" id="settingsBack">Back</button>
+    </div>
+  </section>
+
+  <!-- AUDIO — its own scrollable menu (T143): the Sound button opens this; the mute
+       toggle + separate Music/SFX volumes + tempo + style picker + tester all live here. -->
+  <section id="audio" class="screen">
+    <div class="res-label">Audio</div>
+    <div class="settings-body scroll-body">
       <button class="set-row" id="setSound"><span>Sound</span><span class="set-val" id="setSoundVal">On</span></button>
       <div class="set-row set-slider">
-        <label for="volRange"><span>Volume</span><span class="set-val" id="setVolVal">—</span></label>
-        <input type="range" id="volRange" min="0" max="10" step="1" value="5" aria-label="Volume">
+        <label for="musicVolRange"><span>Music volume</span><span class="set-val" id="setMusicVolVal">—</span></label>
+        <input type="range" id="musicVolRange" min="0" max="10" step="1" value="5" aria-label="Music volume">
+      </div>
+      <div class="set-row set-slider">
+        <label for="sfxVolRange"><span>Sound FX volume</span><span class="set-val" id="setSfxVolVal">—</span></label>
+        <input type="range" id="sfxVolRange" min="0" max="10" step="1" value="8" aria-label="Sound FX volume">
       </div>
       <div class="set-row set-slider">
         <label for="tempoRange"><span>Music tempo</span><span class="set-val" id="setTempoVal">—</span></label>
@@ -224,15 +246,9 @@
           <button type="button" class="mus-btn" data-fx="big">Big burst</button>
         </div>
       </div>
-      <div class="set-danger">
-        <h4>Danger zone</h4>
-        <p>Clear all data wipes every bit of progress saved on this device — heroes, items,
-          scores, events, settings — and returns the app to a fresh start. This cannot be undone.</p>
-        <button class="btn danger" id="clearDataBtn">Clear all data</button>
-      </div>
     </div>
     <div class="res-actions">
-      <button class="btn ghost" id="settingsBack">Back</button>
+      <button class="btn ghost" id="audioBack">Back</button>
     </div>
   </section>
 

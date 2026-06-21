@@ -160,7 +160,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), heroDetail:$("heroDetail"), arena:$("arena"), practice:$("practice"), settings:$("settings") };
+  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), heroDetail:$("heroDetail"), arena:$("arena"), practice:$("practice"), settings:$("settings"), audio:$("audio") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -299,7 +299,7 @@
   // slider + the limiter govern both). Synth is the only music scheduler now;
   // sound.js keeps the SFX. Each screen plays a context (solve=calm · menu · arena
   // ·event); a win fires the wub; SFX duck the music. Guarded no-op if Synth absent.
-  let synthWired = false, curScreen = "entry", musicPreview = null;   // musicPreview: T129 Settings switcher's transient picked style
+  let synthWired = false, curScreen = "entry", musicPreview = null, musicGain = null;   // musicPreview: T129 switcher's picked style; musicGain: T143 music-only volume
   function setupSynth(){
     if(synthWired) return;
     const Sy = window.Synth, S = window.Sound;
@@ -308,11 +308,19 @@
     try{
       Sy.mount({ ctx: ctx });
       const out = Sy.output && Sy.output(), sMaster = S.master && S.master();
-      if(out && sMaster){ try{ out.disconnect(); }catch(e){} out.connect(sMaster); }   // Synth → Sound's master (one chain)
+      // T143 — insert a MUSIC gain on the Synth → master path so music has its OWN
+      // volume (independent of the SFX bus). Synth → musicGain → sound.js master
+      // (mute-only) → limiter. SFX route through sound.js's separate sfx bus.
+      if(out && sMaster){
+        try{ out.disconnect(); }catch(e){}
+        try{ musicGain = ctx.createGain(); musicGain.gain.value = loadMusicVol() / 100; out.connect(musicGain); musicGain.connect(sMaster); }
+        catch(e){ musicGain = null; out.connect(sMaster); }
+      }
       Sy.setMuted(!soundOn());
       synthWired = true;
     }catch(e){ synthWired = false; }
   }
+  function setMusicVolume(slider){ const g = Math.max(0, Math.min(10, slider)) / 100; if(musicGain){ try{ musicGain.gain.value = g; }catch(e){} } return g; }
   function synthTempoMult(){ const v = loadTempo() / 100; return isFinite(v) ? v : 1; }
   // T128(1) — drive the engine's DISTINCT built-in context (its own progression /
   // patches / reverb — incl. the Arena's wub bass + dark Aeolian) via
@@ -1895,6 +1903,7 @@
     }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
     else if(h === "settings"){ renderSettings(); show("settings"); }
+    else if(h === "audio"){ renderAudio(); show("audio"); }
     else { checkGates(); renderTree(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); applyGates(); show("start"); firePendingHighlight(); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
@@ -1999,54 +2008,70 @@
   // ---- sound preference (persisted) + SFX engine (window.Sound) -----------
   function soundOn(){ try{ return localStorage.getItem("halves.sound") !== "off"; }catch(e){ return true; } }
   function saveSound(on){ try{ localStorage.setItem("halves.sound", on ? "on" : "off"); }catch(e){} }
-  function audioUnlock(){ if(window.Sound && window.Sound.unlock) window.Sound.unlock(); setupSynth(); musicForScreen(curScreen); }
-  function applySoundPref(){ const on = soundOn(); if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!on); if(window.Synth && window.Synth.setMuted) window.Synth.setMuted(!on); applyAudioPrefs(); }
-  // T113 — owner-calibrated Volume + Tempo (persisted slider positions).
-  // T135 — RECALIBRATED for the louder generative synth: Volume is stored 0–10
-  // (→ ×0.00..0.10 master gain; the limiter keeps it clip-safe), fresh default 5
-  // (0.05×, mid-slider). Returning users have the OLD 0–400 value stored (e.g. 300 =
-  // 3.0×, now deafening) → clamp anything over the new max down to the default so
-  // they aren't blasted / the slider isn't fed out-of-range. Tempo is stored 40–100
-  // (→ ×0.40..1.00 BPM multiplier), fresh default 50. A saved pref otherwise wins.
-  function loadVol(){
-    const v = parseInt(localStorage.getItem("halves.vol"), 10);
-    if(!isFinite(v) || v > 10) return 5;   // fresh profile OR a stale old-scale value → the new default (0.05×)
-    return v;
+  // Unlock the audio engines WITHOUT (re)starting/routing the music — used by the
+  // celebration tester + slider previews so they don't restart the song (T143(4)).
+  // Applies the calibrated Music + SFX volumes so they're right from the first gesture.
+  function ensureAudioReady(){
+    if(window.Sound && window.Sound.unlock) window.Sound.unlock();
+    setupSynth();
+    if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(loadSfxVol() / 100);
+    setMusicVolume(loadMusicVol());
   }
+  // The user-gesture unlock: ready the engines and START music if it isn't already
+  // playing (so it never RESTARTS mid-interaction — a drag/tap won't re-trigger it).
+  function audioUnlock(){
+    ensureAudioReady();
+    const playing = window.Synth && window.Synth.musicPlaying && window.Synth.musicPlaying();
+    if(!playing) musicForScreen(curScreen);
+  }
+  function applySoundPref(){ const on = soundOn(); if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!on); if(window.Synth && window.Synth.setMuted) window.Synth.setMuted(!on); applyAudioPrefs(); }
+  // T143 — SEPARATE Music + SFX volumes (the owner's "sounds are getting lost under
+  // the music"). Both stored 0–10 (→ gain/100, limiter-safe). MUSIC default 5
+  // (0.05×, the loud synth); SFX default higher (8 → 0.08×) so blips sit over the
+  // music. Migrate the old single `halves.vol`: a stale OLD-scale value (>10, e.g.
+  // 300=3.0×) → the new defaults; a valid in-range one → the music level. Tempo
+  // stored 40–100 (→ ×0.40..1.00), default 50. A saved pref otherwise wins.
+  function migVol(){ const v = parseInt(localStorage.getItem("halves.vol"), 10); return (isFinite(v) && v >= 0 && v <= 10) ? v : null; }
+  function loadMusicVol(){ const v = parseInt(localStorage.getItem("halves.musicVol"), 10); if(isFinite(v) && v >= 0 && v <= 10) return v; const m = migVol(); return m == null ? 5 : m; }
+  function loadSfxVol(){ const v = parseInt(localStorage.getItem("halves.sfxVol"), 10); if(isFinite(v) && v >= 0 && v <= 10) return v; return 8; }
   function loadTempo(){ const v = parseInt(localStorage.getItem("halves.tempo"), 10); return isFinite(v) ? v : 50; }
-  function saveVol(v){ try{ localStorage.setItem("halves.vol", String(v)); }catch(e){} }
+  function saveMusicVol(v){ try{ localStorage.setItem("halves.musicVol", String(v)); }catch(e){} }
+  function saveSfxVol(v){ try{ localStorage.setItem("halves.sfxVol", String(v)); }catch(e){} }
   function saveTempo(v){ try{ localStorage.setItem("halves.tempo", String(v)); }catch(e){} }
   function applyAudioPrefs(){
-    const S = window.Sound; if(S && S.setVolume) S.setVolume(loadVol() / 100);
-    musicForScreen(curScreen);   // T122: the tempo slider drives Synth via the per-context spec
+    const S = window.Sound; if(S && S.setSfxVolume) S.setSfxVolume(loadSfxVol() / 100);   // SFX bus
+    setMusicVolume(loadMusicVol());                                                       // music gain
+    musicForScreen(curScreen);   // re-derive the current context at the new tempo
   }
   // Guarded SFX trigger — a no-op if the engine is absent or muted.
   const DUCK_SFX = { item:1, gold:1, mastery:1, topic100:1, topicUnlock:1 };
   function sfx(name, arg){ const S = window.Sound; if(S && S[name]) S[name](arg); if(DUCK_SFX[name] && window.Synth && window.Synth.duck) window.Synth.duck(); }
-  // Keep every sound button (entry + start menu) in sync, and toggle the pref.
-  const SOUND_BTNS = ["soundBtn", "soundBtnMenu"];
+  // The sound buttons (T143): the ENTRY button toggles mute; the HOME (menu) button
+  // OPENS the dedicated Audio menu (the mute toggle now lives inside it).
   function syncSoundButtons(){
     const on = soundOn();
     const sb = $("soundBtn"); if(sb) sb.innerHTML = ic(on ? "soundOn" : "soundOff")+' Sound '+(on ? 'on' : 'off');   // entry screen
-    const sm = $("soundBtnMenu"); if(sm){ const e = sm.querySelector(".nav-emoji");          // T99 labelled nav button
-      if(e){ e.className = "px-ic " + (on ? "soundOn" : "soundOff") + " nav-emoji"; } else if(sm) sm.innerHTML = ic(on ? "soundOn" : "soundOff"); }
-    const sv = $("setSoundVal"); if(sv) sv.textContent = on ? "On" : "Off";                 // T85 Settings row
+    const sm = $("soundBtnMenu"); if(sm){ const e = sm.querySelector(".nav-emoji");          // home nav button (now opens Audio)
+      if(e){ e.className = "px-ic soundOn nav-emoji"; } else sm.innerHTML = ic("soundOn"); }
+    const sv = $("setSoundVal"); if(sv) sv.textContent = on ? "On" : "Off";                 // the Audio-menu mute row
   }
   function toggleSound(){ saveSound(!soundOn()); syncSoundButtons(); applySoundPref(); }
-  SOUND_BTNS.forEach(id => { const b = $(id); if(b) b.addEventListener("click", toggleSound); });
+  { const sb = $("soundBtn"); if(sb) sb.addEventListener("click", toggleSound); }                         // entry → toggle mute
+  { const sm = $("soundBtnMenu"); if(sm) sm.addEventListener("click", () => { location.hash = "#/audio"; }); }   // home → open the Audio menu
 
-  // ---- Settings screen + "Clear all data" (T85) --------------------------
-  // T113 — show the exact, reportable slider values (×multiplier).
+  // ---- Settings + Audio menus (T85/T143) + "Clear all data" --------------------
   function fmtVol(slider){ return (slider / 100).toFixed(2) + "×"; }
   function fmtTempo(slider){ return (slider / 100).toFixed(2) + "×"; }
-  function renderSettings(){
+  function renderSettings(){ syncSoundButtons(); }
+  function renderAudio(){
     syncSoundButtons();
-    const vr = $("volRange"), tr = $("tempoRange");
-    if(vr){ vr.value = loadVol(); const vv = $("setVolVal"); if(vv) vv.textContent = fmtVol(loadVol()); }
-    if(tr){ tr.value = loadTempo(); const tv = $("setTempoVal"); if(tv) tv.textContent = fmtTempo(loadTempo()); }
+    const mr = $("musicVolRange"), sr = $("sfxVolRange"), tr = $("tempoRange");
+    if(mr){ mr.value = loadMusicVol(); const v = $("setMusicVolVal"); if(v) v.textContent = fmtVol(loadMusicVol()); }
+    if(sr){ sr.value = loadSfxVol(); const v = $("setSfxVolVal"); if(v) v.textContent = fmtVol(loadSfxVol()); }
+    if(tr){ tr.value = loadTempo(); const v = $("setTempoVal"); if(v) v.textContent = fmtTempo(loadTempo()); }
     musicPreview = null; syncMusicSwitch();   // T129: fresh entry → "Auto" (per-screen music), nothing pre-selected
   }
-  // T129 — the Settings music switcher: reflect the picked style (or "Auto").
+  // T129 — the music switcher: reflect the picked style (or "Auto").
   const MUSIC_LABELS = { menu: "Menu", solve: "Solve", arena: "Arena", event: "Event" };
   function syncMusicSwitch(){
     const grp = $("musicSwitch"); if(grp && grp.querySelectorAll){
@@ -2058,25 +2083,32 @@
   }
   $("settingsBtn").addEventListener("click", () => { location.hash = "#/settings"; });
   $("settingsBack").addEventListener("click", navStart);
-  $("setSound").addEventListener("click", toggleSound);
-  // T113 — live audio sliders: drag → hear it change immediately, exact value shown,
-  // persisted. The Test-sound button plays a representative chime to judge volume.
-  (function wireAudioSliders(){
-    const vr = $("volRange"), tr = $("tempoRange"), test = $("setTest");
-    if(vr) vr.addEventListener("input", () => {
-      const v = parseInt(vr.value, 10) || 0; saveVol(v);
-      const vv = $("setVolVal"); if(vv) vv.textContent = fmtVol(v);
-      audioUnlock(); if(window.Sound && window.Sound.setVolume) window.Sound.setVolume(v / 100);
+  { const oa = $("openAudio"); if(oa) oa.addEventListener("click", () => { location.hash = "#/audio"; }); }
+  { const ab = $("audioBack"); if(ab) ab.addEventListener("click", () => { location.hash = "#/settings"; }); }
+  { const ss = $("setSound"); if(ss) ss.addEventListener("click", toggleSound); }
+  // T143 — live audio controls: separate Music + SFX volume sliders (drag → hear it),
+  // tempo, the style picker, and the celebration tester. None RESTART the music (they
+  // use audioUnlock, which only starts music if it isn't already playing).
+  (function wireAudioControls(){
+    const mr = $("musicVolRange"), sr = $("sfxVolRange"), tr = $("tempoRange"), test = $("setTest");
+    if(mr) mr.addEventListener("input", () => {
+      const v = parseInt(mr.value, 10) || 0; saveMusicVol(v);
+      const el = $("setMusicVolVal"); if(el) el.textContent = fmtVol(v);
+      audioUnlock(); setMusicVolume(v);   // music gain only (independent of SFX)
+    });
+    if(sr) sr.addEventListener("input", () => {
+      const v = parseInt(sr.value, 10) || 0; saveSfxVol(v);
+      const el = $("setSfxVolVal"); if(el) el.textContent = fmtVol(v);
+      audioUnlock(); if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(v / 100);
+      sfx("correct", 6);   // preview the SFX at the new level (so the balance is audible)
     });
     if(tr) tr.addEventListener("input", () => {
       const v = parseInt(tr.value, 10) || 100; saveTempo(v);
-      const tv = $("setTempoVal"); if(tv) tv.textContent = fmtTempo(v);
+      const el = $("setTempoVal"); if(el) el.textContent = fmtTempo(v);
       audioUnlock();
-      // re-derive at the new tempo: a previewed style keeps playing, else the screen's context
-      if(musicPreview) synthSwitchContext(musicPreview); else musicForScreen(curScreen);
+      if(musicPreview) synthSwitchContext(musicPreview); else musicForScreen(curScreen);   // re-derive at the new tempo
     });
     if(test) test.addEventListener("click", () => { audioUnlock(); sfx("correct", 6); });
-    // T129 — the music switcher: tap a style → hear that distinct context immediately.
     const musGrp = $("musicSwitch");
     if(musGrp) musGrp.addEventListener("click", e => {
       const btn = e.target.closest && e.target.closest(".mus-btn"); if(!btn) return;
@@ -2086,9 +2118,6 @@
       synthSwitchContext(name);   // distinct built-in context (Synth.setContext) + the T113 tempo
       syncMusicSwitch();
     });
-    // T137 — celebration tester: fire each celebration ON DEMAND, and surface the
-    // burst overlay's live drawing-buffer size as a diagnostic (0×0/1×1 here ⇒ a
-    // resize-timing bug; a real size ⇒ look at occlusion/engine instead).
     const fxGrp = $("fxTest");
     if(fxGrp) fxGrp.addEventListener("click", e => {
       const btn = e.target.closest && e.target.closest(".mus-btn"); if(!btn) return;
@@ -2097,7 +2126,7 @@
     });
   })();
   function fireCelebrationTest(kind){
-    audioUnlock();                       // ensure setupFx() ran (mounts fxBurst)
+    ensureAudioReady();                  // T143(4) — unlock audio WITHOUT restarting the music
     if(!fxBurst) setupFx();
     fxResizeAll();                       // match the live viewport before firing
     if(kind === "item") fxCelebrate([{ id: "test:legendary", rarity: "legendary" }, { id: "test:epic", rarity: "epic" }]);

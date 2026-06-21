@@ -21,10 +21,16 @@
   // the brickwall limiter as the clip-safe net (T113/T114). Past passes failed
   // because the engine ran at ~half scale; the slider reaches genuinely loud (up to
   // VOL_MAX) and the limiter clamps the peaks. The app sets the owner-calibrated
-  // default on boot; mute/unmute toggles 0↔vol.
-  let vol = 0.80;                   // master volume (bare-engine default)
-  const VOL_MAX = 4.0;              // T114 — the slider reaches 4× (limiter-safe)
-  const LIMIT_DB = -1.5;            // brickwall ceiling (the louder range cannot clip)
+  // default on boot; mute zeroes the shared master.
+  // T143 — SFX and MUSIC now have SEPARATE volumes. sound.js owns the SFX bus
+  // (its own gain); the music (Synth) routes through its OWN gain (inserted by the
+  // [A] wire) into this shared master. The master is now MUTE-only (0 or 1); the
+  // SFX gain + the music gain set their levels independently, and the brickwall
+  // limiter still protects the sum.
+  let sfxVol = 0.16;               // SFX bus gain (default — louder than music so blips aren't lost)
+  const SFX_MAX = 1.0;             // limiter-safe ceiling for the SFX gain
+  const VOL_MAX = SFX_MAX;         // back-compat alias (old single-volume callers)
+  const LIMIT_DB = -1.5;           // brickwall ceiling (the louder range cannot clip)
 
   // MIDI note number → frequency (A4=69=440Hz, equal temperament).
   function hz(midi){ return 440 * Math.pow(2, (midi - 69) / 12); }
@@ -71,7 +77,7 @@
   }
 
   // ---- engine (impure) ----------------------------------------------------
-  let ctx = null, master = null, limiter = null, muted = false, ready = false;
+  let ctx = null, master = null, sfxBus = null, limiter = null, muted = false, ready = false;
 
   function unlock(){
     if(!ready){
@@ -80,10 +86,13 @@
         if(!AC) return;                       // no Web Audio (very old browsers) — silent
         ctx = new AC();
         master = ctx.createGain();
-        master.gain.value = muted ? 0 : vol;
-        // Brickwall safety limiter: master → limiter → destination (clip-safe at the
-        // louder volume range). Music (Synth) routes into `master` too, so it shares
-        // this one chain — the volume slider + limiter govern everything.
+        master.gain.value = muted ? 0 : 1;    // MUTE-only shared bus (SFX + music both route here)
+        sfxBus = ctx.createGain();
+        sfxBus.gain.value = sfxVol;           // the SFX level (independent of music)
+        sfxBus.connect(master);
+        // Brickwall safety limiter: master → limiter → destination (clip-safe). Both
+        // the SFX bus and the music (Synth → its own gain) feed `master`, so the
+        // limiter governs the SUM; mute zeroes the master → silences both.
         if(ctx.createDynamicsCompressor){
           limiter = ctx.createDynamicsCompressor();
           try{
@@ -98,27 +107,29 @@
           master.connect(ctx.destination);         // no compressor support — direct (headroom still safe)
         }
         ready = true;
-      }catch(e){ ctx = null; master = null; limiter = null; return; }
+      }catch(e){ ctx = null; master = null; sfxBus = null; limiter = null; return; }
     }
     if(ctx && ctx.state === "suspended"){ try{ ctx.resume(); }catch(e){} }
   }
 
   function setMuted(m){
     muted = !!m;
-    if(master){ try{ master.gain.value = muted ? 0 : vol; }catch(e){} }
+    if(master){ try{ master.gain.value = muted ? 0 : 1; }catch(e){} }   // mute silences BOTH SFX + music
   }
   function isMuted(){ return muted; }
-  // T113 — live master volume (wide range; the limiter keeps the top end clip-safe).
-  function setVolume(v){
-    v = +v; if(!isFinite(v)) return vol;
-    vol = Math.max(0, Math.min(VOL_MAX, v));
-    if(master && !muted){ try{ master.gain.value = vol; }catch(e){} }   // applies LIVE (to music + SFX)
-    return vol;
+  // T143 — the SFX bus level (its own slider, independent of music).
+  function setSfxVolume(v){
+    v = +v; if(!isFinite(v)) return sfxVol;
+    sfxVol = Math.max(0, Math.min(SFX_MAX, v));
+    if(sfxBus){ try{ sfxBus.gain.value = sfxVol; }catch(e){} }   // applies LIVE (SFX only)
+    return sfxVol;
   }
-  function getVolume(){ return vol; }
+  function getSfxVolume(){ return sfxVol; }
+  function setVolume(v){ return setSfxVolume(v); }   // back-compat alias (the old single volume now drives SFX)
+  function getVolume(){ return sfxVol; }
 
   function play(spec){
-    if(muted || !ctx || !master || !spec || !spec.v || !spec.v.length) return;
+    if(muted || !ctx || !sfxBus || !spec || !spec.v || !spec.v.length) return;
     if(ctx.state === "suspended"){ try{ ctx.resume(); }catch(e){} }
     const now = ctx.currentTime;
     for(const v of spec.v){
@@ -129,7 +140,7 @@
         g.gain.setValueAtTime(0.0001, t0);
         g.gain.exponentialRampToValueAtTime(Math.max(0.0001, v.g), t0 + 0.008);
         g.gain.exponentialRampToValueAtTime(0.0001, t1);
-        o.connect(g); g.connect(master);
+        o.connect(g); g.connect(sfxBus);
         o.start(t0); o.stop(t1 + 0.03);
       }catch(e){ /* fire-and-forget */ }
     }
@@ -149,8 +160,9 @@
 
   window.Sound = {
     unlock, setMuted, isMuted, play, sfxSpec,
-    setVolume, getVolume, VOL_MAX,                          // T113/T114 live volume
-    ctx: () => ctx, master: () => master, limiter: () => limiter,   // T122 — the Synth wire mounts/routes here
+    setSfxVolume, getSfxVolume, SFX_MAX,                    // T143 — independent SFX volume
+    setVolume, getVolume, VOL_MAX,                          // back-compat alias (drives SFX)
+    ctx: () => ctx, master: () => master, sfx: () => sfxBus, limiter: () => limiter,   // T122/T143 — the Synth wire routes its music gain into master
     correct: combo => play(sfxSpec("correct", { combo: combo })),
     skip: () => play(sfxSpec("skip")),
     item: rarity => play(sfxSpec("item", { rarity: rarity })),

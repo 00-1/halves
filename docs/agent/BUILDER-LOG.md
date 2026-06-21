@@ -4325,3 +4325,38 @@ notes / questions: **babysitter compare at the live node size:** the Fractions (
   (`½n`) marks should now read unambiguously AS the fraction (the owner can tell which at a glance), using
   the node width; `a/b` (Fractions II) still fine. Next per `NEXT.md`: **`T140`** (12-style switcher) once
   B's T139 hands over the style list → `T101` (Start delay) → Android.
+
+## T143 — Audio gets its own scrollable menu + separate Music/SFX volumes (nav-trap fix)  [HANDOFF]
+commit: (this commit, on main) — [A] task, OWNER-PRIORITY · BUG(nav trap). Owner: (a) "we need separate
+volume controls for sounds and music, the sounds are getting lost"; (b) "the config menu goes off the
+bottom, can't scroll, can't go back — sound controls should live in their own menu, the Sound button can
+open it"; (c) the celebration tester restarts the music.
+changed (A-owned only):
+  - **(1) navigation-trap fix (priority).** `index.html`: both the Settings body AND the new Audio body are
+    `class="settings-body scroll-body"`. `styles.css`: **`.scroll-body{flex:1;min-height:0;overflow-y:auto}`**
+    inside the flex-column screen, with `.res-actions` pinned (`flex:0 0 auto`) → the **Back button is
+    ALWAYS reachable**; no control can push it off the safe-area-bounded screen.
+  - **(2) dedicated Audio menu.** New `#audio` screen + `#/audio` route + `renderAudio()`. The home Sound
+    button (`#soundBtnMenu`) now **opens** `#/audio` instead of toggling; the **mute toggle (`#setSound`)
+    moved INSIDE** the Audio menu, along with the music-style picker, tempo, test-sound, and the celebration
+    tester. Settings is now just an "Audio" link + the Danger zone. (Entry-screen Sound button still toggles.)
+  - **(3) separate Music + SFX volumes.** `sound.js`: the master is now a **MUTE-only shared bus**; SFX
+    route through their **own `sfxBus` gain** (`setSfxVolume`, `SFX_MAX`); voices connect to `sfxBus`→master.
+    `main.js setupSynth`: inserts a **music gain** on the `Synth.output()`→master path (`setMusicVolume`).
+    Two 0–10 sliders: **Music** (default 5 = 0.05×, the loud synth) + **SFX** (default 8, louder so blips
+    aren't lost). The old single `halves.vol` **migrates** (in-range → music level). Mute still silences both
+    (master=0); the limiter still governs the summed master.
+  - **(4) tester no longer restarts music.** New `ensureAudioReady()` (unlock + setupSynth + apply the
+    calibrated volumes, **no `musicForScreen`**) — used by `fireCelebrationTest` + the slider previews. And
+    `audioUnlock()` now only **starts** music if it isn't already playing (so a drag/tap never re-triggers it).
+how I verified: **test/sound.test.js (38→50)** — mute-only master + independent `sfxBus` routing/clamp;
+  separate Music/SFX defaults + `halves.vol` migration; the Audio menu + `#/audio` route; the **mute toggle
+  inside** Audio; **both bodies `.scroll-body` with `overflow-y:auto`** (trap fix); the tester uses
+  `ensureAudioReady` (no `musicForScreen`); `audioUnlock` starts-only-if-not-playing. **synth-wiring (52)** now
+  models `createGain` and asserts Synth→**music gain**→master. **home-layout (28)**: the home Sound button
+  routes to `#/audio`. `node -c` clean; **full 34-gate suite green**. [A]-owned files only (`sound.js` is A's).
+notes / questions: **babysitter + owner LIVE:** open the Audio menu via the Sound button → Back always
+  reachable (scroll), mute toggle inside, **independent Music + SFX sliders** (SFX audible over music — tune
+  the defaults to taste), tester no longer restarts the song. Volume balance (music 0.05× vs SFX 0.08×) is a
+  starting point; both sliders + the limiter make it safe to push. Next per `NEXT.md`: **`T144`** (move the
+  gold/momentum pill to the TOP of `#start`) → `T140` (12-style picker, after B's T139).
