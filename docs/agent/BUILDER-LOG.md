@@ -4206,3 +4206,34 @@ notes / questions: **babysitter live-check:** a fresh profile should boot at a c
   blasting); a returning user who had 3.0× should now also be at 0.05× (migrated), with the slider mid-
   track; dragging to the top is 0.10×. Next per `NEXT.md`: **`T123`** (a11y contrast floor over the FX
   backdrop + honest contrast gate) → `T124` (fraction glyphs) → `T101` (Start delay) → Android.
+
+## T123 — A11y contrast floor over the FX backdrop (dark scrim + HONEST gate)  [HANDOFF]
+commit: (this commit, on main) — [A] task, OWNER-PRIORITY. Owner: "another accessibility pass — light
+grey text on light purple now." Root cause (the recurring backdrop theme): T112's full-bleed FX backdrop
+put a potentially-BRIGHT scene behind the transparent content column, but `--muted` (#939CAB, a mid-grey)
+is tuned for the dark `--bg` — and `contrast.test` only tested against `--bg`, so it passed while the
+RENDERED contrast failed. The backdrop really can be bright (fxgl's home palette pool includes pure
+white; Arena `glow` stops reach ~240), so light-grey-on-light fails AA.
+changed (A-owned only):
+  - **styles.css `.app`** — added a semi-opaque dark scrim `background:rgba(14,17,22,.88)` (the `--bg`
+    colour at 0.88) BEHIND the content column. This pulls the worst-case backdrop pixel under text dark
+    enough that `--muted` clears **AA (≈4.93:1 over white)**; the backdrop still reads in the side gutters
+    (body has 16px padding), at ~12% through the scrim, and vividly in the z-58 celebration overlay (the
+    scrim is below it). Not flattened to solid black.
+  - **styles.css `.build`** — dropped `opacity:.7` from the version stamp (over the scrim, dimming the
+    `--muted` text lightened it back under AA).
+  - **test/contrast.test.js** — made the gate HONEST: it now derives the `.app` scrim and asserts
+    `--muted`/`--text` clear AA against the scrim **composited over the BRIGHTEST backdrop pixel (white =
+    the worst case the backdrop can render)** — the real rendered background, not the dark token. Verified
+    it FAILS with no scrim AND with a too-weak scrim (0.5 → 1.28:1), PASSES at 0.88 (4.93:1) — i.e. it
+    would have caught today's grey-on-purple.
+how I verified: math + gate: `--muted` over scrim+white = **4.93:1** (AA), `--text` = 11.2:1; the gate
+  fails on no/weak scrim. `node -c`-n/a (CSS+test); **full 34-gate suite green** (contrast 6→10 checks).
+  Only [A]-owned files touched. 360-safe (scrim is viewport-agnostic); ≥44px targets + focus rings
+  unaffected.
+notes / questions: **babysitter eyeball:** home + Arena muted text (gold/momentum bars, build stamp,
+  topic-info subline, eyebrow) should now be clearly readable over the backdrop, which still shows as a
+  faint tint behind content + vivid at the gutters/celebration. Tunable via the `.app` scrim alpha (0.88
+  → lower = more backdrop but less margin; the gate enforces the AA floor either way). Next per `NEXT.md`:
+  the reordered **`T137`** (celebration tester in Settings + diagnose why it's still invisible) is now
+  FIRST, then `T124` (fraction glyphs) → `T101` (Start delay) → Android.

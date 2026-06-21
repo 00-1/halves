@@ -45,7 +45,15 @@ body{
    A generous cap kicks in only on very tall/desktop viewports. */
 .app{width:100%;max-width:420px;
   height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  display:flex;flex-direction:column;position:relative}
+  display:flex;flex-direction:column;position:relative;
+  /* T123 — a11y contrast FLOOR over the FX backdrop. The full-bleed backdrop
+     (T112) can render bright (the home palette includes white; Arena glows reach
+     ~240), and our --muted text is tuned for the dark --bg, so light-grey-on-light
+     fails AA. A semi-opaque dark scrim behind the content column pulls the
+     worst-case backdrop pixel under text dark enough that --muted clears AA (≈4.95
+     over white); the backdrop still reads in the side gutters, at 12% through the
+     scrim, and vividly in the z-58 celebration. (contrast.test asserts this floor.) */
+  background:rgba(14,17,22,.88)}
 @media (min-height:1000px){ .app{max-height:960px} }
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .screen.active{opacity:1;pointer-events:auto}
@@ -426,7 +434,7 @@ body{
 
 /* ---------- LINK ROW ---------- */
 .linkrow{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 18px;margin-top:14px;align-items:center}
-.build{margin-top:18px;font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.06em;opacity:.7;min-height:14px}
+.build{margin-top:18px;font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.06em;min-height:14px}
 .build b{color:var(--text);font-weight:700}
 
 /* ---------- RANK (results) ---------- */
