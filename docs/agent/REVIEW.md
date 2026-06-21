@@ -10,7 +10,14 @@ Mother Bramble · Gurgle, King of the Bog · The Frost Jarl · Bonecaller · Cin
 Voltan, Lord of Storms · the Elder Wyrm · The Void Sovereign) per the naming rule in
 BACKLOG; **display-only**, tier numbers/def/loot/battle logic unchanged. (The
 inventory Loot-region labels read from `Enemies.regionLabel`, so they update
-automatically.) Then **`T24` (Arena)** → **`T36`** (icons) → `T25`/`T26` → Phase 4.
+automatically.) Then **`T24` (Arena — must stay unbeatable without a near-complete
+collection; see its DoD)** → **`T36`** (icons) → **`T25`/`T26`** → Phase 4
+(**`T31`** day counter, **`T32`** practice view) → content (**`T27`** guides,
+**`T13`** audit, **`T30`** deep review) → **`T45`** (final perf/CPU/memory audit,
+LAST). **Owner is away — the loop runs to completion unattended:** the Babysitter
+makes sensible spec decisions on any judgement points rather than blocking; the
+Builder escalates only genuine blockers in BUILDER-LOG. Everything below is specced
+and decided — no owner input required to finish.
 
 When you (Builder) hand off a task, I will replace this with one of:
 

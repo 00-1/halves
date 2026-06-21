@@ -702,9 +702,22 @@ Pick an unlocked hero → see tier + matchup hint → play a battle round (reuse
 drill engine over unlocked topics) → resolve → show the result maths → on win
 grant `tier:n` + its **loot batch** (in the unlock modal) + advance (+ any hero
 unlock). Start-screen link.
-- **DoD:** full flow works on existing content; win/loss correct vs the logic;
-  tier ownership + loot persist locally; loot appears in inventory and boosts
-  heroes; no regressions; deploy green.
+- **Owner requirement — the Arena must only be *beatable* once (all/most) inventory
+  buffs are unlocked.** This is already guaranteed by the T23 calibration
+  (`def100` needs near-full collection; no tier gated behind its own loot) — T24
+  must **not weaken it**: the win check must use the player's *real owned* boosts
+  via `Enemies.resolveBattle(hero, tier, perf, collected)` (the actual collected
+  set), with **no perf-only shortcut** that lets a strong drill round beat a tier
+  the hero's rating can't. So clearing the Arena (beating tier 100 / The Void
+  Sovereign) genuinely demands having collected almost everything (drills + loot).
+- **DoD:** full flow works on existing content; win/loss matches `resolveBattle`
+  exactly **on the real collected set** (perf scales within a band but cannot
+  substitute for missing rating); tier ownership + loot persist locally; loot
+  appears in inventory and boosts heroes; **Node re-proof on the live wiring** that
+  the final tier is unbeatable without a near-complete collection and that no tier
+  is winnable without the buffs earnable before it; no regressions; deploy green.
+  (Babysitter re-runs the full battle-invariant suite against the Arena's actual
+  win path.)
 
 ### T25 — Balance + milestone wiring · status: BLOCKED
 Hero-unlock collectibles/milestones for "unlock all heroes", "defeat tier N",
@@ -819,3 +832,36 @@ sequence it **after T27**.
   non-empty note for every question in every topic (spot-checked across topics for
   mathematical correctness by the Babysitter); the grid renders at 360px without
   overflow; no regressions; deploy green.
+
+---
+
+## Phase 5 — Final hardening (do LAST, after every other task is DONE)
+
+### T45 — Performance / CPU / memory audit + fixes · status: BLOCKED (after ALL other tasks)
+Owner: once everything is built, a final pass to ensure no CPU/memory/performance
+problems. Audit the whole running app and fix anything found.
+- **RAF / timers idle correctly.** The confetti canvas (`fx.js`) must stop its
+  `requestAnimationFrame` loop when no particles are alive; the music look-ahead
+  scheduler (`sound.js`) must run **only while playing** and stop on mute/hidden;
+  no stray `setInterval`/RAF left running on menus. Verify each idles.
+- **No leaks across navigation.** Repeatedly routing between screens
+  (start↔game↔results↔inventory↔heroes↔arena) must not accumulate listeners,
+  detached nodes, oscillators, or canvases. Tabs/inventory lazy-render must release
+  the previous tab's DOM. Check event-listener add/remove balance.
+- **Large-list rendering.** The inventory (~1025 items) + the Loot tab (250 tiles)
+  must render/scroll smoothly on a mid-range phone; lazy-render already helps —
+  confirm no full-catalogue re-render on every interaction; debounce scroll
+  handlers (jump-to-top, scroll cues) if needed.
+- **Audio voice budget.** SFX + music never schedule an unbounded number of
+  oscillators (the T33 `MAX_STEPS_PER_TICK` + per-event caps hold); long sessions
+  don't degrade.
+- **localStorage size.** `collected`/`qbest`/best-times/streak/gold stay bounded
+  and parse fast; guard against quota errors (already has in-memory fallback).
+- **Method:** profile in a real browser (DevTools Performance + Memory) across a
+  full play session; record findings + fixes in BUILDER-LOG. Where a pure check is
+  possible (RAF/scheduler idling, listener balance), add a Node/headless assertion.
+- **DoD:** documented audit with before/after for anything fixed; RAF + scheduler
+  provably idle when nothing is animating/playing; no listener/node/oscillator
+  growth over repeated navigation; inventory + Arena smooth at 1025 items; no
+  console errors/warnings in a full session; no regressions; deploy green.
+  (Babysitter verifies the idling/listener-balance assertions + reviews the audit.)
