@@ -176,12 +176,19 @@ body{
 .navbtn .nav-ico{width:18px;height:18px;image-rendering:pixelated}
 .navbtn.hidden{display:none}
 /* edge fades + a bobbing cue, shown only when there is more to scroll to */
-.picker-wrap::before,.picker-wrap::after{content:"";position:absolute;left:0;right:0;height:26px;
-  pointer-events:none;opacity:0;transition:opacity .2s ease;z-index:1}
-.picker-wrap::before{top:0;background:linear-gradient(to bottom,var(--bg),transparent)}
-.picker-wrap::after{bottom:0;background:linear-gradient(to top,var(--bg),transparent)}
-.picker-wrap.can-scroll-up::before{opacity:1}
-.picker-wrap.can-scroll-down::after{opacity:1}
+/* T121 — fade the scroll edges by MASKING the tree content to transparent (so the
+   purple FX backdrop shows through), NOT by painting an opaque `--bg` overlay
+   (which read as a black smear over the backdrop). The mask tracks the live
+   can-scroll-up/down state: fade only the edge(s) that have more content. */
+.picker-wrap.can-scroll-up.can-scroll-down .tree{
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 26px,#000 calc(100% - 26px),transparent);
+          mask-image:linear-gradient(to bottom,transparent,#000 26px,#000 calc(100% - 26px),transparent)}
+.picker-wrap.can-scroll-down:not(.can-scroll-up) .tree{
+  -webkit-mask-image:linear-gradient(to bottom,#000,#000 calc(100% - 26px),transparent);
+          mask-image:linear-gradient(to bottom,#000,#000 calc(100% - 26px),transparent)}
+.picker-wrap.can-scroll-up:not(.can-scroll-down) .tree{
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 26px,#000);
+          mask-image:linear-gradient(to bottom,transparent,#000 26px,#000)}
 .scroll-cue{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);color:var(--muted);
   font-size:12px;pointer-events:none;opacity:0;transition:opacity .2s ease;z-index:2;
   animation:cue-bob 1.4s ease-in-out infinite}

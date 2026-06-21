@@ -3923,3 +3923,30 @@ notes / questions: **eyeball the icons on the live build** — the 9×9 bitmaps 
   the bitmap is a one-line edit in `icons.js`. No image assets; no-build; pixel-styled under
   `data-ui="pixel"` (they're already pixel-art). Next per `NEXT.md`: **`T101`** (Start→fullscreen
   delay).
+
+## T121 — Tree scroll-fade: reveal the backdrop, don't paint black  [HANDOFF]
+commit: (this commit, on main) — [A] task. Owner (screenshot): the T116 scroll-fade is a **black
+band** over the purple FX backdrop. **My T116 regression:** the `.picker-wrap::before/::after`
+fades painted `linear-gradient(var(--bg), transparent)` and `--bg` is near-black `#0E1116`; the
+tree/`#start` are transparent so the full-bleed FX backdrop (T112) shows through everywhere EXCEPT
+the fade, which read as a black smear.
+changed:
+  - **styles.css** — **removed** the opaque `--bg` `::before/::after` colour-overlays (and their
+    `.can-scroll-up::before`/`.can-scroll-down::after` reveal rules). Replaced with a **CSS MASK on
+    the `.tree` scroll container** that alpha-fades its own pixels to transparent at the scrollable
+    edge, so the **purple backdrop shows through** (no coloured overlay). The mask tracks the live
+    state: fade **top + bottom** when `can-scroll-up.can-scroll-down`, **bottom only** when just
+    `can-scroll-down`, **top only** when just `can-scroll-up`, **none** when it fits. The `▾`
+    `.scroll-cue` + its reduced-motion guard are unchanged; `updateTreeScroll()` (T116) already
+    toggles the classes, so no JS change.
+  - **test/tech-tree.test.js** (now **34 checks**) — the (h) fade assertion updated: the scroll-fade
+    **masks `.tree` to transparent per can-scroll edge** and the **opaque `--bg` overlays are gone**
+    (no black band over the backdrop). The scroll-state-toggle checks (T116) are kept.
+how I verified:
+  - **`node test/tech-tree.test.js` → ALL 34 PASSED**; CSS-only (no `.js` changed); **full 32-gate
+    suite green**. The mask doesn't affect hit-testing, so taps still land on nodes; reduced-motion
+    safe; works under `data-ui="pixel"`.
+notes / questions: **eyeball the live build:** at the scroll edges the tree nodes should now **fade
+  into the purple backdrop** (not a black band), only on the edge(s) with more content, with the `▾`
+  cue. If a future backdrop is very light, the mask still tracks it (it reveals whatever's behind,
+  not a fixed colour). Next per `NEXT.md`: **`T101`** (Start→fullscreen delay).

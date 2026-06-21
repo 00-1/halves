@@ -122,7 +122,12 @@ ok(els.treeWrap.classList.contains("can-scroll-down") && !els.treeWrap.classList
 // scroll to the bottom → the top fade appears and the bottom one clears (tracks real scroll)
 els.modeTree.scrollTop = 400; (els.modeTree._h.scroll||[]).forEach(f=>f());
 ok(els.treeWrap.classList.contains("can-scroll-up") && !els.treeWrap.classList.contains("can-scroll-down"), "(h) scrolled to the bottom → top fade shown, bottom cleared");
-ok(/\.picker-wrap::before,\.picker-wrap::after\{[^}]*pointer-events:none/.test(tcss), "(h) the edge fades are pointer-events:none (taps still hit the nodes)");
+// T121 — the fade MASKS the tree content to transparent (reveals the FX backdrop),
+// tracking can-scroll-up/down — NOT an opaque --bg overlay (which read as black).
+ok(/can-scroll-down[^{]*\.tree\{[^}]*mask-image:linear-gradient/.test(tcss) && /can-scroll-up[^{]*\.tree\{[^}]*mask-image:linear-gradient/.test(tcss),
+   "(h) T121: the scroll-fade masks the .tree content to transparent (per can-scroll edge)");
+ok(!/\.picker-wrap::(before|after)\{[^}]*var\(--bg\)/.test(tcss) && !/\.picker-wrap\.can-scroll-(up|down)::(before|after)/.test(tcss),
+   "(h) T121: the opaque --bg edge overlays are gone (no black band over the backdrop)");
 ok(/prefers-reduced-motion[\s\S]{0,60}\.scroll-cue\{animation:none/.test(tcss), "(h) the bobbing cue honours reduced-motion");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " TECH-TREE CHECKS PASSED" : fails + "/" + checks + " FAILED"));
