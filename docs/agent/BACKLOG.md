@@ -937,7 +937,7 @@ rewards how much you've collected + climbed — a stat check, not extra drilling
   unchanged from T43; no regressions; deploy green. (Babysitter re-runs the full
   buff-gating suite against the new path.)
 
-### T48 — Inventory regression: show item tiles + bars-at-top on every tab · status: OPEN
+### T48 — Inventory regression: show item tiles + bars-at-top on every tab · status: DONE
 Owner: "inventory regressed. The **Topics tab no longer shows any inventory items,
 only the progress bars**. On the **other pages the progress bars should be all
 brought to the top, the same as the Topics tab, not above each individual section.**"
@@ -977,3 +977,61 @@ into one block at the top of the tab.
   without overflow; no console errors; no regressions; deploy green. (Babysitter
   verifies every `$("id")` still exists, tiles render on all three tabs, the bar
   block sits above the tiles, and no per-section bar remains beside tiles.)
+
+### T49 — Practice mode: promote the button, fix the hints, surface the guide · status: OPEN
+Owner played Practice and found three problems (screenshot: "half of **5**" showed
+the hint *"Halve the tens and ones separately, then add — half of 5 is 2.5 (odd…)"*).
+The hint **gave away the answer** (`2.5`) and **talked about tens when 5 has none**.
+Root cause: `Guides.explain(modeId, q)` in `guides.js` (~158–207) ends every branch
+with `" is " + a` (reveals the answer) and uses one generic template per topic,
+ignoring the actual number's structure. Four parts:
+
+- **(1) Promote Practice to a primary action.** Move `#practiceBtn` out of the
+  `.linkrow` (it's a small `linkbtn` at `index.html:41`) and make it a **primary
+  button beside Start** on the `#start` screen — same visual weight as `#startBtn`,
+  e.g. a two-button row. It **acts on the currently-selected topic**, exactly like
+  Start, and is **gated by `isUnlocked(mode)`** the same way (a locked topic can't be
+  practised). Keep the existing `openPractice()` wiring. Don't break the 360px
+  layout or the topic picker above it.
+- **(2) Hint = tap-to-reveal aside (owner picked model A).** On the **practice
+  answering screen**, the method note (`#practiceNote`) must be **hidden by default**
+  behind a clearly-separated **"How to approach this"** toggle the player taps to
+  reveal — it is NOT shown inline with the live question, and **normal rounds show no
+  hint at all** (unchanged). Reset to hidden on each new practice question.
+- **(3) Rewrite EVERY topic's hint — method only, number-specific (the core work).**
+  Rework `explain()` for all 15 modes so each hint:
+  - **Never states or contains the answer.** State the *method applied to these
+    numbers* and stop **before** computing the result (e.g. "Divide 18 by 3 to find
+    one third, then take 2 of those" — do **not** write "= 12"). Delete the
+    `"…the answer is " + a` fallback; the fallback must also be answer-free.
+  - **Matches the actual number's structure**, not a fixed template. Examples of the
+    branching required: **halves/doubles** — single-digit vs multi-digit (no "tens and
+    ones" when the operand < 10); **odd → ends in ·5 / even → splits evenly /
+    decimals**; **times** — surface the right trick for *these* operands (×9, ×5, ×4,
+    ×11, square, ×1, commute) and otherwise a tables cue; **percentages** — keyed to
+    the actual % (50/25/10/20/5/1/75…); **fractions-of** — unit vs non-unit, the real
+    denominator/numerator; **place value** — the real direction (×/÷) and number of
+    places for 10/100/1000, decimals included; **bonds** — to 10/100/1000 and decimal
+    bonds to 1, whole-tens vs with-ones. Mathematically correct, British,
+    10-yo-appropriate, and **concise — one short sentence, not a paragraph.**
+- **(4) Surface the topic guide on the practice list + audit the guides.** Under the
+  practice **question-selection** grid (`renderPractice`), render that topic's overall
+  guide (`Guides.get(modeId)` → intro + tips + example) so the documentation sits
+  beneath the list. Then **audit all 15 `GUIDES`** for method coverage and
+  correctness (e.g. halves already covers odds/·5 — confirm each topic names its key
+  methods); fix any gap. **Keep guides concise — do not let them get verbose**
+  (intro ≤ ~1 line, 2–4 tips, one example). The guide *example* may show a worked
+  answer (it's documentation); the **per-question hint** in part 3 must not.
+- **DoD:** Practice is a primary button beside Start, acts on the selected topic, and
+  is unlock-gated (locked topic → can't practise). The practice hint is hidden until
+  the player taps "How to approach this"; normal rounds show no hint. **Node assertion
+  over EVERY question in EVERY topic's curated set:** `explain()` returns a non-empty
+  hint that (a) does **not** contain the question's answer as a token (numeric value
+  and its `.5`/decimal form), and (b) does not reference absent structure — at minimum
+  asserts **no "ten"/"tens" in any single-operand-<10 halves/doubles hint** and the
+  "half of 5" case reads as an odd/half note with no `2.5`. The practice list shows
+  the topic guide below the grid. Guides audited (Babysitter spot-checks wording +
+  maths across all topics). 360px-safe; no console errors; no regressions; normal
+  rounds unaffected; deploy green. (Babysitter re-runs the no-answer-leak +
+  no-phantom-structure assertion across all topics and reads a sample of hints/guides
+  for quality and mathematical correctness.)

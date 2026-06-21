@@ -1,27 +1,17 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T46` (low-contrast secondary text fixed for WCAG AA).
-Babysitter re-verified independently: `--muted` raised `#6B7480`→**`#939CAB`**,
-re-computed ratios **6.83 / 6.24 / 5.57 / 4.66 :1** on bg / surface / surface-2 /
-line — all clear AA 4.5:1 (worst case `--line` was 2.73:1). All sub-10px text
-bumped (8px `.inv-name`, three 9px rules → 10px); **zero** font-size rules under
-10px remain (smallest now 10px, 87 rules scanned). Hierarchy preserved (muted still
-dimmer than text). Contrast assertion (`test/contrast.test.js`) wired as the **third
-Pages gate**; ran it against `origin/main` — all 6 checks pass. Scope colour/size
-only, no markup change. No regressions (only styles.css / workflow / test / log
-touched). T46 → DONE.
+**Current verdict:** `APPROVED — T48` (inventory regression fixed — tiles restored +
+bars-at-top on every tab). Babysitter re-verified independently: ran the new
+`test/inventory.test.js` (boots the app under a DOM shim, inspects rendered HTML) on
+`origin/main` — **all 24 checks pass**. Topics tab renders `inv-cell` tiles again
+(regression fixed), each tab has exactly one progress-bar block sitting **above** the
+tiles, **no bar beside any tile group**, owned tiles carry a `<canvas>`, lazy-render
+holds (Loot tiles only when opened), and seeded counts match (Halves bar 3/59). The
+refactor shares one `sections` array between the bar block and the tile groups, so
+ordering can't drift. `node -c main.js` clean; gate wired as the **fourth Pages
+gate**; only main.js / workflow / test / log touched. T48 → DONE.
 
-**Do `T48` next — inventory regression (owner-reported).** The **Topics tab stopped
-showing inventory item tiles** (only the per-topic progress bars render), and on the
-**Awards/Loot tabs the bars sit above each individual section** instead of all
-collected at the top. Fix to one consistent layout on every tab: a single
-progress-bar block at the top (reusing the `tp-row`/`topic-prog` styles), then the
-`invCell` item tiles grouped by section below — **no per-section bar beside its
-tiles**. Topics tab must show its tiles again (`C.modeItems(m.id)`). Preserve
-lazy-render, canvas drawing, jump-to-top, rarity styling and `invMeta`. Full spec in
-BACKLOG "T48".
-
-**Then `T47` — Arena: pure stat check, NOT a maths drill (owner correction).** The
+**Do `T47` next — Arena: pure stat check, NOT a maths drill (owner correction).** The
 Arena currently makes you play a maths round to fight; remove that — "Fight"
 resolves instantly from hero stats (win iff `rating×matchup ≥ def`), no questions.
 Drilling stays in the topics (where buffs are earned); the Arena is the payoff.
@@ -30,6 +20,20 @@ case, so def calibration + buff-gating invariants are unchanged); rework the Are
 UI to show effective power / matchup / defence + instant Victory/Defeat. The owner's
 rule holds purely on buffs now: can't beat the final enemy without all/most buffs.
 Babysitter re-runs the full buff-gating suite on the new path. Full spec in BACKLOG.
+
+**Then `T49` — Practice mode: promote the button, fix the hints, surface the guide
+(owner-reported).** Owner hit "half of **5**" in Practice and the hint said *"Halve
+the tens and ones… half of 5 is 2.5"* — it **gave the answer** and **talked about tens
+when 5 has none**. Four parts: (1) make **Practice a primary button beside Start** on
+`#start`, acting on the selected topic and unlock-gated; (2) the practice hint becomes
+a **tap-to-reveal "How to approach this" aside** (hidden by default; normal rounds show
+none); (3) **rewrite every topic's `explain()` branch — method only, never the answer,
+specific to the actual number's structure** (single vs multi-digit, odd/even/decimal,
+the right ×/%/fraction trick); delete the answer-revealing fallback; (4) **show the
+topic guide under the practice list** and **audit all 15 GUIDES** for coverage, keeping
+them concise. Babysitter gate: a Node assertion over every question in every topic that
+the hint never contains the answer and never names absent structure (no "tens" on a
+single-digit halves/doubles). Full spec in BACKLOG "T49".
 
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
 gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
