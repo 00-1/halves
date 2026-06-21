@@ -1972,3 +1972,33 @@ notes / questions: the collectibles diff is purely additive (one drawer + a
   touched. Heroes screen + (post-T50) Arena both draw via this one path. Next per
   REVIEW: **T50** (generated icons on nav buttons + hero portrait in the Arena
   picker).
+
+## T51 — CHANGES REQUESTED fix (non-vacuous item-invariance gate)  [HANDOFF]
+commit: (this commit, on main)
+The hero-portrait restoration was approved as correct (12 faces 66/66 distinct,
+items byte-identical) — the only issue was the **gate**: `test/hero-icons.test.js`
+proved "items unchanged" by diffing the working tree against
+`git show HEAD:collectibles.js`. Valid at authoring time (HEAD was the parent),
+but **vacuous as a permanent CI gate** (HEAD == this commit → it diffs the file
+against itself). **collectibles.js / main.js untouched** (only the test changed).
+changed:
+  - test/hero-icons.test.js — replaced the HEAD-diff with **permanent invariants**:
+    1. **Routing guard (key):** `C.CATALOG.every(it => !/^hero:/.test(it.id))` — no
+       catalogue id is `"hero:"`-prefixed, so an item id can NEVER reach the hero
+       blob branch in `buildIcon`. This can't go vacuous.
+    2. **Snapshot guard:** two fixed **embedded baseline** item role grids
+       (`det:Loot`, `det:Mastery`) captured from the approved engine — fails if any
+       item icon's shape ever changes. Dropped the `child_process`/HEAD dependency.
+    The valid hero checks (pairwise-distinct, symmetry, determinism, class palette,
+    hero ≠ familiar critter) are kept as-is.
+how I verified:
+  - `node test/hero-icons.test.js` → **ALL 8 PASS**: heroes 66/66 distinct +
+    symmetric + deterministic + class-coloured + ≠ familiar critter; **no
+    `hero:`-prefixed catalogue id**; **item role grids match the embedded baseline**
+    (0 changed); catalogue 795. The gate now genuinely fails if an item id were
+    ever `hero:`-prefixed or an item icon's shape changed — no `git show HEAD`.
+  - `git status` shows **only `test/hero-icons.test.js`** changed. All eight gates
+    green. No regressions.
+notes / questions: per the verdict I did not touch collectibles.js/main.js. Next
+  per REVIEW: **T50** (generated icons on nav buttons + hero portrait in the Arena
+  picker).
