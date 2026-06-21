@@ -1562,15 +1562,17 @@
     if(!ev){ el.classList.add("hidden"); el.innerHTML = ""; return; }
     const owned = !!loadCollected()["event:" + ev.id];
     el.classList.remove("hidden");
+    // Compact strip (T91): small emblem · tag+name+countdown · an inline Play CTA.
+    // The full blurb lives on the Events tab / play screen, not here — keeps the home
+    // banner short so it never dominates the one-screen #start layout.
     el.innerHTML =
-      '<canvas class="pix eb-art" width="120" height="80"></canvas>'+
+      '<canvas class="pix eb-art" width="84" height="54"></canvas>'+
       '<div class="eb-body">'+
-        '<span class="eb-tag">Today’s event'+(owned ? ' · reward earned' : '')+'</span>'+
+        '<span class="eb-tag">'+(owned ? 'Reward earned' : 'Today’s event')+'</span>'+
         '<span class="eb-name">'+esc(ev.name)+'</span>'+
-        '<span class="eb-blurb">'+esc(ev.blurb)+'</span>'+
-        '<div class="eb-row"><button class="btn eb-play" data-event="'+esc(ev.id)+'">'+(owned ? 'Play again' : 'Play now')+'</button>'+
-          '<span class="eb-count" id="ebCount"></span></div>'+
-      '</div>';
+        '<span class="eb-count" id="ebCount"></span>'+
+      '</div>'+
+      '<button class="btn eb-play" data-event="'+esc(ev.id)+'">'+(owned ? 'Again' : 'Play')+'</button>';
     const cv = el.querySelector(".eb-art");
     if(cv && window.EventArt) window.EventArt.draw(cv, ev.artSeed);
     updateEventCountdown();

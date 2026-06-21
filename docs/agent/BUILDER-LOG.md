@@ -3047,3 +3047,39 @@ notes / questions: the migration treats "has any collected/stats/board" as legac
   still resolves to legacy on first load. Next per REVIEW order: **T87** (wire the
   remaining gates — Practice/Heroes/Arena/Event-banner/Gold — with the same once-highlight,
   migration-safe).
+
+## T91 — BUGFIX: the event banner breaks the home-screen layout (priority)  [HANDOFF]
+commit: (this commit, on main)
+> Process note: apologies for the sequencing — I pulled T86 before the T91 insert was
+> visible in REVIEW, so T86 shipped first. Picking up T91 now as the priority fix; it
+> accounts for T86's home-screen additions (the gated `#invBtn` lives in the linkrow,
+> untouched by this layout change).
+Owner-reported: the T81 banner was far too tall — the home page scrolled, the picker was
+starved to ~nothing, and the topic mark was stranded above the oversized card.
+changed:
+  - **main.js `renderEventBanner()`** — now a **compact horizontal strip**: small emblem ·
+    (tag + name + inline UTC countdown) · an **inline Play button** (no big block). The
+    **multi-line blurb is dropped** from the home banner (the full blurb still shows on the
+    Events tab / play screen). Owned-today reads "Reward earned" + "Again". Still carries
+    the emblem art, event name, Play CTA → `startEvent`, and the 00:00-UTC countdown.
+  - **index.html** — **moved `#eventBanner` to the very top of `#start`** (above `#mark`),
+    so the order reads `event banner → topic mark/tag → toggle → picker` (banner genuinely
+    first; the mark sits next to its selector, no longer stranded).
+  - **styles.css** — `.event-banner` rebuilt as a **bounded strip** (`max-height:84px`,
+    centred row, small 52×34 art, 1-line ellipsised name, inline `.eb-play`); removed the
+    old `.eb-blurb`/`.eb-row` rules. **`.picker-wrap` gains `min-height:148px`** (~3 rows)
+    so the banner can never collapse it to nothing. Trimmed the toggle/best/start-actions
+    top margins to help the one-screen fit.
+how I verified:
+  - **`events.test.js` extended** (+5 T91 checks) → green: the banner has a **bounded
+    `max-height`**, the home banner has **no `eb-blurb`**, `.picker-wrap` keeps a **non-zero
+    min-height**, the banner sits **above the topic mark** in `#start`, and the compact
+    banner still keeps the **Play CTA + UTC countdown**. Existing banner gates
+    (on-home/routes/countdown/emblem) still pass.
+  - Booted the app: the compact banner renders name + inline Play + "New event in HH:MM:SS",
+    drops the blurb, and **Play routes into the gauntlet**. Fixed a contrast-gate catch
+    (`.eb-tag` 9→10px; the gate forbids <10px). `node -c` clean; **full 24-gate suite green**.
+notes / questions: I can't measure pixel viewport fit headlessly, so the one-screen-fit at
+  360×640 / 390×844 is best-effort via the compact strip + picker min-height + tightened
+  margins (please eyeball the live build). Back on sequence — next per REVIEW order: **T87**
+  (wire the remaining onboarding gates), then content extension.
