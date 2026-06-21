@@ -650,14 +650,17 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   is BLOCKED** on the owner reporting the good values (babysitter fills them in → defaults).
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
-  submit.** Authoritative order: **`T113`** (audio sliders — owner-priority) →
-  **`T101`** (Start→fullscreen delay — quick, owner-flagged, leads the perf work) →
+  submit.** Authoritative order — **AUDIO BLOCK FIRST** (owner is focused on it): **`T113`** (volume +
+  tempo sliders — instrument it) → **`T115`** (music with CHARACTER: **calm solves [firm rule]**, real
+  per-context variety, a synth **"wub" win-sting** on topic-complete/battle-win, distinct Arena theme)
+  → **`T101`** (Start→fullscreen delay — quick, owner-flagged, leads the perf work) →
   **`T102`** (Android PWA+TWA — installable parity build, now that the web UI is
   stable) → **`T103`** (Android-inclusive perf research — needs T102 to profile) → **`T89`/`T90`**
   (Arena 3v3 team UI + playout) → content **`T58`** blueprint (Babysitter drafts it **in the background
   now** → owner approves → build) → **`T59`/`T60`/`T61`** → **`T72`** (Play-Store submission). The
-  Arena-biome FX (T108) is already wired (T112); celebration/home FX done. (T114 slots in right after
-  the owner reports T113's calibrated values.) Owns ALL existing Halves
+  Arena-biome FX (T108) is already wired (T112); celebration/home FX done. **`T114`** (set the
+  owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
+  T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
 - **Builder B — next: STAND BY (engine queue exhausted; do NOT invent a new engine capability).**
   T93·T94·T95·T108 are all DONE and headless-perfect but **all unwired** — more engine code would be

@@ -2136,6 +2136,45 @@ the sliders (users can still adjust). DoD: defaults match the owner's reported v
 sound test band updated; all gates green. *(Babysitter fills in the exact numbers when the owner gives
 them.)*
 
+### T115 — [A] Music with CHARACTER: calm solves · real variety · a "wub" win-sting · distinct Arena · status: OPEN · OWNER-PRIORITY
+Owner: the generative music "all sounds the same," there are no interesting variations, and **during
+solves it's too fast/stressful**. Make the music **context-appropriate and distinctive** — not one
+samey texture. **FIRM DESIGN RULE (record it): SOLVE music must be CALM** — solving is the
+stress-sensitive moment; the in-game music must never add pressure. Different contexts should have
+**different energy and character** (calm solve ≠ punchy celebration ≠ epic Arena ≠ pleasant menu).
+- **Calm solve music (hard requirement).** The in-game/solve style (`setMusic` while on `#game`) must
+  be genuinely **calm**: slow, **sparse** (low note density), soft timbre, **no driving/fast drums or
+  busy arps**. Slower than the menu, gentle pad/bell feel. It should fade into the background, never
+  race the solver. (This is independent of T113's tempo slider — calm BY DESIGN, the slider only fine-
+  tunes.) Re-check every per-topic in-game style against this bar.
+- **Real variety across contexts (fix "all sounds the same").** Differentiate the styles by **timbre
+  (waveform mix), scale/mode, rhythm, and density** so menu / solve / Arena / event / celebration each
+  have a **recognisable character** — not the same square-wave arp at a different BPM. Keep them
+  pleasant + ≤ the calm budget where it matters (solves).
+- **A "wub" celebration sting (owner's ask).** On **completing a topic** (a mastery/level-up moment)
+  and on a **battle win**, play a short, fun **dubstep-flavoured bass-wobble** flourish — a synthesised
+  LFO-modulated low-pass on a bass note (oscillator → biquad lowpass with an LFO on cutoff → a couple
+  of "wub"s), **no audio sample files** (stay no-build/no-asset; pure WebAudio). Fire it on the real
+  win/complete hooks (the same surfaces T112's FX burst uses — `finishBattle` win, the round-complete /
+  mastery moment), capped/short, **respects mute + the master volume + the limiter**, reduced-stress
+  (it's a reward, fun not harsh). Pairs with the existing celebration FX burst.
+- **Distinct Arena music (owner: "something new in the arena").** Give the Arena its own recognisable
+  character — more driving/epic than the calm solve music (the Arena is combat; energy is wanted here,
+  unlike solves), distinct from the menu/event themes. May intensify subtly with region/boss to match
+  the T108 Arena backdrop (optional, tasteful).
+- **Stay synth + no-build + calibratable.** All WebAudio synthesis (no sample assets); the single-timer
+  scheduler stays single-timer (no extra RAF/timer leaks); everything honours mute, the T113 master
+  volume + tempo multiplier, and the limiter. Don't regress `sound.test.js`.
+- **DoD:** solve music is **audibly calmer/sparser** than today (and than the menu) — verify a Node
+  check that the in-game styles sit under a calm budget (low density / no fast-drum pattern / slow);
+  the contexts are **measurably distinct** (different waveform/scale/rhythm signatures — not identical
+  configs); a **"wub" sting fires on topic-complete AND battle-win** (Node check it's wired to those
+  hooks, is bounded, and routes through the master/limiter, honouring mute); the **Arena theme is
+  distinct** from menu/solve; no sample assets added (no-build preserved); single scheduler (no leak);
+  `node -c` clean; all gates green (extend `sound.test.js` for the calm-solve budget, the per-context
+  distinctness, and the win-sting wiring). (Babysitter: confirm solves are calm, the contexts sound
+  different, and completing a topic/battle gives the fun wub — then owner ear-checks on the Poco X3.)
+
 ### T106 — [A] Tech-tree v2: use the full width + a clearer relationship visual language · status: DONE (`10e3000`)
 Owner: the tree nodes **don't use the full screen width** (only ~2 abreast in a ~360px column) and
 the **relationship between nodes isn't clear** — improve the connector visual language. Make the
