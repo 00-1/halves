@@ -339,51 +339,96 @@
     return "hsl(" + Math.round(210 - 165 * p) + ",65%,55%)";
   }
 
-  function renderInventory(){
-    const collected = loadCollected();
-    const cat = C.categories();
-    const total = C.CATALOG.length;
-    const have = C.CATALOG.filter(it => collected[it.id]).length;
-    $("invMeta").textContent = have + " / " + total;
+  // ---- tabbed inventory (T42) --------------------------------------------
+  const INV_TABS = [
+    { id:"topics", label:"Topics" },
+    { id:"awards", label:"Awards" },
+    { id:"loot",   label:"Loot" }
+  ];
+  let invTab = "topics";
+  const AWARD_CATS = C.categories().filter(n => n !== "Loot");   // drill-earned cats
 
-    // per-topic completion overview (mirrors the picker's have/total) with a
-    // colour-graded progress bar (cool/low → warm/high, distinct 100%).
-    let topicsDone = 0;
-    const topicRows = MODES.map(m => {
-      const items = C.modeItems(m.id);
-      const total = items.length;
-      const got = items.filter(it => collected[it.id]).length;
-      const done = total > 0 && got === total;
-      if(done) topicsDone++;
+  // One collectible tile: owned shows its icon + flavour name; locked a "?".
+  function invCell(it, col){
+    const owned = !!col[it.id];
+    return '<div class="inv-cell '+(owned ? "owned r-"+it.rarity : "locked")+'" data-id="'+esc(it.id)+'">'+
+      (owned ? '<canvas class="pix" width="48" height="48"></canvas><span class="inv-name">'+esc(it.flavour)+'</span>'
+             : '<span class="q">?</span>')+'</div>';
+  }
+  // A titled section: header (title + owned/total), a graded bar, then the tiles.
+  function invSection(title, items, col){
+    if(!items.length) return "";
+    const got = items.filter(it => col[it.id]).length, pct = got / items.length;
+    return '<div class="inv-cat"><h4>'+esc(title)+' <span>'+got+'/'+items.length+'</span></h4>'+
+      '<div class="tp-bar"><div class="tp-fill" style="width:'+(pct*100).toFixed(1)+
+        '%;background:'+topicBarColor(pct, got === items.length)+'"></div></div>'+
+      '<div class="inv-grid">'+items.map(it => invCell(it, col)).join("")+'</div></div>';
+  }
+  // Topics tab — per-topic completion rows with their own bars.
+  function invTopicsHtml(col){
+    let done = 0;
+    const rows = MODES.map(m => {
+      const items = C.modeItems(m.id), total = items.length;
+      const got = items.filter(it => col[it.id]).length, isDone = total > 0 && got === total;
+      if(isDone) done++;
       const pct = total ? got / total : 0;
-      return '<div class="tp-row'+(done ? " done" : "")+'">'+
+      return '<div class="tp-row'+(isDone ? " done" : "")+'">'+
         '<div class="tp-head"><span class="tp-name">'+esc(m.name)+'</span>'+
           '<span class="tp-prog">'+got+'/'+total+'</span>'+
-          '<span class="tp-state">'+(done ? "✓" : "")+'</span></div>'+
+          '<span class="tp-state">'+(isDone ? "✓" : "")+'</span></div>'+
         '<div class="tp-bar"><div class="tp-fill" style="width:'+(pct*100).toFixed(1)+
-          '%;background:'+topicBarColor(pct, done)+'"></div></div></div>';
+          '%;background:'+topicBarColor(pct, isDone)+'"></div></div></div>';
     }).join("");
-    const topicsHtml = '<div class="inv-cat"><h4>Topics <span>'+topicsDone+'/'+MODES.length+' at 100%</span></h4>'+
-      '<div class="topic-prog">'+topicRows+'</div></div>';
+    return '<div class="inv-cat"><h4>Topics <span>'+done+'/'+MODES.length+' at 100%</span></h4>'+
+      '<div class="topic-prog">'+rows+'</div></div>';
+  }
+  // Awards tab — the drill-earned categories, each a section with a bar.
+  function invAwardsHtml(col){
+    return AWARD_CATS.map(n => invSection(n, C.CATALOG.filter(it => it.cat === n), col)).join("");
+  }
+  // Loot tab — sub-grouped into the 10 themed tier-regions, each with a bar.
+  function invLootHtml(col){
+    const E = window.Enemies, loot = C.CATALOG.filter(it => it.cat === "Loot");
+    const byRegion = {};
+    loot.forEach(it => { const r = Math.floor(((it.tier || 1) - 1) / 10); (byRegion[r] = byRegion[r] || []).push(it); });
+    return Object.keys(byRegion).map(Number).sort((a, b) => a - b).map(r => {
+      const label = (E && E.regionLabel) ? E.regionLabel(r) : ("Region " + (r + 1));
+      return invSection(label + " · tiers " + (r*10+1) + "–" + (r*10+10), byRegion[r], col);
+    }).join("");
+  }
 
-    $("invList").innerHTML = topicsHtml + cat.map(name => {
-      const items = C.CATALOG.filter(it => it.cat === name);
-      if(!items.length) return "";
-      const got = items.filter(it => collected[it.id]).length;
-      const cells = items.map(it => {
-        const owned = !!collected[it.id];
-        return '<div class="inv-cell '+(owned ? "owned r-"+it.rarity : "locked")+'" data-id="'+esc(it.id)+'">'+
-          (owned ? '<canvas class="pix" width="48" height="48"></canvas><span class="inv-name">'+esc(it.flavour)+'</span>'
-                 : '<span class="q">?</span>')+
-          '</div>';
-      }).join("");
-      return '<div class="inv-cat"><h4>'+esc(name)+' <span>'+got+'/'+items.length+'</span></h4>'+
-        '<div class="inv-grid">'+cells+'</div></div>';
-    }).join("");
+  function drawInvCanvases(){
     $("invList").querySelectorAll(".inv-cell.owned canvas").forEach(cv => {
       const it = C.byId(cv.parentElement.dataset.id);
       if(it) C.drawIcon(cv, it.id, C.paletteFor(it.rarity));
     });
+  }
+  function renderInvTabs(){
+    $("invTabs").innerHTML = INV_TABS.map(t =>
+      '<button class="inv-tab'+(t.id === invTab ? " active" : "")+'" data-tab="'+esc(t.id)+'">'+esc(t.label)+'</button>').join("");
+  }
+  // Lazy render: only the ACTIVE tab's tiles go into the DOM (the 250 Loot tiles
+  // cost nothing until the Loot tab is opened).
+  function renderInvTab(){
+    const col = loadCollected();
+    $("invList").innerHTML = invTab === "loot"   ? invLootHtml(col)
+                           : invTab === "awards" ? invAwardsHtml(col)
+                           :                       invTopicsHtml(col);
+    drawInvCanvases();
+    $("invList").scrollTop = 0;
+    updateInvTop();
+  }
+  // jump-to-top: reveal the floating control once the list is scrolled down.
+  function updateInvTop(){
+    const btn = $("invTop"); if(!btn) return;
+    btn.classList.toggle("show", $("invList").scrollTop > 200);
+  }
+  function renderInventory(){
+    const col = loadCollected();
+    $("invMeta").textContent = C.CATALOG.filter(it => col[it.id]).length + " / " + C.CATALOG.length;
+    invTab = "topics";          // default to the first tab on each open
+    renderInvTabs();
+    renderInvTab();
   }
 
   // ---- heroes screen ------------------------------------------------------
@@ -684,6 +729,13 @@
   $("invBack").addEventListener("click", navStart);
   $("heroesBtn").addEventListener("click", () => { location.hash = "#/heroes"; });
   $("heroesBack").addEventListener("click", navStart);
+  // Switch inventory tabs (lazy-renders the chosen tab's tiles).
+  $("invTabs").addEventListener("click", e => {
+    const b = e.target.closest(".inv-tab"); if(!b || b.dataset.tab === invTab) return;
+    invTab = b.dataset.tab; renderInvTabs(); renderInvTab();
+  });
+  $("invList").addEventListener("scroll", updateInvTop, { passive:true });
+  $("invTop").addEventListener("click", () => { $("invList").scrollTop = 0; updateInvTop(); });
   // Tap a collectible to inspect it (owned shows detail; locked teases).
   $("invList").addEventListener("click", e => {
     const cell = e.target.closest(".inv-cell"); if(!cell) return;

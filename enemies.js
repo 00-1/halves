@@ -204,6 +204,9 @@
   // ---- public api ---------------------------------------------------------
   function byTier(n){ return TIERS[n - 1] || null; }
   function tierLoot(n){ return (lootByTier[n] || []).slice(); }
+  // The 10 themed tier-regions (10 tiers each); label = the enemy band name.
+  function tierRegion(n){ return Math.floor((n - 1) / 10); }
+  function regionLabel(r){ return BANDS[r] || ("Region " + (r + 1)); }
   // Can the player attempt tier n? Only after owning the previous tier marker.
   function canAttempt(n, collected){ return n === 1 || !!(collected && collected["tier:" + (n - 1)]); }
   // The next unbeaten tier given owned `tier:*` markers (1-based).
@@ -215,7 +218,7 @@
 
   window.Enemies = {
     TIERS, TIER_COUNT,
-    byTier, tierLoot, canAttempt, currentTier,
+    byTier, tierLoot, tierRegion, regionLabel, canAttempt, currentTier,
     resolveBattle, computePerf,
     matchup: H.matchup, beats: H.beats
   };
