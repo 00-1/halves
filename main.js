@@ -101,6 +101,45 @@
     return wealth;
   }
 
+  // ---- Momentum (T31) — a forgiving daily-practice signal, NOT a fragile -----
+  // streak: +1 per day played, −1 per day missed, floored at 0, capped at 75.
+  const MOMENTUM_LABEL = "Momentum";
+  const MOMENTUM_MAX = 75;
+  let memStreak = null;
+  function loadMomentum(){
+    if(memStreak) return memStreak;
+    let s; try{ s = JSON.parse(localStorage.getItem("halves.streak")); }catch(e){ s = null; }
+    if(!s || typeof s !== "object") s = {};
+    memStreak = { count: s.count || 0, lastDay: (s.lastDay == null ? null : s.lastDay), best: s.best || 0 };
+    return memStreak;
+  }
+  function saveMomentum(s){ memStreak = s; try{ localStorage.setItem("halves.streak", JSON.stringify(s)); }catch(e){} }
+  // Local calendar day index (integer) for a timestamp.
+  function localDay(ms){ const d = new Date(ms); return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000); }
+  // Pure reducer: given the stored state and today's day index, the next state.
+  function reduceMomentum(state, today){
+    let count = (state && state.count) || 0;
+    const lastDay = (state && state.lastDay != null) ? state.lastDay : null;
+    let best = (state && state.best) || 0;
+    if(lastDay == null) count = 1;                                  // first ever play
+    else if(today > lastDay){ const N = today - lastDay;           // gap of N days (N−1 missed)
+      count = Math.min(MOMENTUM_MAX, Math.max(0, count - (N - 1)) + 1); }
+    // today <= lastDay: same day (or clock went back) → no change
+    best = Math.min(MOMENTUM_MAX, Math.max(best, count));
+    const newLast = (lastDay == null) ? today : Math.max(lastDay, today);
+    return { count: count, lastDay: newLast, best: best };
+  }
+  // Register today's play: advance momentum, grant any new momentum milestones.
+  function bumpMomentum(col){
+    const prev = loadMomentum();
+    const next = reduceMomentum(prev, localDay(Date.now()));
+    const wentUp = next.count > prev.count || prev.lastDay == null;
+    saveMomentum(next);
+    const ms = C.evaluateMomentum(next.best, id => !!col[id]);
+    ms.forEach(it => col[it.id] = { ts: Date.now() });
+    return { state: next, wentUp: wentUp, milestones: ms };
+  }
+
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
   const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), arena:$("arena") };
@@ -645,8 +684,10 @@
       sfx("roundComplete");
     }
     const wealth = earnGold(earn, col);               // grants any wealth milestones into col
+    const mo = bumpMomentum(col);                      // a battle is playing too
     saveCollected(col);
-    loot = loot.concat(wealth);
+    loot = loot.concat(wealth).concat(mo.milestones);
+    if(mo.wentUp) momentumToast(mo.state);
     lastBattle = { won: res.win, res: res, heroName: heroName, tierName: bc.tier.name, loot: loot, newHeroes: newHeroes, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
     arenaHero = null;
     mode = (bc.prevMode && bc.prevMode.id !== "battle") ? bc.prevMode : (byId(loadLastMode()) || MODES[0]);
@@ -850,8 +891,10 @@
     if(topics.some(it => /^topics:(one|all)100$/.test(it.id))) earn += 100 * mult;
     const goldBefore = loadGold();
     const wealth = earnGold(earn, collected);
+    // momentum: register today's play (forgiving daily signal)
+    const mo = bumpMomentum(collected);
     saveCollected(collected);
-    const unlocked = newly.concat(topics).concat(more).concat(meta).concat(wealth);
+    const unlocked = newly.concat(topics).concat(more).concat(meta).concat(wealth).concat(mo.milestones);
 
     // round-end stinger — play the most triumphant thing earned this round
     if(unlocked.some(it => /^topics:(one|all)100$/.test(it.id))) sfx("topic100");
@@ -868,6 +911,7 @@
     show("results");
     renderBest();
     showGold($("resGold"), goldBefore, loadGold(), earn);
+    if(mo.wentUp) momentumToast(mo.state);
     if(unlocked.length) setTimeout(() => showUnlocks(unlocked), 650);
   }
 
@@ -875,6 +919,24 @@
   function renderGold(){
     const el = $("goldBar"); if(!el) return;
     el.innerHTML = '🪙 <b>' + esc(fmtGold(loadGold())) + '</b> ' + esc(GOLD_LABEL);
+  }
+  // ---- Momentum display: a calm start-screen indicator + a gentle ack toast.
+  function renderMomentum(){
+    const el = $("momentumBar"); if(!el) return;
+    const m = loadMomentum();
+    el.innerHTML = m.count > 0
+      ? '🗓 <b>' + m.count + '</b> ' + esc(MOMENTUM_LABEL) + (m.count >= MOMENTUM_MAX ? ' · maxed' : '')
+      : '';
+  }
+  function momentumToast(state){
+    const t = document.createElement("div");
+    t.className = "toast momentum";
+    t.innerHTML = '<span class="t-glyph">🗓</span><div class="t-txt">' +
+      '<span class="t-tag">' + esc(MOMENTUM_LABEL) + (state.count >= MOMENTUM_MAX ? " · maxed" : "") + '</span>' +
+      '<span class="t-name">' + state.count + ' day' + (state.count === 1 ? '' : 's') + '</span></div>';
+    $("toasts").appendChild(t);
+    requestAnimationFrame(() => t.classList.add("show"));
+    dismissToast(t, 1800);
   }
   function showGold(el, before, after, earned){
     if(!el) return;
@@ -927,7 +989,7 @@
     else if(h === "best-times"){ renderSummary(); show("summary"); }
     else if(h === "heroes"){ renderHeroes(); show("heroes"); }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; renderArena(); show("arena"); }
-    else { renderTabs(); renderBest(); renderStartState(); renderGold(); show("start"); }
+    else { renderTabs(); renderBest(); renderStartState(); renderGold(); renderMomentum(); show("start"); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
@@ -1078,10 +1140,14 @@
   renderStartState();
   renderBuild();
   renderGold();
+  renderMomentum();
   applySoundPref();   // honour the saved mute pref on load (no-op until T16)
   // Goblin Gold module API (also used by the Node tests).
   window.Gold = { label: GOLD_LABEL, fmtGold: fmtGold, mult: goldMult,
     questionGold: questionGold, roundBonus: roundBonusGold, tierGold: tierGold,
     load: loadGold, evaluate: (total, has) => C.evaluateGold(total, has) };
+  // Momentum module API (pure reducer + helpers, also used by the Node tests).
+  window.Momentum = { label: MOMENTUM_LABEL, MAX: MOMENTUM_MAX, reduce: reduceMomentum,
+    localDay: localDay, load: loadMomentum, evaluate: (best, has) => C.evaluateMomentum(best, has) };
   show("entry");      // splash first; entry buttons reveal the menu via applyRoute()
 })();

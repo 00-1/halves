@@ -186,6 +186,13 @@
     add({ id:"gold:"+g, name:nm, rarity:r, cat:"Milestone", modeId:null, gold:g,
       desc:"Amass "+(g<1e6?(g/1e3)+"K":g<1e9?(g/1e6)+"M":g<1e12?(g/1e9)+"B":g<1e15?(g/1e12)+"T":(g/1e15)+"Qa")+" Goblin Gold." }));
 
+  // momentum milestones (T31) — fired off the high-water momentum mark (`best`),
+  // so dipping and re-climbing never re-awards or revokes them. 75 = the cap.
+  [[3,"uncommon","Warming Up"],[7,"rare","In the Groove"],[14,"rare","Steady Rhythm"],
+   [30,"epic","Daily Devotee"],[50,"epic","Rhythm Master"],[75,"legendary","Peak Momentum"]].forEach(([n,r,nm]) =>
+    add({ id:"momentum:"+n, name:nm, rarity:r, cat:"Milestone", modeId:null, momentum:n,
+      desc:"Reach a momentum of "+n+(n===75?" — the ceiling.":"."), }));
+
   function sortItems(arr){
     return arr.slice().sort((a,b) => (RORDER[a.rarity]-RORDER[b.rarity]) || a.name.localeCompare(b.name));
   }
@@ -198,6 +205,7 @@
       if(it.need) continue;                          // topic milestones: see evaluateTopics
       if(it.meta) continue;                          // hero/arena milestones: see evaluateMeta
       if(it.gold != null) continue;                  // wealth milestones: see evaluateGold
+      if(it.momentum != null) continue;              // momentum milestones: see evaluateMomentum
       if(has(it.id)) continue;
       if(it.modeId && it.modeId !== ctx.mode.id) continue;
       let ok = false;
@@ -262,6 +270,13 @@
   function evaluateGold(total, has){
     const out = [];
     for(const it of CATALOG){ if(it.gold == null || has(it.id)) continue; if(total >= it.gold) out.push(it); }
+    return sortItems(out);
+  }
+
+  // Momentum milestones, given the high-water momentum mark `best` (T31).
+  function evaluateMomentum(best, has){
+    const out = [];
+    for(const it of CATALOG){ if(it.momentum == null || has(it.id)) continue; if(best >= it.momentum) out.push(it); }
     return sortItems(out);
   }
 
@@ -986,7 +1001,7 @@
     RANKS, RARITY, paletteFor, rankIndex,
     CATALOG, byId: id => byIdMap[id], modeItems,
     categories: () => CATS.slice(),
-    evaluate, evaluateCollector, evaluateTopics, evaluateMeta, evaluateGold, evaluateQuestion, drawIcon,
+    evaluate, evaluateCollector, evaluateTopics, evaluateMeta, evaluateGold, evaluateMomentum, evaluateQuestion, drawIcon,
     // item layer (T20)
     HERO_IDS, HERO_NAMES, STAT_NAMES, boostLabel,
     // icon system (T36): ~50 categories over 12 archetypes + variation
