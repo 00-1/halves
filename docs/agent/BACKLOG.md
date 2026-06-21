@@ -631,18 +631,19 @@ tier-100 boss). Display-only — tier numbers/`def`/loot ids (`loot:<n>:<k>`) an
 battle logic are **unchanged**; only the name strings in `enemies.js` change. The
 Babysitter will paste the **owner-approved** region list + rank-title ladder +
 tier-100 name here once the naming research returns and the owner signs off.
-- **PROPOSED (research — AWAITING OWNER SIGN-OFF; do not apply yet):**
-  - **Regions (1→10):** Goblin Warren · Bandit Camp · Whispering Woods · Haunted
-    Marsh · Frostpeak Caverns · Sunken Catacombs · Ember Wastes · Stormspire ·
-    Dragon's Roost · The Void Throne. *(Shadowfen dropped as too like Haunted Marsh;
-    Whispering Woods added; reordered as a varied terrain climb.)*
+- **PROPOSED v2 (construction-varied per owner — AWAITING SIGN-OFF; do not apply yet):**
+  - **Regions (1→10):** Goblin Warren · Gallowmarch · Gloamwood · Haunted Marsh ·
+    Frostpeak Caverns · Drownholm · Cinderwaste · Stormspire · Dragon's Roost · The
+    Void Throne. *(Several converted to single fused words for construction variety;
+    only one pure adjective-noun left. All prefix the rank-titles cleanly.)*
   - **Rank-titles (1→10, reused per region):** Runt · Sentry · Brute · Raider ·
-    Warden · Champion · Reaver · Dread · Warlord · Overlord. *(clean weakest→
-    strongest; none imply a combat type.)*
+    Warden · Champion · Reaver · Dread · Warlord · Overlord. *(non-boss tiers =
+    "<Region> <Rank>", e.g. "Gloamwood Reaver".)*
+  - **Named region bosses (tiers 10/20/…/90 — owner likes these; varied forms):**
+    10 Snaggletooth, the Goblin King · 20 The Highwayman · 30 Old Mother Bramble ·
+    40 Gurgle, King of the Bog · 50 The Frost Jarl · 60 Bonecaller · 70 Cindermaw ·
+    80 Voltan, Lord of Storms · 90 the Elder Wyrm.
   - **Tier 100:** The Void Sovereign *(kept)*.
-  - **Optional** named region bosses (tiers 10/20/…/90) instead of "<Region>
-    Overlord": Goblin King, Bandit Lord, Marsh Witch (woods/marsh), Frost Jarl,
-    Bone Tyrant, Cinder Lord, Storm Tyrant, Elder Wyrm… — owner to decide.
 - **DoD:** the 10 region names + 10 rank-title ladder + tier-100 name match the
   approved set; tier numbering/def/loot/battle logic untouched; the Arena/tier UI
   shows the new names; Node: every tier still has a non-empty name and the loot/def
