@@ -6,6 +6,72 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T94 — Celebration-burst capability on `fxgl.js` (engine side; [B])
+
+**Status: DONE — handed off for review.** Edited only B-owned files
+(`fxgl.js`, `test/fxgl.test.js`); **zero edits to any existing Halves file**
+(wiring the burst onto real win/collectible-gain hooks in `main.js` is the
+[A] *T94w* task). No deps/bundler; deploy-safe; all existing gates green.
+
+### What shipped
+- **New API: `FXGL.burst({ x, y, palette, count, seed })`** (and
+  `controller.burst(...)`). Purpose = **CELEBRATION** — a brief, capped, seeded
+  flourish to *amplify a reward*. `x,y` are normalised [0,1] screen coords
+  (default centre); `palette` tints it (default warm gold/white); `count` is
+  clamped to `BURST_CAP` (256); `seed` makes it **deterministic**.
+- **Consistent with the T93 engine philosophy:** each burst particle stores its
+  launch point/velocity/life/spin in a **static instance buffer** uploaded once;
+  the trajectory is **closed-form ballistic** (terminal-velocity drag,
+  `v' = g − k·v`) evaluated **in-shader** from `uTime`, so a burst stays **one
+  upload + one instanced draw/frame** and needs no per-frame CPU stepping.
+- **Auto-stops, no RAF leak.** Particles self-expire (alpha 0 after `life`); the
+  controller deactivates the burst once `elapsed > maxDeath`, clears the buffer,
+  and lets the **single shared RAF** idle. A burst can run with **no ambient
+  scene** (a transparent overlay surface) or **over** a running T93 scene (the
+  loop is shared — scene field + burst = 2 instanced draws/frame).
+- **Flurries coalesce.** Rapid gains stack into one rolling buffer (each particle
+  carries its own `birth`), capped at `BURST_CAP` (oldest dropped) — never a
+  runaway.
+- **Reduced-motion → a calm flourish** (not nothing, per the DoD): fewer
+  particles, lower speed, no gravity tumble, shorter life — and it still
+  auto-stops. The additive `pointer-events:none` overlay never blocks text
+  (readability stays the [A] mount's concern; engine draws behind/around DOM).
+- **All three backends** carry it: WebGL2 (a 3rd program reusing the splat FS),
+  WebGPU (a 3rd pipeline + WGSL module), and a light CPU 2D flourish for no-GPU.
+
+### Brickmap borrowing (T94)
+Extends the **T93** ports — same instanced-billboard splat recipe (disc mask +
+additive falloff from `splat.wgsl`) and the **xorshift32** seed RNG
+(`particles.rs`); the burst adds a closed-form drag trajectory (the analytic
+solution of `particles.rs`'s gravity+drag integration). No new brickmap read was
+required; no Rust/WASM pulled in.
+
+### Verification
+`node -c` clean; `node test/fxgl.test.js` → **67 checks** (T93's 46 + 21 new):
+seedBurst capped/deterministic/calmer-under-reduced; `burstPos` lifecycle
+(invisible before birth & after life, visible mid-life); `burstMaxDeath`; the
+controller burst **pumps one RAF**, **one instanced draw/frame**, **auto-stops
+with no leak**, **caps at BURST_CAP**, runs **standalone or over a scene** (2
+draws/frame, textures still uploaded once), and the **reduced-motion calm
+flourish** also auto-stops. Full existing 24-gate Halves suite still green
+(B touched nothing else).
+
+### Hand-off to Builder A (the [A] *T94w* wiring task)
+- Mount a full-screen, `aria-hidden`, `pointer-events:none` overlay canvas;
+  `const fx = FXGL.mount(overlay, { width, height });` then call
+  `fx.burst({ x, y, palette, seed })` on the **existing** win/unlock moments:
+  Arena victory (T90 playout) and collectible/loot/event-reward gains. `x,y` =
+  the gain's on-screen point normalised to [0,1] (else it defaults to centre);
+  `palette` can follow the reward's rarity colours. The burst auto-stops, so no
+  teardown is needed between events. Register `test/fxgl.test.js` as a CI gate
+  (still the [A] wiring task's call, alongside the T93 mount).
+
+### Next (Builder B)
+- The engine side of **T95** (semantic home/menu backdrop driven by live
+  event/progress state), per the REVIEW.md pointer.
+
+---
+
 ## T93 — `fxgl.js` FX engine (standalone, brickmap-borrowed, headless-tested)
 
 **Status: DONE — handed off for review.** New files only; zero edits to existing

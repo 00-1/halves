@@ -199,5 +199,75 @@ ok(typeof caps.webgpu === "boolean" && typeof caps.webgl2 === "boolean" && typeo
 ok(/BAYER|bayer/.test(FXGL.shaders.GLSL_SCENE_FS) && /bayer/.test(FXGL.shaders.WGSL_SCENE), "both scene shaders dither (Bayer)");
 ok(/drawArraysInstanced/.test(src) && /draw\(6,/.test(src), "both backends issue an instanced particle draw");
 
+// =====================================================================
+// 8) Celebration burst (T94) — brief, capped, seeded, deterministic, auto-stops
+// =====================================================================
+// pure seed: deterministic, capped, reduced = calmer
+const bA = FXGL.seedBurst({ count: 50, seed: 42, x: 0.5, y: 0.5 }, false, FXGL.BURST_CAP);
+const bB = FXGL.seedBurst({ count: 50, seed: 42 }, false, FXGL.BURST_CAP);
+const bC = FXGL.seedBurst({ count: 50, seed: 43 }, false, FXGL.BURST_CAP);
+ok(JSON.stringify(bA) === JSON.stringify(bB), "seedBurst is deterministic for a seed");
+ok(JSON.stringify(bA) !== JSON.stringify(bC), "a different seed → a different burst");
+ok(FXGL.seedBurst({ count: 99999, seed: 1 }, false, FXGL.BURST_CAP).length === FXGL.BURST_CAP,
+   "seedBurst caps at BURST_CAP (" + FXGL.BURST_CAP + ")");
+const full = FXGL.seedBurst({ count: 100, seed: 5 }, false, FXGL.BURST_CAP).length;
+const calm = FXGL.seedBurst({ count: 100, seed: 5 }, true, FXGL.BURST_CAP).length;
+ok(calm < full, "reduced motion → a calmer, fewer-particle flourish (" + calm + " < " + full + ")");
+
+// closed-form lifecycle: invisible before birth / after life, visible mid-life
+const one = FXGL.seedBurst({ count: 1, seed: 3, x: 0.5, y: 0.5 }, false, FXGL.BURST_CAP)[0]; one.birth = 0;
+const G = FXGL.BURST_GRAVITY, K = FXGL.BURST_DRAG;
+const pre = FXGL.burstPos(one, -0.1, G, K), mid = FXGL.burstPos(one, one.life * 0.5, G, K), post = FXGL.burstPos(one, one.life + 0.5, G, K);
+ok(pre.alpha === 0 && !pre.alive, "burstPos: alpha 0 before birth");
+ok(mid.alive && mid.alpha > 0, "burstPos: alive + visible mid-life");
+ok(post.alpha === 0 && !post.alive, "burstPos: alpha 0 after life (particles self-expire)");
+ok(FXGL.burstMaxDeath(bA) > 0 && FXGL.burstMaxDeath([{ birth: 1, life: 0.5 }]) === 1.5, "burstMaxDeath = latest birth+life");
+
+// controller burst as a STANDALONE overlay (no ambient scene set)
+const brec = { texImage2D: 0, drawArraysInstanced: 0, drawArrays: 0, bufferData: 0 };
+const bgl = makeGL(brec);
+let bq = [], bcaf = 0;
+const bc = new FXGL.Controller(stubCanvas(), { gl: bgl, raf: cb => { bq.push(cb); return bq.length; }, caf: () => { bcaf++; }, width: 120, height: 200, dpr: 1, quality: 2, reducedMotion: false });
+bc.burst({ x: 0.5, y: 0.5, count: 120, seed: 9, palette: ["#ffd98a", "#ffffff"] });
+ok(bc.isBursting() && bc.burstCount() === 120, "burst() fires a 120-particle overlay (no scene needed)");
+ok(bq.length === 1, "burst() pumps exactly ONE rAF (single loop)");
+let bts = 0, bf = 0;
+while(bq.length && bf < 200){ const cb = bq.shift(); bts += 80; cb(bts); bf++; }
+ok(brec.drawArraysInstanced === bf, "exactly one instanced burst draw per frame (" + bf + ")");
+ok(brec.drawArrays === 0, "a burst-only overlay draws no scene pass");
+ok(!bc.isBursting() && bq.length === 0 && bc.rafId === 0, "the burst auto-stops and idles the RAF — no leak (" + bf + " frames)");
+ok(bc.burstCount() === 0, "the burst buffer is released on auto-stop");
+
+// burst is capped at the controller too
+const cap2 = new FXGL.Controller(stubCanvas(), { gl: makeGL({}), raf: () => {}, caf: () => {}, width: 100, height: 100, dpr: 1, reducedMotion: false });
+cap2.burst({ count: 99999, seed: 2 });
+ok(cap2.burstCount() === FXGL.BURST_CAP, "a controller burst is capped at BURST_CAP (" + cap2.burstCount() + ")");
+
+// burst OVER a running ambient scene: a frame draws the field AND the burst
+const srec = { texImage2D: 0, drawArraysInstanced: 0, drawArrays: 0, bufferData: 0 };
+let sq = [];
+const sc = new FXGL.Controller(stubCanvas(), { gl: makeGL(srec), raf: cb => { sq.push(cb); return sq.length; }, caf: () => {}, width: 120, height: 200, dpr: 1, quality: 2, reducedMotion: false });
+sc.setScene({ grid: grid, seed: 4, particles: { kind: "snow", count: 40 } });
+sc.start();
+sc.burst({ count: 60, seed: 2 });
+ok(sq.length === 1, "scene + burst share the single RAF (still one frame in flight)");
+const cbA = sq.shift(); cbA(50); const after1 = srec.drawArraysInstanced;
+const cbB = sq.shift(); cbB(130); const after2 = srec.drawArraysInstanced;
+ok(after1 === 2 && after2 === 4, "a running scene + a burst draw 2 instanced calls/frame (field + burst)");
+ok(srec.texImage2D === 2, "the burst never re-uploads the scene textures (still one-time)");
+
+// reduced-motion burst still fires a calm flourish AND auto-stops (no leak)
+let rq = [];
+const rc = new FXGL.Controller(stubCanvas(), { gl: makeGL({}), raf: cb => { rq.push(cb); return rq.length; }, caf: () => {}, width: 100, height: 100, dpr: 1, reducedMotion: true });
+rc.burst({ count: 100, seed: 5 });
+ok(rc.isBursting() && rc.burstCount() === calm, "a reduced-motion burst fires the calm flourish");
+let rts = 0, rf = 0;
+while(rq.length && rf < 200){ const cb = rq.shift(); rts += 80; cb(rts); rf++; }
+ok(!rc.isBursting() && rq.length === 0, "the reduced-motion burst also auto-stops cleanly");
+
+// both GPU paths carry the burst pipeline
+ok(/exp\(-k\*lt\)/.test(FXGL.shaders.GLSL_BURST_VS) && /exp\(-k\*lt\)/.test(FXGL.shaders.WGSL_BURST),
+   "both burst shaders use the closed-form drag trajectory");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FXGL CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

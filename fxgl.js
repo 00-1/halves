@@ -44,6 +44,14 @@
   const KIND = { motes: 0, embers: 1, snow: 2, stars: 3 };
   const TAU = Math.PI * 2;
 
+  // Celebration-burst budget (T94): a brief, transient flourish — its own cap,
+  // separate from the ambient field. Motion is closed-form ballistic (terminal-
+  // velocity drag), animated in-shader from a static buffer, so a burst stays a
+  // one-time upload + one draw call and auto-stops when its particles expire.
+  const BURST_CAP = 256;            // hard ceiling on live burst particles
+  const BURST_GRAVITY = 1.2;        // screen-fractions / s²  (down = +y)
+  const BURST_DRAG = 1.6;           // velocity damping rate (1/s)
+
   // The 4×4 ordered (Bayer) matrix, row-major — the same lattice brickmap uses
   // for its palette dither and its foliage stipple.
   const BAYER = [ 0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5 ];
@@ -187,6 +195,71 @@
     return { x: x, y: y, alpha: Math.max(0, Math.min(1, a)), size: s.size };
   }
 
+  function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  // Seed a celebration burst (T94) — purpose: CELEBRATION, amplify a reward.
+  // Deterministic from `seed`, capped, and (under reduced motion) a calm, slow,
+  // small flourish rather than a full pop. Each particle carries its launch
+  // point/velocity/life/spin; its trajectory is closed-form (see burstPos), so
+  // the buffer is static and the motion runs in-shader. `birth` is stamped by
+  // the controller when the burst actually fires (supports rapid flurries).
+  function seedBurst(opts, reduced, cap){
+    opts = opts || {};
+    const x0 = clamp01(opts.x != null ? opts.x : 0.5);
+    const y0 = clamp01(opts.y != null ? opts.y : 0.5);
+    const want = (opts.count != null) ? (opts.count | 0) : 80;
+    const scale = reduced ? 0.35 : 1;
+    const n = Math.max(0, Math.min(cap | 0, Math.round(want * scale)));
+    const rng = makeRng((opts.seed | 0) || 0x51ed270b);
+    let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor) : [[255, 217, 138], [255, 255, 255]];
+    if(!pool.length) pool = [[255, 255, 255]];
+    const sMax = reduced ? 0.22 : 0.85;     // peak outward speed (screen-frac/s)
+    const up = reduced ? 0.10 : 0.42;       // upward kick (confetti arc)
+    const lMax = reduced ? 0.7 : 1.4;       // longest life (s)
+    const spin = reduced ? 1.5 : 9;         // rotation rate spread
+    const szMax = reduced ? 4 : 7;
+    const out = new Array(n);
+    for(let i = 0; i < n; i++){
+      const ang = rng() * TAU, spd = lerp(0.14, sMax, rng());
+      const col = pool[(rng() * pool.length) | 0];
+      out[i] = {
+        x0: x0, y0: y0,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - lerp(up * 0.4, up, rng()),  // bias upward
+        size: lerp(2, szMax, rng()),
+        r: col[0], g: col[1], b: col[2],
+        life: lerp(0.6, lMax, rng()),
+        vrot: lerp(-spin, spin, rng()),
+        birth: 0
+      };
+    }
+    return out;
+  }
+
+  // Closed-form ballistic position + fade for a burst particle at burst-elapsed
+  // time `t` (the GLSL/WGSL vertex shaders compute the identical trajectory, so
+  // this both documents the motion and bounds it in tests). Terminal-velocity
+  // drag: v' = g - k·v. Returns normalised position, alpha (0 before birth /
+  // after life), and a liveness flag.
+  function burstPos(p, t, g, k){
+    g = (g == null) ? BURST_GRAVITY : g;
+    k = Math.max((k == null) ? BURST_DRAG : k, 1e-4);
+    const lt = t - p.birth;
+    if(lt < 0 || lt > p.life) return { x: p.x0, y: p.y0, alpha: 0, alive: false };
+    const e = Math.exp(-k * lt);
+    const x = p.x0 + p.vx * (1 - e) / k;
+    const y = p.y0 + (g / k) * lt + (p.vy - g / k) * (1 - e) / k;
+    const fadeIn = Math.min(1, lt / 0.08);
+    const fadeOut = Math.max(0, 1 - lt / p.life);
+    return { x: x, y: y, alpha: clamp01(fadeIn * fadeOut), alive: true };
+  }
+  // The latest death time across a burst (controller uses it to auto-stop).
+  function burstMaxDeath(particles){
+    let m = 0;
+    for(const p of particles){ const d = p.birth + p.life; if(d > m) m = d; }
+    return m;
+  }
+
   // Precompute the per-scene render data shared by every backend (pure).
   function deriveScene(scene, cap){
     if(!scene || !scene.grid || !scene.grid.length) throw new Error("FXGL.setScene needs a grid");
@@ -277,6 +350,37 @@
 "  frag = vec4(vColor/255.0 * a, a);\n" +
 "}\n";
 
+  // Celebration burst (T94) — instanced billboards on a closed-form ballistic
+  // path, animated in-shader from a static buffer. Reuses the particle FS
+  // (disc mask + additive falloff). Dead/unborn instances collapse to alpha 0.
+  const GLSL_BURST_VS =
+"#version 300 es\n" +
+"layout(location=0) in vec2 aP0;\n" +
+"layout(location=1) in vec2 aVel;\n" +
+"layout(location=2) in float aSize;\n" +
+"layout(location=3) in vec3 aColor;\n" +
+"layout(location=4) in float aLife;\n" +
+"layout(location=5) in float aBirth;\n" +
+"layout(location=6) in float aVRot;\n" +
+"uniform float uTime; uniform vec2 uRes; uniform float uGrav; uniform float uDrag;\n" +
+"out vec3 vColor; out vec2 vQuad; out float vAlpha;\n" +
+"void main(){\n" +
+"  vec2 corners[6] = vec2[6](vec2(-0.5,-0.5),vec2(0.5,-0.5),vec2(0.5,0.5),vec2(-0.5,-0.5),vec2(0.5,0.5),vec2(-0.5,0.5));\n" +
+"  vec2 q = corners[gl_VertexID];\n" +
+"  float lt = uTime - aBirth; float k = max(uDrag, 0.0001); float e = exp(-k*lt);\n" +
+"  vec2 pos = aP0;\n" +
+"  pos.x += aVel.x*(1.0-e)/k;\n" +
+"  pos.y += (uGrav/k)*lt + (aVel.y - uGrav/k)*(1.0-e)/k;\n" +
+"  float alive = (lt >= 0.0 && lt <= aLife) ? 1.0 : 0.0;\n" +
+"  float a = clamp(lt/0.08,0.0,1.0) * clamp(1.0 - lt/aLife,0.0,1.0) * alive;\n" +
+"  float rot = aVRot*lt; float cs = cos(rot), sn = sin(rot);\n" +
+"  vec2 cr = vec2(q.x*cs - q.y*sn, q.x*sn + q.y*cs);\n" +
+"  vec2 center = vec2(pos.x*2.0-1.0, 1.0 - pos.y*2.0);\n" +
+"  vec2 off = cr * (aSize/uRes) * 2.0; off.y = -off.y;\n" +
+"  gl_Position = vec4(center + off, 0.0, 1.0);\n" +
+"  vColor = aColor; vQuad = q; vAlpha = a;\n" +
+"}\n";
+
   // WGSL for the WebGPU path — the same two passes (scene quantise + splats).
   const WGSL_SCENE =
 "struct VsOut { @builtin(position) pos: vec4<f32>, @location(0) uv: vec2<f32> };\n" +
@@ -329,6 +433,34 @@
 "  return vec4<f32>(in.color * a, a);\n" +
 "}\n";
 
+  const WGSL_BURST =
+"struct U { time: f32, resx: f32, resy: f32, grav: f32, drag: f32, _p0: f32, _p1: f32, _p2: f32 };\n" +
+"@group(0) @binding(0) var<uniform> u: U;\n" +
+"struct Inst { @location(0) p0: vec2<f32>, @location(1) vel: vec2<f32>, @location(2) size: f32, @location(3) color: vec3<f32>, @location(4) life: f32, @location(5) birth: f32, @location(6) vrot: f32 };\n" +
+"struct VsOut { @builtin(position) pos: vec4<f32>, @location(0) color: vec3<f32>, @location(1) quad: vec2<f32>, @location(2) alpha: f32 };\n" +
+"@vertex fn vs(@builtin(vertex_index) vi: u32, inst: Inst) -> VsOut {\n" +
+"  var corners = array<vec2<f32>,6>(vec2(-0.5,-0.5),vec2(0.5,-0.5),vec2(0.5,0.5),vec2(-0.5,-0.5),vec2(0.5,0.5),vec2(-0.5,0.5));\n" +
+"  let q = corners[vi];\n" +
+"  let lt = u.time - inst.birth; let k = max(u.drag, 0.0001); let e = exp(-k*lt);\n" +
+"  var pos = inst.p0;\n" +
+"  pos.x = pos.x + inst.vel.x*(1.0-e)/k;\n" +
+"  pos.y = pos.y + (u.grav/k)*lt + (inst.vel.y - u.grav/k)*(1.0-e)/k;\n" +
+"  var alive = 0.0; if(lt >= 0.0 && lt <= inst.life){ alive = 1.0; }\n" +
+"  let a = clamp(lt/0.08,0.0,1.0) * clamp(1.0 - lt/inst.life,0.0,1.0) * alive;\n" +
+"  let rot = inst.vrot*lt; let cs = cos(rot); let sn = sin(rot);\n" +
+"  let cr = vec2<f32>(q.x*cs - q.y*sn, q.x*sn + q.y*cs);\n" +
+"  let center = vec2<f32>(pos.x*2.0-1.0, 1.0 - pos.y*2.0);\n" +
+"  var off = cr * (inst.size/vec2<f32>(u.resx,u.resy)) * 2.0; off.y = -off.y;\n" +
+"  var o: VsOut; o.pos = vec4<f32>(center+off, 0.0, 1.0);\n" +
+"  o.color = inst.color/255.0; o.quad = q; o.alpha = a; return o;\n" +
+"}\n" +
+"@fragment fn fs(in: VsOut) -> @location(0) vec4<f32> {\n" +
+"  let d2 = dot(in.quad, in.quad);\n" +
+"  if(d2 > 0.25){ discard; }\n" +
+"  let a = in.alpha * (1.0 - d2*4.0);\n" +
+"  return vec4<f32>(in.color * a, a);\n" +
+"}\n";
+
   // =========================================================================
   // WebGL2 backend
   // =========================================================================
@@ -357,6 +489,7 @@
     this.gl = gl; this.name = "webgl2";
     this.sceneP = program(gl, GLSL_SCENE_VS, GLSL_SCENE_FS);
     this.partP = program(gl, GLSL_PART_VS, GLSL_PART_FS);
+    this.burstP = program(gl, GLSL_BURST_VS, GLSL_PART_FS);  // burst reuses the splat FS
     this.u = {
       sScene: gl.getUniformLocation(this.sceneP, "uScene"),
       sRamp: gl.getUniformLocation(this.sceneP, "uRamp"),
@@ -364,13 +497,19 @@
       sDither: gl.getUniformLocation(this.sceneP, "uDither"),
       sTime: gl.getUniformLocation(this.sceneP, "uTime"),
       pTime: gl.getUniformLocation(this.partP, "uTime"),
-      pRes: gl.getUniformLocation(this.partP, "uRes")
+      pRes: gl.getUniformLocation(this.partP, "uRes"),
+      bTime: gl.getUniformLocation(this.burstP, "uTime"),
+      bRes: gl.getUniformLocation(this.burstP, "uRes"),
+      bGrav: gl.getUniformLocation(this.burstP, "uGrav"),
+      bDrag: gl.getUniformLocation(this.burstP, "uDrag")
     };
     this.sceneTex = gl.createTexture();
     this.rampTex = gl.createTexture();
     this.instBuf = gl.createBuffer();
+    this.burstBuf = gl.createBuffer();
     this.vao = gl.createVertexArray ? gl.createVertexArray() : null;
-    this.count = 0; this.rampCount = 2; this.dither = 1; this.w = 1; this.h = 1;
+    this.burstVao = gl.createVertexArray ? gl.createVertexArray() : null;
+    this.count = 0; this.burstCount = 0; this.rampCount = 2; this.dither = 1; this.w = 1; this.h = 1;
   }
   GLBackend.prototype.tex = function(tex, w, h, data){
     const gl = this.gl;
@@ -409,27 +548,60 @@
     setA(0, 2, 0); setA(1, 1, 8); setA(2, 3, 12); setA(3, 1, 24); setA(4, 1, 28); setA(5, 1, 32); setA(6, 1, 36); setA(7, 1, 40);
     if(this.vao) gl.bindVertexArray(null);
   };
+  // One-time upload of a celebration burst's static instance buffer (T94).
+  GLBackend.prototype.setBurst = function(parts){
+    const gl = this.gl, FL = 11, arr = new Float32Array(parts.length * FL);
+    for(let i = 0; i < parts.length; i++){
+      const s = parts[i], o = i * FL;
+      arr[o] = s.x0; arr[o + 1] = s.y0; arr[o + 2] = s.vx; arr[o + 3] = s.vy;
+      arr[o + 4] = s.size; arr[o + 5] = s.r; arr[o + 6] = s.g; arr[o + 7] = s.b;
+      arr[o + 8] = s.life; arr[o + 9] = s.birth; arr[o + 10] = s.vrot;
+    }
+    this.burstCount = parts.length;
+    if(this.burstVao) gl.bindVertexArray(this.burstVao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.burstBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
+    const stride = FL * 4;
+    const setA = (loc, size, off) => { gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, stride, off); gl.vertexAttribDivisor(loc, 1); };
+    setA(0, 2, 0); setA(1, 2, 8); setA(2, 1, 16); setA(3, 3, 20); setA(4, 1, 32); setA(5, 1, 36); setA(6, 1, 40);
+    if(this.burstVao) gl.bindVertexArray(null);
+  };
   GLBackend.prototype.resize = function(w, h){ this.w = Math.max(1, w | 0); this.h = Math.max(1, h | 0); this.gl.viewport(0, 0, this.w, this.h); };
-  GLBackend.prototype.render = function(time){
-    const gl = this.gl, u = this.u;
+  // Unified frame: clear (opaque under a scene backdrop, transparent for a
+  // burst-only overlay), draw the scene + ambient field, then the burst on top.
+  GLBackend.prototype.renderFrame = function(o){
+    const gl = this.gl, u = this.u, sceneOn = !!o.sceneOn, burstOn = !!o.burstOn;
     gl.viewport(0, 0, this.w, this.h);
     gl.disable(gl.DEPTH_TEST);
-    gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
-    // pass 1 — the dithered, palette-quantised scene
-    gl.disable(gl.BLEND);
-    gl.useProgram(this.sceneP);
-    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.sceneTex); gl.uniform1i(u.sScene, 0);
-    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.rampTex); gl.uniform1i(u.sRamp, 1);
-    gl.uniform1f(u.sCount, this.rampCount); gl.uniform1f(u.sDither, this.dither); gl.uniform1f(u.sTime, time);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    // pass 2 — the additive instanced particle field (one draw call)
-    if(this.count > 0){
+    gl.clearColor(0, 0, 0, sceneOn ? 1 : 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    if(sceneOn){
+      // pass 1 — the dithered, palette-quantised scene
+      gl.disable(gl.BLEND);
+      gl.useProgram(this.sceneP);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.sceneTex); gl.uniform1i(u.sScene, 0);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.rampTex); gl.uniform1i(u.sRamp, 1);
+      gl.uniform1f(u.sCount, this.rampCount); gl.uniform1f(u.sDither, this.dither); gl.uniform1f(u.sTime, o.sceneTime || 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      // pass 2 — the additive instanced ambient particle field (one draw call)
+      if(this.count > 0){
+        gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+        gl.useProgram(this.partP);
+        gl.uniform1f(u.pTime, o.sceneTime || 0); gl.uniform2f(u.pRes, this.w, this.h);
+        if(this.vao) gl.bindVertexArray(this.vao);
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
+        if(this.vao) gl.bindVertexArray(null);
+        gl.disable(gl.BLEND);
+      }
+    }
+    // pass 3 — the celebration burst, additive over whatever is beneath it
+    if(burstOn && this.burstCount > 0){
       gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
-      gl.useProgram(this.partP);
-      gl.uniform1f(u.pTime, time); gl.uniform2f(u.pRes, this.w, this.h);
-      if(this.vao) gl.bindVertexArray(this.vao);
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
-      if(this.vao) gl.bindVertexArray(null);
+      gl.useProgram(this.burstP);
+      gl.uniform1f(u.bTime, o.burstTime || 0); gl.uniform2f(u.bRes, this.w, this.h);
+      gl.uniform1f(u.bGrav, BURST_GRAVITY); gl.uniform1f(u.bDrag, BURST_DRAG);
+      if(this.burstVao) gl.bindVertexArray(this.burstVao);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.burstCount);
+      if(this.burstVao) gl.bindVertexArray(null);
       gl.disable(gl.BLEND);
     }
   };
@@ -438,9 +610,12 @@
     gl.deleteTexture && gl.deleteTexture(this.sceneTex);
     gl.deleteTexture && gl.deleteTexture(this.rampTex);
     gl.deleteBuffer && gl.deleteBuffer(this.instBuf);
+    gl.deleteBuffer && gl.deleteBuffer(this.burstBuf);
     gl.deleteProgram && gl.deleteProgram(this.sceneP);
     gl.deleteProgram && gl.deleteProgram(this.partP);
+    gl.deleteProgram && gl.deleteProgram(this.burstP);
     if(this.vao && gl.deleteVertexArray) gl.deleteVertexArray(this.vao);
+    if(this.burstVao && gl.deleteVertexArray) gl.deleteVertexArray(this.burstVao);
   };
 
   // =========================================================================
@@ -448,11 +623,13 @@
   // =========================================================================
   function GPUBackend(device, ctx, format){
     this.name = "webgpu"; this.device = device; this.ctx = ctx; this.format = format;
-    this.w = 1; this.h = 1; this.count = 0;
+    this.w = 1; this.h = 1; this.count = 0; this.burstCount = 0;
     const sm = device.createShaderModule({ code: WGSL_SCENE });
     const pm = device.createShaderModule({ code: WGSL_PART });
+    const bm = device.createShaderModule({ code: WGSL_BURST });
     this.sceneU = device.createBuffer({ size: 16, usage: 0x40 | 0x8 /* UNIFORM|COPY_DST */ });
     this.partU = device.createBuffer({ size: 16, usage: 0x40 | 0x8 });
+    this.burstU = device.createBuffer({ size: 32, usage: 0x40 | 0x8 });
     this.sampler = device.createSampler({ magFilter: "nearest", minFilter: "nearest" });
     this.scenePipe = device.createRenderPipeline({
       layout: "auto",
@@ -472,6 +649,24 @@
       },
       fragment: {
         module: pm, entryPoint: "fs",
+        targets: [{ format: format, blend: {
+          color: { srcFactor: "one", dstFactor: "one", operation: "add" },
+          alpha: { srcFactor: "one", dstFactor: "one", operation: "add" }
+        } }]
+      },
+      primitive: { topology: "triangle-list" }
+    });
+    this.burstPipe = device.createRenderPipeline({
+      layout: "auto",
+      vertex: {
+        module: bm, entryPoint: "vs",
+        buffers: [{
+          arrayStride: 44, stepMode: "instance",
+          attributes: [ fl(0, "float32x2", 0), fl(8, "float32x2", 1), fl(16, "float32", 2), fl(20, "float32x3", 3), fl(32, "float32", 4), fl(36, "float32", 5), fl(40, "float32", 6) ]
+        }]
+      },
+      fragment: {
+        module: bm, entryPoint: "fs",
         targets: [{ format: format, blend: {
           color: { srcFactor: "one", dstFactor: "one", operation: "add" },
           alpha: { srcFactor: "one", dstFactor: "one", operation: "add" }
@@ -503,33 +698,67 @@
     this.count = ps.length;
     if(ps.length){ this.instBuf = d.createBuffer({ size: arr.byteLength, usage: 0x20 | 0x8 /* VERTEX|COPY_DST */ }); d.queue.writeBuffer(this.instBuf, 0, arr); }
   };
-  GPUBackend.prototype.resize = function(w, h){ this.w = Math.max(1, w | 0); this.h = Math.max(1, h | 0); };
-  GPUBackend.prototype.render = function(time){
+  GPUBackend.prototype.setBurst = function(parts){
     const d = this.device;
-    d.queue.writeBuffer(this.sceneU, 0, new Float32Array([this.rampCount, this.dither, time, 0]));
-    d.queue.writeBuffer(this.partU, 0, new Float32Array([time, this.w, this.h, 0]));
+    if(!this.burstBind) this.burstBind = d.createBindGroup({ layout: this.burstPipe.getBindGroupLayout(0), entries: [ { binding: 0, resource: { buffer: this.burstU } } ] });
+    const arr = new Float32Array(parts.length * 11);
+    for(let i = 0; i < parts.length; i++){ const s = parts[i], o = i * 11;
+      arr[o] = s.x0; arr[o + 1] = s.y0; arr[o + 2] = s.vx; arr[o + 3] = s.vy; arr[o + 4] = s.size;
+      arr[o + 5] = s.r; arr[o + 6] = s.g; arr[o + 7] = s.b; arr[o + 8] = s.life; arr[o + 9] = s.birth; arr[o + 10] = s.vrot; }
+    this.burstCount = parts.length;
+    if(this.burstBuf && this.burstBuf.destroy) this.burstBuf.destroy();
+    if(parts.length){ this.burstBuf = d.createBuffer({ size: arr.byteLength, usage: 0x20 | 0x8 }); d.queue.writeBuffer(this.burstBuf, 0, arr); }
+  };
+  GPUBackend.prototype.resize = function(w, h){ this.w = Math.max(1, w | 0); this.h = Math.max(1, h | 0); };
+  GPUBackend.prototype.renderFrame = function(o){
+    const d = this.device, sceneOn = !!o.sceneOn, burstOn = !!o.burstOn;
+    const st = o.sceneTime || 0, bt = o.burstTime || 0;
+    if(sceneOn){ d.queue.writeBuffer(this.sceneU, 0, new Float32Array([this.rampCount, this.dither, st, 0])); d.queue.writeBuffer(this.partU, 0, new Float32Array([st, this.w, this.h, 0])); }
+    if(burstOn) d.queue.writeBuffer(this.burstU, 0, new Float32Array([bt, this.w, this.h, BURST_GRAVITY, BURST_DRAG, 0, 0, 0]));
     const enc = d.createCommandEncoder();
     const view = this.ctx.getCurrentTexture().createView();
-    const pass = enc.beginRenderPass({ colorAttachments: [{ view: view, clearValue: { r: 0, g: 0, b: 0, a: 1 }, loadOp: "clear", storeOp: "store" }] });
-    pass.setPipeline(this.scenePipe); pass.setBindGroup(0, this.sceneBind); pass.draw(3, 1, 0, 0);
-    if(this.count > 0){ pass.setPipeline(this.partPipe); pass.setBindGroup(0, this.partBind); pass.setVertexBuffer(0, this.instBuf); pass.draw(6, this.count, 0, 0); }
+    const pass = enc.beginRenderPass({ colorAttachments: [{ view: view, clearValue: { r: 0, g: 0, b: 0, a: sceneOn ? 1 : 0 }, loadOp: "clear", storeOp: "store" }] });
+    if(sceneOn){
+      pass.setPipeline(this.scenePipe); pass.setBindGroup(0, this.sceneBind); pass.draw(3, 1, 0, 0);
+      if(this.count > 0){ pass.setPipeline(this.partPipe); pass.setBindGroup(0, this.partBind); pass.setVertexBuffer(0, this.instBuf); pass.draw(6, this.count, 0, 0); }
+    }
+    if(burstOn && this.burstCount > 0){ pass.setPipeline(this.burstPipe); pass.setBindGroup(0, this.burstBind); pass.setVertexBuffer(0, this.burstBuf); pass.draw(6, this.burstCount, 0, 0); }
     pass.end(); d.queue.submit([enc.finish()]);
   };
   GPUBackend.prototype.dispose = function(){
     this.sceneTex && this.sceneTex.destroy && this.sceneTex.destroy();
     this.rampTex && this.rampTex.destroy && this.rampTex.destroy();
     this.instBuf && this.instBuf.destroy && this.instBuf.destroy();
+    this.burstBuf && this.burstBuf.destroy && this.burstBuf.destroy();
   };
 
   // =========================================================================
   // CPU still backend — the no-GPU / reduced-motion fallback (a static still)
   // =========================================================================
-  function CPUBackend(ctx2d){ this.name = "cpu-still"; this.ctx = ctx2d; this.w = 1; this.h = 1; }
+  function CPUBackend(ctx2d){ this.name = "cpu-still"; this.ctx = ctx2d; this.w = 1; this.h = 1; this.burst = null; }
   CPUBackend.prototype.setData = function(derived){ this.derived = derived; };
+  CPUBackend.prototype.setBurst = function(parts){ this.burst = parts; this.burstCount = parts.length; };
   CPUBackend.prototype.resize = function(w, h){ this.w = Math.max(1, w | 0); this.h = Math.max(1, h | 0); };
-  // Render the scene once, dithered + palette-quantised on the CPU. No motion,
-  // no RAF — a faithful still of the same pipeline (purpose: place, statically).
-  CPUBackend.prototype.render = function(){
+  // Frame: the dithered scene still (if any) + a modest, capped 2D celebration
+  // flourish (the no-GPU path stays light — filled motes, no GPU particles).
+  CPUBackend.prototype.renderFrame = function(o){
+    const ctx = this.ctx; if(!ctx) return;
+    if(o.sceneOn && this.derived) this._still();
+    else if(!o.sceneOn && ctx.clearRect) ctx.clearRect(0, 0, this.w, this.h);
+    if(o.burstOn && this.burst && this.burst.length && ctx.fillRect){
+      const W = this.w, H = this.h, t = o.burstTime || 0;
+      for(let i = 0; i < this.burst.length; i++){
+        const bp = burstPos(this.burst[i], t, BURST_GRAVITY, BURST_DRAG);
+        if(!bp.alive || bp.alpha <= 0.01) continue;
+        const s = this.burst[i].size;
+        if(ctx.globalAlpha != null) ctx.globalAlpha = bp.alpha;
+        ctx.fillStyle = toHex([this.burst[i].r, this.burst[i].g, this.burst[i].b]);
+        ctx.fillRect((bp.x * W - s / 2) | 0, (bp.y * H - s / 2) | 0, Math.ceil(s), Math.ceil(s));
+      }
+      if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
+    }
+  };
+  CPUBackend.prototype._still = function(){
     const ctx = this.ctx, d = this.derived; if(!ctx || !d) return;
     const img = d.image, W = this.w, H = this.h;
     if(ctx.createImageData && ctx.putImageData){
@@ -601,11 +830,15 @@
     this.backend = null;
     this.scene = null;
     this.derived = null;
-    this.running = false;
+    this.running = false;          // ambient scene loop intent
     this.rafId = 0;
-    this.startTs = 0;
+    this.sceneTs = 0;
     this.ready = false;
     this.wantStart = false;
+    // transient celebration-burst subsystem (T94): a rolling, capped buffer with
+    // its own clock; particles carry per-particle birth so flurries coalesce.
+    this.burst_ = { parts: [], active: false, startTs: 0, elapsed: 0, maxDeath: 0 };
+    this._frameCb = this._frame.bind(this);
     this._init();
   }
   Controller.prototype.particleCap = function(){
@@ -662,21 +895,56 @@
     try{ if(!ctx2d) ctx2d = cv && cv.getContext && cv.getContext("2d"); }catch(e){}
     this._use(new CPUBackend(ctx2d));
   };
+  // The ambient scene animates only when started AND not reduced-motion; the
+  // loop also runs while a burst is alive. Single source of truth for the RAF.
+  Controller.prototype._ambientLoops = function(){ return this.running && !this.reduced && !!this.derived; };
+  Controller.prototype._needsFrame = function(){ return this._ambientLoops() || this.burst_.active; };
+  // A "still" surface never animates the ambient layer (reduced motion or the
+  // no-GPU CPU backend) — it shows a single static frame instead.
+  Controller.prototype._isStill = function(){ return this.reduced || (this.backend && this.backend.name === "cpu-still"); };
+  // Draw exactly one frame (the still / current state) without scheduling more.
+  Controller.prototype._renderOnce = function(){
+    if(!this.backend) return;
+    this.backend.renderFrame({ sceneOn: !!this.derived, sceneTime: 0, burstOn: this.burst_.active, burstTime: this.burst_.elapsed });
+  };
+  // Pump the single shared RAF iff a frame is actually needed and none is queued.
+  Controller.prototype._pump = function(){
+    if(this.rafId || !this.raf || !this.ready) return;
+    if(this._needsFrame()) this.rafId = this.raf(this._frameCb);
+  };
+  Controller.prototype._frame = function(ts){
+    this.rafId = 0;
+    if(!this._needsFrame()) return;                          // stopped between frames → idle
+    const sceneOn = !!this.derived;
+    let sceneTime = 0;
+    if(this._ambientLoops()){ if(!this.sceneTs) this.sceneTs = ts; sceneTime = (ts - this.sceneTs) / 1000; }
+    if(this.burst_.active){
+      if(!this.burst_.startTs) this.burst_.startTs = ts;
+      this.burst_.elapsed = (ts - this.burst_.startTs) / 1000;
+    }
+    this.backend.renderFrame({ sceneOn: sceneOn, sceneTime: sceneTime, burstOn: this.burst_.active, burstTime: this.burst_.elapsed });
+    // auto-stop the burst once its last particle has expired (no RAF leak)
+    if(this.burst_.active && this.burst_.elapsed > this.burst_.maxDeath){
+      this.burst_.active = false; this.burst_.startTs = 0; this.burst_.elapsed = 0; this.burst_.maxDeath = 0; this.burst_.parts = [];
+      if(this.backend.setBurst) this.backend.setBurst([]);
+    }
+    if(this._needsFrame()) this.rafId = this.raf(this._frameCb);   // keep the single loop alive
+  };
   Controller.prototype._use = function(backend){
     this.backend = backend;
     this.ready = true;
     this._applyResize();
     if(this.derived) backend.setData(this.derived);
-    // CPU still + reduced-motion never animate: draw one frame.
-    if(this.derived && (this.reduced || backend.name === "cpu-still")){ backend.render(0); this.running = false; }
-    else if(this.wantStart){ this.wantStart = false; this.start(); }
+    if(this.derived && this._isStill()) this._renderOnce();   // static still
+    if(this.wantStart){ this.wantStart = false; this.start(); }
+    this._pump();
   };
   Controller.prototype.setScene = function(scene){
     this.scene = scene;
     this.derived = deriveScene(scene, this.particleCap());
     if(this.backend){
       this.backend.setData(this.derived);
-      if(this.reduced || this.backend.name === "cpu-still"){ this._applyResize(); this.backend.render(0); }
+      if(this._isStill()) this._renderOnce();   // reduced/no-GPU → refresh the still
     }
     return this;
   };
@@ -685,35 +953,47 @@
     // Re-seed at the new particle cap and re-fit the buffer.
     if(this.scene){ this.derived = deriveScene(this.scene, this.particleCap()); if(this.backend) this.backend.setData(this.derived); }
     this._applyResize();
-    if(this.backend && (this.reduced || this.backend.name === "cpu-still") && this.derived) this.backend.render(0);
+    if(this.backend && this._isStill() && this.derived) this._renderOnce();
     return this;
   };
   Controller.prototype.start = function(){
-    if(this.running) return this;
     if(!this.ready){ this.wantStart = true; return this; }
-    if(!this.derived) return this;
-    // Reduced motion or a still-only backend → one static frame, no loop.
-    if(this.reduced || this.backend.name === "cpu-still"){ this.backend.render(0); this.running = false; return this; }
-    if(!this.raf) return this;
-    this.running = true; this.startTs = 0;
-    const self = this;
-    this.rafId = this.raf(function f(ts){
-      if(!self.running) return;
-      if(!self.startTs) self.startTs = ts;
-      self.backend.render((ts - self.startTs) / 1000);
-      self.rafId = self.raf(f);
-    });
+    if(this.running) return this;
+    this.running = true; this.sceneTs = 0;
+    if(this._ambientLoops()) this._pump();                       // animate
+    else if(this._isStill() && this.derived) this._renderOnce();  // reduced/static → one still
     return this;
   };
   Controller.prototype.stop = function(){
-    this.running = false;
-    if(this.rafId){ this.caf(this.rafId); this.rafId = 0; }
+    this.running = false; this.sceneTs = 0;
+    // keep the loop only if a burst is still alive; otherwise idle the RAF
+    if(this.rafId && !this.burst_.active){ this.caf(this.rafId); this.rafId = 0; }
     return this;
   };
-  Controller.prototype.resize = function(){ this._applyResize(); if(!this.running && this.derived && this.backend) this.backend.render(0); return this; };
-  Controller.prototype.dispose = function(){ this.stop(); if(this.backend) this.backend.dispose(); this.backend = null; this.ready = false; return this; };
-  Controller.prototype.isAnimating = function(){ return this.running; };
+  // Fire a brief celebration burst (T94). Purpose = CELEBRATION. Capped, seeded
+  // (deterministic), reduced-motion → a calm flourish, auto-stops with no RAF
+  // leak. Coalesces with an in-flight burst (rapid gains stack up to the cap).
+  Controller.prototype.burst = function(opts){
+    if(!this.ready || !this.backend) return this;
+    const seeded = seedBurst(opts, this.reduced, BURST_CAP);
+    if(!seeded.length) return this;
+    if(!this.burst_.active){ this.burst_.parts = []; this.burst_.elapsed = 0; this.burst_.maxDeath = 0; this.burst_.startTs = 0; this.burst_.active = true; }
+    const birth = this.burst_.elapsed;
+    for(let i = 0; i < seeded.length; i++) seeded[i].birth = birth;
+    let parts = this.burst_.parts.concat(seeded);
+    if(parts.length > BURST_CAP) parts = parts.slice(parts.length - BURST_CAP);   // drop oldest
+    this.burst_.parts = parts;
+    this.burst_.maxDeath = Math.max(this.burst_.maxDeath, burstMaxDeath(seeded));
+    this.backend.setBurst(parts);
+    this._pump();
+    return this;
+  };
+  Controller.prototype.resize = function(){ this._applyResize(); if(this.backend && this._isStill() && this.derived) this._renderOnce(); return this; };
+  Controller.prototype.dispose = function(){ this.stop(); this.burst_.active = false; if(this.rafId){ this.caf(this.rafId); this.rafId = 0; } if(this.backend) this.backend.dispose(); this.backend = null; this.ready = false; return this; };
+  Controller.prototype.isAnimating = function(){ return this._ambientLoops(); };
+  Controller.prototype.isBursting = function(){ return this.burst_.active; };
   Controller.prototype.particleCount = function(){ return this.derived ? this.derived.particles.length : 0; };
+  Controller.prototype.burstCount = function(){ return this.burst_.parts.length; };
   Controller.prototype.backendName = function(){ return this.backend ? this.backend.name : null; };
 
   // =========================================================================
@@ -726,22 +1006,25 @@
   function stop(){ if(active) active.stop(); return active; }
   function setQuality(q){ if(active) active.setQuality(q); return active; }
   function dispose(){ if(active){ active.dispose(); active = null; } }
+  function burst(opts){ if(active) active.burst(opts); return active; }
 
   window.FXGL = {
     // runtime API
-    mount: mount, setScene: setScene, start: start, stop: stop,
+    mount: mount, setScene: setScene, start: start, stop: stop, burst: burst,
     setQuality: setQuality, dispose: dispose, resize: function(){ if(active) active.resize(); },
     capabilities: capabilities, active: function(){ return active; },
     Controller: Controller,
     // budget constants
-    PARTICLE_CAP: PARTICLE_CAP, QUALITY: QUALITY, KIND: KIND, BAYER: BAYER,
+    PARTICLE_CAP: PARTICLE_CAP, BURST_CAP: BURST_CAP, BURST_GRAVITY: BURST_GRAVITY, BURST_DRAG: BURST_DRAG,
+    QUALITY: QUALITY, KIND: KIND, BAYER: BAYER,
     // pure math (headless-tested)
     bayer4: bayer4, parseColor: parseColor, toHex: toHex, luma: luma,
     buildRamp: buildRamp, rampIndex: rampIndex, quantizePixel: quantizePixel,
     gridToImage: gridToImage, gridColors: gridColors,
     makeRng: makeRng, seedParticles: seedParticles, animateParticle: animateParticle,
+    seedBurst: seedBurst, burstPos: burstPos, burstMaxDeath: burstMaxDeath,
     deriveScene: deriveScene,
     // shader sources (so a wiring task / tests can inspect them)
-    shaders: { GLSL_SCENE_VS: GLSL_SCENE_VS, GLSL_SCENE_FS: GLSL_SCENE_FS, GLSL_PART_VS: GLSL_PART_VS, GLSL_PART_FS: GLSL_PART_FS, WGSL_SCENE: WGSL_SCENE, WGSL_PART: WGSL_PART }
+    shaders: { GLSL_SCENE_VS: GLSL_SCENE_VS, GLSL_SCENE_FS: GLSL_SCENE_FS, GLSL_PART_VS: GLSL_PART_VS, GLSL_PART_FS: GLSL_PART_FS, GLSL_BURST_VS: GLSL_BURST_VS, WGSL_SCENE: WGSL_SCENE, WGSL_PART: WGSL_PART, WGSL_BURST: WGSL_BURST }
   };
 })();
