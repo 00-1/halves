@@ -2032,7 +2032,7 @@ zero behaviour change.
 > **Three tasks: `T88` (battle model + calibration + proofs — the crux) → `T89` (team-selection
 > UI) → `T90` (watchable playout).**
 
-### T88 — Arena 3v3: deterministic battle model + enemy teams + re-calibration + invariant proofs · status: OPEN
+### T88 — Arena 3v3: deterministic battle model + enemy teams + re-calibration + invariant proofs · status: DONE
 **The crux.** Generalise the single-hero `statBattle` (T47) to a **deterministic 1–3 vs 3
 auto-resolve** sim, re-derive the difficulty curve, and **re-prove every invariant by simulation**.
 Full design = **IDEAS I5 "Calibration design"**; this task implements it.

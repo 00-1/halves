@@ -1,6 +1,25 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T93` [B] (FX engine `fxgl.js`) · live build **`f3eb20e`**. **🎉
+**Current verdict:** `APPROVED — T88` [A] (Arena 3v3 battle model + calibration — the crux) · live
+build **`f5b44fa`**. (A finished this in-flight before switching to the front-end polish, as noted.)
+Faithfully implements the **IDEAS I5** calibration: a deterministic `simulateTeams` (spd order,
+fixed targeting best-matchup→lowest-hp→ord, `max(1,round(atk×matchup))`, wipe-to-decision, **zero
+RNG**, guard-capped); enemy budget model (`atk×hp=budget`); `FOE_BUDGET` computed at load =
+`min(geometric ramp, suffix-min envelope × CAPF)` — **ramp pinned so one starter clears tiers 1–5**,
+**tier-120 pinned between near-full & 85% edges**; enemy team = tier foe + 2 `tier−K` adds.
+**Additive — `statBattle` (1v1) UNCHANGED, live Arena untouched until T89.** Verified
+**independently** (my own lattice via the public API, not just their test): **deterministic**;
+**tiers 1–5 winnable by a SINGLE starter at 0 items**; foe budget **monotonic non-decreasing**
+(plateaus OK — invariant is non-decreasing); **0 violations of monotonicity in loadout AND team
+size**; **tier-120 near-max-only** (full wins · 50% loses · 0 loses); `statBattle` preserved.
+`node -c` clean; **full 26-gate suite green** (new `arena3.test.js` 24-check lattice + the 1v1
+`arena.test.js`). The literal "one-item flips tier 120" is reframed as the **chunk-flip** (one item
+<0.1% of a 3-hero team) with the 1-item flip kept proven for the 1-hero case — sound. T88 → DONE.
+**Perf note (→ T103):** `FOE_BUDGET` runs ~hundreds of sims at module **load** — candidate to
+memoize. **`T89`/`T90`** (team UI + playout, which wire `teamBattle` into the live Arena) remain,
+**after the shipping block** per owner priority.
+
+**Previously approved (done):** `T93` [B] (FX engine `fxgl.js`) · live build **`f3eb20e`**. **🎉
 First Builder-B handoff — collision rule honoured perfectly** (only the 3 new B-owned files:
 `fxgl.js`, `test/fxgl.test.js`, `BUILDER-LOG-FX.md`; **zero edits to any existing Halves file**).
 A standalone WebGPU→WebGL2→CPU-still FX engine: clean `window.FXGL` API (`mount/setScene/start/
@@ -334,10 +353,11 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   reversible `data-ui` tokens — owner approved my T97 leans). **Then the shipping/perf block (Phase 6.16, owner: launch
   ASAP + parity):** **`T101`** (remove/mask the Start→fullscreen delay) → **`T102`** (installable
   Android **PWA+TWA** build for web↔Android parity — pulled forward from `T72`) → **`T103`**
-  (deep **Android-inclusive perf research**, doc). **Then** `T88`–`T90` (Arena 3v3) → content
-  `T58`–`T61` → **`T72`** (now just the Play-Store-*submission* prep doc; its PWA foundation moved
-  to `T102`), **+ FX wiring tasks** (mount `FXGL`) — home backdrop after `T100`, Arena biome after
-  `T88`–`T90`. Owns ALL existing Halves files; log = `BUILDER-LOG.md`. *(If A is mid-task, finish it
+  (deep **Android-inclusive perf research**, doc). **Then** `T89`/`T90` (rest of Arena 3v3 — team
+  UI + playout; **`T88` DONE**) → content `T58`–`T61` → **`T72`** (now just the Play-Store-
+  *submission* prep doc; its PWA foundation moved to `T102`), **+ FX wiring tasks** (mount `FXGL`)
+  — home backdrop after `T100`, Arena biome after `T89`/`T90`. Owns ALL existing Halves files; log
+  = `BUILDER-LOG.md`. *(If A is mid-task, finish it
   first.)*
 - **Builder B — next: `T94` [B]** (add a **celebration-burst capability** to `fxgl.js` — brief,
   capped, seeded particle burst; new API on the B-owned engine, headless-tested). Then the engine
