@@ -1193,3 +1193,36 @@ written at deploy time with `{sha, shortSha, time}` and fetched once at load,
   the control is AA-legible and 360px-safe; `node -c` clean; no console errors; no
   regressions to the existing build-info line; deploy green. (Babysitter verifies the
   sha-compare logic, that reload is user-initiated only, and that failures are swallowed.)
+
+### T55 — Extend the Collector award ladder to 10,000 items · status: OPEN
+Owner: "the Collector awards category only goes up to 150 items — it needs to go up to
+10× that; actually go up to **10k**, since we'll add more over time." Today the
+`Collector` category has just **3** tiers — `collector:25` (Curator), `collector:75`
+(Hoarder), `collector:150` (Completionist) — in `collectibles.js` (~167). With the
+catalogue already at **1045 items**, the ladder dead-ends at 150 and "Completionist" is
+a misnomer (only ~14%). Extend it into a long ladder up to **10,000**.
+- **Add tiers up to 10,000.** Replace the 3-entry list with a full ladder, e.g.
+  thresholds **25, 75, 150, 300, 500, 750, 1000, 1500, 2500, 5000, 7500, 10000** (Builder
+  may tune spacing, but it must start at 25 and **top out at 10000**). Rarity climbs with
+  depth (rare → epic → legendary; the high tiers — ~1000+ — are legendary). Headroom
+  above the current 1045 is intentional (future items).
+- **Migration-safe.** **Keep the existing ids** `collector:25/75/150` so players who
+  already earned them keep them (the milestone is keyed by id). You may **rename** the
+  150 tier (it's no longer "completion") — that only changes the display name, not the
+  id. New ids (`collector:300` … `collector:10000`) are purely additive.
+- **Names + desc.** Characterful, British, **varied** names (no repeated
+  adjective/noun construction — consistent with the project's naming standard); keep
+  Curator/Hoarder. Descriptions read naturally with thousands formatted (e.g. "Collect
+  **2,500** items.").
+- **No logic change needed.** `evaluateCollector(count, has)` is already threshold-based
+  (`count >= it.n`) — confirm it still grants every newly-passed tier and never
+  re-awards an owned one; the Awards-tab Collector section (post-T48: bars-at-top) shows
+  all tiles fine. Icons auto-generate from the new ids.
+- **DoD:** the Collector category exposes the full ladder ending at **10000**; existing
+  `collector:25/75/150` ids are unchanged (migration intact); a Node check confirms
+  `evaluateCollector` grants exactly the tiers with `n ≤ count` (spot values, incl. a
+  large count like 3000 → all tiers ≤3000, none above) and never re-awards owned ones;
+  the Awards tab renders the longer Collector section without overflow at 360px; names
+  are varied + correctly formatted; the icon-variation gate still passes; `node -c`
+  clean; no regressions; deploy green. (Babysitter recomputes the granted set at several
+  counts and checks the ids/migration + naming.)

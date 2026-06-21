@@ -76,6 +76,14 @@ unobtrusive **"Update available — Refresh"** control that calls `location.relo
 click. User-initiated only (never auto-reload / no focus theft mid-drill), offline-safe
 (swallow failures), AA-legible. Full spec in BACKLOG "T54".
 
+**Then `T55` — extend the Collector award ladder to 10,000 (owner-reported).** The
+`Collector` category dead-ends at 150 (Curator/Hoarder/Completionist) while the catalogue
+is already 1045 items. Replace it with a full ladder to **10000** (e.g. 25/75/150/300/
+500/750/1000/1500/2500/5000/7500/10000, rarity climbing to legendary), **keeping the
+existing `collector:25/75/150` ids** (migration), renaming the 150 tier, varied British
+names, thousands-formatted descs. `evaluateCollector` is already threshold-based — no
+logic change. Full spec in BACKLOG "T55".
+
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
 gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
 (beatable only at near-full collection), 50 procedural icon categories with
