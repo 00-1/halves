@@ -599,7 +599,7 @@
     const el = $("topicInfo"); if(!el) return;
     const m = mode, locked = !isUnlocked(m), p = modeProgress(m);
     let meta;
-    if(locked){ meta = ic("lock")+' ' + esc(unlockReq(m)); }
+    if(locked){ meta = ic("lock")+' ' + unlockReq(m); }   // unlockReq already returns escaped HTML (don't double-escape)
     else {
       const best = loadBoard(m.id).slice().sort(rank)[0];
       const bestTxt = best

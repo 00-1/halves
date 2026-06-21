@@ -81,6 +81,12 @@ ok(!els.game.classList.contains("active"), "(e) tapping a locked node never star
 ok(els.startBtn.disabled === true, "(e) Start stays disabled for the previewed locked node");
 ok(/ti-name/.test(els.topicInfo._html) && /Squares/.test(els.topicInfo._html), "(e) the selected-topic info row shows the locked topic");
 ok(/px-ic lock/.test(els.topicInfo._html), "(e) the info row shows the unlock requirement (a lock pixel icon) for a locked topic");
+// (e) T127 — a gating topic NAME with `&` renders the entity ONCE, not double-escaped.
+// addsub2 is locked on a fresh profile and gated on "Add & Subtract" (mastery:addsub),
+// so its unlock requirement subline carries the ampersand.
+clickNode("addsub2");
+ok(/Add &amp; Subtract/.test(els.topicInfo._html) && !/&amp;amp;/.test(els.topicInfo._html),
+   '(e) T127: the `&` in a gating topic name renders a SINGLE entity ("Add & Subtract"), not a double-escaped &amp;');
 
 // (c) the accessible LIST fallback now lives on Best Times (#sumList), tap-to-play
 global.window.location.hash = "#/best-times"; (winH.hashchange||[]).forEach(f=>f());
@@ -93,6 +99,9 @@ ok(/function nodeIcon\(/.test(main) && /nodeIcon\(m, cv\)/.test(main), "(f) node
 ok(/Glyphs\.draw\(cv/.test(main), "(f) nodeIcon currently uses the T56 pixel glyph (replaceable later)");
 // no hand-maintained parallel edge list (graph reads the live fields)
 ok(/m\.unlockedBy/.test(main) && /mastery:\(\.\+\)/.test(main), "the graph reads live unlockedBy/requires fields (no parallel edge list)");
+// T127 — renderTopicInfo must NOT re-escape unlockReq()'s already-escaped HTML (no double-escape)
+ok(/meta = ic\("lock"\)\+' ' \+ unlockReq\(m\);/.test(main) && !/esc\(unlockReq\(/.test(main),
+   "(e) T127: renderTopicInfo uses unlockReq() un-escaped (it already returns escaped HTML — no esc(unlockReq(…)) anywhere)");
 
 // (g) T106 — tech-tree v2: rows fill the width with 1–3 PARTS abreast, two
 // distinct directional state-coloured connectors, the part-chain derived LIVE.

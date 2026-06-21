@@ -4063,3 +4063,27 @@ notes / questions: **eyeball on the live build (Poco X3, fullscreen):** finishin
   rendering fix (resize across Start→fullscreen) is the crux of "nothing at all". Next per `NEXT.md`:
   **`T127`** (quick BUG: `&amp;` shows literally in locked-topic text — double-escape at `main.js:572`)
   → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` → Android.
+
+## T127 — BUG: literal "&amp;" in locked-topic text (double-escape)  [HANDOFF]
+commit: (this commit, on main) — [A] task, BUG. Owner screenshot: the topic-info subline read
+**"Master Add &amp; Subtract first"** — the `&` in "Add & Subtract" rendered as the literal entity.
+cause: `unlockReq(m)` (`main.js:479`) already returns **escaped HTML** (`'Master '+esc(req.name)+'
+first'`), but `renderTopicInfo` escaped it **again** — `esc(unlockReq(m))` → `&amp;amp;` → shows
+`&amp;`. (The other caller, the tech-tree holder, already used `unlockReq(m)` un-escaped.)
+changed (main.js — A-owned):
+  - **`renderTopicInfo` (now `main.js:602`)** — dropped the redundant `esc()`: `meta = ic("lock")+'
+    '+unlockReq(m);` (consistent with the un-escaped holder use). `unlockReq` already escapes its
+    dynamic parts and returns HTML.
+  - **audit** — swept for `esc(...)` wrapped around helpers that already return escaped HTML. Only
+    `:602` was wrong. The legit single-escape of raw text stays: `esc(h.unlockHint)` (a hero's
+    plain-string hint property — NOT the `unlockHint(m)` HTML helper) is correct; left untouched.
+how I verified:
+  - **test/tech-tree.test.js (now 36 checks)** — selecting the locked `addsub2` (gated on "Add &
+    Subtract" via `mastery:addsub`) now asserts the info row HTML contains a SINGLE entity
+    `Add &amp; Subtract` (renders as "Add & Subtract") and **no** `&amp;amp;`; plus a source check
+    that `renderTopicInfo` uses `unlockReq()` un-escaped and there's no `esc(unlockReq(…))` anywhere.
+  - **`node -c main.js` clean; full 34-gate suite green** (tech-tree gate 34→36). Still properly
+    escaped (no XSS regression — `unlockReq` keeps `esc()` on the dynamic name).
+notes / questions: **eyeball:** preview a locked topic gated on "Add & Subtract" — the subline now
+  reads **"Master Add & Subtract first"** (one ampersand), not "&amp;". Next per `NEXT.md`: **`T123`**
+  (a11y contrast floor) → `T124` (fraction glyphs) → `T101` (Start delay) → Android block.
