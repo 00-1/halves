@@ -27,9 +27,10 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T62` → `T63` → `T64` → `T65` → `T67` → `T66` → `T68` → `T52` →
-`T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
-`T59`/`T60`/`T61`). **Do `T62` next** — the methodical, question-by-question hint audit
+**Next-task order:** **`T62` → `T63` → `T64` → `T65` → `T69` → `T67` → `T66` → `T68` →
+`T52` → `T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2
+batches `T59`/`T60`/`T61`). **`T69`** = tiny audio-volume bump (master `VOL` 0.16 → ~0.30,
+keep music balanced, no clipping). **Do `T62` next** — the methodical, question-by-question hint audit
 across ALL topics (the big one; sets the hint standard for T58/T59–T61). (`T66` 120-tier
 change before the arena work; **`T68` Arena wayfinding** — region progress, boss
 anticipation, a simple journey map — sits right after T66 so it's built on the final

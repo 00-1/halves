@@ -1620,3 +1620,22 @@ Mother Bramble*. The **regions + named bosses are the real milestones** — surf
   (Babysitter checks the region/position maths against `tierRegion`/`regionLabel` at several
   tiers incl. a boss-next case and a region boundary, and that the map lists all regions with
   correct status.)
+
+### T69 — Raise the audio volume (SFX + music) · status: OPEN
+Owner: "the volume seems quite low." In `sound.js` the master is `VOL = 0.16` (governs
+everything; SFX route straight to `master`, peak ≈ 0.024) and music is **additionally**
+attenuated via `musicGain.gain.value = 0.07` (effective ≈ 0.011 — very quiet).
+- **Raise the master** `VOL` to a clearly-louder but safe level (~**0.28–0.32**). Keep
+  music a **balanced background** under the SFX/feedback (nudge `musicGain` proportionally
+  if needed — ~0.08–0.10 — so it's audible without drowning the answer blips).
+- **No clipping.** With the T33 per-tick voice caps the summed peak must stay well under
+  1.0 — reason through the worst case (max simultaneous SFX + music voices) and keep
+  headroom (≤ ~0.9). If raising significantly, a `DynamicsCompressorNode`/limiter on the
+  master (before `destination`) is a safe option — recommended if the worst case gets close.
+- **Preserve behaviour:** mute still sets `master.gain = 0`; music still stops on mute /
+  tab-hidden and resumes on unmute/visible; the unlock-on-gesture flow is unchanged.
+- **DoD:** master `VOL` raised to a clearly-louder level; music stays balanced (audible,
+  not dominating the SFX); no clipping at max voice load (worst case reasoned, ≤ ~0.9, or a
+  limiter added); mute + visibility behaviour intact; `node -c` clean; no regressions;
+  deploy green. (Babysitter checks the new `VOL`/`musicGain` values, the worst-case
+  headroom, and that the mute/visibility + balance logic is unchanged.)
