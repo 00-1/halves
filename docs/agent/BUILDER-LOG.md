@@ -2241,3 +2241,38 @@ how I verified:
 notes / questions: kept music proportional-plus (0.09) so it's more present than
   before without dominating. Next per REVIEW order: **T71** (calmer music + more
   per-topic variation + an Arena theme).
+
+## T71 — Calmer music + per-topic variation + an Arena theme  [HANDOFF]
+commit: (this commit, on main)
+changed (three parts):
+  - **(1) Calming pass (sound.js STYLES).** Every style's **bpm is now ≤ 95** (was
+    up to 115 — Sky Castle 113→92, Neon Arcade 114→94, Lava Run 115→95, Bubble Pop
+    110→90, Mecha March 112→92, Clockwork 112→90, Victory Hall 109→94, etc.; the
+    gentle 76–88 ones kept). Busy styles **softened**: lead `density` capped at 0.36
+    (Neon/Victory 0.45→0.34, Lava 0.50→0.36) and the **drum patterns eased** (e.g.
+    Lava `[1,2,3,2,1,2,3,2]`→`[1,0,2,0,1,0,3,0]`, Neon `[1,3,2,3]`→`[1,0,2,0]`,
+    Clockwork `[2,2,2,2]`→`[2,0,2,0]`).
+  - **(2) Per-topic variation.** Expanded to **15 topic styles** (added Tide Pool,
+    Lantern Way, Meadow) so **each of the 15 topics maps to a DISTINCT style** —
+    fixed the colliding `TOPIC_MUSIC` map (halves/fractionsof2, doubles/percentages,
+    bonds/percentages2 had shared indices) to a complete, collision-free 0–14
+    assignment. Indices are explicit `mode.music` (via `TOPIC_MUSIC` in modes.js);
+    new topics fall back to `hash(id)%15`.
+  - **(3) Arena theme.** Added **"Hero's Arena"** (MIN, bpm 95, driving bass,
+    moderate density — heroic but calm) at `ARENA_STYLE = 16`; `styleIndexFor`
+    resolves `"arena"`; `main.js show()` routes the Arena screen to `"arena"` (not
+    `"menu"`). `MENU_STYLE` is now 15.
+  - Preserved: the look-ahead scheduler, T33 voice caps, mute + tab-hidden + T45
+    idle behaviour (all unchanged; verified).
+how I verified:
+  - `node test/sound.test.js` (extended) → **ALL 20 PASS**: **no style bpm > 95**
+    (max 95), **every density ≤ 0.4** (max 0.36), **all 15 topics carry a distinct
+    topic-style index** (15 unique, 0–14), a dedicated **"Hero's Arena"** theme
+    exists, `styleIndexFor('arena')`/`('menu')` resolve correctly, **main.js routes
+    `#arena` to the Arena theme**, and the **MAX_STEPS_PER_TICK voice cap is
+    unchanged**. The T69 volume + mute/visibility checks still pass.
+  - `node -c` (sound/modes/main) OK; all eleven gates green; no regressions.
+notes / questions: "calmer enough" is the owner's ear — the objective bars (bpm
+  cap, softened density/drums, distinct per-topic styles, routed Arena theme) are
+  met. Region-varied Arena music was the optional/nice-to-have; left bounded to one
+  calm Arena theme. Next per REVIEW order: **T67** (hero detail — UX cluster).

@@ -114,23 +114,29 @@
   const SQ={lead:"square",bass:"triangle",arp:"square"}, TRI={lead:"triangle",bass:"triangle",arp:"square"};
   // style = { name, bpm, root, scale, arp[], bass[], drums[] (0 rest·1 kick·2 hat·3 snare), density, waves }
   function St(name,bpm,root,scale,arp,bass,drums,density,waves){ return { name:name,bpm:bpm,root:root,scale:scale,arp:arp,bass:bass,drums:drums,density:density,waves:waves||SQ }; }
-  // 12 topic styles (indices 0..11) + the menu style (index 12) = 13 total.
+  // 15 topic styles (indices 0..14, one per topic) + the menu style (15) + the
+  // Arena theme (16). All tempos are calm (bpm ≤ 95); the busy styles use a lower
+  // lead `density` and gentler drum patterns so nothing feels rushed (T71).
   const STYLES = [
-    St("Dungeon Crawl", 88,45,MIN,    [0,2,4,2],          [0,null,0,5,null,0,null,5], [1,0,2,0],            0.35),
-    St("Sky Castle",   113,60,MAJ,    [0,2,4,7,4,2],      [0,null,4,null],            [1,0,2,0,1,0,2,0],    0.40),
-    St("Pixel Forest", 108,57,PENT,   [0,1,2,4],          [0,null,2,null],            [1,0,2,0],            0.35),
-    St("Neon Arcade",  114,60,MAJ,    [0,2,4,5,7],        [0,0,5,5],                  [1,3,2,3],            0.45),
-    St("Frost Cavern",  80,50,DORIAN, [0,3,5],            [0,null,null,5],            [0,0,2,0],            0.25, TRI),
-    St("Lava Run",     115,43,PENTMIN,[0,2,3,4],          [0,0,0,3],                  [1,2,3,2,1,2,3,2],    0.50),
-    St("Bubble Pop",   110,64,MAJ,    [0,4,2,5],          [0,null,4,null],            [1,0,3,2],            0.40),
-    St("Mecha March",  112,48,MIN,    [0,2,4],            [0,0,5,5],                  [1,2,3,2],            0.30),
+    St("Dungeon Crawl", 84,45,MIN,    [0,2,4,2],          [0,null,0,5,null,0,null,5], [1,0,2,0],            0.32),
+    St("Sky Castle",    92,60,MAJ,    [0,2,4,7,4,2],      [0,null,4,null],            [1,0,2,0],            0.34),
+    St("Pixel Forest",  88,57,PENT,   [0,1,2,4],          [0,null,2,null],            [1,0,2,0],            0.32),
+    St("Neon Arcade",   94,60,MAJ,    [0,2,4,5,7],        [0,0,5,5],                  [1,0,2,0],            0.34),
+    St("Frost Cavern",  80,50,DORIAN, [0,3,5],            [0,null,null,5],            [0,0,2,0],            0.24, TRI),
+    St("Lava Run",      95,43,PENTMIN,[0,2,3,4],          [0,0,0,3],                  [1,0,2,0,1,0,3,0],    0.36),
+    St("Bubble Pop",    90,64,MAJ,    [0,4,2,5],          [0,null,4,null],            [1,0,2,0],            0.32),
+    St("Mecha March",   92,48,MIN,    [0,2,4],            [0,0,5,5],                  [1,0,2,0],            0.30),
     St("Starlight",     76,60,LYD,    [0,4,7],            [0,null,null,null],         [0,0,0,2],            0.20, TRI),
-    St("Goblin Market",108,52,DORIAN, [0,2,5,3],          [0,null,3,5,null,0],        [1,0,2,0,1,3],        0.40),
-    St("Clockwork",    112,55,MAJ,    [0,2,4,7,4,2,0,2],  [0,null,0,null],            [2,2,2,2],            0.35),
-    St("Victory Hall", 109,60,MAJ,    [0,4,7,12,7,4],     [0,0,4,4,5,5],              [1,3,2,3],            0.45),
-    St("Title Theme",   96,57,MAJ,    [0,2,4,2],          [0,null,4,null],            [0,0,2,0],            0.30)   // menu
+    St("Goblin Market", 88,52,DORIAN, [0,2,5,3],          [0,null,3,5,null,0],        [1,0,2,0,1,0],        0.32),
+    St("Clockwork",     90,55,MAJ,    [0,2,4,7,4,2,0,2],  [0,null,0,null],            [2,0,2,0],            0.30),
+    St("Victory Hall",  94,60,MAJ,    [0,4,7,12,7,4],     [0,0,4,4,5,5],              [1,0,2,0],            0.34),
+    St("Tide Pool",     82,64,PENT,   [0,2,4,2],          [0,null,4,null],            [0,0,2,0],            0.26, TRI),
+    St("Lantern Way",   86,50,DORIAN, [0,3,5,3],          [0,null,5,null],            [1,0,2,0],            0.28),
+    St("Meadow",        84,57,MAJ,    [0,2,4,5],          [0,null,2,null],            [0,0,2,0],            0.28),
+    St("Title Theme",   88,57,MAJ,    [0,2,4,2],          [0,null,4,null],            [0,0,2,0],            0.28),   // menu
+    St("Hero's Arena",  95,48,MIN,    [0,4,7,4],          [0,0,5,5],                  [1,0,2,0,1,0,3,0],    0.34)    // arena
   ];
-  const MENU_STYLE = 12;
+  const MENU_STYLE = 15, ARENA_STYLE = 16;
   const LOOP_STEPS = 16;
   // Scale degree → MIDI note (octave-aware; wraps degrees beyond the scale).
   function degMidi(style, degree, octaveShift){
@@ -158,7 +164,8 @@
   function styleIndexFor(key){
     if(typeof key === "number") return ((key % STYLES.length) + STYLES.length) % STYLES.length;
     if(key === "menu") return MENU_STYLE;
-    return hashStr(String(key)) % 12;     // deterministic fallback into the 12 topic styles
+    if(key === "arena") return ARENA_STYLE;
+    return hashStr(String(key)) % 15;     // deterministic fallback into the 15 topic styles
   }
 
   let mTimer = null, mWant = -1, mCur = -1, mNext = 0, mStep = 0, mRnd = null, musicGain = null;
@@ -235,6 +242,6 @@
     roundComplete: () => play(sfxSpec("roundComplete")),
     // music (T17)
     setMusic, stopMusic, musicPlaying,
-    STYLES, MENU_STYLE, styleIndexFor, degMidi, stepVoices
+    STYLES, MENU_STYLE, ARENA_STYLE, styleIndexFor, degMidi, stepVoices
   };
 })();

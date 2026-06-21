@@ -157,6 +157,7 @@
     // music follows the screen: the topic's style in-game, the menu style elsewhere
     if(window.Sound && window.Sound.setMusic){
       if(name === "game") window.Sound.setMusic(typeof mode.music === "number" ? mode.music : mode.id);
+      else if(name === "arena") window.Sound.setMusic("arena");   // T71: dedicated Arena theme
       else window.Sound.setMusic("menu");
     }
   }

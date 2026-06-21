@@ -279,12 +279,14 @@
   const MODE_GROUPS = ["Core", "Number", "Fractions & %", "Measures", "Reasoning"];
 
   // Thematic chiptune style per topic — an explicit `music` field on each mode
-  // (index into Sound.STYLES 0..11; see T17). Any topic without an entry falls
-  // back to a deterministic hash(id)%12 in sound.js, so new topics always have one.
+  // (index into Sound.STYLES 0..14; see T17/T71). Every topic maps to a DISTINCT
+  // style (no two share). Any topic without an entry falls back to a deterministic
+  // hash(id)%15 in sound.js, so new (Wave-2) topics always get one.
   const TOPIC_MUSIC = {
-    halves:2, times:10, doubles:6, squares:7, fractions:8,
-    addsub:3, addsub2:5, bonds:1, bonds2:11, placevalue:9, placevalue2:0,
-    fractionsof:4, fractionsof2:2, percentages:6, percentages2:1
+    halves:8, times:10, doubles:6, addsub:2, addsub2:0,
+    bonds:1, bonds2:4, placevalue:9, placevalue2:5,
+    fractionsof:14, fractionsof2:12, percentages:3, percentages2:13,
+    fractions:11, squares:7
   };
   MODES.forEach(m => { if(TOPIC_MUSIC[m.id] != null) m.music = TOPIC_MUSIC[m.id]; });
 

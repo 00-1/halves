@@ -24,7 +24,8 @@ let timers = 0;
 global.setInterval = () => (++timers, timers); global.clearInterval = () => { timers = Math.max(0, timers - 1); };
 
 new Function(read("sound.js"))();
-const S = global.window.Sound;
+new Function(read("modes.js"))();
+const S = global.window.Sound, MODES = global.window.MODES;
 const VOL = 0.30;
 
 S.unlock();
@@ -54,6 +55,29 @@ hidden = true; visHandler && visHandler();
 ok(!S.musicPlaying(), "tab hidden stops the music scheduler");
 hidden = false; visHandler && visHandler();
 ok(S.musicPlaying(), "tab visible resumes the music scheduler");
+
+// ---- T71: calmer tempos, distinct per-topic styles, an Arena theme ----
+const overCap = S.STYLES.filter(s => s.bpm > 95);
+ok(overCap.length === 0, "no style bpm exceeds 95 (max " + Math.max.apply(null, S.STYLES.map(s=>s.bpm)) + ")");
+const busy = S.STYLES.filter(s => s.density > 0.4);
+ok(busy.length === 0, "busy styles softened — every density ≤ 0.4 (max " + Math.max.apply(null, S.STYLES.map(s=>s.density)).toFixed(2) + ")");
+
+// each of the 15 topics maps to a distinct topic style (no collisions)
+const music = MODES.map(m => m.music);
+ok(MODES.length === 15 && music.every(i => typeof i === "number" && i >= 0 && i < S.MENU_STYLE),
+   "all 15 topics carry a topic-style index (0.." + (S.MENU_STYLE-1) + ")");
+ok(new Set(music).size === 15, "all 15 topic styles are DISTINCT (no two share — " + new Set(music).size + " unique)");
+
+// a dedicated Arena theme exists and is reachable via "arena"
+ok(S.ARENA_STYLE !== S.MENU_STYLE && S.STYLES[S.ARENA_STYLE] && /arena/i.test(S.STYLES[S.ARENA_STYLE].name),
+   "a dedicated Arena theme exists (" + (S.STYLES[S.ARENA_STYLE] && S.STYLES[S.ARENA_STYLE].name) + ")");
+ok(S.styleIndexFor("arena") === S.ARENA_STYLE, "styleIndexFor('arena') → the Arena theme");
+ok(S.styleIndexFor("menu") === S.MENU_STYLE, "styleIndexFor('menu') → the menu theme");
+
+// main.js routes the Arena screen to the arena theme (not menu); voice cap intact
+const mainSrc = read("main.js"), soundSrc = read("sound.js");
+ok(/name === "arena"[\s\S]{0,60}setMusic\("arena"\)/.test(mainSrc), "main.js routes #arena to the Arena theme");
+ok(/MAX_STEPS_PER_TICK\s*=\s*4/.test(soundSrc), "the T33 per-tick voice cap is unchanged");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SOUND CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
