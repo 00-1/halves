@@ -125,8 +125,10 @@ body{
 .readouts{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%;max-width:360px;margin-top:8px}
 .readouts .goldbar,.readouts .momentumbar{margin-top:0;min-height:0}
 /* T96 — one row of bigger icon nav buttons; degrades as gating hides items. */
+/* T111 — uniform wider buttons (min-width 60) so the seven nav buttons wrap to a
+   balanced, centred 4+3 / 5+2 under the 360px cap — never a lone orphan row. */
 .navrow{display:flex;align-items:flex-start;justify-content:center;gap:6px;flex-wrap:wrap;width:100%;max-width:360px;margin-top:14px}
-.navbtn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:44px;
+.navbtn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:60px;
   background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:7px 5px;cursor:pointer;
   font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--muted);
   transition:color .15s,border-color .15s}
@@ -729,4 +731,70 @@ canvas.pix{image-rendering:pixelated}
 [data-ui="pixel"] .u-cell{
   border-radius:var(--ui-radius);
   box-shadow:none;
+}
+
+/* ====================================================================
+   T111 — COMPLETE the T100 pixel restyle: the remaining rounded chrome
+   across every screen (hero-detail, results, inventory, arena, practice,
+   settings, guide, event card, chips, portraits, overlays). Same rules
+   as T100 — squared --ui-radius + pixel-bevel on interactive controls,
+   hard frame (box-shadow:none) on panels, square frames on pixel-art
+   canvases. ALL gated on [data-ui="pixel"]; classic is byte-for-byte
+   unchanged; clean-text (labels/numerals keep their fonts).
+   ==================================================================== */
+/* --- more interactive controls: squared + pixel-bevel --- */
+[data-ui="pixel"] .inv-tab,
+[data-ui="pixel"] .jump-top,
+[data-ui="pixel"] .arena-map-btn,
+[data-ui="pixel"] .practice-hint-toggle,
+[data-ui="pixel"] .set-danger{
+  border-radius:var(--ui-radius);
+  box-shadow:inset 2px 2px 0 var(--ui-bevel-hi), inset -2px -2px 0 var(--ui-bevel-lo);
+}
+[data-ui="pixel"] .inv-tab:active,
+[data-ui="pixel"] .jump-top:active,
+[data-ui="pixel"] .arena-map-btn:active,
+[data-ui="pixel"] .practice-hint-toggle:active{
+  box-shadow:inset -2px -2px 0 var(--ui-bevel-hi), inset 2px 2px 0 var(--ui-bevel-lo);
+}
+[data-ui="pixel"] .inv-tab:focus-visible,
+[data-ui="pixel"] .jump-top:focus-visible,
+[data-ui="pixel"] .arena-map-btn:focus-visible,
+[data-ui="pixel"] .practice-hint-toggle:focus-visible{
+  outline:var(--focus);outline-offset:2px;
+}
+/* --- more panels/cards/rows/chips: squared + hard frame --- */
+[data-ui="pixel"] .g-eg,
+[data-ui="pixel"] .mode-row,
+[data-ui="pixel"] .slow-item,
+[data-ui="pixel"] .event-live,
+[data-ui="pixel"] .tp-row,
+[data-ui="pixel"] .inv-cell,
+[data-ui="pixel"] .hd-head,
+[data-ui="pixel"] .hd-boost,
+[data-ui="pixel"] .hero-stat,
+[data-ui="pixel"] .hero-chip,
+[data-ui="pixel"] .hero-port,
+[data-ui="pixel"] .map-row,
+[data-ui="pixel"] .pq-tile{
+  border-radius:var(--ui-radius);
+  box-shadow:none;
+}
+/* --- pixel-art canvases + floating overlays: square the FRAME only
+   (keep image-rendering / the float shadow) so corners match the chrome --- */
+[data-ui="pixel"] .event-banner .eb-art,
+[data-ui="pixel"] .rankline canvas,
+[data-ui="pixel"] .hd-port,
+[data-ui="pixel"] .ar-port-row .ar-port,
+[data-ui="pixel"] .ar-enemy,
+[data-ui="pixel"] .ah-port,
+[data-ui="pixel"] .ar-port,
+[data-ui="pixel"] .u-cell canvas,
+[data-ui="pixel"] .toast canvas,
+[data-ui="pixel"] .toast .t-glyph,
+[data-ui="pixel"] .at-scene,
+[data-ui="pixel"] .toast,
+[data-ui="pixel"] .toast-more,
+[data-ui="pixel"] .update-bar{
+  border-radius:var(--ui-radius);
 }

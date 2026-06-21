@@ -29,7 +29,7 @@ ok(/#start\{[^}]*padding:12px/.test(css), "(2) #start top padding trimmed (12px)
 
 // ---- (3) tidy nav: Sound/Settings/Fullscreen are LABELLED, no icon-only util -
 ok(!/navbtn util/.test(html), "(3) the icon-only `.util` nav buttons are gone (no bare-emoji buttons)");
-[["soundBtnMenu","Sound"],["settingsBtn","Settings"],["fsBtn","Screen"]].forEach(([id, lbl]) => {
+[["soundBtnMenu","Sound"],["settingsBtn","Setup"],["fsBtn","Screen"]].forEach(([id, lbl]) => {
   const re = new RegExp('id="' + id + '"[^>]*>\\s*<span class="nav-emoji">[^<]+</span><span class="nav-lbl">' + lbl + '</span>');
   ok(re.test(html), "(3) #" + id + " is a labelled nav button (emoji + \"" + lbl + "\")");
 });

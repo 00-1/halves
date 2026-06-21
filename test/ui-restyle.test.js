@@ -54,5 +54,30 @@ ok(/box-shadow:none/.test(panelRule), "(5) panels drop the soft blur shadow (har
 // ---- (6) CLEAN TEXT: the restyle never swaps body text to a pixel font -------
 ok(!/font-family/.test(block), "(6) the restyle sets NO font-family — body text/numerals stay clean (kid legibility)");
 
+// ---- (7) T111 — the restyle COMPLETES every screen (no rounded chrome left) ---
+// the named gaps + the swept screens are all now gated under [data-ui="pixel"].
+["\\.hd-head","\\.hd-port","\\.hero-stat","\\.hd-boost",   // hero-detail
+ "\\.slow-item","\\.rankline canvas",                       // results
+ "\\.inv-cell","\\.inv-tab",                                // inventory
+ "\\.arena-map-btn","\\.map-row","\\.ah-port","\\.ar-port", // arena
+ "\\.pq-tile","\\.practice-hint-toggle",                    // practice
+ "\\.set-danger","\\.g-eg","\\.event-live"].forEach(sel => {
+  ok(new RegExp('\\[data-ui="pixel"\\] ' + sel + '[,{]').test(block), "(7) " + sel.replace(/\\\\/g,"") + " is now covered by the pixel restyle");
+});
+// and it's the strongest possible reversibility proof: a grep of the WHOLE block
+// still finds zero ungated selectors (already asserted in (3)) AND every newly
+// covered rule squares the radius or beveled — never a soft 8–18px radius left.
+ok(!/border-radius:\s*\d/.test(block), "(7) no hard-coded px radius survives in the pixel block — all squared via --ui-radius");
+
+// ---- (8) NAV: shortened label + no orphaned single button -------------------
+ok(/id="settingsBtn"[^>]*>\s*<span class="nav-emoji">[^<]+<\/span><span class="nav-lbl">Setup<\/span>/.test(html),
+   "(8) the Settings label is shortened to \"Setup\" (fits the row)");
+ok(!/nav-lbl">Settings</.test(html), "(8) the long \"Settings\" label is gone");
+// the no-orphan mechanism: 7 uniform wider buttons wrap+centre under the 360 cap
+ok(/\.navrow\{[^}]*flex-wrap:wrap/.test(css) && /\.navrow\{[^}]*justify-content:center/.test(css) && /\.navrow\{[^}]*max-width:360px/.test(css),
+   "(8) the nav row wraps + centres under a 360px cap (a wrapped row is balanced, not left-orphaned)");
+const mw = (css.match(/\.navbtn\{[^}]*min-width:(\d+)px/) || [])[1];
+ok(mw && Number(mw) >= 58, "(8) nav buttons are uniform & wide enough (min-width " + mw + "px) → 7 wrap to 4+3 / 5+2, never 6+1");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " UI-RESTYLE CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

@@ -3577,3 +3577,49 @@ notes / questions: **headless can't judge the look — please eyeball the live b
   per-item effect). **Arena-biome FX** (`setArenaState`/T108) is deliberately deferred to after
   the T89/T90 Arena UI per the pointer. Next per the pointer: **`T106`** (tech-tree v2), then
   `T101`–`T103` (shipping/perf), then `T89`/`T90`.
+
+## T111 — Complete the T100 pixel restyle (every screen) + tidy the nav  [HANDOFF]
+commit: (this commit, on main) — [A] task. Owner (3+ screenshots): T100 covered only a SUBSET of
+selectors, so several screens still showed rounded "web-2.0" boxes, and the home nav's "Settings"
+label pushed the Screen button onto its own orphan row.
+changed:
+  - **styles.css** — extended the `[data-ui="pixel"]` block with the remaining rounded chrome,
+    found by a **full sweep** (grep of every rule's `border-radius`), not just the named screens:
+    • **interactive controls** (squared + pixel-bevel + invert + focus): `.inv-tab`, `.jump-top`,
+      `.arena-map-btn`, `.practice-hint-toggle`, `.set-danger`.
+    • **panels/cards/rows/chips** (squared + `box-shadow:none`): `.g-eg`, `.mode-row`,
+      `.slow-item` (results), `.event-live`, `.tp-row`, `.inv-cell`, `.hd-head`/`.hd-boost`/
+      `.hero-stat` (hero-detail), `.hero-chip`, `.hero-port`, `.map-row`, `.pq-tile`.
+    • **pixel-art canvases + floating overlays** (square the FRAME only, keep
+      `image-rendering`/float shadow): `.event-banner .eb-art`, `.rankline canvas` (results
+      badge), `.hd-port`, the arena portraits (`.ar-port`/`.ar-enemy`/`.ah-port`), `.u-cell
+      canvas`, `.toast canvas`/`.toast .t-glyph`, `.at-scene`, `.toast`, `.toast-more`,
+      `.update-bar`. Everything **gated on `[data-ui="pixel"]`** (classic byte-for-byte
+      unchanged), **clean-text** (no `font-family` in the block). The only non-token radii left
+      are **justified decorative** bars/pips (`.progress-*`, `.tp-bar/-fill`, `.at-pip`, the 50%
+      status dots) — not card/row/chip chrome.
+    • **Nav fix:** `.navbtn` `min-width` `44→60` so the seven uniform buttons wrap to a
+      **balanced, centred 4+3 / 5+2** under the existing `max-width:360` + `justify-content:
+      center` + `flex-wrap` — never a lone 6+1 orphan (6-per-row needs >360, the cap forbids it).
+  - **index.html** — the Settings nav label **"Settings" → "Setup"** (owner asked for shorter;
+    `aria-label` stays "Settings"). The ⛶ Screen⇄Exit sync is unchanged.
+  - **test/ui-restyle.test.js** — extended (now **40 checks**): asserts the 17 newly-covered
+    selectors are gated under `[data-ui="pixel"]`; that **no hard-coded px radius survives in the
+    pixel block** (all squared via `--ui-radius`); and the **nav fix** (label is "Setup", the long
+    label is gone, the row wraps+centres under the 360 cap, buttons `min-width ≥ 58`). The existing
+    reversibility check (every block selector gated; classic `.btn`/banner intact) auto-covers the
+    new rules.
+  - **test/home-layout.test.js** — the settings nav-button label assertion `"Settings" → "Setup"`.
+how I verified:
+  - **`node test/ui-restyle.test.js` → ALL 40 PASSED.** **Contrast gate green** (6 — the restyle
+    is radius/shadow only; no text/bg colour changes, AA unaffected). `node -c` clean (CSS/HTML
+    only). **Full 30-gate suite green.** Cross-checked with a grep: every rounded **chrome**
+    selector now has a `[data-ui="pixel"]` override; the only ones without are the justified
+    decorative bars/pips.
+notes / questions: **headless can't judge pixels — please eyeball:** hero-detail (card/port/stat
+  chips/boost rows), results (slowest rows + rank badge), summary/inventory/arena/practice/settings/
+  modal should all read squared/hard-framed under the pixel look; flipping `data-ui="classic"`
+  restores the soft look byte-for-byte; the home nav is one tidy block (no orphan, "Setup" fits).
+  The 4+3/5+2 wrap is structural (360 cap + centre + min-width 60); if you'd prefer a forced single
+  row, the lever is the button width. Next per the pointer: **`T106`** (tech-tree v2), then
+  `T101`–`T103` (shipping/perf), then `T89`/`T90`.
