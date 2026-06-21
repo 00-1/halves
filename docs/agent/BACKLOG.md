@@ -2745,6 +2745,50 @@ cut 10 NEW music styles (keep them distinct) including the dubstep victory. Put 
   the log) so T140 can list + route them. (Babysitter + owner audition each in the switcher — output
   feature, gates necessary-not-sufficient.)
 
+### T149 — [A] THE celebration bug: `#fxBurst` is trapped inside the `display:none` reset modal — move it to top level · status: OPEN · OWNER-PRIORITY · BUG · ROOT-CAUSED (browser-proven)
+**Found by an actual headless-browser render (Playwright), not a guess — after T125/T126/T133/T136/T137/T138
+all missed it.** `<canvas id="fxBurst">` (index.html:321) is the **last child of `#resetModal`** (`<div class=
+"modal hidden">`, the "Clear all data?" confirm modal). `.modal.hidden{display:none}` → the celebration
+canvas is **removed from rendering** except while the reset modal is open (≈never). So the engine painted a
+perfect ~20%-coverage shower into a canvas the browser never displayed — `clientWidth/Height = 0×0`. The
+backing buffer looked fine (sized via the innerWidth fallback → why `dimensions()` read `1038×2305`), which is
+how every headless gate + the owner-readout stayed misleading. **The engine work (T133/T138) was all correct;
+this is the only thing wrong.**
+- **Fix (one line):** move `<canvas id="fxBurst" class="fx-burst" aria-hidden="true">` OUT of `#resetModal` to
+  a **top-level** position — e.g. directly after `#fxBackdrop` (index.html:19) / as a body-level sibling of
+  `.app`, exactly like the working backdrop. (Verify `#fxCanvas` and `#fxBackdrop` are also top-level.)
+- **Browser-proven:** in headless Chromium at the Poco-X3 viewport (393×852 @ dpr 2.75), the canvas reads
+  `0×0` inside the modal and **`393×852` once moved to `document.body`**, and `FXGL.celebrate()` then paints
+  **19.6% lit coverage** — a bold visible shower. (Same screenshot the owner was sent.)
+- **DoD (browser-verified, not headless-only):** `#fxBurst` is top-level; a real-browser check (T150) shows
+  its `clientWidth>0` and a celebration paints visible coverage; on the owner's device a win/run/item/tester
+  shows the shower; `node -c` clean; all gates green; [A]-owned (index.html; maybe a styles tweak). (Babysitter
+  confirms via the Playwright harness + the owner's eyes.)
+
+### T150 — [B] Autonomous BROWSER-RENDER test harness (Playwright) — catch "rendered but invisible" for real · status: OPEN · OWNER-PRIORITY · PROCESS-FIX
+Owner: **"these iterations are getting nowhere and going round and round… step back and take a new approach…
+or somehow test it autonomously with playwright or similar."** Right: our entire suite is **Node-only** and
+can't see a rendered pixel, layout, or `display:none` — which is exactly how the celebration bug (T149) hid
+through SIX rounds (every "drawn/sized?" gate passed while the canvas was `display:none`, `0×0`). A real
+headless browser closes that gap. **The Babysitter confirmed this works in-env:** global `playwright`
+(`/opt/node22/lib/node_modules/playwright`) + a Chromium at `/opt/pw-browsers` (`PLAYWRIGHT_BROWSERS_PATH=
+/opt/pw-browsers`); it launches headless, loads the static app over a local `http.server`, reads canvas
+pixels, and screenshots.
+- **Build a B-owned browser-render harness** (new file, e.g. `test/browser/render.test.js` + a tiny runner;
+  loads the app **read-only** — no edits to existing Halves files). It must, at a **phone viewport + dpr 2.75**:
+  (1) load the app, capture **console/page errors** (fail on any); (2) drive the **real celebration** (click
+  the FX tester, or fire it) and assert **`#fxBurst.clientWidth>0` AND visible lit-pixel coverage above a
+  threshold** (would have caught T149 instantly via `clientWidth===0`); (3) assert the **FX backdrop** renders;
+  (4) save screenshots as artifacts. Keep the existing Node gates; this is an **additional** browser gate.
+- **Wire it as an opt-in/guarded gate** (skips cleanly if no browser is present so the Node-only CI path still
+  works), and document how to run it locally (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test/browser/…`).
+  Optionally add a GitHub-Actions job that `npx playwright install chromium` + runs it.
+- **DoD:** a runnable browser-render gate that loads the app, fires a celebration, and **fails if the canvas
+  is 0-size / display:none / zero-coverage** (verify by temporarily re-nesting `#fxBurst` in the modal → the
+  gate FAILS); screenshots saved; existing gates intact; B-owned files only. (This is the structural fix so we
+  stop round-tripping rendering bugs through the owner.) *(Coordinates with A's T149: after T149, this gate
+  goes green; it's the regression guard.)*
+
 ### T148 — [A] SFX volume can't go loud enough: the slider uses the music's 0–0.10× scale, but the SFX bus goes to 1.0 · status: OPEN · OWNER-PRIORITY
 Owner: **"sound fx volume doesn't go high enough. probably cos it's using the old sound system which was
 always super quiet. probably sound effects should move to the new system that music moved to."** **Diagnosed

@@ -10,7 +10,16 @@
 
 ---
 
-**Builder A → `T146` (declutter home: drop Sound icon + move Exit into Setup) → `T148` (SFX volume range — quick, high-value) → `T147` (FX tester → a Graphics section) → `T140` (12-style picker — UNBLOCKED) → `T124` (fractions)**
+**Builder A → `T149` (THE celebration fix — move `#fxBurst` out of the display:none modal) → `T146` (declutter home) → `T148` (SFX volume range) → `T147` (FX tester → Graphics) → `T124` (fractions)**
+**⚠ `T149` FIRST — ROOT CAUSE FOUND via a real headless-browser render (Playwright), after 6 engine rounds
+missed it.** `<canvas id="fxBurst">` (index.html:321) is the last child of `#resetModal` (`<div class="modal
+hidden">`) and `.modal.hidden{display:none}` → the celebration canvas is `display:none` (clientSize 0×0)
+except while the "Clear all data?" modal is open. The engine renders perfectly (~20% coverage) into a canvas
+the browser never shows. **Fix:** move that one `<canvas>` line OUT of `#resetModal` to **top level** (after
+`#fxBackdrop` / body-level, like the working backdrop). **Browser-proven:** 0×0 in the modal → 393×852 at
+body, 19.6% celebration coverage at dpr 2.75. (The engine T133/T138 work was all correct.) Then → `T146`
+(drop Sound icon + Exit→Setup), `T148` (SFX 0→1.0× range), `T147` (FX tester→Graphics), `T124` (fractions).
+*(`T140` 12-style picker landed `9e706f3` — Babysitter reviewing.)*
 **`T148` — owner: "sound fx volume doesn't go high enough."** Diagnosed: NOT the SFX engine — the slider
 maps `slider/100` → max **0.10 gain**, but `sound.js`'s `sfxBus` accepts up to **`SFX_MAX=1.0`** (10× more
 headroom; current peak ≈ −36 dB). **Fix:** map the SFX slider to 0→1.0× (not /100), louder default
@@ -41,13 +50,17 @@ exempting only `.build` from the contrast gate, keeping `.readouts`/`res-label` 
 menu→menu/event→festive + the dubstep victory fires on a win; depends on T139) → **`T124`** (fraction glyphs)
 → `T101` → `T102`/`T103` (Android) → content → `T72`.
 
-**Builder B → STAND BY (engine reactive-only) — pending the owner's celebration RE-TEST.**
-`T138` celebration fix DONE `8145505` (the **real cause = DPR downscale**: CPU 2D path now scales draw size by
-`dpr×res` → constant ~6–18 SCREEN px; sizes bumped to 6–18; visibility gate guards on-screen size — ~24%
-coverage, ~18px); `T139` 12-style palette DONE `efef4b4` (all 66 pairs distinct). Nothing queued. **If the
-owner re-tests and it's STILL blank** (would be surprising now — 24% coverage), chase the render loop /
-`canPresent` (RAF pump+present for the full burst? null 2D context?). Otherwise hold. **B-owned only**; never
-touch existing Halves files; never push `claude/agent`.
+**Builder B → `T150` (autonomous BROWSER-RENDER harness — Playwright) — the process fix the owner asked for.**
+*(`T139` 12-style palette DONE `efef4b4`; `T138` engine work was correct — the real celebration bug was
+[A]-side markup, T149, found via a real browser.)* **T150:** build a B-owned headless-browser render gate
+(new file; loads the app read-only) that, at a phone viewport @ **dpr 2.75**, loads the app, fails on any
+console/page error, fires the **real celebration**, and asserts **`#fxBurst.clientWidth>0` + visible lit
+coverage** (would have caught T149 instantly), checks the backdrop renders, and saves screenshots. **Confirmed
+runnable in-env:** global `playwright` at `/opt/node22/lib/node_modules/playwright` + Chromium at
+`/opt/pw-browsers` (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`); serve via a local `http.server`. Make it an
+**additional, browser-guarded gate** (skips cleanly with no browser so Node-only CI still passes); prove it by
+re-nesting `#fxBurst` in the modal → the gate FAILS. Full DoD `BACKLOG.md` T150. **B-owned only** (new
+`test/browser/…` files); never touch existing Halves files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
