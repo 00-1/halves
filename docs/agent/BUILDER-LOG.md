@@ -1229,3 +1229,32 @@ notes / questions: the only deviation from the design note is the deterministic
   uniqueness layer, needed to satisfy the DoD's "globally unique" (the raw
   generator alone collides 26×). Flagged here for your audit. Next per REVIEW
   order: T24 (Arena).
+
+## T43 — Trim tier loot to 250 (recalibrate; keep all battle invariants)  [HANDOFF]
+commit: 3ce24cb (on main)
+changed:
+  - enemies.js — loot batch formula `3 + floor((n-1)/12)` (=668) → **`1 +
+    floor((n-1)/25)` (=250)**: batch grows **1** (tiers 1–25) → **2** (26–50) →
+    **3** (51–75) → **4** (76–100). The rarer-with-depth `lootRarity` logic is
+    unchanged. `def_n` / `def100` recompute automatically from the smaller catalogue
+    (loot drives hero ratings); the no-circular-dependency cap (suffix-min envelope)
+    and the final-boss calibration are by construction, so the invariants are
+    preserved by design and re-proven below.
+how I verified:
+  - node -c enemies.js OK. **Full T23 battle-invariant suite re-run on the trimmed
+    loot (20 checks, ALL PASSED):**
+    - **loot total = 250** (tierLoot sum matches; batch 1 at tier 1, 4 at tier 100);
+      catalogue **775 + 250 = 1025**; all item names **still globally unique**.
+    - loot **T20-stamped** (style∈[0,10)/flavour/valid boost), **`test()===false`**
+      (drill-unearnable), boosts **cover all 12 heroes**.
+    - **(a)** tiers 1–5 winnable by base **bram, 0 items, perf 0.85**.
+    - **(b)** every tier 1–100 def beatable with **pre-tier items only** (0 fails).
+    - **def monotonic non-decreasing** (0 dips).
+    - **(c)** tier 100: winnable at full-minus-final-loot (champion **Rendel**,
+      Cunning 261.5 → boss def **392**, advantage), **not** winnable with 0 items,
+      **not** with one champion-boost missing, and **hardest** tier (392 ≥ t99 291).
+    - Sample defs: 1:11 · 10:19 · 25:47 · 50:194 · 75:225 · 99:291 · 100:392.
+notes / questions: pure content/balance trim — main.js inventory totals are
+  computed from `CATALOG.length`, so they adapt with no code change. Run before T24
+  so Arena grants the final 250-item loot set. Next per REVIEW order: T42 (inventory
+  tabs) then T24 (Arena).
