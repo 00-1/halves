@@ -3667,3 +3667,46 @@ notes / questions: **eyeball on the Poco X3:** the FX should now fill the whole 
   victory pops gold confetti**; nothing animates off home/Arena. The home now fills `100dvh` — the
   bottom slack is mostly gone already; **T106** (next) further packs the tree (3-abreast) into the
   reclaimed height. Next per the pointer: **`T106`**, then `T101`–`T103`, then `T89`/`T90`.
+
+## T106 — Tech-tree v2: use the width + a clearer relationship visual language  [HANDOFF]
+commit: (this commit, on main) — [A] task. Owner: the tree nodes "don't use the full screen width
+(only ~2 abreast)" and "the relationship between nodes isn't clear." Builds on T84 (data-driven
+graph) + T100/T112.
+changed:
+  - **main.js `renderTree()`** — rebuilt the layout. Each main-chain topic is a ROW whose **1–3
+    PARTS** (Part 1 → 2 → 3) run left-to-right, derived by **FOLLOWING the live `requires` chain**
+    (`topicParts()` walks `branchOf` from the spine node — never a parallel edge list; also fixes a
+    latent depth-3 drop in the old single-level render). Two **distinct, directional,
+    state-coloured connectors** make "X unlocks Y" read at a glance:
+    • a **VERTICAL amber CHAIN** arrow between topics (`unlockedBy` — finish this topic to open the
+      next), **lit** when the next topic is unlocked, **dim** while locked;
+    • a **HORIZONTAL purple MASTERY** arrow between a topic's parts (`requires mastery` — master
+      this part to open the next), **lit** when the later part is unlocked, **dim** while locked.
+    Rows carry `data-parts` = the live part count (1/2/3 — never a forced grid). `techGraph()` /
+    `nodeState()` / the `.tnode` `<button>` / the click handler / `window.TechTree` are unchanged
+    (T84 invariants intact).
+  - **styles.css** — tech-tree v2 styles: **bigger nodes** (`width 84→96`), `width:100%` rows, and
+    the two connector kinds (`.tchain` vertical amber-down-arrow, `.tbranch` horizontal
+    purple-right-arrow) drawn from CSS triangles, **state-coloured via `.lit`/`.dim`**. The
+    **mastery connector STRETCHES** (`flex:1 1 24px; max-width:130px`) so a 2–3-part topic row
+    **fills toward the edges** (uses the width); 1-part rows stay centred. Removed the old
+    `.tlink`/`.tcol`/`.tree-row::after` spine line. (Nodes are already squared under
+    `[data-ui="pixel"]` from T100; the connectors suit both looks.) The tree is `flex:1 1 auto`,
+    so with T112's relaxed cap it **grows to fill** the reclaimed height (absorbs the bottom slack).
+  - **test/tech-tree.test.js** (now **27 checks**) — added (g): the part-chain is followed from
+    live `requires` (depth 1/2/3); both connector kinds render, **state-coloured by live unlock**;
+    the connector **counts are data-derived** (one `.tchain` between each pair of topics =
+    spine−1; one `.tbranch` per Part-2/3 = the live branch count); a Part-2 topic renders a
+    **2-wide** row; rows span **varying widths** (1- and multi-part present), no empty rows.
+how I verified:
+  - **`node test/tech-tree.test.js` → ALL 27 PASSED** (10 spine rows · 5 mastery branches · 9 chain
+    links, all derived from live data). `node -c main.js` clean. **Full 30-gate suite green** incl.
+    contrast AA + ui-restyle (the squared-node coverage still holds) + home-layout.
+notes / questions: **eyeball the live tree on the Poco X3:** multi-part topics should now span the
+  width with a clear purple "→" between parts and an amber "↓" between topics; the path you've
+  unlocked reads lit, the rest dim; the tree fills the reclaimed height. Current content is depth-2
+  (no Part-3 yet), so the widest rows are 2-abreast — the layout is **future-proofed for 3-abreast**
+  the moment a Part-3 lands (per IDEAS I6), with no code change. If you'd prefer 1-part rows to also
+  fill the width, the lever is a wider/horizontal single-node style (say the word). Next per the
+  pointer: shipping/perf block **`T101`** (Start→fullscreen delay) → `T102` (Android PWA+TWA) →
+  `T103` (perf research) → `T89`/`T90` (Arena 3v3).

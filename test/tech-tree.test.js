@@ -94,5 +94,22 @@ ok(/Glyphs\.draw\(cv/.test(main), "(f) nodeIcon currently uses the T56 pixel gly
 // no hand-maintained parallel edge list (graph reads the live fields)
 ok(/m\.unlockedBy/.test(main) && /mastery:\(\.\+\)/.test(main), "the graph reads live unlockedBy/requires fields (no parallel edge list)");
 
+// (g) T106 — tech-tree v2: rows fill the width with 1–3 PARTS abreast, two
+// distinct directional state-coloured connectors, the part-chain derived LIVE.
+ok(/while\(g\.branchOf\[cur\.id\]\)/.test(main), "(g) the part-chain is FOLLOWED from live `requires` (handles depth 1/2/3, no parallel list)");
+const tree = els.modeTree._html;
+ok(/class="tchain (lit|dim)"/.test(tree), "(g) a VERTICAL chain connector (state-coloured) links consecutive topics");
+ok(/class="tbranch (lit|dim)"/.test(tree), "(g) a HORIZONTAL mastery connector (state-coloured) links a topic's parts (distinct from the chain)");
+ok(/isUnlocked\(next\) \? "lit" : "dim"/.test(main) && /isUnlocked\(p\) \? "lit" : "dim"/.test(main), "(g) both connectors are lit/dim by LIVE unlock state (the path you've opened reads lit)");
+// the connector COUNTS are derived from the live graph (data-driven, varying depth)
+const spineLen = MODES.filter(m => !m.requires).length, partCount = MODES.filter(m => m.requires).length;
+const tchainN = (tree.match(/class="tchain /g) || []).length, tbranchN = (tree.match(/class="tbranch /g) || []).length;
+ok(tchainN === spineLen - 1, "(g) exactly one chain arrow between each pair of topics (" + tchainN + " == " + (spineLen - 1) + ")");
+ok(tbranchN === partCount, "(g) exactly one mastery arrow per Part-2/3 (" + tbranchN + " == " + partCount + ") — rows are as wide as the live depth");
+// a multi-part topic renders a wider row (uses the width); depth is NOT forced uniform
+ok(/data-parts="2"/.test(tree) && !/data-parts="0"/.test(tree), "(g) a topic with a Part-2 renders a 2-wide row; no empty rows (varying depth, not a forced grid)");
+const widths = (tree.match(/data-parts="(\d+)"/g) || []).map(s => Number(s.replace(/\D/g, "")));
+ok(widths.length === spineLen && widths.some(w => w === 1) && widths.some(w => w >= 2), "(g) rows span varying widths (1- AND multi-part rows present, " + spineLen + " rows)");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " TECH-TREE CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

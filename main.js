@@ -451,15 +451,36 @@
       '<span class="tn-badge" aria-hidden="true">'+NODE_BADGE[st]+'</span>'+
       '<span class="tn-prog">'+p.have+'/'+p.total+'</span></button>';
   }
+  // T106 — tech-tree v2. Each main-chain topic is a ROW whose 1–3 PARTS (Part 1 →
+  // 2 → 3) run left-to-right, derived by FOLLOWING the live `requires` chain (never
+  // a parallel edge list); rows are 1-, 2- or 3-wide as the data dictates. Two
+  // distinct, directional, state-coloured connectors read the relationships at a
+  // glance: a VERTICAL amber "chain" arrow between topics (unlockedBy — finish this
+  // topic to open the next) and a HORIZONTAL purple "mastery" arrow between parts
+  // (requires mastery — master this part to open the next). Lit once you've crossed
+  // it (target unlocked), dim while still locked.
+  function topicParts(g, m){               // the full part-chain for a topic (live requires)
+    const parts = [m]; let cur = m;
+    while(g.branchOf[cur.id]){ cur = g.branchOf[cur.id]; parts.push(cur); }
+    return parts;
+  }
   function renderTree(){
     const g = techGraph();
-    elModeTree.innerHTML = g.spine.map(m => {
-      const branch = g.branchOf[m.id];
-      return '<div class="tree-row">'+
-        '<div class="tcol">'+treeNodeHtml(m)+'</div>'+
-        (branch ? '<div class="tlink" aria-hidden="true"></div><div class="tcol">'+treeNodeHtml(branch)+'</div>' : '')+
-        '</div>';
-    }).join("");
+    let html = "";
+    g.spine.forEach((m, i) => {
+      const parts = topicParts(g, m);
+      let row = "";
+      parts.forEach((p, j) => {
+        if(j > 0){                         // horizontal mastery-gate connector before this part
+          row += '<div class="tbranch ' + (isUnlocked(p) ? "lit" : "dim") + '" aria-hidden="true"></div>';
+        }
+        row += '<div class="tpart">' + treeNodeHtml(p) + '</div>';
+      });
+      html += '<div class="tree-row" data-parts="' + parts.length + '">' + row + '</div>';
+      const next = g.spine[i + 1];         // vertical chain connector to the next topic
+      if(next) html += '<div class="tchain ' + (isUnlocked(next) ? "lit" : "dim") + '" aria-hidden="true"></div>';
+    });
+    elModeTree.innerHTML = html;
     elModeTree.querySelectorAll(".tnode").forEach(btn => {
       const m = byId(btn.dataset.mode), cv = btn.querySelector("canvas");
       if(m && cv) nodeIcon(m, cv);
