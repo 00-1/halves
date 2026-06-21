@@ -4480,3 +4480,26 @@ block; Setup links to `#/graphics`; the live boot still fires each celebration o
 notes: **owner** — Setup now has Audio · Graphics · Fullscreen sub-rows; the celebration tester is under
 Graphics, and (with T149) it throws a real visible shower. This clears the [A] queue through T147; next per
 `NEXT.md`: `T124` (fractions, already shipped `583130c`) — awaiting the babysitter's reconciliation.
+
+## T101 — Remove the jank after Start: defer the audio-graph build off first paint  [HANDOFF]
+commit: (this commit) — [A]. Owner: "a bit of a delay after hitting Start with fullscreen — nice to not
+have that, or at least show loading." Diagnosed the entry `enter()` path: it ran `audioUnlock()` +
+`applySoundPref()` (which build the Synth FDN-reverb graph + start the scheduler) AND the fullscreen
+request BEFORE rendering the round — so the synth graph build + reflow blocked the first question.
+changed (A-owned): **main.js `enter(useFs)`** reordered to feel instant:
+  1. **Gesture-required work stays synchronous** inside the tap: `Sound.unlock()` (resume/unlock the
+     AudioContext — the browser requires this in the gesture) + `fsEnter()` (request fullscreen).
+  2. **Paint the round/menu immediately** (`startIntro()` / `applyRoute()`) — first paint no longer waits
+     on the audio engine.
+  3. **Defer the heavy build** (`setupSynth()` — reverb/graph — + `applySoundPref()`) to **after first
+     paint** via `requestAnimationFrame` (warmAudio). Music starts a frame later; **SFX still work
+     immediately** (the context was unlocked in the gesture); the user-gesture requirements for
+     fullscreen + audio are preserved (both still fire on the tap).
+how I verified: **synth-wiring.test (63→65)** — asserts `enter()` unlocks audio + fullscreen (gesture) and
+  PAINTS the round BEFORE the deferred `setupSynth` (`requestAnimationFrame(warmAudio)`); the boot's
+  `requestAnimationFrame` now runs deferred work so the existing mount/route/victory checks still pass.
+  `node -c` clean; **full 34-gate suite green**. [A]-owned.
+notes / questions: **owner/babysitter (browser):** tapping Start (incl. "Play in fullscreen") should now
+  drop into the first question without the synth-graph build blocking it; fullscreen + audio still engage
+  on the tap; the round/clock is unaffected. If a perceptible reflow delay remains on-device, the noted
+  fallback is a brief "Loading…" overlay — flag it. Next per `NEXT.md`: `T102`/`T103` (Android PWA/TWA).

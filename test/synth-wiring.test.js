@@ -45,6 +45,10 @@ ok(/if\(res\.win\)\{ fxCelebrateWin\(tier\.n\); wubSting\(\);/.test(main) && /ca
 ok(/DUCK_SFX/.test(main) && /window\.Synth\.duck\(\)/.test(main), "(4) the louder SFX stings DUCK the music (Synth.duck)");
 ok(/window\.Synth\.setMuted\(!on\)/.test(main), "(4) mute silences Synth too (applySoundPref)");
 ok(/synthTempoMult\(\)/.test(main) && /loadTempo\(\) \/ 100/.test(main), "(4) the T113 tempo slider drives the Synth context tempo");
+// T101 — Start feels instant: the gesture-required unlock/fullscreen stay sync, the
+// round paints, and the heavier setupSynth build is DEFERRED off the first-paint path.
+ok(/function enter\(useFs\)\{[\s\S]{0,700}Sound\.unlock\(\)[\s\S]{0,200}fsEnter\(\)[\s\S]{0,300}startIntro\(\)[\s\S]{0,80}applyRoute\(\)[\s\S]{0,300}requestAnimationFrame\(warmAudio\)/.test(main), "(4) T101: enter() unlocks audio + fullscreen (gesture) and PAINTS the round before deferring setupSynth (no janky Start delay)");
+ok(/const warmAudio = \(\) => \{ setupSynth\(\); applySoundPref\(\); \}/.test(main), "(4) T101: the heavy music-engine build runs in the deferred warmAudio, not on first paint");
 
 // ---- (6) T140 — the music picker offers ALL 12 of B's styles (audition each) -----
 ok(/id="musicSwitch"/.test(html) && /role="group"/.test(html) && /aria-labelledby="musicLabel"/.test(html), "(6) the Audio menu has a labelled music-style picker group");
@@ -115,7 +119,8 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   global.window.addEventListener = (e,f) => { (winH[e]=winH[e]||[]).push(f); }; global.window.removeEventListener = () => {};
   global.window.matchMedia = () => ({ matches:false, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} });
   global.window.location = { hash:"" }; global.location = global.window.location; global.window.innerWidth = 390;
-  global.requestAnimationFrame = () => 1; global.window.requestAnimationFrame = global.requestAnimationFrame;
+  global.requestAnimationFrame = (fn) => { if(typeof fn === "function") fn(); return 1; };   // run deferred work (T101 warmAudio) synchronously
+  global.window.requestAnimationFrame = global.requestAnimationFrame;
   global.cancelAnimationFrame = () => {}; global.window.cancelAnimationFrame = global.cancelAnimationFrame;
   global.performance = { now: () => 1000 };
   global.CSS = { escape:s=>s }; global.fetch = () => Promise.reject(new Error("no")); global.setInterval = () => 0; global.clearInterval = () => {};

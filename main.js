@@ -2230,13 +2230,20 @@
     // The single user gesture that unlocks audio (and optionally fullscreen),
     // then reveals the menu / honours any deep-link hash route.
     function enter(useFs){
-      audioUnlock();
-      applySoundPref();
-      if(useFs) fsEnter();
+      // T101 — make Start feel instant. Do ONLY the gesture-required work synchronously
+      // (the fullscreen request + the AudioContext unlock must be inside the user tap),
+      // then PAINT the round/menu immediately, and DEFER the heavy music-engine build
+      // (setupSynth's reverb/graph) + prefs to just after first paint — so the
+      // fullscreen reflow + synth graph never block the first question. SFX still work
+      // (the context is unlocked here); music starts a frame later.
+      if(window.Sound && window.Sound.unlock) window.Sound.unlock();   // gesture: unlock/resume the audio context
+      if(useFs) fsEnter();                                             // gesture: request fullscreen
       // A fresh profile is dropped straight into the one-question intro (T86);
       // everyone else (incl. legacy) goes to the menu / honours the deep link.
       if(needsIntro()) startIntro();
       else applyRoute();
+      const warmAudio = () => { setupSynth(); applySoundPref(); };     // heavier work, off the first-paint path
+      if(typeof requestAnimationFrame === "function") requestAnimationFrame(warmAudio); else setTimeout(warmAudio, 0);
     }
     if(!fsSupported()){           // iOS Safari etc. — single "Play", no fullscreen
       fsBtn.classList.add("hidden");
