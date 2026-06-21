@@ -2178,7 +2178,7 @@ bites (worse with an Android gesture-nav inset). The `flex:1` stage absorbing th
   can't silently regress again). (Babysitter: confirm Skip is reachable on the live build + the home
   still fills top-to-bottom.)
 
-### T120 — [B] BUILD the `synth.js` generative-audio engine (phased, per T119) · status: OPEN · OWNER-PRIORITY
+### T120 — [B] BUILD the `synth.js` generative-audio engine (phased, per T119) · status: DONE (`deb2e07`→`976e575`, all 5 phases)
 Build the engine T119 recommends: a **new standalone B-owned `synth.js` → `window.Synth`** (no-build,
 headless-testable, mirroring `fxgl.js`; feeds the **existing limiter** → destination). Work the §8
 phased path, **one reviewable [B] increment per push** (Babysitter reviews each on a "does it sound
@@ -2304,6 +2304,43 @@ applied to the tree. It's now obvious because T112/T106 make the tree taller/mor
   tree re-renders and on resize/fullscreen toggle; taps still hit nodes; reduced-motion safe; 360px-safe;
   `node -c` clean; all gates green (a small check that `updateTreeScroll` toggles the classes from
   scroll metrics). (Babysitter: confirm the fade/cue appears only when scrollable and tracks scroll.)
+
+### T122 — [A] WIRE the `synth.js` engine into the app (make it audible) — phase 6 · status: OPEN · OWNER-PRIORITY
+The B-built `synth.js` (`window.Synth`) generative-audio engine is **complete** (T120 #1–#5: patches,
+FDN reverb/space, harmony, rhythm/variation, contexts; 107 headless checks) but **standalone — nothing
+plays it yet.** This [A] wiring makes it the live **music** engine (the moment the owner finally HEARS
+it). Mirror the FX-wiring pattern; consume `Synth`'s API only (never edit `synth.js`).
+- **Mount on the EXISTING audio context (one master/limiter).** Add `<script src="synth.js">` (before
+  `main.js`; T107 versions it; register `test/synth.test.js` as a CI gate). On the audio-unlock gesture,
+  **`Synth.mount({ ctx, dest })` reusing `sound.js`'s `AudioContext` + master/limiter** (the API takes
+  `opts.ctx`) so music + SFX share one chain — the **T113 volume slider keeps controlling everything**
+  and the **limiter still guards** the louder range. Guarded no-op if `Synth` is absent.
+- **Synth is the MUSIC; `sound.js` keeps the SFX.** **Retire the old `sound.js` music scheduler**
+  (`STYLES`/`startScheduler`/the 16th-note `setMusic` loop) so there's **only ONE music scheduler**
+  (Synth's). Keep `sfx()` for game sound effects (don't regress them); the T115 `wub()` in `sound.js`
+  is superseded by `Synth`'s `wub` patch/victory — remove the duplicate so the wub fires once.
+- **Route each screen to a context** (mirror `fxSetScreen(name)`): `#game` → **`solve`** (the calm
+  context — seed/vary per topic so topics still differ, but all CALM by construction); home/menu →
+  **`menu`**; `#arena` → **`arena`** with **`Synth.intensity()`** driven by the same live boss-proximity
+  the FX uses (`arenaFxState`); an event gauntlet → **`event`**. **Start on enter, `Synth.stop()` on
+  leave** (one scheduler, idle off-screen — no leak).
+- **Wins + ducking.** Fire the **wub win-sting** on the real win moments (Arena victory + topic-complete/
+  mastery — the same hooks T112/T115 use) via `Synth` (victory context or `Synth.play("wub")`). **Duck
+  the music under SFX/stings** (`Synth.duck()`), so effects cut through.
+- **Sliders + mute.** The **T113 tempo slider** now drives `Synth`'s tempo (`setTempo`/context tempo ×
+  mult); **volume** controls the shared master; **mute** silences both; **persisted prefs respected**.
+  The **calm-solve firm rule holds** (solve context is calm by construction — don't re-introduce speed).
+- **No-build + a11y + perf.** Plain `<script>`; ONE scheduler total (drop the old one — verify no double
+  scheduler / no leak when navigating); reduced-motion is irrelevant to audio but keep autoplay-unlock;
+  Android-Chrome CPU budget (the FDN reverb runs on the Poco X3 — `Synth.setQuality()` degrade if
+  needed). Keep `contrast`/all gates green.
+- **DoD:** the app's **music is `Synth`** (old `sound.js` music scheduler removed — only one scheduler
+  runs); each screen plays its context (solve **calm**, Arena **drives** + intensifies near a boss, menu/
+  event distinct); a **wub fires once** on a real win; **music ducks** under SFX; the **T113 volume/
+  tempo sliders + mute** control the combined output and persist; SFX still fire; no double-scheduler/no
+  leak (Node-checkable); `node -c` clean; **all gates green** incl. registering `synth.test.js`; 360-safe.
+  (Babysitter: confirm on the live build there's ONE music engine = Synth, solves are calm, Arena drives,
+  a win wubs, ducking works, and the sliders/mute still rule it — then it's owner ear-check time.)
 
 ### T121 — [A] Tree scroll-fade: reveal the backdrop, don't paint black · status: OPEN
 Owner (screenshot): the T116 scroll-fade is back but it's a **black band** over the new purple FX

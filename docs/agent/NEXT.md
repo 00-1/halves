@@ -10,28 +10,23 @@
 
 ---
 
-**Builder A → `T121`  · tree scroll-fade: reveal the backdrop, not a black band**
-`T117` DONE (emoji→pixel icons). Now fix the T116 scroll-fade: it paints `--bg`
-(near-black) over the purple FX backdrop → a black smear. **Mask the `.tree`
-content to fade to transparent** at the scroll edge (reveal the backdrop), tied to
-`can-scroll-up`/`down`; drop/disable the black `::before/::after` overlays; keep
-the ▾ cue. Fallback: recolour to a transparent→light-purple. Full DoD: `BACKLOG.md`
-T121. Then → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` →
-content → `T72`. *(Heads-up: the B `synth.js` engine wiring [A] task slots in once
-B finishes T120 phases.)*
+**Builder A → `T122`  · WIRE `synth.js` into the app (make the new audio audible — the payoff)**
+`T117` DONE. The B-built `synth.js` engine is COMPLETE; now wire it. Mount `Synth`
+on `sound.js`'s **existing** AudioContext/master/limiter (`Synth.mount({ctx,dest})`;
+register `synth.test.js` as a CI gate). Make **Synth the MUSIC** and **retire the
+old `sound.js` music scheduler** (ONE scheduler; keep `sfx()`). Route screens to
+contexts (`#game`→solve **calm**, home→menu, `#arena`→arena +`intensity()` from
+boss-proximity, event→event); start-on-enter/stop-on-leave. Fire the **wub** once on
+a real win; **duck** music under SFX; the T113 **volume/tempo sliders + mute** drive
+the combined output. Full DoD: `BACKLOG.md` T122. Then → `T121` (scroll-fade) →
+`T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → `T120`  · build `synth.js` — RUN CONTINUOUSLY through phases 1→5 (owner: "keep pushing B ahead")**
-New standalone `window.Synth` per the approved `T119` research (§8 phased path).
-**Don't wait for per-phase approval — push each phase as its own increment and
-keep going to the next.** Phase 1 core (AudioContext/bus → existing limiter, `adsr`
-+ filter/LFO voice renderer, patch table) → 2 space (**FDN reverb** + sends +
-stereo width + ducking — biggest quality lever) → 3 harmony (mode, progressions,
-voice-leading) → 4 rhythm/variation (Euclid, Markov, motif, evolving density) →
-5 contexts (calm-solve set, menu, Arena+`intensity()`, event, victory wub) with
-the calm-vs-energetic invariants as tests. Each push: `node -c` + headless test.
-B-owned files ONLY (`synth.js`, `test/synth.test.js`); never touch `sound.js`/any
-existing file (the [A] wire is phase 6, later). Full DoD: `BACKLOG.md` T120.
-Babysitter reviews each increment as it lands; only interrupts to course-correct.
+**Builder B → STAND BY  · `T120` synth engine COMPLETE (all 5 phases approved)**
+Engine done + headless-perfect but standalone; the value is the [A] wiring (T122),
+which B can't do. Keep watching `origin/claude/agent`: the moment the wiring lands
+and surfaces a real engine gap (missing API/hook, a bug), that's your next task.
+Otherwise idle (optional: light brickmap hardening). B-owned files only; never touch
+existing Halves files.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

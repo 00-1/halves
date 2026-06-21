@@ -1,6 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T117` [A] (all chrome emoji → house generative pixel icons) · live
+**Current verdict:** `APPROVED — T120 COMPLETE` [B] (`synth.js` generative-audio engine — all 5 phases)
+· live build **`976e575`** (#5 contexts). **CI green; collision-clean throughout** (only `synth.js`,
+`test/synth.test.js`, `BUILDER-LOG-FX.md` across all 5 pushes — never an existing file). The principled
+rebuild the owner asked for is **built**: **#1** ADSR + a 6-patch table (materially distinct graphs) +
+filter-envelopes + supersaw; **#2** a real **FDN reverb** (4 damped delay lines, stable feedback, stereo
+tail, music/drum sends, ducking) — the dry-sound fix; **#3** modes-by-mood + chord **progressions** +
+**voice-leading** + bass-root; **#4** a single leak-free **lookahead scheduler** + Euclid + Markov +
+evolving density; **#5 contexts** — `solve`/`menu`/`event`/`arena` bundling tempo·mode·density·reverb·
+patches·kit so the **firm calm-vs-energetic rule holds BY CONSTRUCTION** and is **tested** (Arena denser/
+faster/drier/dark-mode/wub-bass vs solve wetter/calm/soft-attack). Verified **independently** each phase;
+`node -c` clean; **full 32-gate suite green**; **`synth.test` = 107 checks**. Genuinely raises the
+ceiling — patches + space + harmony + groove + mood. T120 → DONE. **🎙 Engine COMPLETE but standalone —
+the payoff is the [A] wiring: filed `T122` (mount `Synth` on the existing context, route contexts, fire
+the wub, duck, retire the old music scheduler) as A's next; that's the moment the owner HEARS it.**
+
+> **Previously approved (done):** `T117` [A] (all chrome emoji → house generative pixel icons) · live
 build **`3e72581`**. **CI green.** New A-owned **`icons.js`** (`window.Icons`): 9×9 hand-pixelled
 bitmaps rendered as **1-bit SVG `mask-image`s** so each icon **inherits its context colour** via
 `currentColor` (gold coin, muted lock, mint check…) — on-brand, no image assets, no-build. `span(name)`
@@ -777,14 +792,18 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T121`** [A] (**`T117` DONE — emoji→pixel icons; `T114`/`T118`/`T116`/`T115`/
-  `T113`/`T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**). *(Read `NEXT.md` fresh before
-  starting — canonical.)* **`T121`** — tree scroll-fade reads black over the purple FX backdrop; **mask
-  the tree content to fade to transparent** (reveal the backdrop), tied to `can-scroll` state — not the
-  `--bg` overlay. Full DoD `T121`. **Then → `T101`** (Start delay) → **`T102`/`T103`** (Android
-  PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**. *(The deeper
-  principled audio rebuild is the **B** track — `T120` synth engine — below; its **[A] wiring** slots in
-  once the engine's complete.)*
+- **Builder A — next: `T122`** [A] · **OWNER-PRIORITY (the payoff: make the new audio audible)**
+  (**`T117` DONE — emoji→pixel icons; `T114`/`T118`/`T116`/`T115`/`T113`/`T106`/`T112`/`T111`/`T110`/
+  `T107`/`T100`/`T104`/`T99` DONE**). *(Read `NEXT.md` fresh before starting — canonical.)*
+  **`T122` — WIRE `synth.js` into the app** (phase 6): mount `Synth` **on `sound.js`'s existing
+  AudioContext/master/limiter** (`Synth.mount({ctx,dest})`, register `synth.test.js` as a CI gate);
+  make **Synth the MUSIC** + **retire the old `sound.js` music scheduler** (one scheduler only; keep
+  `sfx()`); route each screen to its context (`#game`→**solve calm**, home→**menu**, `#arena`→**arena**
+  +`intensity()` from boss-proximity, event→**event**), start-on-enter/stop-on-leave; fire the **wub**
+  once on a real win; **duck** music under SFX; the **T113 volume/tempo sliders + mute** drive the
+  combined output. Full DoD `T122`. **Then → `T121`** (tree scroll-fade: mask content to reveal the
+  backdrop, not a black band) → **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA + perf) →
+  **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
@@ -802,26 +821,15 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T120` [B] — BUILD the `synth.js` generative-audio engine (per your T119
-  research).** `T119` DONE — your `docs/research-generative-audio.md` is approved; now build the engine
-  it recommends: a **new standalone B-owned `synth.js` → `window.Synth`** (no-build, headless-testable,
-  mirroring `fxgl.js`). **OWNER 2026-06-21: "keep pushing B ahead with B's version" → RUN CONTINUOUSLY
-  through phases 1→5; do NOT wait for per-phase approval — push each phase as its own increment and keep
-  going.** (Collision-free B-owned files → safe to run ahead; Babysitter reviews each as it lands and
-  only interrupts to course-correct.) **Work the phased path from §8, one reviewable increment per push** (I review
-  each): **(1) Engine core** — `AudioContext`/bus setup feeding the **existing limiter**, the `adsr` +
-  filter/LFO voice renderer, the patch table, Node test (patch→graph, ADSR shape). **(2) Space** — the
-  **FDN reverb** + sends + stereo width + ducking (the biggest quality levers). **(3) Harmony** —
-  key/mode, chord progressions, voice-leading, bass-follows-root. **(4) Rhythm/variation** — Euclidean
-  kit, Markov/2nd-order melody, motif development, evolving + phrase-seeded density. **(5) Contexts** —
-  author the per-context specs (the calm solve set, menu, Arena+`intensity()`, event, victory sting/
-  wub) with the **calm-vs-energetic invariants as tests**. Each increment: `node -c` clean + a headless
-  test (graph/scheduler/determinism/patch-distinctness/calm-budget). **B-owned files ONLY** —
-  `synth.js`, `test/synth.test.js`, the research doc; **NEVER touch `sound.js` or any existing Halves
-  file** (the [A] wiring — mount `Synth`, route contexts like `fxSetScreen`, fire the win-sting + duck,
-  retire the old music scheduler — is **phase 6, an [A] task** I'll spec once the engine lands). Log =
-  `BUILDER-LOG-FX.md` (or `BUILDER-LOG-AUDIO.md`). *(Genuine quality bar: I'll judge each increment on
-  whether it makes the audio sound *good*, not just different — patches + reverb/space first.)*
+- **Builder B — next: STAND BY (`T120` synth engine COMPLETE — all 5 phases shipped & approved).** The
+  `synth.js` engine is done and headless-perfect but **standalone**; the value now is the **[A] wiring
+  (`T122`)**, which B can't do. **Keep watching `origin/claude/agent` per your self-continue loop:** the
+  moment the T122 wiring lands and surfaces a real engine gap (an API the integration needs, a bug, a
+  missing context/quality hook), **that becomes your next task** and preempts standby. Optional while
+  idle: light brickmap-side hardening or a small engine polish **only if clearly needed** — else idle
+  quietly. **B-owned files only; never touch existing Halves files; never push `claude/agent`.**
+  *(Possible future [B] work once wired: more contexts/patches if the owner wants, or an SFX-as-patches
+  migration — but not speculatively; grounded in what the wiring surfaces.)*
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —
