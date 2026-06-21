@@ -2128,13 +2128,28 @@ engages**. ~6 dB of headroom is unused, so small `VOL` bumps changed almost noth
   loud and the tempo genuinely slows; then the **owner reports the two values** → T114 sets them as
   defaults.)
 
-### T114 — [A] Audio: set the owner-calibrated Volume + Tempo as defaults · status: BLOCKED (needs T113 + owner's reported values)
-Once T113 ships and the owner calibrates and **reports the good Volume + Tempo values**, set those as
-the **defaults** (the initial slider positions / `VOL` + `tempoMult` constants) so a fresh player gets
-the right feel out of the box. Trivial constant change + update the sound test's expected band. Keep
-the sliders (users can still adjust). DoD: defaults match the owner's reported values; `node -c` clean;
-sound test band updated; all gates green. *(Babysitter fills in the exact numbers when the owner gives
-them.)*
+### T114 — [A] Audio: set the owner-calibrated Volume + Tempo defaults + extend the volume range · status: OPEN (owner reported values)
+**Owner's calibrated values (2026-06-21):** "volume definitely 2.5× **or more** as default; tempo 0.4
+to 0.6." The owner **hit the slider max (2.5×) and still wanted more**, so the *range* is too low, not
+just the default. Act on both:
+- **Raise `VOL_MAX` 2.5 → 4.0** (sound.js) so the slider reaches "or more"; update the `volRange` `max`
+  attribute (250 → **400**) in index.html to match. The −1.5 dB limiter still keeps it clip-safe.
+- **Default master volume = 3.0×** (comfortably "2.5× or more", with headroom to 4×). Set the
+  `loadVol()` fallback **80 → 300** (main.js) and the `volRange` initial `value` **80 → 300**
+  (index.html). *(If 3.0× still isn't loud enough for the owner with the extended slider, bump the
+  default further — owner to confirm; note: past ~3× it's mostly the limiter compressing harder, so if
+  louder-still is wanted the deeper lever is raising the per-voice source gains / the limiter ceiling
+  `LIMIT_DB`.)*
+- **Default music tempo = 0.5×** (middle of the owner's 0.4–0.6). Set the `loadTempo()` fallback
+  **100 → 50** (main.js) and the `tempoRange` initial `value` **100 → 50** (index.html). *(Re-confirm
+  after T115 reworks the music — the calm-solve redesign may shift the ideal tempo.)*
+- The sliders still let users adjust; a legacy profile with a saved `halves.vol`/`halves.tempo` keeps
+  its value (only the **fallback default** changes for fresh installs).
+- **DoD:** fresh-profile defaults are **volume 3.0× (300), tempo 0.5× (50)**; `VOL_MAX = 4.0` and the
+  volume slider reaches it; existing saved prefs are untouched; `node -c` clean; **update
+  `sound.test.js`** (the default-volume band + `VOL_MAX` assertion: default ≈ 3.0× in a ~2.5–4.0 band,
+  `VOL_MAX = 4.0`); all gates green. (Babysitter: confirm a cleared profile boots loud (~3×) + calm
+  (0.5×) and the slider now goes past 2.5×.)
 
 ### T118 — [A] BUGFIX: #game overflows (Skip key cut off below the fold) — T112 regression · status: OPEN · BUG · DO FIRST
 Owner (screenshot, timed level): the Skip key is **cut off at the bottom** of the game/solve screen,

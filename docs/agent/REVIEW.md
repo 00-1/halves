@@ -662,14 +662,18 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   `app + insets > viewport` and non-scrolling `#game` clips its bottom (Skip). Fix the app height to
   the available space: `height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))`;
   keep T99's top-pin + T112's fill-screen; Skip fully visible/tappable. Full DoD in BACKLOG `T118`.
-  **Then → `T115`** — music with CHARACTER: **calm solves [FIRM RULE]**, real per-context variety (stop
+  **Then → `T114`** (quick — bake the owner's calibrated audio defaults: **`VOL_MAX` 2.5→4.0**, default
+  **volume 3.0×** [slider 300, max 400], default **tempo 0.5×** [slider 50]; update `sound.test`). Owner
+  hit the 2.5× max and wanted more, so the range is raised too. **Then → `T115`** — music with
+  CHARACTER: **calm solves [FIRM RULE]**, real per-context variety (stop
   the "all sounds the same"), a synth **"wub" win-sting** on topic-complete/battle-win, distinct Arena
   theme. **`T114`** (set the owner-calibrated volume/tempo as defaults) is BLOCKED on the owner
   reporting T113's values — slot it once they do (ideally after T115).
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
-  **`T118`** (BUG: Skip cut off on `#game` — T112 safe-area regression) → **`T115`**
+  **`T118`** (BUG: Skip cut off on `#game` — T112 safe-area regression) → **`T114`** (owner-calibrated
+  audio defaults: volume 3.0×/max 4.0×, tempo 0.5×) → **`T115`**
   (music with CHARACTER) → **`T116`** (restore the tree's scroll-affordance fade/cue — a small T96
   regression the owner spotted) → **`T117`** (replace ALL chrome emoji with house generative pixel
   icons — owner pass; padlock/speaker/cog/coin/calendar + the full swept set) → **`T101`**
