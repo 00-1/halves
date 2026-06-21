@@ -1621,7 +1621,7 @@ Mother Bramble*. The **regions + named bosses are the real milestones** — surf
   tiers incl. a boss-next case and a region boundary, and that the map lists all regions with
   correct status.)
 
-### T69 — Raise the audio volume (SFX + music) · status: OPEN
+### T69 — Raise the audio volume (SFX + music) · status: DONE
 Owner: "the volume seems quite low." In `sound.js` the master is `VOL = 0.16` (governs
 everything; SFX route straight to `master`, peak ≈ 0.024) and music is **additionally**
 attenuated via `musicGain.gain.value = 0.07` (effective ≈ 0.011 — very quiet).

@@ -1,6 +1,15 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T65` (Arena scrolls to top after a fight). One line in
+**Current verdict:** `APPROVED — T69` (audio volume raised, no clipping). Master `VOL`
+0.16→**0.30** (in the louder band), `musicGain` 0.07→**0.09** (music stays a balanced
+background under SFX). Independently verified via the new `test/sound.test.js` (stub
+AudioContext): **all 11 checks pass** — master = VOL, music balanced, **worst-case output
+peak ≈ 0.191 ≤ 0.9 (no clipping)**, mute zeroes master + stops music, unmute restores,
+tab-hidden stops / visible resumes. Builder added a clean `musicPlaying()` accessor for
+testability; wired as the 11th Pages gate; `node -c` clean. ("Louder/calmer enough" is the
+owner's ear; the objective bar is met.) T69 → DONE.
+
+**Previously approved (done):** `T65` (Arena scrolls to top after a fight). One line in
 `finishBattle` — `$("arenaBody").scrollTop = 0` after `renderArena`, before `show`, so the
 result + current tier are visible (win or loss). Verified it's in `finishBattle` only, NOT
 in `renderArena`/the hero-click handler, so hero selection doesn't jump-scroll. `arena.test.js`
@@ -57,9 +66,9 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T69` → `T71` → `T67` → `T66` → `T68` → `T52` → `T53` →
+**Next-task order:** **`T71` → `T67` → `T66` → `T68` → `T52` → `T53` →
 `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
-`T59`/`T60`/`T61`). **Do `T69` next**, then:
+`T59`/`T60`/`T61`). **Do `T71` next** — calmer music + per-topic variation + Arena theme. Then:
 - **`T69`** — tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep music balanced, no
   clipping). **`T71`** — calmer music (cap bpm ~95, soften busy styles) + a distinct style
   per topic + a dedicated Arena theme (Arena currently plays the menu style). Both audio,
