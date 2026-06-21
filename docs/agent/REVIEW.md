@@ -96,8 +96,8 @@ with **genuinely new content** (new procedural art + names + guides), not diluti
   *difficulty* — calibration is dynamic; Collector ladder; lazy inventory), the
   **anti-dilution rule** (new icon categories + name banks + guide + method-only hints +
   glyph tokens per wave), the add-a-topic checklist, and the invariants/gates to re-verify.
-  **Decision recorded:** the Arena stays **100 tiers** — grows in difficulty, not length;
-  variety via new enemy art (T52)/loot themes. (Owner may override to tier-growth.)
+  **Decision (owner-confirmed):** the Arena stays **100 tiers** — grows in difficulty
+  (dynamic calibration), not length; variety via new enemy art (T52)/loot themes.
 - **`T59`/`T60`/`T61`** — the Wave-2 topics in 3 thematic batches, each following T58 and
   bringing new art/names: **A** Rounding + Larger ×/÷; **B** Measures (Money, Time,
   Metric); **C** Reasoning (Ratio, Mean, Sequences). Specs in `docs/research-11plus.md`.

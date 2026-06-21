@@ -1320,9 +1320,10 @@ only (plus reading the code to be accurate); no behaviour change.
   calibration is dynamic, adding drill items with boosts raises the ceiling and the
   boss def automatically, so "tier 100 ⇔ near-full collection" keeps holding; the
   **Collector ladder** (to 10k, T55); lazy inventory; per-topic completion milestones.
-  **Record the decision:** the Arena stays **100 tiers** — it grows in *difficulty*, not
-  *length*; variety comes from new enemy art (T52) / loot themes, not more tiers. (State
-  this as the policy unless the owner later chooses tier growth.)
+  **Decision (owner-confirmed):** the Arena stays **100 tiers** — it grows in
+  *difficulty*, not *length* (the dynamic calibration handles this automatically);
+  variety comes from new enemy art (T52) / loot themes, not more tiers. Document this as
+  the **settled policy** for adding content.
 - **What needs intentional NEW content per wave (the anti-dilution rule):** new
   **procedural icon categories/archetypes** (so new items don't recycle the existing
   ~50); new **name templates / word banks** (so names stay diverse — no new repeated
