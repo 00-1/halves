@@ -14,19 +14,22 @@
 `T122` DONE. T121 **part (b) coin gold + calendar green DONE (`b662840`)**. **Still do
 part (a):** the T116 scroll-fade paints `--bg` (near-black) over the purple FX backdrop
 → black smear: **mask the `.tree` content to fade to transparent** (reveal the backdrop),
-tied to `can-scroll`; keep the ▾ cue. Full DoD: `BACKLOG.md` T121(a). Then → `T123`
-(a11y: grey text fails AA over the purple backdrop — contrast floor + honest gate) →
-`T124` (fraction tree-glyphs illegible — bigger/clearer using node width) → `T125`
-(VFX pass 3: make the FX LAND — Arena backdrop presence + celebrations fire more/
-noticeable; after T123) → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90`
-→ content → `T72`.
+tied to `can-scroll`; keep the ▾ cue. Full DoD: `BACKLOG.md` T121(a). Then → `T125`
+(**BIG celebrations on EVERY win/run/item** — remove the rank gate, fire T126's big
+burst everywhere; owner-priority; no contrast dep) → `T123` (a11y: grey text fails AA
+over the purple backdrop — contrast floor + honest gate) → `T124` (fraction tree-glyphs
+illegible — bigger/clearer using node width) → `T101` (Start delay) → `T102`/`T103`
+(Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → STAND BY  · `T120` synth engine COMPLETE (all 5 phases approved)**
-Engine done + headless-perfect but standalone; the value is the [A] wiring (T122),
-which B can't do. Keep watching `origin/claude/agent`: the moment the wiring lands
-and surfaces a real engine gap (missing API/hook, a bug), that's your next task.
-Otherwise idle (optional: light brickmap hardening). B-owned files only; never touch
-existing Halves files.
+**Builder B → `T126`  · FXGL: a BIG "celebration" burst mode (loads of particles)**
+Off stand-by. Owner wants celebrations with "loads of particles" — the T94 burst was
+deliberately *brief + capped* (256) and reads as too subtle. Beef up the engine: a
+celebration mode with a much higher cap (~600–1000), bigger/longer-lived particles,
+a firework/shower feel (launch+gravity or radial spray), bright palette — while
+KEEPING the invariants (capped, seeded/deterministic, **auto-stops + no RAF leak**,
+single-RAF, reduced-motion calmer, GPU→CPU fallback, instanced/in-shader for perf,
+`setQuality` degrades count). B-owned files ONLY (`fxgl.js`, `test/fxgl.test.js`);
+never touch existing Halves files (the [A] wire = T125). Full DoD: `BACKLOG.md` T126.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

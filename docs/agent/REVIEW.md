@@ -821,13 +821,13 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
 - **Builder A — next: `T121` (finish part a — scroll-fade)** [A] (**`T122` DONE; T121 part (b)
   coin-gold/calendar-green DONE `b662840`**). *(Read `NEXT.md` fresh before starting — canonical.)*
-  **`T121(a)`** mask the tree scroll-fade to reveal the backdrop (not a black `--bg` smear) → **`T123`**
-  (a11y: grey text fails AA over the purple FX backdrop — contrast floor/scrim + honest `contrast.test`)
-  → **`T124`** (fraction tree-glyphs still illegible — bigger/clearer using the node width; T104
-  follow-up) → **`T125`** (VFX pass 3: make the FX LAND — Arena backdrop presence + celebrations fire
-  more often/noticeably; **after T123** since more backdrop = more contrast risk) → **`T101`** (Start
-  delay) → **`T102`/`T103`** (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content
-  **`T58`–`T61`** → **`T72`**.
+  **`T121(a)`** mask the tree scroll-fade to reveal the backdrop (not a black `--bg` smear) → **`T125`**
+  (**BIG celebrations on EVERY win/run/item** — remove the `FX_RANK_MIN` gate, fire **T126**'s big burst
+  on every topic-run/Arena-victory/new-item; owner-priority; bursts are the overlay → **no contrast
+  dep**, so it doesn't wait on T123) → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
+  contrast floor/scrim + honest `contrast.test`) → **`T124`** (fraction tree-glyphs still illegible —
+  bigger/clearer using the node width) → **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA +
+  perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
@@ -845,15 +845,16 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: STAND BY (`T120` synth engine COMPLETE — all 5 phases shipped & approved).** The
-  `synth.js` engine is done and headless-perfect but **standalone**; the value now is the **[A] wiring
-  (`T122`)**, which B can't do. **Keep watching `origin/claude/agent` per your self-continue loop:** the
-  moment the T122 wiring lands and surfaces a real engine gap (an API the integration needs, a bug, a
-  missing context/quality hook), **that becomes your next task** and preempts standby. Optional while
-  idle: light brickmap-side hardening or a small engine polish **only if clearly needed** — else idle
-  quietly. **B-owned files only; never touch existing Halves files; never push `claude/agent`.**
-  *(Possible future [B] work once wired: more contexts/patches if the owner wants, or an SFX-as-patches
-  migration — but not speculatively; grounded in what the wiring surfaces.)*
+- **Builder B — next: `T126` [B] — a BIG "celebration" burst mode in `fxgl.js`** (off stand-by; owner
+  wants celebrations with "loads of particles"). The T94 burst was deliberately *brief + capped* (256)
+  → too subtle now. Add a celebration mode: a much higher cap (~600–1000), **bigger/longer-lived
+  particles, a firework/shower feel** (launch+gravity or radial spray), bright palette — KEEPING every
+  invariant (capped, **seeded/deterministic**, **auto-stops + no RAF leak**, single-RAF, reduced-motion
+  calmer/shorter, GPU→CPU fallback, **instanced/in-shader** so the higher count stays in the Poco-X3
+  budget, `setQuality` degrades the count). Don't regress the existing ambient/`burst()` callers.
+  **B-owned files ONLY** (`fxgl.js`, `test/fxgl.test.js`); never touch existing Halves files (the [A]
+  wire is `T125`). Log `BUILDER-LOG-FX.md`. *(The synth engine T120 + its mute-idle fix are done; this
+  is the next [B] engine task. After it, back to reactive stand-by unless the owner wants more.)*
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —

@@ -2342,30 +2342,55 @@ it). Mirror the FX-wiring pattern; consume `Synth`'s API only (never edit `synth
   (Babysitter: confirm on the live build there's ONE music engine = Synth, solves are calm, Arena drives,
   a win wubs, ducking works, and the sliders/mute still rule it — then it's owner ear-check time.)
 
-### T125 — [A] VFX pass 3: make the FX actually LAND (Arena + celebrations + presence) · status: OPEN
-Owner: "is there still a VFX pass queued? I never saw anything beyond the main screen." Diagnosis: the
-FX is wired but **under-tuned / over-gated**, so it reads as invisible. NOT a new engine — consume the
-existing `FXGL` API; this is [A] tuning/wiring. **Depends on T123** (the contrast floor) — strengthening
-backdrops adds grey-text-on-purple risk, so do T123 first, and keep AA on every screen FX touches.
-- **Arena backdrop — make it clearly present.** It's wired (`#arena`, `deriveArenaScene`) and not bugged,
-  but the early-region palette is dark/subtle vs the home's bright purple, so it's unnoticeable. Lift its
-  presence (a touch more opacity/contrast/scene energy, still behind the DOM, still AA-safe) so entering
-  the Arena visibly *feels* like a place — and confirm it actually shows on the live build.
-- **Celebrations — fire more often + be noticeable.** Today a burst only pops on an Arena win, a **rank
-  ≥6** run (`FX_RANK_MIN=6`), or a **new collectible** — too rare. **Loosen the gate** (e.g. lower the
-  rank floor so a *decent* round pops, scaled so a poor run still doesn't) and **make the burst itself
-  more visible** (more particles / a touch longer / brighter palette) so a win/level-up clearly
-  celebrates. Keep it tasteful + never covering the question/result text (T64) + reduced-motion-safe.
-- **(Owner's call — presence on more screens.)** Optionally extend a *subtle* backdrop to the **results/
-  summary** win screens so finishing a round feels rewarded, and/or a very faint ambience on other menu
-  screens (inventory/heroes). **NOT the solve/#game screen** (keep solving calm/undistracted) unless the
-  owner asks. Default this task to **Arena + celebrations only**; add screens if the owner wants them.
-- **DoD:** entering the **Arena shows a clearly-present backdrop** (verified live); a **celebration burst
-  fires on a decent win/level-up** and is **noticeable** (not a rare faint flicker); nothing covers key
-  text; AA holds on every FX-touched screen (with T123's floor); reduced-motion-safe; perf budget holds
-  (idle off-screen); `node -c` clean; all gates green (extend `fx-wiring.test` for the loosened gate +
-  the Arena presence). (Babysitter: confirm on the live build the Arena has visible atmosphere and a
-  normal good win actually celebrates — the owner's "I never saw anything" is the bar to clear.)
+### T125 — [A] BIG celebrations on EVERY win/run/item (wire T126's celebration burst everywhere) · status: OPEN · OWNER-PRIORITY
+Owner (revised): "we need a LOT more celebration. **every arena victory** is a celebration. **every
+topic run** is a celebration. **every new inventory item.** I want loads of particles etc. I'm not
+seeing anything like that, unless it's super subtle." (Owner confirmed the Arena *backdrop* does exist
+— that's fine; this task is about the **celebration bursts**, which are currently over-gated + small.)
+Pairs with **T126 [B]** (the engine's bigger "celebration" burst). Celebration bursts are the
+**overlay** (`#fxBurst`, z-58) — **NO contrast dependency** (that's the backdrop), so this does NOT
+wait on T123.
+- **Fire on EVERY moment — remove the gates.** **Delete the `FX_RANK_MIN=6` rank gate** so **every
+  completed topic run** celebrates (scale the size by rank — bigger for a great run — but **always fire
+  something**, even a modest run). **Every Arena victory** celebrates (big). **Every new inventory item**
+  (the `showUnlocks` path already covers collectible/loot/event gains) celebrates. No "decent run only"
+  gating — the owner wants it constant.
+- **Make it BIG — loads of particles.** Use **T126's celebration burst** at high count (the raised cap),
+  bright palettes, a real shower/firework feel — not the brief faint flicker today. A topic-complete /
+  Arena win should read as an unmistakable celebration. (If T126 isn't merged yet, A may ship an interim
+  using the current `FXGL.burst` at max count, then adopt T126's bigger mode.)
+- **Keep it usable.** Never covers the question/result text (T64 — the burst is sparse/overlaid, fades
+  fast enough to not obscure); respects mute? (visual, so no) reduced-motion → a calmer reduced shower
+  (engine handles it); idle when off-screen; perf budget holds on the Poco X3 (the higher cap is the
+  T126 concern — A just fires it).
+- **DoD:** a **noticeable, particle-rich celebration fires on EVERY topic-run completion, EVERY Arena
+  victory, and EVERY new inventory item** (verified live — the owner's "loads of particles" is the bar);
+  scaled by rank but never absent on a completed run; never covers key text; reduced-motion-safe; idle
+  off-screen; `node -c` clean; all gates green (`fx-wiring.test` updated: gate removed → fires on every
+  run/win/item, uses the big burst). (Babysitter: confirm on the live build that finishing ANY run and
+  winning ANY Arena fight throws a big visible burst.)
+
+### T126 — [B] FXGL: a bigger "celebration" burst mode (loads of particles, real shower) · status: OPEN · OWNER-PRIORITY
+Owner wants celebrations with **"loads of particles"** — the T94 burst was deliberately *brief + capped*
+(`BURST_CAP=256`), which now reads as too subtle. Beef up the engine's celebration capability (B-owned
+`fxgl.js`; A wires it via T125). Mirror the existing burst discipline.
+- **A bigger, denser, longer celebration burst.** Add a celebration mode (or extend `burst()` opts):
+  **raise the particle ceiling** well above 256 (e.g. a `CELEBRATE_CAP` ~600–1000) for the celebration
+  path, **bigger + longer-lived particles**, a **firework/shower feel** (upward launch + gravity fall, or
+  radial spray), brighter/peak palette. It must still read as a *burst that ends* (auto-stops), not an
+  ambient loop.
+- **Keep the invariants:** capped (the new higher cap), **seeded + deterministic**, **auto-stops + no
+  RAF leak**, single-RAF, reduced-motion → a calmer/shorter shower, GPU→CPU fallback intact. Don't
+  regress the existing ambient/`burst()` callers.
+- **Perf:** the higher cap must stay within the Poco-X3 budget — instanced/animated-in-shader (no
+  per-particle JS per frame), `setQuality` degrades the count. Confirm headless that one celebration is
+  bounded and frees its buffer.
+- **Scope/ownership:** B-owned files ONLY — `fxgl.js`, `test/fxgl.test.js`; never touch existing Halves
+  files (the [A] wire is T125). Log `BUILDER-LOG-FX.md`.
+- **DoD:** a `FXGL` celebration burst that's **visibly big (hundreds of particles, shower/firework)**,
+  capped at the new ceiling, seeded/deterministic, auto-stopping, leak-free, reduced-motion-safe,
+  `setQuality`-degradable; `node -c` clean; the fxgl gate extends to cover it; all gates green.
+  (Babysitter: verify capped/deterministic/auto-stop/no-leak as for T94, just bigger.)
 
 ### T124 — [A] Fraction tree-glyphs still illegible — make them bigger/clearer using the node width · status: OPEN
 Owner (screenshot, tech-tree): the fraction topic glyphs are **still bad at node size** — esp. the
