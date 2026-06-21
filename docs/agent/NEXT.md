@@ -19,11 +19,18 @@ play — sweep for more). KEEP the `→` answer-arrows + hint `↑/↓` (content
 New gate: no targeted emoji remain. Full DoD: `BACKLOG.md` T117. Then → `T101`
 (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → `T120`  · build `synth.js`, phase 1 (engine core + patches)**
+**Builder B → `T120`  · build `synth.js` — RUN CONTINUOUSLY through phases 1→5 (owner: "keep pushing B ahead")**
 New standalone `window.Synth` per the approved `T119` research (§8 phased path).
-Phase 1: AudioContext/bus → existing limiter, the `adsr` + filter/LFO voice
-renderer, the patch table, headless test. B-owned files only; never touch
-`sound.js`. Full DoD: `BACKLOG.md` T120.
+**Don't wait for per-phase approval — push each phase as its own increment and
+keep going to the next.** Phase 1 core (AudioContext/bus → existing limiter, `adsr`
++ filter/LFO voice renderer, patch table) → 2 space (**FDN reverb** + sends +
+stereo width + ducking — biggest quality lever) → 3 harmony (mode, progressions,
+voice-leading) → 4 rhythm/variation (Euclid, Markov, motif, evolving density) →
+5 contexts (calm-solve set, menu, Arena+`intensity()`, event, victory wub) with
+the calm-vs-energetic invariants as tests. Each push: `node -c` + headless test.
+B-owned files ONLY (`synth.js`, `test/synth.test.js`); never touch `sound.js`/any
+existing file (the [A] wire is phase 6, later). Full DoD: `BACKLOG.md` T120.
+Babysitter reviews each increment as it lands; only interrupts to course-correct.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

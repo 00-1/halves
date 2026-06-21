@@ -756,7 +756,10 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
 - **Builder B — next: `T120` [B] — BUILD the `synth.js` generative-audio engine (per your T119
   research).** `T119` DONE — your `docs/research-generative-audio.md` is approved; now build the engine
   it recommends: a **new standalone B-owned `synth.js` → `window.Synth`** (no-build, headless-testable,
-  mirroring `fxgl.js`). **Work the phased path from §8, one reviewable increment per push** (I review
+  mirroring `fxgl.js`). **OWNER 2026-06-21: "keep pushing B ahead with B's version" → RUN CONTINUOUSLY
+  through phases 1→5; do NOT wait for per-phase approval — push each phase as its own increment and keep
+  going.** (Collision-free B-owned files → safe to run ahead; Babysitter reviews each as it lands and
+  only interrupts to course-correct.) **Work the phased path from §8, one reviewable increment per push** (I review
   each): **(1) Engine core** — `AudioContext`/bus setup feeding the **existing limiter**, the `adsr` +
   filter/LFO voice renderer, the patch table, Node test (patch→graph, ADSR shape). **(2) Space** — the
   **FDN reverb** + sends + stereo width + ducking (the biggest quality levers). **(3) Harmony** —
