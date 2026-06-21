@@ -1455,3 +1455,39 @@ Make the same hidden-by-default, tap-to-reveal hint available in **normal drill 
   exists; 360px-safe; `node -c` clean; no console errors; no regressions; deploy green.
   (Babysitter checks the toggle appears in a normal round, hidden-by-default + per-question
   reset, the timer/scoring is untouched, and Practice is unchanged.)
+
+---
+
+## Phase 9 — In-round readability
+
+### T64 — Mid-round item toasts must not obscure the question · status: OPEN
+Owner: "when you get **multiple inventory items at the same time** it can **obscure the
+question** until they disappear. I still want to see them prominently, but not hiding the
+question." Cause: `.toasts` (`styles.css` ~437) is a **fixed, top-anchored vertical stack**
+(`top: 10px`, grows downward, `z-index:60`); when several items unlock on one answer (e.g.
+Solved + Spark + Beat + a Collector/Gold milestone), the column grows **down into the
+`#stage`/`#prompt`/`#answer`** and covers the question until they fade. `showToast`
+(`main.js` ~447) appends each toast immediately with a 2000ms hold.
+- **Keep them prominent, but never cover the question.** The `#prompt` and `#answer` (and
+  the eyebrow) must remain **fully visible at all times**, even with many simultaneous
+  unlocks. Each toast stays full-size, animated, legible (icon + name + rarity) — do not
+  shrink them into illegibility.
+- **Suggested approach (Builder may choose another that meets the DoD):** **cap** the
+  number of concurrently-visible mid-round toasts (e.g. ≤2) and **queue** the rest, showing
+  each as a slot frees; **bound the toast band's vertical extent** (a max-height in the top
+  safe area) so the stack can *never* reach `#stage`; when a backlog exists, use a brisker
+  hold so the queue drains promptly without lingering over play; optionally a small "+N"
+  indicator while items are queued.
+- **No item lost, no double-count.** Every unlocked item still appears (queued if needed),
+  and the **end-of-round unlock modal** (`showUnlocks`) still lists the full set — leave
+  that modal as-is. Don't change what gets awarded, only how the toasts are paced/placed.
+- **Perf (T45):** queuing must not leak timers/nodes or stack RAFs; reuse `dismissToast`;
+  the toast canvases still release.
+- **DoD:** with **N=5+ simultaneous** mid-round unlocks the question (`#prompt`/`#answer`)
+  is never covered/obscured; toasts stay prominent and **every** item is still shown
+  (queued, none dropped); a Node check of the queue logic proves it caps the visible count
+  and drains **all** items in order with no loss; the end-of-round modal is unchanged; no
+  timer/node/RAF leaks across repeated bursts; 360px-safe (incl. short screens); `node -c`
+  clean; no console errors; no regressions; deploy green. (Babysitter verifies the cap/queue
+  logic drains all items, the band is height-bounded above the stage, and the modal still
+  lists the full set.)

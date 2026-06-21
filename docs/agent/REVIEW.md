@@ -25,9 +25,9 @@ call as the Heroes screen** (so they're the T51 restored faces); `lastBattle` no
 name ellipsis). Ran `test/nav-icons.test.js` — **all 16 checks pass**; wired as the 9th
 Pages gate; `node -c` clean; no regressions. T50 → DONE.
 
-**Next-task order:** **`T57` → `T62` → `T63` → `T52` → `T53` → `T54` → `T55` → `T56`**,
-then content extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`). **Do `T57`
-next** (tiny doc scrub).
+**Next-task order:** **`T57` → `T62` → `T63` → `T64` → `T52` → `T53` → `T54` → `T55` →
+`T56`**, then content extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`). **Do
+`T57` next** (tiny doc scrub).
 - **`T62` — methodical, question-by-question hint audit across ALL topics.** Owner: "not
   only halves — fix every bit of advice across all topics… an agent needs to go through
   them one by one. I don't mind burning time." A deliberate per-question pass on **every**
@@ -41,6 +41,10 @@ next** (tiny doc scrub).
   toggle as Practice, per-question reset; the clock keeps running on reveal so Mastery/Speed
   stay honest (no scoring change). Do after T62 so the widely-surfaced hints are already
   high-quality.
+- **`T64` — mid-round item toasts must not obscure the question** (owner: multiple
+  simultaneous unlocks cover the question). Keep them prominent but cap/queue the stack and
+  bound its band so `#prompt`/`#answer` stay fully visible; no item dropped; end-of-round
+  modal unchanged. Do after the hint cluster, before the cosmetic art (T52+).
 - Sequenced early because T62 sets the hint standard that T58's playbook and the new-topic
   batches (T59–T61) must follow. Then T52–T56. Detailed blocks below are in spec order;
   follow this line for sequence.
