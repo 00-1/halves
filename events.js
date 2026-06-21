@@ -110,9 +110,47 @@
   }
   function rewardId(id){ return "event:" + id; }
 
+  // ---- T79 — the cross-topic gauntlet generator -----------------------------
+  // A DETERMINISTIC per-event question set: same set every play and every 14-day
+  // recurrence (so the best-attempt board is fair). NOT fresh-random per entry.
+  // Pure + dependency-injected (takes the modes array, like the clock is injected
+  // for the scheduler) so it is unit-testable with no DOM. Each topic's fixed pool
+  // is canonicalised by sorting prompts, then a seeded shuffle picks `n` distinct
+  // questions; the combined set is seed-shuffled into a themed interleave. Answers
+  // come straight from the curated topic sets, so they stay calibrated.
+  function hashStr(s){ let h = 2166136261 >>> 0; for(let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function seededShuffle(arr, rnd){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = Math.floor(rnd() * (i+1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  function buildGauntlet(eventId, modes){
+    const ev = byId(eventId);
+    if(!ev || !Array.isArray(modes)) return [];
+    const byMode = {}; modes.forEach(m => { byMode[m.id] = m; });
+    const rnd = mulberry32((hashStr(eventId) ^ ((ev.artSeed || 0) >>> 0)) >>> 0);
+    const out = [];
+    ev.questionMix.forEach(q => {
+      const m = byMode[q.topic];
+      if(!m || typeof m.build !== "function") return;
+      // canonical pool (build() returns the same fixed set; sort to a TOTAL order
+      // so it's identical every call). The numeric collator can rank two distinct
+      // prompts equal, so tie-break on the raw string — otherwise the stable sort
+      // would leak build()'s shuffle and the set would vary between plays.
+      const pool = m.build().slice().sort((a, b) => {
+        const ap = String(a.p), bp = String(b.p);
+        const c = ap.localeCompare(bp, undefined, { numeric:true });
+        return c !== 0 ? c : (ap < bp ? -1 : ap > bp ? 1 : 0);
+      });
+      const order = seededShuffle(pool.map((_, i) => i), rnd);
+      const take = Math.min(q.n, pool.length);
+      for(let k=0;k<take;k++){ const it = pool[order[k]]; out.push({ p:it.p, a:it.a, topic:q.topic }); }
+    });
+    return seededShuffle(out, rnd);   // themed interleave across topics (deterministic)
+  }
+
   window.Events = {
     ROSTER: ROSTER, roster: () => ROSTER.slice(),
     epochDaysUTC: epochDaysUTC, indexFor: indexFor, today: today, byId: byId,
-    isLive: isLive, daysUntilLive: daysUntilLive, rewardId: rewardId, DAY_MS: DAY_MS
+    isLive: isLive, daysUntilLive: daysUntilLive, rewardId: rewardId,
+    buildGauntlet: buildGauntlet, DAY_MS: DAY_MS
   };
 })();

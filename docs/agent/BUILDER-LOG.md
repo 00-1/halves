@@ -2715,3 +2715,50 @@ notes / questions: event reward tiles show the procedural flavour name + icon li
   every other collectible (consistent with the existing inventory UI); the bespoke
   per-event art/copy/music + home banner are **T81** as specced. Next per REVIEW
   order: **T79** (event play mode: cross-topic gauntlet + today-only reward grant).
+
+## T79 — Event play mode: the cross-topic gauntlet + today-only reward grant  [HANDOFF]
+commit: (this commit, on main)
+Goal: the actual event game. Reuses the round/clock/scoring engine; adds a
+deterministic cross-topic gauntlet per event and grants the `event:<id>` reward
+on completing the live event (idempotent).
+changed:
+  - **events.js** — new pure, deterministic **`buildGauntlet(eventId, modes)`**
+    (modes injected, like the clock). For each `{topic,n}` in the event's
+    `questionMix`: take the topic's fixed set, **canonicalise by a TOTAL-order sort**
+    (numeric collator + raw-string tie-break — the collator ranks some distinct
+    prompts equal, so without the tie-break a stable sort would leak `build()`'s
+    shuffle), seed-shuffle and pick `n` distinct questions; the combined set is
+    seed-shuffled into a themed interleave. **Byte-stable across plays / the 14-day
+    recurrence / fresh boots** (seed = `hash(id) ^ artSeed`). Answers come straight
+    from the curated topic sets, so they stay calibrated.
+  - **main.js** — `startEvent(eventId)` (guarded **live-today only**) builds the
+    gauntlet, tags each question with its source `_mode` (so the engine renders the
+    right eyebrow/expr/hint), and runs the shared round. `finishEvent()` (branched at
+    the top of `finish()`, before the normal path) shows results and **grants
+    `event:<id>` only while still live and only once** (idempotent), then evaluates
+    collector-count + hero/arena milestones the reward may trigger. `correct()` now
+    skips per-question Gold **and** topic Beat/Spark grants while `eventCtx` is set
+    (the event's reward is its own buff; topic items aren't farmable here). New
+    **"Live today" play strip** atop the Events inventory tab is the functional entry
+    (the prominent home banner is T81); `window.EventPlay.start` is exposed for
+    T80/T81 + tests.
+  - **styles.css** — `.event-live` strip (amber-bordered card; AA, 360px-safe).
+how I verified:
+  - **Extended `test/events.test.js`** → **ALL 45 PASS** (was 28; +17 for T79):
+    `buildGauntlet` is **byte-stable per event** (same set every play, and **across a
+    fresh module boot**), each gauntlet has exactly the mix's question count, **every
+    question is numeric/non-negative/finite/numpad-safe (≤5 digits)** and is drawn
+    from the right topic's curated set (themed); unknown id → empty.
+    **DOM-drive**: froze `Date.now` to a live UTC day, `EventPlay.start` runs the
+    event, **synthetic numpad keypresses answer the whole gauntlet → results screen
+    → `event:<id>` reward granted**; **replaying is idempotent** (reward kept, not
+    duplicated); on the **next UTC day the same event won't start** (returns false,
+    no round opens).
+  - Booted the app: the Events tab's **"Live today" strip** shows today's event + a
+    Play button (`data-event`), and clicking it **starts the gauntlet** (game screen
+    active). No new `$("id")`s (reuses the game/results ids).
+  - `node -c` clean (events/main/collectibles); **full 20-gate suite green**; no regressions.
+notes / questions: events pay **no Goblin Gold** and don't write the per-topic
+  best-times board — the best-attempt board + live-window lockout is **T80**, and the
+  bespoke per-event art/copy/music + prominent home banner is **T81** (next per REVIEW
+  order: T80).

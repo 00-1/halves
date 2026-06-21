@@ -646,7 +646,19 @@
     const Ev = window.Events, evItems = C.CATALOG.filter(it => it.cat === "Events");
     const ordered = (Ev && Ev.roster) ? Ev.roster().map(e => C.byId("event:" + e.id)).filter(Boolean) : evItems;
     const got = ordered.filter(it => col[it.id]).length;
-    return invTabHtml("Events", got + "/" + ordered.length, [{ label:"Daily Events", items:ordered }], col);
+    // "Live today" play strip — the functional entry into today's event gauntlet
+    // (the prominent home banner is T81). Playable only while live, by definition.
+    let strip = "";
+    const live = (Ev && Ev.today) ? Ev.today() : null;
+    if(live){
+      const owned = !!col["event:" + live.id];
+      strip = '<div class="event-live"><div class="el-info">'+
+        '<span class="el-tag">Live today'+(owned ? ' · reward earned' : '')+'</span>'+
+        '<span class="el-name">'+esc(live.name)+'</span>'+
+        '<span class="el-blurb">'+esc(live.blurb)+'</span></div>'+
+        '<button class="btn el-play" data-event="'+esc(live.id)+'">'+(owned ? 'Play again' : 'Play')+'</button></div>';
+    }
+    return strip + invTabHtml("Events", got + "/" + ordered.length, [{ label:"Daily Events", items:ordered }], col);
   }
 
   function drawInvCanvases(){
@@ -755,7 +767,7 @@
   // (Enemies.statBattle over the REAL collected set). Drilling the topics is
   // where buffs are earned; the Arena is the payoff. Clearing it still demands a
   // near-complete collection (the win == the old max-perf win, T23/T43).
-  let arenaHero = null, lastBattle = null, practiceCtx = null, arenaMapOpen = false;
+  let arenaHero = null, lastBattle = null, practiceCtx = null, arenaMapOpen = false, eventCtx = null;
 
   // ---- per-question best-time store (halves.qbest) for the Practice view -----
   let memQbest = null;
@@ -1006,6 +1018,62 @@
     sfx("roundStart");
     beginRound();
   }
+  // ---- Events (T79): the cross-topic gauntlet. Reuses the round engine; only
+  // playable while the event is LIVE today; completing it grants the event's
+  // `event:<id>` reward (idempotent / own-once). The deterministic question set
+  // (same every play + recurrence) comes from Events.buildGauntlet.
+  function startEvent(eventId){
+    const Ev = window.Events;
+    if(!Ev || !Ev.isLive(eventId)) return false;   // live-window only
+    const ev = Ev.byId(eventId); if(!ev) return false;
+    const set = Ev.buildGauntlet(eventId, MODES);
+    if(!set.length) return false;
+    practiceCtx = null;
+    eventCtx = { id: eventId, event: ev };
+    order = set.map(q => ({ p:q.p, a:q.a, _mode: byId(q.topic) || mode }));
+    elEyebrow.innerHTML = 'solve <b>↓</b>';
+    sfx("roundStart");
+    beginRound();
+    return true;
+  }
+  function finishEvent(){
+    cancelAnimationFrame(raf);
+    const ev = eventCtx.event, eid = eventCtx.id; eventCtx = null;
+    const total = (performance.now()-startTime)/1000;
+    const score = times.filter(t => t.miss === 0).length;
+    $("resMode").textContent = ev.name;
+    $("resTime").innerHTML = fmt(total)+'<small>s</small>';
+    const acc = order.length ? Math.round(score/order.length*100) : 100;
+    const accEl = $("resAcc"); accEl.textContent = acc+"%"; accEl.classList.toggle("clean", mistakes === 0);
+    $("resMiss").textContent = mistakes;
+    const slow = times.slice().sort((a,b)=>b.t-a.t).slice(0,5);
+    $("slowList").innerHTML = slow.map(s =>
+      '<div class="slow-item"><span class="q">'+esc(s.p)+'<span class="h"> → </span>'+esc(s.h)+
+      (s.miss ? '<span class="miss">'+s.miss+'×</span>' : '')+'</span><span class="t">'+fmt(s.t)+'s</span></div>').join("");
+    renderResultRank(C.rankIndex(score, order.length, total));
+
+    // Grant the reward — only while still live today, and only once (idempotent).
+    const collected = loadCollected();
+    const rid = "event:" + eid, unlocked = [];
+    if(window.Events.isLive(eid) && !collected[rid]){
+      const it = C.byId(rid);
+      if(it){ collected[rid] = { ts: Date.now() }; unlocked.push(it); }
+    }
+    // collection-count + hero/arena milestones the new reward may trigger
+    const has = id => !!collected[id];
+    const more = C.evaluateCollector(Object.keys(collected).length, has);
+    more.forEach(it => collected[it.id] = { ts: Date.now() });
+    const meta = grantMeta(collected);
+    saveCollected(collected);
+    const all = unlocked.concat(more).concat(meta);
+
+    sfx(all.length ? "topicUnlock" : "roundComplete");
+    show("results");
+    renderBest();
+    $("resGold").innerHTML = "";   // events pay no Gold — the reward is the buff
+    if(all.length) setTimeout(() => showUnlocks(all), 650);
+  }
+
   function finishPractice(){
     const pc = practiceCtx; practiceCtx = null;
     // record the per-question best time (Beat/Spark already granted in correct()).
@@ -1118,16 +1186,20 @@
     const col = loadCollected();
     // Goblin Gold: per clean question = (2 + speed bonus) × combo streak × global
     // multiplier (a skip earns 0; Practice attempts earn no Gold — training only).
-    if(!practiceCtx){
+    if(!practiceCtx && !eventCtx){
       const qm = it._mode || mode;
       const target = (typeof qm.masterSecs === "number") ? qm.masterSecs : 4;
       roundGold += questionGold(target, dt, combo, goldMult(col));
     }
-    const fresh = C.evaluateQuestion(mode.id, it.p, dt, id => !!col[id]);
-    if(fresh.length){
-      fresh.forEach(c => col[c.id] = { ts: Date.now() });
-      saveCollected(col);
-      fresh.forEach(showToast);
+    // Per-question Beat/Spark grants apply to normal drills + Practice, but NOT
+    // events (the event's reward is its own buff; topic items aren't earned here).
+    if(!eventCtx){
+      const fresh = C.evaluateQuestion(mode.id, it.p, dt, id => !!col[id]);
+      if(fresh.length){
+        fresh.forEach(c => col[c.id] = { ts: Date.now() });
+        saveCollected(col);
+        fresh.forEach(showToast);
+      }
     }
 
     elPrompt.classList.add("split");
@@ -1140,6 +1212,7 @@
   function finish(){
     cancelAnimationFrame(raf);
     if(practiceCtx){ finishPractice(); return; }   // Practice attempt → grade just that question
+    if(eventCtx){ finishEvent(); return; }          // Event gauntlet → grant the event reward
     const total = (performance.now()-startTime)/1000;
     const score = times.filter(t => t.miss === 0).length;   // clean first-try answers
 
@@ -1364,6 +1437,8 @@
   $("invTop").addEventListener("click", () => { $("invList").scrollTop = 0; updateInvTop(); });
   // Tap a collectible to inspect it (owned shows detail; locked teases).
   $("invList").addEventListener("click", e => {
+    const play = e.target.closest(".el-play");
+    if(play){ startEvent(play.dataset.event); return; }   // launch today's live event
     const cell = e.target.closest(".inv-cell"); if(!cell) return;
     const it = C.byId(cell.dataset.id); if(!it) return;
     if(cell.classList.contains("owned")) openModal(it.cat, [it], false);
@@ -1509,5 +1584,8 @@
   window.Practice = { recordQbest: recordQbest, qTileColor: qTileColor };
   // Toast queue API (T64) — cap/queue exposed for the Node tests.
   window.Toasts = { CAP: TOAST_CAP, enqueue: enqueueToast, shown: () => toastShown, queued: () => toastQ.length };
+  // Event play API (T79) — start today's live event gauntlet (used by the Events
+  // tab now, the best-attempt board in T80 / the home banner in T81, and tests).
+  window.EventPlay = { start: startEvent, active: () => !!eventCtx };
   show("entry");      // splash first; entry buttons reveal the menu via applyRoute()
 })();

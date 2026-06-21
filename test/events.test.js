@@ -114,5 +114,112 @@ ok(/n !== "Loot" && n !== "Events"/.test(main), "the Awards tab excludes the Eve
 const html = read("index.html");
 ok(/<script src="events\.js">[\s\S]*<script src="collectibles\.js">/.test(html), "index.html loads events.js before collectibles.js");
 
+// ===================== T79 — the cross-topic gauntlet =======================
+// (h) buildGauntlet: deterministic per event, valid + numpad-safe, themed mix.
+const modeById = {}; MODES.forEach(m => modeById[m.id] = m);
+let genOk = true, byteStable = true, sizeOk = true, mixThemed = true;
+Ev.ROSTER.forEach(e => {
+  const a = Ev.buildGauntlet(e.id, MODES), b = Ev.buildGauntlet(e.id, MODES);
+  if(JSON.stringify(a) !== JSON.stringify(b)) byteStable = false;          // same set on replay
+  const want = e.questionMix.reduce((s, q) => s + q.n, 0);
+  if(a.length !== want) sizeOk = false;
+  // every question is numeric, non-negative, finite and ≤5 numpad digits
+  a.forEach(q => {
+    if(typeof q.a !== "number" || q.a < 0 || !isFinite(q.a)) genOk = false;
+    if(String(q.a).replace("-", "").replace(".", "").length > 5) genOk = false;
+    if(typeof q.p !== "string" || !q.p) genOk = false;
+  });
+  // each question's prompt actually belongs to its tagged topic's set (themed mix)
+  e.questionMix.forEach(q => {
+    const pool = new Set(modeById[q.topic].build().map(x => x.p));
+    const got = a.filter(x => x.topic === q.topic);
+    if(got.length !== Math.min(q.n, pool.size)) mixThemed = false;
+    if(!got.every(x => pool.has(x.p))) mixThemed = false;
+  });
+});
+ok(byteStable, "buildGauntlet is byte-stable per event (same set every play/recurrence)");
+ok(sizeOk, "each gauntlet has exactly the questionMix's total question count");
+ok(genOk, "every gauntlet question is numeric, non-negative, finite and numpad-safe (≤5 digits)");
+ok(mixThemed, "every gauntlet draws the right count from each topic's curated set (themed)");
+// determinism survives a fresh module boot (no hidden state)
+(function(){
+  const g0 = global.window; global.window = {};
+  ["modes.js","events.js"].forEach(f => new Function(read(f))());
+  const Ev2 = global.window.Events, M2 = global.window.MODES;
+  let same = true;
+  Ev.ROSTER.forEach(e => { if(JSON.stringify(Ev2.buildGauntlet(e.id, M2)) !== JSON.stringify(Ev.buildGauntlet(e.id, MODES))) same = false; });
+  global.window = g0;
+  ok(same, "the gauntlet is identical across a fresh module boot (deterministic, no hidden state)");
+})();
+ok(Ev.buildGauntlet("not-an-event", MODES).length === 0, "buildGauntlet of an unknown id is empty");
+
+// (i) DOM drive: play the live event end-to-end → reward granted, idempotent,
+//     and NOT playable when the event is not live today.
+(function eventPlayDrive(){
+  // a fixed timestamp; whatever event is live on that UTC day is the target
+  const FIXED = Date.UTC(2026, 5, 21, 12, 0, 0);
+  const liveId = Ev.today(FIXED).id;
+  const offDayMs = FIXED + 86400000;                  // next UTC day → liveId not live
+
+  let els = {}, store = {}, winH = {};
+  function mkEl(id){ return { id, _html:"", _text:"", _h:{}, dataset:{}, style:{}, disabled:false,
+    parentElement:{ clientWidth:300, dataset:{} }, width:48, height:48, scrollWidth:120, clientWidth:300, scrollHeight:400, scrollTop:0,
+    classList:{ _s:new Set(), add(c){this._s.add(c);}, remove(c){this._s.delete(c);},
+      toggle(c,f){ if(f===undefined){ this._s.has(c)?this._s.delete(c):this._s.add(c); return this._s.has(c);} else { f?this._s.add(c):this._s.delete(c); return !!f; } }, contains(c){return this._s.has(c);} },
+    addEventListener(e,fn){ (this._h[e]=this._h[e]||[]).push(fn); }, removeEventListener(){},
+    appendChild(c){return c;}, insertBefore(c){return c;}, setAttribute(){}, getAttribute(){return null;}, removeAttribute(){}, remove(){}, focus(){}, blur(){},
+    querySelector(s){ return /canvas/.test(s||"") ? mkEl("_c") : null; }, querySelectorAll(){ return []; }, closest(){ return null; },
+    getContext(){ return { clearRect(){}, fillRect(){}, save(){}, restore(){}, beginPath(){}, fill(){}, set fillStyle(v){}, get fillStyle(){return"";} }; },
+    get innerHTML(){return this._html;}, set innerHTML(v){this._html=String(v);}, get textContent(){return this._text;}, set textContent(v){this._text=String(v);} }; }
+  global.window = {}; global.window.addEventListener = (e,f) => { (winH[e]=winH[e]||[]).push(f); }; global.window.removeEventListener = () => {};
+  global.window.matchMedia = () => ({ matches:false, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} });
+  global.window.location = { hash:"" }; global.location = global.window.location; global.window.innerWidth = 360;
+  global.requestAnimationFrame = () => 1; global.window.requestAnimationFrame = global.requestAnimationFrame;
+  global.cancelAnimationFrame = () => {}; global.window.cancelAnimationFrame = global.cancelAnimationFrame;
+  global.performance = { now: () => 1000 };
+  global.CSS = { escape:s=>s }; global.fetch = () => Promise.reject(new Error("no")); global.setInterval = () => 0; global.clearInterval = () => {};
+  // run round-advance timers synchronously so the gauntlet can be driven in a loop
+  global.setTimeout = (fn) => { if(typeof fn === "function") fn(); return 0; }; global.clearTimeout = () => {};
+  global.window.setTimeout = global.setTimeout; global.window.clearTimeout = global.clearTimeout;
+  global.localStorage = { getItem:k => k in store ? store[k] : null, setItem:(k,v)=>{ store[k]=String(v); }, removeItem:k=>{ delete store[k]; } };
+  global.window.localStorage = global.localStorage;
+  global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
+    addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
+    documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
+  const realDateNow = Date.now; Date.now = () => FIXED;     // freeze "today" to the live UTC day
+  ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
+  const EP = global.window.EventPlay, Cm = global.window.Collectibles;
+  ok(EP && typeof EP.start === "function", "window.EventPlay.start is exposed");
+
+  // answer the whole gauntlet via synthetic numpad keypresses on #pad
+  const set = global.window.Events.buildGauntlet(liveId, global.window.MODES);
+  function playThrough(){
+    ok(EP.start(liveId) === true, "the live event starts");
+    ok(els.game.classList.contains("active"), "event play activates the game screen");
+    for(let i=0;i<set.length;i++){
+      const ans = String(set[i].a);
+      for(const ch of ans){ (els.pad._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".key" ? { dataset:{ k:ch } } : null) } })); }
+    }
+  }
+  playThrough();
+  ok(els.results.classList.contains("active"), "after the last answer the event shows results");
+  const owned1 = JSON.parse(store["halves.collected"] || "{}");
+  ok(!!owned1["event:" + liveId], "completing the live event granted its event:<id> reward");
+  const before = Object.keys(owned1).filter(k => k === "event:" + liveId).length;
+
+  // replay (still live) → reward grant is idempotent (own-once), still owned
+  playThrough();
+  const owned2 = JSON.parse(store["halves.collected"] || "{}");
+  ok(!!owned2["event:" + liveId], "replaying the live event keeps the reward (idempotent)");
+  ok(Object.keys(owned2).filter(k => k === "event:" + liveId).length === before, "the reward is not duplicated on replay");
+
+  // not live today → cannot start (returns false, no round)
+  Date.now = () => offDayMs;
+  els.game.classList.remove("active");
+  ok(EP.start(liveId) === false, "an event that is not live today cannot be started");
+  ok(!els.game.classList.contains("active"), "a non-live event never opens a round");
+  Date.now = realDateNow;
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " EVENT CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
