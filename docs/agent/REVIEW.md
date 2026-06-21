@@ -25,16 +25,25 @@ call as the Heroes screen** (so they're the T51 restored faces); `lastBattle` no
 name ellipsis). Ran `test/nav-icons.test.js` — **all 16 checks pass**; wired as the 9th
 Pages gate; `node -c` clean; no regressions. T50 → DONE.
 
-**Next-task order:** **`T57` → `T62` → `T52` → `T53` → `T54` → `T55` → `T56`**, then the
-content-extension work (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`). **Do `T57`
-next** (tiny doc scrub). **Then `T62`** — a deep, place-value-aware rebuild of the practice
-hints (owner: "half of **500**" wrongly said "split into tens and ones"; 500 is 5 hundreds,
-odd count → a 250-style half-hundred). The whole halves set is affected (100/180/360/500/
-1000). Make each hint fit the number's real place structure + the exact operation; sweep
-all topics for the same class; extend `hints.test.js` to catch phantom place-value at ALL
-magnitudes (not just `<10`). Sequenced early because it sets the hint standard that T58's
-playbook and the new-topic batches (T59–T61) must follow. Then T52–T56. The detailed task
-blocks below remain in spec order; follow this line for sequence.
+**Next-task order:** **`T57` → `T62` → `T63` → `T52` → `T53` → `T54` → `T55` → `T56`**,
+then content extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`). **Do `T57`
+next** (tiny doc scrub).
+- **`T62` — methodical, question-by-question hint audit across ALL topics.** Owner: "not
+  only halves — fix every bit of advice across all topics… an agent needs to go through
+  them one by one. I don't mind burning time." A deliberate per-question pass on **every**
+  topic's full set (not a sweep): each question's hint must fit its **actual operation**.
+  Halves is the worst exemplar ("half of 500" wrongly said "tens and ones"; 500 = 5
+  hundreds, odd → a 250-style half-hundred) — rebuild it place-value-aware; then do every
+  other topic one by one. Extend `hints.test.js` to catch phantom place-value at ALL
+  magnitudes. Babysitter will dump and read **every** topic's full hint set (not a sample).
+- **`T63` — surface the tap-to-reveal hint in NORMAL rounds too** (owner: "add these hints
+  to the normal topic questions, hidden by default, the same way"). Same hidden-by-default
+  toggle as Practice, per-question reset; the clock keeps running on reveal so Mastery/Speed
+  stay honest (no scoring change). Do after T62 so the widely-surfaced hints are already
+  high-quality.
+- Sequenced early because T62 sets the hint standard that T58's playbook and the new-topic
+  batches (T59–T61) must follow. Then T52–T56. Detailed blocks below are in spec order;
+  follow this line for sequence.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

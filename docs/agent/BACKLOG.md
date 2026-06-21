@@ -1381,18 +1381,26 @@ content.)
 
 ---
 
-## Phase 8 — Hint quality (deep, number-specific) — do EARLY (after T57)
+## Phase 8 — Hint quality (deep, methodical, EVERY question) — do EARLY (after T57)
 
-### T62 — Deep, place-value-aware practice hints (fit the actual operation) · status: OPEN
-Owner (screenshot, "half of **500**"): the hint said *"Split 500 into tens and ones,
-halve each part, then add them"* — but **500 has no tens or ones; it's 5 hundreds, and an
-odd number of them, so the half lands on a 250-style half-hundred.** This is the T49
-phantom-structure bug at a bigger magnitude (T49 only guarded operands `<10`). The whole
-**halves** set is affected — `100`, `180`, `360`, `500`, `1000` all wrongly say "tens and
-ones". Make the advice **genuinely match the specific number's place structure and the
-exact operations the student performs.**
-- **Halves — rebuild the explanation to be place-value-aware (the core work).** Branch on
-  the actual number:
+### T62 — Methodical, question-by-question hint audit across ALL topics · status: OPEN
+Owner: "I'm **not only talking about halves — we need to fix every bit of advice across
+all topics.** We may need to spend real time on this, methodically thinking about each
+question. I don't mind burning time on this — an agent needs to go through them one by
+one." So this is **not** a quick branch tweak: it's a deliberate, **per-question pass over
+every topic's full curated set**, checking that the hint `explain()` produces for *that
+exact question* describes the *actual operation the student performs* — correct, specific,
+appropriately framed, method-only.
+- **Method (mandatory): go through them one by one.** For **every topic**, enumerate its
+  **entire** question set (`mode.build()`), and for **each question** read the current
+  hint and judge it against the real operation; rewrite the topic's `explain()` branch
+  (adding number-aware sub-branches as needed) until **every** question in that topic gets
+  an apt hint. Record the per-topic pass in BUILDER-LOG (topic → issues found → fixes), so
+  the Babysitter can verify topic-by-topic. Do not stop at halves.
+- **The worst exemplar — halves (screenshot "half of 500"):** the hint said *"Split 500
+  into tens and ones…"* but **500 is 5 hundreds (an odd count), so its half lands on a
+  250-style half-hundred** — no tens or ones involved. The T49 fix only guarded operands
+  `<10`; `100/180/360/500/1000` are all wrong. Rebuild halves to be **place-value-aware**:
   - **Single digit:** even → halve directly; odd → the half ends in ·5 (as now).
   - **Round numbers (trailing zeros — 90, 100, 500, 1000, 250…):** work in the largest
     unit actually present (tens / hundreds / thousands); if the **count of that unit is
@@ -1403,22 +1411,47 @@ exact operations the student performs.**
     actually present** (e.g. 360 → 300 + 60; 45 → 40 + 5; 144 → 100 + 40 + 4), halve each,
     add; flag the ·5 ending only when the **ones digit is odd**.
   - Method only — never state the answer (T49 standard); one concise British sentence.
-- **Sweep EVERY other topic for the same class of defect** — any hint that names structure
-  the specific number lacks or gives an approach that doesn't fit the actual operands
-  (check doubles for round hundreds/thousands, place-value, bonds, etc.). Fix each so the
-  advice is precisely appropriate to that question's operation. Keep concise + correct.
+- **EVERY other topic, question by question (the bulk of the work).** Apply the same
+  rigour to all 15 topics — times, doubles, add/subtract, bonds, place value, fractions-of,
+  fractions→decimal, percentages, squares, etc. For each, check the hint fits the *specific*
+  operands: e.g. doubles of round hundreds/thousands shouldn't imply absent places; ×-tricks
+  must be the *best* one for those factors; %/fraction hints must match the actual values;
+  place-value hints must state the right direction + number of places for the real operands;
+  bonds must reflect whole-ten vs with-ones, decimal bonds, etc. Fix every mismatch; keep
+  each hint concise, British, 10-yo-appropriate, mathematically correct, method-only.
 - **Strengthen the gate (`hints.test.js`) for ALL magnitudes:** assert no halves/doubles
   hint names a place value **finer than the number's smallest nonzero place** — concretely
   (a) a multiple of 100 must not say "tens and ones"/"ones"/"tens" as split targets, (b) a
   multiple of 10 must not say "ones", and add explicit must-pass cases for **`half of 500`**
   (reads as hundreds, odd-count, no "tens and ones", no `250`) and **`half of 1000`**.
   Keep the existing no-answer-leak (token + words) and singular/plural checks.
-- **DoD:** every halves hint matches its number's real place structure and the actual
-  halving operation (Babysitter dumps all 26 halves hints and reads each); the
-  round-hundred/thousand and odd-unit cases are handled (500/1000/100/90 correct); all
-  other topics swept and any mismatched advice fixed; the extended Node gate proves no
-  phantom place-value at any magnitude + no answer leak across every question in every
-  topic; concise, British, mathematically correct; all CI gates green; no regressions;
-  deploy green. (Babysitter reads the full halves dump + a cross-topic sample for
-  appropriateness and correctness, and confirms the gate now fails on a phantom-place
-  hint at the hundreds magnitude.)
+- **DoD:** **every question in every one of the 15 topics** yields a hint that fits its
+  specific operation — verified by dumping the **full** hint set (every `mode.build()`
+  question → its `explain()` output) and reading them all; halves place-value cases
+  (500/1000/100/180/360/90) are correct; no hint names a place the number lacks or gives a
+  mismatched approach; the extended Node gate proves no phantom place-value at any magnitude
+  + no answer leak (token & words) + no plural slips across every question; a BUILDER-LOG
+  per-topic record of issues-found→fixes; concise, British, mathematically correct;
+  method-only; all CI gates green; no regressions; deploy green. (Babysitter independently
+  dumps and reads **every** topic's full hint set, not a sample, and confirms the gate now
+  fails on a phantom-place hint at the hundreds magnitude. Expect this to take real time —
+  that's the point.)
+
+### T63 — Surface the "how to approach this" hint in normal rounds too · status: OPEN
+Owner: "add these hints to the **normal topic questions** (hidden by default, in the same
+way)." Today the tap-to-reveal hint (`#practiceHintToggle` + `#practiceNote`) only appears
+in **Practice** mode (gated on `practiceCtx` in `beginRound`/`renderInput`, `main.js`).
+Make the same hidden-by-default, tap-to-reveal hint available in **normal drill rounds**.
+- **Show the toggle + note in normal rounds**, using the same `Guides.explain(mode.id, it)`
+  for the current question; **collapsed by default**, reset to hidden on every new question,
+  label flips on reveal — identical UX to Practice. (Practice mode is unchanged.)
+- **Build on T62** (do it after) so the hints surfaced widely are already high-quality.
+- **No scoring change / no gaming:** the clock keeps running while a hint is revealed, so it
+  naturally costs time — Mastery/Speed brackets/Flawless stay earned by real performance;
+  do **not** disable or alter any achievement based on hint use, and do not pause the timer.
+- **DoD:** in a normal round the hint toggle shows, the note is hidden until tapped, resets
+  per question, and reveals the correct method note; Practice mode still behaves as before;
+  the round clock is unaffected by revealing a hint; achievements unchanged; every `$("id")`
+  exists; 360px-safe; `node -c` clean; no console errors; no regressions; deploy green.
+  (Babysitter checks the toggle appears in a normal round, hidden-by-default + per-question
+  reset, the timer/scoring is untouched, and Practice is unchanged.)
