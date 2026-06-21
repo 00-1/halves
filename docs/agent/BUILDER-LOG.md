@@ -1302,3 +1302,26 @@ how I verified:
 notes / questions: Loot region labels come from `Enemies.regionLabel`, so T44's
   tier/region rename will flow through automatically. Next per REVIEW order: T44
   (tier rename) then T24 (Arena).
+
+## T44 — Rename enemy tiers (regions + rank-titles + named bosses)  [HANDOFF]
+commit: 813eec3 (on main)
+changed:
+  - enemies.js — replaced `BANDS`/`ARCHETYPES`/`tierName` with the FINAL mapping
+    (display-only): **BANDS** = the 10 regions (Goblin Warren … The Void Throne);
+    **RANK_TITLES** = Runt · Sentry · Brute · Raider · Warden · Champion · Reaver ·
+    Dread · Warlord · Overlord; **BOSSES** = the 10 named region bosses.
+    `tierName(n)`: `region=floor((n-1)/10)`, `pos=(n-1)%10`; `pos===9` → the named
+    boss, else `"<Region> <RankTitle>"`. Tier numbering / `def` / `loot:<n>:<k>`
+    ids / battle logic all untouched. (`regionLabel` reads `BANDS`, so the T42
+    inventory Loot-region labels update automatically.)
+how I verified:
+  - node -c enemies.js OK. Node test (13 checks, ALL PASSED): **all 100 tier names
+    follow the FINAL rule exactly**; the ten tiers ≡0 mod 10 use the **named boss**
+    (Goblin King…The Void Sovereign); samples "Goblin Warren Runt" (t1), "Haunted
+    Marsh Raider" (t34), "Bonecaller" (t60), "The Void Throne Warlord" (t99), "The
+    Void Sovereign" (t100); `Enemies.regionLabel` now returns the new region names
+    (Gallowmarch, Cinderwaste …). **Unchanged:** 100 tiers, numbering intact, loot
+    still 250 with ids `loot:5:0`…, `def` still monotonic, boss still hardest,
+    tier 1 still winnable by base bram — so the T23/T43 invariants are unaffected.
+notes / questions: pure display rename; the Arena tier UI (T24) will show these.
+  Next per REVIEW order: **T24 (Arena)**.
