@@ -4022,3 +4022,44 @@ notes / questions: **eyeball:** the coin beside the gold reads **gold**, the cal
   reads **green**, all other pixel icons stay the muted house colour; and (from a) the tree scroll
   edges fade into the purple backdrop, no black band. Next per `NEXT.md`: **`T123`** (a11y) → `T101`
   (Start delay) → Android block.
+
+## T125 — FIX the celebration burst (it didn't render) + fire BIG on EVERY win/run/item  [HANDOFF]
+commit: (this commit, on main) — [A] task, OWNER-PRIORITY · BUG. Owner: "nothing at all, not even a
+small one" on an Arena win; "every arena victory / every topic run / every new inventory item" should
+be a celebration with "loads of particles". Two parts: **(0)** fix the rendering bug, **(1)** make it
+big + constant.
+root cause (the "nothing at all"):
+  - `fxBurst` (the #fxBurst overlay controller) was built ONCE in `setupFx()` on the ENTRY screen
+    (pre-fullscreen) and **never `resize()`d** — unlike `fxBg`, which gets `resize()` on every screen
+    change. After the Start→fullscreen viewport change its drawing buffer stayed entry-sized (or
+    1×1 if it had no layout at construction), so the burst drew off-buffer → invisible.
+changed (main.js — A-owned):
+  - **`setupFx()`** — added `fxResizeAll()` (resizes BOTH `fxBg` + `fxBurst`, null/`resize`-guarded),
+    called right after construction AND on the next animation frame, plus a **`window` resize**
+    listener and **`fullscreenchange`** (+ webkit/moz/MS) listeners. The buffers now always match the
+    live viewport, esp. across Start→fullscreen.
+  - **`fxBigBurst(opts)`** (new) — the single celebration path: **resizes `fxBurst` first**, then
+    fires **`FXGL.celebrate()`** (T126's 800-cap shower; falls back to `burst()` if absent). All three
+    moments route through it.
+  - **`fxCelebrate` / `fxCelebrateRank` / `fxCelebrateWin`** — **deleted the `FX_RANK_MIN=6` gate** so
+    EVERY completed topic run celebrates (scaled by rank, but a worst-rank/skip run still throws a real
+    shower), EVERY Arena victory celebrates BIG (800), EVERY new inventory item (the `showUnlocks`
+    path) celebrates. Counts raised to the hundreds (was ~45–150). Overlay is transient + sparse so it
+    never covers the question/result text; the engine downshifts for reduced-motion + `setQuality`.
+how I verified:
+  - **`test/fx-wiring.test.js` rewritten/extended → ALL 54 PASSED.** The stub FXGL now models the
+    drawing-buffer size: `resize()` copies the current viewport into the controller; `celebrate()`
+    records the buffer size AT FIRE TIME. New checks prove: both controllers are sized on construction,
+    the `fullscreenchange` handler re-sizes them to the live viewport (412×915, not 1×1), a real Arena
+    WIN and a finished topic RUN (driven live — even a SKIP-everything worst rank) each fire a
+    `celebrate()` on a correctly-sized controller (not 1×1) with hundreds of particles; source checks
+    confirm the `FX_RANK_MIN` gate is gone and all three entry points route through the resize-then-
+    `celebrate()` helper.
+  - **`node -c main.js` clean; full 34-gate suite green** (rebased onto `2815188` so T126's
+    `FXGL.celebrate()` is present). No B-owned files touched.
+notes / questions: **eyeball on the live build (Poco X3, fullscreen):** finishing ANY topic run and
+  winning ANY Arena fight should now throw an unmistakable big particle shower over the screen (z-58),
+  fading fast enough not to obscure the result text; a new item from `showUnlocks` does too. The
+  rendering fix (resize across Start→fullscreen) is the crux of "nothing at all". Next per `NEXT.md`:
+  **`T127`** (quick BUG: `&amp;` shows literally in locked-topic text — double-escape at `main.js:572`)
+  → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` → Android.

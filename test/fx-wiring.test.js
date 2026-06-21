@@ -43,7 +43,17 @@ ok(/fxSetScreen\(name\)/.test(main), "(3) show() drives the backdrop per screen 
 ok(/fxCelebrate\(items\)/.test(main.slice(main.indexOf("function showUnlocks"), main.indexOf("function showUnlocks") + 260)), "(3) the reward burst fires from showUnlocks (every reward-gain path routes here)");
 // T112: celebrate real WINS too (Arena victory + a rank-scaled round finish)
 ok(/if\(res\.win\)\{[^}]*fxCelebrateWin\(tier\.n\)/.test(main), "(3) an Arena VICTORY fires a celebration burst");
-ok(/fxCelebrateRank\(rankIdx\)/.test(main), "(3) a good round finish fires a rank-scaled burst (none for a poor run)");
+ok(/fxCelebrateRank\(rankIdx\)/.test(main), "(3) EVERY completed topic run fires a rank-scaled celebration");
+// ---- T125: the burst RENDERS (resize wiring) + fires BIG on EVERY moment -----
+ok(!/FX_RANK_MIN/.test(main), "(T125) the FX_RANK_MIN 'decent run only' gate is GONE → every run celebrates");
+ok(/function fxBigBurst\(opts\)\{[\s\S]{0,160}\.resize\(\)[\s\S]{0,140}\.celebrate\(opts\)/.test(main),
+   "(T125) each celebration RESIZES the controller first, then fires FXGL.celebrate() (T126's big shower)");
+ok(/window\.addEventListener\("resize", fxResizeAll\)/.test(main), "(T125) a window resize re-sizes the FX controllers");
+ok(/fullscreenchange[\s\S]{0,90}fxResizeAll/.test(main), "(T125) the Start→fullscreen transition re-sizes the FX controllers (the rendering fix)");
+ok(/function setupFx\([\s\S]{0,700}fxResizeAll\(\)/.test(main), "(T125) the controllers are sized right after construction (not left 1×1)");
+// the three celebration entry points all route through the resize-then-celebrate helper
+["fxCelebrate","fxCelebrateRank","fxCelebrateWin"].forEach(fn =>
+  ok(new RegExp("function " + fn + "\\([\\s\\S]{0,800}fxBigBurst\\(").test(main), "(T125) " + fn + "() routes through fxBigBurst (resize + big celebrate)"));
 
 // ---- (4) the gates are registered in CI -------------------------------------
 ok(/test\/fxgl\.test\.js/.test(wf), "(4) Builder-B's engine gate test/fxgl.test.js is registered in CI");
@@ -51,13 +61,21 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
 
 // ============ live boot: drive the wiring with a stub FXGL ===================
 (function boot(){
-  const fx = { homeStates: [], arenaStates: [], bursts: [], starts: 0, stops: 0, mounts: 0 };
+  const fx = { homeStates: [], arenaStates: [], bursts: [], celebrates: [], starts: 0, stops: 0, mounts: 0, ctls: [] };
+  // The stub models the DRAWING-BUFFER size (T125): resize() copies the CURRENT
+  // viewport into the controller's buffer; burst()/celebrate() record the buffer
+  // size AT FIRE TIME. So a celebration that fires without a fresh resize would be
+  // caught drawing into a stale/1×1 buffer (the "nothing at all" bug).
+  let viewport = { w: 1, h: 1 };   // entry/pre-fullscreen: no layout yet → 1×1
   function Ctl(){ const c = {
+    ready: true, _w: 0, _h: 0, resizes: 0,
     setHomeState(s){ fx.homeStates.push(s); return c; }, setArenaState(s){ fx.arenaStates.push(s); return c; }, setScene(){ return c; },
-    start(){ fx.starts++; return c; }, stop(){ fx.stops++; return c; }, resize(){ return c; },
-    burst(o){ fx.bursts.push(o); return c; },
+    start(){ fx.starts++; return c; }, stop(){ fx.stops++; return c; },
+    resize(){ c._w = viewport.w; c._h = viewport.h; c.resizes++; return c; },
+    burst(o){ fx.bursts.push({ o: o, w: c._w, h: c._h, ctl: c }); return c; },
+    celebrate(o){ fx.celebrates.push({ o: o, w: c._w, h: c._h, ctl: c }); return c; },
     isAnimating(){ return false; }, isBursting(){ return false; }, dispose(){ return c; } };
-    return c; }
+    fx.ctls.push(c); return c; }
 
   let els = {}, store = {}, winH = {};
   function mkEl(id){ return { id, _html:"", _text:"", _h:{}, dataset:{}, style:{}, disabled:false,
@@ -81,8 +99,9 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   global.window.localStorage = global.localStorage;
   // the STUB engine — records what the wiring calls (engine internals are fxgl.test.js)
   global.window.FXGL = { Controller: function(){ fx.mounts++; return Ctl(); }, capabilities(){ return { webgl2:true, webgpu:false, reducedMotion:false }; } };
+  let docH = {};
   global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
-    addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
+    addEventListener(e,fn){ (docH[e]=docH[e]||[]).push(fn); }, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
     documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
   // load the data modules first, seed a FULL collection (so the Arena win grants
   // loot → showUnlocks → burst, and progress reads high), then boot main.js.
@@ -93,6 +112,13 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   new Function(read("main.js"))();
 
   ok(fx.mounts === 2, "boot: the wiring mounts TWO controllers (backdrop + burst) — " + fx.mounts);
+
+  // T125 — the RENDERING fix: both controllers are sized on construction, and the
+  // Start→fullscreen viewport change re-sizes their buffers (no stale 1×1).
+  ok(fx.ctls.length === 2 && fx.ctls.every(c => c.resizes >= 1), "boot: T125 — BOTH FX controllers are resize()d on construction (no stale 1×1 buffer)");
+  viewport = { w: 412, h: 915 };                       // the Start→fullscreen viewport
+  (docH.fullscreenchange||[]).forEach(f=>f());
+  ok(fx.ctls.every(c => c._w === 412 && c._h === 915), "boot: T125 — the fullscreenchange handler re-sizes the buffers to the LIVE viewport (412×915, not 1×1)");
 
   const route = h => { global.window.location.hash = h; (winH.hashchange||[]).forEach(f=>f()); };
   // home → the backdrop is derived from live state and started
@@ -112,22 +138,37 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   ok(as && "tierFrac" in as && "facingBoss" in as, "boot: the Arena state carries boss-proximity (tierFrac/facingBoss) for intensity");
   ok(!els.fxBackdrop.classList.contains("hidden"), "boot: the backdrop is VISIBLE on the Arena (full-bleed, not hidden)");
 
-  // win an Arena fight → an Arena-victory burst AND the reward-gain burst
+  // win an Arena fight → an Arena-victory celebration AND the reward-gain celebration
   const heroId = (els.arenaBody._html.match(/data-hero="([^"]+)"/) || [])[1];
   ok(!!heroId, "boot: the Arena offers an unlocked hero");
   (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
-  const burstsBefore = fx.bursts.length;
+  const celebsBeforeWin = fx.celebrates.length;
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
-  ok(fx.bursts.length > burstsBefore, "boot: a real Arena WIN fires a celebration burst (victory + loot)");
-  const b = fx.bursts[fx.bursts.length - 1];
-  ok(b && typeof b.x === "number" && typeof b.y === "number" && b.count > 0 && b.seed, "boot: the burst carries {x,y,count,seed} (deterministic, positioned)");
+  ok(fx.celebrates.length > celebsBeforeWin, "boot: T125 — a real Arena WIN fires a BIG celebration (victory + loot), not a faint burst");
+  const cw = fx.celebrates[fx.celebrates.length - 1];
+  ok(cw && typeof cw.o.x === "number" && typeof cw.o.y === "number" && cw.o.count > 0 && cw.o.seed, "boot: the WIN celebration carries {x,y,count,seed} (deterministic, positioned)");
+  ok(cw && cw.w > 1 && cw.h > 1, "boot: T125 — the WIN celebration fires on a correctly-sized controller (not 1×1) — " + (cw && cw.w) + "×" + (cw && cw.h));
+  ok(cw && cw.o.count >= 400, "boot: T125 — it's a BIG shower (hundreds of particles; count " + (cw && cw.o.count) + ")");
+  ok(cw && (cw.o.palette == null || Array.isArray(cw.o.palette)), "boot: the WIN celebration palette is seeded (array or default)");
+
+  // finish a TOPIC RUN — even SKIP-everything (worst rank) STILL celebrates now (the
+  // FX_RANK_MIN gate is gone), on a correctly-sized controller.
+  route("#/");
+  function padPress(k){ (els.pad._h.click||[]).forEach(f => f({ target:{ closest:s => (s === ".key" ? { dataset:{ k:String(k) } } : null) } })); }
+  const celebsBeforeRun = fx.celebrates.length;
+  (els.startBtn._h.click||[]).forEach(f=>f({}));        // start a normal round on the default topic
+  let guard = 0;
+  while(fx.celebrates.length === celebsBeforeRun && guard++ < 80) padPress("skip");
+  ok(fx.celebrates.length > celebsBeforeRun, "boot: T125 — finishing a topic run (even a SKIP-everything worst rank) STILL fires a celebration (gate removed)");
+  const cr = fx.celebrates[fx.celebrates.length - 1];
+  ok(cr && cr.w > 1 && cr.h > 1, "boot: T125 — the RUN celebration fires on a correctly-sized controller (not 1×1) — " + (cr && cr.w) + "×" + (cr && cr.h));
+  ok(cr && cr.o.count > 0, "boot: the RUN celebration is a real shower (count " + (cr && cr.o.count) + ")");
 
   // leave to a NON-fx screen → the backdrop idles + hides (no RAF off home/Arena)
   const stopsBefore = fx.stops;
   route("#/best-times");
   ok(fx.stops > stopsBefore, "boot: leaving home/Arena STOPS the backdrop (idle, no RAF)");
   ok(els.fxBackdrop.classList.contains("hidden"), "boot: the backdrop is HIDDEN off home/Arena (no stale scene bleeding behind other screens)");
-  ok(b && (b.palette == null || Array.isArray(b.palette)), "boot: the burst palette is seeded from the gained items (array or default)");
 })();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FX-WIRING CHECKS PASSED" : fails + "/" + checks + " FAILED"));

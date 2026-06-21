@@ -176,12 +176,30 @@
   // The burst controller is never given a scene, so it never loops / leaks RAF.
   const FX_MOODS = ["motes", "embers", "snow", "stars"];   // engine particle kinds
   let fxBg = null, fxBurst = null;
+  // T125 — keep BOTH controllers' drawing buffers matched to the LIVE viewport.
+  // The burst overlay is built on the ENTRY screen (pre-fullscreen); without this
+  // it keeps the entry-sized (or 0/1×1) buffer after the Start→fullscreen viewport
+  // change, so the celebration draws off-buffer → "nothing at all". Re-size both on
+  // construction, on window resize/orientation, on the fullscreen transition, and
+  // right before each burst.
+  function fxResizeAll(){
+    try{ if(fxBg && fxBg.resize) fxBg.resize(); }catch(e){}
+    try{ if(fxBurst && fxBurst.resize) fxBurst.resize(); }catch(e){}
+  }
   function setupFx(){
     const FXGL = window.FXGL; if(!FXGL || !FXGL.Controller) return;
     try{
       const bg = $("fxBackdrop"); if(bg) fxBg = new FXGL.Controller(bg, {});
       const bu = $("fxBurst");    if(bu) fxBurst = new FXGL.Controller(bu, {});
     }catch(e){ fxBg = null; fxBurst = null; }
+    // Size both now (laid out) and on the next frame (in case layout settled late),
+    // then keep them matched on every viewport change.
+    fxResizeAll();
+    if(typeof requestAnimationFrame === "function") requestAnimationFrame(fxResizeAll);
+    if(typeof window !== "undefined" && window.addEventListener) window.addEventListener("resize", fxResizeAll);
+    if(typeof document !== "undefined" && document.addEventListener)
+      ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
+        .forEach(ev => document.addEventListener(ev, fxResizeAll));
   }
   // LIVE home state for the backdrop — read from the real sources, never constants:
   // collection progress (0–1), the daily Momentum streak, and today's event.
@@ -227,6 +245,19 @@
   // gained items (deterministic), capped, never covers key text (it's a sparse,
   // transient overlay), reduced-motion handled by the engine.
   const FX_RANK = { common:0, uncommon:1, rare:2, epic:3, legendary:4 };
+  // T125 — fire T126's BIG celebration shower (FXGL.celebrate, up to 800 particles)
+  // on the burst overlay (#fxBurst, z-58). ALWAYS resize the controller first so it
+  // draws into a buffer matching the CURRENT viewport (the rendering fix — esp.
+  // across the Start→fullscreen transition; that stale/0-sized buffer was the root
+  // of "nothing at all"). The overlay is transient + sparse so it never covers the
+  // question/result text; the engine downshifts for reduced-motion + setQuality.
+  function fxBigBurst(opts){
+    if(!fxBurst) return;
+    try{ if(fxBurst.resize) fxBurst.resize(); }catch(e){}
+    try{ if(fxBurst.celebrate) fxBurst.celebrate(opts); else fxBurst.burst(opts); }catch(e){}
+  }
+  // EVERY new inventory item (the showUnlocks path covers loot/reward/event gains):
+  // a real shower, richer for more / rarer items — but it always fires.
   function fxCelebrate(items){
     if(!fxBurst || !items || !items.length) return;
     let seed = items.length >>> 0, pal = null, best = -1;
@@ -237,26 +268,25 @@
       if(rk > best){ best = rk; pal = C.paletteFor ? C.paletteFor(it.rarity) : null; }
     }
     const palette = pal ? [pal.accent, pal.body, "#ffffff"] : null;
-    const count = Math.min(150, 50 + items.length * 12 + best * 14);
-    try{ fxBurst.burst({ x: 0.5, y: 0.4, count: count, seed: seed || 1, palette: palette }); }catch(e){}
+    const count = Math.min(800, 360 + items.length * 60 + best * 80);
+    fxBigBurst({ x: 0.5, y: 0.55, count: count, seed: seed || 1, palette: palette });
   }
-  // Celebrate a WIN (T112) — beyond reward gains. A rank-scaled results burst (only
-  // a decent run pops; bigger/warmer the higher the rank) and an Arena-victory
-  // burst. Both capped + reduced-motion-safe; fired behind/around the result, never
-  // over the text.
-  const FX_RANK_MIN = 6;   // below this (a poor run) there's no celebration
+  // EVERY completed topic RUN celebrates (T125 — no "decent run only" gate). Scaled
+  // by rank (a great run is huge) but a modest run still throws a real shower.
   function fxCelebrateRank(rankIdx){
     if(!fxBurst) return;
     const ranks = C.RANKS || [];
-    if(!ranks.length || rankIdx < FX_RANK_MIN) return;
-    const rk = ranks[Math.min(rankIdx, ranks.length - 1)];
-    const t = Math.min(1, (rankIdx - FX_RANK_MIN) / Math.max(1, ranks.length - 1 - FX_RANK_MIN));
-    const count = Math.round(45 + t * 105);
-    try{ fxBurst.burst({ x: 0.5, y: 0.34, count: count, seed: (rankIdx + 1) * 0x9e3779b1 >>> 0, palette: [rk.color, "#ffffff"] }); }catch(e){}
+    const rk = ranks.length ? ranks[Math.min(Math.max(rankIdx, 0), ranks.length - 1)] : null;
+    const t = ranks.length > 1 ? Math.min(1, Math.max(0, rankIdx) / (ranks.length - 1)) : 1;
+    const count = Math.round(380 + t * 420);
+    fxBigBurst({ x: 0.5, y: 0.55, count: count, seed: (rankIdx + 1) * 0x9e3779b1 >>> 0,
+      palette: rk ? [rk.color, "#ffd98a", "#ffffff"] : null });
   }
+  // EVERY Arena VICTORY celebrates BIG (T125).
   function fxCelebrateWin(tierN){
     if(!fxBurst) return;
-    try{ fxBurst.burst({ x: 0.5, y: 0.32, count: 120, seed: ((tierN | 0) + 1) * 0x85ebca6b >>> 0, palette: ["#f5b544", "#ffd98a", "#ffffff"] }); }catch(e){}
+    fxBigBurst({ x: 0.5, y: 0.55, count: 800, seed: ((tierN | 0) + 1) * 0x85ebca6b >>> 0,
+      palette: ["#f5b544", "#ffd98a", "#ffffff", "#78dcff"] });
   }
 
   // ---- Synth wiring (T122) — the generative MUSIC engine ------------------
