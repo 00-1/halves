@@ -11,6 +11,16 @@ assertion proving `--muted` ≥4.5:1 on bg/surface/surface-2/line, no <10px text
 remains, 360px-safe, no regressions — and **wire the contrast check into the Pages
 workflow as a third gate.** Full spec in BACKLOG "Phase 6".
 
+**Then `T47` — Arena: pure stat check, NOT a maths drill (owner correction).** The
+Arena currently makes you play a maths round to fight; remove that — "Fight"
+resolves instantly from hero stats (win iff `rating×matchup ≥ def`), no questions.
+Drilling stays in the topics (where buffs are earned); the Arena is the payoff.
+Drop `perf`/`computePerf` from the Arena path (mathematically the old `perf=1`
+case, so def calibration + buff-gating invariants are unchanged); rework the Arena
+UI to show effective power / matchup / defence + instant Victory/Defeat. The owner's
+rule holds purely on buffs now: can't beat the final enemy without all/most buffs.
+Babysitter re-runs the full buff-gating suite on the new path. Full spec in BACKLOG.
+
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
 gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
 (beatable only at near-full collection), 50 procedural icon categories with

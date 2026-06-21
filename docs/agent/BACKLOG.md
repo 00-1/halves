@@ -897,3 +897,42 @@ bar, and fails even that on `--line`). `--text`, amber, mint, coral all pass
   rule under 10px remains; muted still visibly dimmer than `--text`; 360px-safe; no
   regressions; deploy green. **Wire the contrast assertion into the Pages workflow**
   as a third gate so contrast can't regress. (Babysitter re-computes the ratios.)
+
+### T47 — Arena: pure stat check, NOT a maths drill · status: OPEN
+Owner correction: the Arena currently makes you **play a maths round** to fight a
+tier — but "this is also a maths drill; that wasn't the intention. You should just
+win if your hero stats are good enough." The maths drilling belongs in the
+**topics** (that's where buffs are earned); the Arena is the **payoff** that
+rewards how much you've collected + climbed — a stat check, not extra drilling.
+- **Remove the drill round from the Arena.** Delete the `BATTLE_MODE` synthetic
+  mode and the question round from the Arena flow; "Fight" resolves **instantly**
+  from hero stats — no questions.
+- **Stat-only outcome.** Win **iff** `effectiveRating(hero, collected) ×
+  matchup(hero.type, tier.type) ≥ tier.def`. Drop `perf`/`computePerf` from the
+  Arena win path entirely (it's mathematically the old `perf = 1` case — see note),
+  so the **def calibration and all T23/T43 buff-gating invariants are unchanged**.
+- **Arena UI rework.** Pick a hero → show its **effective power** (with buffs), the
+  **RPS matchup** vs the tier, and the tier's **defence**; **Fight** → instant
+  **Victory** (grant `tier:n` + its loot + advance + any hero unlock) or **Defeat**
+  with a clear "not strong enough — collect more buffs (drill topics) or pick the
+  advantage-type hero" message. The *choice of hero/type* is the decision; the
+  outcome is deterministic.
+- **Buffs still come from drilling the topics (collectibles) + tier loot** —
+  unchanged. The Arena adds **no** drilling.
+- **The owner's core rule, now purely buff-dependent:** you **cannot beat the
+  final enemy (The Void Sovereign) without unlocking all/most buffs**, and can't
+  reach it without clearing each prior tier. (Holds by construction — see note.)
+- **Note (why invariants hold):** old `battlePower = rating × matchup ×
+  (0.4 + 0.6·perf)`; at `perf=1` that's `rating × matchup`. Stat-only win
+  (`rating × matchup ≥ def`) == the old max-perf win, which is exactly what the
+  buff-gating was proven at. So no tier becomes unbeatable and the final-tier ⇔
+  full-collection invariant is preserved.
+- **DoD:** Node proof on the new stat-only path — (a) win == `rating×matchup ≥ def`
+  with **no perf/question input**; (b) tiers 1–5 winnable by the starter hero's
+  stats; (c) **no tier gated behind its own loot**; (d) tier 100 **unbeatable
+  without a near-complete collection**, beatable at near-full, **one missing
+  champion boost flips it to a loss**; (e) `canAttempt` still requires `tier:n-1`.
+  The Arena **never invokes a question round** (assert `BATTLE_MODE` gone / no
+  drill started from `#/arena`); **normal topic drills unaffected**; def values
+  unchanged from T43; no regressions; deploy green. (Babysitter re-runs the full
+  buff-gating suite against the new path.)
