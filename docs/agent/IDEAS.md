@@ -191,5 +191,32 @@ real showcase of the new visual character, reusing our seeded generators (per th
 build-on-existing-art guardrail). If both proceed, sequence the tree **with/after** the T82
 direction so it's built once, in the chosen style.
 
-*(Status: captured, NOT queued. When promoted: likely one task — a data-driven, 360px-safe tree
-view toggle on the picker — ideally coordinated with the T82 visual direction.)*
+**Owner refinements (2026-06-21, round 2 — with a Mindustry tech-tree screenshot as inspo).**
+- **Icon-forward nodes, text on selection (not on every node).** For a cleaner, more visual tree,
+  nodes should be **mostly just the topic's icon** (minimal/no inline text). The name, progress,
+  unlock requirement, and detail move into a **detail panel for the SELECTED node** (the
+  Mindustry pattern: tap a node → a panel shows its info; the tree itself stays uncluttered).
+  This also helps the **360px** problem — icon-only nodes pack far better than text-laden rows.
+- **Promote the guide/docs to a first-class action.** Today the "how to approach this" guide is
+  reached via a small **`?`** on each picker row (`.mr-guide` → `openGuide` modal). Move it OUT of
+  the `?` and make it a **button at the same level as Play and Practice** (`startBtn` "Start" +
+  `practiceBtn` "Practice" → add e.g. a "Guide"/"How to" peer). So a selected topic offers
+  **Play · Practice · Guide** as equals. *(This is a small, self-contained UX win that could even
+  ship independently of the full tree — still parked, not queued.)*
+- **Nodes show the topic icon — settle which asset.** Each node carries the topic's icon. Open
+  question the owner flagged ("the icons we're due to update soon?"): we **just** pixel-arted the
+  topic **operator glyphs** in **T56** (`glyphs.js`). Decide whether tree nodes use those T56
+  glyphs, or a **richer per-topic emblem** designed as part of the visual direction — most
+  naturally **settled in T82** (and built from our seeded generators per the build-on-existing-art
+  guardrail). Don't design a throwaway node icon before T82 picks the style.
+- **Aesthetic = owner's call / open.** Mindustry's look (icon nodes · amber connector paths ·
+  selected-node detail · a resource/summary panel + bottom button bar) is the reference, but the
+  owner is **not tied to it** and invited a better direction. *Babysitter view:* the icon-node +
+  detail-on-select pattern is genuinely a good fit — it's phone-friendly, shows off our procedural
+  icons, and matches the dithered/atmospheric direction under T82 (imagine connector paths that
+  "light up" as you unlock). Recommend deciding the tree's final look **as part of / right after
+  T82**, then building it once in the chosen style.
+
+*(Status: captured, NOT queued. When promoted: likely **(a)** a tiny standalone "guide becomes a
+Play/Practice-peer button" change, and **(b)** the data-driven, 360px-safe, icon-node tree view
+with a selected-node detail panel — coordinated with the T82 visual direction for node art + feel.)*
