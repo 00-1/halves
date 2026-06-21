@@ -1,6 +1,14 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T71` (calmer music + distinct per-topic styles + an Arena
+**Current verdict:** `APPROVED — T67` (hero detail view) · build **`d7eb533`**. A new
+`#/hero/<id>` screen: list card collapsed to "Boosted by N — tap for details ›" (no more
+"+N more" cut-off); the detail shows the T51 portrait, full stats, the **complete owned
+boost list untruncated/scrollable**, and an **"X / Y boosts collected"** summary with the
+real per-hero total (verified bram = 17/93). No giant locked list (owner-confirmed);
+unknown/locked hero → back to the list; lazy-built on open. All `$("id")`s exist;
+`hero-detail.test.js` (13 checks) green as a new gate; `node -c` clean. T67 → DONE.
+
+**Previously approved (done):** `T71` (calmer music + distinct per-topic styles + an Arena
 theme). Independently verified: **no style exceeds 95 BPM** (was up to 115; max now 95),
 busy styles softened (every density ≤ 0.36, drums thinned); **all 15 topics map to 15
 DISTINCT styles** (indices 0–14, none missing, zero collisions — incl. 3 new gentle styles
@@ -75,10 +83,10 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T67` → `T66` → `T68` → `T52` → `T53` →
+**Next-task order:** **`T66` → `T68` → `T52` → `T53` →
 `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
 `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness: research doc + PWA foundation).
-**Do `T67` next** — hero detail view (full owned boost list + "X/Y collected"). Then:
+**Do `T66` next** — set the Arena to 120 tiers (10 regions x 12). Then:
 - **`T66`** (120 tiers) sits before the arena work; **`T68`** (Arena wayfinding — region
   progress, boss anticipation, a simple journey map) right after T66 so it's built on the
   final 12-per-region structure; then the arena art `T52`/`T53`. **`T67`** (hero detail)

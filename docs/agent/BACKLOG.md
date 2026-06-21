@@ -1550,7 +1550,7 @@ Structure: **10 regions × 12 tiers**, a named boss at each region's **12th** ti
   deploy green. (Babysitter dumps all 120 tier names + the full def array, and re-runs the
   buff-gating suite at the new length.)
 
-### T67 — Hero detail view (full boost list; decide unowned display) · status: OPEN
+### T67 — Hero detail view (full boost list; decide unowned display) · status: DONE
 Owner: "heroes in the hero list need to be **expandable or have their own separate page** —
 the list of [boost] items is very long and partially hidden. Also I'm not sure if we should
 show items there that they **don't have yet**?" Today `heroCard` (`main.js` ~578) crams the
