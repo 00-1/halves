@@ -37,18 +37,23 @@
 
   function clamp(v, lo, hi){ return v < lo ? lo : (v > hi ? hi : v); }
 
-  // ---- themed names -------------------------------------------------------
+  // ---- themed names (T44) -------------------------------------------------
+  // Regions (weakest→strongest), the rank-title ladder within a region, and a
+  // named boss overriding each region's 10th tier (tiers 10/20/…/100).
   const BANDS = [
-    "Goblin Warren", "Bandit Camp", "Haunted Marsh", "Frostpeak Caverns",
-    "Sunken Catacombs", "Ember Wastes", "Shadowfen", "Stormspire",
-    "Dragon's Roost", "The Void Throne"
+    "Goblin Warren", "Gallowmarch", "Gloamwood", "Haunted Marsh", "Frostpeak Caverns",
+    "Drownholm", "Cinderwaste", "Stormspire", "Dragon's Roost", "The Void Throne"
   ];
-  const ARCHETYPES = ["Sentry", "Brute", "Warden", "Shade", "Champion",
-                      "Marauder", "Reaver", "Stalker", "Hexer", "Overlord"];
+  const RANK_TITLES = ["Runt", "Sentry", "Brute", "Raider", "Warden",
+                       "Champion", "Reaver", "Dread", "Warlord", "Overlord"];
+  const BOSSES = [
+    "Goblin King", "The Highwayman", "Old Mother Bramble", "Gurgle, King of the Bog",
+    "The Frost Jarl", "Bonecaller", "Cindermaw", "Voltan, Lord of Storms",
+    "the Elder Wyrm", "The Void Sovereign"
+  ];
   function tierName(n){
-    if(n === TIER_COUNT) return "The Void Sovereign";
-    const band = BANDS[Math.min(BANDS.length - 1, Math.floor((n - 1) / 10))];
-    return band + " " + ARCHETYPES[(n - 1) % ARCHETYPES.length];
+    const region = Math.floor((n - 1) / 10), pos = (n - 1) % 10;
+    return pos === 9 ? BOSSES[region] : (BANDS[region] + " " + RANK_TITLES[pos]);
   }
 
   // ---- loot generation ----------------------------------------------------
