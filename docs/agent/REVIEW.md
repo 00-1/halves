@@ -1,6 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T55` (Collector ladder → 10,000) · live build **`d35b2aa`**.
+**Current verdict:** `APPROVED — T56` (pixel-art app mark + topic glyphs + favicon) · live
+build **`a700348`**. New standalone `glyphs.js` (`window.Glyphs`) — a pure, deterministic
+5×7 (+3×4) pixel bitmap font covering exactly the symbols the glyphs use (`0-9 x a b n k`,
+`× ÷ + − ± / %`, stacked fractions `½ ¾`, superscript `²`); ink codes 0/1/2 (empty/body/accent),
+static draw (no RAF). Driven by structured `glyphTokens` added to all 15 modes (the old
+`glyph` HTML kept as a fallback). `paintGlyph()` wires it into the start mark, entry brand,
+guide/practice titles and the topic toast; `installFavicon()` mints a runtime favicon +
+apple-touch-icon + theme-color from the same renderer (data-URL, try/catch-guarded). Verified
+**independently**: built all 15 grids — **pairwise distinct**, **zero missing chars**, **every
+glyph carries the amber accent**; each `glyphTokens` mirrors the original operator (incl. the
+place-value pair, both `×÷` differing only by which symbol is accented — the DoD's "÷×"
+shorthand). amber/text inks on `--bg` keep the existing AA. `node -c` clean (glyphs/modes/main);
+the **full 19-gate suite is green** (new `glyphs.test.js`, 27 checks, wired into CI); no
+regressions. T56 → DONE.
+
+**Previously approved (done):** `T55` (Collector ladder → 10,000) · live build **`d35b2aa`**.
 The 3-tier list became a **12-tier ramp** (25, 75, 150, 300, 500, 750, 1000, 1500, 2500,
 5000, 7500, 10000). Existing ids `collector:25/75/150` preserved with their rarities
 (migration-safe); the 150 tier renamed `Completionist`→`Magpie` (display only). New 300+ tiers
@@ -69,9 +84,11 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T56` next** — pixel-art the app mark + 15 topic glyphs (keep the maths operators) +
-procedural favicon/apple-touch-icon. Then the **Events** foundation `T78` (UTC-daily scheduler
-+ "Events" tab + reward items). Specs in BACKLOG (T56 + Phase 6.5); this line is authoritative.
+**Do `T78` next** (Events foundation) — the UTC-daily scheduler (`events.js`: today's event
+= `roster[floor(epochDaysUTC)%14]`, 14 events, recurs every 14 days), the new **"Events"
+inventory tab**, and 14 real-buff reward items (`event:<id>`, full collection members feeding
+Arena power). Then `T79` (cross-topic gauntlet) → `T80` (best-attempt lockout) → `T81`
+(art/copy/music/banner). Specs in BACKLOG Phase 6.5; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

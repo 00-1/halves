@@ -1227,7 +1227,7 @@ a misnomer (only ~14%). Extend it into a long ladder up to **10,000**.
   clean; no regressions; deploy green. (Babysitter recomputes the granted set at several
   counts and checks the ids/migration + naming.)
 
-### T56 — Pixel-art the app mark + topic glyphs (keep the maths operators) · status: OPEN
+### T56 — Pixel-art the app mark + topic glyphs (keep the maths operators) · status: DONE
 Owner: "the main app icon and the individual topic icons look too sleek for the pixel
 image-gen style of the other images in the game. I **do** like the relevant
 mathematical operators being shown — is there a way to replace these with pixel
