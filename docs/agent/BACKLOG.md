@@ -1658,7 +1658,7 @@ auto; min-height:0`, so the oversized banner collapses it); **(c)** the **select
   fits one viewport, the topic list shows multiple rows, the banner is compact-but-prominent, and
   the Play CTA + countdown still work.)
 
-### T86 — Onboarding gating I: unlock-state model + first-run intro + Inventory gate + highlight · status: OPEN
+### T86 — Onboarding gating I: unlock-state model + first-run intro + Inventory gate + highlight · status: DONE
 The onboarding engine + the first gate (promoted from IDEAS I4). Pure, local, migration-safe.
 - **Unlock-state model** in `localStorage` (e.g. `halves.unlocked`) with pure helpers
   `isFeatureUnlocked(id)` / `unlockFeature(id)`. **Migration-safe:** a **legacy profile** (has any

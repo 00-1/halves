@@ -1,6 +1,26 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T85` (Settings + "Clear all data") · live build **`ebc4182`**.
+**Current verdict:** `APPROVED — T86` (onboarding gating I) · live build **`0fe0608`**. **⚠️
+Built OUT OF ORDER** — `T91` (the priority banner-layout bugfix) was queued ahead of it but the
+Builder pulled `T86` (it pulled the queue before the T91 insert was visible). T86's *work* is
+sound, so approving it; **`T91` is still OPEN and is now firmly the next task.** The onboarding
+engine: `halves.unlocked` model with `isFeatureUnlocked`/`unlockFeature`/`needsIntro`.
+**Migration-safe (verified):** `profileHasProgress()` (any collected / `stats.games>0` / any board)
+stamps `{legacy:1}` → **all features unlocked, never re-gated**; only a genuinely empty profile is
+gated. First-run: `startIntro()` runs **ONE** trivial question ("half of 12"→6, numpad-safe, not a
+topic round); solving grants its reward (`solve:halves:12`) + `unlockFeature("inventory")` + a
+**one-time** pulse/coachmark; skipping still completes (never traps). `applyGates()` hides the
+Inventory nav until unlocked; the `#/inventory` deep-link is guarded. **Access layer only** — earn/
+collection/Arena untouched (`arena.test.js` green). Verified independently: `node -c` clean; **full
+24-gate suite green** incl. new `onboarding.test.js` (23 checks: fresh-vs-**legacy migration**,
+single-question intro, Inventory unlock+reveal+reward, once-only highlight, deep-link block,
+reload persistence). T86 → DONE.
+
+**⚠️ Sequencing note:** Builder skipped the higher-priority `T91`. No harm (T86 is correct), but
+`T91` must come next — and T91 now also needs to account for T86's home-screen additions
+(`applyGates`, the gated `invBtn`). Recorded so the ledger stays accurate.
+
+**Previously approved (done):** `T85` (Settings + "Clear all data") · live build **`ebc4182`**.
 A new **Settings screen** (reachable via a `⚙ Settings` link on home; mute toggle folded in) with a
 **Danger-zone "Clear all data"** behind real friction: a `#resetModal` needing **BOTH** a 5s
 **countdown** AND re-entering a shown random **4-digit code** on the numpad — `resetCanConfirm()`
@@ -216,15 +236,14 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T91` next (PRIORITY BUGFIX)** — the T81 event banner is too tall and breaks the home layout
-(page scrolls, picker starved to nothing, selected-topic mark stranded above it): make the banner
-a **compact strip** (keep it prominent + art/name/Play-CTA/UTC-countdown; drop/clamp the
-home-banner blurb, inline Play, bounded height), **fit `#start` to one screen** (360×640 & 390×844),
-keep the **picker ≥3 rows** (min-height), and **reorder the banner above the `#mark`**. Then
-resume the gating block: **`T86`** (onboarding engine: unlock-state model + first-run
-single-question intro + Inventory gate + one-time highlight; **migration-safe — never re-gate
-existing players**) → **`T87`** (wire the remaining gates: Practice/Heroes/Arena/Event-banner/
-Gold). Then **`T92`** (event reward tiers: keep an easy participation reward but add **skip-proof**
+**Do `T91` next (PRIORITY BUGFIX — was skipped once; do it NOW).** The T81 event banner is too
+tall and breaks the home layout (page scrolls, picker starved to nothing, selected-topic mark
+stranded above it): make the banner a **compact strip** (keep it prominent + art/name/Play-CTA/
+UTC-countdown; drop/clamp the home-banner blurb, inline Play, bounded height), **fit `#start` to
+one screen** (360×640 & 390×844), keep the **picker ≥3 rows** (min-height), and **reorder the
+banner above the `#mark`**. **Note:** T86 already added `applyGates()` + a gated `invBtn` to the
+home screen — T91 must keep those working. **`T86` is DONE.** Then **`T87`** (wire the remaining
+gates: Practice/Heroes/Arena/Event-banner/Gold). Then **`T92`** (event reward tiers: keep an easy participation reward but add **skip-proof**
 "did well" + "extremely well" tiers — **sequenced before the Arena** so its re-calibration sees the
 full reward set). Then the **Arena 3v3 block** (Phase 6.10): **`T88`** (deterministic 1–3 vs 3
 battle model + enemy teams + re-calibration + invariant sim-proofs — the crux; design in IDEAS I5)
