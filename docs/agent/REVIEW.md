@@ -14,15 +14,26 @@ and are non-trivial** (180/172 non-zero cells of 256, so they'd catch any shape 
 the routing invariant holds (0 real ids `hero:`-prefixed) and is meaningfully protective.
 `node -c` clean; wired as the 8th Pages gate. T51 → DONE.
 
-**Next-task order (owner elevated the doc scrub):** **`T57` → `T50` → `T52` → `T53` →
-`T54` → `T55` → `T56`**, then the content-extension work (`T58` playbook, then the Wave-2
-topic batches `T59`/`T60`/`T61`). **Do `T57` first** — it's a tiny doc-only scrub
-(remove the named school/town/county from `docs/research-11plus.md`, keep "11+" + the
-exam board; zero-grep DoD incl. `docs/agent/*`). The detailed task blocks below remain in
-spec order; follow this line for sequence.
+**Current verdict:** `APPROVED — T50` (procedural icons on the menu buttons + hero
+portraits in the Arena). Babysitter re-verified independently: all four nav buttons get a
+`<canvas>` + a stable procedural icon from a **real** category preset (`scroll`/`chest`/
+`helm`/`sword` — confirmed all exist), drawn once at init (`drawMenuIcons`, no RAF); the
+Arena pick cards and the result header draw the hero portrait via the **same `"hero:"`
+call as the Heroes screen** (so they're the T51 restored faces); `lastBattle` now carries
+`heroId`/`heroType` for the result portrait. CSS is layout-safe (`.linkbtn` inline-flex
+`white-space:nowrap` + fixed 16px icon; `.arena-hero` flex with `min-width:0` keeping
+name ellipsis). Ran `test/nav-icons.test.js` — **all 16 checks pass**; wired as the 9th
+Pages gate; `node -c` clean; no regressions. T50 → DONE.
 
-**Then `T50` — generated icons on nav buttons + hero portrait in the Arena picker
-(owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
+**Next-task order (owner elevated the doc scrub):** **`T57` → `T52` → `T53` → `T54` →
+`T55` → `T56`**, then the content-extension work (`T58` playbook, then the Wave-2 topic
+batches `T59`/`T60`/`T61`). **Do `T57` next** — a tiny doc-only scrub (remove the named
+school/town/county from `docs/research-11plus.md`, keep "11+" + the exam board; zero-grep
+DoD incl. `docs/agent/*`). The detailed task blocks below remain in spec order; follow
+this line for sequence.
+
+**Reference — `T50` (DONE above) / generated icons on nav buttons + hero portrait in the
+Arena picker (owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
 "subtle and boring" — give each a small **procedural pixel icon** (reuse the existing
 `C.drawIcon` system + a fitting category preset with a fixed seed; no new art), legible
 and non-wrapping at 360px. And the Arena "choose your champion" cards show no portrait

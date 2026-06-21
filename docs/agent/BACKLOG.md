@@ -1071,7 +1071,7 @@ only tiny seed jitter. The old drawer lives at `git show f1d8e92~1:collectibles.
   deploy green. (Babysitter diffs item-icon grids pre/post to prove items untouched and
   eyeballs that the 12 hero grids differ from one another.)
 
-### T50 — Generated icons on nav buttons + hero portrait in the Arena picker · status: OPEN (do AFTER T57)
+### T50 — Generated icons on nav buttons + hero portrait in the Arena picker · status: DONE
 Owner: "the Best times / Inventory / Hero / Arena buttons are very subtle and boring
 — nice if they get generated icons. Selecting a hero doesn't show the hero's icon —
 let's include that." Two parts, both using the **existing procedural pixel-icon
