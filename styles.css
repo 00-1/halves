@@ -45,15 +45,7 @@ body{
    A generous cap kicks in only on very tall/desktop viewports. */
 .app{width:100%;max-width:420px;
   height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  display:flex;flex-direction:column;position:relative;
-  /* T123 — a11y contrast FLOOR over the FX backdrop. The full-bleed backdrop
-     (T112) can render bright (the home palette includes white; Arena glows reach
-     ~240), and our --muted text is tuned for the dark --bg, so light-grey-on-light
-     fails AA. A semi-opaque dark scrim behind the content column pulls the
-     worst-case backdrop pixel under text dark enough that --muted clears AA (≈4.95
-     over white); the backdrop still reads in the side gutters, at 12% through the
-     scrim, and vividly in the z-58 celebration. (contrast.test asserts this floor.) */
-  background:rgba(14,17,22,.88)}
+  display:flex;flex-direction:column;position:relative}
 @media (min-height:1000px){ .app{max-height:960px} }
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .screen.active{opacity:1;pointer-events:auto}
@@ -173,6 +165,14 @@ body{
 .topic-info .ti-meta b{color:var(--amber)}
 /* T96 — Gold + Momentum readouts inline (gated until first earned). */
 .readouts{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%;max-width:360px;margin-top:8px}
+/* T142 — LOCAL contrast backing for the few text rows that float DIRECTLY on the FX
+   backdrop (the rest of the UI is carded). A translucent-dark pill keeps the backdrop
+   visible AROUND it while pulling the worst-case (white) backdrop pixel under the text
+   dark enough for --muted AA (≈4.93:1). Replaces T123's global .app slab (which made
+   the full-bleed backdrop a dark slab) — contrast.test asserts this per element. */
+.readouts{background:rgba(14,17,22,.88);border-radius:11px;padding:7px 16px}
+.build{align-self:center;background:rgba(14,17,22,.88);border-radius:9px;padding:4px 12px}
+#arena .res-label{display:inline-block;align-self:center;background:rgba(14,17,22,.88);border-radius:8px;padding:4px 12px}
 .readouts .goldbar,.readouts .momentumbar{margin-top:0;min-height:0}
 /* T96 — one row of bigger icon nav buttons; degrades as gating hides items. */
 /* T111 — uniform wider buttons (min-width 60) so the seven nav buttons wrap to a

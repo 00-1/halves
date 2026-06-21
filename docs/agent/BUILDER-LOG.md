@@ -4274,3 +4274,30 @@ notes / questions: T123 (a11y contrast floor) is ALREADY DONE/pushed (`63876e4`)
   T123" predates that. **Babysitter / owner:** tap the Settings tester — if a shower appears, the bug was
   occlusion/triggering (fixed); if not, please report the `#setFxVal` size (e.g. "1080×2400" vs "0×0") so
   we route [B] T138 precisely. Next per `NEXT.md`: `T124` (fraction glyphs) → `T101` (Start delay) → Android.
+
+## T142 — Restore the FX backdrop T123's scrim killed (LOCAL backings, not a global slab)  [HANDOFF]
+commit: (this commit, on main) — [A] task, OWNER-PRIORITY · REGRESSION. Owner (screenshot, build
+`63876e4`): "this build killed the nice background :-(". T123's a11y fix put a semi-opaque dark scrim on
+`.app` — but `.app` is ~the full phone width, so the full-bleed FX backdrop (which the owner loves) became
+a near-solid dark slab with only thin gutters. A UNIFORM scrim can't keep both (a light scrim fails AA
+over the backdrop's bright pixels). Almost all text is ALREADY carded, so the global scrim was overkill.
+changed (A-owned only):
+  - **styles.css** — **removed the global `.app` scrim** → the full backdrop reads again. Added a LOCAL
+    translucent-dark backing (`rgba(14,17,22,.88)` + radius + padding) to the FEW rows that float directly
+    on the backdrop (which shows only on `#start`/`#arena`): the **stat row `.readouts`** (Goblin Gold /
+    Momentum), the **`.build` stamp**, and the **`#arena .res-label`** title. Audit: `.topic-info` is
+    already carded (`background:var(--surface)`), tree nodes/event banner/buttons/Best-times rows are all
+    carded — they needed nothing. The backdrop now shows AROUND these pills (vivid), dimmed only locally
+    behind the text.
+  - **test/contrast.test.js** — reframed the honest gate to the PER-ELEMENT mechanism: asserts (1) **no
+    global `.app` scrim**, and (2) each floating row has a local backing whose alpha makes `--muted` clear
+    **AA (4.93:1) over the worst-case white backdrop pixel**. Verified it **FAILS if any floating row is
+    left unprotected** (removed `.build`'s backing → FAIL) and passes when all three are backed.
+how I verified: math/gate — each floating row: `--muted` 4.93:1 over white (AA); the global-scrim check is
+  gone; the gate fails on an unprotected row. `node -c`-n/a (CSS+test); **full 34-gate suite green**
+  (contrast 14 checks). Only [A]-owned files; 360-safe (border-box padding); ≥44px targets unaffected.
+notes / questions: **babysitter / owner eyeball:** the full-bleed backdrop should be back (vivid, not a
+  dark slab), with only small dark pills behind the stat row / build stamp / Arena title keeping that text
+  readable. Tunable per element (the .88 alpha → lower = more backdrop through the pill, but the gate holds
+  the AA floor). T123's global scrim is fully superseded. Next per `NEXT.md`: `T140` (12-style music
+  switcher, after B's T139) → `T124` (fraction glyphs) → `T101` → Android.
