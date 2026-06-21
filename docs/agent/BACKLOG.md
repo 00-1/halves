@@ -2281,7 +2281,7 @@ UI; never competes with text or the topic picker.
   -c` clean; all gates green. (Babysitter: confirm it encodes real state, not decoration, and the
   home screen stays readable + one-screen per T91.)
 
-### T108 — [B] Semantic Arena-biome backdrop derivation (the Arena sibling of T95) · status: OPEN
+### T108 — [B] Semantic Arena-biome backdrop derivation (the Arena sibling of T95) · status: DONE (`86a7094`)
 **Purpose = sense of place + status (Arena).** Serves the owner's locked vision — atmosphere as a
 *purposeful* layer in the Arena (sense of place per region; intensify near a boss; amplify the win).
 Engine-side only; the [A] Arena wiring will call it (after T89/T90). Mirror T95's discipline exactly.

@@ -1,6 +1,30 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T100` [A] (gamey pixel-bevel restyle, reversible) · live build
+**Current verdict:** `APPROVED — T108` [B] (semantic Arena-biome derivation) · live build
+**`86a7094`**. **CI green.** Fourth Builder-B handoff (self-continued, no nudge). **Collision rule
+honoured** (only `fxgl.js`, `test/fxgl.test.js`, `BUILDER-LOG-FX.md`). Adds `deriveArenaScene(state)`
++ `Controller.setArenaState` — a `setScene`-shaped backdrop from **live Arena state** (place + status,
+not noise): **10 distinct region palettes** + accent kinds (Cinderwaste embers / Frostpeak snow…) for
+sense of place; **boss-proximity dominates intensity** (denser particles + hotter/brighter glow as the
+boss nears; `facingBoss` pins it to 1.0), **tier lifts the baseline** (deeper = tenser); **victory**
+warms/brightens + adds embers, **defeat** dims. Accepts the **real `scenery.js` region grid** and
+**recolours it** by the live palette. Verified **independently**: `node -c` clean; **full fxgl gate
+green (102 checks, +20 for T108)** — deterministic per state, all-10-palettes-distinct, capped
+(`ARENA_PARTICLE_MAX`), out-of-range region clamps, single-RAF, idles when stopped, textures-once;
+**full 28-gate suite green**. Standalone — the **[A] side** feeds it region/tier/boss/mood. T108 →
+DONE. *(Engine-side only; nothing visible until [A] wiring.)*
+
+> **B's FX-engine queue is now EXHAUSTED — and intentionally NOT extended.** B has shipped four
+> collision-free engine capabilities (T93 ambient · T94 burst · T95 home backdrop · T108 Arena biome),
+> **all headless-perfect but ALL UNWIRED** — none is visible in the app yet. Manufacturing a 5th
+> engine task would be padding (anti-dilution rule). **The real lever now is the FX [A] WIRING**, which
+> B cannot do. So B's pointer is set to **STAND BY / optional brickmap hardening** (below), and I'm
+> recommending to the owner that a **first FX-wiring [A] task jump the queue right after `T107`** so
+> all of B's work becomes visible and B's future work is grounded in real integration needs.
+
+---
+
+**Previously approved (done):** `T100` [A] (gamey pixel-bevel restyle, reversible) · live build
 **`6fc8f99`**. **CI green.** Implements the T97-researched, owner-approved direction. `<html
 data-ui="pixel">` ships the look **on**; **every** new rule is gated on `[data-ui="pixel"]` (the
 classic CSS above is the untouched fallback) so **one attribute flip → `"classic"` fully reverts** —
@@ -503,19 +527,18 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
     (mount `FXGL`; `setHomeState`; `FXGL.burst()` on wins/gains = `T94w`; Arena biome via
     `deriveArenaScene` after `T89`/`T90`). Owns ALL existing Halves files; log = `BUILDER-LOG.md`.
     *(If A is genuinely mid-task on something, finish that, then `T107` — nothing else.)*
-- **Builder B — next: `T108` [B]** (semantic **Arena-biome** derivation — the Arena sibling of T95).
-  A new engine API `deriveArenaScene(state)` that maps **live Arena state** (region 1–10, tier, boss-
-  proximity, win/defeat mood) → a `setScene`-shaped backdrop: **region** sets the palette/scenery
-  mood (sense of place), **tier/boss-proximity** raises intensity (denser particles / hotter glow as
-  a boss nears), deterministic from a state-derived seed, capped, single-RAF, reduced-motion → static
-  still. Mirror T95's discipline exactly; **B-owned files only** (`fxgl.js`, `test/fxgl.test.js`) +
-  brickmap; headless-tested. *(T93·T94·T95 DONE — engine, burst, home backdrop all shipped; this keeps
-  B productive on collision-free work. If the [A] FX wiring lands and surfaces an engine need, that
-  preempts T108.)* Log = `BUILDER-LOG-FX.md`.
-  **FX [A] wiring now fully unblocked (the real payoff):** mount `FXGL` + register its gate; home
-  backdrop via `setHomeState(liveState)` (after `T100`); fire `FXGL.burst()` on Arena wins + collect/
-  loot/event gains (**T94w**); Arena biome via `setScene`/`deriveArenaScene` (after `T89`/`T90`).
-  These are **[A]** tasks — Babysitter to slot into A's queue once the shipping/restyle block clears.
+- **Builder B — next: STAND BY (engine queue exhausted; do NOT invent a new engine capability).**
+  T93·T94·T95·T108 are all DONE and headless-perfect but **all unwired** — more engine code would be
+  padding. **Keep watching `origin/claude/agent`** per your self-continue loop: the moment the [A] FX
+  wiring lands and surfaces a real engine gap (an API the integration actually needs, a bug, a missing
+  hook), **that becomes your next task** and preempts standby. **Optional, only if you want movement
+  while idle:** light **brickmap-side hardening** (in the `brickmap` repo — keep edits minimal: a perf
+  note, a recipe doc, or a small fix) — never touch existing Halves files, never push to claude/agent.
+  Otherwise idle quietly. *(Babysitter is recommending the owner pull an FX-wiring [A] task forward
+  right after `T107` so your four capabilities become visible and your next work is grounded.)*
+  **FX [A] wiring tasks (for Builder A, when sequenced):** mount `FXGL` + register its CI gate; home
+  backdrop via `setHomeState(liveState)`; fire `FXGL.burst()` on Arena wins + collectible/loot/event
+  gains (**T94w**); Arena biome via `setArenaState`/`deriveArenaScene` (after `T89`/`T90`).
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —
