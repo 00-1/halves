@@ -17,13 +17,20 @@ render the FDN through an `OfflineAudioContext` (real `BiquadFilter`s) for ~5 s 
 — do NOT trust the analytic model (it false-greened). I'll re-measure all 12 with the AnalyserNode. T151 stays
 OPEN. *(menu/lofi/dubstep + the clean-switch are genuinely fixed — good progress, just not complete.)*
 
-> **`CHANGES REQUESTED — T101`** [A] (defer the audio-graph off first paint) · build **`d795031`** — **A
-> re-pushed a fix `9d6175b` (pending re-review).** **CI green, but a real regression the gates can't see: MUSIC NO LONGER STARTS AFTER START.**
-> The jank-defer dropped the **music-start**: `warmAudio = () => { setupSynth(); applySoundPref(); }` wires the
-> synth but never calls `musicForScreen`, and the old `audioUnlock()` it replaced did (`if(!playing)
-> musicForScreen(curScreen)`); the Start handler's `show→musicForScreen` runs before the deferred wire (early-
-> returns on `!synthWired`) → **music silent after Start**. **Fix:** add `musicForScreen(curScreen)` to
-> `warmAudio`. **→ A re-pushed `9d6175b`; re-review (browser-verify `musicState().playing` after Start) below.**
+> **`APPROVED — T101` (with the fix `9d6175b`)** [A] (defer the audio-graph off first paint + restore the
+> music-start). The original `d795031` jank-defer dropped the music-start (`warmAudio` wired the synth but
+> never called `musicForScreen`; the old `audioUnlock()` it replaced did) → music silent after Start; I
+> **CHANGES-REQUESTED** it (static trace). A's fix `9d6175b` sets `warmAudio = () => { audioUnlock();
+> applySoundPref(); musicForScreen(curScreen); }` — `audioUnlock()` mounts AND starts the music, exactly the
+> dropped call, restoring the pre-T101 working sequence. **Verified the diff + `node -c`/`synth-wiring` green.**
+> **⚠ Honest caveat:** unlike the celebration (reliable pixel check), **headless can't confirm audio
+> *playback* — the AudioContext is inconsistent without a real audio device** (`S.ctx()` came back `null` in
+> my Start-flow probe; audio *analysis* like the T151 divergence works only once the ctx is forced up). So the
+> code is right but **music-after-Start playback is owner-ear-pending**, and there's a possible **async-resume
+> race** (the deferred `audioUnlock` may try to start the scheduler before the ctx finishes resuming → if the
+> owner reports no music after Start, that's the cause: await the resume / retry on `ready`). **[B] `T150`
+> should add an `OfflineAudioContext` start test** (reliable) since live-ctx headless is flaky. T101 → DONE
+> (code restores the working path; flagged for the owner's ear).
 
 > **Previously approved (done):** `T149` [A] (THE celebration fix — `#fxBurst` moved out of the `display:none`
 > reset modal) · live build **`9c211a3`**. **CI green; collision-clean** ([A]-owned: `index.html`,

@@ -10,19 +10,14 @@
 
 ---
 
-**Builder A → `T101` FIX (BUG: music no longer starts after Start) → `T124` (fraction glyphs) → `T152[A]` (celebration point-emission) → roadmap (Android → Arena 3v3 → content → `T72`)**
-**⚠ `T101` CHANGES REQUESTED — fix the regression you shipped.** The jank-defer is good, but it **dropped the
-music-start**: the deferred `warmAudio = () => { setupSynth(); applySoundPref(); }` wires the synth but never
-calls `musicForScreen`, and the old `audioUnlock()` you replaced DID (`if(!playing) musicForScreen(curScreen)`).
-The Start handler's `applyRoute()`/`startIntro()` runs `show→musicForScreen` BEFORE the deferred `setupSynth`,
-so it early-returns on the `!synthWired` guard (`main.js:350`) → **music never starts after Start** (first
-round/menu is silent; SFX work). **Fix:** `warmAudio = () => { setupSynth(); applySoundPref();
-musicForScreen(curScreen); }` (or call `audioUnlock()` in the RAF); keep the sync unlock+fullscreen + the
-defer; add a guard if feasible. **Then `T124`** (fraction tree-glyphs bigger/clearer using node width). **Then
-`T152[A]`** (after B's small-size engine option): fire each `fxCelebrate*` from the **source element's
-normalized centre** (`getBoundingClientRect()`) — inventory→toast, run→rank badge, mastery→topic node,
-arena-win→enemy portrait — with the existing rarity/rank/topic palette + small size (BACKLOG T152 table).
-Then → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
+**Builder A → `T124` (fraction glyphs) → `T152[A]` (celebration point-emission, after B's engine part) → roadmap (Android → Arena 3v3 → content → `T72`)**
+*(`T101` jank-defer + music-start fix DONE `9d6175b` — APPROVED; music-after-Start playback is owner-ear-
+pending since headless can't confirm audio playback, possible async-resume race to watch.)* **`T124`** —
+fraction tree-glyphs bigger/clearer using node width (owner-flagged illegible). **Then `T152[A]`** (after B's
+small-size engine option): fire each `fxCelebrate*` from the **source element's normalized centre**
+(`getBoundingClientRect()`) — inventory→toast, run→rank badge, mastery→topic node, arena-win→enemy portrait —
+with the existing rarity/rank/topic palette + small size (BACKLOG T152 table). Then → `T102`/`T103` (Android)
+→ `T89`/`T90` → content → `T72`.
 
 **Builder B → `T151` FINISH (PARTIAL fix — `ambient` still diverges to 1096) → `T150` (browser harness) → `T152[B]` (small-particle option)**
 **⚠ `T151` re-pushed `2f8d1a9` is PARTIAL.** The Butterworth-Q damping fix is correct + fixed `menu`/`lofi`/
