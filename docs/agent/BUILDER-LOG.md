@@ -1940,3 +1940,35 @@ how I verified:
     branches and parts 1/2/4 untouched (approved as-is). No regressions.
 notes / questions: kept the change minimal per "do not churn the other topics".
   Next per REVIEW: **T51** (restore the varied hero portraits).
+
+## T51 — Restore the varied hero portraits (un-regress the "weird faces")  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - collectibles.js — restored a dedicated **`heroSprite`** drawer = the original
+    mirrored creature-blob, generalised from the old G=12 drawer to the current
+    **G=16** (left half filled with a centre-weighted probability, mirrored to the
+    right, ~30% accent). `buildIcon` now detects the **`"hero:"` id prefix** and
+    builds the blob (seeded per hero id, class palette via the existing
+    shiftPalette), bypassing the `"familiar"` critter preset. **Item path is
+    untouched** — only ids starting `"hero:"` (which no catalogue item carries)
+    take the new branch.
+  - main.js — comment-only: the hero `drawIcon` caller note now reflects the
+    creature-blob route (the call itself is unchanged, so T50's identical Arena
+    call will draw the same restored faces).
+  - test/hero-icons.test.js — NEW; wired as the 8th Pages gate.
+how I verified:
+  - `node test/hero-icons.test.js` → **ALL 8 PASS**: the **12 hero portraits are
+    pairwise distinct (66/66)**, symmetric (mirrored), deterministic per hero, and
+    paint with the class palette; a hero portrait **differs from the `"familiar"`
+    item critter**; and — loading the **committed HEAD collectibles.js** alongside
+    the working tree — **item role + colour grids are byte-identical** across a
+    spread of catalogue ids *and* forced `"familiar"`-category ids (**0 diffs**),
+    catalogue size unchanged (795).
+  - ASCII-rendered bram/greta/mo/roon — four clearly different "weird faces"
+    (was one repeated turtle). `node -c collectibles.js` OK; **icon-variation gate
+    still green** (item categories intact). All eight gates pass. No regressions.
+notes / questions: the collectibles diff is purely additive (one drawer + a
+  prefix branch); no `"familiar"` category or any of the ~50 item archetypes were
+  touched. Heroes screen + (post-T50) Arena both draw via this one path. Next per
+  REVIEW: **T50** (generated icons on nav buttons + hero portrait in the Arena
+  picker).

@@ -583,11 +583,33 @@
       if(g[y][x]){ cx.fillStyle = a[y][x] ? pal.accent : pal.body; cx.fillRect(off+x*scale, off+y*scale, scale, scale); }
   }
 
+  // Restored hero portrait (T51): the original mirrored creature-blob — a
+  // symmetric, seed-varied "weird face", generalised from the old G=12 drawer to
+  // the current grid. The left half is filled with a centre-weighted probability
+  // and mirrored to the right; ~30% of filled cells take the accent colour. Seeded
+  // per hero id, so each of the 12 heroes is a visibly distinct creature.
+  function heroSprite(g, a, rnd){
+    const half = Math.floor(G/2), mid = (G-1)/2;
+    for(let y=1;y<G-1;y++) for(let x=1;x<=half-1;x++){
+      const on = rnd() < (0.62 - Math.abs(y-mid)/G*0.4) ? 1 : 0;
+      g[y][x] = on; g[y][G-1-x] = on;
+      if(on && rnd() < 0.3){ a[y][x] = 1; a[y][G-1-x] = 1; }
+    }
+  }
+
   // Build the body/accent/locked grids + palette shift for one id (pure; shared
   // by drawIcon and the icon-variation test).
   function buildIcon(id, catId){
     const seed = hashStr(id);
     const rPick = mulberry32(seed), rTex = mulberry32((seed ^ 0x9e3779b9) >>> 0);
+    // Hero portraits route to the restored creature-blob, NOT an item category —
+    // item icons (which never carry a "hero:" id) are untouched.
+    if(typeof id === "string" && id.indexOf("hero:") === 0){
+      const g = grid0(), a = grid0(), locked = grid0();
+      heroSprite(g, a, rPick);
+      const shift = { hue: (rTex()*2-1)*20, lum: (rTex()*2-1)*0.08 };
+      return { g, a, locked, shift, cat: null };
+    }
     const cat = CAT_BY_ID[catId] || CAT_BY_ID[categoryOf(id)];
     const g = grid0(), a = grid0(), locked = grid0();
     const lock = (x,y) => { if(inB(x,y)) locked[y][x] = 1; };

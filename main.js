@@ -613,7 +613,7 @@
     }).join("");
     $("heroList").querySelectorAll(".hero-card.unlocked canvas").forEach(cv => {
       const card = cv.closest(".hero-card"); const h = card && Hs.byId(card.dataset.hero);
-      if(h) C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], "familiar");   // critter portrait
+      if(h) C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], "familiar");   // "hero:" id → restored creature-blob portrait (T51)
     });
   }
 
