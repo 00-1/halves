@@ -207,9 +207,11 @@ a Settings screen + **Clear-all-data** behind a serious **countdown + numpad-cod
 every `halves.*` key → genuine first-run; also the QA reset for the gating). Then **`T86`**
 (onboarding engine: unlock-state model + first-run single-question intro + Inventory gate +
 one-time highlight; **migration-safe — never re-gate existing players**) → **`T87`** (wire the
-remaining gates: Practice/Heroes/Arena/Event-banner/Gold). Then content extension
-`T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store; folds in the T82 TWA/manifest/SW plan). Specs
-in BACKLOG; this line is authoritative.
+remaining gates: Practice/Heroes/Arena/Event-banner/Gold). Then the **Arena 3v3 block** (Phase
+6.10): **`T88`** (deterministic 1–3 vs 3 battle model + enemy teams + re-calibration + invariant
+sim-proofs — the crux; design in IDEAS I5) → **`T89`** (team-selection UI, 1–3 heroes) → **`T90`**
+(watchable turn playout). Then content extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play
+Store; folds in the T82 TWA/manifest/SW plan). Specs in BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

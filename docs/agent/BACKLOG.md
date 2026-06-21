@@ -1670,6 +1670,91 @@ point**. Draft ladder (owner delegated "add good points"; confirm/adjust in revi
 
 ---
 
+## Phase 6.10 — Arena 3v3: party battles (promoted from IDEAS I5, 2026-06-21)
+
+> Owner: deepen the Arena — pick **1–3 heroes** vs a **3-foe team** (the tier foe + 2 weaker
+> lower-tier "adds"), resolved by a **deterministic auto-resolve** turn-attrition sim. Decisions
+> LOCKED: **deterministic, zero-RNG**; **variable team size 1–3** (owner: "still possible to send
+> less than 3 heroes, e.g. early game" — allow 1–3, **don't gate** the mode on owning 3). The
+> owner **delegated the calibration** to the Babysitter; the full design lives in **IDEAS I5** and
+> is the spec for T88.
+>
+> **Non-negotiable guardrails (the calibrated-Arena guarantee must survive):**
+> - **Deterministic / no RNG** — same inputs → same outcome (so it gates in Node like today's
+>   `statBattle`). Any randomness must be seeded.
+> - **Every invariant re-proved over the SIM**, across team sizes **and** the loadout lattice:
+>   **tiers 1–5 winnable with a SINGLE starter hero at 0 items** (the binding early floor — a new
+>   player owns one hero); **curve monotonic**; **no tier behind its own loot**; **top region
+>   beatable only near-max** (tier 120 ⇔ near-full, one champion boost flips it).
+> - **Monotone in loadout AND team size** — more buffs / more heroes never worsens the result;
+>   damp any anti-monotone mechanic (speed turn-order swing, overkill).
+> - **Migration-safe** — existing `tier:N` progress carries over; 1-hero is the special case of
+>   the same sim.
+>
+> **Three tasks: `T88` (battle model + calibration + proofs — the crux) → `T89` (team-selection
+> UI) → `T90` (watchable playout).**
+
+### T88 — Arena 3v3: deterministic battle model + enemy teams + re-calibration + invariant proofs · status: OPEN
+**The crux.** Generalise the single-hero `statBattle` (T47) to a **deterministic 1–3 vs 3
+auto-resolve** sim, re-derive the difficulty curve, and **re-prove every invariant by simulation**.
+Full design = **IDEAS I5 "Calibration design"**; this task implements it.
+- **Battle sim (zero RNG).** Combatants `{atk, hp, spd, type}`; turn order by `spd` (fixed index
+  tie-break); on a turn the actor picks a target by a **fixed rule** (best type-matchup; tie →
+  lowest current `hp`; tie → index) and deals `damage = max(1, round(atk × matchup − mitigation))`;
+  remove at `hp ≤ 0`; loop until one side is wiped; **win = ≥1 hero alive**. Same inputs → same
+  result.
+- **Teams.** Player: **1–3 heroes** (owner: allow fewer — early game; **do not gate** on owning 3).
+  Enemy: **always 3** = the tier foe (scales on the existing curve) **+ 2 adds at `tier−k`** (define
+  `k`; weaker; **floor at tier 1** so low-tier adds are near-trivial). Hero `atk/hp/spd` are
+  **monotone-increasing in the collected loadout** (extends today's buff→`rating`).
+- **Re-calibration (preserve the guarantee).** Tune the enemy-team curve so the **sim** yields:
+  **tiers 1–5 winnable with a SINGLE starter hero at 0 items**; **curve strictly monotonic**; **no
+  tier gated behind its own loot**; **top region near-max-only** with **tier 120 ⇔ near-full** and
+  **removing any one champion boost flips it**. The sim must be **monotone in loadout AND team
+  size** — damp any anti-monotone mechanic (cap `spd`'s turn-order swing; keep damage smooth;
+  avoid overkill flips).
+- **Migration.** Existing `tier:N` wins carry over; the 1-hero path is the 1v1 special case (note
+  any intentional difference from today's `statBattle` outcomes).
+- **Proofs.** Extend `arena.test.js` to **simulate every tier across {team size 1/2/3} × {loadout
+  lattice: 0 · partial · near-full · full · full-minus-one-champion-boost}** and assert all four
+  invariants **+ monotonicity in loadout and team size**. The **sim is the source of truth**; if a
+  non-monotone/off-curve outcome appears, **fix the mechanic, not the test.**
+- **DoD:** deterministic sim (no RNG; same inputs → same result); player team 1–3, enemy = foe + 2
+  `tier−k` adds; **tiers 1–5 winnable by a single starter hero at 0 items**; curve monotonic; no
+  tier behind own loot; top near-max-only with the one-boost flip; **monotone in loadout + team
+  size**, all proven by the lattice simulation; migration-safe; battle answers/stats numeric +
+  sane; `node -c` clean; every `$("id")` resolves; all gates green (extended `arena.test.js`).
+  (Babysitter: re-run the FULL invariant sweep across team sizes × loadout lattice, verify
+  monotonicity, the single-starter-hero floor, the tier-120 one-boost flip, and migration.)
+
+### T89 — Arena 3v3: team-selection UI (1–3 heroes) + enemy-team display · status: OPEN
+Let the player assemble the party and see what they're up against. Built on T88's sim.
+- Select **1–3 heroes** from **owned** heroes for a tier attempt (can send fewer — down to 1);
+  **can't pick locked/unowned**; show the **3-foe enemy team** with their **type matchups** vs the
+  chosen party; "Fight" runs the T88 sim. Gracefully handle owning <3 heroes.
+- Preserve existing Arena flow (tier gating via `canAttempt`, the wayfinding/region UI, T65
+  scroll-to-top after a fight). 360px-safe.
+- **DoD:** select 1–3 owned heroes (not more than owned/3, locked excluded); enemy team of 3 shown
+  with matchups; "Fight" resolves via the T88 sim and records the result/tier progress as today;
+  routing/back intact; 360px-safe; `node -c` clean; all gates green; a Node/DOM test covers the
+  selection rules (1–3 allowed, can't exceed owned or 3, locked excluded) and that a fight routes
+  through `statBattle`-team. (Babysitter: verify 1-hero and 3-hero attempts both work, locked/
+  unowned can't be fielded, and tier progress still records.)
+
+### T90 — Arena 3v3: watchable deterministic turn playout + result · status: OPEN
+Make the fight *readable* — show the deterministic sim resolving, calmly.
+- Render the sim **turn by turn** (who strikes whom, HP draining, KOs) then the result — a **calm,
+  watchable** playout (consistent with the no-anxiety design), not a wall of numbers. Reuse/extend
+  `fx.js` where cheap; **no new RNG** (it only visualises the T88 sim, which is the source of
+  truth). Keep T65 scroll-to-top after the fight.
+- **DoD:** the playout deterministically visualises the T88 sim's turns and its result **matches**
+  the sim; calm + skippable/quick; **no RAF leak** (perf gate holds — single loop, cancels on
+  leave); 360px-safe; `node -c` clean; no console errors; all gates green; a Node check confirms
+  the playout's resolved outcome equals `statBattle`-team for sampled tiers/teams. (Babysitter:
+  confirm the shown result always equals the sim, the loop cleans up, and it stays calm/legible.)
+
+---
+
 ### T57 — Scrub the specific school/town/county references from the docs · status: DONE
 Owner: remove the named-school and place references from the codebase, keeping only the
 generic "11+" and the exam board. Babysitter sweep: the only occurrences are in

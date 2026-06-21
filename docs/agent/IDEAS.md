@@ -314,7 +314,15 @@ agreed unlock ladder + migration policy.)*
 
 ---
 
-## I5 — Arena 3v3: party of heroes vs a team of foes (owner musing, 2026-06-21)
+## I5 — Arena 3v3 — ✅ PROMOTED to BACKLOG (T88 + T89 + T90) on 2026-06-21
+
+> Owner: "promote 3 hero arena." Now BACKLOG **Phase 6.10**: **T88** (deterministic 3v3 battle
+> model + enemy teams + re-calibration + invariant sim-proofs — the crux) → **T89** (team-selection
+> UI, 1–3 heroes) → **T90** (watchable turn playout). Decisions LOCKED below: **deterministic
+> auto-resolve**, **variable team size 1–3** (owner: must allow sending fewer, e.g. early game),
+> calibration authored below. **BACKLOG is authoritative**; notes retained for provenance.
+
+## I5 (original) — Arena 3v3: party of heroes vs a team of foes (owner musing, 2026-06-21)
 
 **The idea (owner).** Deepen the Arena: pick **3 heroes**, fight **3 enemies** — the tier's
 current foe **plus two weaker "assistant" enemies pulled from lower levels**. Resolution leans
@@ -327,14 +335,19 @@ single-hero check, and the enemy-team idea reuses existing lower-tier enemy defs
 Genuinely additive and in-domain — worth doing well.
 
 **Owner decisions (2026-06-21, round 2) — LOCKED:** **deterministic auto-resolve** (decisions
-#1 win-by-attrition, #2 no-RNG, #4 auto-resolve below are all settled this way), and the owner
-**delegated the calibration** to the Babysitter ("you figure out how to keep it levelled… beatable
-only with near-max loadouts"). Calibration design authored below.
+#1 win-by-attrition, #2 no-RNG, #4 auto-resolve below are all settled this way); **variable team
+size 1–3** (decision #5 — owner: "it should still be possible to send less than 3 heroes, e.g.
+early game" → **allow 1–3, do NOT gate the mode** on owning 3); and the owner **delegated the
+calibration** to the Babysitter ("you figure out how to keep it levelled… beatable only with
+near-max loadouts"). Calibration design authored below.
 
 ### Calibration design (Babysitter-authored, owner-delegated 2026-06-21)
 Goal: a deterministic 3v3 auto-resolve whose **top is beatable only with near-max loadouts**,
-while **every existing invariant still holds** (tiers 1–5 winnable with a starter team at 0 items ·
-curve monotonic · no tier behind its own loot · final tier ⇔ near-full, one boost flips it).
+while **every existing invariant still holds**. With **variable team size 1–3**, the binding
+early-game floor tightens: **tiers 1–5 must be winnable with a SINGLE starter hero at 0 items**
+(a brand-new player owns only one), even though the enemy is always 3 (the 2 adds are near-trivial
+at low tiers). Also: curve monotonic · no tier behind its own loot · final tier ⇔ near-full, one
+boost flips it. Monotone in **loadout AND team size** (more buffs / more heroes never worse).
 
 **Battle model (deterministic, zero RNG).** 6 combatants — 3 heroes + 3 foes — each `{atk, hp,
 spd, type}`. Turn order by `spd` (fixed index tie-break). On a combatant's turn it picks a target
