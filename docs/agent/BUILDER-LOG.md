@@ -1179,3 +1179,53 @@ how I verified:
     **pip-boosted item's `boostLabel` shows "Pocket"**; pip unlock predicate still
     fires on `speed:*:3`. No logic change.
 notes / questions: one-word fix per the verdict; re-handoff. Next: T35.
+
+## T35 — Diverse item names + inventory truncation fix  [HANDOFF]
+commit: 6e22130 (on main)
+changed:
+  - collectibles.js — replaced the `ADJ`/`NOUNS` constants and `itemFlavour(id)`
+    with the full DESIGN-names.md system (kept `hashStr`/`itemStyle` and the
+    `CATALOG.forEach` stamp): word banks (612 ADJECTIVES, 10 NOUNS pools, 124
+    EPITHETS, 64 CREATURES, 62 PLACES, 26 COOKADJ, 28 FOOD_CREATURE_PARTS, 124
+    FIXED), 13 weighted TEMPLATES + 8 FOOD_TEMPLATES, and `pick/fillTemplate/
+    chooseTemplate/itemFlavour` — all deterministic per id. theme = `itemStyle(id)`
+    for now (food templates on style 7); per the design's coupling note this
+    remaps to icon-family in T36.
+    - **Uniqueness layer (deviation, justified):** the design's integration note
+      said "replace only ADJ/NOUNS/itemFlavour", but the raw generator produces
+      **26 colliding names over the 1443-item catalogue** (dominated by the
+      124-entry FIXED pool — pigeonhole/birthday — plus a few `{adj} {noun}`), and
+      the DoD mandates *globally unique* names. So I added a thin `uniqueFlavour()`
+      that claims the first free **salted re-roll** (`flavourFor(id,"#k")`,
+      theme/icon-family preserved so food stays food) and pointed the stamp +
+      `registerItem` at it. `itemFlavour` itself still matches the design exactly.
+      The claim order is fixed (catalogue stamped, then loot registered in tier
+      order) ⇒ deterministic across reloads. Names are cosmetic + regenerated each
+      load (collected set is keyed by id), so order-derived names never break saves.
+  - styles.css — `.inv-cell .inv-name`: dropped `white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis` for `white-space:normal;overflow-wrap:anywhere;
+    word-break:break-word;hyphens:auto` (line-height 1.25). The owned tile caption
+    now **wraps to as many lines as needed** (the flex cell grows; the grid row
+    sizes to it) so the full name shows — no clipping. Modal/detail/toasts already
+    showed the full name (unchanged).
+how I verified:
+  - node -c (collectibles/main/enemies/heroes) all OK; CSS brace-balance OK
+    (257/257); no TODO/stub; old `ADJ` constant + single-template generator fully
+    removed; `hashStr`/`itemStyle`/stamp kept.
+  - **DoD Node test over the FULL 1443-item catalogue (incl. T23 loot), ALL
+    PASSED:** every name non-empty; **all 1443 names globally unique** (0 dups, was
+    26); no unfilled `{placeholders}`; **deterministic across reloads** (rebuilt in
+    a fresh realm, 0 drift); template usage spread across **6 structure buckets**
+    (adjNoun 553, "of the…" 321, "of…" 186, creature's 168, "The…" 141, list/aside
+    74) — not one mould; loot named by the new system. Adjective bank 612 < 1443
+    catalogue → adjective reuse is expected/documented; uniqueness carried by the
+    epithet/creature/place tails + the uniqueness layer. Samples: "Cinder-flecked
+    Hex-mark of the Cellar", "Frog's Gremlin", food "Roasted Glow-worm Roll of
+    Twilight"; FIXED reachable ("The Heroic Spork").
+  - DOM-shim render harness (3 checks, PASSED): inventory renders owned tiles with
+    the **full multi-word name** in `.inv-name` (no inlined ellipsis); 360px grid
+    unchanged (4 cols) but the caption now wraps.
+notes / questions: the only deviation from the design note is the deterministic
+  uniqueness layer, needed to satisfy the DoD's "globally unique" (the raw
+  generator alone collides 26×). Flagged here for your audit. Next per REVIEW
+  order: T24 (Arena).
