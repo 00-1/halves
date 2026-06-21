@@ -1,6 +1,44 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T98` [A] (audio too quiet — raised + limiter) · live build
+**Current verdict:** `CHANGES REQUESTED — T99` [A] (home top-band + nav + banner) · build
+**`d1ac5e0`**. Two of T99's **three** deliverables landed cleanly — but the third (an explicit DoD
+bullet + an owner request) is **missing entirely**, and the new test doesn't cover it. Reject.
+
+**What's right (keep it):** the **top-band reclaim** — `body` flips `align-items:center →
+flex-start` while `.app` keeps its `max-height:780px` cap, so on a tall (fullscreen) viewport the
+leftover falls to the **bottom** and every `inset:0` screen starts flush at the top (correct read of
+the owner's fullscreen-correlation note). The **banner is pinned** (`#start` pad `20→12`,
+`.event-banner` margin-top `14→0`, `.tree` `14→12`). The **nav is tidy**: the icon-only
+`.navbtn.util` style is dropped; Sound/Settings/Screen become labelled `.nav-emoji`+`.nav-lbl`
+buttons matching the four primary ones (gap `8→6`, one uniform row); `syncSoundButtons` flips only
+the `.nav-emoji` span and the fullscreen sync only the `.nav-lbl` span (both keep the text label, with
+an `innerHTML` fallback). All **[A]-owned files only** (no collision). `node -c` clean; **full
+27-gate suite green** incl. the new `home-layout.test.js` (22 checks: cap+top-align, banner-first,
+labelled nav, no surviving icon-only util, sound-toggle flips emoji-only).
+
+**BLOCKER — the missing third deliverable (DoD bullet "Fix the premature 'Reward earned' tag"):**
+`renderEventBanner()` (`main.js:1537,1545`) is **unchanged** — it still computes
+`owned = !!loadCollected()["event:"+ev.id]` (the **participation tier only**) and renders the tag as
+`owned ? 'Reward earned' : 'Today’s event'`. After T92 every event has **3 tiers**; the owner
+explicitly asked for **progress** ("'1/3 event rewards earned', or similar"). So today the banner
+still says "Reward earned" the instant the player merely *shows up* — the exact bug the owner flagged.
+
+  1. **Show N/3 progress, not a binary.** Count owned tiers across the three suffixes
+     **`""`, `":well"`, `":ace"`** (the exact keys `award()` writes — see `main.js:1222–1223` and the
+     roster sweep at `:803`): e.g. `const col = loadCollected(); const got = ["",":well",":ace"]
+     .filter(s => col["event:"+ev.id+s]).length;`. Render the tag as **`got>=3 ? 'All rewards earned'
+     : got>0 ? got+'/3 rewards earned' : 'Today’s event'`** (wording your call; must read as progress
+     and only say done at 3/3). Keep the strip compact (T91) — it's a short tag, no layout growth.
+  2. **Cover it in a test.** `home-layout.test.js` asserts the banner is pinned but **not** its tag
+     text. Add a check: with 0 tiers → "Today's event"; with 1 of 3 owned → "1/3 …" (not "Reward
+     earned"); with all 3 → the done wording. (This is the regression the owner will eyeball first.)
+
+Nothing else is required — the layout/nav work is approved as-is; just add the banner fix + its test,
+rebase on `origin/main`, push. T99 stays **OPEN**; pointer unchanged.
+
+---
+
+**Previously approved (done):** `T98` [A] (audio too quiet — raised + limiter) · live build
 **`5c26f9b`**. `VOL` **0.30 → 0.80** (≈2.7× louder; mute/unmute still toggles 0↔VOL) **plus a
 brickwall LIMITER** (DynamicsCompressor, −1.5 dB, knee 0, ratio 20, 3 ms attack) on
 `master→limiter→destination` — so clipping is impossible **by construction**, not by estimate;
