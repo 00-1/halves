@@ -895,12 +895,17 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: STAND BY (`T126` DONE — `FXGL.celebrate()` big shower shipped & approved; `T120`
-  synth engine + mute-fix DONE).** Both engines complete; the remaining value is the **[A] wiring**
-  (`T125` — wire `celebrate()` everywhere + fix the burst-never-resized rendering bug), which B can't do.
-  **Keep watching `origin/claude/agent`:** the moment `T125` (or any wiring) surfaces a real engine gap
-  (a missing hook, a bug), that's your next task. Otherwise idle (optional light brickmap hardening).
-  **B-owned files only; never touch existing Halves files; never push `claude/agent`.**
+- **Builder B — next: `T130` [B] — GOLDEN-SNAPSHOT harness (brickmap-style render-regression)** (off
+  stand-by; owner: "brickmap's golden render could be learned from"). The structural fix for our
+  recurring **"green gates, broken feature"** gap. **Study brickmap's golden-render** (you have access),
+  then build a **no-build Node golden harness** (B-owned new files; `UPDATE_GOLDEN=1` regenerates,
+  default compares + fails) applied to the **deterministic, headless** outputs: **FXGL CPU-still** renders
+  (scene + `burst()` + `celebrate()` at fixed seeds → compact pixel signature) and **synth context
+  scores** (the scheduled-event score per context → **stable AND mutually distinct**; this class would
+  have caught T128's "every context sounds the same"). GPU/browser/full-layout golden = **out of scope**
+  (keep CI Node-only) — note as future opt-in. Full DoD `T130`. **B-owned files ONLY**; never touch
+  existing Halves files; never push `claude/agent`. *(Runs in parallel with A's T129/T128 audio-bug
+  fixes; if those surface a real engine gap, that preempts.)*
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —

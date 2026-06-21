@@ -34,12 +34,15 @@ ONE canvas/context (composite burst over backdrop); flag [B] if engine-level. Fu
 T128 (live-verified). Then → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` (Start
 delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → STAND BY  · `T126` celebration burst DONE; both engines complete**
-`FXGL.celebrate()` (800-cap firework/shower) shipped & approved; synth engine done.
-The remaining value is the [A] wiring (`T125`). Keep watching `origin/claude/agent`:
-if `T125` surfaces a real engine gap (missing hook/bug), that's your next task.
-Otherwise idle (optional light brickmap hardening). B-owned files only; never touch
-existing Halves files.
+**Builder B → `T130`  · GOLDEN-SNAPSHOT harness (brickmap-style render regression)**
+Off stand-by (owner: "brickmap's golden render could be learned from"). Study brickmap's golden-render
+(you have access), then build a no-build Node golden harness (B-owned new files; `UPDATE_GOLDEN=1`
+regenerates, default compares + fails) for the deterministic headless outputs: **FXGL CPU-still**
+renders (scene+burst+celebrate at fixed seeds → compact pixel signature) and **synth context scores**
+(per-context scheduled-event score → stable AND **mutually distinct** — would've caught T128's "all
+contexts sound the same"). GPU/browser/full-layout golden = out of scope (keep CI Node-only). Full DoD:
+`BACKLOG.md` T130. B-owned files only; never touch existing Halves files. *(Parallel with A's T129/T128;
+if those surface an engine gap, that preempts.)*
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

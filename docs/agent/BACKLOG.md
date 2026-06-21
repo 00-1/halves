@@ -2451,6 +2451,37 @@ cramped blob, and the **wider tree-v2 nodes (96px)** leave the fraction under-us
   live node size — must read as the fraction, not a blob — this is the 2nd attempt after T104, get it
   clearly right.)
 
+### T130 — [B] Golden-snapshot harness for deterministic engine output (brickmap-style render regression) · status: OPEN
+Owner: "brickmap uses a golden render — checks the render of various things stays consistent and new
+things show up. Could be learned from." This is the structural fix for our recurring **"green gates,
+broken feature"** gap (T118/T125/T128 — see ORCHESTRATION's output-feature rule): source-grep gates
+don't catch output regressions; **golden snapshots of actual output do.** Builder B has brickmap access
+and owns the engines — study brickmap's golden-render, then build the Halves-adapted, no-build version.
+- **Study brickmap's golden-render** (in `00-1/brickmap`): how it captures reference renders, compares,
+  and updates them; what's worth porting vs what's GPU/native-specific.
+- **Build a no-build, Node golden harness** (B-owned new files — a small helper + golden fixtures +
+  tests; never touch existing Halves files). An `UPDATE_GOLDEN=1` (env) path **regenerates** the goldens
+  (the "new things show up" workflow); the default run **compares** and **fails** on an unexpected
+  change. Goldens are small, committed, diff-reviewable (hashes or compact serialisations, not huge
+  binaries).
+- **Apply to what's deterministic + headless (no GPU/browser):**
+  - **FXGL CPU-still backend** — render a few representative scenes + a `burst()` + a `celebrate()` at
+    fixed seeds to the CPU ImageData path; snapshot a compact pixel signature (downsampled grid / hash).
+    Catches FX render-logic regressions.
+  - **Synth scores** — snapshot the deterministic scheduled-event "score" (the first N steps' notes/
+    times/patches) for **each context (solve/menu/arena/event)** at a fixed seed; assert each is
+    **stable** AND **mutually distinct**. *(This class of golden would have caught T128's "every context
+    sounds the same" — make distinctness an explicit golden assertion.)*
+- **Scope note (don't over-reach):** GPU-only paths (WebGL/WebGPU) and full-page layout need a real
+  browser (Puppeteer) — **out of scope here** (keep CI light/Node-only); note them as a possible future
+  opt-in. Glyphs/icons goldens are a possible later [A] adoption of this harness.
+- **DoD:** a committed golden harness + gates wired into `pages.yml` that (a) **fail** when an FXGL CPU
+  render or a synth context-score changes unexpectedly, (b) **pass** after an intentional `UPDATE_GOLDEN`
+  regen, (c) include a **synth context-distinctness** golden (solve≠menu≠arena≠event); goldens are
+  compact + diff-reviewable; `node -c` clean; all gates green; B-owned files only. (Babysitter: confirm
+  the harness actually catches a deliberately-mutated render/score, and that the distinctness golden is
+  real — this is the gate that starts closing the output-verification gap.)
+
 ### T129 — [A] Settings: a MUSIC SWITCHER to sample every style + test switching · status: OPEN · OWNER-PRIORITY
 Owner: "add a music switcher to Settings next to the other audio settings, so I can sample all our
 audio styles and test the switching works." Both a real feature AND the **diagnostic instrument for the
