@@ -26,6 +26,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Icon variation test (gate)
         run: node test/icon-variation.test.js
+      - name: Performance test (gate)
+        run: node test/perf.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

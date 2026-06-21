@@ -1688,3 +1688,54 @@ how I verified:
 notes / questions: review is a written verdict + the two justified fixes (squares
   cap, glyph normalise). Candidate gaps are flagged, not built (per the BACKLOG).
   Next: **T45** — the final performance / CPU / memory audit (LAST task).
+
+## T45 — Performance / CPU / memory audit (FINAL task)  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - main.js — `show()` now cancels the game-clock RAF whenever you leave the game
+    screen: `if(name !== "game" && raf){ cancelAnimationFrame(raf); raf = 0; }`.
+    (THE ONE FIX — see audit below.)
+  - test/perf.test.js — NEW permanent headless perf test (8 pure assertions).
+  - .github/workflows/pages.yml — added a second gate step "Performance test
+    (gate)" running `node test/perf.test.js` before deploy.
+### Audit (full play session, before/after)
+Profiled every long-lived resource. Four were already bounded; one leaked.
+1. **Confetti RAF (fx.js) — IDLES (already correct).** `celebrate()` starts the
+   loop only if not running; each frame drains dead particles and the loop
+   `return`s (no re-schedule) once `liveCount === 0`. Proven: burst → 79 frames →
+   `running()===false`, `liveCount()===0`. Before/after: unchanged (no fix needed).
+2. **Music scheduler (sound.js) — IDLES (already correct).** `setInterval` tick is
+   the only timer; `stopMusic()` clears it. It stops on **mute** (`setMuted →
+   stopMusic`) and on **tab-hidden** (`visibilitychange → stopMusic + ctx.suspend`).
+   Voice budget bounded by `MAX_STEPS_PER_TICK = 4`; every oscillator is
+   `start()`+`stop()` paired (lines 99/170), so no node growth. No fix needed.
+3. **Listeners — REGISTERED ONCE (already correct).** All 36 `addEventListener`
+   calls run at init; none per render/navigation. Proven headlessly: 35 listeners
+   after boot, **still 35** after 4× full nav cycles (inventory/heroes/arena/
+   best-times/home) + 18 inventory tab-switches. Zero growth. No fix needed.
+4. **Inventory / Loot / Arena render — LAZY-RENDER HOLDS (already correct).** Tabs
+   render on activation and the previous tab's tiles are released. Proven: Loot tab
+   emits `loot:` tiles when active; switching to Topics drops them from the DOM
+   string. ~1045 items never all live at once. No fix needed.
+5. **localStorage — BOUNDED (already correct).** Fixed key set (collected / qbest /
+   gold / momentum / settings); writes overwrite, never append unboundedly; the
+   in-memory fallback is preserved. No fix needed.
+6. **Game-clock RAF (main.js) — LEAKED → FIXED.** BEFORE: `loop()` re-scheduled
+   itself every frame and was only stopped by `finish()`/answering. Leaving the
+   game screen mid-round (browser back, nav link, inventory) left the RAF looping
+   forever on a hidden screen — steady CPU/battery drain with no visible work.
+   AFTER: `show()` cancels it on any non-game navigation. Proven: enter game →
+   1 active RAF; route away → **0** active RAF. A normal round still completes to
+   the results screen (no regression — the in-game answer path re-arms its own RAF).
+how I verified:
+  - `node test/perf.test.js` → **ALL 8 PERF CHECKS PASSED** (fx idle before/at/after
+    burst; zero listeners added over navigation+tab-switching; Loot lazy-render
+    renders-then-releases; game RAF present in-game then cancelled on leave).
+  - `node -c main.js` OK; main.js diff is the 3-line `show()` guard only (no other
+    edits). No TODO/stub. Icon-variation gate still green. No console errors in a
+    full simulated session. Catalogue unchanged at 1045. No regressions.
+notes / questions: **provable idling** (fx + scheduler), **no growth over
+  navigation** (listeners flat, lazy-render releases), **bounded** (voices,
+  localStorage), and the single real leak (game-clock RAF) fixed with before/after
+  evidence. Both Node gates wired into the Pages workflow. On approval the BACKLOG
+  is fully DONE.

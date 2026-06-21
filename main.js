@@ -149,6 +149,9 @@
         elMark=$("mark"), elTag=$("tag"), elModeTabs=$("modeTabs");
 
   function show(name){
+    // stop the game clock RAF whenever we leave the game screen (e.g. browser
+    // back mid-round), so it never loops on a hidden screen.
+    if(name !== "game" && raf){ cancelAnimationFrame(raf); raf = 0; }
     Object.values(screens).forEach(s => s.classList.remove("active"));
     screens[name].classList.add("active");
     // music follows the screen: the topic's style in-game, the menu style elsewhere
