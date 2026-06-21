@@ -485,12 +485,12 @@
   function setContext(name, opts){
     const c = CONTEXTS[name]; if(!c) return api;
     setReverb(c.reverb);
-    if(E.reverb && E.reverb.setDecay) E.reverb.setDecay(c.reverbDecay == null ? 0.78 : c.reverbDecay);   // per-style tail length
+    if(E.reverb && E.reverb.setDecay) E.reverb.setDecay(c.reverbDecay == null ? FDN_DECAY_DEFAULT : c.reverbDecay);   // per-style tail length
     setMusic(Object.assign({ seed: hashStr(name) }, c));
     if(opts && opts.now) swapNow();
     return api;
   }
-  function setReverbDecay(d){ if(E.reverb && E.reverb.setDecay) E.reverb.setDecay(d == null ? 0.78 : d); return api; }
+  function setReverbDecay(d){ if(E.reverb && E.reverb.setDecay) E.reverb.setDecay(d == null ? FDN_DECAY_DEFAULT : d); return api; }
   // Immediate context swap (T132): adopt the pending spec (`M.want`) RIGHT NOW —
   // re-aligned to a phrase start (clean downbeat entry) — so the new context's
   // harmony/patches/reverb take effect on the NEXT scheduled step (≤1 step), not
@@ -547,9 +547,21 @@
   // "cheap" tell). Built ONCE at mount; buses send into it.
   const FDN_TIMES = [0.0297, 0.0371, 0.0411, 0.0437];   // mutually-prime-ish (s)
   const FDN_HADAMARD = [[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]];
+  // T151 — the damping lowpass MUST be non-resonant. Web Audio interprets a
+  // BiquadFilter "lowpass" Q in dB (linear = 10^(Q/20)); the default Q=1 is a
+  // +2 dB RESONANT peak (~1.25× linear) sitting AT the cutoff — and that peak
+  // multiplies the feedback loop gain. With the unitary matrix scaled by
+  // `decay`, the loop gain at the cutoff becomes `decay × 1.25`, which exceeds 1
+  // for any `decay ≥ ~0.8` (e.g. ambient's 0.9 → ~1.13 → exponential blow-up;
+  // even 0.78 sits at ~0.975, razor-thin). Q = -3.0103 dB is linear 0.7071, a
+  // maximally-flat Butterworth: gain ≤ 1 everywhere, so the loop gain is ≤ decay
+  // < 1 UNCONDITIONALLY (stable for every style's tail). See test/synth.test.js
+  // "T151 divergence" gate for the numeric proof.
+  const FDN_DAMP_Q = -3.0103;   // dB → linear 0.7071 (Butterworth, no resonant peak)
+  const FDN_DECAY_DEFAULT = 0.78, FDN_DECAY_MAX = 0.95;
   function makeReverb(ctx, opts){
     opts = opts || {};
-    const decay = opts.decay == null ? 0.78 : opts.decay;     // feedback gain (<1 → stable)
+    const decay = opts.decay == null ? FDN_DECAY_DEFAULT : opts.decay;   // feedback gain (<1 → stable)
     const damp = opts.damp == null ? 3600 : opts.damp;        // tail darkening (Hz)
     const input = ctx.createGain(), output = ctx.createGain();
     const pre = ctx.createDelay(0.2); pre.delayTime.value = opts.preDelay == null ? 0.012 : opts.preDelay;
@@ -558,6 +570,7 @@
     for(let i = 0; i < 4; i++){
       const dl = ctx.createDelay(0.5); dl.delayTime.value = FDN_TIMES[i];
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = damp;
+      if(lp.Q) lp.Q.value = FDN_DAMP_Q;                        // T151: non-resonant (Butterworth) → loop gain ≤ decay
       dl.connect(lp); delays.push(dl); damps.push(lp);
       pre.connect(dl);                                         // input feeds every line
     }
@@ -573,9 +586,10 @@
       else damps[i].connect(output);
     }
     return { input: input, output: output, delays: delays, damps: damps, fb: fb,
+             dampHz: damp, dampQ: FDN_DAMP_Q, decay: decay,   // T151: introspection for the divergence gate
              setDamp: function(f){ for(const d of damps) try{ d.frequency.value = f; }catch(e){} },
              // T139: a longer/shorter tail per style — rescale the feedback gains (stays < 1 = stable).
-             setDecay: function(dec){ const d = Math.max(0, Math.min(0.95, dec)); for(const f of fb) try{ f.g.gain.value = f.coef * d; }catch(e){} } };
+             setDecay: function(dec){ const d = Math.max(0, Math.min(FDN_DECAY_MAX, dec)); for(const f of fb) try{ f.g.gain.value = f.coef * d; }catch(e){} } };
   }
 
   // ---- engine state + graph --------------------------------------------------
@@ -703,7 +717,15 @@
     styles: function(){ return STYLE_IDS.map(function(id){ return { id: id, label: CONTEXTS[id].label }; }); },   // launcher list (for [A]/T140)
     // introspection (tests / the [A] wire)
     buses: function(){ return { master: E.master, limiter: E.limiter, music: E.music, drum: E.drum, sfx: E.sfx, reverb: E.reverb, musicSend: E.musicSend, drumSend: E.drumSend }; },
-    noiseBuffer: function(){ return E.noiseBuf; }
+    noiseBuffer: function(){ return E.noiseBuf; },
+    // T151: the FDN topology + the (max) per-style decays — so the divergence gate
+    // can faithfully simulate the reverb feedback and prove the tail is bounded.
+    reverbParams: function(){
+      const decays = STYLE_IDS.map(function(id){ const d = CONTEXTS[id].reverbDecay; return d == null ? FDN_DECAY_DEFAULT : d; });
+      return { times: FDN_TIMES.slice(), hadamard: FDN_HADAMARD.map(function(r){ return r.slice(); }),
+               dampHz: 3600, dampQ: FDN_DAMP_Q, decayDefault: FDN_DECAY_DEFAULT, decayMax: FDN_DECAY_MAX,
+               styleDecays: decays };
+    }
   };
   window.Synth = api;
 })();
