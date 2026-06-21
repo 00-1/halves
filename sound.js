@@ -149,36 +149,71 @@
     }
   }
 
+  // T115 — a short synth "wub" celebration sting (dubstep bass-wobble): a saw bass
+  // through a low-pass whose cutoff a ~7 Hz LFO wobbles → a couple of "wub"s. Pure
+  // WebAudio (NO sample files), routed through master so it honours mute + the T113
+  // master volume + the limiter. Short/bounded; oscillators auto-stop (no leak).
+  function wub(){
+    if(muted || !ctx || !master) return;
+    if(ctx.state === "suspended"){ try{ ctx.resume(); }catch(e){} }
+    try{
+      const now = ctx.currentTime, dur = 0.66;
+      const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+      const lfo = ctx.createOscillator(), lfoGain = ctx.createGain();
+      o.type = "sawtooth"; o.frequency.value = hz(36);            // ~C2 bass note
+      lp.type = "lowpass"; lp.frequency.value = 300; try{ lp.Q.value = 9; }catch(e){}
+      lfo.type = "sine"; lfo.frequency.value = 7;                 // the wobble rate (~7 Hz)
+      lfoGain.gain.value = 600;                                   // cutoff sweep depth
+      lfo.connect(lfoGain); lfoGain.connect(lp.frequency);        // LFO modulates the cutoff → "wub"
+      o.connect(lp); lp.connect(g); g.connect(master);           // through master (vol + limiter apply)
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.32, now + 0.02);
+      g.gain.setValueAtTime(0.32, now + dur - 0.1);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      o.start(now); lfo.start(now);
+      o.stop(now + dur + 0.05); lfo.stop(now + dur + 0.05);
+    }catch(e){ /* fire-and-forget */ }
+  }
+
   // ---- generative chiptune music (T17) ------------------------------------
   function hashStr(s){ let h = 2166136261 >>> 0; for(let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
   function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
   const MAJ=[0,2,4,5,7,9,11], MIN=[0,2,3,5,7,8,10], PENT=[0,2,4,7,9], PENTMIN=[0,3,5,7,10], DORIAN=[0,2,3,5,7,9,10], LYD=[0,2,4,6,7,9,11];
   const SQ={lead:"square",bass:"triangle",arp:"square"}, TRI={lead:"triangle",bass:"triangle",arp:"square"};
+  // T115 — soft timbres for the CALM solve styles (no harsh square leads): a sine
+  // "pad", a triangle "bell", an airy sine-arp "glass". Real per-context variety.
+  const PAD={lead:"sine",bass:"triangle",arp:"triangle"}, BELL={lead:"triangle",bass:"sine",arp:"triangle"}, GLASS={lead:"triangle",bass:"triangle",arp:"sine"};
   // style = { name, bpm, root, scale, arp[], bass[], drums[] (0 rest·1 kick·2 hat·3 snare), density, waves }
   function St(name,bpm,root,scale,arp,bass,drums,density,waves){ return { name:name,bpm:bpm,root:root,scale:scale,arp:arp,bass:bass,drums:drums,density:density,waves:waves||SQ }; }
   // 15 topic styles (indices 0..14, one per topic) + the menu style (15) + the
   // Arena theme (16). All tempos are calm (bpm ≤ 95); the busy styles use a lower
   // lead `density` and gentler drum patterns so nothing feels rushed (T71).
+  // T115 — the 15 topic styles are the SOLVE music: CALM BY DESIGN (firm rule —
+  // solving is stress-sensitive). All are slow (bpm ≤ 72, < the menu), SPARSE
+  // (density ≤ 0.18), soft-timbre (sine/triangle pads & bells), and carry NO
+  // driving drums (only rests + the occasional soft hat). They stay DISTINCT via
+  // scale/root/arp/timbre. The menu is gentler-but-present; the Arena is driving/
+  // epic (combat — energy wanted); the event is festive — real per-context character.
   const STYLES = [
-    St("Dungeon Crawl", 84,45,MIN,    [0,2,4,2],          [0,null,0,5,null,0,null,5], [1,0,2,0],            0.32),
-    St("Sky Castle",    92,60,MAJ,    [0,2,4,7,4,2],      [0,null,4,null],            [1,0,2,0],            0.34),
-    St("Pixel Forest",  88,57,PENT,   [0,1,2,4],          [0,null,2,null],            [1,0,2,0],            0.32),
-    St("Neon Arcade",   94,60,MAJ,    [0,2,4,5,7],        [0,0,5,5],                  [1,0,2,0],            0.34),
-    St("Frost Cavern",  80,50,DORIAN, [0,3,5],            [0,null,null,5],            [0,0,2,0],            0.24, TRI),
-    St("Lava Run",      95,43,PENTMIN,[0,2,3,4],          [0,0,0,3],                  [1,0,2,0,1,0,3,0],    0.36),
-    St("Bubble Pop",    90,64,MAJ,    [0,4,2,5],          [0,null,4,null],            [1,0,2,0],            0.32),
-    St("Mecha March",   92,48,MIN,    [0,2,4],            [0,0,5,5],                  [1,0,2,0],            0.30),
-    St("Starlight",     76,60,LYD,    [0,4,7],            [0,null,null,null],         [0,0,0,2],            0.20, TRI),
-    St("Goblin Market", 88,52,DORIAN, [0,2,5,3],          [0,null,3,5,null,0],        [1,0,2,0,1,0],        0.32),
-    St("Clockwork",     90,55,MAJ,    [0,2,4,7,4,2,0,2],  [0,null,0,null],            [2,0,2,0],            0.30),
-    St("Victory Hall",  94,60,MAJ,    [0,4,7,12,7,4],     [0,0,4,4,5,5],              [1,0,2,0],            0.34),
-    St("Tide Pool",     82,64,PENT,   [0,2,4,2],          [0,null,4,null],            [0,0,2,0],            0.26, TRI),
-    St("Lantern Way",   86,50,DORIAN, [0,3,5,3],          [0,null,5,null],            [1,0,2,0],            0.28),
-    St("Meadow",        84,57,MAJ,    [0,2,4,5],          [0,null,2,null],            [0,0,2,0],            0.28),
-    St("Title Theme",   88,57,MAJ,    [0,2,4,2],          [0,null,4,null],            [0,0,2,0],            0.28),   // menu
-    St("Hero's Arena",  95,48,MIN,    [0,4,7,4],          [0,0,5,5],                  [1,0,2,0,1,0,3,0],    0.34),   // arena
-    St("Festival Day",  92,62,LYD,    [0,4,7,11,7,4],     [0,null,4,null,5,null,4,null],[1,0,2,0,0,0,2,0],   0.30, TRI) // event
+    St("Dungeon Crawl", 62,45,MIN,    [0,2,3,2],          [0,null,null,0],            [0,0,2,0],            0.14, PAD),
+    St("Sky Castle",    70,60,MAJ,    [0,4,7,4],          [0,null,null,null],         [0,0,0,0],            0.16, BELL),
+    St("Pixel Forest",  64,57,PENT,   [0,2,4,2],          [0,null,null,4],            [0,0,2,0],            0.15, GLASS),
+    St("Neon Arcade",   72,60,LYD,    [0,4,2,7],          [0,null,4,null],            [0,0,2,0],            0.17, BELL),
+    St("Frost Cavern",  58,50,DORIAN, [0,3,5,3],          [0,null,null,null],         [0,0,0,0],            0.12, PAD),
+    St("Lava Run",      68,43,PENTMIN,[0,3,2,0],          [0,null,null,3],            [0,0,2,0],            0.16, PAD),
+    St("Bubble Pop",    72,64,MAJ,    [0,4,2,5],          [0,null,4,null],            [0,0,2,0],            0.17, GLASS),
+    St("Mecha March",   66,48,MIN,    [0,2,4,2],          [0,null,null,5],            [0,0,2,0],            0.15, TRI),
+    St("Starlight",     60,60,LYD,    [0,4,7],            [0,null,null,null],         [0,0,0,0],            0.11, PAD),
+    St("Goblin Market", 68,52,DORIAN, [0,2,5,3],          [0,null,3,null],            [0,0,2,0],            0.16, BELL),
+    St("Clockwork",     70,55,MAJ,    [0,2,4,2],          [0,null,0,null],            [0,0,2,0],            0.16, GLASS),
+    St("Victory Hall",  72,60,MAJ,    [0,4,7,4],          [0,null,4,null],            [0,0,2,0],            0.18, BELL),
+    St("Tide Pool",     62,64,PENT,   [0,2,4,2],          [0,null,null,4],            [0,0,0,0],            0.13, GLASS),
+    St("Lantern Way",   66,50,DORIAN, [0,3,5,3],          [0,null,5,null],            [0,0,2,0],            0.15, PAD),
+    St("Meadow",        70,57,MAJ,    [0,2,4,5],          [0,null,2,null],            [0,0,2,0],            0.16, BELL),
+    St("Title Theme",   80,57,MAJ,    [0,2,4,2],          [0,null,4,null],            [2,0,2,0],            0.22, TRI),   // menu — gentle but present
+    St("Hero's Arena",  92,48,MIN,    [0,4,7,4],          [0,0,5,5],                  [1,0,2,0,1,0,3,0],    0.34, SQ),    // arena — driving / epic
+    St("Festival Day",  86,62,LYD,    [0,4,7,11,7,4],     [0,null,4,null,5,null,4,null],[1,0,2,0,0,0,2,0],   0.26, TRI)    // event — festive
   ];
   const MENU_STYLE = 15, ARENA_STYLE = 16, EVENT_STYLE = 17;
   const LOOP_STEPS = 16;
@@ -286,6 +321,7 @@
     topic100: () => play(sfxSpec("topic100")),
     roundStart: () => play(sfxSpec("roundStart")),
     roundComplete: () => play(sfxSpec("roundComplete")),
+    wub: wub,   // T115 — synth dubstep win-sting (topic-complete / battle-win)
     // music (T17)
     setMusic, stopMusic, musicPlaying,
     STYLES, MENU_STYLE, ARENA_STYLE, EVENT_STYLE, styleIndexFor, degMidi, stepVoices

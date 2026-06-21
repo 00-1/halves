@@ -42,7 +42,7 @@ ok(/setArenaState\(arenaFxState\(\)\)/.test(main), "(3) the Arena screen drives 
 ok(/fxSetScreen\(name\)/.test(main), "(3) show() drives the backdrop per screen (home / Arena / idle)");
 ok(/fxCelebrate\(items\)/.test(main.slice(main.indexOf("function showUnlocks"), main.indexOf("function showUnlocks") + 260)), "(3) the reward burst fires from showUnlocks (every reward-gain path routes here)");
 // T112: celebrate real WINS too (Arena victory + a rank-scaled round finish)
-ok(/if\(res\.win\) fxCelebrateWin\(tier\.n\)/.test(main), "(3) an Arena VICTORY fires a celebration burst");
+ok(/if\(res\.win\)\{[^}]*fxCelebrateWin\(tier\.n\)/.test(main), "(3) an Arena VICTORY fires a celebration burst");
 ok(/fxCelebrateRank\(rankIdx\)/.test(main), "(3) a good round finish fires a rank-scaled burst (none for a poor run)");
 
 // ---- (4) the gates are registered in CI -------------------------------------

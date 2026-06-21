@@ -3755,3 +3755,42 @@ notes / questions: **OWNER — please calibrate on the Poco X3 and report two nu
   will set them as the defaults. Range note: Volume reaches **2.5×** (limiter-safe); Tempo goes down
   to **0.40×**. Next per the LOCKED sequence: **`T101`** (Start→fullscreen delay) → `T102` (Android
   PWA+TWA) → `T103` (perf) → `T89`/`T90`. *(T114 is blocked on your reported values.)*
+
+## T115 — Music with CHARACTER: calm solves · real variety · a "wub" sting · distinct Arena  [HANDOFF]
+commit: (this commit, on main) — [A] task · OWNER-PRIORITY. Owner: the generative music "all sounds
+the same," and during solves it's too fast/stressful.
+**FIRM DESIGN RULE (recorded — in `sound.js` + here): SOLVE music must be CALM.** Solving is the
+stress-sensitive moment; the in-game music must never add pressure.
+changed:
+  - **sound.js** — **reworked all 18 styles for real per-context character:**
+    • **The 15 topic = SOLVE styles are now calm BY DESIGN:** slow (**bpm 58–72**, all **< the menu's
+      80**), **sparse** (**density ≤ 0.18**), **soft timbres** (new `PAD`/`BELL`/`GLASS` presets —
+      sine/triangle leads, **no harsh square**), and **NO driving drums** (patterns use only rests +
+      the occasional soft hat — no kick/snare). Still 15 distinct (scale/root/arp/timbre vary).
+    • **Menu** gentler-but-present (80 bpm, soft-hat groove). **Arena** is **driving/epic** (92 bpm,
+      MIN, full kick+snare groove, square lead, denser 0.34 — combat wants energy, unlike solves) and
+      clearly distinct from menu/solve. **Event** festive.
+    • **New synth `wub()` win-sting** — a dubstep bass-wobble: a saw bass → a **biquad lowpass whose
+      cutoff a ~7 Hz LFO modulates** → a couple of "wub"s. **Pure WebAudio, no sample files**; routed
+      **through `master`** so it honours **mute + the T113 volume + the limiter**; short (~0.66 s),
+      oscillators auto-stop (no timer/RAF leak). Exposed `Sound.wub`.
+  - **main.js** — fires the **wub on the real win/complete hooks** (pairs with T112's FX burst): an
+    **Arena victory** (`finishBattle` win, beside `fxCelebrateWin`) and a **topic-complete / mastery
+    level-up** (the round-end stinger, when a Mastery or topics:*100 is earned).
+  - **test/sound.test.js** (now **61 checks**) — the **calm-solve budget** (every solve style bpm ≤ 78,
+    density ≤ 0.20, drums only rests/hats, soft lead, slower than the menu); **per-context distinctness**
+    (Arena driving + denser + square lead + kicks vs solves' none; Arena ≠ menu by scale/name); the
+    **wub** is exposed, is an LFO-on-lowpass synth (no sample), honours mute, routes through master, and
+    is **wired to the win + mastery hooks**; **no sample assets**; **single scheduler preserved**.
+    **test/fx-wiring.test.js** — the Arena-victory assertion updated for the new `{burst; wub}` block.
+how I verified:
+  - **`node test/sound.test.js` → ALL 61 PASSED**; `node -c sound.js`/`main.js` clean; **full 30-gate
+    suite green**. Config/wiring is unit-tested; the *sound* needs ears.
+notes / questions: **OWNER ear-check on the Poco X3:** (1) solves should now feel **calm/sparse/slow**
+  (gentle pad/bell, no driving drums) — and since T113's tempo slider still applies, you can fine-tune
+  even slower; (2) menu / solve / **Arena** / event should each sound **different** (the Arena is the
+  punchy one); (3) **completing a topic or winning a battle gives the fun "wub"** (it respects
+  mute/volume). If a solve style still feels busy, the lever is its `density`/`drums` in `sound.js`.
+  Next per the LOCKED sequence: **`T116`** (restore the tree scroll-cue) → `T117` (chrome emoji →
+  pixel icons) → `T101`–`T103` → `T89`/`T90`. *(T114 — bake the calibrated volume/tempo — still waits
+  on the owner's reported values; ideally now, since the music is final.)*

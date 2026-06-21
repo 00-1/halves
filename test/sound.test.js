@@ -119,5 +119,32 @@ ok(/name === "arena"[\s\S]{0,60}setMusic\("arena"\)/.test(mainSrc), "main.js rou
 ok(/eventCtx \? "event"/.test(mainSrc), "main.js routes the event gauntlet to the event theme");
 ok(/MAX_STEPS_PER_TICK\s*=\s*4/.test(soundSrc), "the T33 per-tick voice cap is unchanged");
 
+// ---- T115: music with CHARACTER — calm solves · real variety · a "wub" sting ----
+const SOLVE = S.STYLES.slice(0, S.MENU_STYLE);   // indices 0..14 = the in-game/solve styles
+const menuS = S.STYLES[S.MENU_STYLE], arenaS = S.STYLES[S.ARENA_STYLE], eventS = S.STYLES[S.EVENT_STYLE];
+const CALM_BPM = 78, CALM_DENS = 0.20;
+// FIRM RULE: solve music is calm — slow, sparse, no driving drums, soft timbre.
+ok(SOLVE.every(s => s.bpm <= CALM_BPM), "T115: every solve style is calm-slow (bpm ≤ " + CALM_BPM + ", max " + Math.max.apply(null, SOLVE.map(s=>s.bpm)) + ")");
+ok(SOLVE.every(s => s.density <= CALM_DENS), "T115: every solve style is sparse (density ≤ " + CALM_DENS + ", max " + Math.max.apply(null, SOLVE.map(s=>s.density)).toFixed(2) + ")");
+ok(SOLVE.every(s => s.drums.every(d => d === 0 || d === 2)), "T115: solve drums carry NO driving kick/snare (only rests + soft hats — calm by design)");
+ok(SOLVE.every(s => s.waves.lead !== "square"), "T115: solve leads are SOFT timbres (sine/triangle, never a harsh square)");
+ok(Math.max.apply(null, SOLVE.map(s=>s.bpm)) < menuS.bpm, "T115: solves are slower than the menu (" + Math.max.apply(null, SOLVE.map(s=>s.bpm)) + " < " + menuS.bpm + ")");
+// real variety: the Arena is driving/epic and clearly distinct from the calm solves
+ok(arenaS.drums.some(d => d === 1 || d === 3) && arenaS.density > CALM_DENS, "T115: the Arena theme is DRIVING (kick/snare + denser) — opposite character to solves");
+ok(arenaS.waves.lead === "square" && SOLVE.every(s => s.waves.lead !== "square"), "T115: the Arena lead is a punchy square — a different timbre from every solve");
+ok(SOLVE.every(s => s.drums.every(d => d !== 1)) && arenaS.drums.some(d => d === 1), "T115: contexts differ in RHYTHM (no kicks in solves; kicks drive the Arena)");
+ok(arenaS.scale !== menuS.scale && arenaS.name !== menuS.name, "T115: the Arena theme is distinct from the menu (scale + name)");
+// the synth "wub" win-sting — no sample assets, honours mute + master, wired to wins
+ok(typeof S.wub === "function", "T115: a synth wub() win-sting is exposed");
+ok(/createBiquadFilter/.test(soundSrc) && /lowpass/.test(soundSrc) && /lfo/i.test(soundSrc), "T115: wub is an LFO-on-lowpass bass-wobble (synthesised, not a sample)");
+ok(/function wub\(\)\{\s*if\(muted/.test(soundSrc), "T115: wub honours mute (early return)");
+ok(/function wub[\s\S]{0,1200}g\.connect\(master\)/.test(soundSrc), "T115: wub routes through master (T113 volume + the limiter apply)");
+ok(!/\.(mp3|ogg|wav|m4a|aac|flac)\b/.test(soundSrc), "T115: no audio sample files anywhere (pure WebAudio, no-build)");
+// fired on the REAL win/complete hooks (Arena victory + topic-complete/mastery)
+ok(/if\(res\.win\)\{[^}]*sfx\("wub"\)/.test(mainSrc), "T115: the wub fires on an Arena victory (finishBattle win)");
+ok(/cat === "Mastery"[\s\S]{0,80}sfx\("wub"\)/.test(mainSrc), "T115: the wub fires on a topic-complete / mastery (level-up) moment");
+// single scheduler preserved (no extra timer/RAF for the sting or the styles)
+ok((soundSrc.match(/setInterval\(/g) || []).length <= 1, "T115: still a single scheduler timer (no leak from the sting/styles)");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SOUND CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

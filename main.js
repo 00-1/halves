@@ -1259,7 +1259,7 @@
     renderArena();
     const ab = $("arenaBody"); if(ab) ab.scrollTop = 0;   // T65: show the result + tier, not the hero list
     show("arena");
-    if(res.win) fxCelebrateWin(tier.n);   // T112: an Arena-victory burst (reward-gain bursts still fire via showUnlocks)
+    if(res.win){ fxCelebrateWin(tier.n); sfx("wub"); }   // T112 victory burst + T115 synth "wub" win-sting
     if(loot.length) setTimeout(() => showUnlocks(loot), 650);
   }
 
@@ -1608,6 +1608,8 @@
     if(unlocked.some(it => /^topics:(one|all)100$/.test(it.id))) sfx("topic100");
     else if(unlocked.some(it => it.cat === "Mastery")) sfx("mastery");
     else sfx("roundComplete");
+    // T115 — the synth "wub" win-sting on a real topic-complete / mastery (level-up) moment
+    if(unlocked.some(it => it.cat === "Mastery" || /^topics:(one|all)100$/.test(it.id))) sfx("wub");
 
     // celebratory toast for any topic this round newly opened (chain or Part-2)
     MODES.forEach(m => { if(!wasUnlocked[m.id] && isUnlocked(m)) showTopicToast(m); });
