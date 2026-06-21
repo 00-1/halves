@@ -1717,6 +1717,13 @@ cramped (~4 nodes visible), and the nav links sprawl over two rows. Rebalance `#
 **tree gets real space** and everything still fits one screen (per T91).
 - **Reclaim the top.** Top-align `#start` content (kill the empty band the owner circled) so the
   banner sits **near the top** and the reclaimed height goes to the tree.
+- **Move the selected-topic mark DOWN into the topic-info row (de-duplicate).** Today the selected
+  topic is shown **twice**: the **big `#mark` glyph + `#tag`** up top *and* the tree's detail panel
+  (name + `have/total`) below. Owner: drop the **large top mark/tag** and put the topic **icon
+  beside its info** — i.e. consolidate into **one compact selected-topic row** below the tree:
+  `[glyph icon] name · have/total · best · gold · momentum` (the empty space the owner circled).
+  This frees a big band at the top so the **tree expands upward**. (Keep the glyph via the existing
+  `paintGlyph`/`nodeIcon` path; the tag line can fold into the row or be dropped.)
 - **Banner button.** Redesign the Play/"Again" CTA — it's far too big/clunky. Make it a tidy,
   proportionate button within the compact strip (keep art + name + countdown + Play→`startEvent`;
   owned → a small "Again"). Keep the bounded-height strip (T91).
@@ -1732,10 +1739,12 @@ cramped (~4 nodes visible), and the nav links sprawl over two rows. Rebalance `#
   text moved/below) — reusing the procedural pixel icons. Must **degrade gracefully when gating
   hides some** (T86/T87 hide Inventory/Heroes/Arena until unlocked — the row stays balanced/centred
   with fewer items).
-- **DoD:** `#start` is top-aligned (no big empty top band); the **tree is the only home picker**
-  (toggle removed) and visibly gets more space (more nodes shown); the banner CTA is a tidy
-  proportionate button (still art+name+countdown+Play→event); the nav is **one row of bigger
-  icon-buttons** that stays balanced as gating hides items; **still fits one screen** at 360×640 &
+- **DoD:** `#start` is top-aligned (no big empty top band); the **big top mark/tag is gone** and
+  the selected topic shows as **one compact icon+info row** below the tree (no duplicate display);
+  the **tree is the only home picker** (toggle removed) and visibly gets more space (more nodes
+  shown, expanding into the reclaimed top); the banner CTA is a tidy proportionate button (still
+  art+name+countdown+Play→event); the nav is **one row of bigger icon-buttons** that stays balanced
+  as gating hides items; **still fits one screen** at 360×640 &
   390×844 with the picker keeping a usable height; the Best Times list still plays topics (a11y
   alternative); 360px-safe; `node -c` clean; no console errors; **all gates green** (update
   `tech-tree.test.js` for the removed toggle / Best-Times fallback; keep `events.test.js` banner
