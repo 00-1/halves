@@ -275,7 +275,7 @@
   }
 
   // Enable Start only for an unlocked topic.
-  function renderStartState(){ $("startBtn").disabled = !isUnlocked(mode); }
+  function renderStartState(){ const locked = !isUnlocked(mode); $("startBtn").disabled = locked; $("practiceBtn").disabled = locked; }
   elModeTabs.addEventListener("click", e => {
     // the "?" guide control opens a guide for any topic (incl. locked previews)
     const gb = e.target.closest(".mr-guide");
@@ -309,6 +309,11 @@
   // Practice / Review view wiring (T32).
   $("practiceBtn").addEventListener("click", openPractice);
   $("practiceBack").addEventListener("click", () => show("start"));
+  $("practiceHintToggle").addEventListener("click", () => {
+    const note = $("practiceNote"), t = $("practiceHintToggle");
+    const open = note.classList.toggle("hidden") === false;   // toggle returns new state of "hidden"
+    t.textContent = open ? "Hide the method" : "How to approach this";
+  });
   $("practiceGrid").addEventListener("click", e => {
     const tile = e.target.closest(".pq-tile"); if(!tile) return;
     const m = byId(tile.dataset.mode); if(!m) return;
@@ -663,6 +668,15 @@
         '<span class="pq-p">' + esc(q.p) + '</span>' +
         '<span class="pq-t">' + (t != null ? fmt(t) + 's' : '—') + '</span></button>';
     }).join("");
+    // Surface the topic's overall guide beneath the list (documentation; T49).
+    const gw = $("practiceGuide"), g = window.Guides && window.Guides.get(modeId);
+    if(gw){
+      gw.innerHTML = g
+        ? '<p class="g-intro">' + esc(g.intro) + '</p>' +
+          '<ul class="g-tips">' + g.tips.map(t => '<li>' + esc(t) + '</li>').join("") + '</ul>' +
+          '<div class="g-eg"><span class="g-eg-tag">Try this</span>' + esc(g.example) + '</div>'
+        : "";
+    }
   }
   function openPractice(){ if(!isUnlocked(mode)) return; renderPractice(mode.id); show("practice"); }
 
@@ -834,13 +848,17 @@
     elGhost.textContent  = numStr(it.a);
     elCounter.textContent = (idx+1)+" / "+order.length;
     elProgress.style.width = (idx/order.length*100)+"%";
-    // Practice view surfaces a short "how to approach this" note for the question.
-    const note = $("practiceNote");
-    if(note){
-      if(practiceCtx && window.Guides && window.Guides.explain){
-        note.textContent = window.Guides.explain(mode.id, it);
-        note.classList.remove("hidden");
-      } else note.classList.add("hidden");
+    // Practice view: a "how to approach this" method note, hidden behind a
+    // tap-to-reveal toggle (reset to hidden on every new question). Normal rounds
+    // show neither the toggle nor the note.
+    const note = $("practiceNote"), toggle = $("practiceHintToggle");
+    if(practiceCtx && window.Guides && window.Guides.explain){
+      if(note) note.textContent = window.Guides.explain(mode.id, it);
+      if(note) note.classList.add("hidden");                 // collapsed by default
+      if(toggle){ toggle.classList.remove("hidden"); toggle.textContent = "How to approach this"; }
+    } else {
+      if(note) note.classList.add("hidden");
+      if(toggle) toggle.classList.add("hidden");
     }
     fitText(elPrompt); fitText(elGhost);
     renderInput();

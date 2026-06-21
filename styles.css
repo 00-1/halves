@@ -124,6 +124,11 @@ body{
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn:disabled:active{transform:none}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+/* Practice promoted to a primary action beside Start (T49) */
+.start-actions{display:flex;gap:12px;margin-top:28px;width:100%;max-width:360px;justify-content:center}
+.start-actions .btn{margin-top:0;flex:1 1 0;min-width:0;padding:18px 8px}
+.btn.alt{background:var(--surface-2);color:var(--text);border:1px solid var(--line)}
+.btn.alt:disabled{opacity:.4;cursor:not-allowed}
 .linkbtn{margin-top:18px;background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:12px;
   letter-spacing:.08em;text-transform:uppercase;font-weight:700;cursor:pointer;padding:6px;
   border-bottom:1px solid transparent;transition:color .15s ease,border-color .15s ease}
@@ -368,8 +373,7 @@ canvas.pix{image-rendering:pixelated}
 #practice{align-items:center;padding:28px 8px 32px}
 .practice-sub{font-family:var(--display);font-weight:700;font-size:16px;color:var(--text);margin-top:6px}
 .practice-sub .g-glyph{color:var(--amber)}
-.pq-grid{margin-top:16px;width:100%;max-width:380px;flex:1 1 auto;min-height:0;overflow-y:auto;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px;align-content:start}
+.pq-grid{width:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px;align-content:start}
 .pq-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;
   border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;padding:6px 4px;
   font-family:var(--mono);transition:transform .08s ease}
@@ -378,7 +382,15 @@ canvas.pix{image-rendering:pixelated}
 .pq-p{font-size:13px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .pq-t{font-size:10px;color:var(--muted)}
 .pq-tile.unsolved .pq-t{color:#d05a4a}
-/* "how to approach this" note on the game screen during practice */
+/* practice question list scrolls with its guide beneath it (T49) */
+.practice-scroll{width:100%;max-width:380px;flex:1 1 auto;min-height:0;overflow-y:auto;margin-top:16px}
+.practice-guide{margin-top:18px;text-align:left;border-top:1px solid var(--line);padding-top:14px}
+.practice-guide:empty{display:none}
+/* "how to approach this": hidden behind a tap-to-reveal toggle in practice (T49) */
+.practice-hint-toggle{margin-top:12px;background:var(--surface-2);color:var(--text);border:1px solid var(--line);
+  border-radius:999px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.04em;
+  padding:8px 16px;cursor:pointer}
+.practice-hint-toggle:active{transform:scale(.97)}
 .practice-note{font-family:var(--mono);font-size:12px;color:var(--mint);line-height:1.5;text-align:center;
   max-width:340px;margin:10px auto 0;padding:0 6px}
 

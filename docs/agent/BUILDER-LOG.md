@@ -1859,3 +1859,53 @@ notes / questions: **Deliberate behaviour change:** an instant Arena fight no
   catalogue grew (T25 etc.) and recalibrated def; **unchanged by T47** (I didn't
   touch calibration). Next per REVIEW: **T49** (Practice — promote button, fix
   hints, surface guide).
+
+## T49 — Practice: promote the button, fix the hints, surface the guide  [HANDOFF]
+commit: (this commit, on main)
+changed (four parts):
+  - **(1) index.html / styles.css / main.js** — `#practiceBtn` moved out of the
+    `.linkrow` into a primary **`.start-actions` two-button row beside Start**
+    (`.btn.alt`, same size/weight). `renderStartState` now disables BOTH Start and
+    Practice when the selected topic is locked (`openPractice` keeps its own guard).
+  - **(2) index.html / main.js / styles.css** — the practice method note is now
+    **hidden behind a tap-to-reveal "How to approach this" toggle**
+    (`#practiceHintToggle`). `nextQuestion` shows the toggle + keeps the note
+    collapsed on every new practice question; the toggle flips it open/closed and
+    its label. **Normal rounds show neither** the toggle nor the note.
+  - **(3) guides.js — `explain()` fully rewritten (the core work).** Every topic's
+    hint is now **method-only and number-specific** and **never contains the
+    answer**: it states the method for the actual numbers and stops before the
+    result. Branches on real structure — halves/doubles single-digit vs multi-digit
+    (no "tens and ones" under 10) and odd/even; times surfaces the right trick for
+    *these* operands (square / ×1 / ×10 / ×11 / ×9 / ×5 / ×4 / ×2, else tables) on
+    the correct factor; percentages keyed to 50/25/10/20/5/1/75; fractions-of unit
+    vs non-unit with the real denominator/numerator; place value the real direction
+    + places for 10/100/1000; bonds whole-ten vs with-ones; subtraction anchored on
+    the minuend. The answer-revealing `"…the answer is " + a` fallback is gone (new
+    fallback is answer-free). Symmetric cases (`70−35`, `5/8 of 8`, `50+?=100`,
+    `0.5+?=1`) are handled by emitting only safe operands / number-words so the
+    answer can never appear as a token.
+  - **(4) index.html / main.js / styles.css** — `renderPractice` renders the
+    topic's **overall guide (intro + tips + example) beneath the question grid**
+    (reusing the `.g-intro`/`.g-tips`/`.g-eg` markup); the grid + guide share a
+    `.practice-scroll` region so the guide scrolls under the list. The 15 GUIDES
+    were audited (already line-by-line approved at T27) — correct + concise
+    (intro ≤1 line, 2–4 tips, one example); no changes needed.
+how I verified:
+  - `node -c main.js guides.js` OK; **74 `$("id")` refs all present** in index.html.
+  - `node test/hints.test.js` → **ALL PASS over EVERY question in EVERY topic**:
+    every hint non-empty, **none contains its answer as a numeric token** (incl.
+    decimal forms), **no "ten" in any single-digit (<10) halves/doubles hint**, and
+    the owner's "half of 5" reads as an odd/half note with **no 2.5**.
+  - `node test/practice.test.js` → **ALL 12 PASS**: Practice button enabled/disabled
+    in lockstep with Start; opens the Practice screen; grid lists questions; **guide
+    renders beneath the list**; a question attempt shows the toggle with the note
+    **hidden by default**; tapping reveals it (label flips); **a normal round shows
+    no hint UI**.
+  - Both wired as the 6th/7th Pages gates. All seven gates green (icon, perf,
+    contrast, inventory, arena, hints, practice). 360px-safe (two-button row uses
+    flex:1; guide in the scroll region). No regressions — normal rounds unaffected.
+notes / questions: Practice is rendered as `.btn.alt` (solid, equal size to Start)
+  rather than a ghost outline, to read as a true primary action; easy to restyle.
+  Next per REVIEW: **T51** (restore the varied hero portraits — un-regress the
+  "weird faces").

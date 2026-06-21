@@ -150,60 +150,90 @@
     }
   };
 
-  // ---- explain(modeId, question): the guide's method applied to the specific
-  // numbers (generated, not hand-written), for the Practice view (T32). British,
-  // 10-yo-appropriate, mathematically correct. Always returns a non-empty line.
-  const ORDINAL = { 2:"half", 3:"third", 4:"quarter", 5:"fifth", 6:"sixth", 8:"eighth", 10:"tenth" };
-  function tidy(n){ return Math.round(n * 1e6) / 1e6; }   // kill float fuzz for display
+  // ---- explain(modeId, question): the METHOD for this specific question, applied
+  // to its actual numbers — for the Practice "How to approach this" aside (T32/T49).
+  // British, 10-yo-appropriate, mathematically correct, one short sentence. It
+  // NEVER states or contains the answer: it describes the method and stops before
+  // computing the result. Number-specific (single vs multi-digit, odd/even, the
+  // right trick), never naming structure the number doesn't have. Returns a
+  // non-empty, answer-free line for every question.
+  const WORD = { 2:"two", 3:"three", 4:"four", 5:"five", 6:"six", 7:"seven", 8:"eight", 9:"nine", 10:"ten", 11:"eleven", 12:"twelve" };
+  const ORD  = { 2:"half", 3:"third", 4:"quarter", 5:"fifth", 6:"sixth", 7:"seventh", 8:"eighth", 10:"tenth" };
+  const FALLBACK = "Picture the method and work it through one step at a time.";
   function explain(modeId, q){
     if(!q) return "";
-    const p = String(q.p), a = q.a, fb = "Work it through step by step — the answer is " + a + ".";
+    const p = String(q.p);
     switch(modeId){
       case "halves": { const n = parseFloat(p); if(isNaN(n)) break;
-        return "Halve the tens and ones separately, then add — half of " + n + " is " + a + (n % 2 ? " (odd, so it ends in a half)" : "") + "."; }
+        const odd = (n % 2 !== 0);
+        if(n < 10) return odd
+          ? n + " is an odd single digit, so halving it lands on a half."
+          : "Halve the single digit " + n + " straight off.";
+        return "Split " + n + " into tens and ones, halve each part, then add them" + (odd ? " (odd, so it ends in a half)." : "."); }
       case "doubles": { const n = parseFloat(p); if(isNaN(n)) break;
-        return "Double the tens and ones, then add them — double " + n + " is " + a + "."; }
+        if(n < 10) return "Double the single digit " + n + " — add it to itself.";
+        return "Split " + n + " by place value, double each part, then add them up."; }
       case "times": { const m = p.match(/(\d+)\s*[×x]\s*(\d+)/); if(!m) break; const x = +m[1], y = +m[2];
-        let trick = "";
-        if(x === 9 || y === 9){ const o = x === 9 ? y : x; trick = " Tip: ×9 is ×10 then take one lot off (" + (o*10) + " − " + o + " = " + a + ")."; }
-        else if(x === 4 || y === 4){ trick = " Tip: ×4 is double, then double again."; }
-        else if(x === 5 || y === 5){ trick = " Tip: ×5 is ×10 then halve."; }
-        return x + " lots of " + y + " is " + a + "." + trick; }
+        const other = k => (x === k ? y : x);   // the partner of the trick-factor k
+        if(x === y) return "It's a square — multiply " + x + " by itself.";
+        if(x === 1 || y === 1) return "Times one leaves the number unchanged.";
+        if(x === 10 || y === 10) return "Times ten shifts " + other(10) + " one place bigger.";
+        if(x === 11 || y === 11) return "For ×11, multiply " + other(11) + " by ten, then add one more " + other(11) + ".";
+        if(x === 9 || y === 9) return "For ×9, multiply " + other(9) + " by ten, then take one " + other(9) + " away.";
+        if(x === 5 || y === 5) return "For ×5, multiply " + other(5) + " by ten, then halve.";
+        if(x === 4 || y === 4) return "For ×4, double " + other(4) + ", then double again.";
+        if(x === 2 || y === 2) return "Just double " + other(2) + ".";
+        return "Recall " + x + " × " + y + " from your times tables (or build it from a fact next door)."; }
       case "addsub": case "addsub2": {
         const mp = p.match(/(\d+)\s*\+\s*(\d+)/);
-        if(mp) return "Add by bridging through the next ten (and hundred): " + (+mp[1]) + " + " + (+mp[2]) + " = " + a + ".";
+        if(mp) return "Bridge through the next ten: from " + (+mp[1]) + ", add " + (+mp[2]) + " in easy jumps.";
         const ms = p.match(/(\d+)\s*[−-]\s*(\d+)/);
-        if(ms) return "Count up from " + (+ms[2]) + " to " + (+ms[1]) + " (or take tens then ones) → " + a + ".";
+        if(ms) return "Count up from the smaller number to " + (+ms[1]) + ", or take away the tens then the ones.";
         break; }
-      case "bonds": { const m = p.match(/(\d+)\s*\+/); if(!m) break;
-        return "The two parts make 100: " + (+m[1]) + " needs " + a + " (the ones make 10, the tens make 9)."; }
-      case "bonds2": { const m = p.match(/([\d.]+)\s*\+.*?=\s*([\d.]+)/); if(!m) break; const x = +m[1], whole = +m[2];
+      case "bonds": { const m = p.match(/(\d+)\s*\+/); if(!m) break; const x = +m[1];
+        return x % 10 === 0
+          ? "A whole ten — count up in tens to make 100."
+          : "Make the ones reach the next ten, then count the tens up to 100."; }
+      case "bonds2": { const m = p.match(/([\d.]+)\s*\+.*?=\s*([\d.]+)/); if(!m) break; const whole = +m[2];
         return whole === 1
-          ? "A decimal bond to 1 — just a bond to 10 in disguise: " + x + " needs " + a + "."
-          : "Count up to the next hundred, then on to 1000: " + x + " needs " + a + "."; }
+          ? "A decimal bond to 1 — the digits after the point must add up to ten."
+          : "Count up to the next hundred, then on to 1000."; }
       case "placevalue": case "placevalue2": {
         const m = p.match(/([\d.]+)\s*([×x÷\/])\s*(\d+)/); if(!m) break;
         const v = m[1], op = m[2], t = +m[3];
         const places = t === 10 ? "one place" : t === 100 ? "two places" : "three places";
         const dir = (op === "×" || op === "x") ? "bigger" : "smaller";
-        return "× or ÷ by " + t + " shifts the digits " + places + " " + dir + ": " + v + " " + (op === "x" ? "×" : op) + " " + t + " = " + a + "."; }
+        return "Shift the digits of " + v + " " + places + " " + dir + " (the decimal point stays put)."; }
       case "fractionsof": { const m = p.match(/(\d+)\/(\d+)\s*of\s*(\d+)/); if(!m) break;
-        return "Share " + (+m[3]) + " into " + (+m[2]) + " equal groups: " + (+m[3]) + " ÷ " + (+m[2]) + " = " + a + "."; }
+        const d = +m[2], amt = +m[3];
+        return "Split " + amt + " into " + (WORD[d] || d) + " equal groups and take one " + (ORD[d] || "part") + "."; }
       case "fractionsof2": { const m = p.match(/(\d+)\/(\d+)\s*of\s*(\d+)/); if(!m) break;
-        const nu = +m[1], d = +m[2], amt = +m[3], one = tidy(amt / d);
-        return "Find one " + (ORDINAL[d] || ("1/" + d)) + ", then take " + nu + ": " + amt + " ÷ " + d + " = " + one + ", × " + nu + " = " + a + "."; }
+        const nu = +m[1], d = +m[2], amt = +m[3];
+        return "Split " + amt + " into " + (WORD[d] || d) + " equal groups, then take " + (WORD[nu] || nu) + " of them."; }
       case "percentages": case "percentages2": {
         const m = p.match(/(\d+)%\s*of\s*(\d+)/); if(!m) break; const pct = +m[1], amt = +m[2];
-        const how = pct === 50 ? "50% is half" : pct === 25 ? "25% is a quarter (halve, then halve again)" :
-          pct === 10 ? "10% is divide by 10" : pct === 20 ? "20% is double 10%" : pct === 5 ? "5% is half of 10%" :
-          pct === 1 ? "1% is divide by 100" : pct === 75 ? "75% is a half plus a quarter" : (pct + "% of " + amt);
-        return how + ": " + pct + "% of " + amt + " = " + a + "."; }
-      case "fractions": { const m = p.match(/(\d+)\/(\d+)/); if(!m) break;
-        return "Turn " + (+m[1]) + "/" + (+m[2]) + " into a decimal — build it from a fraction you know → " + a + "."; }
+        if(pct === 50) return "50% is one half — halve " + amt + ".";
+        if(pct === 25) return "25% is one quarter — halve " + amt + ", then halve again.";
+        if(pct === 10) return "10% is one tenth — find a tenth of " + amt + ".";
+        if(pct === 20) return "20% is two tenths — find a tenth of " + amt + ", then double it.";
+        if(pct === 5)  return "5% is half of a tenth — find a tenth of " + amt + ", then halve.";
+        if(pct === 1)  return "1% is one hundredth — find a hundredth of " + amt + ".";
+        if(pct === 75) return "75% is a half plus a quarter — take both of " + amt + ".";
+        return pct + "% — build it up from one tenth of " + amt + "."; }
+      case "fractions": { const m = p.match(/(\d+)\/(\d+)/); if(!m) break; const nu = +m[1], d = +m[2];
+        if(d === 10) return nu + " tenths — read it straight off as a decimal.";
+        if(d === 100) return nu + " hundredths — two decimal places.";
+        if(d === 20) return "Twentieths are half a tenth: find " + nu + "/10, then halve.";
+        if(d === 5)  return "Each fifth is two tenths — count " + nu + " of them.";
+        if(d === 4)  return "Quarters come from halving twice — count " + nu + " quarters.";
+        if(d === 8)  return "Eighths come from halving three times — count " + nu + " eighths.";
+        if(d === 16) return "Sixteenths halve an eighth — keep halving and count " + nu + ".";
+        if(d === 2)  return "One half as a decimal is five tenths.";
+        return "Turn " + nu + "/" + d + " into tenths you know, then read off the decimal."; }
       case "squares": { const m = p.match(/(\d+)/); if(!m) break; const n = +m[1];
-        return "A square is the number times itself: " + n + " × " + n + " = " + a + "."; }
+        return "A square is the number times itself — multiply " + n + " by " + n + "."; }
     }
-    return fb;
+    return FALLBACK;
   }
 
   window.Guides = {

@@ -35,10 +35,12 @@
     <div class="best" id="bestLine">No best time yet</div>
     <div class="goldbar" id="goldBar"></div>
     <div class="momentumbar" id="momentumBar"></div>
-    <button class="btn" id="startBtn">Start</button>
+    <div class="start-actions">
+      <button class="btn" id="startBtn">Start</button>
+      <button class="btn alt" id="practiceBtn">Practice</button>
+    </div>
     <div class="linkrow">
       <button class="linkbtn" id="statsBtn">Best times</button>
-      <button class="linkbtn" id="practiceBtn">Practice</button>
       <button class="linkbtn" id="invBtn">Inventory</button>
       <button class="linkbtn" id="heroesBtn">Heroes</button>
       <button class="linkbtn" id="arenaBtn">Arena</button>
@@ -75,6 +77,7 @@
       <div class="answer empty" id="answer"><span class="placeholder">— —</span></div>
     </div>
 
+    <button class="practice-hint-toggle hidden" id="practiceHintToggle">How to approach this</button>
     <div class="practice-note hidden" id="practiceNote"></div>
 
     <div class="pad" id="pad">
@@ -130,7 +133,10 @@
   <section id="practice" class="screen">
     <div class="res-label">Practice <span class="inv-meta" id="practiceMeta"></span></div>
     <div class="practice-sub" id="practiceTitle"></div>
-    <div class="pq-grid" id="practiceGrid"></div>
+    <div class="practice-scroll" id="practiceScroll">
+      <div class="pq-grid" id="practiceGrid"></div>
+      <div class="practice-guide" id="practiceGuide"></div>
+    </div>
     <div class="res-actions">
       <button class="btn ghost" id="practiceBack">Back</button>
     </div>
