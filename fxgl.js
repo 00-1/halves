@@ -55,6 +55,8 @@
   // Home backdrop (T95): a calm, legible ambient field — its own modest cap,
   // well under the Arena's, so the home screen stays readable and cheap to idle.
   const HOME_PARTICLE_MAX = 120;
+  // Arena biome (T108): livelier than home (it dresses a battle) but still capped.
+  const ARENA_PARTICLE_MAX = 220;
 
   // The 4×4 ordered (Bayer) matrix, row-major — the same lattice brickmap uses
   // for its palette dither and its foliage stipple.
@@ -364,6 +366,122 @@
       palette: palette,
       particles: homeParticles(state, palette),
       seed: seedFromHome(state),
+      dither: 1
+    };
+  }
+
+  // =========================================================================
+  // SEMANTIC ARENA BIOME (T108) — the Arena sibling of T95. Purpose: SENSE OF
+  // PLACE + STATUS. Pure mapping from *live Arena state* (region 1–10, tier,
+  // boss-proximity, mood) to a setScene-shaped backdrop: the region sets the
+  // palette/mood (a distinct place per region), tier + boss-proximity raise the
+  // intensity (denser particles + a hotter glow as the boss nears), and a
+  // victory mood briefly warms/brightens (the [A] side pairs it with a burst).
+  // Deterministic from a state-derived seed. Engine-owned region moods (not a
+  // copy of scenery.js) — the [A] wiring may also pass the real `scenery.js`
+  // region grid in `state.grid`, which we then recolour by the live palette.
+  // =========================================================================
+  // 10 region moods — top-sky / horizon / glow anchors + a default accent kind,
+  // echoing the Arena's region families (warren · gallows · gloam · marsh ·
+  // frost · drown · cinder · storm · dragon · void).
+  const ARENA_REGIONS = [
+    { top: [16, 24, 12], horizon: [40, 56, 26], glow: [120, 150, 70],  kind: "motes"  },
+    { top: [20, 20, 28], horizon: [44, 44, 56], glow: [150, 150, 180], kind: "motes"  },
+    { top: [12, 26, 32], horizon: [28, 52, 60], glow: [90, 170, 180],  kind: "motes"  },
+    { top: [14, 28, 18], horizon: [30, 60, 38], glow: [110, 180, 110], kind: "motes"  },
+    { top: [20, 34, 48], horizon: [58, 86, 110], glow: [170, 210, 240], kind: "snow"   },
+    { top: [10, 18, 34], horizon: [24, 48, 86], glow: [80, 130, 210],  kind: "motes"  },
+    { top: [34, 16, 8],  horizon: [80, 34, 16], glow: [240, 120, 50],  kind: "embers" },
+    { top: [24, 16, 34], horizon: [52, 38, 76], glow: [170, 120, 230], kind: "stars"  },
+    { top: [32, 12, 14], horizon: [78, 28, 26], glow: [240, 90, 70],   kind: "embers" },
+    { top: [10, 6, 18],  horizon: [28, 16, 44], glow: [150, 90, 230],  kind: "stars"  }
+  ];
+  const MOOD_CODE = { neutral: 0, victory: 1, defeat: 2 };
+
+  function regionIndex(region){ return Math.max(0, Math.min(ARENA_REGIONS.length - 1, ((region | 0) || 1) - 1)); }
+
+  // Intensity in [0,1]: boss-proximity dominates, tier within the region lifts the
+  // baseline — so deeper tiers feel tenser and the boss is the peak.
+  function arenaIntensity(state){
+    if(state.facingBoss) return 1;                          // the boss fight is the peak
+    const bossProx = clamp01(state.bossProximity != null ? state.bossProximity : 0);
+    const tierNorm = state.tierFrac != null ? clamp01(state.tierFrac) : clamp01((state.tier || 0) / 12);
+    return clamp01(bossProx * 0.7 + tierNorm * 0.3);
+  }
+  function seedFromArena(state){
+    if(state.seed != null) return (state.seed | 0) || 1;
+    let h = 2166136261 >>> 0;
+    const mix = function(n){ h ^= (n >>> 0); h = Math.imul(h, 16777619) >>> 0; };
+    mix(regionIndex(state.region));
+    mix(state.tier | 0);
+    mix(Math.round(arenaIntensity(state) * 20));
+    mix(MOOD_CODE[state.mood] || 0);
+    return h || 1;
+  }
+  function scaleRgb(c, m){ return [Math.min(255, c[0] * m), Math.min(255, c[1] * m), Math.min(255, c[2] * m)]; }
+
+  // Region + intensity + mood → a dark→light ramp. Intensity heats & brightens
+  // the glow (the boss bears down); victory warms/brightens, defeat dims/cools.
+  function arenaPalette(state){
+    const R = ARENA_REGIONS[regionIndex(state.region)], mood = state.mood || "neutral", heat = arenaIntensity(state);
+    let top = R.top.slice(), horizon = R.horizon.slice(), glow = R.glow.slice();
+    glow = mixRgb(glow, [255, 180, 90], heat * 0.5);   // hotter toward the boss
+    glow = scaleRgb(glow, 1 + heat * 0.3);
+    if(mood === "victory"){ glow = scaleRgb(glow, 1.15).map(v => Math.min(255, v + 18)); horizon = scaleRgb(horizon, 1.1); }
+    else if(mood === "defeat"){ glow = scaleRgb(glow, 0.6); horizon = scaleRgb(horizon, 0.7); top = scaleRgb(top, 0.8); }
+    return [ toHex(top), toHex(mixRgb(top, horizon, 0.5)), toHex(horizon), toHex(mixRgb(horizon, glow, 0.6)), toHex(glow) ];
+  }
+
+  // The grid: prefer the real `scenery.js` region grid if the caller passes it
+  // (recoloured by the live palette via the luminance ramp); otherwise synthesise
+  // a grounded region backdrop — sky gradient, a hot glow band whose strength is
+  // the intensity, and a dark ground silhouette below the horizon.
+  function arenaGrid(state, palette, cols, rows){
+    if(state.grid && state.grid.length && state.grid[0] && state.grid[0].length) return state.grid;
+    const rgb = palette.map(parseColor), dark = rgb[0], mid = rgb[(rgb.length / 2) | 0], glow = rgb[rgb.length - 1], ground = scaleRgb(dark, 0.6);
+    const intensity = arenaIntensity(state), rng = makeRng(seedFromArena(state));
+    const horizon = rows * 0.62;
+    const shimmer = new Array(cols);
+    for(let c = 0; c < cols; c++) shimmer[c] = rng() - 0.5;
+    const g = [];
+    for(let r = 0; r < rows; r++){
+      g[r] = new Array(cols);
+      const vy = rows > 1 ? r / (rows - 1) : 0;
+      const below = r >= horizon;
+      const d = Math.abs(r - horizon) / rows;
+      const band = Math.max(0, 1 - d * 5) * (0.3 + 0.7 * intensity);
+      for(let c = 0; c < cols; c++){
+        let col = below ? ground.slice() : mixRgb(dark, mid, vy);
+        col = mixRgb(col, glow, band * 0.85);
+        const s = 1 + shimmer[c] * 0.05;
+        g[r][c] = toHex([col[0] * s, col[1] * s, col[2] * s]);
+      }
+    }
+    return g;
+  }
+
+  // Particles: the region's accent kind (victory → warm embers), density rises
+  // with intensity (denser as the boss nears), capped so the Arena stays legible.
+  function arenaParticles(state, palette){
+    const R = ARENA_REGIONS[regionIndex(state.region)], intensity = arenaIntensity(state);
+    let kind = R.kind;
+    if(state.mood === "victory") kind = "embers";
+    const count = Math.min(ARENA_PARTICLE_MAX, Math.round(30 + intensity * 150));
+    const colors = palette.slice(Math.max(0, palette.length - 2));
+    return { kind: kind, count: count, colors: colors };
+  }
+
+  // The public derivation: live Arena state → a setScene-shaped backdrop.
+  function deriveArenaScene(state){
+    state = state || {};
+    const cols = state.cols || (state.grid && state.grid[0] ? state.grid[0].length : 28);
+    const rows = state.rows || (state.grid && state.grid.length ? state.grid.length : 14);
+    const palette = arenaPalette(state);
+    return {
+      grid: arenaGrid(state, palette, cols, rows),
+      palette: palette,
+      particles: arenaParticles(state, palette),
+      seed: seedFromArena(state),
       dither: 1
     };
   }
@@ -1047,6 +1165,9 @@
   // Semantic home backdrop (T95): derive a calm ambient scene from live home
   // state and apply it. Re-callable as state changes (progress / event / streak).
   Controller.prototype.setHomeState = function(state){ return this.setScene(deriveHomeScene(state)); };
+  // Semantic Arena biome (T108): derive a region/tier/boss-driven backdrop and
+  // apply it. Re-callable as the fight advances (tier up / boss near / win/loss).
+  Controller.prototype.setArenaState = function(state){ return this.setScene(deriveArenaScene(state)); };
   Controller.prototype.setQuality = function(q){
     this.quality = Math.max(0, Math.min(2, q | 0));
     // Re-seed at the new particle cap and re-fit the buffer.
@@ -1107,10 +1228,11 @@
   function dispose(){ if(active){ active.dispose(); active = null; } }
   function burst(opts){ if(active) active.burst(opts); return active; }
   function setHomeState(state){ if(active) active.setHomeState(state); return active; }
+  function setArenaState(state){ if(active) active.setArenaState(state); return active; }
 
   window.FXGL = {
     // runtime API
-    mount: mount, setScene: setScene, setHomeState: setHomeState, start: start, stop: stop, burst: burst,
+    mount: mount, setScene: setScene, setHomeState: setHomeState, setArenaState: setArenaState, start: start, stop: stop, burst: burst,
     setQuality: setQuality, dispose: dispose, resize: function(){ if(active) active.resize(); },
     capabilities: capabilities, active: function(){ return active; },
     Controller: Controller,
@@ -1124,6 +1246,7 @@
     makeRng: makeRng, seedParticles: seedParticles, animateParticle: animateParticle,
     seedBurst: seedBurst, burstPos: burstPos, burstMaxDeath: burstMaxDeath,
     deriveScene: deriveScene, deriveHomeScene: deriveHomeScene, seedFromHome: seedFromHome,
+    deriveArenaScene: deriveArenaScene, seedFromArena: seedFromArena, arenaIntensity: arenaIntensity, ARENA_PARTICLE_MAX: ARENA_PARTICLE_MAX, ARENA_REGIONS: ARENA_REGIONS,
     // shader sources (so a wiring task / tests can inspect them)
     shaders: { GLSL_SCENE_VS: GLSL_SCENE_VS, GLSL_SCENE_FS: GLSL_SCENE_FS, GLSL_PART_VS: GLSL_PART_VS, GLSL_PART_FS: GLSL_PART_FS, GLSL_BURST_VS: GLSL_BURST_VS, WGSL_SCENE: WGSL_SCENE, WGSL_PART: WGSL_PART, WGSL_BURST: WGSL_BURST }
   };

@@ -320,5 +320,75 @@ hcRm.setHomeState({ progress: 0.4, streak: 2 });
 hcRm.start();
 ok(hrm === 0 && !hcRm.isAnimating(), "reduced-motion home backdrop is a static still (no RAF)");
 
+// =====================================================================
+// 10) Semantic Arena biome (T108) — derived from LIVE Arena state
+// =====================================================================
+const meanLuma = (g) => { let s = 0, n = 0; for(const row of g) for(const cell of row){ s += FXGL.luma(FXGL.parseColor(cell)); n++; } return s / n; };
+const paletteLuma = (p) => FXGL.luma(FXGL.parseColor(p[p.length - 1]));   // brightness of the glow end
+
+// deterministic per state
+const asA = FXGL.deriveArenaScene({ region: 3, tier: 2, bossProximity: 0.2, mood: "neutral" });
+const asB = FXGL.deriveArenaScene({ region: 3, tier: 2, bossProximity: 0.2, mood: "neutral" });
+ok(JSON.stringify(asA) === JSON.stringify(asB), "deriveArenaScene is deterministic for a given state");
+
+// region drives a distinct sense of place (different palette/mood per region)
+const r1 = FXGL.deriveArenaScene({ region: 1, tier: 1 }), r7 = FXGL.deriveArenaScene({ region: 7, tier: 1 }), r10 = FXGL.deriveArenaScene({ region: 10, tier: 1 });
+ok(JSON.stringify(r1.palette) !== JSON.stringify(r7.palette) && JSON.stringify(r7.palette) !== JSON.stringify(r10.palette),
+   "different regions → different palettes (sense of place)");
+ok(r7.particles.kind === "embers" && r5kind(), "region accent kinds differ (Cinderwaste embers, Frostpeak snow)");
+function r5kind(){ return FXGL.deriveArenaScene({ region: 5, tier: 1 }).particles.kind === "snow"; }
+const allRegions = []; for(let rg = 1; rg <= 10; rg++) allRegions.push(JSON.stringify(FXGL.deriveArenaScene({ region: rg, tier: 1 }).palette));
+ok(new Set(allRegions).size === 10, "all 10 region palettes are distinct (" + new Set(allRegions).size + "/10)");
+
+// boss-proximity raises intensity → denser particles + a hotter/brighter glow
+const farBoss = FXGL.deriveArenaScene({ region: 9, tier: 3, bossProximity: 0.1 });
+const nearBoss = FXGL.deriveArenaScene({ region: 9, tier: 3, bossProximity: 0.95 });
+ok(nearBoss.particles.count > farBoss.particles.count, "nearer the boss → denser particle field (status: intensity)");
+ok(paletteLuma(nearBoss.palette) > paletteLuma(farBoss.palette), "nearer the boss → a hotter/brighter glow");
+ok(meanLuma(nearBoss.grid) > meanLuma(farBoss.grid), "nearer the boss → a brighter backdrop (the glow band swells)");
+
+// tier within a region also lifts intensity (deeper = tenser)
+const lowTier = FXGL.deriveArenaScene({ region: 2, tier: 0, bossProximity: 0 });
+const highTier = FXGL.deriveArenaScene({ region: 2, tier: 11, bossProximity: 0 });
+ok(highTier.particles.count > lowTier.particles.count, "deeper tier → higher baseline intensity");
+ok(FXGL.arenaIntensity({ facingBoss: true }) === 1, "facingBoss pins intensity to the peak (1.0)");
+
+// mood: victory warms/brightens vs neutral; defeat dims
+const neutral = FXGL.deriveArenaScene({ region: 6, tier: 4, bossProximity: 0.5, mood: "neutral" });
+const victory = FXGL.deriveArenaScene({ region: 6, tier: 4, bossProximity: 0.5, mood: "victory" });
+const defeat = FXGL.deriveArenaScene({ region: 6, tier: 4, bossProximity: 0.5, mood: "defeat" });
+ok(paletteLuma(victory.palette) > paletteLuma(neutral.palette), "victory mood warms/brightens the palette");
+ok(paletteLuma(defeat.palette) < paletteLuma(neutral.palette), "defeat mood dims the palette");
+ok(victory.particles.kind === "embers", "victory adds warm embers");
+
+// capped + region clamped
+ok(nearBoss.particles.count <= FXGL.ARENA_PARTICLE_MAX, "the Arena field is capped (≤ ARENA_PARTICLE_MAX)");
+ok(JSON.stringify(FXGL.deriveArenaScene({ region: 99 }).palette) === JSON.stringify(FXGL.deriveArenaScene({ region: 10 }).palette), "out-of-range region clamps to the last region");
+
+// accepts the real scenery.js region grid when the [A] side passes it
+const realGrid = S.buildGrid(4);
+const withGrid = FXGL.deriveArenaScene({ region: 5, tier: 2, grid: realGrid });
+ok(withGrid.grid === realGrid, "deriveArenaScene uses the caller's scenery grid when provided");
+ok(JSON.stringify(withGrid.palette) !== JSON.stringify(FXGL.gridColors(realGrid)), "…but recolours it via the live region palette (not the raw grid colours)");
+
+// renders through the T93 pipeline on a real backend (single RAF, idles, textures once)
+const arec = { texImage2D: 0, drawArraysInstanced: 0, drawArrays: 0, bufferData: 0 };
+let aq = [], acaf = 0;
+const ac = new FXGL.Controller(stubCanvas(), { gl: makeGL(arec), raf: cb => { aq.push(cb); return aq.length; }, caf: () => { acaf++; }, width: 360, height: 640, dpr: 1, quality: 2, reducedMotion: false });
+ac.setArenaState({ region: 9, tier: 5, bossProximity: 0.9, mood: "neutral" });
+ok(arec.texImage2D === 2 && ac.particleCount() > 0, "setArenaState uploads the derived scene (textures once)");
+ac.start();
+let at = 0; for(let i = 0; i < 4; i++){ const cb = aq.shift(); at += 16; cb(at); }
+ok(aq.length === 1 && arec.drawArraysInstanced === 4, "Arena biome animates on a single RAF (one draw/frame)");
+ac.stop();
+ok(acaf >= 1 && !ac.isAnimating(), "the Arena biome idles when stopped (off-Arena: no RAF)");
+
+// reduced motion → a static still
+let arm = 0;
+const acRm = new FXGL.Controller(stubCanvas(), { gl: makeGL({}), raf: () => { arm++; }, caf: () => {}, width: 360, height: 640, dpr: 1, reducedMotion: true });
+acRm.setArenaState({ region: 7, tier: 6, bossProximity: 0.8 });
+acRm.start();
+ok(arm === 0 && !acRm.isAnimating(), "reduced-motion Arena biome is a static still (no RAF)");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FXGL CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

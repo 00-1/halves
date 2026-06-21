@@ -6,6 +6,68 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T108 — Semantic Arena-biome backdrop derivation (engine side; [B])
+
+**Status: DONE — handed off for review.** Edited only B-owned files
+(`fxgl.js`, `test/fxgl.test.js`); **zero edits to any existing Halves file**
+(the [A] Arena wiring calls it, after T89/T90). Mirrors T95's discipline. No
+deps/bundler; deploy-safe; all existing gates green.
+
+### What shipped
+- **New API: `FXGL.deriveArenaScene(state)`** (and `controller.setArenaState`).
+  Purpose = **SENSE OF PLACE + STATUS (Arena)** — a `setScene`-shaped backdrop
+  derived from **live Arena state**, not decoration:
+  - `state = { region: 1..10, tier, bossProximity: 0..1 | facingBoss, mood: neutral|victory|defeat, grid?, seed?, cols?, rows? }`
+  - **region** → a distinct palette + accent **kind** per region (10 engine-owned
+    region moods echoing the Arena families: warren/gallows/gloam/marsh/frost/
+    drown/cinder/storm/dragon/void) — a real *sense of place*.
+  - **tier + boss-proximity** → **intensity** (0..1): the glow runs **hotter +
+    brighter** and the particle field **denser** as the boss nears; `facingBoss`
+    pins it to the peak (1.0).
+  - **mood**: **victory** briefly warms/brightens + adds embers (the [A] side
+    pairs it with a T94 `burst()`); **defeat** dims/cools.
+  - **deterministic** from a state-derived seed (region + tier + intensity band +
+    mood) — same state → same biome; it shifts as you advance.
+- **Reuses the real scenery:** if the [A] caller passes `state.grid`
+  (`Scenery.buildGrid(region)`), the engine renders that real silhouette
+  **recoloured by the live intensity-aware palette** (hotter near a boss);
+  otherwise it synthesises a grounded region backdrop (sky gradient + a hot glow
+  band scaled by intensity + a dark ground silhouette).
+- **Budget = T95 discipline:** capped at **`ARENA_PARTICLE_MAX = 220`** (livelier
+  than home's 120 since it dresses a battle, still bounded); renders through the
+  existing T93 backends — single RAF, one draw/frame, **idles when off-Arena**,
+  reduced-motion → static still, no-WebGL2 → CPU still. No new GPU code.
+
+### Brickmap borrowing (T108)
+None new — pure state→scene mapping feeding the **T93** ports (Bayer dither,
+luminance→palette ramp, atmospheric gradient/glow, instanced accents). The
+intensity-scaled hot glow builds on T93's gradient recipe.
+
+### Verification
+`node -c` clean; `node test/fxgl.test.js` → **102 checks** (T95's 82 + 20 new):
+deterministic per state; **all 10 region palettes distinct** (sense of place);
+**nearer-boss → denser field + hotter/brighter glow + brighter backdrop**;
+deeper tier lifts intensity; `facingBoss` = peak; **victory warms/brightens +
+embers, defeat dims**; capped; region clamps; **uses the caller's scenery grid
+and recolours it**; renders on a real backend (single RAF, one draw/frame,
+textures once, idles), reduced-motion → static still. Full existing 24-gate
+Halves suite still green.
+
+### Hand-off to Builder A (the [A] Arena-biome wiring task, after T89/T90)
+- Mount a backdrop canvas behind the Arena (`aria-hidden`,
+  `pointer-events:none`); feed it the live region/tier/boss state:
+  `FXGL.mount(bg, { width, height }); FXGL.setArenaState({ region, tier, bossProximity, mood, grid: Scenery.buildGrid(region) }); FXGL.start();`
+  Re-call `setArenaState(...)` as the fight advances (tier up, boss approached,
+  win/loss); on a win, also fire `FXGL.burst(...)` (T94) and pass `mood:"victory"`.
+  `FXGL.stop()` when leaving the Arena. Keep text legible (a scrim as
+  `scenery.js` does). Register the gate.
+
+### Next (Builder B)
+- Await the Babysitter's verdict + next pointer (the [A] FX wiring may preempt
+  with a surfaced engine need; otherwise the next flagged [B] surface).
+
+---
+
 ## T95 — Semantic home/menu backdrop (engine side; [B])
 
 **Status: DONE — handed off for review.** Edited only B-owned files
