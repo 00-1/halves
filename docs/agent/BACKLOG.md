@@ -1035,3 +1035,41 @@ ignoring the actual number's structure. Four parts:
   rounds unaffected; deploy green. (Babysitter re-runs the no-answer-leak +
   no-phantom-structure assertion across all topics and reads a sample of hints/guides
   for quality and mathematical correctness.)
+
+### T50 — Generated icons on nav buttons + hero portrait in the Arena picker · status: OPEN
+Owner: "the Best times / Inventory / Hero / Arena buttons are very subtle and boring
+— nice if they get generated icons. Selecting a hero doesn't show the hero's icon —
+let's include that." Two parts, both using the **existing procedural pixel-icon
+system** (`C.drawIcon(canvas, id, pal, catId)` in `collectibles.js`) — no new art
+engine, same 8-bit aesthetic.
+
+- **(1) Procedural icons on the four menu buttons.** Give `#statsBtn` (Best times),
+  `#invBtn` (Inventory), `#heroesBtn` (Heroes), `#arenaBtn` (Arena) a small generated
+  pixel icon before the label. Reuse a **fitting existing category preset** per button
+  with a **fixed deterministic seed** (so each is stable across loads), e.g. a
+  blade/`sword` or `shield` for Arena, a `helm`/`familiar` for Heroes, a `gem`/`coin`
+  for Inventory, an `orb`/`scroll` for Best times — Builder picks the best-reading
+  match. Add a `<canvas class="pix">` to each and draw it when the `#start` screen is
+  shown (and on boot); icons must be legible at the small menu size and use a sensible
+  palette (`C.paletteFor(...)` or a fixed pal). **Do not break the `.linkrow` layout
+  or wrap** at 360px; keep the text label (icon + text). The `🔊 Sound` / `⛶ Fullscreen`
+  utility toggles are out of scope (leave as-is) unless trivially consistent.
+- **(2) Hero portrait in the Arena hero picker.** The Arena "choose your champion"
+  cards (`.arena-hero`, built in `renderArena`) currently show only name/rating/matchup
+  — **no portrait**, unlike the Heroes-list cards. Add the hero portrait to each pick
+  card: a `<canvas class="pix">` drawn with the **same call the Heroes screen uses** —
+  `C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], "familiar")` — via a post-render
+  `querySelectorAll` loop (mirror `renderHeroes` lines ~609–611). Also show the chosen
+  hero's portrait in the **battle/Victory result** header if it fits cleanly. **Build
+  on the post-T47 Arena** (T47 reworks the Arena flow/UI first; add portraits to the
+  reworked picker, do not reintroduce anything T47 removed).
+- **Scope:** presentation only — no change to icon data, hero data, battle maths, or
+  the catalogue. Deterministic (fixed seeds → stable icons). Lazy where it already is.
+- **DoD:** the four menu buttons each render a stable procedural pixel icon beside the
+  label, legible and non-wrapping at 360px; the Arena pick cards each draw the correct
+  hero portrait (matching that hero's Heroes-screen portrait), and the result header
+  shows the chosen hero's portrait; every `$("id")` referenced exists; `node -c` clean;
+  no console errors; no regressions to the menu, Heroes screen, or the (post-T47)
+  Arena; deploy green. (Babysitter verifies the icon draw-calls target real canvases,
+  the hero portrait id/pal matches the Heroes screen, and the menu layout holds at
+  360px.)

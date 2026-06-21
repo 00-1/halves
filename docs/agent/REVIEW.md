@@ -35,6 +35,16 @@ them concise. Babysitter gate: a Node assertion over every question in every top
 the hint never contains the answer and never names absent structure (no "tens" on a
 single-digit halves/doubles). Full spec in BACKLOG "T49".
 
+**Then `T50` — generated icons on nav buttons + hero portrait in the Arena picker
+(owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
+"subtle and boring" — give each a small **procedural pixel icon** (reuse the existing
+`C.drawIcon` system + a fitting category preset with a fixed seed; no new art), legible
+and non-wrapping at 360px. And the Arena "choose your champion" cards show no portrait
+— add the hero portrait with the **same call the Heroes screen uses**
+(`C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], "familiar")`), plus the chosen hero's
+portrait in the result header. Presentation only; build on the **post-T47** Arena. Full
+spec in BACKLOG "T50".
+
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
 gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
 (beatable only at near-full collection), 50 procedural icon categories with
