@@ -10,30 +10,35 @@
 
 ---
 
-**Builder A → `T140` (12-style switcher + routing — WAITS for B's T139) → meanwhile `T124` (fraction glyphs)**
-*(`T142` backdrop restore DONE `42aac3b`; `T137` tester DONE `41016d4`; `T123` a11y DONE.)* **`T140` is
-blocked on B's `T139`** (needs the final 12 style names/labels) — and T139 is itself gated on the owner's
-palette thumbs-up. So **A: do `T124` now** (fraction tree-glyphs bigger/clearer using node width — the owner
-flagged the fraction glyphs as illegible) while T139 is pending; then **`T140`** when B hands over the style
-list: extend the music switcher to ALL 12 styles + per-screen routing (solve→a calm style, arena→arena,
-menu→menu, event→festive) + the **dubstep victory fires on a win**. Then → `T101` (Start delay) →
-`T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
+**Builder A → `T143` (Audio gets its own SCROLLABLE menu + separate Music/SFX volumes — fixes the nav trap) → `T144` (gold/momentum pill to TOP) → `T140` (12-style picker, after B's T139) → `T124` (fractions)**
+*(`T142` backdrop DONE `42aac3b`; `T137` tester DONE; `T123` a11y DONE.)* **⚠ `T143` FIRST — the owner is
+TRAPPED in Settings: "config menu goes off the bottom, can't scroll, can't go back."** (1) **Make Settings +
+the new Audio menu `overflow-y:auto`** within the safe-area height so **Back is always reachable** (priority).
+(2) **The home Sound button OPENS a dedicated Audio menu** (instead of toggling) — move the **mute toggle
+INSIDE** it, plus the music picker, tempo, the celebration tester, and (3) **separate Music + SFX volume
+sliders** ("sounds are getting lost" under the music — Music gain on the `Synth.output()` path you wire; SFX
+gain in `sound.js`; replace the single T135 master; SFX default louder relative to music; migrate old
+`halves.vol`; mute silences both). (4) **Fix the celebration tester restarting music** — `fireCelebrationTest`
+must unlock audio WITHOUT `musicForScreen` (which re-routes/restarts it). Full DoD `BACKLOG.md` T143. Then →
+**`T144`** (move the `.readouts` gold/momentum pill to the TOP of `#start`, keep its T142 pill backing) →
+**`T140`** (extend the music picker to ALL 12 styles B builds + per-screen routing solve→calm/arena→arena/
+menu→menu/event→festive + the dubstep victory fires on a win; depends on T139) → **`T124`** (fraction glyphs)
+→ `T101` → `T102`/`T103` (Android) → content → `T72`.
 
-**Builder B → `T139` (build the 12 styles) — ⚠ HOLD the CONTEXTS until the owner approves the palette; meanwhile build the no-regret ENGINE ADDITIONS**
-*(`T141` research DONE `02d2d6f` — the 12-style palette is OUT FOR OWNER THUMBS-UP; don't finalise the style
-rows until the Babysitter posts the owner's OK, since a style may be swapped.)* **You CAN start now on the
-engine ADDITIONS the palette needs regardless of which exact styles land** (from the research §0/§3): (1) a
-**tempo-synced wub wobble** (`wub` LFO rate locked to the beat — ⅛/¼-note — via an optional
-`wobbleRate`/`lfoSync` off the patch/context) for dubstep/dnb/techno; (2) a **`chip`** square-pluck patch
-(fast `{a:.001,d:.06,s:0,r:.02}`, dry) for chiptune/8-bit; *(optional)* a scheduler **swing** field
-(delay odd 16ths ~12–22%) for lofi/tropical; *(optional)* per-context **reverb decay** for ambient; and the
-**victory DROP** gesture (noise-sweep build → sub-wub drop + bright stab) for the dubstep win sting on the
-**un-ducked SFX bus** (the T128 lesson). These are tiny, testable, and wasted by no palette outcome. **Then,
-once the owner approves the list:** **T139** — replace `CONTEXTS` with the agreed 12 (keep `menu`/`arena`,
-DROP the old `solve`/`event`), make the dubstep victory a real audible drop reusable by the win sting (un-ducked sfx bus),
-and extend the `golden-synth` distinctness gate to all 12. Full DoD: `BACKLOG.md` T141/T139. **B-owned only**
-(`synth.js` + new research doc + tests/goldens + `BUILDER-LOG-FX.md`); never touch existing Halves files;
-never push `claude/agent`.
+**Builder B → `T139` (FINISH the 12 styles — PALETTE APPROVED) → `T138` (celebration STILL invisible — engine fix)**
+*(`T139 pt1` engine additions DONE `051b25d`.)* **`T139` — PALETTE APPROVED** (owner: "move ahead with those
+music styles, add them to the song picker"): finish building the 12 from `docs/research-music-styles.md` §2
+(keep `menu`/`arena`, DROP old `solve`/`event`; the 10 new incl. **Dubstep Victory** — its real audible DROP
+on the un-ducked SFX bus is the win sting); extend `golden-synth` distinctness to all 12 (regen intentional);
+**hand A the final names/labels** in the log for T140. **Then `T138` — celebration STILL invisible.** Owner
+live: "the celebration picker… none of them work. they do restart the music though" — the restart proves the
+handlers FIRE yet nothing renders → T137's occlusion fix wasn't the (whole) cause; it's the `{backend:"2d"}`
+engine render path. Investigate: 2D canvas **0/1-sized** (→ `dimensions()` `0×0`, may bounce to [A] resize);
+**RAF never pumps** for a 2D controller; particles draw **invisibly** (transparent alpha / sub-pixel `size` at
+this DPR / off-canvas); or wrong context presented. **Add a REAL visibility check** (golden asserting in-bounds
+alpha>0 ≥1px coverage — NOT a fillRect count). **Wait for the owner's `dimensions()` readout** (visible once
+A's T143 makes Settings scrollable) before assuming engine-side. Full DoD `BACKLOG.md` T139/T138. **B-owned
+only**; never touch existing Halves files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

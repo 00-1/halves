@@ -1027,15 +1027,19 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T124` (fraction glyphs — `T140` is blocked on B's T139)** [A]
-  (**`T142`/`T137`/`T123`/`T135`/`T136`/`T131`/`T128`(1)+(2)/… DONE**). *(Read `NEXT.md` fresh — canonical.)*
-  `T142` (restore the backdrop — local pills, not the global slab) DONE `42aac3b`; `T137` celebration tester
-  + occlusion fix DONE `41016d4` (owner live-checking via the tester). **`T140` (12-style switcher) is blocked
-  on B's `T139`**, which is itself gated on the owner's palette thumbs-up — so **do `T124` now** (fraction
-  tree-glyphs bigger/clearer using node width — owner flagged the fraction glyphs illegible), then **`T140`**
-  when B hands over the final style names: switcher lists all 12 + per-screen routing (solve→calm, arena→
-  arena, menu→menu, event→festive) + the **dubstep victory fires on a win**. Then → **`T101`** (Start delay)
-  → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
+- **Builder A — next: `T143` (Audio's own SCROLLABLE menu + separate Music/SFX volumes — fixes the nav trap)
+  → `T144` (gold/momentum pill to TOP) → `T140` (12-style picker, after B's T139) → `T124` (fractions)** [A]
+  (**`T142`/`T137`/`T123`/`T135`/… DONE**). *(Read `NEXT.md` fresh — canonical.)* **⚠ `T143` FIRST — owner is
+  TRAPPED: "config menu goes off the bottom, can't scroll, can't go back."** (1) Settings + a new Audio menu
+  `overflow-y:auto` so **Back is always reachable** (priority); (2) the home **Sound button opens a dedicated
+  Audio menu** (mute toggle moves inside) holding the music picker, tempo, tester, and (3) **separate Music +
+  SFX volume sliders** ("sounds are getting lost" — Music gain on the `Synth.output()` path [A] wires; SFX
+  gain in `sound.js`; replace the single T135 master; migrate `halves.vol`); (4) fix the **tester restarting
+  music** (`fireCelebrationTest` must not call `musicForScreen`). Then **`T144`** (move `.readouts` gold/
+  momentum pill to the TOP of `#start`, keep its T142 pill backing). Then **`T140`** (picker lists all 12 + per-
+  screen routing + dubstep victory fires on a win — needs B's T139 names). Then → **`T124`** (fraction glyphs)
+  → **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content
+  **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
@@ -1053,20 +1057,19 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T139` (build the 12 styles) — ⚠ HOLD the CONTEXTS until the owner OKs the palette;
-  build the no-regret ENGINE ADDITIONS meanwhile.** *(`T141` research DONE `02d2d6f` — palette OUT FOR OWNER
-  THUMBS-UP; `T134` clean-swap DONE `ea1ed5c`.)* **Don't finalise the style rows** until the Babysitter posts
-  the owner's OK (a style may be swapped). **Start now on the engine ADDITIONS the palette needs regardless**
-  (research §0/§3): (1) **tempo-synced wub wobble** (LFO rate locked to the beat via an optional
-  `wobbleRate`/`lfoSync` off the patch/context) — dubstep/dnb/techno; (2) a **`chip`** square-pluck patch
-  (fast `{a:.001,d:.06,s:0,r:.02}`, dry) — chiptune/8-bit; *(optional)* a scheduler **swing** field; *(opt)*
-  per-context **reverb decay** for ambient; and the **victory DROP** gesture (noise-sweep build → sub-wub
-  drop + bright stab) for the win sting on the **un-ducked SFX bus**. All tiny/testable, wasted by no palette
-  outcome. **Then on owner OK → `T139`:** replace `CONTEXTS` with the agreed 12 (keep `menu`/`arena`, drop
-  old `solve`/`event`), make the dubstep victory the audible win-sting drop, extend the `golden-synth`
-  distinctness gate to all 12 (regen intentional), and **hand A the final style names/labels** (in the log)
-  for T140. Full DoD: `BACKLOG.md` T139. **B-owned only** (`synth.js` + tests/goldens + `BUILDER-LOG-FX.md`);
-  never touch existing Halves files; never push `claude/agent`.
+- **Builder B — next: `T139` (FINISH the 12 styles — PALETTE APPROVED) → `T138` (celebration STILL invisible
+  — engine fix).** *(`T141` research DONE; **owner OK'd the palette** "move ahead… add them to the song
+  picker"; `T139 pt1` engine additions DONE `051b25d`; `T134` clean-swap DONE.)* **`T139`:** finish building
+  the 12 from `research-music-styles.md` §2 (keep `menu`/`arena`, drop old `solve`/`event`; 10 new incl. the
+  **Dubstep Victory** whose real DROP on the un-ducked SFX bus is the win sting); extend `golden-synth`
+  distinctness to all 12; **hand A the names/labels** for T140. **Then `T138`:** the owner confirms the
+  celebration tester "none work" but the buttons "restart the music" → the fns FIRE yet nothing renders → it's
+  the `{backend:"2d"}` render path, not (just) the T137 occlusion. Investigate (0/1-sized canvas → may bounce
+  [A]; RAF not pumping; particles invisible — transparent/sub-pixel/off-canvas) and add a **real visibility
+  golden** (in-bounds, alpha>0, ≥1px — not a fillRect count). **T138 benefits from the owner's tester
+  `dimensions()` readout**, which is visible once A's `T143` makes Settings scrollable — so it naturally lands
+  after T139/T143. Full DoD: `BACKLOG.md` T139/T138. **B-owned only** (`synth.js`/`fxgl.js` + tests/goldens +
+  `BUILDER-LOG-FX.md`); never touch existing Halves files; never push `claude/agent`.
   - *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless browser to CI —
     kept out of scope to keep CI Node-only.)*
 

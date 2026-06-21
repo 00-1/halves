@@ -2658,7 +2658,35 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
-### T139 — [B] Music styles: keep menu+arena, replace solve/event, cut to 12 DISTINCT styles incl. a dubstep VICTORY (implements T141) · status: OPEN · OWNER-PRIORITY · blocked-by T141
+### T138 — [B] Celebration STILL invisible — engine-side fix (the tester confirms the fns fire but nothing renders) · status: OPEN · OWNER-PRIORITY · BUG
+Owner (live, after T137's tester + occlusion fix): **"the celebration picker is now in the menu. none of
+them work. they do restart the current music though, for whatever reason."** The "restart the music" proves
+the button handlers **fire** (`fireCelebrationTest`→`audioUnlock`→`musicForScreen` re-routes music) and the
+celebration fns are called — yet **nothing renders**. So T137's z-order/occlusion fix was **not** the (whole)
+cause: it's engine-side, in the `{backend:"2d"}` render path. *(The music-restart side-effect is a separate
+[A] fix — see T143.)*
+- **Deep-investigate `fxgl.js`'s forced-Canvas2D path on a real device/headless DOM.** Candidates: the 2D
+  canvas ends up **0/1-sized** (so `dimensions()` would read `0×0`/`1×1` — if so it's a resize-timing bug, may
+  bounce to [A]); the **RAF loop never pumps** for a `{backend:"2d"}` controller (e.g. `_needsFrame`/`_pump`
+  gating); particles draw **invisibly** (transparent globalAlpha, sub-pixel `size` at this DPR, or off-canvas
+  coords); or the 2D context isn't actually the one being presented.
+- **Add a REAL visibility check (not a draw count).** Extend the golden/fx test so it asserts the celebrate
+  frame has **actual visible coverage** — e.g. a non-trivial count of pixels whose alpha>0 land **inside** the
+  canvas bounds with size ≥1 device px (the T133 golden only counted `fillRect` calls, which a transparent/
+  off-canvas/zero-size draw still passes — that's why it stayed green while invisible).
+- **Coordinate the readout:** once T143 makes Settings scrollable, the owner can read the tester's
+  `dimensions()`/`isReady()` value — if it shows `0×0`, the fix is resize ([A]); a real size + invisible ⇒
+  the particle-visibility fix here. Build the most likely fix now; confirm against the owner's readout.
+- **DoD (LIVE-verified):** tapping a celebration tester button shows a **visible** particle shower on a real
+  device; the new visibility check fails on a zero-coverage frame; `node -c` clean; all gates green; **B-owned
+  only** (`fxgl.js` + tests/goldens + `BUILDER-LOG-FX.md`). (Babysitter: the bar is the owner SEEING it; green
+  gates necessary-not-sufficient — this has hidden behind them three times.)
+
+### T139 — [B] Music styles: keep menu+arena, replace solve/event, cut to 12 DISTINCT styles incl. a dubstep VICTORY (implements T141) · status: OPEN · OWNER-PRIORITY · PALETTE APPROVED (build the 12 from T141's table)
+**Owner approved the T141 palette (2026-06-21): "move ahead with those music styles, and add them to the
+song picker."** Build the 12 exactly as proposed in `docs/research-music-styles.md` §2 (menu+arena kept; the
+10 new: Lo-Fi Study, Ambient Drift, Chiptune Rush, Synthwave Cruise, Liquid DnB, Festival, 8-Bit Boss March,
+Tropical Pluck, Hypno Techno, + **Dubstep Victory**). The owner did not request swaps.
 Owner (live, switching now works): **"I like the menu and arena music. the others are a bit samey. the
 dubstep victory doesn't seem to exist (victory or switcher). Keep the two I like, ditch the others, then
 cut 10 NEW music styles (keep them distinct) including the dubstep victory. Put them all in the launcher."**
@@ -2701,11 +2729,49 @@ the **dubstep victory to actually fire on a win**.
 - **Victory** — on a real Arena win / topic-complete, fire B's **dubstep victory drop** (via the engine
   hook T139 exposes) so the owner actually hears it (it currently "doesn't seem to exist" on a win); keep it
   on the sfx bus (un-ducked).
-- **DoD (LIVE-verified — output feature):** all 12 styles audition in the Settings switcher and each is
+- **DoD (LIVE-verified — output feature):** all 12 styles audition in the picker and each is
   audibly distinct; picking one swaps instantly + cleanly; per-screen routing plays sensible (calm solve,
   energetic arena) styles; **a dubstep wub drop lands on a win**; reverts to per-screen on exit; `node -c`
   clean; all gates green (assert the switcher offers all 12 contexts; assert the win path triggers the
-  victory drop); [A]-owned files. (Babysitter + owner confirm by ear.)
+  victory drop); [A]-owned files. (Babysitter + owner confirm by ear.) *(The picker now lives in the
+  dedicated Audio menu from T143.)*
+
+### T143 — [A] Audio gets its OWN scrollable menu (Sound button opens it) + separate Music/SFX volumes + fixes · status: OPEN · OWNER-PRIORITY · BUG(navigation trap)
+Owner (live): **(a)** "we need separate volume controls for sounds and music, cos the sounds are getting
+lost now." **(b)** "the config menu now goes off the bottom of the page, and it's not possible to scroll. so
+I can't go back. maybe sound controls should live in their own menu. our sound button can open that menu
+instead of toggling. and the toggle can live inside the menu." **(c)** [from T138] the celebration tester
+restarts the music when tapped.
+- **Dedicated Audio menu.** The home **Sound button** (bottom row) currently toggles mute — change it to
+  **open a new Audio settings screen/menu** (hash route + back button, same chrome as Settings). **Move the
+  mute toggle INSIDE** this menu, plus all audio controls: music style picker (→ T140's 12), tempo, the
+  volume sliders (below), and the celebration tester. This declutters the main Settings (which had grown too
+  tall) and gives audio a clear home.
+- **SCROLLABLE (the navigation-trap fix).** Make the Audio menu **and** the main Settings screen
+  `overflow-y:auto` within the safe-area height so the **Back button is ALWAYS reachable** — no control can
+  push it off the bottom. (Audit other long screens too.) This is the priority: the owner is currently
+  trapped (can't go back).
+- **Separate Music + SFX volumes.** Replace the single master-volume slider (T135) with **two**: **Music**
+  (a gain on the Synth music path — `Synth.output()` is consumed by [A], insert a GainNode there) and **SFX**
+  (sound.js's SFX gain — A owns `sound.js`). Keep the louder-engine scale + a sensible default each (SFX
+  higher relative to music so sounds aren't lost); migrate the old single `halves.vol`. Mute still silences
+  both.
+- **Fix the tester music-restart** (T138(b)): `fireCelebrationTest` should unlock audio **without** calling
+  `musicForScreen` (which re-routes/restarts the music) — just ensure the context is unlocked + `setupFx`.
+- **DoD (LIVE-verified):** the Sound button opens a scrollable Audio menu with the mute toggle inside, the
+  music picker, tempo, and **independent Music + SFX volume sliders** (sounds audible over music); **Back is
+  always reachable** on both the Audio menu and Settings (no off-screen trap); the celebration tester no
+  longer restarts the music; `node -c` clean; all gates green (assert the Sound button routes to the menu;
+  assert two volume params; assert the scroll container); [A]-owned files. (Babysitter + owner confirm live.)
+
+### T144 — [A] Move the Goblin-Gold/Momentum readout pill to the TOP of the home page · status: OPEN · OWNER-PRIORITY
+Owner (live): **"the goblin gold / momentum pill should move to the top of the page."** Currently the
+`.readouts` row sits low (above the Start row). Move it to the **top** of the home screen (above the event
+banner / topic tree, as a header stat bar) while keeping its T142 local dark pill backing (so it stays
+legible over the backdrop) and a11y/layout intact.
+- **DoD:** the gold/momentum readout renders at the **top** of `#start`; still legible (keeps its pill
+  backing); no layout/scroll regression (respects the T112 safe-area height); `node -c` clean; all gates
+  green; [A]-owned files. (Babysitter + owner confirm via screenshot.)
 
 ### T134 — [B] Clean immediate context-swap (no layered overlap) + audible distinctness · status: DONE (`ea1ed5c`, CI green)
 **DONE 2026-06-21** — APPROVED (REVIEW.md). Clean swap: `renderVoice` hands its amp param back, scheduler
