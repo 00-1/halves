@@ -153,14 +153,13 @@ advantage + perfect perf).
   per-hero effective stats and which items boost them.
 - Start-screen links to Arena & Heroes alongside Best times / Inventory.
 
-## Currency & economy (display name TBD)
+## Currency & economy ("Goblin Gold")
 
-A soft currency that only goes up from play. **Display name is being chosen with
-the owner** (NOT "Gold Stars" — rejected). Internal keys/functions stay
-`gold`/`fmtGold`/`halves.gold`; keep the user-facing label in ONE constant so it's
-a one-line change once decided — do not hard-code it throughout. It only goes up
-from play. Stored
-locally (`halves.gold`).
+A soft currency that only goes up from play. **Display name: "Goblin Gold"**
+(owner-chosen — on-theme with the goblin-filled world, comedic at absurd scale).
+Internal keys/functions stay `gold`/`fmtGold`/`halves.gold`; keep the user-facing
+label in ONE constant (`"Goblin Gold"`) so it's a one-line change. It only goes up
+from play. Stored locally (`halves.gold`).
 
 **Base earn** (per event, before the multiplier):
 - per cleanly-solved question: `2 + speedBonus` (faster vs the mode's `masterSecs`

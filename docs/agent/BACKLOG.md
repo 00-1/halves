@@ -635,12 +635,11 @@ the engagement layer.
 - **DoD:** Node test of the full progression curve; milestones evaluate
   correctly; final-tier ⇔ full-collection invariant holds.
 
-### T26 — Currency: fun accumulation · status: BLOCKED
+### T26 — Currency (Goblin Gold): fun accumulation · status: BLOCKED
 Implement the currency per `DESIGN-heroes.md` §"Currency & economy" — **earn,
 display, persist; NO spending (build no spend mechanic yet).** **Display name is
-still being decided with the owner** ("Gold Stars" was rejected) — keep the
-user-facing label in ONE constant (internal `gold`/`fmtGold`/`halves.gold` keys are
-fine) so the final name is a one-line change. Make the accumulation itself fun and
+"Goblin Gold"** (owner-chosen) — keep it in ONE constant (internal
+`gold`/`fmtGold`/`halves.gold` keys are fine). Make the accumulation itself fun and
 able to reach **billions/trillions+**:
 - Base earn hooks (per clean question scaled by speed; per round; first Mastery;
   first topic 100%; enemy-tier depth — skipped = 0), all multiplied by the
