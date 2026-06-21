@@ -1491,3 +1491,25 @@ Solved + Spark + Beat + a Collector/Gold milestone), the column grows **down int
   clean; no console errors; no regressions; deploy green. (Babysitter verifies the cap/queue
   logic drains all items, the band is height-bounded above the stage, and the modal still
   lists the full set.)
+
+### T65 — Scroll the Arena back to top after a fight resolves · status: OPEN
+Owner: "each time you have a **victory** in the Arena you should be **scrolled back to the
+top** — otherwise you're just looking at your heroes and missing the information at the top
+about who you're challenging/beating." Cause: `#arenaBody` is the scroll container
+(`.arena-body{…overflow-y:auto}`, `styles.css` ~340); after you scroll down to pick a hero
+and Fight, `finishBattle` (`main.js` ~790) calls `renderArena()` which rewrites
+`#arenaBody` (new result block prepended at the top) but **never resets `scrollTop`**, so
+the browser keeps you parked at the hero list — the Victory/Defeat result + the current
+tier sit above the fold.
+- **Fix:** after a fight resolves, set `$("arenaBody").scrollTop = 0` so the result and the
+  tier you're challenging/beating are shown. Put it in **`finishBattle`** (after
+  `renderArena()`), applying to **both Victory and Defeat** (both surface a result the
+  player should read).
+- **Do NOT reset scroll on hero-selection re-renders.** Selecting a hero card also calls
+  `renderArena()` (the `#arenaBody` click handler, ~1178) — that must **keep** the player's
+  current scroll (no jump while picking). So the reset belongs in `finishBattle`, not in
+  `renderArena` itself.
+- **DoD:** after a fight (win *or* loss) the Arena is scrolled to the top showing the result
+  + current tier; **selecting a hero does not jump-scroll**; entering the Arena starts at the
+  top; `node -c` clean; no console errors; no regressions; deploy green. (Babysitter
+  confirms the reset is in `finishBattle` only and hero-pick re-renders preserve scroll.)
