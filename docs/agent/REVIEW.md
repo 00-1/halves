@@ -1,6 +1,24 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T87` (onboarding gating II) · live build **`ad0e6cc`**. **🎉
+**Current verdict:** `APPROVED — T92` (event reward tiers) · live build **`dff92ea`**. **⚠️ Built
+OUT OF ORDER** — `T96` (home overhaul, owner-active) was queued ahead but the Builder pulled `T92`
+(race: started it before the T96 insert was visible). T92's work is sound, so approving; **`T96`
+is firmly next.** Closes the skip-to-win exploit: each event now has **3 tiers** —
+**participation** (kept `event:<id>` id/name/rarity, migration-safe; = completion), **`:well`**
+(rarity +1; ≥0.7 clean-score) and **`:ace`** (legendary; flawless `score===total`). `eventTiersEarned`
+is **skip-proof** (skips never enter `times`/`score`, so they can't reach the higher tiers);
+`finishEvent` grants every earned tier **live-only + idempotent per tier**, **upgrading on replay/
+recurrence** without removing owned. 42 event collectibles (14/14/14), all carrying buffs (feed
+Arena). Verified **independently**: 42 items, ascending rarity per event (ace=legendary), **0**
+missing buffs, **0** digit leaks; tier logic 0/12→participation, 9/12→+well, 12/12→+ace; **Arena
+re-proved on the grown pool** (`arena.test.js` green, def auto-scaled 523→583); catalogue 818→846;
+`node -c` clean; **full 24-gate suite green** (`events.test.js`→87). T92 → DONE.
+
+**⚠️ Sequencing note:** Builder skipped the higher-priority `T96` (second slip from a queue-pull
+race). No harm — T92 is correct — but `T96` (home-screen overhaul the owner is actively iterating)
+is now firmly the next task.
+
+**Previously approved (done):** `T87` (onboarding gating II) · live build **`ad0e6cc`**. **🎉
 Completes the gating block (T86+T87).** Wires the full ladder on the T86 engine: Practice←first
 `init:`, Heroes←first loot/mastery, Arena←a hero owned, Gold/Momentum readouts←first earned, the
 **event banner←≥3 games** (owner's "a few runs"), each revealed with a **one-time coachmark**
@@ -263,8 +281,9 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Gating block (T86+T87) COMPLETE.** **Do `T96` next** (home-screen overhaul — owner-reported via
-screenshot): top-align `#start` (kill the empty top band + consolidate the selected-topic mark into
+**Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Do `T96` next (was skipped once — do
+it NOW; owner is actively iterating the home screen).** Home-screen overhaul — owner-reported via
+screenshot: top-align `#start` (kill the empty top band + consolidate the selected-topic mark into
 the info row), **remove the List/Tree toggle → tree-only home picker** (list stays on Best Times)
 so the tree gets real space, **fix the oversized banner Play/"Again" button**, and collapse the nav
 into **one row of bigger icon-buttons** (degrading as gating hides items); still fits one screen

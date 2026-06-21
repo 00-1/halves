@@ -1803,7 +1803,7 @@ component-by-component treatments, references) — a vague survey is a DoD failu
 
 ## Phase 6.11 — Event reward tiers (owner-reported, 2026-06-21)
 
-### T92 — Events: tier the reward by performance (participation · did well · did extremely well) · status: OPEN
+### T92 — Events: tier the reward by performance (participation · did well · did extremely well) · status: DONE
 Owner-reported: today **completing** an event grants its reward **regardless of performance** — so
 **skipping through most of it still pays out the full reward** (same exploit class as T74's
 all-skipped topic unlock). `finishEvent` grants `event:<id>` on completion with no score check.
