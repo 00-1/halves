@@ -41,9 +41,23 @@ ok(missingTotal === 0, "the pixel font supports every symbol in every topic glyp
 
 // the DoD spot-check operators must each resolve to a real bitmap (not dropped).
 ["×","÷","+","−","±","/","%"].forEach(op => ok(Gl.buildGrid(["*"+op]).missing.length === 0, "operator " + op + " has a real glyph"));
-// composite forms: stacked fractions ½ ¾ and superscript ²
-ok(Gl.buildGrid(["*f12"]).missing.length === 0 && Gl.buildGrid(["*f34"]).missing.length === 0, "stacked fractions ½ and ¾ encode without missing digits");
+// composite forms: vulgar fractions ½ ¾ and superscript ²
+ok(Gl.buildGrid(["*f12"]).missing.length === 0 && Gl.buildGrid(["*f34"]).missing.length === 0, "fractions ½ and ¾ encode without missing digits");
 ok(Gl.buildGrid(["*s2"]).missing.length === 0, "superscript ² encodes without a missing digit");
+
+// T104 — ½/¾ are SLASHED diagonals (legible at small node size), not the old
+// crammed 3‑wide numerator/bar/denominator stack that turned to mud.
+(function(){
+  const g = Gl.buildGrid(["f12"]);
+  const ink = (y,x) => g.cells[y][x] !== 0;
+  ok(g.w === 5, "a fraction glyph is 5 wide now (the diagonal form), not the old 3‑wide stack");
+  ok(ink(0, g.w - 1) && ink(g.h - 1, 0), "the fraction has a diagonal slash (top‑right + bottom‑left corners inked)");
+  ok(!(ink(4,0) && ink(4,1) && ink(4,2)), "no full horizontal mid‑bar — the unreadable stacked fraction is gone");
+  const upperLeft = [0,1,2,3].some(y => [0,1,2].some(x => ink(y,x)));
+  const lowerRight = [5,6,7,8].some(y => [2,3,4].some(x => ink(y,x)));
+  ok(upperLeft && lowerRight, "numerator sits upper‑left, denominator lower‑right (separated by the slash)");
+  ok(ser(Gl.buildGrid(["f12"])) !== ser(Gl.buildGrid(["f34"])), "½ and ¾ remain distinct bitmaps in the new form");
+})();
 
 // (c) accent vs body ink role.
 function inks(tokens){ const s = new Set(); Gl.buildGrid(tokens).cells.forEach(r => r.forEach(v => { if(v) s.add(v); })); return s; }

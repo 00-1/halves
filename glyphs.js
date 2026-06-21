@@ -16,7 +16,7 @@
  * Tokens are a compact string DSL (see modes.js `glyphTokens`):
  *   "x"      a glyph in operand ink           (digits, x a b n k, × ÷ + − ± / %)
  *   "*×"     leading "*" = operator ACCENT ink (the amber-highlighted symbol)
- *   "f12"    a stacked vulgar fraction 1⁄2     (num / bar / den)
+ *   "f12"    a slashed vulgar fraction 1⁄2     (num · diagonal slash · den)
  *   "s2"     a raised superscript 2            (for x²)
  *
  * window.Glyphs = { buildGrid(tokens)->{w,h,cells,missing}, draw(canvas,tokens,opts), H }
@@ -66,7 +66,7 @@
   function parse(s){
     let ink = 1;
     if(s.charAt(0) === "*"){ ink = 2; s = s.slice(1); }
-    if(s.charAt(0) === "f") return { type:"frac", num:s.charAt(1), den:s.charAt(2), ink:ink, w:3 };
+    if(s.charAt(0) === "f") return { type:"frac", num:s.charAt(1), den:s.charAt(2), ink:ink, w:5 };
     if(s.charAt(0) === "s") return { type:"sup",  ch:s.charAt(1), ink:ink, w:3 };
     return { type:"char", ch:s, ink:ink, w:5 };
   }
@@ -97,11 +97,15 @@
       const g = SMALL[t.ch];
       if(!g){ missing.push(t.ch); return; }
       for(let r=0;r<4;r++) for(let c=0;c<3;c++) if(g[r].charAt(c) === "#") cells[r][x0+c] = t.ink;
-    } else { // frac: numerator (rows 0‑3) · bar (row 4) · denominator (rows 5‑8)
+    } else { // frac (T104): DIAGONAL slashed fraction — far clearer at small node
+      // size than the old crammed 3‑wide stack. Numerator sits top‑LEFT, the
+      // denominator bottom‑RIGHT, separated by a "/" anti‑diagonal across the 5×9 box.
       const gn = SMALL[t.num], gd = SMALL[t.den];
-      if(!gn) missing.push(t.num); else for(let r=0;r<4;r++) for(let c=0;c<3;c++) if(gn[r].charAt(c) === "#") cells[r][x0+c] = t.ink;
-      for(let c=0;c<3;c++) cells[4][x0+c] = t.ink;
-      if(!gd) missing.push(t.den); else for(let r=0;r<4;r++) for(let c=0;c<3;c++) if(gd[r].charAt(c) === "#") cells[5+r][x0+c] = t.ink;
+      if(!gn) missing.push(t.num); else for(let r=0;r<4;r++) for(let c=0;c<3;c++) if(gn[r].charAt(c) === "#") cells[r][x0+c] = t.ink;         // top‑left, cols 0‑2 rows 0‑3
+      if(!gd) missing.push(t.den); else for(let r=0;r<4;r++) for(let c=0;c<3;c++) if(gd[r].charAt(c) === "#") cells[5+r][x0+2+c] = t.ink;     // bottom‑right, cols 2‑4 rows 5‑8
+      // the slash: a clean two‑step staircase from bottom‑left to top‑right
+      const slash = [[8,0],[7,1],[6,1],[5,2],[4,2],[3,2],[2,3],[1,3],[0,4]];
+      slash.forEach(p => { cells[p[0]][x0+p[1]] = t.ink; });
     }
   }
 

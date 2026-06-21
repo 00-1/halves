@@ -3410,3 +3410,31 @@ how I verified:
 notes / questions: wording is "N/3 rewards earned" / "All rewards earned" (owner said "or
   similar"). Next per the pointer: **`T104`** (stacked-fraction glyphs ½/¾), then `T100`,
   `T101`–`T103`, `T89`/`T90`.
+
+## T104 — Fix the unreadable stacked-fraction glyphs ½/¾ (slashed + clearer)  [HANDOFF]
+commit: (this commit, on main) — [A] task (front-end polish, inserted between T99 and T100).
+Owner: the ½/¾ topic glyphs were unreadable at tech-tree node size.
+Goal: make the vulgar fractions legible at small node size — slashed/clearer.
+changed:
+  - **glyphs.js** — the pixel-font fraction (`fNM`) was a **3-wide vertical stack**
+    (numerator rows 0‑3 · a horizontal **bar** row 4 · denominator rows 5‑8): three
+    3×4 sub-glyphs + a bar crammed into 3 columns → mud at node size. Replaced with a
+    **5-wide DIAGONAL slashed fraction**: numerator top-LEFT (cols 0‑2, rows 0‑3),
+    denominator bottom-RIGHT (cols 2‑4, rows 5‑8), separated by a clean two-step "/"
+    staircase from bottom-left to top-right. Same SMALL digit set + ink role (accent for
+    `*f…`); only `parse()`'s frac width (3→5) and the `stamp()` frac branch changed. The
+    two affected topic glyphs are `fractionsof` (½n) and `fractions` (¾). Verified the
+    rendered bitmaps read as "1 / 2" and "3 / 4".
+  - **test/glyphs.test.js** — extended (already a CI gate): asserts the fraction is now
+    5 wide, carries a diagonal slash (top-right + bottom-left corners inked), has **no full
+    horizontal mid-bar** (the old stack is gone), places numerator upper-left + denominator
+    lower-right, and that ½/¾ stay distinct. Now **32 glyph checks**.
+how I verified:
+  - **`node test/glyphs.test.js` → ALL 32 GLYPH CHECKS PASSED.** `node -c glyphs.js` clean.
+    **Full 27-gate suite green** (the 15 topic glyphs remain pairwise distinct; favicon/mark
+    wiring unaffected). ASCII-rendered ½/¾ to eyeball the diagonal form.
+notes / questions: **headless can't judge the final node-size legibility — please eyeball the
+  live tech-tree nodes** for `fractionsof`/`fractions`. The digits are still the 3×4 SMALL
+  set (now spatially separated by the slash, which is the readability win); if you want them
+  bolder I can thicken the slash or widen the digits. Next per the pointer: **`T100`** (gamey
+  buttons-first restyle), then `T101`–`T103` (shipping/perf), then `T89`/`T90` (finish Arena).
