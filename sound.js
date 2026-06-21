@@ -24,8 +24,8 @@
   // failed because the engine runs at ~half scale (peaks ≈0.51 at 0.80) so small
   // bumps did nothing; the slider reaches genuinely loud (up to VOL_MAX) and the
   // limiter clamps the peaks. A global TEMPO multiplier scales every style's BPM.
-  let vol = 0.80;                   // master volume (default; owner-calibrated via the slider)
-  const VOL_MAX = 2.5;              // the slider can push well past full scale (limiter-safe)
+  let vol = 0.80;                   // master volume (bare-engine default; the app sets the owner-calibrated default on boot)
+  const VOL_MAX = 4.0;              // T114 — owner hit the 2.5 max and wanted more; range now reaches 4× (limiter-safe)
   let tempoMult = 1.0;              // global music-tempo multiplier (bpm × tempoMult)
   const TEMPO_MIN = 0.4, TEMPO_MAX = 1.0;
   const LIMIT_DB = -1.5;            // brickwall ceiling (the louder range cannot clip)

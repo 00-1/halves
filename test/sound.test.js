@@ -66,7 +66,14 @@ ok(S.musicPlaying(), "unmute resumes the music scheduler");
 // ---- T113: live Volume + Tempo sliders (a WIDE range, calibratable by ear) ----
 const ssrc = read("sound.js"), msrc = read("main.js"), hsrc = read("index.html");
 ok(typeof S.setVolume === "function" && typeof S.setTempo === "function", "T113: live setVolume/setTempo are exposed");
-ok(S.VOL_MAX >= 2 && S.VOL_MAX <= 3, "T113: the volume range reaches genuinely LOUD (VOL_MAX " + S.VOL_MAX + " ≥ 2× — fixes the 'tiny bump' problem)");
+ok(S.VOL_MAX === 4, "T114: VOL_MAX raised to 4.0 (the owner hit the old 2.5 max and wanted more) — " + S.VOL_MAX);
+// T114 — owner-calibrated FRESH-PROFILE defaults (a saved pref still wins): volume
+// 3.0× (slider 300 of 0–400), tempo 0.5× (slider 50). The defaults sit in main.js.
+ok(/function loadVol\(\)\{[\s\S]{0,90}: 300;/.test(msrc), "T114: fresh-profile default volume = 300 (3.0× — comfortably 'past 2.5×')");
+ok(/function loadTempo\(\)\{[\s\S]{0,90}: 50;/.test(msrc), "T114: fresh-profile default tempo = 50 (0.5× — middle of the owner's 0.4–0.6)");
+ok(/id="volRange"[^>]*max="400"/.test(hsrc) && /id="volRange"[^>]*value="300"/.test(hsrc), "T114: the volume slider reaches 400 (4.0×) and defaults to 300 (3.0×)");
+ok(/id="tempoRange"[^>]*value="50"/.test(hsrc), "T114: the tempo slider defaults to 50 (0.5×)");
+ok(/halves\.vol/.test(msrc) && /isFinite\(v\) \? v :/.test(msrc), "T114: a saved halves.vol/halves.tempo still wins (only the fallback default changed)");
 // setVolume drives the master gain LIVE, across a wide range that passes today's 0.80
 S.setVolume(1.6); ok(Math.abs(master.gain.value - 1.6) < 1e-9, "T113: setVolume(1.6) sets the master gain LIVE to 1.6 (> 0.80 — genuinely louder)");
 S.setVolume(99);  ok(Math.abs(master.gain.value - S.VOL_MAX) < 1e-9, "T113: setVolume clamps to VOL_MAX (" + master.gain.value + ") — the limiter keeps it clip-safe");

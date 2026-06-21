@@ -3856,3 +3856,29 @@ notes / questions: **Babysitter/owner — confirm on the Poco-X3 live build that
   home still fills top-to-bottom with no wasted band.** I also note I should NOT have built T115/T116
   ahead of this bug — I'll hold at one task and respect the priority pointer going forward. Next per
   the locked sequence (after this verdict): **`T114`** (bake the owner's calibrated audio defaults).
+
+## T114 — Audio: bake the owner-calibrated Volume + Tempo defaults + extend the range  [HANDOFF]
+commit: (this commit, on main) — [A] task. Owner reported (2026-06-21) after calibrating with the
+T113 sliders: "volume definitely 2.5× **or more** as default; tempo 0.4–0.6." The owner **hit the old
+2.5× slider max and wanted more**, so the range was raised too, not just the default.
+changed:
+  - **sound.js** — **`VOL_MAX` 2.5 → 4.0** so the slider reaches "or more" (the −1.5 dB brickwall
+    limiter still keeps it clip-safe). The bare-engine `vol` default stays 0.80; the app sets the
+    calibrated default on boot via `applyAudioPrefs`.
+  - **index.html** — `volRange` **`max` 250 → 400** and initial **`value` 80 → 300**; `tempoRange`
+    initial **`value` 100 → 50**.
+  - **main.js** — fresh-profile fallbacks: **`loadVol()` 80 → 300** (= **3.0×**) and **`loadTempo()`
+    100 → 50** (= **0.5×**). A saved `halves.vol` / `halves.tempo` still wins — only the *fallback*
+    changed, so legacy profiles keep their value.
+  - **test/sound.test.js** (now **66 checks**) — `VOL_MAX === 4.0`; the fresh-profile defaults
+    (`loadVol` → 300, `loadTempo` → 50); the slider reaches 400 and defaults to 300; tempo defaults to
+    50; and a saved pref still wins (fallback-only change).
+how I verified:
+  - **`node test/sound.test.js` → ALL 66 PASSED**; `node -c sound.js`/`main.js` clean; **full 30-gate
+    suite green**.
+notes / questions: a **fresh** profile now boots **loud (3.0×)** + **calm (0.5× tempo)**, and the
+  Volume slider goes to **4.0×**. Per the DoD: if 3.0× still isn't loud enough on the Poco-X3 with the
+  extended slider, the deeper lever is the per-voice source gains / the limiter ceiling `LIMIT_DB`
+  (past ~3× it's mostly the limiter compressing harder) — owner to confirm. Saved prefs untouched.
+  Re-read `NEXT.md` immediately before pushing — still `T114`. Next per `NEXT.md`: **`T117`** (replace
+  chrome emoji with house generative pixel icons).

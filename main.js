@@ -1891,8 +1891,10 @@
   // T113 — owner-calibrated Volume + Tempo (persisted slider positions). Volume is
   // stored 0–250 (→ ×0..2.5 master gain; the limiter keeps the top end clip-safe);
   // tempo is stored 40–100 (→ ×0.40..1.00 BPM multiplier).
-  function loadVol(){ const v = parseInt(localStorage.getItem("halves.vol"), 10); return isFinite(v) ? v : 80; }
-  function loadTempo(){ const v = parseInt(localStorage.getItem("halves.tempo"), 10); return isFinite(v) ? v : 100; }
+  // T114 — owner-calibrated fresh-profile defaults: volume 3.0× (slider 300, of a
+  // 0–400 range), tempo 0.5× (slider 50). A saved halves.vol/halves.tempo wins.
+  function loadVol(){ const v = parseInt(localStorage.getItem("halves.vol"), 10); return isFinite(v) ? v : 300; }
+  function loadTempo(){ const v = parseInt(localStorage.getItem("halves.tempo"), 10); return isFinite(v) ? v : 50; }
   function saveVol(v){ try{ localStorage.setItem("halves.vol", String(v)); }catch(e){} }
   function saveTempo(v){ try{ localStorage.setItem("halves.tempo", String(v)); }catch(e){} }
   function applyAudioPrefs(){
