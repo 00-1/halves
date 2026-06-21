@@ -1,20 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T26` (Goblin Gold — fmtGold ladder solid, earn
-scales with speed/combo/collection, 11 wealth milestones, no spend). **🏁 Phase 3
-(the hero/Arena/loot/Gold metagame) is COMPLETE.** **Do `T31` next** — Phase 4: the
-daily-practice momentum counter per BACKLOG (a single number, **+1 each day played,
-−1 each day missed, floored at 0, capped at 75**; reducer `count = min(75, max(0,
-count − (N−1)) + 1)`; milestones off the high-water `best` at 3/7/14/30/50/75; small
-non-blocking start-screen indicator; no guilt/countdowns/notifications;
-migration-safe). DoD: Node-test the pure reducer across all branches + the cap +
-milestones; no timers/notifications; no regressions. Then **`T32`** (practice view)
-(**`T31`** day counter, **`T32`** practice view) → content (**`T27`** guides,
-**`T13`** audit, **`T30`** deep review) → **`T45`** (final perf/CPU/memory audit,
-LAST). **Owner is away — the loop runs to completion unattended:** the Babysitter
-makes sensible spec decisions on any judgement points rather than blocking; the
-Builder escalates only genuine blockers in BUILDER-LOG. Everything below is specced
-and decided — no owner input required to finish.
+**Current verdict:** `APPROVED — T31` (momentum counter — reducer correct across all
+branches, cap 75, 6 milestones, no timers). **Do `T27` next** (reordered ahead of
+T32 — **T32 depends on T27** for its per-question approach notes). T27 = per-topic
+"how to beat it" guides per `docs/agent/DESIGN-guides.md`: concise, British,
+**mathematically correct**, 10-yo-appropriate `{intro, tips[2-4], example}` per
+topic; openable from topic selection for locked & unlocked topics; 360px-safe. DoD:
+every topic has a guide; Babysitter audits each for correctness + wording; no
+regressions. Then **`T32`** (per-question Practice/Review view — heat-map grid,
+self-paced timed attempts, individual Beat/Spark, approach notes from T27;
+round-level achievements stay round-only) → **`T13`** (question-set audit) →
+**`T30`** (deep content review) → **`T45`** (final perf/CPU/memory audit, LAST).
+**Owner is away — the loop runs to completion unattended:** the Babysitter makes
+sensible spec/ordering decisions on judgement points (e.g. this T27-before-T32
+reorder) rather than blocking; the Builder escalates only genuine blockers in
+BUILDER-LOG. Everything left is specced and decided — no owner input required.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -30,6 +30,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T31 — Daily-practice momentum counter → APPROVED
+The forgiving up/down day counter (owner's redesign). Verified via `window.Momentum` under a DOM shim + Node: node -c OK; no stub; **no momentum timers** (lazy, updates only on play); catalogue 1041→**1047**, names still unique; icon test green. **Reducer correct across all branches:** first play→1; same-day no-change; gap-1→+1; gap-3 (7→6 = max(0,7−2)+1); long absence (gap 100)→1 with `best` preserved; floored at 0; **capped at 75** (74+1→75, 75+1→75, 200 consecutive days stay 75/75); `best` monotonic ≤75 and survives a count dip. 6 momentum milestones at 3/7/14/30/50/75 firing off `best`; `evaluate()` skips momentum items. Label "Momentum", MAX 75. No regressions.
 
 ### T26 — Currency (Goblin Gold) → APPROVED — Phase 3 COMPLETE
 Goblin Gold (earn/display/persist, no spend). Verified via `window.Gold` under a DOM shim + Node: node -c OK; no stub; **no spend code** (only the "NO spending" comment); catalogue 1030→**1041**, names still globally unique; icon-variation CI test still green. **`fmtGold` correct across the whole ladder** (0/999/1.00K/12.3K/1.23M/1.00B/1.00T/1.00Qa/1.00Qi/1.00Sx…1.00Dc and beyond) and **NaN/Infinity/negative all → 0** (never NaN/∞). label="Goblin Gold". Earn `questionGold(target,dt,combo,mult)`: **faster→more (5 vs 3), higher combo→more (7.5), higher mult→more (15)**, all >0; `goldMult` grows with collection; round/tier bonuses; **skips earn nothing** (builder's DOM harness: clean round earns & persists `halves.gold`>0; all-skipped round earns 0). 11 wealth-milestone `gold:` collectibles; `evaluateGold` fires at 1000 (not 999); `evaluate()` skips gold items. No regressions.

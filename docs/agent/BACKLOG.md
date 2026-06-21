@@ -374,7 +374,7 @@ screen/topic change. Honour mute; stop when hidden.
 
 ## Phase 2.8 — Topic guides
 
-### T27 — Per-topic "how to beat it" guides · status: BLOCKED
+### T27 — Per-topic "how to beat it" guides · status: OPEN
 Add a short, friendly guide for **every** topic (incl. Part-2 variants), reachable
 from the **topic-selection screen**, aimed at a British 10-year-old — concise, not
 verbose. Full content standard + tone + seed examples + per-topic strategy hints:
@@ -764,7 +764,7 @@ the Babysitter; both are deploy-safe, self-contained, and respect the doc's red
 lines (no purchases, no public leaderboards, no guilt/loss-aversion dark
 patterns, no push notifications).
 
-### T31 — Daily-practice momentum counter · status: BLOCKED (spec CONFIRMED by owner)
+### T31 — Daily-practice momentum counter · status: DONE
 A forgiving habit signal — **not** a fragile streak with freezes (owner redesign).
 A single number that **goes up 1 for each day you play and down 1 for each day you
 don't**, floored at 0 and **capped at 75** (owner: 100 is unrealistic to reach).
