@@ -2382,3 +2382,38 @@ how I verified:
 notes / questions: computed everything from `tierRegion`/`regionLabel`/`REGION_SIZE`
   so it auto-tracks the structure. Next per REVIEW order: **T52** (procedural enemy
   sprites in the Arena — a new generator).
+
+## T52 — Procedural enemy sprites in the Arena (new generator)  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - **monsters.js — NEW standalone generator** (`window.Monsters`), separate from
+    the collectibles icon system (no `Collectibles`/`drawIcon`/`ARCH`/`CATEGORIES`
+    reuse). Pure + deterministic per tier: `buildGrid(tier) → { role 16×16 (0/1
+    outline/2 body/3 accent/4 eye), boss, pal }` and `draw(canvas, tier)`. Seeded
+    from `hashStr(tier.name) ^ tier.n`. A **vertically-symmetric, lumpy creature**:
+    body ellipse with per-row lumpiness, **1–3 eyes** (more in deep/void regions),
+    **horns/antennae** (region-biased), a **teeth mouth**, symmetric **spots**, and
+    **feet/tentacle stubs**. **Region-themed** (silhouette/horn/eye/feature bias by
+    the 10 regions) and **type-tinted** (Brawn red / Cunning green / Arcane purple
+    palette). **Bosses** (every 12th tier) are **larger + crowned + never single-
+    eyed**. Clearly distinct from the hero "creature blob".
+  - index.html — loads `monsters.js` (after enemies.js).
+  - main.js — `renderArena` draws the **current tier's enemy** on its card
+    (`.at-enemy`, 64px) and the **foe you just fought** in the result header
+    (`.ar-enemy` beside the hero portrait, "hero vs enemy"); a post-render
+    `querySelectorAll(".at-enemy, .ar-enemy")` loop calls `Monsters.draw`
+    (static — no RAF). `lastBattle` carries `tierN`/`tierType` for the result foe.
+  - styles.css — `.at-enemy`/`.ar-enemy`/`.ar-port-row`/`.ar-vs` (pixelated).
+how I verified:
+  - `node test/monster-variation.test.js` (NEW, 14th gate) → **ALL 9 PASS**:
+    deterministic; **40/40 sampled sprites pairwise distinct**; **≥90% of pairs
+    differ ≥0.15** (779/780); **every region's boss differs from its grunt** (≥0.2,
+    10/10) and **renders bigger** (10/10); **regions look distinct** (45/45 pairs);
+    **palette tinted by RPS type**; standalone (no icon-system reuse in code); **no
+    RAF**. ASCII-rendered t1/t12/t60/t120 — varied creatures, bosses crowned/larger.
+  - `node -c main.js` OK; **item icons + hero portraits untouched** (icon-variation
+    + hero-icons gates green); all fourteen gates pass; 360px-safe; pixelated. No
+    regressions (arena/wayfinding/nav-icons still green with the new canvases).
+notes / questions: a brand-new generator, fully independent of the icon engine.
+  Next per REVIEW order: **T53** (procedural region scenery — per-location
+  backdrop behind the tier card).

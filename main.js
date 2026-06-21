@@ -770,7 +770,11 @@
     if(lastBattle){
       const r = lastBattle;
       html += '<div class="arena-result '+(r.won ? "win" : "loss")+'">'+
-        (r.heroId ? '<canvas class="pix ar-port" width="48" height="48" data-hero="'+esc(r.heroId)+'" data-type="'+esc(r.heroType||"Brawn")+'"></canvas>' : "")+
+        '<div class="ar-port-row">'+
+          (r.heroId ? '<canvas class="pix ar-port" width="48" height="48" data-hero="'+esc(r.heroId)+'" data-type="'+esc(r.heroType||"Brawn")+'"></canvas>' : "")+
+          '<span class="ar-vs">vs</span>'+
+          '<canvas class="pix ar-enemy" width="48" height="48" data-tier="'+(r.tierN||1)+'" data-tname="'+esc(r.tierName)+'" data-ttype="'+esc(r.tierType||"Brawn")+'"></canvas>'+
+        '</div>'+
         '<div class="ar-title">'+(r.won ? "Victory!" : "Defeated")+'</div>'+
         '<div class="ar-sub">'+esc(r.heroName)+' vs '+esc(r.tierName)+'</div>'+
         '<div class="ar-maths">'+Math.round(r.res.rating)+' ★ × '+r.res.matchup+
@@ -809,6 +813,7 @@
         return '<span class="at-pip '+(isB ? "boss " : "")+cl+'" title="Tier '+at+'"></span>';
       }).join("");
       html += '<div class="arena-tier t-'+tier.type.toLowerCase()+'">'+
+        '<canvas class="pix at-enemy" width="64" height="64" data-tier="'+tier.n+'" data-tname="'+esc(tier.name)+'" data-ttype="'+esc(tier.type)+'"></canvas>'+
         '<div class="at-region">'+esc(E.regionLabel(reg))+' · region '+(reg+1)+'/'+REGIONS+' · tier '+posInReg+'/'+RS+'</div>'+
         '<div class="at-pips">'+pips+'</div>'+
         (isBossNow ? '<div class="at-boss now">⚔ Region boss — defeat '+esc(tier.name)+' to conquer '+esc(E.regionLabel(reg))+'</div>'
@@ -841,6 +846,10 @@
     });
     const rp = $("arenaBody").querySelector(".ar-port");
     if(rp && rp.dataset.hero) C.drawIcon(rp, "hero:"+rp.dataset.hero, HERO_PAL[rp.dataset.type] || HERO_PAL.Brawn, "familiar");
+    // enemy sprites (T52) — current-tier card + the result header's foe (static)
+    if(window.Monsters) $("arenaBody").querySelectorAll(".at-enemy, .ar-enemy").forEach(cv => {
+      window.Monsters.draw(cv, { n: +cv.dataset.tier, name: cv.dataset.tname, type: cv.dataset.ttype });
+    });
     $("arenaFight").disabled = cleared || !arenaHero || !heroes.length;
     $("arenaFight").textContent = cleared ? "Cleared" : (arenaHero ? "Fight!" : "Pick a hero");
   }
@@ -894,7 +903,7 @@
     const wealth = earnGold(earn, col);               // grants any wealth milestones into col
     saveCollected(col);
     loot = loot.concat(wealth);
-    lastBattle = { won: res.win, res: res, heroName: heroName, heroId: heroId, heroType: (Hs.byId(heroId)||{}).type, tierName: tier.name, loot: loot, newHeroes: newHeroes, regionCleared: regionCleared, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
+    lastBattle = { won: res.win, res: res, heroName: heroName, heroId: heroId, heroType: (Hs.byId(heroId)||{}).type, tierName: tier.name, tierN: tier.n, tierType: tier.type, loot: loot, newHeroes: newHeroes, regionCleared: regionCleared, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
     arenaHero = null;
     renderArena();
     const ab = $("arenaBody"); if(ab) ab.scrollTop = 0;   // T65: show the result + tier, not the hero list
