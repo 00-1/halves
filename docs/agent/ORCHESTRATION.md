@@ -40,11 +40,20 @@ files the other never touches, so `main` never conflicts.
 5. **PUSH TARGETS.** Both push to Halves `main` (deploys). B also pushes to `brickmap` (its
    own repo flow). Neither Builder writes `claude/agent` (Babysitter-only).
 
-## Queue (two pointers)
+## Queue (canonical pointer = `NEXT.md`)
 
-`REVIEW.md` carries **two** next-task pointers — **"Builder A — next"** and **"Builder B —
-next"**. Each Builder reads **ONLY its own**. Tasks in `BACKLOG.md` are tagged **[A]** or
-**[B]**. The Babysitter watches `main` for commits from either and reviews by task id.
+**`NEXT.md` is the CANONICAL pointer** (added 2026-06-21): two crisp lines — Builder A's and Builder
+B's current task — that each Builder **re-reads FRESH before every task and again before pushing**,
+obeying it over anything they had in mind (a `BUILD ONLY`/`BUG` line is absolute). `REVIEW.md` keeps the
+verbose **"Builder A — next"** / **"Builder B — next"** rationale; `NEXT.md` is the one-line truth
+derived from it. Each Builder reads **ONLY its own** line. Tasks in `BACKLOG.md` are tagged **[A]**/
+**[B]**. The Babysitter updates `NEXT.md` on **every** review and watches `main` for commits, reviewing
+by task id.
+
+*Why:* Builder A repeatedly built its previously-queued task instead of a fresh DO-FIRST insert — a
+**staleness race** (A pulled its next task before the insert was visible), not disobedience. Fix =
+the fresh-re-read rule + this unambiguous one-line channel; the owner's direct nudge is the backstop
+for a live bug.
 
 ## brickmap
 
