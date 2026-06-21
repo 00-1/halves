@@ -1739,3 +1739,37 @@ notes / questions: **provable idling** (fx + scheduler), **no growth over
   localStorage), and the single real leak (game-clock RAF) fixed with before/after
   evidence. Both Node gates wired into the Pages workflow. On approval the BACKLOG
   is fully DONE.
+
+## T46 — Fix low-contrast secondary text (WCAG AA)  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - styles.css — **`--muted: #6B7480 → #939CAB`** (the AA-compliant value the
+    Babysitter pre-verified). Used for nearly all secondary/label text, so this one
+    token fixes every failing case at once. Plus the 4 sub-10px text rules bumped to
+    10px: `.inv-cell .inv-name` **8→10px**, `.g-eg-tag` 9→10px, `.hero-chip` 9→10px,
+    `.toast .t-tag` 9→10px. Colour/size only — no markup change.
+  - test/contrast.test.js — NEW Node WCAG gate (computes relative luminance +
+    contrast ratio straight from styles.css; asserts --muted ≥4.5:1 on bg/surface/
+    surface-2/line, --muted dimmer than --text, and no font-size <10px remains).
+  - .github/workflows/pages.yml — added a third gate step "Contrast test (gate)".
+### What was wrong / what's fixed
+The old `--muted #6B7480` failed AA for normal text on every background it sat on
+(3.99:1 bg · 3.65:1 surface · 3.26:1 surface-2 · **2.73:1 line** — AA needs 4.5:1).
+`#939CAB` lifts all four above the bar while staying clearly secondary.
+how I verified:
+  - `node test/contrast.test.js` → **ALL 6 CONTRAST CHECKS PASSED**: --muted on
+    --bg **6.83:1**, --surface **6.24:1**, --surface-2 **5.57:1**, --line **4.66:1**
+    (all ≥4.5, matching the Babysitter's computed figures exactly); --muted still
+    dimmer than --text (hierarchy preserved); **no font-size rule under 10px**
+    (87 rules scanned, smallest now 10px).
+  - styles.css diff is **exactly 5 lines** (1 colour var + 4 font sizes) — no
+    structural/markup change. All three gates green together (icon + perf + contrast).
+    360px-safe (inv-name still wraps via overflow-wrap:anywhere; the tile grid is
+    unchanged minmax(64px,1fr)). No regressions.
+notes / questions: I used **10px** for the four bumped rules (the DoD's hard floor)
+  rather than the soft "11px preferred" — these are dense tile captions / uppercase
+  tag labels in the tight 64px inventory grid and on toasts, where 10px keeps the
+  layout clean while clearing the legibility bar. Easy to lift to 11px if the owner
+  prefers larger. Suggested value taken as-is since the Babysitter had pre-verified
+  it. Next per REVIEW: **T48** (inventory tab regression), then **T47** (Arena
+  pure stat check).

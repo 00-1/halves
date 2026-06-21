@@ -4,7 +4,7 @@
   --surface-2:#1E2530;
   --line:#2A323F;
   --text:#E6E9EF;
-  --muted:#6B7480;
+  --muted:#939CAB;
   --amber:#F5B544;
   --mint:#4ADE9A;
   --coral:#FF6B6B;
@@ -100,7 +100,7 @@ body{
 .g-tips li::before{content:"▸";position:absolute;left:0;color:var(--amber)}
 .g-eg{font-family:var(--mono);font-size:12.5px;color:var(--text);background:var(--surface-2);border-radius:10px;
   padding:10px 12px;line-height:1.5}
-.g-eg-tag{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);margin-bottom:4px;font-weight:700}
+.g-eg-tag{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mint);margin-bottom:4px;font-weight:700}
 .mode-row.done .mr-state,.mode-row.done .mr-prog{color:var(--mint)}
 .best{margin-top:26px;font-family:var(--mono);color:var(--muted);font-size:13px;min-height:18px;letter-spacing:.04em}
 .best b{color:var(--amber);font-weight:700}
@@ -281,7 +281,7 @@ canvas.pix{image-rendering:pixelated}
 .inv-cell:active{transform:scale(.93)}
 .inv-cell canvas{image-rendering:pixelated;width:44px;height:44px}
 /* full name shown — wrap to as many lines as needed (the cell grows), never clip */
-.inv-cell .inv-name{width:100%;font-family:var(--mono);font-size:8px;line-height:1.25;color:var(--muted);
+.inv-cell .inv-name{width:100%;font-family:var(--mono);font-size:10px;line-height:1.25;color:var(--muted);
   text-align:center;white-space:normal;overflow-wrap:anywhere;word-break:break-word;hyphens:auto}
 .inv-cell.locked{cursor:default}
 .inv-cell.locked .q{font-family:var(--mono);font-weight:800;color:var(--line);font-size:22px}
@@ -322,7 +322,7 @@ canvas.pix{image-rendering:pixelated}
 .hero-items{margin-top:7px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .hero-il{font-family:var(--mono);font-size:10px;color:var(--muted)}
 .hero-none{font-family:var(--mono);font-size:11px;color:var(--muted)}
-.hero-chip{font-family:var(--mono);font-size:9px;color:var(--text);background:var(--surface-2);
+.hero-chip{font-family:var(--mono);font-size:10px;color:var(--text);background:var(--surface-2);
   border:1px solid var(--line);border-radius:999px;padding:1px 7px;white-space:nowrap}
 .hero-chip.r-uncommon{border-color:#3fce8c}.hero-chip.r-rare{border-color:#3f97d8}
 .hero-chip.r-epic{border-color:#9a5cf6}.hero-chip.r-legendary{border-color:#f0ad3c}
@@ -447,7 +447,7 @@ canvas.pix{image-rendering:pixelated}
 .fx-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:59}
 .toast canvas{image-rendering:pixelated;border-radius:6px;background:var(--surface);flex:0 0 auto}
 .toast .t-txt{display:flex;flex-direction:column;line-height:1.15}
-.toast .t-tag{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.toast .t-tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .toast .t-name{font-family:var(--display);font-weight:700;font-size:14px;color:var(--text)}
 .toast .t-glyph{flex:0 0 auto;width:36px;height:36px;display:flex;align-items:center;justify-content:center;
   border-radius:6px;background:var(--surface);font-family:var(--mono);font-weight:700;font-size:15px;color:var(--amber)}
