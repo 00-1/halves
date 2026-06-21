@@ -719,7 +719,7 @@ unlock). Start-screen link.
   (Babysitter re-runs the full battle-invariant suite against the Arena's actual
   win path.)
 
-### T25 — Balance + milestone wiring · status: BLOCKED
+### T25 — Balance + milestone wiring · status: DONE
 Hero-unlock collectibles/milestones for "unlock all heroes", "defeat tier N",
 "defeat the final tier". Balance pass so the curve is fair and the final tier
 matches "needs ~everything". Update docs/research-11plus.md note that Phase 3 is

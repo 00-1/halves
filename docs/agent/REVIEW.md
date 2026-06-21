@@ -1,13 +1,16 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T36` (icon overhaul — 50 categories, strong
-per-item variation, CI-gated variation test, names still unique). **Do `T25` next:**
-balance + milestone wiring — hero-unlock collectibles/milestones ("unlock all
-heroes", "defeat tier N", "defeat the final tier"); a balance pass so the curve is
-fair and the final tier matches "needs ~everything" (already proven in T24/T43 —
-keep it); note in research-11plus.md that Phase 3 is the engagement layer. DoD:
-Node test of the progression curve + milestones evaluate correctly + final-tier ⇔
-full-collection invariant still holds. Then **`T26`** (Goblin Gold) → Phase 4
+**Current verdict:** `APPROVED — T25` (5 tier/hero milestones wired; balance kept;
+invariants intact). **Do `T26` next:** the **Goblin Gold** currency per
+DESIGN-heroes.md §Currency — **earn/display/persist, NO spending**. Display label
+"Goblin Gold" in ONE constant (internal `gold`/`fmtGold`/`halves.gold`). Earn hooks
+(per clean question scaled by speed; per round; first Mastery; first topic 100%;
+enemy-tier depth — skipped = 0) × escalating global multiplier + in-round combo;
+`fmtGold(n)` big-number ladder (K/M/B/T/Qa…Dc, 3 sig figs, never NaN/∞); animated
+ticking counter + "+N" flourish on start + results; wealth-milestone collectibles
+at 1K…1Qa. DoD: Node-test earn/multiplier/combo (skipped=0; faster→more) + `fmtGold`
+across the whole ladder + wealth milestones fire at thresholds; persists; no spend
+mechanic; no regressions. Then Phase 4
 (**`T31`** day counter, **`T32`** practice view) → content (**`T27`** guides,
 **`T13`** audit, **`T30`** deep review) → **`T45`** (final perf/CPU/memory audit,
 LAST). **Owner is away — the loop runs to completion unattended:** the Babysitter
@@ -29,6 +32,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T25 — Balance + milestone wiring → APPROVED
+5 new Milestone collectibles (`meta:tier10/25/50` Climber/Breaker/Crusher, `meta:tier100` Realm Champion, `meta:allheroes` Legendary Roster) + `evaluateMeta(heroesUnlocked, total, has)`; balance unchanged (already proven in T24/T43). Verified (Node): node -c OK; no stub; catalogue 1025→**1030**, all 1030 names still globally unique; icon-variation test still green. **All 5 milestones registered.** `evaluateMeta` fires `meta:tier10` on the `tier:10` marker (not on `tier:9`), `meta:tier100` on `tier:100`, and `meta:allheroes` at **12/12 and not 11/12**. `evaluate(ctx, has)` **never returns a meta item** (meta-path only — granted in finish()/finishBattle() via `grantMeta`). Invariants intact: tier 100 unbeatable with 0 items, tier 1 winnable by starter, def monotonic (0 dips). No regressions.
 
 ### T36 — Pixel icons: ~50 categories + per-item variation → APPROVED
 Full icon-engine rewrite per DESIGN-icons.md (G 12→16; 12 archetype renderers → 50-entry CATEGORIES; `categoryOf`/`familyOf` replace the old style index; `shiftPalette` + structural jitter + interior texture, silhouette & `locked` cells never touched). Verified: node -c all OK; **old API fully removed** (no `ICON_STYLES`/`itemStyle`/`styleOverride`); no stub. **50 distinct categories** in catalogue + 50-entry table; every item has a `category`; `familyOf ∈ [0,12)`. **`test/icon-variation.test.js` PASSES all 5** (ran it: cross-category role ≥0.18 [closest staff/wand 0.237]; within-category combined ≥0.22 [worst key 0.282], no identical pairs; identity cells 100%; determinism) — and it's **wired into the Pages workflow as a deploy gate**. `drawIcon` renders all 50 categories + the hero portrait (`"familiar"`) with 0 throws; inventory/heroes/arena render. **Names still globally unique** after NOUNS reindexed to the 12 families (+Tool/Garment) and food templates moved to the provision family. Accepted, documented interpretation: `gridDist` normalised by the union of occupied cells (the meaningful "fraction of the icon's own pixels that differ" measure). No regressions.
