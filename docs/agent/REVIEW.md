@@ -1,6 +1,23 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T80` (best-attempt board: event entries + live-window lockout) ·
+**Current verdict:** `APPROVED — T81` (event presentation — emblem art · music · home banner) ·
+live build **`4990953`**. **🎉 Completes the Phase 6.5 Events block (T78→T81).** New standalone
+`eventart.js` (`window.EventArt`): a seeded **heraldic-crest emblem** generator — its own visual
+language (anti-dilution, not a reskin), static draw. `sound.js` adds a dedicated calm event
+theme **"Festival Day" (EVENT_STYLE 17, 92 BPM)**, routed in during the gauntlet (`eventCtx ?
+"event"`). `main.js` `renderEventBanner()` puts a **prominent banner on the home screen (`#start`,
+above the picker)** with the emblem art, name/blurb, a **Play CTA that routes into the live
+event**, and a **live countdown to 00:00 UTC** (ticks only while home is visible; re-renders on
+rollover; owned-today reads "reward earned"). The **T80 tint fixup** is done properly: new
+`--amber-weak: rgba(245,181,68,.12)` token replaces the invalid `var(--amber)1f`. Verified
+**independently**: EventArt is **14/14 unique (100% pairwise distinct)**, deterministic, valid
+hex, static (no RAF/timers); event theme **92 BPM ≤95 + density 0.30 ≤0.4** (calm/volume hold,
+max BPM across all styles still 95); the banner is gated to live inside `#start` before the picker
+(home-screen prominence locked in), countdown targets `(epochDaysUTC+1)*DAY_MS`, CTA → `startEvent`;
+old invalid CSS **gone**; no Arena event-gate UI. `node -c` clean; **full 20-gate suite green**
+(`events.test.js` now 77, `sound.test.js` extended). T81 → DONE.
+
+**Previously approved (done):** `T80` (best-attempt board: event entries + live-window lockout) ·
 live build **`135b9a6`**. Events now appear on the Best Times board: a new **event best-attempt
 store keyed by EVENT id** (`halves.eventBest`, same `rank` order as topic boards) so the best
 **persists across the 14-day recurrence**; `finishEvent` records it. A "Daily Events" section
@@ -138,11 +155,11 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T81` next** (event presentation — the LAST Events task) — compelling per-event procedural
-art + copy + **new event music** + the **prominent home banner** (owner: a front-and-centre
-home-screen CTA, not hidden in menus). **Includes a required carry-over fixup:** the T80 live-row
-`background:var(--amber)1f` is invalid CSS (dropped) → replace with a valid low-alpha amber.
-After the Events block, **`T82`** (visual-direction deep research, Phase 6.7 — doc only), then
+**Events block (T78→T81) COMPLETE.** **Do `T82` next** — visual-direction **deep research**
+(Phase 6.7, **doc only**): learn FROM brickmap's performant visual character (no voxels),
+Android-primary; weigh rendering-stack options against our 3 crown jewels (a11y / no-build /
+Node-verification); **build ON our existing generative art** (icons/heroes/monsters/scenery/
+glyphs — owner guardrail); end with a ranked recommendation + a reversible first-spike. After it,
 content extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store). Specs in BACKLOG; this
 line is authoritative.
 

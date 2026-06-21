@@ -1375,7 +1375,7 @@ The actual game. Reuses the existing round/clock/scoring engine; adds the event 
   simulated 14-day recurrence** (set the clock forward 14 days → same event live again →
   prior best still present and beatable). Migration-safe; `node -c` clean; gates green.
 
-### T81 — Event presentation: compelling art + copy + event music + home banner · status: OPEN
+### T81 — Event presentation: compelling art + copy + event music + home banner · status: DONE
 Make events *feel* special. **New procedural art set** (anti-dilution rule — do not reskin
 existing art).
 - **Per-event procedural graphics:** a new, standalone procedural art generator for events
