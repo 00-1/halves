@@ -100,18 +100,21 @@ body{
 .sumlist{margin-top:24px;width:100%;max-width:340px;text-align:left}
 .sum-row{display:flex;align-items:center;gap:12px;min-height:44px;
   font-family:var(--mono);font-size:14px;padding:11px 14px;background:var(--surface);
-  border:1px solid var(--line);border-left:4px solid var(--line);border-radius:12px;margin-bottom:8px;
+  border:1px solid var(--line);border-radius:12px;margin-bottom:8px;
   font-variant-numeric:tabular-nums;transition:transform .1s ease}
 .sum-row .md{flex:1 1 auto;min-width:0;color:var(--text);font-weight:700}
 .sum-row .md .holder{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:3px;
   letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* rank shown by a crisp (pixel-square) accent dot, not a rounded card border */
+.sum-row .holder .rankdot{display:inline-block;width:9px;height:9px;margin-right:7px;
+  vertical-align:-1px;background:var(--muted)}
+.sum-row .holder .rankdot.empty{background:transparent;box-shadow:inset 0 0 0 1.5px var(--muted)}
 .sum-row .sc{flex:0 0 auto;color:var(--mint);font-weight:700;text-align:right}
 .sum-row .tm{flex:0 0 auto;color:var(--amber);font-weight:700;min-width:56px;text-align:right}
 .sum-row .go{flex:0 0 auto;width:14px;text-align:center;color:var(--muted);font-size:12px}
 /* states: played (heat-map tint, set inline) · not-played · locked */
 .sum-row.played,.sum-row.notplayed{cursor:pointer}
 .sum-row.played:active,.sum-row.notplayed:active{transform:scale(.99)}
-.sum-row.notplayed{border-left-style:dashed}
 .sum-row.notplayed .sc,.sum-row.notplayed .tm{color:var(--muted)}
 .sum-row.locked{opacity:.5}
 
@@ -211,11 +214,14 @@ canvas.pix{image-rendering:pixelated}
 .inv-cat h4 span{color:var(--line)}
 .inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
 .topic-prog{display:flex;flex-direction:column;gap:6px}
-.tp-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);
+.tp-row{display:flex;flex-direction:column;gap:7px;background:var(--surface);border:1px solid var(--line);
   border-radius:10px;padding:8px 12px}
-.tp-name{flex:1 1 auto;font-family:var(--display);font-weight:700;font-size:14px;color:var(--text)}
+.tp-head{display:flex;align-items:center;gap:10px}
+.tp-name{flex:1 1 auto;min-width:0;font-family:var(--display);font-weight:700;font-size:14px;color:var(--text)}
 .tp-prog{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .tp-state{width:16px;text-align:center;font-size:13px;color:var(--mint)}
+.tp-bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.tp-fill{height:100%;border-radius:3px;transition:width .3s ease}
 .tp-row.done{border-color:var(--mint)}
 .tp-row.done .tp-name{color:var(--mint)}
 .tp-row.done .tp-prog{color:var(--mint)}

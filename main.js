@@ -216,18 +216,21 @@
           '<span class="go">🔒</span></div>';
       }
       const best = loadBoard(m.id).slice().sort(rank)[0];
-      // Unlocked but never played: muted/dashed, still tappable to play.
+      // Unlocked but never played: muted, hollow dot, still tappable to play.
       if(!best){
         return '<div class="sum-row notplayed" data-mode="'+esc(m.id)+'">'+
-          '<span class="md">'+esc(m.name)+'<span class="holder">Not played</span></span>'+
+          '<span class="md">'+esc(m.name)+
+            '<span class="holder"><i class="rankdot empty"></i>Not played</span></span>'+
           '<span class="sc">—</span><span class="tm">—</span><span class="go">▶</span></div>';
       }
-      // Played: heat-map tint + left accent + rank label in the rank's colour.
+      // Played: subtle heat-map tint + a crisp square rank dot + rank label in the
+      // rank's colour (no rounded coloured card border — see T37).
       const rk = C.RANKS[C.rankIndex(best.score, best.total, best.time)];
       return '<div class="sum-row played" data-mode="'+esc(m.id)+'" '+
-        'style="border-left-color:'+rk.color+';background:'+rk.color+'1f">'+
+        'style="background:'+rk.color+'1f">'+
         '<span class="md">'+esc(m.name)+
-          '<span class="holder" style="color:'+rk.color+'">'+esc(rk.name)+'</span></span>'+
+          '<span class="holder"><i class="rankdot" style="background:'+rk.color+'"></i>'+
+            '<span style="color:'+rk.color+'">'+esc(rk.name)+'</span></span></span>'+
         '<span class="sc">'+best.score+'/'+(best.total||"?")+'</span>'+
         '<span class="tm">'+fmt(best.time)+'s</span><span class="go">▶</span></div>';
     }).join("");
@@ -328,6 +331,14 @@
     dismissToast(t, 2600);
   }
 
+  // Topic progress-bar colour, graded by completeness: cool blue (low) → green →
+  // warm amber (high), with a distinct mint at a full 100%.
+  function topicBarColor(pct, done){
+    if(done) return "var(--mint)";
+    const p = Math.max(0, Math.min(1, pct));
+    return "hsl(" + Math.round(210 - 165 * p) + ",65%,55%)";
+  }
+
   function renderInventory(){
     const collected = loadCollected();
     const cat = C.categories();
@@ -335,17 +346,22 @@
     const have = C.CATALOG.filter(it => collected[it.id]).length;
     $("invMeta").textContent = have + " / " + total;
 
-    // per-topic completion overview (mirrors the picker's have/total)
+    // per-topic completion overview (mirrors the picker's have/total) with a
+    // colour-graded progress bar (cool/low → warm/high, distinct 100%).
     let topicsDone = 0;
     const topicRows = MODES.map(m => {
       const items = C.modeItems(m.id);
+      const total = items.length;
       const got = items.filter(it => collected[it.id]).length;
-      const done = items.length > 0 && got === items.length;
+      const done = total > 0 && got === total;
       if(done) topicsDone++;
+      const pct = total ? got / total : 0;
       return '<div class="tp-row'+(done ? " done" : "")+'">'+
-        '<span class="tp-name">'+esc(m.name)+'</span>'+
-        '<span class="tp-prog">'+got+'/'+items.length+'</span>'+
-        '<span class="tp-state">'+(done ? "✓" : "")+'</span></div>';
+        '<div class="tp-head"><span class="tp-name">'+esc(m.name)+'</span>'+
+          '<span class="tp-prog">'+got+'/'+total+'</span>'+
+          '<span class="tp-state">'+(done ? "✓" : "")+'</span></div>'+
+        '<div class="tp-bar"><div class="tp-fill" style="width:'+(pct*100).toFixed(1)+
+          '%;background:'+topicBarColor(pct, done)+'"></div></div></div>';
     }).join("");
     const topicsHtml = '<div class="inv-cat"><h4>Topics <span>'+topicsDone+'/'+MODES.length+' at 100%</span></h4>'+
       '<div class="topic-prog">'+topicRows+'</div></div>';
