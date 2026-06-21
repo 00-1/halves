@@ -571,6 +571,35 @@ archetype family (12) per the DESIGN-names coupling note (add Tool + Garment poo
   icons; collectible earning unaffected; 360px-safe; no regressions; deploy green.
   (Babysitter re-runs the variation test + eyeballs a montage.)
 
+### T42 — Inventory tabs + per-category progress bars + jump-to-top · status: BLOCKED (after T35; touches renderInventory)
+Owner: the inventory is unwieldy (1443 items, 668 of them loot). Restructure it.
+1. **Tabs.** A tab bar under the "INVENTORY x/total" header splits the content;
+   **Loot gets its own tab.** Suggested: **Topics** (the existing per-topic
+   collection rows), **Awards** (the drill-earned categories: Rank, Initiation,
+   Flawless, Speed, Mastery, Solved, Spark, Milestone, Collector), **Loot** (the
+   tier-loot). Exact grouping is builder's discretion **provided Loot is its own
+   tab** and the tabs keep each view manageable. **Lazy-render**: only the active
+   tab's tiles are in the DOM (so the 668-tile Loot tab costs nothing until opened
+   — also helps perf). Default to the first tab; remembering the last tab is
+   optional.
+2. **Per-category progress bars.** Generalise the T37 topic bars to **every
+   category**: each category section (incl. **Loot**, which has none today) gets a
+   colour-graded owned/total bar (reuse `.tp-bar`/`.tp-fill` + `topicBarColor`).
+   The Topics tab keeps its per-topic bars.
+3. **Jump-to-top.** A floating "↑ top" control on the inventory that appears once
+   the (T39) list is scrolled down and snaps it back to the top; hidden at the top;
+   360px-safe; doesn't overlap the always-visible Back or the header. (If trivial,
+   apply the same to the other long lists — Best Times/Heroes — but inventory is the
+   ask.)
+- **DoD:** inventory shows a working tab bar; switching tabs swaps content; **Loot
+  is its own tab**; only the active tab's tiles are in the DOM (Loot tiles absent
+  until its tab is opened); **every category incl. Loot** shows an owned/total
+  graded progress bar; jump-to-top appears when scrolled and returns to top (hidden
+  at top); header count still correct; Back (T39) still always-visible; names (T35)
+  + icons (T36) render inside tabs unchanged; 360px-safe; no regressions; deploy
+  green. (Babysitter checks tab switching + lazy-render + the Loot bar in a DOM
+  harness.)
+
 ---
 
 ## Phase 3 — Hero / Enemy metagame

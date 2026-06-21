@@ -6,8 +6,10 @@ heroes.js in sync). **Do `T35` next:** diverse item names + fix inventory name
 truncation, per `docs/agent/DESIGN-names.md` (drop-in templates + 612 adjectives +
 124 fixed funny names incl. "Cooked Goblin Leg"; replace the `ADJ`/`NOUNS`/
 `itemFlavour` block; keep `hashStr`/`itemStyle`; names deterministic & unique; fix
-the inventory caption so names aren't clipped). Then **`T24` (Arena)** → **`T36`**
-(icons) → `T25`/`T26` → Phase 4. Specs in BACKLOG.
+the inventory caption so names aren't clipped). Then **`T42`** (inventory tabs —
+Loot its own tab — + per-category progress bars + jump-to-top) → **`T24` (Arena)** →
+**`T36`** (icons) → `T25`/`T26` → Phase 4. (T35 + T42 batch the inventory-rendering
+work together.) Specs in BACKLOG.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
