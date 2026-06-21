@@ -1036,7 +1036,7 @@ ignoring the actual number's structure. Four parts:
   no-phantom-structure assertion across all topics and reads a sample of hints/guides
   for quality and mathematical correctness.)
 
-### T51 — Restore the varied hero portraits (un-regress the "weird faces") · status: OPEN
+### T51 — Restore the varied hero portraits (un-regress the "weird faces") · status: CHANGES
 (Built **before T50** so the hero art is already correct when T50 adds portraits to the
 Arena.) Owner: "the hero icons regressed — they used to look like weird faces, now
 they're all the same turtle creature. Bring the old ones back." **Babysitter root

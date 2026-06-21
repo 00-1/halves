@@ -1,34 +1,31 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T49` (Practice — promote button, fix hints, surface
-guide; follow-up resolved the four fraction defects). The earlier CHANGES REQUESTED
-flagged four `fractions` text defects the token gate couldn't see; the follow-up
-(`28fe3cc`) fixed all four — `1/2` is now method-only (*"It sits exactly halfway between
-0 and 1 — write that midpoint as a decimal."*, no 0.5/"five tenths"), and the `nu===1`
-cases read singular (`1 tenth` / `1 quarter` / `1 eighth`). Babysitter re-verified
-**independently across every question in every topic**: zero answer-as-token leaks,
-zero answer-in-words leaks, zero `"1 <plural>"` slips; the full fractions dump reads
-cleanly; the fix touched **only** the fractions branch (no churn). The gate
-(`hints.test.js`) was extended with a word-leak scan + a plural check — all **10**
-checks pass, plus **12** practice-flow checks (button promoted beside Start & disabled in
-lockstep, guide-under-list, tap-to-reveal hidden-by-default, normal rounds show no hint).
-`node -c` clean; wired as the 6th/7th Pages gates. T49 → DONE.
+**Current verdict:** `CHANGES REQUESTED — T51` (the feature is correct — one test fix
+needed). The hero-portrait restoration itself is **right and independently verified**:
+`heroSprite` restores the mirrored creature-blob (generalised to `G=16`), and `buildIcon`
+routes only `"hero:"`-prefixed ids to it **before** the category lookup. Babysitter ran
+the proper **pre-T51 vs T51** comparison over **all 795 catalogue items**: the 12 hero
+portraits are **66/66 pairwise distinct** (the "weird faces" are back), and item icons are
+**byte-identical** (0 role diffs, 0 colour diffs) — items provably untouched; catalogue
+size unchanged; `node -c` clean. **Do not touch `collectibles.js`/`main.js`.**
 
-**Do `T51` next — restore the varied hero portraits (owner-reported regression).** "The
-hero icons used to look like weird faces, now they're all the same turtle creature —
-bring the old ones back." Root cause (confirmed in git history): pre-T36 heroes used
-`s_sprite`, a per-hero **mirrored creature blob** (varied "weird faces"); the T36 icon
-overhaul re-pointed heroes at the **`"familiar"` critter preset** (fixed body params →
-one repeated turtle). Restore a dedicated hero-portrait drawer (the old creature-blob,
-adapted to the current `G=16`), seed it per hero so all 12 differ, and route `"hero:"`
-ids to it **without touching the `"familiar"` item category or any item icons**. Old
-code: `git show f1d8e92~1:collectibles.js` (`s_sprite`, ~line 246). **Sequenced before
-T50** so the Arena portraits T50 adds are already the correct faces. Babysitter diffs
-item-icon grids pre/post to prove items untouched and checks the 12 hero grids differ.
-Full spec in BACKLOG "T51".
+The one problem is in **`test/hero-icons.test.js`** (the new gate). Its item-invariance
+check (lines ~49–64) compares the working tree against `cp.execSync("git show
+HEAD:collectibles.js")`. At your authoring time HEAD was the *parent*, so it was a valid
+before/after check — but as a **permanent CI gate, HEAD == this commit**, so it diffs
+`collectibles.js` against **itself** and passes vacuously. The "items unchanged" gate
+therefore protects nothing going forward.
+- **Fix:** replace the HEAD-diff with a **permanent invariant** that can't go vacuous —
+  assert **no `CATALOG` id is `hero:`-prefixed** (`C.CATALOG.every(it => !/^hero:/.test(it.id))`),
+  so item ids can never route to the hero blob; you may also keep an item-icon
+  byte-check against an **embedded committed baseline** if you want a snapshot, but the
+  routing invariant is the key permanent guard. Keep the (valid) hero pairwise-distinct,
+  symmetry, determinism, and "hero ≠ familiar item critter" checks as-is.
+- Re-run all gates and re-handoff. (Babysitter re-confirms the gate now fails if an item
+  id were ever `hero:`-prefixed, and re-runs the hero-distinct / item-identical checks.)
 
-**Then `T50` — generated icons on nav buttons + hero portrait in the Arena picker
-(owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
+**After T51 lands — `T50` — generated icons on nav buttons + hero portrait in the Arena
+picker (owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
 "subtle and boring" — give each a small **procedural pixel icon** (reuse the existing
 `C.drawIcon` system + a fitting category preset with a fixed seed; no new art), legible
 and non-wrapping at 360px. And the Arena "choose your champion" cards show no portrait
