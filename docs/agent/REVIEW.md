@@ -59,9 +59,7 @@ cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.tes
 
 **Next-task order:** **`T69` → `T71` → `T67` → `T66` → `T68` → `T52` → `T53` →
 `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
-`T59`/`T60`/`T61`). **Do `T69` next** — tiny audio-volume bump (master VOL 0.16 -> ~0.30), then T71 (calmer music).  Then:
-`finishBattle` (win or loss; NOT on hero-pick re-renders) so the result/tier shows after a
-fight. Then:
+`T59`/`T60`/`T61`). **Do `T69` next**, then:
 - **`T69`** — tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep music balanced, no
   clipping). **`T71`** — calmer music (cap bpm ~95, soften busy styles) + a distinct style
   per topic + a dedicated Arena theme (Arena currently plays the menu style). Both audio,
@@ -70,27 +68,6 @@ fight. Then:
   progress, boss anticipation, a simple journey map) right after T66 so it's built on the
   final 12-per-region structure; then the arena art `T52`/`T53`. **`T67`** (hero detail)
   rides with the UX cluster.
-- **`T62` — methodical, question-by-question hint audit across ALL topics.** Owner: "not
-  only halves — fix every bit of advice across all topics… an agent needs to go through
-  them one by one. I don't mind burning time." A deliberate per-question pass on **every**
-  topic's full set (not a sweep): each question's hint must fit its **actual operation**.
-  Halves is the worst exemplar ("half of 500" wrongly said "tens and ones"; 500 = 5
-  hundreds, odd → a 250-style half-hundred) — rebuild it place-value-aware; then do every
-  other topic one by one. Extend `hints.test.js` to catch phantom place-value at ALL
-  magnitudes. Babysitter will dump and read **every** topic's full hint set (not a sample).
-- **`T63` — surface the tap-to-reveal hint in NORMAL rounds too** (owner: "add these hints
-  to the normal topic questions, hidden by default, the same way"). Same hidden-by-default
-  toggle as Practice, per-question reset; the clock keeps running on reveal so Mastery/Speed
-  stay honest (no scoring change). Do after T62 so the widely-surfaced hints are already
-  high-quality.
-- **`T64` — mid-round item toasts must not obscure the question** (owner: multiple
-  simultaneous unlocks cover the question). Keep them prominent but cap/queue the stack and
-  bound its band so `#prompt`/`#answer` stay fully visible; no item dropped; end-of-round
-  modal unchanged. Do after the hint cluster, before the cosmetic art (T52+).
-- **`T65` — scroll the Arena to top after a fight resolves** (owner: after a victory you're
-  left looking at your heroes, missing the result/tier info at the top). Reset
-  `#arenaBody.scrollTop = 0` in `finishBattle` (win or loss); do **not** reset on
-  hero-selection re-renders. Tiny fix.
 - **`T66` — set the Arena to 120 tiers** (owner reconsidered ~1000; chose 120, close to 100,
   all names hand-crafted). 10 regions × 12, boss at each region's 12th tier (keep the 10
   named regions/bosses, add ~2 rank titles), retune `DEF_GROWTH` for the new length, update
