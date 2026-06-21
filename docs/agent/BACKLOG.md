@@ -1876,6 +1876,11 @@ inset:0` screen. Reclaim it; pin the event banner to the very top of `#start`; t
   All screens (esp. `#start`'s tree and the event banner) gain the reclaimed height.
 - **Pin the event banner to the top** of `#start` (in the band the owner circled) — flush to the
   top, no gap above it.
+- **Fix the premature "Reward earned" tag (owner).** After T92 each event has **3 reward tiers**
+  (`event:<id>` · `:well` · `:ace`), but the banner shows "Reward earned" as soon as the
+  **participation** tier is owned (`owned = !!col["event:"+ev.id]`) — misleading. Show **progress**
+  instead, e.g. **"N/3 rewards earned"** (count owned tiers: `event:<id>`, `:well`, `:ace`); only
+  read fully-done at 3/3. Keep the strip compact (T91).
 - **Tidy the home nav (`#navRow`).** Today Best/Items/Heroes/Arena have icon+label but **Sound
   (🔊) and Settings (⚙) are icon-only (look weird)** and the **fullscreen "Exit" button sits on its
   own wrapped row.** Make the row **consistent**: give Sound + Settings the same **icon+label**
