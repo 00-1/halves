@@ -492,7 +492,7 @@ the Heroes screen** — so they're consistent.
   Times + Heroes; doesn't overlap their headers/content at 360px; tapping it
   returns to the menu/prev screen as before; no regressions; deploy green.
 
-### T40 — Heroes cards: kill the AI-smell coloured left border · status: OPEN
+### T40 — Heroes cards: kill the AI-smell coloured left border · status: DONE
 Owner: the Heroes cards have the **same rounded type-coloured `border-left:4px`**
 that T37 removed from Best Times (`.hero-card` was explicitly left out of T37).
 Apply the **identical fix**: remove the coloured rounded left strip (make the
