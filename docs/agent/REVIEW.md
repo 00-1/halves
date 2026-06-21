@@ -1,21 +1,24 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `CHANGES REQUESTED — T151` [B] (fix the synth divergence — non-resonant FDN damping) ·
-live build **`2f8d1a9`**. **CI green, but the fix is PARTIAL — I re-measured and `ambient` still blows up.**
-The diagnosis is excellent and right: the FDN damping lowpass had a **resonant Q=1 (+2 dB peak)** multiplying
-the feedback loop gain over unity; B set it to **Butterworth (Q=0.707, no peak)** → for `decay 0.78` the loop
-is now stable. **🌐 BABYSITTER RE-MEASURED** (AnalyserNode on `Synth.output()`, 4 s/context): **`menu`
-bounded (peak ~1.0, was 159 ✓)**, **`lofi→dubstep {now}` bounded (~0.9) and the switch CLEARS cleanly ✓** —
-but **`ambient` (which ships `reverbDecay: 0.9`) STILL DIVERGES: peaks `0.36 · 1.73 · 3.24 · 9.4 · 27.9 ·
-90.1 · 284 · 1096` over ~4 s.** So high-decay styles are NOT fixed. **Why CI passed anyway:** B's new gate
-uses an **analytic `simulateFDN` model** that *declares* 0.9 stable — but the real Web Audio diverges, so the
-**model gave a FALSE GREEN** (the model's "loop gain ≤ decay" misses some remaining excess gain in the real
-filter). This is precisely the trap the browser-verify rule exists for. **FIX (B):** (1) bound **every** style
-incl. `ambient`/`decay 0.9` — either find the remaining >1 loop-gain source empirically, or lower
-`FDN_DECAY_MAX`/`ambient.reverbDecay` to a measured-safe value; (2) **make the gate measure REAL audio** —
-render the FDN through an `OfflineAudioContext` (real `BiquadFilter`s) for ~5 s per style and assert peak ≤ ~2
-— do NOT trust the analytic model (it false-greened). I'll re-measure all 12 with the AnalyserNode. T151 stays
-OPEN. *(menu/lofi/dubstep + the clean-switch are genuinely fixed — good progress, just not complete.)*
+**Current verdict:** `APPROVED — T151 + T150` [B] (synth divergence fixed across ALL styles + a real
+browser/audio test harness) · live build **`44ea919`**. **CI green; collision-clean** (B-owned: `synth.js`,
+`test/synth.test.js`, `test/browser/{_harness,audio.test,render.test}.js`, screenshots `.gitignore`,
+`BUILDER-LOG-FX.md`). **The audio "sounds bad" is FIXED.** Completion of the divergence fix: **(1)** the
+Butterworth-Q non-resonant damping (from `2f8d1a9`) + **(2)** dropped `ambient`'s `reverbDecay: 0.9` and
+**capped FDN decay below the measured ~0.82 stability cliff** (even a passive filter develops a pole > unit
+circle above that). **🌐 BABYSITTER RE-MEASURED (AnalyserNode, 5 s/style):** `ambient` **1096 → ~1.2 peak**,
+`menu` ~1.3, `dnb` ~1.35, `ambient→dubstep {now}` ~1.5 and the switch **CLEARS cleanly** — every style now
+**BOUNDED** (no divergence; the owner's distortion + "doesn't fully switch" both resolved). **And B built the
+process fix (`T150`) + replaced the false-greening analytic gate with a REAL one:** `test/browser/audio.test.js`
+renders each style's reverb through a true **`OfflineAudioContext`** (5 s, continuous excitation) and asserts
+**peak ≤ 2.0** (with a teeth-check that the old 0.9 diverges); `test/browser/render.test.js` loads the REAL
+app @ dpr 2.75, fires the REAL celebration, and asserts **`#fxBurst.clientWidth > 0` AND lit coverage ≥ 2000**
+(would've caught T149's `0×0`/`display:none` modal instantly); `_harness.js` self-serves read-only + resolves
+Playwright + **skips clean with no browser so Node-only CI is unaffected**. Verified: `node -c` clean (all 3
+browser files); `synth.test` 161; my independent measurement confirms boundedness. **T151 → DONE; T150 →
+DONE** (the autonomous render+audio gates now guard this whole class of bug). B → `T152[B]` (small-particle
+option). *(`2f8d1a9` was the partial fix — bounded menu/lofi/dubstep but `ambient` still hit 1096; I
+re-measured + bounced it, B completed it here.)*
 
 > **`APPROVED — T101` (with the fix `9d6175b`)** [A] (defer the audio-graph off first paint + restore the
 > music-start). The original `d795031` jank-defer dropped the music-start (`warmAudio` wired the synth but

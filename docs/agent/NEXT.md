@@ -19,25 +19,15 @@ small-size engine option): fire each `fxCelebrate*` from the **source element's 
 with the existing rarity/rank/topic palette + small size (BACKLOG T152 table). Then → `T102`/`T103` (Android)
 → `T89`/`T90` → content → `T72`.
 
-**Builder B → `T151` FINISH (PARTIAL fix — `ambient` still diverges to 1096) → `T150` (browser harness) → `T152[B]` (small-particle option)**
-**⚠ `T151` re-pushed `2f8d1a9` is PARTIAL.** The Butterworth-Q damping fix is correct + fixed `menu`/`lofi`/
-`dubstep` (Babysitter re-measured: peak ~1.0; the `{now}` switch now CLEARS cleanly ✓). **BUT `ambient`
-(`reverbDecay: 0.9`) STILL DIVERGES** — AnalyserNode peaks `0.36 · 1.73 · 9.4 · 90 · 284 · 1096` over ~4 s.
-**Your gate FALSE-GREENED it:** the analytic `simulateFDN` model declares 0.9 stable, but real Web Audio
-diverges → **don't trust the model.** **Fix:** (1) bound EVERY style incl. `ambient`/decay 0.9 — find the
-remaining >1 loop-gain empirically, or lower `FDN_DECAY_MAX`/`ambient.reverbDecay` to a measured-safe value;
-(2) **replace the analytic gate with a REAL `OfflineAudioContext` render** (actual `BiquadFilter`s) per style,
-assert peak ≤ ~2 over ≥5 s — the analytic model can't be trusted. **ALSO confirm a `{now}` switch FULLY
-CLEARS** — owner: "doesn't fully switch, elements of the previous music continue" (same runaway tail; my
-measure shows lofi→dubstep already clears once bounded). I'll re-measure ALL 12 with the AnalyserNode. **Then
-`T150`** — the
-Playwright browser-render harness (loads app @ dpr 2.75, fires the real celebration, asserts
-`#fxBurst.clientWidth>0` + lit coverage — would've caught T149; guarded so Node-only CI still passes; in-env:
-global `playwright` at `/opt/node22/lib/node_modules/playwright` + Chromium at `/opt/pw-browsers`). **Then
-`T152[B]`** — a **small/fine** particle size option (DPR-aware via T138 so crisp not sub-pixel) + spread +
-confirmed off-centre `{x,y}` emission, for the owner-planned point-emission celebrations (A wires positions in
-`T152[A]`). Full DoD: `BACKLOG.md` T151/T150/T152. **B-owned only** (new `test/browser/…` + `synth.js`/
-`fxgl.js` tests); never touch existing Halves files; never push `claude/agent`.
+**Builder B → `T152[B]` (small-particle engine option) → then STAND BY (reactive).**
+*(`T151` audio divergence FIXED `44ea919` — Babysitter re-measured: every style bounded ~1.0–1.5, ambient
+1096→1.2, switches clear; `T150` browser render+audio gates DONE in the same push.)* **`T152[B]`** — add a
+**small/fine** particle size option to the FX engine (DPR-aware via T138 so it's crisp not sub-pixel) + a
+spread control + confirm arbitrary off-centre `{x,y}` emission + `palette` (for the owner-planned
+point-emission celebrations; A wires the per-trigger positions/colours in `T152[A]`). Extend the
+`test/browser/render.test.js` visibility check to an off-centre, small-size burst. Full DoD `BACKLOG.md`
+T152. Then STAND BY. **B-owned only** (`fxgl.js` + `test/browser/*` + tests); never touch existing Halves
+files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

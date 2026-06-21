@@ -2690,7 +2690,16 @@ element**; colour is mostly already there (refine per below).
   collision-clean ([B] `fxgl.js`+tests; [A] `main.js`). (Babysitter browser-verifies positions/colours; owner
   eyeballs the feel.) *(Polish — sequence after the audio bug T151 + the harness T150.)*
 
-### T151 — [B] Synth output DIVERGES exponentially (feedback instability) — the real "audio sounds bad" · status: OPEN · OWNER-PRIORITY · BUG · BROWSER-MEASURED
+### T151 — [B] Synth output DIVERGES exponentially (feedback instability) — the real "audio sounds bad" · status: DONE (`44ea919`, CI green, BABYSITTER-RE-MEASURED)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). Two fixes: (1) non-resonant Butterworth-Q damping (`2f8d1a9`);
+(2) dropped `ambient`'s `reverbDecay:0.9` + capped FDN decay below the measured ~0.82 stability cliff
+(`44ea919`). **Babysitter re-measured (AnalyserNode, 5s/style): every style now BOUNDED** — ambient
+**1096→~1.2**, menu ~1.3, dnb ~1.35, ambient→dubstep switch ~1.5 and CLEARS cleanly (resolves both "sounds
+bad" + "doesn't fully switch"). The first attempt `2f8d1a9` was PARTIAL (ambient still diverged; B's analytic
+gate false-greened it) — caught by re-measurement, bounced, completed. Real `OfflineAudioContext` peak-bound
+gate added (`test/browser/audio.test.js`). *(Original diagnosis below.)*
+
+> Original spec:
 Owner: **"the audio switching sounds bad. but I think the problem may be the switching rather than the
 audio. I wonder if this is something you can confirm yourself too?"** **Confirmed autonomously — and it's
 worse than the switch:** the Babysitter tapped an `AnalyserNode` on `Synth.output()` in headless Chromium and
@@ -2837,7 +2846,16 @@ this is the only thing wrong.**
   shows the shower; `node -c` clean; all gates green; [A]-owned (index.html; maybe a styles tweak). (Babysitter
   confirms via the Playwright harness + the owner's eyes.)
 
-### T150 — [B] Autonomous BROWSER-RENDER test harness (Playwright) — catch "rendered but invisible" for real · status: OPEN · OWNER-PRIORITY · PROCESS-FIX
+### T150 — [B] Autonomous BROWSER-RENDER test harness (Playwright) — catch "rendered but invisible" for real · status: DONE (`44ea919`, CI green)
+**DONE 2026-06-21** — APPROVED (delivered alongside T151). `test/browser/_harness.js` (self-serves the repo
+read-only, resolves Playwright at `/opt/node22/lib/node_modules/playwright` + `/opt/pw-browsers`, **skips
+clean with no browser so Node-only CI is unaffected**); `test/browser/render.test.js` (loads the real app @
+dpr 2.75, fires the real celebration, asserts `#fxBurst.clientWidth>0` AND lit coverage ≥2000 — would've
+caught T149's `0×0`/`display:none` modal); `test/browser/audio.test.js` (OfflineAudioContext peak-bound
+gate). Babysitter verified the files are real (read them) + `node -c` clean. The autonomous render+audio
+gates now guard the "green-but-invisible/inaudible" class. *(Original spec below.)*
+
+> Original spec:
 Owner: **"these iterations are getting nowhere and going round and round… step back and take a new approach…
 or somehow test it autonomously with playwright or similar."** Right: our entire suite is **Node-only** and
 can't see a rendered pixel, layout, or `display:none` — which is exactly how the celebration bug (T149) hid
