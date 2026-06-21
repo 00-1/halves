@@ -64,10 +64,11 @@ fire(els.practiceHintToggle, "click");
 ok(els.practiceNote.classList.contains("hidden") === false, "tapping the toggle reveals the method note");
 ok(/Hide/.test(els.practiceHintToggle._text), "toggle label flips to a hide affordance");
 
-// a NORMAL round shows no hint UI
+// a NORMAL round now ALSO offers the hint (T63): toggle shown, note hidden by default
 fire(els.startBtn, "click");
-ok(els.practiceHintToggle.classList.contains("hidden") === true && els.practiceNote.classList.contains("hidden") === true,
-   "normal round: no hint toggle and no note");
+ok(els.practiceHintToggle.classList.contains("hidden") === false, "normal round: the hint toggle is shown (T63)");
+ok(els.practiceNote.classList.contains("hidden") === true, "normal round: the note is hidden by default");
+ok(els.practiceNote._text.length > 0, "normal round: the note holds the question's method");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " PRACTICE CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

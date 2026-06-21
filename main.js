@@ -874,13 +874,14 @@
     elGhost.textContent  = numStr(it.a);
     elCounter.textContent = (idx+1)+" / "+order.length;
     elProgress.style.width = (idx/order.length*100)+"%";
-    // Practice view: a "how to approach this" method note, hidden behind a
-    // tap-to-reveal toggle (reset to hidden on every new question). Normal rounds
-    // show neither the toggle nor the note.
+    // "How to approach this" method note, hidden behind a tap-to-reveal toggle
+    // (reset to hidden on every new question). Shown in BOTH normal drills and
+    // Practice (T63); the clock keeps running while it's open, so revealing it
+    // costs time and never changes scoring.
     const note = $("practiceNote"), toggle = $("practiceHintToggle");
-    if(practiceCtx && window.Guides && window.Guides.explain){
-      if(note) note.textContent = window.Guides.explain(mode.id, it);
-      if(note) note.classList.add("hidden");                 // collapsed by default
+    const hint = (window.Guides && window.Guides.explain) ? window.Guides.explain(qm.id, it) : "";
+    if(hint){
+      if(note){ note.textContent = hint; note.classList.add("hidden"); }   // collapsed by default
       if(toggle){ toggle.classList.remove("hidden"); toggle.textContent = "How to approach this"; }
     } else {
       if(note) note.classList.add("hidden");

@@ -2107,3 +2107,29 @@ how I verified:
 notes / questions: scope was guides.js (halves/doubles/addsub2/times/bonds2
   branches) + the gate. Next per REVIEW order: **T63** (surface the hint in normal
   rounds too).
+
+## T63 — Surface the "how to approach this" hint in normal rounds too  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - main.js — `nextQuestion` no longer gates the hint toggle/note on `practiceCtx`.
+    It now computes `Guides.explain(qm.id, it)` for the current question (`qm =
+    it._mode || mode`) and shows the **same tap-to-reveal toggle + collapsed note
+    in BOTH normal drills and Practice** — hidden by default, reset to hidden on
+    every new question, label flips on reveal (identical UX). The toggle handler
+    and elements are the existing shared ones (#game screen), so Practice is
+    unchanged.
+  - test/practice.test.js — updated the final assertions: a normal round now shows
+    the toggle (hidden note by default) holding the question's method.
+### No scoring/clock change
+The reveal only toggles a CSS class; the round clock (`loop()`/`raf`/`startTime`)
+is never touched, so revealing a hint **costs real time** and Mastery / Speed
+brackets / Flawless stay earned by performance. No achievement logic was altered.
+how I verified:
+  - `node test/practice.test.js` → **ALL 14 PASS**, incl. the new normal-round
+    checks (toggle shown, note hidden-by-default, note holds the method) — and
+    Practice mode's existing behaviour still passes unchanged.
+  - `node -c main.js` OK; **perf gate green** (the normal round it drives still
+    completes; navigation/listener balance unaffected — the toggle is wired once).
+    All nine gates pass; 360px-safe (same elements/CSS as Practice). No regressions.
+notes / questions: scope was the one `nextQuestion` block + the test. Next per
+  REVIEW order: **T64** (mid-round item toasts must not obscure the question).
