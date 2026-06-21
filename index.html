@@ -55,6 +55,7 @@
       <button class="linkbtn" id="arenaBtn"><canvas class="pix mr-ico" width="16" height="16"></canvas>Arena</button>
       <button class="linkbtn" id="soundBtnMenu">🔊 Sound on</button>
       <button class="linkbtn" id="fsBtn" aria-label="Toggle fullscreen">⛶ Fullscreen</button>
+      <button class="linkbtn" id="settingsBtn">⚙ Settings</button>
     </div>
     <div class="build" id="buildInfo"></div>
   </section>
@@ -186,6 +187,23 @@
     </div>
   </section>
 
+  <!-- SETTINGS (T85) -->
+  <section id="settings" class="screen">
+    <div class="res-label">Settings</div>
+    <div class="settings-body">
+      <button class="set-row" id="setSound"><span>Sound</span><span class="set-val" id="setSoundVal">On</span></button>
+      <div class="set-danger">
+        <h4>Danger zone</h4>
+        <p>Clear all data wipes every bit of progress saved on this device — heroes, items,
+          scores, events, settings — and returns the app to a fresh start. This cannot be undone.</p>
+        <button class="btn danger" id="clearDataBtn">Clear all data</button>
+      </div>
+    </div>
+    <div class="res-actions">
+      <button class="btn ghost" id="settingsBack">Back</button>
+    </div>
+  </section>
+
 </div>
 
 <!-- celebration FX overlay (confetti/sparks) -->
@@ -216,6 +234,27 @@
     <div class="modal-title" id="unlockTitle">New collectible!</div>
     <div class="unlock-grid" id="unlockGrid"></div>
     <button class="btn" id="unlockClose">Nice</button>
+  </div>
+</div>
+
+<!-- CLEAR-ALL-DATA CONFIRM MODAL (T85) — countdown + numpad code -->
+<div class="modal hidden" id="resetModal">
+  <div class="modal-card reset-card">
+    <div class="modal-title">Clear all data?</div>
+    <div class="reset-warn">This permanently deletes <b>ALL</b> your progress — heroes, items,
+      scores, events. It cannot be undone.</div>
+    <div class="reset-code">Type <b id="resetCode">0000</b> to confirm</div>
+    <div class="reset-entry empty" id="resetEntry"><span class="placeholder">— — — —</span></div>
+    <div class="reset-pad" id="resetPad">
+      <div class="key" data-k="1">1</div><div class="key" data-k="2">2</div><div class="key" data-k="3">3</div>
+      <div class="key" data-k="4">4</div><div class="key" data-k="5">5</div><div class="key" data-k="6">6</div>
+      <div class="key" data-k="7">7</div><div class="key" data-k="8">8</div><div class="key" data-k="9">9</div>
+      <div class="key util" data-k="back">⌫</div><div class="key" data-k="0">0</div><div class="key util" data-k="clr">C</div>
+    </div>
+    <div class="res-actions">
+      <button class="btn danger" id="resetConfirm" disabled>Clear</button>
+      <button class="btn ghost" id="resetCancel">Cancel</button>
+    </div>
   </div>
 </div>
 

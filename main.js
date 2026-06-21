@@ -160,7 +160,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), heroDetail:$("heroDetail"), arena:$("arena"), practice:$("practice") };
+  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), heroDetail:$("heroDetail"), arena:$("arena"), practice:$("practice"), settings:$("settings") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -1587,6 +1587,7 @@
       else { location.hash = "#/heroes"; return; }   // unknown/locked → back to the list
     }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
+    else if(h === "settings"){ renderSettings(); show("settings"); }
     else { renderPicker(); renderBest(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); show("start"); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
@@ -1699,9 +1700,74 @@
   function syncSoundButtons(){
     const on = soundOn();
     SOUND_BTNS.forEach(id => { const b = $(id); if(b) b.innerHTML = on ? '🔊 Sound on' : '🔇 Sound off'; });
+    const sv = $("setSoundVal"); if(sv) sv.textContent = on ? "On" : "Off";   // T85 Settings row
   }
   function toggleSound(){ saveSound(!soundOn()); syncSoundButtons(); applySoundPref(); }
   SOUND_BTNS.forEach(id => { const b = $(id); if(b) b.addEventListener("click", toggleSound); });
+
+  // ---- Settings screen + "Clear all data" (T85) --------------------------
+  function renderSettings(){ syncSoundButtons(); }
+  $("settingsBtn").addEventListener("click", () => { location.hash = "#/settings"; });
+  $("settingsBack").addEventListener("click", navStart);
+  $("setSound").addEventListener("click", toggleSound);
+
+  // Wipe every halves.* key → a genuine first-run. Prefix-scan (catches every key,
+  // incl. per-mode boards and any future key) with an enumerated fallback, then
+  // drop the in-memory caches and reload so nothing survives.
+  const KNOWN_KEYS = ["halves.collected","halves.stats","halves.gold","halves.streak",
+    "halves.eventBest","halves.qbest","halves.mode","halves.pickerView","halves.sound"];
+  function clearAllData(){
+    try{
+      const keys = [];
+      if(typeof localStorage.length === "number" && typeof localStorage.key === "function"){
+        for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k && k.indexOf("halves.") === 0) keys.push(k); }
+      }
+      KNOWN_KEYS.forEach(k => { if(keys.indexOf(k) < 0) keys.push(k); });
+      MODES.forEach(m => keys.push(boardKey(m.id)));   // per-mode best-time boards
+      keys.forEach(k => { try{ localStorage.removeItem(k); }catch(e){} });
+    }catch(e){}
+    // drop in-memory caches too, so even without a reload the state reads first-run
+    Object.keys(mem).forEach(k => delete mem[k]);
+    memCollected = memStats = memGold = memStreak = memEventBest = memQbest = null;
+    try{ if(location && typeof location.reload === "function") location.reload(); }catch(e){}
+  }
+
+  // Serious confirm: a code shown for the user to re-enter on the numpad, AND a
+  // ~5s countdown — Confirm is impossible until BOTH are satisfied. Cancel is safe.
+  let resetCode = "", resetEntry = "", resetLeft = 0, resetTimer = 0;
+  function resetCanConfirm(){ return resetLeft <= 0 && resetEntry === resetCode && resetEntry.length === 4; }
+  function renderResetState(){
+    const ent = $("resetEntry"), btn = $("resetConfirm");
+    if(ent){ ent.classList.toggle("empty", resetEntry === "");
+      ent.innerHTML = resetEntry === "" ? '<span class="placeholder">— — — —</span>'
+        : esc(resetEntry.split("").join(" ")); }
+    if(btn){ btn.disabled = !resetCanConfirm(); btn.textContent = resetLeft > 0 ? ("Clear (" + resetLeft + ")") : "Clear all data"; }
+  }
+  function openReset(){
+    resetCode = String(Math.floor(1000 + Math.random() * 9000));   // a 4-digit code
+    resetEntry = ""; resetLeft = 5;
+    $("resetCode").textContent = resetCode;
+    renderResetState();
+    if(resetTimer) clearInterval(resetTimer);
+    resetTimer = setInterval(() => { resetLeft = Math.max(0, resetLeft - 1); renderResetState(); if(resetLeft <= 0){ clearInterval(resetTimer); resetTimer = 0; } }, 1000);
+    const md = $("resetModal"); md.classList.remove("hidden"); requestAnimationFrame(() => md.classList.add("show"));
+  }
+  function closeReset(){
+    if(resetTimer){ clearInterval(resetTimer); resetTimer = 0; }
+    const md = $("resetModal"); md.classList.remove("show"); setTimeout(() => md.classList.add("hidden"), 200);
+  }
+  $("clearDataBtn").addEventListener("click", openReset);
+  $("resetCancel").addEventListener("click", closeReset);
+  $("resetModal").addEventListener("click", e => { if(e.target === $("resetModal")) closeReset(); });
+  $("resetPad").addEventListener("click", e => {
+    const k = e.target.closest(".key"); if(!k) return;
+    const v = k.dataset.k;
+    if(v === "back") resetEntry = resetEntry.slice(0, -1);
+    else if(v === "clr") resetEntry = "";
+    else if(resetEntry.length < 4) resetEntry += v;
+    renderResetState();
+  });
+  $("resetConfirm").addEventListener("click", () => { if(resetCanConfirm()) clearAllData(); });
 
   // ---- entry / "tap to begin" screen (the fullscreen + audio gesture) -----
   (function setupEntry(){

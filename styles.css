@@ -174,6 +174,27 @@ body{
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn:disabled:active{transform:none}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+/* T85 — destructive action button + Settings + clear-data confirm. */
+.btn.danger{background:var(--coral);color:var(--bg)}
+.btn.danger:disabled{opacity:.4}
+.settings-body{width:100%;max-width:360px;display:flex;flex-direction:column;gap:18px;margin-top:24px;text-align:left}
+.set-row{display:flex;align-items:center;justify-content:space-between;width:100%;
+  font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);background:var(--surface);
+  border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer}
+.set-row .set-val{color:var(--amber)}
+.set-danger{border:1px solid var(--coral);border-radius:14px;padding:16px;background:rgba(255,107,107,.06)}
+.set-danger h4{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral);margin-bottom:8px}
+.set-danger p{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.reset-card{text-align:center}
+.reset-warn{font-family:var(--mono);font-size:13px;color:var(--text);line-height:1.5;margin-bottom:14px}
+.reset-warn b{color:var(--coral)}
+.reset-code{font-family:var(--mono);font-size:13px;color:var(--muted);margin-bottom:8px}
+.reset-code b{color:var(--amber);font-size:20px;letter-spacing:.3em;font-weight:800}
+.reset-entry{font-family:var(--mono);font-weight:800;font-size:26px;letter-spacing:.2em;color:var(--text);
+  min-height:34px;margin-bottom:14px}
+.reset-entry.empty .placeholder{color:var(--line);letter-spacing:.1em}
+.reset-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:6px}
+.reset-pad .key{height:48px;font-size:20px;border-radius:11px}
 /* Practice promoted to a primary action beside Start (T49) */
 .start-actions{display:flex;gap:10px;margin-top:28px;width:100%;max-width:360px;justify-content:center}
 .start-actions .btn{margin-top:0;flex:1 1 0;min-width:0;padding:16px 6px;font-size:16px}

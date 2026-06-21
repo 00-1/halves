@@ -2964,3 +2964,42 @@ notes / questions: list stays the **default** view (a11y fallback) with Tree one
   away + remembered. Because it renders from data it auto-grows with Wave-2 (≤2-wide rows
   keep 360px-safe at ~23 nodes). **Phase 6.8 tech-tree block is complete (T83–T84).** Next
   per REVIEW order: **content extension T58** (the playbook) → Wave-2 batches T59/T60/T61.
+
+## T85 — Settings screen + "Clear all data" (serious confirmation)  [HANDOFF]
+commit: (this commit, on main) — Phase 6.9 settings/gating block, task 1 of 3
+Goal: add a Settings screen housing a destructive **Clear all data** — a real
+reset/privacy feature AND the way to return to a genuine first-run state to QA the
+T86/T87 onboarding gating.
+changed:
+  - **index.html** — a **⚙ Settings** link in the home linkrow; a **`#settings`
+    screen** (a Sound row + a "Danger zone" with the Clear-all-data button + Back);
+    and a **`#resetModal`** confirm (blunt warning + a shown code + an entry display +
+    a **numpad** [0-9, ⌫, C] + Clear/Cancel).
+  - **main.js** — `#settings` added to the screens map + routed (`#/settings`,
+    `renderSettings` syncs the Sound row, Back → home). **`clearAllData()`** wipes every
+    `halves.*` key via a **prefix scan** (`localStorage.length`/`key`) **plus** an
+    enumerated fallback (known keys + every per-mode board `halves.hof:<id>`), drops the
+    in-memory caches, and **reloads** to first-run. **Serious confirm**: `openReset()`
+    shows a random **4-digit code** + starts a **5s countdown** (1s interval);
+    `resetCanConfirm()` requires **both** `countdown ≤ 0` **and** the entered 4 digits ==
+    the code. The numpad appends/erases/clears the entry; Confirm's label shows
+    "Clear (N)" while counting and stays **disabled** until both conditions hold; Cancel /
+    backdrop close safely (no wipe).
+  - **styles.css** — `.btn.danger` (coral), `.settings-body`/`.set-row`/`.set-danger`,
+    and the reset modal (`.reset-warn`/`.reset-code`/`.reset-entry`/`.reset-pad`).
+    360px-safe; reuses the existing `.key` numpad styling.
+how I verified:
+  - `node test/settings-reset.test.js` (NEW, **23rd gate**) → **ALL 16 PASS** (DOM shim
+    with an enumerable localStorage): Settings routes from home; **opening it harms no
+    data**; the confirm shows a **4-digit code**; Confirm **starts disabled** and a
+    disabled press does nothing; a **wrong code** keeps it disabled **even after the
+    countdown** (and doesn't wipe); a **correct code while the countdown still runs**
+    stays disabled (early press doesn't wipe); only **countdown-elapsed + correct code**
+    enables Confirm, which then **clears every `halves.*` key** — including an **unknown
+    future key + a per-mode board** (proving the prefix scan) → **0 keys left**, and the
+    app **reloads** to first-run; cancel/back leave data intact.
+  - `node -c` clean; **full 23-gate suite green**; every `$("id")` resolves; no regressions.
+notes / questions: folded the **mute toggle into Settings** (the babysitter-optional
+  extra) while keeping the existing home 🔊 button. Next per REVIEW order: **T86**
+  (onboarding gating engine + first-run intro + Inventory gate + highlight — migration-safe,
+  never re-gate existing players).
