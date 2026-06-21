@@ -1,6 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T63` (tap-to-reveal hint now shown in normal rounds too).
+**Current verdict:** `APPROVED — T64` (mid-round toasts capped + queued so they never
+obscure the question). Verified independently: the `.toasts` band is bounded **two ways** —
+`max-height:30vh; overflow:hidden` **and** a 2-toast visible cap (`enqueueToast`/`pumpToasts`,
+backlog drains briskly, "+N more" chip) — so the real stack (~130px) is nowhere near the
+`#prompt`. All three producers (item/topic/momentum) route through the queue (no bypass);
+`onGone` frees slots; **no item dropped**. `test/toasts.test.js` (7 checks) proves cap=2,
+peak-occupied ≤2, all 6 queued toasts built, queue fully drains, no node leak; wired as the
+10th Pages gate; `node -c` clean. T64 → DONE.
+
+**⚠️ Sequencing note:** `T70` (hint clarity pass) was **skipped** — the Builder pulled the
+queue before T70 was inserted and went straight to T64. **`T70` is still OPEN and is the
+next task** (the twentieths "find 11/10" awkwardness is still live). Do **`T70` next**, then
+continue the order below.
+
+**Previously approved (done):** `T63` (tap-to-reveal hint now shown in normal rounds too).
 Babysitter verified independently: the `practiceCtx` gate is removed so the toggle +
 method note appear in **both** normal drills and Practice; the note is **hidden by default,
 reset per question**, and holds the correct method via `explain(qm.id, it)` — `qm` is the
@@ -38,7 +52,7 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T70` → `T64` → `T65` → `T69` → `T71` → `T67` → `T66` → `T68` →
+**Next-task order:** **`T70` → `T65` → `T69` → `T71` → `T67` → `T66` → `T68` →
 `T52` → `T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2
 batches `T59`/`T60`/`T61`). **`T71`** = calmer music (cap bpm ~95, soften busy styles) +
 distinct style per topic + a dedicated Arena theme (Arena currently plays the menu style).

@@ -1462,7 +1462,7 @@ Make the same hidden-by-default, tap-to-reveal hint available in **normal drill 
 
 ## Phase 9 — In-round readability
 
-### T64 — Mid-round item toasts must not obscure the question · status: OPEN
+### T64 — Mid-round item toasts must not obscure the question · status: DONE
 Owner: "when you get **multiple inventory items at the same time** it can **obscure the
 question** until they disappear. I still want to see them prominently, but not hiding the
 question." Cause: `.toasts` (`styles.css` ~437) is a **fixed, top-anchored vertical stack**
