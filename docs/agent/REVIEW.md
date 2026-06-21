@@ -1,14 +1,12 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T37` (rank dot + inventory progress bars — form
-changed, colour map kept). **Continue the UI-polish block. Do `T38` next:** start
-screen fits the viewport — `#start` a flex column bounded by viewport height, the
-**picker** the flexible scroll region (`flex:1 1 auto; min-height:0; overflow-y:
-auto`) so Start/links/build-info stay on-screen and the topic list scrolls, not the
-whole page; keep the ▾ cue working. Then **`T39`** (floating/always-visible Back on
-Inventory + Best Times + Heroes) → **`T40`** (Heroes cards: remove the same AI-smell
-coloured left border, use the T37 pixel-square type dot) → **`T35`** (diverse names
-+ truncation) → **`T24` (Arena)** → **`T36`** (icons) → `T25`/`T26` → Phase 4. Specs
+**Current verdict:** `APPROVED — T38` (start screen fits the viewport; picker is the
+sole shrink/scroll region). **Continue the UI-polish block. Do `T39` next:**
+floating/always-visible **Back** on the Inventory (reachable without scrolling to
+the bottom), and the same pattern on **Best Times + Heroes**; don't overlap the
+headers; 360px-safe. Then **`T40`** (Heroes cards: remove the same AI-smell coloured
+left border, use the T37 pixel-square type dot) → **`T35`** (diverse names +
+truncation) → **`T24` (Arena)** → **`T36`** (icons) → `T25`/`T26` → Phase 4. Specs
 in BACKLOG.
 
 When you (Builder) hand off a task, I will replace this with one of:
@@ -25,6 +23,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T38 — Start screen fits the viewport → APPROVED
+CSS-only, start-scoped. Verified the diff matches spec exactly: `#start` `justify-content: center→flex-start` (overflow falls to bottom, header never clipped; `overflow-y:auto` kept as safety); `.picker-wrap` gains `flex:1 1 auto; min-height:0; display:flex; flex-direction:column`; `.picker` drops `max-height:42vh` for `flex:1 1 auto; min-height:0; overflow-y:auto` — so the picker is the sole grow/shrink child and Start/links/build stay on-screen while the topic list scrolls (not the page). Selectors are start-screen-only (no other screen uses `#start`/`.picker-wrap`/`.picker`). node -c main.js OK (JS untouched); scroll-cue JS unchanged and builder's DOM-shim harness (5 checks) confirms ▾/edge-fades still toggle against the picker's scroll. 360px-safe (widths unchanged). No regressions.
 
 ### T37 — Best-Times rank dot + Inventory topic progress bars → APPROVED
 Visual-only; owner's two "show colour, not an AI-smell border" fixes. Verified: node -c main.js OK; no TODO/stub; no new DOM ids. **Best Times:** `.sum-row` base no longer has the coloured `border-left:4px` (now uniform `border:1px solid var(--line)`); grep confirms no `border-left`/inline `border-left-color` remains. Rank colour is a crisp **9px square** `<i class="rankdot">` (no border-radius — on-brand pixel look) inline-coloured `rk.color`; not-played = `.rankdot.empty` (hollow inset box-shadow); locked = no dot; subtle rank tint + exact colour map kept. **Inventory:** topic rows gain `.tp-bar`/`.tp-fill` (width = owned/total) graded via `topicBarColor` = `hsl(210→45)` (blue→amber) and **`var(--mint)` at 100%** (`.tp-row.done` mint border); fraction text retained. Builder's DOM-shim harness (12 checks) passed; 360px-safe; no regressions to routing/picker/other screens.

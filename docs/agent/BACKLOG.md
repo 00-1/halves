@@ -467,7 +467,7 @@ Two related "show it with colour, not an AI-smell border" fixes (owner screensho
   owned/total with sensible colour grading; both 360px-safe; no regressions; deploy
   green.
 
-### T38 — Start screen fits the viewport (picker is the flexible scroll region) · status: OPEN
+### T38 — Start screen fits the viewport (picker is the flexible scroll region) · status: DONE
 Owner: the topic-selection (start) screen slightly overflows the bottom (build info
 clipped). Make `#start` a flex **column** bounded by the app/viewport height so the
 header (mark/tag), best-line, **Start**, link row, sound/exit and build info always
