@@ -1647,3 +1647,44 @@ notes / questions: most sets were already well-curated (per QUESTION-SETS.md), s
   changed only the genuinely weak/arbitrary entries to avoid regressions. (Babysitter
   audits content.) Next per REVIEW order: T30 (deep content review — incl.
   normalising the decimal glyph "·" vs "." app-wide) → T45 (perf audit, last).
+
+## T30 — Deep content review  [HANDOFF]
+commit: 65dd2b6 (on main)
+changed:
+  - modes.js — **Squares trimmed** to the 11+ band: removed **16²–19²** (256/289/
+    324/361 — beyond GL recall, which is ≤12² with a common extension to 15²). Kept
+    2²–15² + the pattern-based handy ones **20²/25²/30²** (17 items).
+  - guides.js — **decimal glyph normalised to "."** app-wide (the numpad types
+    "."): every "·" in the guide text and in `explain()` is now "." (prompts/
+    answers/explain already used "."). Reworded the halves note's odd-case from
+    "ends .5" to "ends in a half".
+### Written review
+1. **Completeness.** The built core (15 modes) covers the high-frequency GL 11+
+   arithmetic: tables, doubles/halves, ±, bonds, place value, fractions-of,
+   percentages-of, fraction→decimal, squares. **Candidate gaps** (high-value, NOT
+   built — flagged per the BACKLOG's planned Wave-2, no speculative building):
+   rounding (to 10/100/dp), ratio & proportion, mean/average, money change, time
+   durations, metric/unit conversion, sequences (term-to-term / nth), and short
+   multiplication/division of larger numbers. These are the natural next block.
+2. **Selection (per-topic keep / trim / add).**
+   - Halves — KEEP (benchmark). Times/Doubles — KEEP. Add/Sub & II — KEEP
+     (bridging/non-bridging/compensation/complement all covered). Bonds & II — KEEP.
+     Place value & II — KEEP. Fractions-of & II — KEEP (rebalanced in T13).
+     Percentages-of & II — KEEP (T13 fix). Fraction→decimal — KEEP (T13 expanded).
+   - **Squares — TRIM** (applied): 16²–19² out.
+3. **Difficulty calibration.** After the squares trim, **no question sits
+   meaningfully beyond the Year 5/6 11+ band.** Upper-band-but-legitimate items
+   kept: `placevalue2` 3-dp ÷1000 (6÷1000 = 0.006) and `fractions` 1/16 = 0.0625 —
+   both are genuine upper-11+ place-value/fraction content. Part-1/Part-2 splits
+   land correctly (P2 = harder-but-still-11+). The smallest items (e.g. 2², ½ of 18)
+   are deliberate warm-ups, not filler.
+how I verified:
+  - node -c (modes/guides) OK; no TODO/stub. **Zero decimal "·" remain** in any
+    guide text or `explain()` output (all topics scanned). Squares now 17 items
+    (16²–19² gone); **every answer still exact/numeric/non-negative/numpad-safe with
+    no duplicate prompts**; catalogue 1053→**1045** (−8: squares Beat/Spark for
+    16²–19²); **names still globally unique**; `explain()` non-empty + correct for
+    all questions; icon-variation test green; no regressions.
+notes / questions: review is a written verdict + the two justified fixes (squares
+  cap, glyph normalise). Candidate gaps are flagged, not built (per the BACKLOG).
+  Next: **T45** — the final performance / CPU / memory audit (LAST task).
