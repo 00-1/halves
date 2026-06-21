@@ -38,9 +38,11 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T70` → `T64` → `T65` → `T69` → `T67` → `T66` → `T68` → `T52` →
-`T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
-`T59`/`T60`/`T61`). **Do `T70` next** — hint *clarity* pass (owner: "explain everything in a
+**Next-task order:** **`T70` → `T64` → `T65` → `T69` → `T71` → `T67` → `T66` → `T68` →
+`T52` → `T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2
+batches `T59`/`T60`/`T61`). **`T71`** = calmer music (cap bpm ~95, soften busy styles) +
+distinct style per topic + a dedicated Arena theme (Arena currently plays the menu style).
+Clustered right after `T69` (both audio, both in `sound.js`). **Do `T70` next** — hint *clarity* pass (owner: "explain everything in a
 way that's actually helpful"): fix the twentieths to the clean scale-to-hundredths method
 (×5 top and bottom, read two decimal places — leak-free), and re-read every hint for
 genuine clarity, not just correctness (vague/cute/knowledge-assuming phrasings). **`T69`** = tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep

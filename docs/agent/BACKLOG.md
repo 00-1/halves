@@ -1664,3 +1664,34 @@ raises the bar from *correct* to *genuinely clear & useful to a 10-year-old*.
   (Babysitter dumps the full hint set again and reads for **clarity**, not just
   correctness); all gates green (no new leaks/phantom/plural); concise; no regressions;
   deploy green. (Babysitter re-reads every topic's full hint set for genuine helpfulness.)
+
+### T71 — Calmer music + more per-topic variation + an Arena theme · status: OPEN
+Owner: "the music is still sometimes a bit fast/stressful — make it more **calming**. Add
+more **variation** in music style across topics. Maybe **Arena-specific** music." Context
+(`sound.js`): 12 topic styles + 1 menu style; **tempo is static** per style
+(`mNext += (60/bpm)/4`, no dynamic speed-up), so "fast" = the high-BPM styles
+(**109–115**: Sky Castle, Neon Arcade, Lava Run, Bubble Pop, Mecha March, Clockwork,
+Victory Hall). Topics → styles by `hashStr(id)%12` (15 topics, 12 styles → collisions).
+The **Arena plays the *menu* style** (main.js routes all non-`game` screens to "menu").
+- **(1) Calming pass.** Bring every style's **bpm into a relaxed range — cap the max at
+  ~95** (keep the gentle 76–88 ones); **soften the busy styles** — lower `density` (the
+  lead-note probability), ease drum intensity (the `DRUM` gains / patterns), favour the
+  triangle lead where it suits. The music must never feel rushed at any topic.
+- **(2) More per-topic variation.** Give **each of the 15 current topics a distinct
+  style** — an explicit `mode.music` index per mode (in `modes.js`) or expand + map so
+  **no two topics share** and the variety is intentional (different scale/mood/instrumentation
+  per topic). Add new styles as needed (all within the calm range). (Wave-2 topics get a
+  style when added — note the rule in the T58 playbook.)
+- **(3) Arena-specific music.** Add a dedicated **Arena theme** (adventurous/heroic but
+  still calm, within the bpm cap) and **route the Arena screen to it** (change `main.js` so
+  `#/arena` uses the arena style, not "menu"). **Optional/nice-to-have:** vary it by region
+  (the 10 regions pick from a small flavoured set) — keep bounded.
+- **Preserve:** the look-ahead scheduler, the T33 voice caps (`MAX_STEPS_PER_TICK`/per-event
+  caps), mute + tab-hidden behaviour, and the T45 "music idles when not playing".
+- **DoD:** **no style's `bpm` exceeds ~95** (Babysitter checks every value); the busy styles
+  are softened (lower density/drums); **each of the 15 topics maps to a distinct style**
+  (verify zero collisions); a dedicated **Arena theme exists and the Arena screen plays it**
+  (not the menu style); scheduler / voice-cap / mute / idle behaviour unchanged; `node -c`
+  clean; no console errors; no regressions; deploy green. (Babysitter verifies the bpm cap,
+  the distinct per-topic mapping, and the arena-music routing; "calmer" itself is the owner's
+  ear.)
