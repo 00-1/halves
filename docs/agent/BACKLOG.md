@@ -606,6 +606,48 @@ Owner: the inventory is unwieldy (1443 items, 668 of them loot). Restructure it.
   green. (Babysitter checks tab switching + lazy-render + the Loot bar in a DOM
   harness.)
 
+### T43 — Trim tier loot to ~250 (recalibrate; keep all battle invariants) · status: BLOCKED (after T35; before T24)
+Owner: 668 loot is too many — trim to **~250**, keeping the "deeper tiers drop more
+& rarer" feel. Change the loot **batch formula** in `enemies.js` (currently `3 +
+floor((n-1)/12)` = 668). Suggested: **`1 + floor((n-1)/25)`** → batch grows 1
+(tiers 1–25) → 4 (tiers 76–100), **total 250**. Builder may use any growing formula
+landing **~230–260** (confirm the exact total via Node). Keep the existing
+rarer-with-depth rarity logic.
+- **Recalibrate & RE-VERIFY (critical):** loot drives hero ratings, so `def_n` /
+  `def100` recompute from the smaller set. Re-run the **full T23 battle-invariant
+  suite on the new loot** — all must still hold: (a) tiers 1–5 winnable by the
+  starter hero (bram, 0 items) at good perf; (b) **no tier gated behind its own
+  loot**; (c) tier 100 unwinnable with nothing, winnable only at near-full
+  collection; **def monotonic non-decreasing**; loot still `test()===false`
+  (drill-unearnable) + T20-stamped; loot boosts still cover **all 12 heroes**.
+- **DoD:** Node reports loot total ≈250; **every T23 invariant re-passes** on the
+  trimmed set; loot stamped + covers 12 heroes; catalogue shrinks accordingly
+  (base + ~250); no regression; deploy green. **Run before T24** so Arena grants the
+  final set. (Babysitter re-runs the full battle-invariant harness.)
+
+### T44 — Rename enemy tiers (regions + rank-titles) · status: BLOCKED (await research + owner sign-off)
+Owner: refine the tier naming (10 themed regions + 10 reused rank-titles + the
+tier-100 boss). Display-only — tier numbers/`def`/loot ids (`loot:<n>:<k>`) and all
+battle logic are **unchanged**; only the name strings in `enemies.js` change. The
+Babysitter will paste the **owner-approved** region list + rank-title ladder +
+tier-100 name here once the naming research returns and the owner signs off.
+- **PROPOSED (research — AWAITING OWNER SIGN-OFF; do not apply yet):**
+  - **Regions (1→10):** Goblin Warren · Bandit Camp · Whispering Woods · Haunted
+    Marsh · Frostpeak Caverns · Sunken Catacombs · Ember Wastes · Stormspire ·
+    Dragon's Roost · The Void Throne. *(Shadowfen dropped as too like Haunted Marsh;
+    Whispering Woods added; reordered as a varied terrain climb.)*
+  - **Rank-titles (1→10, reused per region):** Runt · Sentry · Brute · Raider ·
+    Warden · Champion · Reaver · Dread · Warlord · Overlord. *(clean weakest→
+    strongest; none imply a combat type.)*
+  - **Tier 100:** The Void Sovereign *(kept)*.
+  - **Optional** named region bosses (tiers 10/20/…/90) instead of "<Region>
+    Overlord": Goblin King, Bandit Lord, Marsh Witch (woods/marsh), Frost Jarl,
+    Bone Tyrant, Cinder Lord, Storm Tyrant, Elder Wyrm… — owner to decide.
+- **DoD:** the 10 region names + 10 rank-title ladder + tier-100 name match the
+  approved set; tier numbering/def/loot/battle logic untouched; the Arena/tier UI
+  shows the new names; Node: every tier still has a non-empty name and the loot/def
+  invariants are unaffected; no regression; deploy green.
+
 ---
 
 ## Phase 3 — Hero / Enemy metagame
