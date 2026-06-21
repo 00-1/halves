@@ -1,6 +1,16 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T62` (methodical, question-by-question hint audit across
+**Current verdict:** `APPROVED — T63` (tap-to-reveal hint now shown in normal rounds too).
+Babysitter verified independently: the `practiceCtx` gate is removed so the toggle +
+method note appear in **both** normal drills and Practice; the note is **hidden by default,
+reset per question**, and holds the correct method via `explain(qm.id, it)` — `qm` is the
+question's source mode (`it._mode || mode`, line 866), more robust than `mode.id`. Only the
+note/toggle display changed, so the **clock and scoring are untouched** (revealing a hint
+just costs time — Mastery/Speed stay honest); Practice unchanged. `node -c` clean; the
+flipped `practice.test.js` (normal round now shows the toggle, note hidden + populated) —
+**all 14 checks pass**. T63 → DONE.
+
+**Previously approved (done):** `T62` — methodical, question-by-question hint audit across
 all 15 topics). Babysitter **dumped and read every hint for every question in every topic**
 (300+), not a sample. Halves is rebuilt place-value-aware: round numbers work in their real
 unit with odd-count → "half-hundred/half-ten/half-thousand" (the "half of 500" bug is
@@ -28,11 +38,12 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T63` → `T70` → `T64` → `T65` → `T69` → `T67` → `T66` → `T68` →
-`T52` → `T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2
-batches `T59`/`T60`/`T61`). **`T70`** = hint *clarity* pass (owner: "explain everything in a
-way that's actually helpful") — fix the twentieths to the clean scale-to-hundredths method,
-and re-read every hint for genuine clarity, not just correctness. **`T69`** = tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep
+**Next-task order:** **`T70` → `T64` → `T65` → `T69` → `T67` → `T66` → `T68` → `T52` →
+`T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
+`T59`/`T60`/`T61`). **Do `T70` next** — hint *clarity* pass (owner: "explain everything in a
+way that's actually helpful"): fix the twentieths to the clean scale-to-hundredths method
+(×5 top and bottom, read two decimal places — leak-free), and re-read every hint for
+genuine clarity, not just correctness (vague/cute/knowledge-assuming phrasings). **`T69`** = tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep
 music balanced, no clipping). **Do `T63` next** — surface the tap-to-reveal hint in normal
 rounds too (hidden by default; the T62 hint standard now applies everywhere). (`T66` 120-tier
 change before the arena work; **`T68` Arena wayfinding** — region progress, boss

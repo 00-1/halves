@@ -1439,7 +1439,7 @@ appropriately framed, method-only.
   fails on a phantom-place hint at the hundreds magnitude. Expect this to take real time —
   that's the point.)
 
-### T63 — Surface the "how to approach this" hint in normal rounds too · status: OPEN
+### T63 — Surface the "how to approach this" hint in normal rounds too · status: DONE
 Owner: "add these hints to the **normal topic questions** (hidden by default, in the same
 way)." Today the tap-to-reveal hint (`#practiceHintToggle` + `#practiceNote`) only appears
 in **Practice** mode (gated on `practiceCtx` in `beginRound`/`renderInput`, `main.js`).
