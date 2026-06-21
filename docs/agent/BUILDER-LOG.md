@@ -2843,3 +2843,43 @@ notes / questions: kept this as the single Events gate (extended events.test.js 
   sound.test.js) rather than adding a 21st gate file. **Phase 6.5 Events is complete
   (T78–T81).** Next per REVIEW order: **T82** (visual-direction deep research, Phase
   6.7 — doc-only), then content extension T58 → Wave-2 batches.
+
+## T82 — Deep research: brickmap-grade visual character (doc only)  [HANDOFF]
+commit: (this commit, on main) — Phase 6.7, **doc only, ZERO code/behaviour change**
+Goal: a rigorous research/design doc on giving Halves brickmap's performant visual
+character **without a voxel engine**, Android-primary, building ON our existing
+generative art — ending in a ranked recommendation + a reversible first spike.
+changed:
+  - **docs/VISUAL-DIRECTION-RESEARCH.md (NEW)** — substantively answers (1)–(7):
+    (1) an **aesthetic teardown → 7 voxel-free techniques** (Bayer dithering, palette
+    quantisation + per-biome ramps, instanced particle splats, atmospheric/depth fog,
+    banding-as-feature, exposed-tech mono HUD, chunky forms) each mapped to a Halves
+    surface with a rough cost; (2) an explicit **inventory of our existing generative
+    art** (icons/heroes/monsters/scenery/glyphs/eventart/fx) + a concrete **build-on
+    (grid→texture→dither/ramp/particles) composition plan** — losing them is a non-goal;
+    (3) a **scored option matrix** (hybrid DOM+WebGL2 FX / full 2D WebGL / cross-platform
+    engine / native Android / TWA) against perf·aesthetic·effort·risk and the **three
+    crown jewels** (DOM a11y · no-build · Node-verify); (4) **Android delivery** (TWA via
+    Bubblewrap, manifest/SW/asset-links, bundle/cold-start, min-SDK 26 + WebGL2 baseline
+    / WebGPU as progressive enhancement, COPPA/Families — tied to T72); (5) **perf
+    principles** (instance-don't-iterate, static uploads, palette LUTs, a real 60fps
+    mid-range Android budget + degrade ladder, keep perf.test.js meaningful); (6)
+    **keep-vs-rebuild + verification** (logic/generators portable & still Node-gated; FX
+    layer additive; a11y plan = text/input stay DOM, FX canvas aria-hidden; gate the FX
+    layer via pure-function + budget + WebGL-stub Node tests); (7) a **ranked
+    recommendation** (hybrid FX layer + TWA) and a **reversible first spike** (dithered,
+    palette-driven, particle backdrop behind the existing menu, reusing EventArt/Scenery
+    seeds, proven on a real mid-range Android tablet) with explicit **success + kill
+    criteria**; plus risks/unknowns + open questions for the owner.
+  - **Honesty note in the doc:** `00-1/brickmap` is **out of this session's GitHub scope**
+    (only `00-1/halves` allowed) — I did NOT read its source; the teardown is built from
+    the owner-shared screenshots described in the brief + standard graphics technique, and
+    flags the brief's "Rust+wgpu/Bevy voxel" attribution as unverified. Nothing about
+    brickmap's internals is invented.
+how I verified:
+  - **Doc only** — `git status` shows the **single new `.md`**, zero `.js`/CSS/HTML touched;
+    **full 20-gate suite green**; deploy-safe.
+notes / questions: open questions for the owner are listed in §8 (primary target device;
+  strictly-Node-only vs an elective Playwright visual check; WebGPU appetite; confirm the
+  brickmap stack attribution). Next per REVIEW order: content extension **T58** (the
+  content-extension playbook) → Wave-2 batches T59/T60/T61, then **T72** (Play Store).
