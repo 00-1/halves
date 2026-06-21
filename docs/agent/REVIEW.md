@@ -1,6 +1,19 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T122` [A] (🎙 the new synth engine is WIRED & AUDIBLE) · live build
+**Current verdict:** `APPROVED — T126` [B] (FXGL big "celebration" burst — loads of particles) · live
+build **`2815188`**. **CI green; collision-clean** (only `fxgl.js`, `test/fxgl.test.js`, log). Adds
+`Controller.celebrate(opts)` + `CELEBRATE_CAP = 800` (>3× the brief `BURST_CAP` 256): a real firework/
+shower — strong **upward launch + gravity fall**, **bigger/longer-lived** particles (life ~2.4s vs the
+brief burst), bright multi-colour. **Invariants kept** (shares burst's `_ignite` path): capped at 800,
+**seeded/deterministic**, **single-RAF + auto-stops + no leak**, reduced-motion → a calmer/shorter
+shower, **`setQuality` degrades the count** (Poco-X3 budget). Verified **independently**: `node -c`
+clean; **full 33-gate suite green**; `fxgl.test` (116) pins `CELEBRATE_CAP ≥600 > BURST_CAP`, the 800
+cap, determinism, reduced-motion-smaller, **celebrate() fires >256 particles on a single RAF**, and the
+quality degrade. The engine side of "loads of particles" is ready. T126 → DONE. **→ [A] `T125` wires
+`celebrate()` on EVERY win/run/item — AND fixes the rendering bug (the burst controller is never
+resized → likely why the owner sees "nothing at all"; that's the crux, before size).** B → stand by.
+
+> **Previously approved (done):** `T122` [A] (🎙 the new synth engine is WIRED & AUDIBLE) · live build
 **`a4e81b8`**. **CI green.** The payoff: B's `synth.js` is now the **live music engine**. **One audio
 chain:** `Synth.mount({ctx})` reuses `sound.js`'s **existing AudioContext** and its output routes **into
 sound.js's master** → so the **T113 volume slider + the brickwall limiter apply to everything** (music +
@@ -845,16 +858,12 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T126` [B] — a BIG "celebration" burst mode in `fxgl.js`** (off stand-by; owner
-  wants celebrations with "loads of particles"). The T94 burst was deliberately *brief + capped* (256)
-  → too subtle now. Add a celebration mode: a much higher cap (~600–1000), **bigger/longer-lived
-  particles, a firework/shower feel** (launch+gravity or radial spray), bright palette — KEEPING every
-  invariant (capped, **seeded/deterministic**, **auto-stops + no RAF leak**, single-RAF, reduced-motion
-  calmer/shorter, GPU→CPU fallback, **instanced/in-shader** so the higher count stays in the Poco-X3
-  budget, `setQuality` degrades the count). Don't regress the existing ambient/`burst()` callers.
-  **B-owned files ONLY** (`fxgl.js`, `test/fxgl.test.js`); never touch existing Halves files (the [A]
-  wire is `T125`). Log `BUILDER-LOG-FX.md`. *(The synth engine T120 + its mute-idle fix are done; this
-  is the next [B] engine task. After it, back to reactive stand-by unless the owner wants more.)*
+- **Builder B — next: STAND BY (`T126` DONE — `FXGL.celebrate()` big shower shipped & approved; `T120`
+  synth engine + mute-fix DONE).** Both engines complete; the remaining value is the **[A] wiring**
+  (`T125` — wire `celebrate()` everywhere + fix the burst-never-resized rendering bug), which B can't do.
+  **Keep watching `origin/claude/agent`:** the moment `T125` (or any wiring) surfaces a real engine gap
+  (a missing hook, a bug), that's your next task. Otherwise idle (optional light brickmap hardening).
+  **B-owned files only; never touch existing Halves files; never push `claude/agent`.**
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —

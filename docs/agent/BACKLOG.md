@@ -2391,7 +2391,7 @@ wait on T123.
   (Babysitter: confirm on the live build that finishing ANY run and winning ANY Arena fight throws a big
   **visible** burst — the rendering fix is the crux.)
 
-### T126 — [B] FXGL: a bigger "celebration" burst mode (loads of particles, real shower) · status: OPEN · OWNER-PRIORITY
+### T126 — [B] FXGL: a bigger "celebration" burst mode (loads of particles, real shower) · status: DONE (`2815188`)
 Owner wants celebrations with **"loads of particles"** — the T94 burst was deliberately *brief + capped*
 (`BURST_CAP=256`), which now reads as too subtle. Beef up the engine's celebration capability (B-owned
 `fxgl.js`; A wires it via T125). Mirror the existing burst discipline.

@@ -21,15 +21,12 @@ over the purple backdrop — contrast floor + honest gate) → `T124` (fraction 
 illegible — bigger/clearer using node width) → `T101` (Start delay) → `T102`/`T103`
 (Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → `T126`  · FXGL: a BIG "celebration" burst mode (loads of particles)**
-Off stand-by. Owner wants celebrations with "loads of particles" — the T94 burst was
-deliberately *brief + capped* (256) and reads as too subtle. Beef up the engine: a
-celebration mode with a much higher cap (~600–1000), bigger/longer-lived particles,
-a firework/shower feel (launch+gravity or radial spray), bright palette — while
-KEEPING the invariants (capped, seeded/deterministic, **auto-stops + no RAF leak**,
-single-RAF, reduced-motion calmer, GPU→CPU fallback, instanced/in-shader for perf,
-`setQuality` degrades count). B-owned files ONLY (`fxgl.js`, `test/fxgl.test.js`);
-never touch existing Halves files (the [A] wire = T125). Full DoD: `BACKLOG.md` T126.
+**Builder B → STAND BY  · `T126` celebration burst DONE; both engines complete**
+`FXGL.celebrate()` (800-cap firework/shower) shipped & approved; synth engine done.
+The remaining value is the [A] wiring (`T125`). Keep watching `origin/claude/agent`:
+if `T125` surfaces a real engine gap (missing hook/bug), that's your next task.
+Otherwise idle (optional light brickmap hardening). B-owned files only; never touch
+existing Halves files.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
