@@ -114,6 +114,66 @@ const c2d = celebrate2dFrame();
 ok(c2d.drawn > 100, "the 2D celebrate frame draws 100+ particles (not invisible — " + c2d.drawn + ")");
 gold("fx_celebrate_2d_frame", c2d);
 
+// ---- T138: a REAL VISIBILITY check (rasterised, not a draw count) ----------
+// The fillRect-count golden above passes even for a transparent / off-canvas / 1×1
+// frame — which is exactly how the celebration stayed green while invisible on
+// device. This actually PAINTS each rect (with its alpha) into an in-bounds pixel
+// buffer and measures lit coverage, so a zero-coverage frame fails.
+function rasterCtx(W, H){
+  const cov = new Float32Array(W * H); let alpha = 1;
+  const ctx = {
+    clearRect(){ cov.fill(0); },                         // the overlay clears each frame
+    fillRect(x, y, w, h){ x |= 0; y |= 0; w = Math.max(0, w | 0); h = Math.max(0, h | 0);
+      for(let yy = y; yy < y + h; yy++){ if(yy < 0 || yy >= H) continue;
+        for(let xx = x; xx < x + w; xx++){ if(xx < 0 || xx >= W) continue; cov[yy * W + xx] = Math.min(1, cov[yy * W + xx] + alpha); } } },
+    createImageData: (w, h) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }), putImageData(){}
+  };
+  Object.defineProperty(ctx, "fillStyle", { get(){ return "#fff"; }, set(){} });
+  Object.defineProperty(ctx, "globalAlpha", { get(){ return alpha; }, set(v){ alpha = v; } });
+  return { ctx: ctx, cov: cov, coverage(){ let lit = 0; for(let i = 0; i < cov.length; i++) if(cov[i] > 0.02) lit++; return { litPx: lit, frac: lit / cov.length }; } };
+}
+function visibleCelebrate(w, h, dpr){
+  const W = Math.round(w * dpr), H = Math.round(h * dpr);
+  const r = rasterCtx(W, H); const q = [];
+  const ov = new FXGL.Controller(stubCanvas(w, h), { backend: "2d", ctx2d: r.ctx, raf: cb => { q.push(cb); return q.length; }, caf: () => {}, width: w, height: h, dpr: dpr, quality: 2, reducedMotion: false });
+  ov.celebrate({ x: 0.5, y: 0.55, count: 600, seed: 7 });
+  q.shift()(1000); q.shift()(1500);     // drive to a representative frame (the last clear+draw wins)
+  return { ov: ov, cov: r.coverage() };
+}
+const vis = visibleCelebrate(360, 640, 2);
+ok(vis.cov.litPx > 400, "T138: the 2D celebrate frame paints REAL visible pixels in-bounds (" + vis.cov.litPx + " lit px — fails if invisible)");
+ok(vis.cov.frac > 0.001, "T138: visible coverage is a non-trivial fraction of the canvas (" + (vis.cov.frac * 100).toFixed(2) + "%)");
+gold("fx_celebrate_visibility", { litPx_bucket: Math.round(vis.cov.litPx / 250) * 250 });
+
+// the visibility check FAILS on the device bug it's guarding (a 1×1 / unsized canvas):
+// the same celebration on a stale 1×1 buffer paints ~nothing.
+(function(){
+  const r = rasterCtx(1, 1); const q = [];
+  const ov = new FXGL.Controller(stubCanvas(1, 1), { backend: "2d", ctx2d: r.ctx, raf: cb => { q.push(cb); return q.length; }, caf: () => {}, width: 0, height: 0, dpr: 1, quality: 2, reducedMotion: false });
+  ov.burst_ && (ov.burst_.active = false);
+  // force the degenerate buffer (mimic fire-before-layout): resize to 1×1 then draw one frame WITHOUT the ignite re-fit
+  ov.backend.resize(1, 1); ov.backend.setBurst(FXGL.seedCelebrate({ count: 600, seed: 7 }, false, FXGL.CELEBRATE_CAP).map(p => (p.birth = 0, p)));
+  ov.backend.renderFrame({ sceneOn: false, burstOn: true, burstTime: 0.5 });
+  ok(r.coverage().litPx <= 1, "T138: the visibility check CATCHES a 1×1 unsized frame (~0 lit px) — the invisible bug fails it");
+})();
+
+// the engine fix: a celebration fired BEFORE an explicit resize still sizes itself
+(function(){
+  const r = rasterCtx(720, 1280); const q = [];
+  const cv = stubCanvas(360, 640);   // clientWidth/Height present, but no resize() called by the caller
+  const ov = new FXGL.Controller(cv, { backend: "2d", ctx2d: r.ctx, raf: cb => { q.push(cb); return q.length; }, caf: () => {}, dpr: 2, quality: 2, reducedMotion: false });
+  ov.celebrate({ x: 0.5, y: 0.55, count: 400, seed: 3 });   // _ignite re-fits from the canvas
+  ok(ov.dimensions().w > 1 && ov.dimensions().h > 1, "T138: celebrate() re-fits the canvas before drawing (no fire-before-layout 1×1 — " + ov.dimensions().w + "×" + ov.dimensions().h + ")");
+  q.shift()(1000); q.shift()(1500);
+  ok(r.coverage().litPx > 400, "T138: …and the auto-sized overlay paints a visible shower");
+  ok(ov.canPresent() === true, "canPresent() is true when a real 2D context is present");
+})();
+// canPresent() flags a null 2D context (canvas already bound to another API → invisible)
+(function(){
+  const ov = new FXGL.Controller(stubCanvas(360, 640), { backend: "2d", ctx2d: null, width: 360, height: 640, dpr: 1, raf: () => {}, caf: () => {}, reducedMotion: false });
+  ok(ov.canPresent() === false, "canPresent() is FALSE when getContext('2d') returned null (the tester can surface it)");
+})();
+
 // celebrate is visibly bigger than burst at its peak (a real shower) — a property
 // golden, not just a pixel one
 const burstPeak = particleSig(FXGL.seedBurst({ count: 200, seed: 1 }, false, FXGL.BURST_CAP), 0.4).alive;

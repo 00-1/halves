@@ -1010,7 +1010,8 @@
         const s = this.burst[i].size;
         if(ctx.globalAlpha != null) ctx.globalAlpha = bp.alpha;
         ctx.fillStyle = toHex([this.burst[i].r, this.burst[i].g, this.burst[i].b]);
-        ctx.fillRect((bp.x * W - s / 2) | 0, (bp.y * H - s / 2) | 0, Math.ceil(s), Math.ceil(s));
+        const px = Math.max(1, Math.ceil(s));   // never sub-pixel (always ≥1 device px → visible)
+        ctx.fillRect((bp.x * W - s / 2) | 0, (bp.y * H - s / 2) | 0, px, px);
       }
       if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
     }
@@ -1166,6 +1167,14 @@
   // overlay reaches a real (non-1×1) size before celebrating (the invisible trap).
   Controller.prototype.dimensions = function(){ return this.backend ? { w: this.backend.w | 0, h: this.backend.h | 0 } : { w: 0, h: 0 }; };
   Controller.prototype.isReady = function(){ return !!this.ready; };
+  // Whether the active backend actually has a drawable context (T138 tester readout):
+  // a Canvas2D backend whose `getContext("2d")` returned null (canvas already bound to
+  // another context) can't present — surface that instead of silently drawing nothing.
+  Controller.prototype.canPresent = function(){
+    const b = this.backend; if(!b) return false;
+    if(b.name === "cpu-still") return !!b.ctx;     // a real 2D context was obtained
+    return true;                                    // GL/GPU constructed → has a context
+  };
   // The ambient scene animates only when started AND not reduced-motion; the
   // loop also runs while a burst is alive. Single source of truth for the RAF.
   Controller.prototype._ambientLoops = function(){ return this.running && !this.reduced && !!this.derived; };
@@ -1254,6 +1263,11 @@
   // the auto-stop / no-leak / single-RAF machinery.
   Controller.prototype._ignite = function(seeded){
     if(!this.ready || !this.backend || !seeded || !seeded.length) return this;
+    // T138: re-fit the canvas to the live viewport BEFORE drawing. A celebration is
+    // often fired right after mount / before layout settled, leaving the buffer at
+    // 1×1 (→ nothing visible). Re-sizing on ignite makes it present regardless of
+    // when the [A] caller's resize ran.
+    this._applyResize();
     if(!this.burst_.active){ this.burst_.parts = []; this.burst_.elapsed = 0; this.burst_.maxDeath = 0; this.burst_.startTs = 0; this.burst_.active = true; }
     const birth = this.burst_.elapsed;
     for(let i = 0; i < seeded.length; i++) seeded[i].birth = birth;

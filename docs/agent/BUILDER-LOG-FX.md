@@ -6,6 +6,49 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T138 — celebration STILL invisible: engine fix + a REAL visibility gate ([B])
+
+**Status: DONE — handed off for review.** B-owned files only (`fxgl.js`,
+`test/golden-fx.test.js` + a new golden); **zero edits to any existing Halves file.**
+Owner (after T137): the celebration tester buttons fire (they restart the music) but
+**nothing renders** → it's the `{backend:"2d"}` render path, not just T137's occlusion.
+
+### Root-causes addressed (engine side)
+1. **Fire-before-layout 1×1 buffer** (the likeliest): a celebration is often fired
+   right after mount / before layout settles, leaving the canvas at **1×1** (→ nothing
+   visible). **Fix:** `_ignite()` now **re-fits the canvas (`_applyResize()`) before
+   drawing**, so a burst/celebration always sizes itself to the live viewport
+   regardless of when the [A] caller's `resize()` ran. (Verified: a 360×640@dpr2
+   canvas with no explicit resize now draws at 720×1280.)
+2. **Null 2D context** (the other candidate — canvas already bound to a WebGL/WebGPU
+   context, so `getContext("2d")` returns null and the backend silently no-ops): added
+   **`controller.canPresent()`** so the tester can *surface* it (true = real context;
+   false = re-mount on a fresh canvas — an [A] fix). 
+3. **Sub-pixel safety:** particles now floor to **≥1 device px**.
+
+### The REAL visibility gate (the structural guard the owner needs)
+The T133 golden only **counted `fillRect` calls** — a transparent / off-canvas / 1×1
+draw passes it, which is *exactly* how this stayed green while invisible. Added a
+**rasterised** check: a test context that actually **paints each rect (with its alpha)
+into an in-bounds pixel buffer** and measures lit coverage. The celebrate frame paints
+**~56 000 lit px (6.1% of a 720×1280 canvas)**; the check **fails on a zero-coverage /
+1×1 / off-canvas frame** (demonstrated: a 1×1 buffer → ≤1 lit px → the check trips).
+Committed as `fx_celebrate_visibility`.
+
+### Verify
+`node -c` clean; `golden-fx.test.js` (+ the rasterised visibility checks +
+re-fit/`canPresent` engine tests); full suite green. **On-device confirmation is the
+owner's check** (green gates necessary-not-sufficient — this hid behind them before);
+the re-fit fixes the most likely cause and the gate now catches a recurrence.
+
+### Hand-off to Builder A
+- The overlay now self-sizes on `celebrate()`, so the shower should present. If the
+  owner's tester shows **`canPresent() === false`** (or `dimensions()` 0×0), the
+  `#fxBurst` canvas is bound to a stale GL context → **re-mount it on a fresh
+  `<canvas>` element** (that's the [A]-side residual).
+
+---
+
 ## T139 (part 2) — the 12-style palette (owner-approved) · DONE
 
 **Status: DONE — handed off for review.** B-owned files only (`synth.js`,
