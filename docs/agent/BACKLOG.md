@@ -1756,7 +1756,7 @@ cramped (~4 nodes visible), and the nav links sprawl over two rows. Rebalance `#
 
 ## Phase 6.14 — UI direction research (owner-requested, 2026-06-21)
 
-### T97 — Deep research: a "gamey, less web-2.0" UI direction that fits our aesthetic (doc only) · status: OPEN
+### T97 — Deep research: a "gamey, less web-2.0" UI direction that fits our aesthetic (doc only) · status: DONE
 Owner: **not convinced by the current rounded buttons** — wants the UI **more "gamey", less "web
 2.0"**, and asked to **research what UI options fit our aesthetic before committing**. Produce a
 rigorous design-research doc (e.g. `docs/UI-DIRECTION-RESEARCH.md`). **Doc only — read the code/CSS

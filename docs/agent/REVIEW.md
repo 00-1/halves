@@ -1,6 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T96` [A] (home-screen overhaul) · live build **`0d19c72`**.
+**Current verdict:** `APPROVED — T97` [A] (UI-direction research · **doc only**) · build
+**`793d7fa`**. `docs/UI-DIRECTION-RESEARCH.md` (241 lines); **doc + BUILDER-LOG only** — no code/
+gates touched (verified). Substantively answers (1)–(5), grounded in the **live CSS**: §1 audit
+(real `border-radius` tallies, the `.btn radius:14px` pill, 13 soft shadows, Space-Grotesk →
+diagnosis "pixel/RPG content in a soft rounded web-app frame"); §2 four UI languages (pixel/8-bit ·
+JRPG window · exposed-tech mono HUD · modern angular) each w/ **no-build CSS** (bevel box-shadows,
+`clip-path`, procedural 9-slice `border-image`) + harmony + legibility risk; §3 per-component
+treatments (buttons-first, real bevel CSS); §4 honest constraints (**pixel-bevel frames NOT body
+text** for kid legibility · focus ring · ≥44px · AA · no-build · **`data-ui` token reversibility**);
+§5 ranked **pick** (exposed-tech HUD + pixel-bevel low-radius buttons + JRPG framing on big screens;
+clean text) + a **buttons-first reversible phased plan** + **FX co-design** + success/kill criteria.
+Concrete + reversible, not a punt. T97 → DONE. **4 open questions raised for the owner** (relayed in
+chat) — the restyle itself is a later task pending the owner's direction pick.
+
+**Previously approved (done):** `T96` [A] (home-screen overhaul) · live build **`0d19c72`**.
 Addresses both owner screenshots. `#start` is now **`justify-content:flex-start`** (top-aligned —
 kills the empty top band); the **big top `#mark`/`#tag` are gone**, consolidated into **one compact
 `#topicInfo` row** (glyph · name · have/total · best — no more duplicate top-mark + detail panel);
@@ -297,11 +311,11 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T97`** [A] (UI-direction research, **doc only** — gamey/less-web-2.0; audit
-  + ranked recommendation + **buttons-first** reversible restyle plan, co-designed with the FX
-  layer). Then `T88`–`T90` (Arena 3v3) → content `T58`–`T61` → `T72`, **+ FX wiring tasks** (mount
-  `FXGL`) once B's engine + the surfaces exist. Owns ALL existing Halves files; log =
-  `BUILDER-LOG.md`. *(T96 DONE.)*
+- **Builder A — next: `T88`** [A] (Arena 3v3 battle model + calibration — the crux; design in IDEAS
+  I5). Then `T89`/`T90` → content `T58`–`T61` → `T72`, **+ the gamey-UI restyle** (pending the
+  owner's direction pick from T97's 4 questions) **+ FX wiring tasks** (mount `FXGL`) once B's
+  engine + the surfaces exist. Owns ALL existing Halves files; log = `BUILDER-LOG.md`. *(T96, T97
+  DONE.)*
 - **Builder B — next: `T93`** [B] (`fxgl.js` FX engine — standalone, brickmap-borrowed,
   headless-tested, `window.FXGL`). Then the engine sides of `T94`/`T95`. Creates NEW files only +
   brickmap; **never edits existing Halves files**; log = `BUILDER-LOG-FX.md`.
