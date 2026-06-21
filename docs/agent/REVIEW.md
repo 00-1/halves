@@ -844,7 +844,8 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   canonical.)* **`T125` — FIX the celebration burst (it doesn't render: `fxBurst` never resized →
   stale/0 buffer → "nothing at all" on a win) THEN fire `FXGL.celebrate()` BIG on EVERY topic-run/Arena-
   win/new-item** (delete `FX_RANK_MIN`). Bursts are the overlay → **no contrast dep**, doesn't wait on
-  T123. Full DoD `T125`. → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
+  T123. Full DoD `T125`. → **`T127`** (quick BUG: literal "&amp;" in locked-topic text — double-escape
+  at `main.js:572`) → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
   contrast floor/scrim + honest `contrast.test`) → **`T124`** (fraction tree-glyphs still illegible —
   bigger/clearer using the node width) → **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA +
   perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.

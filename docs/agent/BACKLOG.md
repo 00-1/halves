@@ -2342,6 +2342,22 @@ it). Mirror the FX-wiring pattern; consume `Synth`'s API only (never edit `synth
   (Babysitter: confirm on the live build there's ONE music engine = Synth, solves are calm, Arena drives,
   a win wubs, ducking works, and the sliders/mute still rule it — then it's owner ear-check time.)
 
+### T127 — [A] BUG: "&amp;" shows literally in locked-topic text (double-escape) · status: OPEN · BUG
+Owner (screenshot): the topic-info subline reads **"Master Add &amp; Subtract first"** — the `&` in the
+topic name "Add & Subtract" renders as the literal entity. **Cause = double-escape:** `unlockReq(m)`
+(`main.js:449`) already returns **escaped HTML** (`'Master '+esc(req.name)+' first'`), but
+`renderTopicInfo` (`main.js:572`) escapes it **again** — `esc(unlockReq(m))` → `&amp;amp;` → renders as
+`&amp;`. (The other caller, `:727`, correctly uses `unlockReq(m)` un-escaped.)
+- **Fix:** at `main.js:572` drop the redundant `esc()` — `meta = ic("lock")+' '+unlockReq(m);` (consistent
+  with `:727`, since `unlockReq` already escapes its dynamic parts and returns HTML).
+- **Quick audit** for the same pattern: any `esc(...)` wrapped around a helper that ALREADY returns
+  escaped HTML (e.g. `unlockHint`/`unlockReq`/similar). Don't touch the legit single-escapes of raw text
+  (e.g. `:1065 esc(h.unlockHint)` where the hint is a plain string).
+- **DoD:** "Add & Subtract" (and any name with `&`/`<`/`>`) renders **correctly** in the locked-topic
+  subline (and anywhere unlockReq/unlockHint show) — no literal `&amp;`; still properly escaped (no XSS
+  regression); `node -c` clean; all gates green (add a small check that a name with `&` renders a single
+  `&` in the topic-info HTML, not `&amp;amp;`). (Babysitter: confirm the subline reads "Add & Subtract".)
+
 ### T125 — [A] FIX the celebration burst (it doesn't render) + fire BIG on EVERY win/run/item · status: OPEN · OWNER-PRIORITY · BUG
 **FIRST — the burst likely doesn't render at all (owner: "nothing at all, not even a small one" on an
 Arena win).** Babysitter diagnosis: the burst controller `fxBurst` is built once in `setupFx()` (on the
