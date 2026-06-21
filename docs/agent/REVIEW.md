@@ -1,6 +1,35 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T107` [A] (asset cache-busting — SHIPPING BLOCKER cleared) · live
+**Current verdict:** `APPROVED — T110` [A] (FX wiring pass 1 — the engine is now VISIBLE) · live build
+**`349fcf7`**. **CI green.** 🎉 **First integration of Builder-B's FX engine into the live app** — and
+it consumes B's API only (`fxgl.js` **not** edited). Mounts two guarded controllers (no-op if FXGL
+absent): a home **backdrop** (`#fxBackdrop`, inside `#start`, `z-index:-1` under an `isolation:isolate`
+context so it sits behind the DOM, `opacity:.85`, `pointer-events:none`, `aria-hidden`) driven by
+**`setHomeState(homeFxState())`** and a fixed app-level **burst** overlay (`#fxBurst`, `z-index:58`
+under toasts, tap-transparent). **`homeFxState()` reads REAL sources** (verified the API names against
+the codebase): collection progress `have/total` ∈[0,1], `loadMomentum().count` streak, and
+`Events.today()` → `{seed:artSeed, name, palette:paletteFor(rarity), mood}` — **never constants**.
+`show()` starts the backdrop **only** on `#start` and **stops it (idle, no RAF) on every other
+screen**. `fxCelebrate()` hangs off **`showUnlocks()`** — the single surface **every** reward gain
+routes through (`finishBattle` Arena-win loot `:1206`, normal collectible gains `:1332`, event rewards
+`:1568`) — firing `FXGL.burst()` **seeded + palette-coloured from the gained items**, capped, over the
+unlock modal; reduced-motion handled by the engine. Verified **independently**: `node -c` clean; **full
+30-gate suite green** incl. B's `fxgl.test.js` (102) + the new **`fx-wiring.test.js` (29)** which boots
+real `main.js` with a stub FXGL and proves 2 controllers, **home derives from live state + starts**
+(progress **>0** from a seeded collection — not a constant), **leaving home stops the RAF**, and a
+**real Arena-win loot gain fires a burst** with valid `{x,y,count,seed}`; `cache-bust.test.js` correctly
+bumped 14→15 refs (the bust versions `fxgl.js` too). All **[A]-owned files**; collision rule intact.
+T110 → DONE. *(Owner: eyeball the live home — a subtle state-driven backdrop should sit behind the
+tree without hurting readability, and earning a collectible/loot/event reward should pop a brief burst.
+Flag if the backdrop is too strong; the `.fx-backdrop opacity:.85` is the dial.)*
+
+> **Note — A skipped `T111` again** (built T110 while T111 was pointer #1; pulled the queue before the
+> re-point). T110 is correct + high-value so approved on merits. **T111 (the full pixel-restyle sweep +
+> nav tidy) is still A's next** — re-pointed below.
+
+---
+
+**Previously approved (done):** `T107` [A] (asset cache-busting — SHIPPING BLOCKER cleared) · live
 build **`f1d4d6d`**. **CI green** (the bust runs inside the deploy job → the uploaded `index.html` is
 versioned). **A finally did T107 after the owner's direct nudge.** Clean, no-build-preserving design:
 `scripts/cachebust.js` exposes a **pure** `bust(html, ver)` that appends `?v=<ver>` to every **local**
@@ -535,8 +564,8 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T111`** [A] (**`T107` DONE — cache-busting shipped; `T100`/`T104`/`T99` DONE**).
-  **`T111` FIRST — owner-flagged UI polish** (do this before T110; the owner is looking at it now).
+- **Builder A — next: `T111`** [A] (**`T110` DONE — FX wiring shipped; `T107`/`T100`/`T104`/`T99`
+  DONE**). **`T111` — owner-flagged UI polish (the owner is looking at it now).**
   (a) **COMPLETE the T100 pixel restyle across ALL screens** — T100 only covered a subset, so several
   screens still show rounded boxes: **hero-detail** (`.hd-head`/`.hd-port`/`.hero-stat`/`.hb-row`),
   **results** (`.slow-item` rows + `.rankline canvas` badge), then **sweep** summary/inventory/arena/
@@ -544,16 +573,8 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   screenshots so far; catch the rest in one pass). All gated on `[data-ui="pixel"]` (classic
   unchanged), clean-text. (b) **Nav tidy** — rename **Settings → `Setup`** (shorter; owner's pick
   overrides) and lay the 7 nav buttons so the **Exit/Screen button is no longer orphaned** (one row if
-  they fit at 360px, else a balanced 4+3). Full DoD in BACKLOG `T111`. **Then → `T110` — FX wiring pass 1 (make B's engine visible).** With T107 done,
-  deploys are trustworthy, so wire the FX the owner has been waiting to see. **Mount `FXGL`** (add
-  `<script src="fxgl.js">` — the
-  T107 bust auto-versions it; register `test/fxgl.test.js` as a CI gate) on a backdrop canvas behind
-  the home DOM (`aria-hidden`, `pointer-events:none`); drive it with **`setHomeState(liveState)`** from
-  the **real** live state (today's event {seed,palette,name,mood} + progress + streak), and **stop it
-  off-home** (idle, no RAF). Fire **`FXGL.burst()`** (T94) on the existing **win / collectible / loot /
-  event-reward** moments (subsumes **`T94w`**) — reduced-motion → the calm flourish; **never cover the
-  question/result text** (T64 spirit); respect the toast system. Full DoD in BACKLOG `T110`. Then →
-  **`T106`** (tech-tree v2 — full width + clearer connectors + absorb the bottom slack) → shipping/perf
+  they fit at 360px, else a balanced 4+3). Full DoD in BACKLOG `T111`. **Then →
+  `T106`** (tech-tree v2 — full width + clearer connectors + absorb the bottom slack) → shipping/perf
   block `T101` (Start→fullscreen delay) → `T102` (Android PWA+TWA parity) → `T103` (Android-inclusive
   perf research) → `T89`/`T90` (rest of Arena 3v3) → **Arena-biome FX wiring** (`setArenaState`/
   `deriveArenaScene`, after the Arena UI exists) → content `T58`–`T61` → `T72` (Play-Store submission).

@@ -1903,7 +1903,7 @@ chrome, and bring them all under the pixel tokens in one pass.
   (Babysitter: spot-check hero-detail, results, summary, inventory, arena all read consistent; nav is
   one tidy block.)
 
-### T110 — [A] FX wiring pass 1: mount FXGL + home backdrop + celebration bursts · status: OPEN
+### T110 — [A] FX wiring pass 1: mount FXGL + home backdrop + celebration bursts · status: DONE (`349fcf7`)
 **Make B's built-but-unwired FX engine VISIBLE** (owner's "bring the grit / put it everywhere"
 vision). The engine (`fxgl.js`) ships four capabilities — ambient scene (T93), celebration burst
 (T94), semantic home backdrop (T95), Arena biome (T108) — **none wired**. This task wires the **home
