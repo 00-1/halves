@@ -3479,3 +3479,46 @@ notes / questions: **headless can't judge the look — please eyeball the live b
   (pixel/classic, persisted) is a natural next step if you want it user-switchable rather than
   build-time. Next per the pointer: **`T106`** (tech-tree v2 — full-width ~3-abreast + clearer
   node relationships), then `T101`–`T103` (shipping/perf), then `T89`/`T90`.
+
+## T107 — Asset cache-busting so deploys actually ship fresh CSS/JS  [HANDOFF]
+commit: (this commit, on main) — [A] task · **SHIPPING BLOCKER** (owner: a fresh deploy still
+rendered the pre-T99 layout + old banner tag — the CDN/browser served stale `styles.css`/
+`main.js` while `build.json` read fresh, so every live review was untrustworthy). Done FIRST
+per the owner's explicit override (ahead of T106 / task-number order).
+root cause: `index.html` referenced its assets with **bare** local paths
+(`href="styles.css"`, `src="main.js"`) → GH-Pages default `max-age` lets the cache shadow new
+code; only `build.json` (fetched `no-store`) read fresh, so the page *looked* deployed but ran
+old assets. The T54 version-check only *offers* a manual refresh; it didn't bust the cache.
+changed:
+  - **scripts/cachebust.js (NEW)** — the single, pure rewrite used by BOTH the deploy and the
+    gate. `bust(html, version)` appends `?v=<version>` to every **local** `.css`/`.js`
+    `href`/`src`; the regex skips anything with a scheme or existing query (`[^"?:]`), so the
+    **Google-Fonts link / preconnects are untouched** and it's **idempotent**. As a CLI
+    (`node scripts/cachebust.js <version> [file]`) it rewrites the file in place and
+    **verifies no bare local ref survives** (exit 1 if any do) — so the deploy step is itself
+    a gate on the built artifact.
+  - **.github/workflows/pages.yml** — a new **"Cache-bust asset URLs"** step runs
+    `node scripts/cachebust.js "${GITHUB_SHA:0:7}"` **after** the node gates (so they see clean
+    bare refs) and **before** "Upload site" (so the *deployed* `index.html` is fully versioned
+    with the same short sha `build.json` stamps). **Source `index.html` stays bare** (no-build;
+    other gates match exact refs). Also wired `test/cache-bust.test.js` as the **29th gate**.
+  - **test/cache-bust.test.js (NEW, 38 checks)** — proves, via the SAME `cachebust.js` the CI
+    runs: the source carries the expected 14 bare refs (stylesheet + 13 module scripts); after
+    the rewrite **no bare local ref survives** and every asset carries `?v=<sha>` with the one
+    current sha (no mismatch); external/preconnect refs untouched; idempotent; and the workflow
+    runs the bust with the short sha, **after** the gates and **before** upload.
+cooperation with T54: the refreshed page (when the user taps the version-check bar) references
+  the **new** `?v=<sha>` URLs, so the reload lands on fresh assets — no silent stale reload.
+  `fxgl.js` will be busted automatically once an FX-wiring task adds its `<script>` (the rewrite
+  processes all local `.js` refs — no special-casing).
+how I verified:
+  - **`node test/cache-bust.test.js` → ALL 38 CACHE-BUST CHECKS PASSED.** Dry-ran the CLI on a
+    copy → all 14 refs versioned, fonts/preconnects untouched. **Full 29-gate suite green**;
+    `node -c` clean; **source `index.html` unchanged** (no-build preserved). No visual change /
+    360px-safe (URLs only).
+notes / questions: `index.html` itself is the entry doc and must revalidate — GH-Pages serves
+  HTML with a short/again-revalidate policy, and the T54 no-store `build.json` poll + the `?v`
+  on assets cover freshness; we can't set GH-Pages headers from here. **Babysitter: after this
+  deploys, confirm on the live site that a fresh push changes the page WITHOUT a hard-refresh —
+  this is the gate that makes all later visual reviews trustworthy.** Next per the pointer:
+  **`T106`** (tech-tree v2), then `T101`–`T103` (shipping/perf), then `T89`/`T90`.

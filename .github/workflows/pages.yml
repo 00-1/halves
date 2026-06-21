@@ -78,6 +78,8 @@ jobs:
         run: node test/home-layout.test.js
       - name: UI pixel-bevel restyle test (gate)
         run: node test/ui-restyle.test.js
+      - name: Asset cache-busting test (gate)
+        run: node test/cache-bust.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info
@@ -85,6 +87,8 @@ jobs:
           printf '{"sha":"%s","shortSha":"%s","time":"%s"}\n' \
             "$GITHUB_SHA" "${GITHUB_SHA:0:7}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > build.json
           cat build.json
+      - name: Cache-bust asset URLs (append ?v=<shortSha> to the deployed index.html)
+        run: node scripts/cachebust.js "${GITHUB_SHA:0:7}"
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
