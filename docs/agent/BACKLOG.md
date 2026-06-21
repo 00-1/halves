@@ -1865,6 +1865,32 @@ per SFX voice). **Raise it to clearly audible.**
   (Babysitter: recompute the worst-case voice sum × VOL ≤ 1.0 and confirm the new VOL is much
   higher than 0.30.)
 
+### T111 — [A] UI polish: restyle the hero-DETAIL page + tidy the nav (no orphan Exit, shorter Settings) · status: OPEN
+Owner (2 screenshots): three follow-ups to T99/T100.
+- **Hero-detail page still uses rounded boxes (T100 coverage gap).** T100's `[data-ui="pixel"]` block
+  restyled `.hero-card` (the heroes **list**) but **not** the hero **DETAIL** screen (`#heroDetail`),
+  which uses different selectors: **`.hd-head`** (the big hero card), **`.hd-port`** (border-radius:10px
+  port), the **`.hero-stat`** stat chips (`23 PWR · 8 GRD · 7 SPD · 5 FOC`), and the **boost rows**
+  (`.hb-row`/`.hb-name`/`.hb-amt`). Extend the pixel restyle to these: squared radius (`--ui-radius`) +
+  hard 1–2px frame / `box-shadow:none`, matching T100's panels. **Keep it reversible** (gate every rule
+  on `[data-ui="pixel"]`; `data-ui="classic"` unchanged) and **clean-text** (no pixel font). Grep the
+  `#heroDetail` render for any other rounded container and cover it so the whole page reads consistent.
+- **Nav: no orphaned Exit + shorter "Settings".** The home `#navRow` has 7 labelled buttons (Best/
+  Items/Heroes/Arena/Sound/Settings/Screen); **"Settings" (8 chars) overflows**, pushing the 7th button
+  (**Screen/Exit**, the fullscreen toggle) onto its **own row**. Fix BOTH: **rename the Settings label
+  to a shorter word — default `Setup`** (owner asked for a shorter word; `Setup`/`Config`/`Opts`/`Gear`
+  all fine — owner's pick overrides) and lay the 7 buttons so **none is orphaned** — fit all seven on
+  **one row** if they fit at 360px (7×44px + gaps ≈ 344px < 360, so short labels should fit), else a
+  **balanced 2-row grid** (e.g. 4+3), never a single button alone. Keep the fullscreen button's
+  emoji/label sync working (⛶ Screen ⇄ Exit) and gating-hide intact.
+- **DoD:** the hero-detail card, port, stat chips, and boost rows read **squared/hard-framed** like the
+  rest under `data-ui="pixel"` (and revert cleanly under `classic`); the nav shows **no orphaned single
+  button** (Exit/Screen inline) and the **Settings label fits** (shortened); AA contrast holds (gate
+  green), ≥44px targets, 360px-safe, reversible; `node -c` clean; all gates green (extend
+  `ui-restyle.test.js` to assert the hero-detail selectors are gated + the nav has no lone-button row /
+  the shortened label). (Babysitter: eyeball the hero-detail page reads consistent + the nav is one
+  tidy block.)
+
 ### T110 — [A] FX wiring pass 1: mount FXGL + home backdrop + celebration bursts · status: OPEN
 **Make B's built-but-unwired FX engine VISIBLE** (owner's "bring the grit / put it everywhere"
 vision). The engine (`fxgl.js`) ships four capabilities — ambient scene (T93), celebration burst

@@ -535,9 +535,16 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T110`** [A] (**`T107` DONE — cache-busting shipped; `T100`/`T104`/`T99` DONE**).
-  **`T110` — FX wiring pass 1 (make B's engine visible).** With T107 done, deploys are trustworthy, so
-  wire the FX the owner has been waiting to see. **Mount `FXGL`** (add `<script src="fxgl.js">` — the
+- **Builder A — next: `T111`** [A] (**`T107` DONE — cache-busting shipped; `T100`/`T104`/`T99` DONE**).
+  **`T111` FIRST — quick owner-flagged UI polish** (do this before T110; it's small and the owner is
+  looking at it now). (a) **Hero-DETAIL page still rounded** — T100 missed it; extend the
+  `[data-ui="pixel"]` restyle to `#heroDetail`'s `.hd-head`/`.hd-port`/`.hero-stat` chips/`.hb-row`
+  boost rows (squared + hard frame, reversible, clean-text). (b) **Nav tidy** — rename **Settings →
+  `Setup`** (shorter; owner's pick overrides) and lay the 7 nav buttons so the **Exit/Screen button is
+  no longer orphaned** on its own row (one row if they fit at 360px, else a balanced 4+3). Full DoD in
+  BACKLOG `T111`. **Then → `T110` — FX wiring pass 1 (make B's engine visible).** With T107 done,
+  deploys are trustworthy, so wire the FX the owner has been waiting to see. **Mount `FXGL`** (add
+  `<script src="fxgl.js">` — the
   T107 bust auto-versions it; register `test/fxgl.test.js` as a CI gate) on a backdrop canvas behind
   the home DOM (`aria-hidden`, `pointer-events:none`); drive it with **`setHomeState(liveState)`** from
   the **real** live state (today's event {seed,palette,name,mood} + progress + streak), and **stop it
