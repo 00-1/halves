@@ -237,79 +237,351 @@
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
-  // ---- 10 pixel-icon styles (G = 12 grid). Each fills `g` (1 = filled) and
-  // `a` (1 = accent cell); a shared painter draws outline + body/accent. -----
-  const G = 12;
-  function box(t, x0, y0, x1, y1){
-    for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) if(y>=0&&y<G&&x>=0&&x<G) t[y][x] = 1;
-  }
-  function s_sprite(g, a, rnd){                      // 0 — mirrored creature blob
-    const half = Math.floor(G/2);
-    for(let y=1;y<G-1;y++) for(let x=1;x<=half-1;x++){
-      const on = rnd() < (0.62 - Math.abs(y-(G-1)/2)/G*0.4) ? 1 : 0;
-      g[y][x] = on; g[y][G-1-x] = on;
-      if(on && rnd() < 0.3){ a[y][x] = 1; a[y][G-1-x] = 1; }
+  // ---- procedural 16-bit icons (T36) -------------------------------------
+  // 12 parameterised archetype renderers → ~50 category presets, with per-item
+  // variation (structural jitter + 6 generic levers) capped so identity cells are
+  // never disturbed. Strict 3-colour contract: each render fills `g` (body) and
+  // `a` (accent); paintGrid derives the outline. Entropy = mulberry32(hashStr(id)).
+  const G = 16;
+  const MIR = x => G - 1 - x;
+  function grid0(){ const t = []; for(let y=0;y<G;y++) t[y] = new Array(G).fill(0); return t; }
+  function inB(x,y){ return x>=0 && x<G && y>=0 && y<G; }
+  function box(t,x0,y0,x1,y1,v){ v=(v===undefined)?1:v; for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) if(inB(x,y)) t[y][x]=v; }
+  function hline(t,y,x0,x1,v){ box(t,x0,y,x1,y,v); }
+  function vline(t,x,y0,y1,v){ box(t,x,y0,x,y1,v); }
+  function dot(t,x,y,v){ if(inB(x,y)) t[y][x]=(v===undefined)?1:v; }
+  function disc(t,cx,cy,r,v){ v=(v===undefined)?1:v; for(let y=-r;y<=r;y++) for(let x=-r;x<=r;x++) if(x*x+y*y<=r*r+r) dot(t,cx+x,cy+y,v); }
+  function carve(g,x,y){ if(inB(x,y)) g[y][x]=0; }
+  // mirror the left half (x<8) onto the right, for symmetric archetypes
+  function mirror(g,a){ for(let y=0;y<G;y++) for(let x=0;x<8;x++){ g[y][MIR(x)]=g[y][x]; a[y][MIR(x)]=a[y][x]; } }
+
+  // palette hue/lum nudge on a *cloned* palette (outline stays dark)
+  function hexToRgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+  function rgbToHex(r,g,b){ const c=v=>('0'+Math.max(0,Math.min(255,Math.round(v))).toString(16)).slice(-2); return '#'+c(r)+c(g)+c(b); }
+  function rgbToHsl(r,g,b){ r/=255;g/=255;b/=255; const mx=Math.max(r,g,b),mn=Math.min(r,g,b); let h,s,l=(mx+mn)/2;
+    if(mx===mn){ h=s=0; } else { const d=mx-mn; s=l>0.5?d/(2-mx-mn):d/(mx+mn);
+      h = mx===r ? (g-b)/d+(g<b?6:0) : mx===g ? (b-r)/d+2 : (r-g)/d+4; h/=6; } return [h*360,s,l]; }
+  function hslToRgb(h,s,l){ h=((h%360)+360)%360/360; let r,g,b;
+    if(s===0){ r=g=b=l; } else { const h2=(p,q,t)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; };
+      const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q; r=h2(p,q,h+1/3); g=h2(p,q,h); b=h2(p,q,h-1/3); } return [r*255,g*255,b*255]; }
+  function nudge(hex,dh,dl){ const [r,g,b]=hexToRgb(hex); let [h,s,l]=rgbToHsl(r,g,b); l=Math.max(0.04,Math.min(0.96,l+dl)); const [R,G2,B]=hslToRgb(h+dh,s,l); return rgbToHex(R,G2,B); }
+  function shiftPalette(pal,d){ if(!d||(!d.hue&&!d.lum)) return pal; return { body:nudge(pal.body,d.hue,d.lum), accent:nudge(pal.accent,d.hue,d.lum), outline:pal.outline }; }
+
+  // ---- 12 archetype renderers: fn(g, a, P, rnd, lock) --------------------
+  // `lock(x,y)` marks an identity cell (never touched by jitter). Each draws the
+  // left half + invariant core, then symmetric archetypes call mirror().
+  const cl = (v,lo,hi) => v<lo?lo:(v>hi?hi:v);
+  const ARCH = {
+    // mirrored blob; distinct silhouettes via body size + appendages.
+    critter(g,a,P,rnd,lock){
+      const cy=8, W=P.bodyW, H=P.bodyH;
+      for(let y=cy-H;y<=cy+H;y++){ const dy=(y-cy)/(H+0.6); let w=Math.round(W*Math.sqrt(Math.max(0,1-dy*dy))); if(P.dome && y>=cy) w=W; if(w>0) box(g,8-w,y,7,y); }
+      if(P.horns){ box(g,8-W+1,cy-H-2,8-W+2,cy-H-1); box(g,6,cy-H-2,7,cy-H-1); }
+      if(P.feet){ box(g,8-W,cy+H+1,8-W+1,cy+H+2); if(P.feet>=4) box(g,5,cy+H+1,6,cy+H+2); }
+      if(P.tail){ box(g,8-W-2,cy,8-W-1,cy+2); if(P.tail>=2) box(g,8-W-3,cy-1,8-W-2,cy); }
+      if(P.wings){ box(g,8-W-4,cy-2,8-W-1,cy+1); if(P.wings>=2) box(g,8-W-5,cy-3,8-W-4,cy+2); }
+      for(let y=cy-2;y<=cy+3;y++) lock(7,y);
+      mirror(g,a);
+      dot(g,6,cy-1,0); dot(g,9,cy-1,0); lock(6,cy-1); lock(9,cy-1);   // eyes
+      box(a,6,cy+2,9,cy+3);                                           // belly
+    },
+    // mirrored bottle: body + shoulder + neck + cork (cork = identity).
+    bottle(g,a,P,rnd,lock){
+      const by=15-P.bodyH, bw=P.bodyW;
+      box(g,8-bw,by,7,15); box(g,6,by-2,7,by-1); box(g,6,by-4,7,by-3); box(g,6,by-5,7,by-5);
+      for(let y=by-5;y<=15;y++) lock(7,y);
+      mirror(g,a);
+      const liq=Math.round((15-by)*P.liquid); box(a,8-bw,15-liq,7,15); mirror(g,a);
+      if(P.label){ hline(g,11,8-bw,7); hline(a,11,8-bw,7); mirror(g,a); }
+    },
+    // big parchment rect; rolls/spine/glyph lines/seal distinguish the presets.
+    sheet(g,a,P,rnd,lock){
+      const x0=8-P.w, x1=12, y0=2+(P.topRoll?1:0), y1=13-(P.botRoll?1:0);
+      box(g,x0,y0,x1,y1);
+      if(P.topRoll){ box(g,x0-1,1,x1+1,2); box(a,x0-1,1,x1+1,1); }
+      if(P.botRoll){ box(g,x0-1,13,x1+1,14); box(a,x0-1,14,x1+1,14); }
+      for(let y=y0;y<=y1;y++) lock(8,y); lock(x0,y0+1); lock(x1,y1-1);
+      for(let i=0;i<P.glyphLines;i++){ const gy=y0+2+i*2; if(gy<y1-1) hline(a,gy,x0+1,x1-1); }
+      if(P.spine){ box(g,7,y0,8,y1); box(a,7,y0,8,y1); }
+      if(P.seal){ box(a,x1-2,y1-2,x1-1,y1-1); }
+    },
+    // bold blade + crossguard + grip + pommel; len/width/shape per item.
+    blade(g,a,P,rnd,lock){
+      const tipY=cl(12-P.bladeLen,1,10), bw=P.bladeWidth;
+      for(let y=12;y>=tipY;y--){ const t=(12-y)/(12-tipY+0.01); let w=Math.max(1,Math.round(bw*(1-t*0.45))); let cx0=8-w; if(P.shape===2) cx0+=((12-y)%2?1:-1); box(g,cx0,y,7,y); if(P.edge) a[y][cx0]=1; }
+      box(g,8-bw-1,13,7,13); lock(7,12); lock(7,13);                        // ricasso core
+      if(P.guard){ box(g,8-P.guardW,14,7,14); box(a,8-P.guardW,14,7,14); lock(7,14); }
+      box(g,7,15,7,15); if(P.pommel){ box(g,6,15,7,15); box(a,6,15,7,15); }  // grip/pommel
+      mirror(g,a);
+      if(P.shape===3) for(let y=tipY;y<=11;y++) carve(g,MIR(8-bw),y);         // sickle back-thin
+    },
+    // shaft + a distinct head (hammer/mace/axe/orb) or key bits.
+    tool(g,a,P,rnd,lock){
+      box(g,7,16-P.shaftLen,8,15); for(let y=11;y<=15;y++) lock(7,y);
+      if(P.head===1){ box(g,4,2,8,5); box(a,4,3,8,4); lock(7,3); }
+      else if(P.head===2){ disc(g,7,4,3,1); disc(a,7,4,1,1); lock(7,4); }
+      else if(P.head===3){ box(g,2,2,7,7); for(let y=2;y<=7;y++) for(let x=2;x<2+(6-(y<5?y:9-y));x++) carve(g,x,y); box(a,6,3,7,6); lock(7,4); }
+      else if(P.head===4){ disc(g,7,4,2,1); box(a,6,3,8,5); lock(7,4); }
+      if(P.teeth){ box(g,7,5,8,12); for(let i=0;i<P.teeth;i++){ box(g,9,10+i,10,10+i); } disc(g,7,4,2,1); disc(g,7,4,1,0); lock(7,11); }
+      mirror(g,a);
+      if(P.teeth) for(let i=0;i<P.teeth;i++) box(g,9,10+i,10,10+i);            // keep key bits asymmetric
+    },
+    // mirrored faceted gem; facet width/height + twist per item.
+    gem(g,a,P,rnd,lock){
+      const ty=cl(8-P.facetH,1,7), by=cl(8+P.facetH,9,15), fw=P.facetW;
+      for(let y=ty;y<=8;y++){ const rw=Math.max(1,Math.round(fw*(y-ty+1)/(8-ty+1))); box(g,8-rw,y,8,y); }
+      for(let y=9;y<=by;y++){ const rw=Math.max(1,Math.round(fw*(by-y+1)/(by-8))); box(g,8-rw,y,8,y); }
+      for(let y=ty+1;y<=by-1;y++) lock(8,y);
+      for(let y=ty;y<=by;y++) for(let x=8-fw;x<=8;x++) if(g[y][x] && (x+y+P.facetTwist)%2===0) a[y][x]=1;
+      mirror(g,a);
+    },
+    // band with a hollow centre; crown points / amulet pendant / signet face.
+    ring(g,a,P,rnd,lock){
+      const r=P.outerR, ir=Math.max(2,r-2), cy=9;
+      disc(g,8,cy,r,1); disc(g,8,cy,ir,0); for(let x=8-r;x<=8-ir-1;x++) lock(x,cy); lock(8,cy-r);
+      if(P.bandStyle===1){ for(let p=0;p<=P.points;p++){ const px=3+p*2; box(g,px,3,px,5,1); } box(g,3,5,8,7,1); box(a,3,5,8,6,1); lock(8,4); }
+      else if(P.stone){ box(g,7,cy-r-1,8,cy-r,1); box(a,7,cy-r-1,8,cy-r,1); lock(7,cy-r-1); }
+      mirror(g,a);
+      if(P.bandStyle===2){ for(let y=cy+1;y<=cy+r;y++) carve(g,8,y); }            // torc opening
+    },
+    // heater / round / kite outline + boss + division.
+    shield(g,a,P,rnd,lock){
+      const w=P.w;
+      if(P.outline===2){ disc(g,8,8,w,1); }
+      else if(P.outline===3){ for(let y=2;y<=15;y++){ const rw=y<7?Math.max(1,Math.round(w*(y-1)/6)):Math.max(1,Math.round(w*(15-y)/8)); box(g,8-rw,y,8,y); } }
+      else { box(g,8-w,2,8,9); for(let y=10;y<=14;y++){ const rw=Math.max(1,Math.round(w*(14-y)/4)); box(g,8-rw,y,8,y); } }
+      for(let y=4;y<=10;y++) lock(8,y);
+      if(P.boss===1){ box(a,6,7,8,9,1); } else if(P.boss===2){ disc(a,8,8,2,1); }
+      if(P.divide===1){ hline(a,8,8-w,8,1); } else if(P.divide===2){ vline(a,8,3,13,1); }
+      mirror(g,a);
+    },
+    // hat / cap / boot / glove by kind.
+    garment(g,a,P,rnd,lock){
+      if(P.kind===1){ for(let y=2;y<=9;y++){ const rw=Math.max(1,Math.round((y-1)*0.85)); box(g,8-rw,y,7,y); } box(g,2,10,7,11); box(a,2,10,7,11); box(a,5,5,6,6); for(let y=3;y<=9;y++) lock(7,y); }
+      else if(P.kind===2){ box(g,3,5,8,8); box(g,2,8,8,9); box(a,2,8,8,8); for(let y=5;y<=8;y++) lock(7,y); }
+      else if(P.kind===3){ box(g,5,2,8,11); box(g,5,12,12,14); box(a,5,12,12,13); for(let y=4;y<=11;y++) lock(7,y); lock(11,13); }
+      else { box(g,4,3,8,6); box(g,4,7,8,14); box(a,4,12,8,14); for(let y=4;y<=12;y++) lock(7,y); }
+      mirror(g,a);
+    },
+    // central stave (locked) + jittered strokes; optional plate behind.
+    sigil(g,a,P,rnd,lock){
+      if(P.plate===1){ box(g,2,2,13,13); box(a,3,3,12,12); } else if(P.plate===2){ disc(g,8,8,7,1); disc(a,8,8,6,1); }
+      const S=P.strokeSet;
+      box(a,7,3,8,12,1); for(let y=3;y<=12;y++){ lock(7,y); }                  // central stave
+      if(S&2) box(a,4,5,11,5,1); if(S&4) box(a,4,11,11,11,1);
+      if(S&8) for(let i=0;i<6;i++) dot(a,4+i,3+i,1); if(S&16) for(let i=0;i<6;i++) dot(a,4+i,12-i,1);
+      if(S&32) box(a,5,8,11,8,1); if(S&64){ box(a,5,6,10,9,1); box(a,7,7,8,8,0); }
+      for(let y=0;y<G;y++) for(let x=0;x<G;x++) if(a[y][x] && !g[y][x]) g[y][x]=1;
+      mirror(g,a);
+    },
+    // mirrored disc + highlight; globe = cross banding, coin = flat rim.
+    orb(g,a,P,rnd,lock){
+      const r=P.r; disc(g,8,8,r,1);
+      if(P.coin){ for(let y=8-1;y<=8+1;y++){} box(g,8-r,7,8,9); for(let x=8-r;x<=8;x++){ carve(g,x,8-r); carve(g,x,8+r); } }
+      for(let y=8-2;y<=8+2;y++) lock(8,y);
+      box(a,8-Math.floor(r/2)-1,8-Math.floor(r/2)-1,8-Math.floor(r/2),8-Math.floor(r/2),1);   // highlight
+      if(P.ring===1){ box(a,8-r,8,8,8,1); for(let y=8-r;y<=8+r;y++) a[y]&&(a[y][8]=1); }       // globe cross
+      else if(P.ring===2){ for(let x=8-r;x<=8;x++) dot(a,x,8-r,1); }
+      mirror(g,a);
+    },
+    // organic cap+stem, or a container box+lid+clasp.
+    provision(g,a,P,rnd,lock){
+      if(P.form===1){ const ch=4;
+        for(let y=2;y<=2+ch;y++){ const rw=Math.round(P.capW*Math.sin((y-1)/(ch+1)*Math.PI*0.92)); if(rw>0) box(g,8-rw,y,7,y); }
+        box(g,5,3+ch,7,12); box(a,5,3+ch,7,12); for(let y=3;y<=12;y++) lock(7,y);
+        for(let i=0;i<P.spots;i++){ const sx=5+(i%3), sy=3+(i%2); if(g[sy]&&g[sy][sx]) a[sy][sx]=1; }
+        mirror(g,a);
+      } else {
+        box(g,2,6,8,14); box(g,1,5,8,6); for(let y=6;y<=14;y++) lock(8,y);
+        box(a,1,5,8,6); if(P.clasp){ box(g,7,8,8,11,1); box(a,7,9,8,10,1); lock(8,10); }
+        for(let i=0;i<P.bands;i++){ vline(a,3+i*2,7,13,1); }
+        mirror(g,a);
+      }
     }
+  };
+
+  // ---- ~50 category presets over the 12 archetypes -----------------------
+  // family = archetype index (0..11) for the naming coupling (T35); each preset
+  // sets distinguishing fixed params; resolvePreset jitters the ranged ones.
+  const FAMILY = ["critter","bottle","sheet","blade","tool","gem","ring","shield","garment","sigil","orb","provision"];
+  const FAM_IDX = {}; FAMILY.forEach((f,i)=>FAM_IDX[f]=i);
+  const CATEGORIES = [
+    { id:"familiar", arch:"critter", p:{bodyW:5,bodyH:5,feet:2,tail:1} },
+    { id:"imp",      arch:"critter", p:{bodyW:5,bodyH:5,horns:1,tail:2,feet:2} },
+    { id:"slime",    arch:"critter", p:{bodyW:7,bodyH:4,dome:1} },
+    { id:"batling",  arch:"critter", p:{bodyW:4,bodyH:4,wings:2} },
+    { id:"dragonet", arch:"critter", p:{bodyW:5,bodyH:6,horns:1,wings:1,feet:4,tail:1} },
+    { id:"potion",   arch:"bottle",  p:{bodyW:5,bodyH:8,liquid:0.6,label:1} },
+    { id:"elixir",   arch:"bottle",  p:{bodyW:6,bodyH:9,liquid:0.85,label:0} },
+    { id:"tonic",    arch:"bottle",  p:{bodyW:3,bodyH:7,liquid:0.5,label:1} },
+    { id:"vial",     arch:"bottle",  p:{bodyW:3,bodyH:5,liquid:0.7,label:0} },
+    { id:"scroll",   arch:"sheet",   p:{w:5,topRoll:1,botRoll:1,glyphLines:3} },
+    { id:"tome",     arch:"sheet",   p:{w:5,spine:1,glyphLines:2} },
+    { id:"map",      arch:"sheet",   p:{w:6,topRoll:1,seal:1,glyphLines:2} },
+    { id:"letter",   arch:"sheet",   p:{w:4,seal:1,glyphLines:2} },
+    { id:"dagger",   arch:"blade",   p:{bladeLen:5,bladeWidth:3,guard:1,guardW:3,pommel:1,edge:1} },
+    { id:"sword",    arch:"blade",   p:{bladeLen:9,bladeWidth:3,guard:1,guardW:4,pommel:1,edge:1} },
+    { id:"kris",     arch:"blade",   p:{bladeLen:8,bladeWidth:3,shape:2,guard:1,guardW:3,edge:1} },
+    { id:"sickle",   arch:"blade",   p:{bladeLen:7,bladeWidth:4,shape:3,pommel:1,edge:1} },
+    { id:"cleaver",  arch:"blade",   p:{bladeLen:6,bladeWidth:5} },
+    { id:"rapier",   arch:"blade",   p:{bladeLen:10,bladeWidth:2,guard:1,guardW:4,pommel:1,edge:1} },
+    { id:"hammer",   arch:"tool",    p:{shaftLen:11,head:1} },
+    { id:"mace",     arch:"tool",    p:{shaftLen:11,head:2} },
+    { id:"axe",      arch:"tool",    p:{shaftLen:11,head:3} },
+    { id:"staff",    arch:"tool",    p:{shaftLen:13,head:4} },
+    { id:"wand",     arch:"tool",    p:{shaftLen:9,head:4} },
+    { id:"key",      arch:"tool",    p:{shaftLen:10,head:0,teeth:3} },
+    { id:"gem",      arch:"gem",     p:{facetW:4,facetH:4} },
+    { id:"shard",    arch:"gem",     p:{facetW:2,facetH:6} },
+    { id:"jewel",    arch:"gem",     p:{facetW:5,facetH:3} },
+    { id:"geode",    arch:"gem",     p:{facetW:6,facetH:5} },
+    { id:"ring",     arch:"ring",    p:{bandStyle:0,outerR:5,stone:1} },
+    { id:"signet",   arch:"ring",    p:{bandStyle:0,outerR:5,stone:0} },
+    { id:"amulet",   arch:"ring",    p:{bandStyle:2,outerR:5,stone:1} },
+    { id:"crown",    arch:"ring",    p:{bandStyle:1,outerR:5,points:4} },
+    { id:"shield",   arch:"shield",  p:{outline:1,w:6,boss:2} },
+    { id:"buckler",  arch:"shield",  p:{outline:2,w:5,boss:1} },
+    { id:"kiteshield",arch:"shield", p:{outline:3,w:6,divide:2} },
+    { id:"helm",     arch:"shield",  p:{outline:2,w:6,divide:1} },
+    { id:"wizardhat",arch:"garment", p:{kind:1} },
+    { id:"cap",      arch:"garment", p:{kind:2} },
+    { id:"boots",    arch:"garment", p:{kind:3} },
+    { id:"gloves",   arch:"garment", p:{kind:4} },
+    { id:"rune",     arch:"sigil",   p:{plate:1} },
+    { id:"glyph",    arch:"sigil",   p:{plate:0} },
+    { id:"talisman", arch:"sigil",   p:{plate:2} },
+    { id:"orb",      arch:"orb",     p:{r:6,ring:0,coin:0} },
+    { id:"globe",    arch:"orb",     p:{r:6,ring:1,coin:0} },
+    { id:"coin",     arch:"orb",     p:{r:5,ring:0,coin:1} },
+    { id:"mushroom", arch:"provision",p:{form:1,capW:5,spots:2} },
+    { id:"bread",    arch:"provision",p:{form:1,capW:6,spots:0} },
+    { id:"chest",    arch:"provision",p:{form:2,clasp:1,bands:2} }
+  ];
+  const CAT_BY_ID = {}; CATEGORIES.forEach(c => { c.family = FAM_IDX[c.arch]; CAT_BY_ID[c.id] = c; });
+  function categoryOf(id){ return CATEGORIES[hashStr(id + "~cat") % CATEGORIES.length].id; }
+  function familyOf(id){ return CAT_BY_ID[categoryOf(id)].family; }
+
+  // per-archetype base params; presets override the distinguishing ones.
+  const BASE = {
+    critter:  { bodyW:5, bodyH:5, dome:0, horns:0, feet:0, tail:0, wings:0 },
+    bottle:   { bodyW:5, bodyH:8, liquid:0.6, label:0 },
+    sheet:    { w:5, topRoll:0, botRoll:0, glyphLines:3, spine:0, seal:0 },
+    blade:    { bladeLen:6, bladeWidth:3, shape:0, guard:0, guardW:3, pommel:0, edge:0 },
+    tool:     { shaftLen:11, head:1, teeth:0 },
+    gem:      { facetW:4, facetH:4, facetTwist:0 },
+    ring:     { bandStyle:0, outerR:5, stone:0, points:4 },
+    shield:   { outline:1, w:6, boss:0, divide:0 },
+    garment:  { kind:1 },
+    sigil:    { plate:1, strokeSet:19 },
+    orb:      { r:6, ring:0, coin:0 },
+    provision:{ form:1, capW:5, spots:2, clasp:0, bands:2 }
+  };
+  // resolve a preset's params for one item: identity params + per-item structural
+  // jitter on the *soft* ranges (never enough to reach a sibling category, and the
+  // locked core stays filled regardless).
+  function resolvePreset(cat, rnd){
+    const P = Object.assign({}, BASE[cat.arch], cat.p);
+    const j = (v,d) => v + (Math.floor(rnd()*(2*d+1)) - d);
+    switch(cat.arch){
+      case "critter":   P.bodyW=cl(j(P.bodyW,1),3,7); P.bodyH=cl(j(P.bodyH,1),3,6); break;
+      case "bottle":    P.bodyW=cl(j(P.bodyW,1),3,6); P.bodyH=cl(j(P.bodyH,1),5,9); P.liquid=0.35+rnd()*0.5; break;
+      case "sheet":     P.glyphLines=cl(j(P.glyphLines,1),1,5); P.w=cl(j(P.w,1),4,6); break;
+      case "blade":     P.bladeLen=cl(j(P.bladeLen,1),4,11); P.bladeWidth=cl(j(P.bladeWidth,1),1,5); break;
+      case "tool":      P.shaftLen=cl(j(P.shaftLen,1),8,13); break;
+      case "gem":       P.facetW=cl(j(P.facetW,1),2,6); P.facetH=cl(j(P.facetH,1),2,6); P.facetTwist=Math.floor(rnd()*2); break;
+      case "ring":      P.outerR=cl(j(P.outerR,0),4,6); break;
+      case "shield":    P.w=cl(j(P.w,0),5,7); break;
+      case "sigil":     P.strokeSet=Math.floor(rnd()*128); break;   // strokes vary; the stave is always drawn
+      case "orb":       P.r=cl(j(P.r,0),5,6); break;
+      case "provision": P.capW=cl(j(P.capW,1),4,6); P.spots=Math.floor(rnd()*4); break;
+    }
+    return P;
   }
-  function s_potion(g, a){                            // 1 — flask + liquid + bubble
-    box(g,5,1,6,1); box(g,5,2,6,3); box(g,4,4,7,4); box(g,3,5,8,5); box(g,2,6,9,9); box(g,3,10,8,10);
-    box(a,3,7,8,9); box(a,4,10,7,10); a[6][6]=1; box(a,5,1,6,1);
+
+  // Variation levers. Palette hue/lum (applied at paint) + interior texture: on
+  // INTERIOR body cells (never the silhouette edge or the locked identity cells)
+  // assign a highlight (accent) or a carve (interior outline), seeded per item.
+  // Silhouette + locked cells are untouched, so the category stays recognizable
+  // while each item gets the chunky, varied look (the owner-requested "varied a lot").
+  function applyLevers(g, a, locked, P, rPick, rTex){
+    let filled = 0; const body = [];
+    const isInner = (x,y) => x>0 && x<G-1 && y>0 && y<G-1 && g[y-1][x] && g[y+1][x] && g[y][x-1] && g[y][x+1];
+    for(let y=0;y<G;y++) for(let x=0;x<G;x++) if(g[y][x]){ filled++; if(!locked[y][x]) body.push([x,y]); }
+    for(let i=body.length-1;i>0;i--){ const k=Math.floor(rTex()*(i+1)); const t=body[i]; body[i]=body[k]; body[k]=t; }
+    const budget = Math.min(body.length, Math.max(5, Math.round(filled * 0.45)));
+    for(let i=0;i<budget;i++){ const x=body[i][0], y=body[i][1];
+      // highlight any body cell; carve only fully-interior cells (silhouette intact)
+      if(rTex() < 0.7 || !isInner(x,y)) a[y][x] = 1; else g[y][x] = 0;
+    }
+    // one symmetry-breaking accent off-centre
+    for(let k=0;k<6;k++){ const x=2+Math.floor(rPick()*5), y=2+Math.floor(rPick()*12); if(inB(x,y) && g[y][x] && !locked[y][x]){ a[y][x] = 1; break; } }
   }
-  function s_scroll(g, a){                            // 2 — parchment + ribbon + glyph lines
-    box(g,2,1,9,2); box(g,2,9,9,10); box(g,3,3,8,8);
-    box(a,2,1,9,1); box(a,2,10,9,10); box(a,4,4,7,4); box(a,4,6,7,6);
-  }
-  function s_blade(g, a){                             // 3 — dagger w/ glowing edge
-    box(g,5,1,6,7); box(g,3,8,8,8); box(g,5,9,6,10); box(g,4,11,7,11);
-    box(a,5,1,5,7); a[8][3]=1; a[8][8]=1; box(a,4,11,7,11);
-  }
-  function s_gem(g, a){                               // 4 — faceted crystal
-    box(g,4,2,7,2); box(g,3,3,8,3); box(g,2,4,9,5); box(g,3,6,8,6); box(g,4,7,7,7); box(g,5,8,6,8);
-    for(let y=2;y<=8;y++) for(let x=2;x<=5;x++) if(g[y][x] && (x+y)%2===0) a[y][x]=1;
-  }
-  function s_ring(g, a){                              // 5 — band + set stone
-    box(g,3,3,8,10);
-    for(let y=5;y<=8;y++) for(let x=4;x<=7;x++) g[y][x]=0;     // hollow
-    box(g,5,1,6,2); box(a,5,1,6,2); a[3][3]=1; a[3][8]=1; a[10][3]=1; a[10][8]=1;
-  }
-  function s_shield(g, a){                            // 6 — heater shield + boss + trim
-    box(g,2,2,9,2); box(g,2,3,9,5); box(g,3,6,8,7); box(g,4,8,7,8); box(g,5,9,6,10);
-    box(a,5,5,6,6); box(a,2,2,9,2);
-  }
-  function s_food(g, a, rnd){                         // 7 — drumstick (meat + bone)
-    box(g,3,1,8,1); box(g,2,2,9,5); box(g,3,6,8,6); box(g,5,7,6,9); box(g,4,10,7,11);
-    for(let y=1;y<=6;y++) for(let x=2;x<=9;x++) if(g[y][x] && rnd() < 0.3) a[y][x]=1;
-    box(a,5,7,6,8); box(a,4,10,7,10);
-  }
-  function s_rune(g, a){                              // 8 — symmetric sigil on a tablet
-    box(g,2,1,9,10); box(a,5,2,6,9); box(a,3,5,8,6); a[3][3]=1; a[3][8]=1; a[8][3]=1; a[8][8]=1;
-  }
-  function s_orb(g, a){                               // 9 — glowing sphere + highlight
-    box(g,4,1,7,1); box(g,3,2,8,2); box(g,2,3,9,8); box(g,3,9,8,9); box(g,4,10,7,10);
-    box(a,3,3,4,4); a[1][5]=1; a[1][6]=1; a[10][5]=1; a[10][6]=1;
-  }
-  const ICON_STYLES = [s_sprite, s_potion, s_scroll, s_blade, s_gem, s_ring, s_shield, s_food, s_rune, s_orb];
 
   function paintGrid(cx, g, a, pal, scale, off){
-    const fl = (x,y) => x>=0 && y>=0 && x<G && y<G && g[y][x];
+    const fl = (x,y) => inB(x,y) && g[y][x];
     cx.fillStyle = pal.outline;
     for(let y=0;y<G;y++) for(let x=0;x<G;x++)
       if(!g[y][x] && (fl(x-1,y)||fl(x+1,y)||fl(x,y-1)||fl(x,y+1))) cx.fillRect(off+x*scale, off+y*scale, scale, scale);
     for(let y=0;y<G;y++) for(let x=0;x<G;x++)
       if(g[y][x]){ cx.fillStyle = a[y][x] ? pal.accent : pal.body; cx.fillRect(off+x*scale, off+y*scale, scale, scale); }
   }
-  // Draws the pixel icon for `seed` (style = hash(seed) % 10, or `styleOverride`
-  // when given — heroes force the creature-sprite style) using palette `pal`.
-  function drawIcon(canvas, seed, pal, styleOverride){
+
+  // Build the body/accent/locked grids + palette shift for one id (pure; shared
+  // by drawIcon and the icon-variation test).
+  function buildIcon(id, catId){
+    const seed = hashStr(id);
+    const rPick = mulberry32(seed), rTex = mulberry32((seed ^ 0x9e3779b9) >>> 0);
+    const cat = CAT_BY_ID[catId] || CAT_BY_ID[categoryOf(id)];
+    const g = grid0(), a = grid0(), locked = grid0();
+    const lock = (x,y) => { if(inB(x,y)) locked[y][x] = 1; };
+    const P = resolvePreset(cat, rPick);
+    ARCH[cat.arch](g, a, P, rPick, lock);
+    applyLevers(g, a, locked, P, rPick, rTex);
+    const shift = { hue: (rTex()*2-1)*20, lum: (rTex()*2-1)*0.08 };
+    return { g, a, locked, shift, cat };
+  }
+  // Role grid (0 empty/1 outline/2 body/3 accent) — shape only, palette-independent.
+  function iconRoleGrid(id, catId){
+    const { g, a } = buildIcon(id, catId);
+    const fl = (x,y) => inB(x,y) && g[y][x];
+    const r = grid0();
+    for(let y=0;y<G;y++) for(let x=0;x<G;x++){
+      if(g[y][x]) r[y][x] = a[y][x] ? 3 : 2;
+      else if(fl(x-1,y)||fl(x+1,y)||fl(x,y-1)||fl(x,y+1)) r[y][x] = 1;
+    }
+    return r;
+  }
+  // Colour grid (hex per cell, with the per-item palette shift applied).
+  function iconColorGrid(id, basePal, catId){
+    const { g, a, shift } = buildIcon(id, catId);
+    const pal = shiftPalette(basePal || RARITY.common, shift);
+    const fl = (x,y) => inB(x,y) && g[y][x];
+    const r = grid0();
+    for(let y=0;y<G;y++) for(let x=0;x<G;x++){
+      if(g[y][x]) r[y][x] = a[y][x] ? pal.accent : pal.body;
+      else if(fl(x-1,y)||fl(x+1,y)||fl(x,y-1)||fl(x,y+1)) r[y][x] = pal.outline;
+      else r[y][x] = 0;
+    }
+    return r;
+  }
+  function lockedCells(catId){
+    const cat = CAT_BY_ID[catId]; if(!cat) return [];
+    const g = grid0(), a = grid0(), locked = grid0();
+    const lock = (x,y) => { if(inB(x,y)) locked[y][x] = 1; };
+    ARCH[cat.arch](g, a, resolvePreset(cat, mulberry32(12345)), mulberry32(12345), lock);
+    const out = []; for(let y=0;y<G;y++) for(let x=0;x<G;x++) if(locked[y][x]) out.push([x,y]);
+    return out;
+  }
+
+  // Draws the icon for `id` using palette `pal`; `catId` forces a category
+  // (heroes pass "familiar" for a critter portrait).
+  function drawIcon(canvas, id, pal, catId){
     const cx = canvas.getContext("2d");
     const scale = Math.max(1, Math.floor(canvas.width / G));
     cx.clearRect(0,0,canvas.width,canvas.height);
     const off = Math.floor((canvas.width - scale*G) / 2);
-    const grid = [], acc = [];
-    for(let y=0;y<G;y++){ grid[y] = new Array(G).fill(0); acc[y] = new Array(G).fill(0); }
-    const style = (styleOverride != null) ? (styleOverride % ICON_STYLES.length) : (hashStr(seed) % ICON_STYLES.length);
-    ICON_STYLES[style](grid, acc, mulberry32(hashStr(seed)));
-    paintGrid(cx, grid, acc, pal, scale, off);
+    const { g, a, shift } = buildIcon(id, catId);
+    paintGrid(cx, g, a, shiftPalette(pal, shift), scale, off);
   }
 
   // Every catalogue item belonging to one mode (init / flawless / speed /
@@ -411,21 +683,23 @@
     "Polite","Courteous","Genteel","Well-mannered","Chivalrous","Gracious","Civil","Decorous",
     "Boggle-eyed","Wide-eyed","Bug-eyed","Squinty","Bleary","Owlish","Beady-eyed","Goggling"
   ];
-  // Noun pools indexed by style (0..9, matching ICON_STYLES); remap to icon-family in T36.
+  // Noun pools indexed by the 12 archetype FAMILIES (T36 coupling):
+  // 0 critter · 1 bottle · 2 sheet · 3 blade · 4 tool · 5 gem · 6 ring · 7 shield
+  // · 8 garment · 9 sigil · 10 orb · 11 provision.
   const NOUNS = [
-    [ // 0 sprite/familiar
+    [ // 0 critter
       "Familiar","Imp","Sprite","Critter","Pixie","Wisp","Gremlin","Bogle",
       "Pipsqueak","Hobgoblin","Brownie","Puck","Goblet-imp","Mite","Tiddler","Whelp",
       "Fledgling","Sproutling","Gobbler","Nibbler","Skitterling","Flit","Pocket-beast","Lap-dragon",
       "Mischief","Scamp","Tagalong","Companion","Shoulder-friend","Snufflekin","Bumblefly","Squeaker"
     ],
-    [ // 1 potion
+    [ // 1 bottle
       "Potion","Elixir","Tonic","Brew","Draught","Cordial","Philtre","Tincture",
       "Concoction","Bottle","Vial","Flask","Phial","Fizz","Bubbly-brew","Decoction",
       "Remedy","Restorative","Pick-me-up","Quaff","Syrup","Infusion","Essence","Distillate",
       "Mixture","Swig","Slurp","Glug","Gulp","Sip"
     ],
-    [ // 2 scroll
+    [ // 2 sheet
       "Scroll","Tome","Codex","Rune-page","Manuscript","Parchment","Ledger","Grimoire",
       "Almanac","Folio","Treatise","Compendium","Diary","Journal","Note","Letter",
       "Map","Chart","Blueprint","Sketch","Doodle","Pamphlet","Leaflet","Bestiary",
@@ -437,42 +711,54 @@
       "Cleaver","Hatchet","Sickle","Shiv","Pin","Needle","Quill-knife","Thorn-blade",
       "Pocketblade","Snickersnee","Bread-knife","Butter-knife","Toothpick","Splinter"
     ],
-    [ // 4 gem
+    [ // 4 tool
+      "Hammer","Mace","Cudgel","Mallet","Maul","Warhammer","Club","Bludgeon",
+      "Axe","Hatchet","Tomahawk","War-pick","Staff","Stave","Rod","Sceptre",
+      "Wand","Twig-wand","Pointer","Baton","Key","Skeleton-key","Latchkey","Cog",
+      "Gear","Spanner","Lever","Crank","Pickaxe","Trowel","Tongs","Whisk"
+    ],
+    [ // 5 gem
       "Gem","Shard","Jewel","Geode","Crystal","Stone","Pebble","Bead",
       "Cabochon","Facet","Sparkler","Glimmerstone","Heartstone","Dewdrop","Teardrop","Nugget",
       "Chip","Sliver","Prism","Druzy","Twinkle","Glint","Gleamstone","Lodestone",
       "Marble","Knucklebone-gem","Wishing-stone","Sky-shard","Frostbead","Cinderstone"
     ],
-    [ // 5 ring
+    [ // 6 ring
       "Ring","Band","Signet","Loop","Hoop","Circlet","Bangle","Torc",
       "Cuff","Coil","Knuckle-ring","Thumb-ring","Pinky-ring","Friendship-band","Seal-ring","Twist",
       "Gimmel","Promise-band","Halo-ring","Whorl","Ringlet","Bracelet-bit","Charm-band","Spinner",
       "Knot","Curlicue","Loopy-thing","Round-about"
     ],
-    [ // 6 shield
+    [ // 7 shield
       "Shield","Aegis","Buckler","Targe","Pavise","Rondache","Gardbrace","Bulwark",
       "Wardplate","Guard","Cover","Bastion","Defender","Boss","Roundel","Kite-shield",
       "Heater","Door-of-a-shield","Lid","Pot-lid","Dustbin-lid","Tray","Plank-board","Barricade",
       "Rampart","Screen","Fender","Shieldling"
     ],
-    [ // 7 food
-      "Hearth-loaf","Cave Mushroom","Jerky","Pasty","Stew","Pie","Dumpling","Biscuit",
-      "Crumpet","Scone","Bun","Roll","Tart","Pudding","Porridge","Broth",
-      "Cheese","Sausage","Pickle","Jam","Honey-cake","Gingerbread","Toffee","Trail-mix",
-      "Ration","Hardtack","Wafer","Oatcake","Flapjack","Marmalade","Soup","Snack",
-      "Nibble","Morsel"
+    [ // 8 garment
+      "Wizard-hat","Cap","Bonnet","Hood","Cowl","Cloak","Cape","Mantle",
+      "Boot","Bootie","Slipper","Clog","Glove","Mitten","Gauntlet","Cuff-glove",
+      "Belt","Sash","Girdle","Scarf","Shawl","Muffler","Sock","Stocking",
+      "Tunic","Smock","Apron","Robe","Tabard","Nightcap","Earmuff","Kerchief"
     ],
-    [ // 8 rune
+    [ // 9 sigil
       "Rune","Sigil","Glyph","Mark","Ward","Symbol","Hex-mark","Stave",
       "Brand","Inscription","Cipher","Etching","Carving","Scribble","Squiggle","Token",
       "Charm-mark","Bind-rune","Seal","Emblem","Crest","Insignia","Tracery","Knotwork",
       "Talisman-mark","Doodle-rune","Spellmark","Wardstone"
     ],
-    [ // 9 orb
+    [ // 10 orb
       "Orb","Globe","Bauble","Sphere","Marble","Bubble","Crystal-ball","Snowglobe",
       "Eyeball-of-glass","Gazing-ball","Dewglobe","Pearl","Moonball","Glimmer-orb","Lantern-globe","Trinket-ball",
       "Spherelet","Roundel-orb","Wishing-orb","Fortune-ball","Plasma-bauble","Glow-globe","Bobble","Sphere-thing",
       "Whirligig","Gobstopper","Bowling-bauble","Planetoid"
+    ],
+    [ // 11 provision
+      "Hearth-loaf","Cave Mushroom","Jerky","Pasty","Stew","Pie","Dumpling","Biscuit",
+      "Crumpet","Scone","Bun","Roll","Tart","Pudding","Porridge","Broth",
+      "Cheese","Sausage","Pickle","Jam","Honey-cake","Gingerbread","Toffee","Trail-mix",
+      "Ration","Hardtack","Wafer","Oatcake","Flapjack","Marmalade","Soup","Snack",
+      "Nibble","Morsel"
     ]
   ];
   const EPITHETS = [
@@ -584,7 +870,6 @@
     { w:  5, t: "FIXED", fixed: true },
     { w:  3, t: "{cookadj} {creature} {foodpart} of {epithet}" }
   ];
-  function itemStyle(id){ return hashStr(id) % 10; }
   function itemBoost(id, rarity){
     return { hero: HERO_IDS[hashStr(id) % 12], stat: STAT_KEYS[hashStr(id + "§") % 4],
              amount: BOOST_AMOUNT[rarity] || 1 };
@@ -610,12 +895,12 @@
     for(const t of table){ if((r -= t.w) < 0) return t; }
     return table[0];
   }
-  // theme = itemStyle(id) for now; switch to icon-family when T36 lands.
-  // `salt` re-rolls the template + words while keeping the icon-family theme
-  // (so a re-roll for de-duplication stays themed to the icon, food stays food).
+  // theme = the item's archetype family (0..11, T36); the noun pool + food-template
+  // choice follow the icon. `salt` re-rolls the template + words for de-dup while
+  // keeping the family theme (so a re-roll stays themed; provision stays food).
   function flavourFor(id, salt){
-    const theme = itemStyle(id);
-    const table = (theme === 7 /* food */) ? FOOD_TEMPLATES : TEMPLATES;
+    const theme = familyOf(id);
+    const table = (theme === FAM_IDX.provision) ? FOOD_TEMPLATES : TEMPLATES;
     return fillTemplate(id + salt, chooseTemplate(id + salt, table), theme);
   }
   function itemFlavour(id){ return flavourFor(id, ""); }
@@ -633,10 +918,10 @@
     usedNames.add(n); return n;
   }
   function boostLabel(b){ return b ? "+" + b.amount + " " + STAT_NAMES[b.stat] + " · " + (HERO_NAMES[b.hero] || b.hero) : ""; }
-  // Stamp every catalogue item with its deterministic style / flavour / boost.
-  // (uniqueFlavour guarantees globally-unique names; see its note.)
+  // Stamp every catalogue item with its deterministic icon category / flavour /
+  // boost. (uniqueFlavour guarantees globally-unique names; see its note.)
   CATALOG.forEach(it => {
-    it.style = itemStyle(it.id);
+    it.category = categoryOf(it.id);
     it.flavour = uniqueFlavour(it.id);
     it.boost = itemBoost(it.id, it.rarity);
   });
@@ -648,7 +933,7 @@
   function registerItem(it){
     const existing = byIdMap[it.id];
     if(existing) return existing;
-    it.style = itemStyle(it.id);
+    it.category = categoryOf(it.id);
     it.flavour = uniqueFlavour(it.id);
     it.boost = itemBoost(it.id, it.rarity);
     add(it);
@@ -661,7 +946,9 @@
     categories: () => CATS.slice(),
     evaluate, evaluateCollector, evaluateTopics, evaluateQuestion, drawIcon,
     // item layer (T20)
-    HERO_IDS, HERO_NAMES, STAT_NAMES, boostLabel, ICON_STYLES,
+    HERO_IDS, HERO_NAMES, STAT_NAMES, boostLabel,
+    // icon system (T36): ~50 categories over 12 archetypes + variation
+    CATEGORIES, categoryOf, familyOf, iconRoleGrid, iconColorGrid, lockedCells, shiftPalette,
     // post-build registration (T23 loot)
     registerItem,
     SPARK, SPEED

@@ -471,7 +471,7 @@
     }).join("");
     $("heroList").querySelectorAll(".hero-card.unlocked canvas").forEach(cv => {
       const card = cv.closest(".hero-card"); const h = card && Hs.byId(card.dataset.hero);
-      if(h) C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], 0);   // style 0 = sprite portrait
+      if(h) C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], "familiar");   // critter portrait
     });
   }
 
