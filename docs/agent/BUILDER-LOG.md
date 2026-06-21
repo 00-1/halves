@@ -1421,3 +1421,36 @@ notes / questions: one deliberate, documented interpretation — `gridDist` is
   "chunky highlight" the owner wanted back; jitter never touches silhouette/locked
   cells, so recognizability holds (proved by the cross-category + identity checks).
   Next per REVIEW order: T25 (balance + milestone wiring).
+
+## T25 — Balance + milestone wiring  [HANDOFF]
+commit: 87aa1b5 (on main)
+changed:
+  - collectibles.js — five new **Milestone** collectibles: `meta:tier10/25/50`
+    (Tier Climber/Breaker/Crusher — "defeat tier N"), `meta:tier100` (**Realm
+    Champion** — "defeat the final tier"), `meta:allheroes` (**Legendary Roster** —
+    "unlock all 12 heroes"). New **`evaluateMeta(heroesUnlocked, heroesTotal,
+    has)`**: tier milestones read the `tier:<n>` markers via `has`; `allHeroes`
+    fires at full hero unlock. `evaluate()` now skips `meta` items (so they're only
+    granted via the meta path, never by a drill ctx). Exported `evaluateMeta`.
+  - main.js — `grantMeta(col)` computes the live hero-unlock count from
+    `window.Heroes` and grants any newly-satisfied meta milestones into `col`;
+    wired into **both** `finish()` (a drill round can unlock the last hero →
+    Legendary Roster) and `finishBattle()` (tier defeats + the final-hero unlock),
+    included in the unlock modal alongside loot.
+  - docs/research-11plus.md — appended a "Phase 3 is the engagement layer" note.
+  - **Balance:** unchanged. The curve was proven fair in T24/T43 (monotonic def,
+    early tiers winnable by the starter, final ⇔ full-collection); kept as-is.
+how I verified:
+  - node -c (collectibles/main) OK; icon-variation test still green; no TODO/stub;
+    catalogue 1025→**1030**, all **1030 names still globally unique**.
+  - **T25 Node test (20 checks, ALL PASSED):** all five milestones registered;
+    `evaluateMeta` fires `meta:tier10/50/100` exactly on the matching `tier:<n>`
+    marker and not otherwise; owned milestones aren't re-earned; `allheroes` fires
+    at **12/12** and not at 11/12; a **constructed collection unlocks all 12 heroes**
+    (verified via `Heroes.isHeroUnlocked`) → `evaluateMeta` grants Legendary Roster.
+    Progression curve **still monotonic**, final tier still hardest, tier 1 still
+    winnable by the starter; **final-tier ⇔ full-collection invariant still holds**
+    (tier 100 winnable at ~full collection, unbeatable with 0 items).
+notes / questions: milestones render in the inventory **Awards** tab like the other
+  Milestone collectibles; they're granted at the moment their condition is met
+  (drill finish or Arena win). Next per REVIEW order: T26 (Goblin Gold currency).
