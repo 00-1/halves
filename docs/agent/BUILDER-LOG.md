@@ -1044,3 +1044,38 @@ how I verified:
     type border-left untouched — out of T37 scope).
 notes / questions: visual-only; kept the colour map, changed the form per the
   spec. Next per REVIEW order: T38 (start screen fits viewport).
+
+## T38 — Start screen fits the viewport (picker is the flexible scroll region)  [HANDOFF]
+commit: 62cd2ad (on main)
+changed:
+  - styles.css — start screen is now a viewport-bounded flex column with the
+    **picker as the only flexible/scrolling region**:
+    - `#start`: `justify-content:center` → **`flex-start`**. It was a centred,
+      whole-screen-scrolling column, so on a short viewport the centred stack
+      clipped at *both* ends (the owner saw build-info cut off). Flex-start makes
+      any residual overflow fall to the bottom, never clipping the header;
+      `overflow-y:auto` stays only as a last-resort safety net.
+    - `.picker-wrap`: now `flex:1 1 auto; min-height:0; display:flex;
+      flex-direction:column` — it absorbs the leftover vertical space.
+    - `.picker`: dropped the fixed `max-height:42vh` for `flex:1 1 auto;
+      min-height:0; overflow-y:auto`. So mark/tag/best/**Start**/links/build are
+      all `flex:0`-ish and stay on-screen; the **topic list** shrinks + scrolls
+      inside the column instead of the whole page scrolling.
+    Scoped to start-screen-only selectors (`#start`/`.picker-wrap`/`.picker`) — no
+    other screen uses them.
+how I verified:
+  - CSS brace-balance check OK (255/255); the three edits confirmed; `max-height:
+    42vh` gone from `.picker`. node -c main.js OK (JS untouched).
+  - The scroll-cue JS (`updateScrollCues`) is **unchanged** and still targets the
+    picker (`#modeTabs`) + its `.picker-wrap` parent. DOM-shim harness (5 checks,
+    ALL PASSED): with the picker overflowing, scrolled to top → `can-scroll-down`
+    on / `can-scroll-up` off; scrolled to bottom → the inverse; list fits → neither
+    cue. So the ▾ cue + edge fades still toggle correctly against the picker's own
+    scroll.
+  - Layout reasoning: `.app` (100dvh, max 780px) → `.screen` (absolute inset:0) →
+    `#start` has a definite height; the picker (`flex:1; min-height:0`) is the sole
+    grow/shrink child, so short viewports shrink+scroll the picker while the footer
+    (Start/links/build) stays visible, and tall viewports let the picker show more
+    rows. 360px-safe (widths unchanged: `.picker-wrap` still `max-width:360px`).
+notes / questions: CSS-only, start-screen-scoped; no regressions to other screens.
+  Next per REVIEW order: T39 (floating/always-visible Back on long-scroll screens).
