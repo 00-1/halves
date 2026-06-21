@@ -361,7 +361,8 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   top + tidy the nav (label Sound/Settings, fullscreen inline) so the tree expands → **`T100`**
   **`T104`** (fix the unreadable stacked fraction glyphs ½/¾ — slashed/clearer, legible at node
   size) → **`T100`** gamey UI restyle, buttons-first (pixel-bevel + squared panels, clean text,
-  reversible `data-ui` tokens — owner approved my T97 leans). **Then the shipping/perf block (Phase 6.16, owner: launch
+  reversible `data-ui` tokens — owner approved my T97 leans) → **`T106`** (tech-tree v2: use the
+  full width ~3-abreast + a clearer node-relationship visual language). **Then the shipping/perf block (Phase 6.16, owner: launch
   ASAP + parity):** **`T101`** (remove/mask the Start→fullscreen delay) → **`T102`** (installable
   Android **PWA+TWA** build for web↔Android parity — pulled forward from `T72`) → **`T103`**
   (deep **Android-inclusive perf research**, doc). **Then** `T89`/`T90` (rest of Arena 3v3 — team

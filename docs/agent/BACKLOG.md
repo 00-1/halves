@@ -1948,6 +1948,33 @@ is deferred to a later step.)
   far as headless allows). (Babysitter: confirm it reads "game not web-app", the focus ring +
   contrast + tap targets survive, body text is unaffected, and `data-ui="classic"` restores today.)
 
+### T106 — [A] Tech-tree v2: use the full width + a clearer relationship visual language · status: OPEN
+Owner: the tree nodes **don't use the full screen width** (only ~2 abreast in a ~360px column) and
+the **relationship between nodes isn't clear** — improve the connector visual language. Make the
+home tech tree read like a real game tech tree. Builds on T84 (data-driven graph) + T100 (gamey
+tokens); coordinate the node/connector style with the `data-ui` look.
+- **Use the width.** Lay the tree **wider — ~3 abreast** (owner's suggestion) or a snaking/grid
+  layout that fills the 360px width, instead of the current narrow 2-wide column. Bigger or
+  better-packed nodes; the tree should feel like it occupies the screen.
+- **Clearer relationships.** Improve the connector language so **"X unlocks Y" reads at a glance**:
+  clear directional **paths/pipes** (not a thin ambiguous line), and **visually distinguish the two
+  edge kinds** — the **chain** (`unlockedBy`, the main progression) vs the **mastery-gate branch**
+  (`requires:"mastery:<id>"` → Part-2). Consider **state-colouring the connectors** (the path you've
+  unlocked reads "lit"/amber; locked paths dim) so progression is obvious. Optionally the path can
+  "complete"/light as you advance (CSS/canvas, no-build).
+- **Keep the invariants from T84:** rendered **from live data** (`unlockedBy`/`requires`/
+  `isUnlocked`/`have-total`) — **never a parallel edge list**; **focusable `<button>` nodes**
+  (a11y); **locked nodes preview-only, never start**; the **Best-Times list stays the a11y
+  fallback**. Must scale to the Wave-2 topics (~23 nodes) since it renders from data.
+- **DoD:** the tree visibly **uses the full width** (≈3-abreast / filled layout, not a narrow
+  column); the connectors **clearly convey unlock direction** and **distinguish chain vs
+  mastery-gate** edges (and ideally lit/dim by state); still **data-driven** (grep/inspect confirms
+  it reads live `unlockedBy`/`requires`, no parallel edge list); nodes stay **focusable**, **locked
+  nodes never start**, 360px-safe, scales with more topics; coordinates with the `data-ui` tokens;
+  `node -c` clean; all gates green (keep/extend `tech-tree.test.js`). (Babysitter: verify it fills
+  the width, the relationships read clearly at a glance, the graph is still derived from live data,
+  locked-start is impossible, and it holds at 360px + with an enlarged topic set.)
+
 ---
 
 ## Phase 6.16 — Shipping & perf: Android parity + perf pass + the start delay (owner, 2026-06-21)
