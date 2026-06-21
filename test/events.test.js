@@ -87,18 +87,28 @@ ok(new Set(Ev.ROSTER.map(e => e.name)).size === 14 && new Set(Ev.ROSTER.map(e =>
 // (f) the 14 rewards are real collection members in a new "Events" category
 ok(C.categories().includes("Events"), "a new 'Events' collectible category exists");
 const evItems = C.CATALOG.filter(it => it.cat === "Events");
-ok(evItems.length === 14, "exactly 14 event reward items in the catalogue (" + evItems.length + ")");
+ok(evItems.length === 42, "exactly 42 event reward items — 3 tiers × 14 events (" + evItems.length + ")");
 const HERO_IDS = new Set(C.HERO_IDS);
-let allReal = true, allBuff = true, idOk = true;
+const RORD = { common:0, uncommon:1, rare:2, epic:3, legendary:4 };
+let allReal = true, allBuff = true, idOk = true, tiersOk = true, ascOk = true;
 Ev.ROSTER.forEach(e => {
-  const it = C.byId("event:" + e.id);
-  if(!it || it.cat !== "Events") allReal = false;
-  if(it){ if(it.name !== e.reward || it.rarity !== e.rarity) allReal = false;
-    if(!it.boost || !HERO_IDS.has(it.boost.hero) || !(it.boost.amount > 0)) allBuff = false; }
+  const p = C.byId("event:" + e.id), w = C.byId("event:" + e.id + ":well"), a = C.byId("event:" + e.id + ":ace");
+  if(!p || p.cat !== "Events") allReal = false;
+  // participation keeps its original id + name + rarity (migration-safe)
+  if(p){ if(p.name !== e.reward || p.rarity !== e.rarity || p.tier !== "participation") allReal = false; }
+  // the two new tiers exist, are named, in the Events cat, with their tier tags
+  if(!w || !a || w.cat !== "Events" || a.cat !== "Events" || w.tier !== "well" || a.tier !== "ace" ||
+     w.name !== e.rewardWell || a.name !== e.rewardAce) tiersOk = false;
+  // ascending (non-decreasing) rarity participation ≤ well ≤ ace; ace is legendary
+  if(p && w && a){ if(!(RORD[p.rarity] <= RORD[w.rarity] && RORD[w.rarity] <= RORD[a.rarity]) || a.rarity !== "legendary") ascOk = false; }
+  // every tier is a real buff (feeds Arena power)
+  [p, w, a].forEach(it => { if(!it || !it.boost || !HERO_IDS.has(it.boost.hero) || !(it.boost.amount > 0)) allBuff = false; });
   if(Ev.rewardId(e.id) !== "event:" + e.id) idOk = false;
 });
-ok(allReal, "each event reward is registered as event:<id> with its name + rarity");
-ok(allBuff, "every event reward carries a real hero buff (feeds Arena power)");
+ok(allReal, "participation tier keeps event:<id> + its name + rarity (migration-safe)");
+ok(tiersOk, "each event also has :well and :ace tiers (named, tagged)");
+ok(ascOk, "tier rarity is ascending (participation ≤ well ≤ ace = legendary)");
+ok(allBuff, "every event reward tier carries a real hero buff (feeds Arena power)");
 ok(idOk, "Events.rewardId(id) === 'event:'+id (stable, migration-safe ids)");
 // they count toward the global total
 ok(C.CATALOG.filter(it => it.cat === "Events").every(it => C.byId(it.id) === it), "event items are addressable in the global catalogue");
@@ -193,25 +203,23 @@ ok(Ev.buildGauntlet("not-an-event", MODES).length === 0, "buildGauntlet of an un
 
   // answer the whole gauntlet via synthetic numpad keypresses on #pad
   const set = global.window.Events.buildGauntlet(liveId, global.window.MODES);
+  const key = k => (els.pad._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".key" ? { dataset:{ k:String(k) } } : null) } }));
   function playThrough(){
     ok(EP.start(liveId) === true, "the live event starts");
     ok(els.game.classList.contains("active"), "event play activates the game screen");
-    for(let i=0;i<set.length;i++){
-      const ans = String(set[i].a);
-      for(const ch of ans){ (els.pad._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".key" ? { dataset:{ k:ch } } : null) } })); }
-    }
+    for(let i=0;i<set.length;i++) for(const ch of String(set[i].a)) key(ch);   // flawless
   }
   playThrough();
   ok(els.results.classList.contains("active"), "after the last answer the event shows results");
   const owned1 = JSON.parse(store["halves.collected"] || "{}");
-  ok(!!owned1["event:" + liveId], "completing the live event granted its event:<id> reward");
-  const before = Object.keys(owned1).filter(k => k === "event:" + liveId).length;
+  ok(!!owned1["event:" + liveId] && !!owned1["event:" + liveId + ":well"] && !!owned1["event:" + liveId + ":ace"],
+     "a FLAWLESS live run grants all three tiers (participation + well + ace)");
 
-  // replay (still live) → reward grant is idempotent (own-once), still owned
+  // replay (still live) → grants are idempotent per tier (own-once, none removed)
   playThrough();
   const owned2 = JSON.parse(store["halves.collected"] || "{}");
-  ok(!!owned2["event:" + liveId], "replaying the live event keeps the reward (idempotent)");
-  ok(Object.keys(owned2).filter(k => k === "event:" + liveId).length === before, "the reward is not duplicated on replay");
+  ok(!!owned2["event:" + liveId] && !!owned2["event:" + liveId + ":well"] && !!owned2["event:" + liveId + ":ace"],
+     "replaying keeps all three tiers (idempotent per tier)");
 
   // not live today → cannot start (returns false, no round)
   Date.now = () => offDayMs;
@@ -219,6 +227,54 @@ ok(Ev.buildGauntlet("not-an-event", MODES).length === 0, "buildGauntlet of an un
   ok(EP.start(liveId) === false, "an event that is not live today cannot be started");
   ok(!els.game.classList.contains("active"), "a non-live event never opens a round");
   Date.now = realDateNow;
+})();
+
+// ============ T92 — reward tiers are skip-proof + recurrence-upgradeable ====
+(function eventTierDrive(){
+  const DAYMS = 86400000, FIXED = Date.UTC(2026, 5, 21, 12, 0, 0);
+  const liveId = Ev.today(FIXED).id;
+  let els = {}, store = {}, winH = {};
+  function mkEl(id){ return { id, _html:"", _text:"", _h:{}, dataset:{}, style:{}, disabled:false,
+    parentElement:{ clientWidth:300, dataset:{} }, width:48, height:48, scrollWidth:120, clientWidth:300, scrollHeight:400, scrollTop:0,
+    classList:{ _s:new Set(), add(c){this._s.add(c);}, remove(c){this._s.delete(c);},
+      toggle(c,f){ if(f===undefined){ this._s.has(c)?this._s.delete(c):this._s.add(c); return this._s.has(c);} else { f?this._s.add(c):this._s.delete(c); return !!f; } }, contains(c){return this._s.has(c);} },
+    addEventListener(e,fn){ (this._h[e]=this._h[e]||[]).push(fn); }, removeEventListener(){},
+    appendChild(c){return c;}, insertBefore(c){return c;}, setAttribute(){}, getAttribute(){return null;}, removeAttribute(){}, remove(){}, focus(){}, blur(){},
+    querySelector(s){ return /canvas/.test(s||"") ? mkEl("_c") : null; }, querySelectorAll(){ return []; }, closest(){ return null; },
+    getContext(){ return { clearRect(){}, fillRect(){}, save(){}, restore(){}, beginPath(){}, fill(){}, set fillStyle(v){}, get fillStyle(){return"";} }; },
+    get innerHTML(){return this._html;}, set innerHTML(v){this._html=String(v);}, get textContent(){return this._text;}, set textContent(v){this._text=String(v);} }; }
+  global.window = {}; global.window.addEventListener = (e,f) => { (winH[e]=winH[e]||[]).push(f); }; global.window.removeEventListener = () => {};
+  global.window.matchMedia = () => ({ matches:false, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} });
+  global.window.location = { hash:"" }; global.location = global.window.location; global.window.innerWidth = 360;
+  global.requestAnimationFrame = () => 1; global.window.requestAnimationFrame = global.requestAnimationFrame;
+  global.cancelAnimationFrame = () => {}; global.window.cancelAnimationFrame = global.cancelAnimationFrame;
+  global.performance = { now: () => 1000 };
+  global.CSS = { escape:s=>s }; global.fetch = () => Promise.reject(new Error("no")); global.setInterval = () => 0; global.clearInterval = () => {};
+  global.setTimeout = (fn) => { if(typeof fn === "function") fn(); return 0; }; global.clearTimeout = () => {};
+  global.localStorage = { getItem:k => k in store ? store[k] : null, setItem:(k,v)=>{ store[k]=String(v); }, removeItem:k=>{ delete store[k]; } };
+  global.window.localStorage = global.localStorage;
+  global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
+    addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
+    documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
+  const realNow = Date.now; let clock = FIXED; Date.now = () => clock;
+  ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
+  const EP = global.window.EventPlay, MODES2 = global.window.MODES, set = global.window.Events.buildGauntlet(liveId, MODES2);
+  const key = k => (els.pad._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".key" ? { dataset:{ k:String(k) } } : null) } }));
+  function play(mode){ EP.start(liveId); for(let i=0;i<set.length;i++){ if(mode === "skip") key("skip"); else if(mode === "skipMost" && i > 0) key("skip"); else for(const ch of String(set[i].a)) key(ch); } }
+  const own = id => !!JSON.parse(store["halves.collected"] || "{}")[id];
+
+  // SKIP-THROUGH: skipping (almost) every question → ONLY participation, never well/ace
+  play("skipMost");   // answer just Q1, skip the rest → clean fraction ≈ 1/N (< 0.7)
+  ok(own("event:" + liveId), "a skip-through still earns the participation tier (completing it)");
+  ok(!own("event:" + liveId + ":well") && !own("event:" + liveId + ":ace"), "a skip-through earns ONLY participation — well/ace are skip-proof");
+
+  // RECURRENCE UPGRADE: 14 days later, a flawless run adds the higher tiers (kept ones stay)
+  clock = FIXED + 14 * DAYMS;
+  ok(global.window.Events.isLive(liveId), "the same event is live again 14 days on");
+  play("flawless");
+  ok(own("event:" + liveId) && own("event:" + liveId + ":well") && own("event:" + liveId + ":ace"),
+     "improving on the recurrence earns well + ace without removing participation");
+  Date.now = realNow;
 })();
 
 // ============ T80 — best-attempt board + live-window lockout ================

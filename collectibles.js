@@ -227,11 +227,19 @@
   // Stable ids (`event:<id>`), migration-safe: a pre-existing profile simply does
   // not own them yet. Guarded so test harnesses that don't load events.js are
   // unaffected (no event items, no "Events" tab content).
+  // Three performance tiers per event (T92): participation (kept `event:<id>` id,
+  // migration-safe) for completing, plus `:well` and `:ace` gated on clean-score —
+  // ascending rarity, all real buffs that feed Arena power.
   if(window.Events && window.Events.ROSTER){
-    window.Events.ROSTER.forEach(e => add({
-      id:"event:"+e.id, name:e.reward, rarity:e.rarity, cat:"Events", modeId:null,
-      eventId:e.id, desc:"Reward for completing "+e.name+"."
-    }));
+    const RBUMP = { common:"uncommon", uncommon:"rare", rare:"epic", epic:"legendary", legendary:"legendary" };
+    window.Events.ROSTER.forEach(e => {
+      add({ id:"event:"+e.id, name:e.reward, rarity:e.rarity, cat:"Events", modeId:null,
+        eventId:e.id, tier:"participation", desc:"Reward for completing "+e.name+"." });
+      add({ id:"event:"+e.id+":well", name:e.rewardWell, rarity:RBUMP[e.rarity] || "epic", cat:"Events", modeId:null,
+        eventId:e.id, tier:"well", desc:"Reward for doing well in "+e.name+"." });
+      add({ id:"event:"+e.id+":ace", name:e.rewardAce, rarity:"legendary", cat:"Events", modeId:null,
+        eventId:e.id, tier:"ace", desc:"Reward for acing "+e.name+"." });
+    });
   }
 
   function sortItems(arr){

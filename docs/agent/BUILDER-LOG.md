@@ -3119,3 +3119,40 @@ notes / questions: ladder per the spec's draft (owner delegated "add good points
   the toast queue (calm). **Phase 6.9 (T85–T87) is complete.** Next per REVIEW order:
   **T92** (event reward tiers — skip-proof "did well"/"extremely well" tiers, sequenced
   before the Arena 3v3 re-calibration), then the content-extension wave.
+
+## T92 — Events: tier the reward by performance (participation · well · ace)  [HANDOFF]
+commit: (this commit, on main)
+Goal: close the skip-to-win exploit — today completing an event pays the full reward
+regardless of score. Keep an easy participation reward, add two performance-gated tiers.
+changed:
+  - **events.js** — each event gains **`rewardWell` + `rewardAce`** names (characterful,
+    themed, distinct) alongside the existing `reward`.
+  - **collectibles.js** — registers **3 tiers per event** (14×3 = **42** items): the
+    **participation** tier keeps the **`event:<id>` id + name + rarity** (migration-safe),
+    plus **`event:<id>:well`** (rarity bumped one step) and **`event:<id>:ace`** (legendary).
+    Each carries a `tier` tag and the auto-stamped hero **boost** → all feed Arena power.
+    Catalogue 818 → **846**.
+  - **main.js** — **`eventTiersEarned(eid, score, total)`** (skip-proof): participation =
+    completion; **`well` ≥ 70%** clean-score `score/total`; **`ace` = flawless** (`score===
+    total`). Since **skips never enter `times`** (T74), skipping lowers the fraction and
+    **can't reach** the higher tiers. `finishEvent` grants **every tier earned this run,
+    live-only, idempotent per tier**; improving on a replay / the 14-day recurrence earns
+    the higher tiers **without removing** owned ones. The **Events tab now lists all 3
+    tiers per event** (42, in roster→tier order). (Renamed the shadowing local
+    `unlocked`→`earned` so it no longer collides with the T86 onboarding state.)
+how I verified:
+  - **`events.test.js` extended** → **ALL 87 PASS**: **42** event items; participation keeps
+    its id/name/rarity; **:well/:ace** exist + tagged; **rarity ascending** (participation ≤
+    well ≤ ace = legendary); every tier is a real **buff**. DOM drives: a **FLAWLESS** live
+    run grants **all three tiers**; replay is **idempotent per tier**; a **skip-through earns
+    ONLY participation** (well/ace skip-proof); **improving on the 14-day recurrence** adds
+    well+ace without dropping participation.
+  - **`arena.test.js` re-proved on the grown pool** (+28 items): tiers 1–5 winnable at 0
+    items, def **monotonic**, no tier behind own loot, **tier-120 def auto-scaled 523→583**,
+    champion at full-minus-final-loot = 583, **removing one boost still flips** to a loss.
+  - Booted the app: the **Events tab shows 42 tiles** (3/event, "/42" total). `hero-icons`
+    catalogue pin 818→846. `node -c` clean; **full 24-gate suite green**; no regressions.
+notes / questions: thresholds **well ≥ 0.7**, **ace = flawless** (the spec's suggestion;
+  tunable). Sequenced **before** the Arena 3v3 (T88) so its re-calibration sees the full
+  42-item event-reward set. Next per REVIEW order: the **Arena 3v3 block (Phase 6.10) —
+  T88**, then content extension.

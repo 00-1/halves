@@ -870,7 +870,12 @@
   // tab reads as the calendar; owned/locked just like every other category.
   function invEventsHtml(col){
     const Ev = window.Events, evItems = C.CATALOG.filter(it => it.cat === "Events");
-    const ordered = (Ev && Ev.roster) ? Ev.roster().map(e => C.byId("event:" + e.id)).filter(Boolean) : evItems;
+    // 3 tiers per event (participation · well · ace), in roster then tier order (T92)
+    let ordered = evItems;
+    if(Ev && Ev.roster){
+      ordered = [];
+      Ev.roster().forEach(e => ["", ":well", ":ace"].forEach(suf => { const it = C.byId("event:" + e.id + suf); if(it) ordered.push(it); }));
+    }
     const got = ordered.filter(it => col[it.id]).length;
     // "Live today" play strip — the functional entry into today's event gauntlet
     // (the prominent home banner is T81). Playable only while live, by definition.
@@ -1282,6 +1287,16 @@
     beginRound();
     return true;
   }
+  // The reward-tier ids earned by a run (T92), skip-proof. Participation = completion;
+  // `well` ≥ 70% clean first-try; `ace` = flawless (every question clean). `score` =
+  // clean answers, `total` = questions; skips never enter `score` (they're not in `times`).
+  const EVENT_WELL_FRAC = 0.7;
+  function eventTiersEarned(eid, score, total){
+    const frac = total ? score / total : 0, ids = ["event:" + eid];   // participation
+    if(frac >= EVENT_WELL_FRAC) ids.push("event:" + eid + ":well");
+    if(total > 0 && score === total) ids.push("event:" + eid + ":ace");
+    return ids;
+  }
   function finishEvent(){
     cancelAnimationFrame(raf);
     const ev = eventCtx.event, eid = eventCtx.id; eventCtx = null;
@@ -1302,12 +1317,19 @@
     // persists across the 14-day recurrence (beatable next time it comes around).
     recordEventBest(eid, { score:score, time:total, total:order.length, ts:Date.now() });
 
-    // Grant the reward — only while still live today, and only once (idempotent).
+    // Grant every reward TIER earned this run (T92) — only while still live, and
+    // idempotent per tier (own-once). Participation = completion; the higher tiers
+    // are gated on the SKIP-PROOF clean-score fraction (skips never enter `times`,
+    // so skipping lowers it and can't reach them). Improving on a replay / the
+    // 14-day recurrence earns the higher tiers without removing earned ones.
     const collected = loadCollected();
-    const rid = "event:" + eid, unlocked = [];
-    if(window.Events.isLive(eid) && !collected[rid]){
-      const it = C.byId(rid);
-      if(it){ collected[rid] = { ts: Date.now() }; unlocked.push(it); }
+    const earned = [];
+    if(window.Events.isLive(eid)){
+      eventTiersEarned(eid, score, order.length).forEach(id => {
+        if(collected[id]) return;
+        const it = C.byId(id);
+        if(it){ collected[id] = { ts: Date.now() }; earned.push(it); }
+      });
     }
     // collection-count + hero/arena milestones the new reward may trigger
     const has = id => !!collected[id];
@@ -1315,7 +1337,7 @@
     more.forEach(it => collected[it.id] = { ts: Date.now() });
     const meta = grantMeta(collected);
     saveCollected(collected);
-    const all = unlocked.concat(more).concat(meta);
+    const all = earned.concat(more).concat(meta);
 
     sfx(all.length ? "topicUnlock" : "roundComplete");
     show("results");
