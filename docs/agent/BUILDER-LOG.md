@@ -1603,3 +1603,47 @@ notes / questions: Practice is a training ground — it can only ever earn the
   attempted question's Beat/Spark, so "100% still requires real mastery" via actual
   rounds. (Babysitter spot-checks `explain` correctness.) Next per REVIEW order:
   T13 (question-set audit) → T30 (deep content review) → T45 (perf audit).
+
+## T13 — Question-set audit pass  [HANDOFF]
+commit: 7e7828a (on main)
+changed:
+  - modes.js — three targeted improvements (the rest already meet the standard):
+    1. **fractions** 18 → **21**: added **9/20, 11/20, 17/20** — a coherent
+       twentieths family (terminating decimals; ×5 gives a percentage, linking to
+       the % topics).
+    2. **fractionsof** P1: **⅓** was light (4) — added **⅓ of 60 = 20** (a common
+       time/money base) and dropped the less-common **⅕ of 45**; now ⅓×5, ⅕×6.
+    3. **percentages** P1: replaced the arbitrary **10% of 130** with **10% of 150**
+       (a common base). Beat/Spark regenerate from the sets automatically.
+per-topic audit (covered cases · key common values):
+  - **Halves** (benchmark, 26): small odds 3/5/7/9 (·5 answers), teens, money
+    50/100/200/250/500/1000, time 24/30/60/90/180/360. Gold standard — unchanged.
+  - **Times** (21): the hard middle facts 6×7/7×8/8×9 + 3–9 tables + ×11/×12. Good.
+  - **Doubles** (21): singles/teens, ×5s (25/35/45), hundreds (120/125/250). Good.
+  - **Add/Subtract** (21): bridging (47+35), non-bridging (41+58), compensation
+    (+18/−19/−29), complement to 100 (84+16), both + and −. Good.
+  - **Add/Subtract II** (21): 3-digit ± 2-digit, bridging hundreds, crossing 1000
+    (965+78). Good.
+  - **Number bonds** (21): round tens (9), near-round (25/45/55/75), awkward
+    (37/63/49/72/81/92), small↔large partners (8↔92). Good balance.
+  - **Number bonds II** (21): decimal bonds to 1 (tenths + 0.05/0.25/0.75/0.95),
+    1000-bonds in multiples of 50/100. Good.
+  - **Place value** (21): ×÷10/100, whole + decimals, 7÷10=0·7, 60÷100=0·6. Good.
+  - **Place value II** (21): ×÷100/1000, answers <1, 3-dp (6÷1000). Good.
+  - **Fractions of** (21): ½¼⅓⅕ of nice bases → whole answers; money 100/50/60. ✓ fixed.
+  - **Fractions of II** (21): ⅔¾⅗⅝ of bases giving whole answers. Good.
+  - **Percentages of** (21): 10/25/50% of round/money bases ≤400. ✓ fixed.
+  - **Percentages of II** (21): 1/5/20/75%; clean terminating answers (1% of 50=0·5). Good.
+  - **Fractions→decimal** (21): halves/quarters/fifths/eighths/tenths/twentieths
+    + 1/16. ✓ expanded.
+  - **Squares** (21): 2²–20² + handy 25²=625, 30²=900. Good.
+how I verified:
+  - node -c modes.js OK; **every answer exact, non-negative, round-trips on the
+    numpad, ≤5 digits; no duplicate prompts in any topic**. Catalogue rebuilt
+    1047→**1053** (+3 Beat +3 Spark for the new fractions), **names still unique**;
+    new prompts catalogued and `explain()` correct for each; removed prompts gone;
+    `explain` non-empty for all questions; icon-variation test green.
+notes / questions: most sets were already well-curated (per QUESTION-SETS.md), so I
+  changed only the genuinely weak/arbitrary entries to avoid regressions. (Babysitter
+  audits content.) Next per REVIEW order: T30 (deep content review — incl.
+  normalising the decimal glyph "·" vs "." app-wide) → T45 (perf audit, last).
