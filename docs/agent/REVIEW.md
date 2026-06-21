@@ -619,11 +619,16 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   full width (≈3-abreast / filled layout, handling varying 1/2/3-part depth gracefully), a clearer
   connector visual language (chain vs mastery-gate, lit/dim by state), still **data-driven** (live
   `unlockedBy`/`requires`/`isUnlocked`, no parallel edge list), focusable nodes, locked-never-start,
-  360px-safe. Full DoD in BACKLOG `T106`. **Then → shipping/perf**
-  block `T101` (Start→fullscreen delay) → `T102` (Android PWA+TWA parity) → `T103` (Android-inclusive
-  perf research) → `T89`/`T90` (rest of Arena 3v3) → **Arena-biome FX wiring** (`setArenaState`/
-  `deriveArenaScene`, after the Arena UI exists) → content `T58`–`T61` → `T72` (Play-Store submission).
-  Owns ALL existing Halves files; log = `BUILDER-LOG.md`.
+  360px-safe. Full DoD in BACKLOG `T106`.
+  **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
+  that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
+  submit.** Authoritative order after T106: **`T101`** (Start→fullscreen delay — quick, owner-flagged,
+  leads the perf work) → **`T102`** (Android PWA+TWA — installable parity build, now that the web UI is
+  stable) → **`T103`** (Android-inclusive perf research — needs T102 to profile) → **`T89`/`T90`**
+  (Arena 3v3 team UI + playout) → content **`T58`** blueprint (Babysitter drafts it **in the background
+  now** → owner approves → build) → **`T59`/`T60`/`T61`** → **`T72`** (Play-Store submission). The
+  Arena-biome FX (T108) is already wired (T112); celebration/home FX done. Owns ALL existing Halves
+  files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
 - **Builder B — next: STAND BY (engine queue exhausted; do NOT invent a new engine capability).**
   T93·T94·T95·T108 are all DONE and headless-perfect but **all unwired** — more engine code would be
   padding. **Keep watching `origin/claude/agent`** per your self-continue loop: the moment the [A] FX
