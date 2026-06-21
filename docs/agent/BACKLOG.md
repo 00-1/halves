@@ -727,7 +727,7 @@ the engagement layer.
 - **DoD:** Node test of the full progression curve; milestones evaluate
   correctly; final-tier ⇔ full-collection invariant holds.
 
-### T26 — Currency (Goblin Gold): fun accumulation · status: BLOCKED
+### T26 — Currency (Goblin Gold): fun accumulation · status: DONE
 Implement the currency per `DESIGN-heroes.md` §"Currency & economy" — **earn,
 display, persist; NO spending (build no spend mechanic yet).** **Display name is
 "Goblin Gold"** (owner-chosen) — keep it in ONE constant (internal
