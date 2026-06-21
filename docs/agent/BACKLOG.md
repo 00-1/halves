@@ -1111,3 +1111,85 @@ engine, same 8-bit aesthetic.
   Arena; deploy green. (Babysitter verifies the icon draw-calls target real canvases,
   the hero portrait id/pal matches the Heroes screen, and the menu layout holds at
   360px.)
+
+### T52 — Procedural enemy sprites in the Arena (new generator, high variation) · status: OPEN
+Owner: "add an icon for the enemies in the Arena — a new image gen, something with lots
+of variation." The Arena tier card (`.arena-tier`, `main.js` ~702) shows only the
+enemy's name/type/def — **no art**. Add a **new procedural monster-sprite generator**
+(separate from the item-icon archetypes — do NOT reuse/alter the collectibles icon
+system) and draw the current tier's enemy on its card.
+- **New generator module.** A standalone, pure, deterministic pixel-sprite drawer
+  (e.g. `monsters.js`, loaded in `index.html`, exposing `window.Monsters` with a
+  `draw(canvas, tier)`-style API and a pure grid builder for testing). Seed from the
+  tier (`tier.n`/`tier.name`) so a given enemy always looks the same.
+- **Lots of variation, themed.** Vary body silhouette, eyes (count/placement), horns,
+  limbs/appendages, mouth, spots/texture across enemies — clearly distinct from the
+  hero "creature blob". **Theme by the 10 regions** (`BANDS`: Goblin Warren … The Void
+  Throne) and tint by the tier's RPS **type** (Brawn/Cunning/Arcane palette). **Bosses**
+  (tiers 10/20/…/100, named in `BOSSES`) must read as **bigger/special** (extra
+  features or a larger frame), not just a recoloured grunt.
+- **Where shown.** The current-tier card in `renderArena`, and the **battle result**
+  header (the enemy you just fought). Locked/cleared states still render sensibly.
+- **Performance (T45).** Sprites are **static** — draw once to a canvas on render, no
+  per-frame RAF loop; deterministic so no recompute churn. 360px-safe; pixelated
+  (`image-rendering:pixelated`) to match the aesthetic.
+- **DoD:** every tier's card shows a distinct, deterministic enemy sprite; a **Node
+  variation assertion** (mirroring `icon-variation.test.js`) proves a sample of enemy
+  sprites across regions/types produce **visibly different grids** (e.g. ≥90% of a
+  sampled set are pairwise distinct, bosses differ from grunts in the same region);
+  region/type theming is applied; bosses render larger/special; item icons + hero
+  portraits untouched; `node -c` clean; no RAF/loop added; no console errors; 360px-safe;
+  no regressions; deploy green. **Wire the enemy-variation assertion into the Pages
+  workflow** as another gate. (Babysitter re-runs the variation assertion and eyeballs
+  that bosses differ from grunts and regions differ from one another.)
+
+### T53 — Procedural region scenery in the Arena (per-location backdrop) · status: OPEN
+Owner: "add some scenery image gen for each location in the Arena." Give each of the
+**10 Arena regions** (`BANDS`) a generated **scenery backdrop** behind the tier card so
+each location feels distinct. Build on T52 (enemy sprites land first).
+- **New scenery generator.** A pure, deterministic procedural backdrop drawer (e.g. in
+  `monsters.js`/a `scenery.js`, `window.Scenery.draw(canvas, region)`), seeded by the
+  region index (0–9) so each region's scene is stable. Layered silhouettes / horizon /
+  themed motifs (e.g. warren mounds, gallows, gloam trees, marsh, frost peaks, drowned
+  spires, cinder dunes, storm towers, dragon crags, void rifts) — **a distinct palette +
+  silhouette per region**, evoking the `BANDS` name. Keep it tasteful and low-detail
+  (it's a backdrop, not the focus).
+- **Readability first (ties to T46).** The backdrop must sit **behind** the enemy sprite
+  and the tier text and **never hurt legibility** — dim/low-contrast wash, or an overlay
+  scrim, so `--text`/`--muted` keep their WCAG-AA contrast over it. The enemy sprite and
+  all controls stay clearly on top.
+- **Performance (T45).** Static — draw once per region change to a cached canvas; **no
+  per-frame animation/RAF**. Redraw only when the region (tier band) actually changes.
+  360px-safe.
+- **DoD:** each of the 10 regions shows a distinct, deterministic backdrop matching its
+  theme; advancing into a new region swaps the scene; text/sprite remain clearly legible
+  over it (spot-check contrast holds); no RAF/animation loop added (static draw, redrawn
+  only on region change); `node -c` clean; no console errors; 360px-safe; no regressions
+  to the Arena flow; deploy green. (Babysitter checks the 10 region grids differ, the
+  draw is static/idle, and text contrast over the backdrop is preserved.)
+
+### T54 — Version check + "Update" button (poll build.json) · status: OPEN
+Owner: "add a version check — poll a version.json and give the user a button to update
+(refresh) when we see a new version." **Reuse the existing `build.json`** (already
+written at deploy time with `{sha, shortSha, time}` and fetched once at load,
+`main.js` ~1244) as the version source — don't add a parallel file.
+- **Record the loaded version.** On first load, remember the sha the app booted with
+  (the `build.json` already fetched). On `local build` (no `build.json`), the check is a
+  no-op.
+- **Poll for a newer deploy.** Periodically re-fetch `build.json` with `cache:"no-store"`
+  (e.g. every few minutes — pick a sensible interval; reuse/extend the existing
+  `setInterval`, don't add a tight loop). If the fetched `sha` **differs** from the
+  booted sha, a new version is live.
+- **Offer an update.** Show an unobtrusive **"Update available — Refresh"** control (e.g.
+  a small banner/button) that, on click, calls `location.reload()`. Dismissible; never
+  auto-reloads (don't interrupt a round). Must not steal focus or block input mid-drill.
+  Style consistent with the app; legible (WCAG-AA, no sub-10px text).
+- **Robustness.** A failed/404 fetch is ignored (offline-safe, no console spam); the
+  poll never throws; works on GitHub Pages (the `no-store` fetch already defeats most
+  caching).
+- **DoD:** with a simulated sha change the app surfaces the Update control and clicking
+  it triggers a reload; identical sha shows nothing; missing `build.json`/offline is a
+  silent no-op; no auto-reload, no focus theft, no tight polling loop (interval only);
+  the control is AA-legible and 360px-safe; `node -c` clean; no console errors; no
+  regressions to the existing build-info line; deploy green. (Babysitter verifies the
+  sha-compare logic, that reload is user-initiated only, and that failures are swallowed.)

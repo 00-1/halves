@@ -55,6 +55,27 @@ and non-wrapping at 360px. And the Arena "choose your champion" cards show no po
 portrait in the result header. Presentation only; build on the **post-T47** Arena. Full
 spec in BACKLOG "T50".
 
+**Then `T52` — procedural enemy sprites in the Arena (owner-reported).** "Add an icon
+for the enemies — a new image gen with lots of variation." Add a **new** monster-sprite
+generator (separate from the item-icon system; e.g. `monsters.js`/`window.Monsters`),
+deterministic per tier, with high variation, **themed by the 10 regions** and tinted by
+RPS type, **bosses bigger/special**; draw it on the tier card + battle-result header.
+Static (no RAF). Wire an enemy-variation assertion as a new Pages gate. Full spec in
+BACKLOG "T52".
+
+**Then `T53` — procedural region scenery in the Arena (owner-reported).** "Scenery image
+gen for each location." Each of the 10 regions (`BANDS`) gets a deterministic **backdrop**
+behind the tier card — distinct palette/silhouette per region — drawn **behind** the
+sprite/text and dimmed so WCAG-AA text contrast holds (ties to T46). Static, redrawn only
+on region change (no RAF). Build on T52. Full spec in BACKLOG "T53".
+
+**Then `T54` — version check + "Update" button (owner-reported).** Poll the existing
+`build.json` (already deployed with the sha; **don't** add a parallel `version.json`)
+with `cache:"no-store"` on an interval; if the sha differs from the booted one, show an
+unobtrusive **"Update available — Refresh"** control that calls `location.reload()` on
+click. User-initiated only (never auto-reload / no focus theft mid-drill), offline-safe
+(swallow failures), AA-legible. Full spec in BACKLOG "T54".
+
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
 gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
 (beatable only at near-full collection), 50 procedural icon categories with
