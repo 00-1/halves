@@ -1258,3 +1258,47 @@ notes / questions: pure content/balance trim — main.js inventory totals are
   computed from `CATALOG.length`, so they adapt with no code change. Run before T24
   so Arena grants the final 250-item loot set. Next per REVIEW order: T42 (inventory
   tabs) then T24 (Arena).
+
+## T42 — Inventory tabs + per-category bars + jump-to-top  [HANDOFF]
+commit: c5e38c3 (on main)
+changed:
+  - main.js — rewrote `renderInventory` into a tabbed, lazy-rendered view:
+    - **Tabs** `INV_TABS` = Topics · Awards · **Loot (its own tab)**, rendered into
+      a new `#invTabs` bar; clicking a tab swaps content. **Lazy-render**: only the
+      active tab's tiles enter the DOM (`renderInvTab` sets `#invList` to just that
+      tab) — the 250 Loot tiles aren't built until the Loot tab is opened. Opening
+      the inventory defaults to **Topics**.
+    - **Per-category bars**: shared `invSection(title, items, col)` renders a
+      header (owned/total) + a graded `.tp-bar/.tp-fill` (reusing `topicBarColor`)
+      + the tile grid — used for every **Awards** category and every **Loot**
+      region. Topics tab keeps its per-topic bars.
+    - **Loot sub-grouped by the 10 tier-regions** (`region = floor((tier-1)/10)`,
+      label via `Enemies.regionLabel` so it auto-follows T44's rename) — each
+      region a section with its own bar and "· tiers N–M" range.
+    - **Jump-to-top** `#invTop`: `updateInvTop()` toggles `.show` when
+      `invList.scrollTop > 200`; clicking snaps scrollTop to 0 and hides it.
+  - enemies.js — exported `tierRegion(n)` and `regionLabel(r)` (band name) for the
+    Loot grouping (DRY; T44-proof).
+  - index.html — added `#invTabs` under the header and the floating `#invTop`
+    button inside `#inventory`.
+  - styles.css — `.inv-tabs` (fixed pill tab bar under the header), `.inv-tab`
+    (+`.active` amber), `.jump-top` (absolute FAB, hidden→`.show`). `.invlist`
+    margin trimmed for the tab bar.
+how I verified:
+  - node -c (main/enemies/collectibles) OK; CSS brace-balance OK (263/263); no
+    TODO/stub. Back (T39) + names (T35) untouched.
+  - **DOM-shim harness (19 checks, ALL PASSED):** 3 tabs render with Topics active
+    by default; Topics shows per-topic rows and **no item/loot tiles** in the DOM;
+    Awards shows the drill categories **each with a progress bar** and **still no
+    loot tiles** (lazy); switching to **Loot** lazily renders loot tiles
+    sub-grouped into **exactly 10 regions** ("Goblin Warren · tiers 1–10" …) each
+    with a bar; jump-to-top is hidden at the top, **shows when scrolled >200**, and
+    click returns to top + hides; header count = owned/total over the whole
+    catalogue; reopening defaults back to Topics. The inv-cell tap-to-inspect
+    handler is unchanged (works across tabs).
+  - 360px-safe: tab bar is 3 equal flex pills within `max-width:360px`; the FAB is
+    a small absolute pill at bottom-right (clears the centered Back); list stays the
+    scroll region (T39).
+notes / questions: Loot region labels come from `Enemies.regionLabel`, so T44's
+  tier/region rename will flow through automatically. Next per REVIEW order: T44
+  (tier rename) then T24 (Arena).
