@@ -204,6 +204,29 @@
 
   function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
 
+  // T152 — particle SIZE + SPREAD options (the owner's "very small particles, emanating
+  // from the point of interest"). Sizes are SCREEN px (the CPU path multiplies by
+  // pxScale=dpr·res and the GL/WebGPU path divides uRes, so a value is crisp on-device
+  // — T138); a small-but-real floor keeps "small" from going sub-pixel/invisible.
+  const MIN_PARTICLE_PX = 2;   // smallest on-screen particle (matches the CPU draw floor)
+  // Resolve [min,max] particle size (screen px) from opts. No opts → the caller's
+  // defaults (byte-identical, so the goldens/determinism hold). `sizePx` sets an
+  // explicit MAX (small/fine), `sizeScale` multiplies; both floor at MIN_PARTICLE_PX.
+  function sizeRange(opts, defMin, defMax){
+    let hi = defMax, lo = defMin;
+    if(opts.sizePx != null && opts.sizePx > 0){ hi = opts.sizePx; lo = opts.sizePx * (defMin / defMax); }
+    const sc = (opts.sizeScale != null && opts.sizeScale > 0) ? opts.sizeScale : 1;
+    hi *= sc; lo *= sc;
+    lo = Math.max(MIN_PARTICLE_PX, lo); hi = Math.max(lo, hi);
+    return [lo, hi];
+  }
+  // Spread multiplier on the outward spray: 1 = default, <1 hugs the source point
+  // (emanate-from-the-thing), >1 wider. Clamped sane. No opt → 1 (identical default).
+  function spreadMul(opts){
+    const s = (opts.spread != null && opts.spread > 0) ? opts.spread : 1;
+    return Math.max(0.05, Math.min(4, s));
+  }
+
   // Seed a celebration burst (T94) — purpose: CELEBRATION, amplify a reward.
   // Deterministic from `seed`, capped, and (under reduced motion) a calm, slow,
   // small flourish rather than a full pop. Each particle carries its launch
@@ -220,20 +243,21 @@
     const rng = makeRng((opts.seed | 0) || 0x51ed270b);
     let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor) : [[255, 217, 138], [255, 255, 255]];
     if(!pool.length) pool = [[255, 255, 255]];
-    const sMax = reduced ? 0.22 : 0.85;     // peak outward speed (screen-frac/s)
+    const sprd = spreadMul(opts);                            // T152: tighten/widen the spray
+    const sMax = (reduced ? 0.22 : 0.85) * sprd;             // peak outward speed (screen-frac/s)
     const up = reduced ? 0.10 : 0.42;       // upward kick (confetti arc)
     const lMax = reduced ? 0.7 : 1.4;       // longest life (s)
     const spin = reduced ? 1.5 : 9;         // rotation rate spread
-    const szMax = reduced ? 4 : 7;
+    const sz = sizeRange(opts, 2, reduced ? 4 : 7);          // T152: small/fine via sizePx/sizeScale
     const out = new Array(n);
     for(let i = 0; i < n; i++){
-      const ang = rng() * TAU, spd = lerp(0.14, sMax, rng());
+      const ang = rng() * TAU, spd = lerp(0.14 * sprd, sMax, rng());
       const col = pool[(rng() * pool.length) | 0];
       out[i] = {
         x0: x0, y0: y0,
         vx: Math.cos(ang) * spd,
         vy: Math.sin(ang) * spd - lerp(up * 0.4, up, rng()),  // bias upward
-        size: lerp(2, szMax, rng()),
+        size: lerp(sz[0], sz[1], rng()),
         r: col[0], g: col[1], b: col[2],
         life: lerp(0.6, lMax, rng()),
         vrot: lerp(-spin, spin, rng()),
@@ -260,20 +284,21 @@
     let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor)
              : [[255, 217, 138], [255, 255, 255], [120, 220, 255], [255, 140, 200], [180, 255, 160]];   // bright, festive
     if(!pool.length) pool = [[255, 255, 255]];
-    const sMax = reduced ? 0.5 : 1.4;       // wider, faster spray
+    const sprd = spreadMul(opts);                            // T152: tighten/widen the spray
+    const sMax = (reduced ? 0.5 : 1.4) * sprd;              // wider, faster spray
     const up = reduced ? 0.3 : 0.9;         // tall fountain launch
     const lMax = reduced ? 1.0 : 2.4;       // longer-lived (a real shower)
     const spin = reduced ? 2 : 11;
-    const szMax = reduced ? 8 : 18;         // bold flakes (screen px after pxScale)
+    const sz = sizeRange(opts, 6, reduced ? 8 : 18);         // T152: small/fine via sizePx/sizeScale (default bold flakes)
     const out = new Array(n);
     for(let i = 0; i < n; i++){
-      const ang = rng() * TAU, spd = lerp(0.2, sMax, rng());
+      const ang = rng() * TAU, spd = lerp(0.2 * sprd, sMax, rng());
       const col = pool[(rng() * pool.length) | 0];
       out[i] = {
         x0: x0, y0: y0,
         vx: Math.cos(ang) * spd,
         vy: Math.sin(ang) * spd - lerp(up * 0.5, up, rng()),  // strong upward launch → arc + fall
-        size: lerp(6, szMax, rng()),
+        size: lerp(sz[0], sz[1], rng()),
         r: col[0], g: col[1], b: col[2],
         life: lerp(1.0, lMax, rng()),
         vrot: lerp(-spin, spin, rng()),
@@ -1334,7 +1359,8 @@
     Controller: Controller,
     // budget constants
     PARTICLE_CAP: PARTICLE_CAP, BURST_CAP: BURST_CAP, CELEBRATE_CAP: CELEBRATE_CAP, BURST_GRAVITY: BURST_GRAVITY, BURST_DRAG: BURST_DRAG,
-    HOME_PARTICLE_MAX: HOME_PARTICLE_MAX, QUALITY: QUALITY, KIND: KIND, BAYER: BAYER,
+    HOME_PARTICLE_MAX: HOME_PARTICLE_MAX, QUALITY: QUALITY, KIND: KIND, BAYER: BAYER, MIN_PARTICLE_PX: MIN_PARTICLE_PX,
+    sizeRange: sizeRange, spreadMul: spreadMul,
     // pure math (headless-tested)
     bayer4: bayer4, parseColor: parseColor, toHex: toHex, luma: luma,
     buildRamp: buildRamp, rampIndex: rampIndex, quantizePixel: quantizePixel,

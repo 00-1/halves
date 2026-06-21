@@ -6,6 +6,48 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T152 — celebration particles: small/fine size + spread + off-centre emission ([B] engine side)
+
+Owner: **"very small particle sizes, emanating from the point of interest (e.g. where
+the inventory toast appears), colour-coded."** Colour + arbitrary `{x,y}` + `palette`
+were already accepted by `seedBurst`/`seedCelebrate`; this adds the **size** + **spread**
+levers and proves off-centre small bursts stay visible. (The `main.js` call-site wiring
+— emit from each source element's rect, pass the small size — is the **[A]** half.)
+
+### Engine additions (`fxgl.js`) — opt-in, defaults byte-identical
+- **`sizePx`** (explicit MAX particle size, screen px) and **`sizeScale`** (multiplier)
+  → small/fine particles. Floored at **`MIN_PARTICLE_PX = 2`** screen px so "small"
+  stays crisp on-device (DPR-aware via the T138 `pxScale` / GL `uRes` path) and never
+  goes sub-pixel/invisible. `sizeRange(opts, defMin, defMax)` resolves the range.
+- **`spread`** (1 = default, `<1` hugs the source point — "emanate from the thing",
+  `>1` wider) scales the outward spray (`spreadMul`, clamped 0.05–4).
+- Both `seedBurst` + `seedCelebrate` use them; with no opts the lerp args are
+  **identical**, so the goldens + determinism hold (verified: `golden-fx` unchanged).
+- Exposed `MIN_PARTICLE_PX`, `sizeRange`, `spreadMul` for tests/inspection.
+
+### Visibility gate extended (the T138 rasteriser → off-centre + small)
+`test/golden-fx.test.js` now also fires a **small (`sizePx:5`), tight (`spread:0.4`),
+OFF-CENTRE (0.8,0.3)** celebrate and rasterises it: asserts real in-bounds coverage
+(19 220 lit px), on-screen size **5.1 px** (≥ floor 2, **<** the bold-default ≥8), and
+the coverage **centroid sits on the source** (0.80,0.24 ≈ 0.80,0.30 — not screen-centre
+0.5,0.55). Plus property checks: `sizePx` caps+floors the size and is clearly finer
+than bold; `spread<1` cuts horizontal travel (0.10 ≪ 0.33). New golden
+`fx_small_offcentre`.
+
+### Verify
+- `node -c fxgl.js` clean; `fxgl.test` + `golden-fx` **35** (was 28) green; full Node
+  suite + both browser gates green.
+
+### [A] hand-off (the T152 wiring half)
+At each celebration call site in `main.js`, replace `x:0.5,y:0.55` with the **source
+element's normalised centre** (`el.getBoundingClientRect()` → `/innerWidth,/innerHeight`)
+and pass **`sizePx`** (small, e.g. 4–6) + the existing rarity/rank/topic `palette`
+(+ optionally `spread<1` to hug the source): inventory toast → toast rect + rarity
+palette; rank → rank-badge rect + rank colour; mastery → topic node/banner + topic
+accent; arena win → defeated-enemy portrait rect + gold/hero. Engine is ready.
+
+---
+
 ## T151 — synth output DIVERGES exponentially: non-resonant damping + a measured decay cap ([B], OWNER-PRIORITY BUG)
 
 **Owner-priority, browser-measured.** The Babysitter tapped an `AnalyserNode` on

@@ -147,6 +147,47 @@ ok(vis.cov.frac > 0.002, "T138: visible coverage is a non-trivial fraction of th
 ok(vis.maxScreenPx >= 8, "T138: particles render at a real SCREEN size after the DPR downscale (" + vis.maxScreenPx.toFixed(1) + "px ≥ 8 — the actual invisibility cause; unscaled it'd be ~6.5px and fade out)");
 gold("fx_celebrate_visibility", { litPx_bucket: Math.round(vis.cov.litPx / 500) * 500, screenPx_bucket: Math.round(vis.maxScreenPx) });
 
+// ---- T152: small/fine particles, emitted FROM an off-centre source ----------
+// The owner wants celebrations to "emanate from the point of interest" at "very small
+// sizes". This extends the T138 rasterised check to an OFF-CENTRE, SMALL-size burst:
+// it must paint REAL in-bounds pixels, at a SMALL on-screen size (≥ the floor, and
+// clearly finer than the bold default), CENTRED on the source (not screen-centre).
+function visibleSmall(w, h, dpr, sx, sy){
+  const W = Math.round(w * dpr), H = Math.round(h * dpr);
+  const r = rasterCtx(W, H); const q = [];
+  const ov = new FXGL.Controller(stubCanvas(w, h), { backend: "2d", ctx2d: r.ctx, raf: cb => { q.push(cb); return q.length; }, caf: () => {}, width: w, height: h, dpr: dpr, quality: 2, reducedMotion: false });
+  ov.celebrate({ x: sx, y: sy, count: 500, seed: 5, sizePx: 5, spread: 0.4 });   // small + tight to the source
+  q.shift()(1000); q.shift()(1100);     // ~0.1 s elapsed — particles still near the source point
+  let sum = 0, mx = 0, my = 0;          // coverage-weighted centroid (normalised)
+  for(let yy = 0; yy < H; yy++) for(let xx = 0; xx < W; xx++){ const c = r.cov[yy * W + xx]; if(c > 0.02){ sum += c; mx += c * xx; my += c * yy; } }
+  const cen = sum > 0 ? { x: mx / sum / W, y: my / sum / H } : { x: 0.5, y: 0.5 };
+  return { cov: r.coverage(), maxScreenPx: r.maxRect() / dpr, centroid: cen };
+}
+const small = visibleSmall(377, 838, 2.75, 0.8, 0.3);   // off-centre top-right (e.g. a toast)
+ok(small.cov.litPx > 100, "T152: the small off-centre burst paints REAL visible pixels in-bounds (" + small.cov.litPx + " lit px)");
+ok(small.maxScreenPx >= FXGL.MIN_PARTICLE_PX && small.maxScreenPx < 8, "T152: particles are SMALL yet on-screen (" + small.maxScreenPx.toFixed(1) + "px: ≥ floor " + FXGL.MIN_PARTICLE_PX + ", < the bold-default ≥8)");
+ok(Math.abs(small.centroid.x - 0.8) < 0.1 && Math.abs(small.centroid.y - 0.3) < 0.12,
+   "T152: the burst EMANATES from the off-centre source (centroid " + small.centroid.x.toFixed(2) + "," + small.centroid.y.toFixed(2) + " ≈ 0.80,0.30 — NOT screen-centre 0.5,0.55)");
+gold("fx_small_offcentre", { litPx_bucket: Math.round(small.cov.litPx / 200) * 200, screenPx: Math.round(small.maxScreenPx), cx: Math.round(small.centroid.x * 10) / 10, cy: Math.round(small.centroid.y * 10) / 10 });
+
+// sizePx CAPS the particle size and floors it (small but never sub-pixel), and is
+// clearly finer than the bold default — the two size regimes are distinct.
+(function(){
+  const fine = FXGL.seedCelebrate({ count: 300, seed: 2, sizePx: 4 }, false, FXGL.CELEBRATE_CAP);
+  let fmax = 0, fmin = 1e9; for(const p of fine){ fmax = Math.max(fmax, p.size); fmin = Math.min(fmin, p.size); }
+  ok(fmax <= 4 + 1e-6 && fmin >= FXGL.MIN_PARTICLE_PX, "T152: sizePx caps the size (max " + fmax.toFixed(2) + " ≤ 4) and floors it (min " + fmin.toFixed(2) + " ≥ " + FXGL.MIN_PARTICLE_PX + ")");
+  const bold = FXGL.seedCelebrate({ count: 300, seed: 2 }, false, FXGL.CELEBRATE_CAP);
+  let bmax = 0; for(const p of bold) bmax = Math.max(bmax, p.size);
+  ok(fmax < bmax, "T152: the small regime (" + fmax.toFixed(1) + ") is clearly finer than the bold default (" + bmax.toFixed(1) + ")");
+})();
+
+// spread < 1 HUGS the source: smaller horizontal travel than the default spray.
+(function(){
+  function travel(opts){ const ps = FXGL.seedCelebrate(opts, false, FXGL.CELEBRATE_CAP); let m = 0; for(const p of ps){ p.birth = 0; const b = FXGL.burstPos(p, 0.3, FXGL.BURST_GRAVITY, FXGL.BURST_DRAG); m = Math.max(m, Math.abs(b.x - p.x0)); } return m; }
+  const wide = travel({ count: 300, seed: 4 }), tight = travel({ count: 300, seed: 4, spread: 0.3 });
+  ok(tight < wide * 0.6, "T152: spread<1 keeps particles near the source (max travel tight " + tight.toFixed(3) + " ≪ wide " + wide.toFixed(3) + ")");
+})();
+
 // the visibility check FAILS on the device bug it's guarding (a 1×1 / unsized canvas):
 // the same celebration on a stale 1×1 buffer paints ~nothing.
 (function(){
