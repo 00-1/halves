@@ -2883,3 +2883,40 @@ notes / questions: open questions for the owner are listed in §8 (primary targe
   strictly-Node-only vs an elective Playwright visual check; WebGPU appetite; confirm the
   brickmap stack attribution). Next per REVIEW order: content extension **T58** (the
   content-extension playbook) → Wave-2 batches T59/T60/T61, then **T72** (Play Store).
+
+## T83 — Promote the topic guide to a first-class action (Play · Practice · Guide)  [HANDOFF]
+commit: (this commit, on main) — Phase 6.8 tech-tree block, task 1 of 2
+Goal: move the "how to approach this" guide out of the tiny per-row "?" into a
+first-class **Guide** button beside Start/Practice for the selected topic.
+changed:
+  - **index.html** — added `<button class="btn alt" id="guideBtn">Guide</button>`
+    as a third peer in `.start-actions` (Start · Practice · Guide).
+  - **main.js** — `$("guideBtn")` opens the selected topic's guide (`openGuide(mode)`);
+    `renderStartState()` gates it (`disabled = !Guides.has(mode.id)`). Removed the
+    per-row `?` (`.mr-guide`) markup from `modeRow` and its click-handler branch.
+    **Picker rows (incl. locked) are now selectable** so any topic can be previewed
+    and its guide read via the button (the old `?` opened locked previews; this keeps
+    that). `selectMode` already guards persistence (`if(isUnlocked) saveLastMode`),
+    and `renderBest`/`renderMark`/`renderStartState` already handle a locked selection.
+  - **styles.css** — deleted the `.mr-guide` rules; resized `.start-actions .btn`
+    (font 16px, padding 16px 6px, gap 10px) so three buttons fit at 360px.
+how I verified:
+  - `node test/guide-action.test.js` (NEW, **21st gate**) → **ALL 11 PASS**: Guide is a
+    peer of Start/Practice in `.start-actions`; selecting a topic **with** a guide
+    enables it and clicking **opens the modal** (which still closes); a topic **without**
+    a guide **disables** it (mirrors Start/Practice gating); a **locked topic is
+    selectable**, keeps Start/Practice **disabled** but Guide **enabled**, and its
+    **guide still opens** (no preview lost); the per-row `?` is **fully removed** (no
+    orphan markup/handler/CSS).
+  - `node -c` clean; grep confirms **zero `mr-guide`/`data-guide` refs** remain;
+    **full 21-gate suite green**; no regressions.
+interpretation note (for the babysitter — there's a small spec tension): the spec says
+  Guide should be "disabled … when … locked" **and** that "the Guide button must still
+  open a guide for a selected (incl. locked-preview) topic." Those conflict if locked
+  rows can't be selected. I resolved it to **lose no functionality**: locked rows are
+  selectable for preview, and Guide is gated by *has-guide only* (not lock), so a locked
+  topic's guide still opens while Start/Practice stay disabled — preserving the old `?`
+  locked-preview behaviour and lining up with T84's "select any node" tree. If you'd
+  rather Guide be lock-gated (and drop locked previews, or keep a `?` only on locked
+  rows), it's a one-line flip in `renderStartState` + restoring the row markup — say the
+  word. Next per REVIEW order: **T84** (the data-driven tech-tree view).

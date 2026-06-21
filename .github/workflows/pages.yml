@@ -64,6 +64,8 @@ jobs:
         run: node test/glyphs.test.js
       - name: Events scheduler test (gate)
         run: node test/events.test.js
+      - name: Guide action test (gate)
+        run: node test/guide-action.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

@@ -259,12 +259,13 @@
     }
     const cls = "mode-row" + (m.id===mode.id ? " active" : "") +
                 (locked ? " locked" : "") + (done ? " done" : "");
-    const guide = (window.Guides && window.Guides.has(m.id))
-      ? '<button class="mr-guide" data-guide="'+esc(m.id)+'" aria-label="How to beat '+esc(m.name)+'">?</button>' : '';
+    // The guide is now a first-class "Guide" action on the selected topic (T83);
+    // the old per-row "?" is removed. Rows (incl. locked) are selectable so any
+    // topic can be previewed and its guide read via the Guide button.
     return '<div class="'+cls+'" data-mode="'+esc(m.id)+'"'+(locked?' aria-disabled="true"':'')+'>'+
       '<span class="mr-main"><span class="mr-name">'+esc(m.name)+'</span>'+
         '<span class="mr-sub">'+sub+'</span></span>'+
-      '<span class="mr-side">'+guide+'<span class="mr-prog">'+have+'/'+total+'</span>'+
+      '<span class="mr-side"><span class="mr-prog">'+have+'/'+total+'</span>'+
         '<span class="mr-state">'+state+'</span></span></div>';
   }
   function renderTabs(){
@@ -341,8 +342,17 @@
     renderTabs(); renderMark(); renderBest(); renderStartState();
   }
 
-  // Enable Start only for an unlocked topic.
-  function renderStartState(){ const locked = !isUnlocked(mode); $("startBtn").disabled = locked; $("practiceBtn").disabled = locked; }
+  // Enable Start/Practice only for an unlocked topic. The Guide button is a peer
+  // action (T83): enabled whenever the selected topic HAS a guide — including
+  // locked topics, so their guide can still be previewed (the old per-row "?"
+  // behaviour, now first-class).
+  function renderStartState(){
+    const locked = !isUnlocked(mode);
+    $("startBtn").disabled = locked;
+    $("practiceBtn").disabled = locked;
+    const gb = $("guideBtn");
+    if(gb) gb.disabled = !(window.Guides && window.Guides.has(mode.id));
+  }
 
   // Procedural pixel icon on each menu button (T50) — a fitting category preset +
   // a fixed seed id, so each is stable across loads. Reuses C.drawIcon; no new art.
@@ -360,11 +370,9 @@
     });
   }
   elModeTabs.addEventListener("click", e => {
-    // the "?" guide control opens a guide for any topic (incl. locked previews)
-    const gb = e.target.closest(".mr-guide");
-    if(gb){ openGuide(byId(gb.dataset.guide)); return; }
+    // Any row is selectable, incl. locked (preview): selecting shows the topic's
+    // mark + enables the Guide button, while Start/Practice stay gated by unlock.
     const t = e.target.closest(".mode-row"); if(!t) return;
-    if(t.classList.contains("locked")) return;   // locked rows aren't selectable
     selectMode(t.dataset.mode);
   });
 
@@ -389,6 +397,8 @@
   }
   $("guideClose").addEventListener("click", closeGuide);
   $("guideModal").addEventListener("click", e => { if(e.target === $("guideModal")) closeGuide(); });
+  // First-class "Guide" action for the selected topic (T83) — peer to Start/Practice.
+  $("guideBtn").addEventListener("click", () => openGuide(mode));
 
   // Practice / Review view wiring (T32).
   $("practiceBtn").addEventListener("click", openPractice);
