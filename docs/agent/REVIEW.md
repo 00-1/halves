@@ -1,18 +1,45 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T135` [A] (recalibrate volume for the louder synth — default 0.05×, max
+**Current verdict:** `APPROVED — T123` [A] (a11y contrast floor over the FX backdrop — dark scrim + honest
+gate) · live build **`63876e4`**. **CI green; collision-clean** ([A]-owned: `styles.css`,
+`test/contrast.test.js`, `BUILDER-LOG.md`). The recurring backdrop-a11y theme, fixed honestly: T112's
+full-bleed backdrop can render **bright** (home palette includes white; Arena glows ~240) behind the
+transparent content column, and `--muted` is tuned for the dark `--bg`, so light-grey-on-light failed AA —
+while the old `contrast.test` only checked against `--bg` and passed (a dishonest gate). T123 adds a
+semi-opaque **dark scrim** `background:rgba(14,17,22,.88)` on `.app` so the worst-case backdrop pixel under
+text is dark enough for `--muted` to clear AA (~4.95:1 over white); the backdrop still reads in the side
+gutters, faintly (12%) through the scrim, and vividly in the z-58 celebration. Drops the `.build` stamp's
+`opacity:.7` (sub-AA under the scrim). **Honest gate:** `contrast.test` now derives the scrim, composites it
+over the **brightest** backdrop pixel (white = worst case), and asserts `--muted`/`--text` clear AA against
+**that** — it **fails** on no/weak scrim. This is a **shared-layout-primitive change (`.app`) that ships
+with its invariant assertion** (satisfies the ORCHESTRATION rule). Verified independently: `node -c` clean;
+`contrast.test` 10 (the new checks fail without the scrim); full suite + CI green. T123 → DONE. *(Owner: the
+backdrop is now dimmed ~88% behind the text column for legibility — still visible in the gutters + the
+celebration; tell me if you want it brighter and I'll trade a touch of contrast headroom.)* A → `T137`
+(celebration tester) — see queue.
+
+> **Previously approved (done):** `T134` [B] (clean immediate swap — no overlap — + audible distinctness) ·
+> live build **`ea1ed5c`**. **CI green; collision-clean** (B-owned: `synth.js`, `test/synth.test.js`,
+> `test/golden/synth_score_*.json`, `BUILDER-LOG-FX.md`). Fixes exactly the owner's switcher complaint.
+> **(a) Clean swap:** `renderVoice` now hands its amp param back; the scheduler registers live voices on
+> `M.active`; **`releaseMusic()` on `swapNow()`** ~75ms-releases every active voice
+> (`cancelAndHoldAtTime`→`setTargetAtTime`, no click) + a brief music-bus fade-out→in + a reverb-output dip
+> — so an immediate switch **cuts in cleanly** instead of the old pad + multi-second FDN tail ringing over
+> the new context (rapid taps no longer pile up). The **default** phrase-boundary swap keeps its natural
+> ring (unchanged). **(b) Distinctness:** reworked all four contexts across every lever (register/instrument/
+> tempo/density/kit). Verified independently: `node -c` clean; `synth.test` 130 (+10 — immediate swap drives
+> `activeVoices→0` + bus/reverb fade; default swap does NOT release early; four distinct tempos/roots/modes;
+> solve drumless); `golden-synth` scores regenerated (intentional) **+ still mutually distinct** (10/10);
+> full suite + CI green. T134 → DONE. **(Owner confirms switching now works + likes menu/arena. The
+> distinctness rework is about to be superseded by the owner's 12-style request — see `T139`/`T140`.)**
+
+> **Previously approved (done):** `T135` [A] (recalibrate volume for the louder synth — default 0.05×, max
 0.10×, migrate) · live build **`09b6d9b`**. **CI green; collision-clean** (all [A]-owned: `index.html`,
-`main.js`, `test/sound.test.js`, `BUILDER-LOG.md`). Exactly the owner's spec: `#volRange` → `min=0 max=10
-step=1 value=5` (0.00×–0.10×, default 0.05× mid-slider); `loadVol()` fresh default → 5; master gain
-(`vol/100`), `fmtVol`, the limiter/`VOL_MAX` all unchanged (only the slider range + default moved). The
-**migration is correct + robust**: `loadVol()` returns 5 for a fresh profile **or** any stored `v > 10`
-(the old-scale `300` = 3.0× → 5), so a returning user is **not deafened** and the slider isn't fed an
-out-of-range value; it's a **clamp-on-read** (idempotent — every `halves.vol` reader goes through `loadVol`,
-no bypass) so even the stale stored `300` can never take effect. Verified **independently**: `node -c`
-clean; `sound.test` 38 pass; **CI green**; and a **logic check** of the migration across cases — fresh→5,
-`300`→5, `5`→5, `10`→10, `0`→0, `11`→5 (all → 0.00×–0.10×, none deafening). T135 → DONE. **🔊 OWNER: volume
-now defaults to 0.05× with the slider topping out at 0.10× — and your old loud setting won't carry over.**
-A → `T123` (a11y contrast floor).
+> `main.js`, `test/sound.test.js`, `BUILDER-LOG.md`). `#volRange` → `min=0 max=10 step=1 value=5`
+> (0.00×–0.10×, default 0.05×); `loadVol()` fresh default → 5; **migration**: `loadVol()` returns 5 for a
+> fresh profile or any stored `v > 10` (old `300` = 3.0× → 5) — a clamp-on-read (idempotent; no bypass).
+> Verified: `node -c` clean; `sound.test` 38; CI green; migration logic-checked (300→5, 10→10, 0→0, 11→5).
+> T135 → DONE.
 
 > **Previously approved (done):** `T136` [A] (wire the celebration overlay — mount `#fxBurst` with
 > `{backend:"2d"}`) · live build **`f4040e6`**. **CI green; collision-clean** ([A]-owned: `main.js`,
@@ -974,20 +1001,22 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T137` (celebration TESTER + diagnose the invisibility) → then `T123`** [A]
-  (**`T135`/`T136`/`T131`/`T128`(1)+(2)/`T129`/… DONE**). *(Read `NEXT.md` fresh — canonical.)*
-  **⚠ T136 did NOT actually make the celebration visible — owner live: "I don't see celebrations."** Despite
-  every gate + the T133 golden passing (which only **counts** drawn rects, never proves visibility). **`T137`
-  — owner-requested celebration TESTER in Settings** (buttons firing `fxCelebrate`/`fxCelebrateRank`/
-  `fxCelebrateWin`/`fxBigBurst` on demand) AND **use it to root-cause the invisibility live.** I ruled out
-  the easy causes statically (CSS layer right — `#fxBurst` z-58 over `.app`; `ready` sync-true for 2D;
-  `renderFrame` draws correctly), so check on-device: (1) `fxBurst` ready + `dimensions()` non-zero (else
-  resize timing — [A]); (2) **occlusion — a 2nd overlay `#fxCanvas` (z-59, `window.FX`) sits ABOVE `#fxBurst`
-  (z-58)** → reconcile; (3) if ready+sized+unoccluded yet invisible, particles draw transparent/sub-pixel/
-  off-canvas → **[B] `T138`** engine fix + a real visibility golden. Full DoD `T137` (LIVE — owner must SEE
-  it; gates necessary-not-sufficient — I will NOT mark DONE on green gates). Then → **`T123`** (a11y contrast
-  floor + honest `contrast.test`) → **`T124`** (fraction glyphs) → **`T101`** (Start delay) →
-  **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
+- **Builder A — next: `T142` (RESTORE the backdrop T123 killed — quick regression) → `T137` (celebration
+  tester) → `T140` (12-style switcher)** [A] (**`T123`/`T135`/`T136`/`T131`/`T128`(1)+(2)/… DONE**). *(Read
+  `NEXT.md` fresh — canonical.)* **⚠ `T142` FIRST — owner (screenshot, build `63876e4`): "this build killed
+  the nice background."** T123's `.app` `rgba(14,17,22,.88)` scrim is ~full phone width → the full-bleed
+  backdrop is a dark slab. **Remove the global scrim** (backdrop returns) and **protect only the genuinely
+  floating-on-backdrop text locally** (stat row "Goblin Gold/Momentum", `build` stamp, audit others — almost
+  everything is already carded); keep `contrast.test` honest but per-element (fails if a floating row is
+  unprotected). Full DoD `T142`. **Then `T137`** — celebration TESTER in Settings + diagnose the still-live
+  invisibility: gates+golden pass yet nothing shows (golden only **counts** rects); I ruled out the easy
+  causes statically (layer right z-58, `ready` sync-true, `renderFrame` draws) — check on-device: `fxBurst`
+  ready + `dimensions()` non-zero (resize → [A]); **occlusion by the 2nd overlay `#fxCanvas` (z-59,
+  `window.FX`) above `#fxBurst` (z-58)** → reconcile; else particles draw invisibly → **[B] `T138`** + a real
+  visibility golden. **Then `T140`** (extend the music switcher to all 12 styles B builds in T139 +
+  per-screen routing + the dubstep victory fires on a win — depends on T139). Then → **`T124`** (fraction
+  glyphs) → **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content
+  **`T58`–`T61`** → **`T72`**. *(T123 a11y DONE but its scrim is superseded by T142.)*
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
@@ -1005,22 +1034,22 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T134` (clean swap + distinctness — owner is on it).** *(`T133` celebration DONE
-  `3e7da28` — Canvas2D overlay, `golden-fx` 2D-frame golden + mutation-test confirmed; the [A] activation is
-  `T136`.)* **`T134` — owner live on the switcher: "songs play over each other rather than switching, or
-  they sound really similar."** Both real, BOTH engine-side: **(a) overlap** — the T132/T128 immediate
-  `swapNow()` resets the generator but does **not** release the currently-sounding voices or the
-  multi-second FDN-reverb tail, so the old pad chord + tail ring **over** the new context (rapid switching
-  piles them up); now affects **every** per-screen transition. Fix: on the **immediate** swap path, quickly
-  release/fade the active music voices + tame the reverb carryover (~60–120ms music-bus fade across the
-  swap, and/or release held voices + briefly cut the reverb send) → a clean cut-in; leave the default
-  phrase-boundary swap's natural ring. **(b) too similar** — solve/menu/event share instrumentation
-  (pad+bass+pluck/bell), close tempo/density, differ only by mode (arena's the outlier); strengthen the
-  **audible** contrast (register/instrumentation/tempo/density), keeping calm-solve-vs-arena + the
-  golden-distinctness gate. **Verify on a real browser** (rapid switcher sampling → clean cut-in + clearly
-  different); add the strongest headless check feasible (a swap doesn't leave >1 context's voices active;
-  per-context distinctness stays). Full DoD: `BACKLOG.md` T134. **B-owned only** (`synth.js` + tests +
-  `BUILDER-LOG-FX.md`); never touch existing Halves files; never push `claude/agent`.
+- **Builder B — next: `T141` (RESEARCH musical styles → a 12-style palette) → then `T139` (build them).**
+  *(`T134` clean-swap DONE `ea1ed5c` — owner confirms switching works + likes menu/arena.)* Owner likes
+  **menu**+**arena**, finds the others samey, the **dubstep victory** is missing — wants the two kept, the
+  others ditched, **10 NEW distinct styles incl. the dubstep victory, all in the launcher**, AND **"a
+  research pass on musical styles to really get those 10 unique/interesting."** **`T141` FIRST — research**
+  (the T119→T120 pattern): a B-owned doc (`docs/research-music-styles.md`) on the genre DNA (tempo/mode/
+  rhythm/instrumentation/production tricks) of a spread of styles, mapped to THIS engine's levers, ending in
+  a **concrete proposed 12-style table** (menu+arena kept; 10 new incl. dubstep victory + ≥1 CALM for solves
+  + ≥1 festive) with each style's engine-param recipe + any small patch additions a style needs (pulse/square
+  for chiptune, half-time wobble for dubstep, …). **The Babysitter surfaces the proposed palette to the
+  owner for a thumbs-up before T139 builds it.** Then **`T139`** — implement the 12 in `CONTEXTS` (replace
+  solve/event), make the **dubstep victory a real audible drop** reusable by the win sting (un-ducked sfx
+  bus — the T128 lesson), extend the `golden-synth` distinctness gate to all 12 (regen intentional), and
+  **hand A the final style names/labels** (in the log) for T140. Full DoD: `BACKLOG.md` T141/T139. **B-owned
+  only** (`synth.js` + new research doc + tests/goldens + `BUILDER-LOG-FX.md`); never touch existing Halves
+  files; never push `claude/agent`.
   - *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless browser to CI —
     kept out of scope to keep CI Node-only.)*
 

@@ -2626,8 +2626,88 @@ in a real browser (the owner's symptoms are the bar), not by green gates.** Baby
   `ready` + sized before `celebrate`). (Babysitter: I will treat green gates as necessary-not-sufficient
   here — confirm against the owner's three live symptoms.)
 
-### T134 — [B] Clean immediate context-swap (no layered overlap) + audible distinctness · status: OPEN · OWNER-PRIORITY
-Owner live (sampling the T129 switcher): **"it sounds like the songs play over each other rather than
+### T141 — [B] RESEARCH pass: musical styles → a concrete, distinct 12-style palette (precedes T139) · status: OPEN · OWNER-PRIORITY
+Owner: **"we should probably do a research pass on musical styles to really get those 10 new styles unique/
+interesting."** Same pattern as T119 (audio research) → T120 (engine): research first so the styles are
+genuinely characterful, not parameter nudges.
+- **Research the genre DNA** of a spread of styles (≥ the ~10–12 we'll ship), each: defining **tempo range,
+  mode/scale & typical progressions, rhythmic feel (straight/swung/half-time/breakbeat/Euclid pattern),
+  instrumentation/register, and the production tricks that make it recognisable** (e.g. dubstep = half-time
+  ~140 with a LFO-wobble sub on the off-beats + a drop; chiptune = fast square/pulse arps, no reverb; lo-fi
+  = swung ~75, jazzy 7th chords, soft, wow/flutter; synthwave = ~110 gated saw arp + bright lead; DnB =
+  ~174 breakbeat + sub; ambient = drone, very wet, no kit; etc.). Cite/borrow recipes (brickmap-style: take
+  the technique, not the asset).
+- **Map each to THIS engine's levers** — what's achievable with the current patches (pad/pluck/bass/bell/
+  lead/wub), modes, Euclid kit, ADSR, FDN reverb — and **call out any small engine additions** a style needs
+  (e.g. a pulse/square patch for chiptune, a half-time wobble for dubstep, a noise-sweep) so T139 can build
+  them. Keep it no-build / Node-verifiable / a11y-safe.
+- **Output:** a **B-owned research doc** (e.g. `docs/research-music-styles.md`) ending in a **concrete
+  proposed style table** — the final **12** (menu + arena kept; 10 new incl. the **dubstep victory** + ≥1
+  calm for solves + ≥1 festive), each with its name/label and its engine-parameter recipe (mode/root/tempo/
+  density/progression/kit/patches/reverb). This table is the spec T139 implements.
+- **DoD:** the research doc + the 12-row proposed palette table (distinct, characterful, engine-mappable,
+  any needed patch additions flagged); `node -c` clean if any code touched (doc-only is fine); **B-owned
+  files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
+  T139 builds it** (owner may swap a style). Then → **T139** implements.
+
+### T139 — [B] Music styles: keep menu+arena, replace solve/event, cut to 12 DISTINCT styles incl. a dubstep VICTORY (implements T141) · status: OPEN · OWNER-PRIORITY · blocked-by T141
+Owner (live, switching now works): **"I like the menu and arena music. the others are a bit samey. the
+dubstep victory doesn't seem to exist (victory or switcher). Keep the two I like, ditch the others, then
+cut 10 NEW music styles (keep them distinct) including the dubstep victory. Put them all in the launcher."**
+- **Engine side ([B], `synth.js` `CONTEXTS` + any new patches/drum patterns).** Final set = **12 named,
+  mutually-distinct styles**: **keep `menu` + `arena` exactly** (owner likes them) and **add 10 NEW** ones,
+  removing the current `solve`/`event` (owner finds them samey — design fresh replacements rather than
+  keeping those two). Use every lever to make them **obviously different by ear** (mode · root/register ·
+  progression · tempo · density · drum kit/Euclid · patch selection · reverb), per the T120 principles.
+- **Aim for a varied palette** (B picks the specifics — these are suggestions, not a spec): e.g. a real
+  **dubstep VICTORY** (REQUIRED — half-time, heavy LFO **wub** wobble bass, a drop), a calm/ambient one, a
+  chiptune/8-bit, a lo-fi/swung groove, a synthwave arp, a driving DnB/breakbeat, an epic/cinematic pad, a
+  funky/syncopated, a mysterious/minor, a bright/festive. **Must include ≥1 genuinely CALM style** (the game
+  routes it to the solve screen — owner's standing "calm during solves" rule) and ≥1 festive (events).
+- **Dubstep victory must be real + reusable two ways:** (1) a selectable looping style in the switcher so
+  the owner can audition it; (2) the engine exposes a way for the win moment to fire it as a short
+  **drop/sting** (extend/replace `sting("victory")` so it's an actual audible wub drop, not the current
+  subtle wub+bell — the owner says it "doesn't seem to exist" on a win). Keep it on the un-ducked sfx bus
+  (the T128 lesson) so it isn't self-ducked.
+- **Distinctness GATE (extend the golden):** update `golden-synth.test.js` so the per-context score goldens
+  cover **all 12** and the distinctness golden asserts they're **mutually distinct** (no two collapse to the
+  same score) — this is the structural guard against "samey" returning. Regenerate the goldens (intentional).
+- **DoD:** 12 distinct styles in `CONTEXTS` (menu+arena kept; solve/event replaced; 10 new incl. dubstep
+  victory + ≥1 calm + ≥1 festive); a real audible dubstep victory drop reusable by the win sting; the golden
+  distinctness gate covers all 12 + passes; `node -c` clean; all gates green; **B-owned files only**
+  (`synth.js` + tests/goldens + `BUILDER-LOG-FX.md`). **Hand A the final list of style names/labels** (in
+  the log) so T140 can list + route them. (Babysitter + owner audition each in the switcher — output
+  feature, gates necessary-not-sufficient.)
+
+### T140 — [A] Music switcher + routing for the 12 styles (audition all incl. dubstep victory; victory fires) · status: OPEN · OWNER-PRIORITY
+Depends on T139 (B's final style list). The owner wants **all 12 styles in the launcher** to audition, and
+the **dubstep victory to actually fire on a win**.
+- **Switcher (Settings)** — extend the T129 music switcher from 4 buttons to **all 12 styles** B defines
+  (use B's names/labels from its log; same pixel-button a11y, ≥44px, keyboard, scroll/wrap as needed for 12;
+  each calls `Synth.setContext(name, {now:true})` so it swaps instantly + cleanly via T134). Include the
+  **dubstep victory** as an auditionable entry (if it's a sting not a loop, a button that triggers the
+  drop). Show the selected one; revert to per-screen music on exit.
+- **Per-screen routing** (`musicForScreen`) — decoupled from style names now there are more styles than
+  screens: menu screen → `menu`, arena → `arena`, **game/solve → one of the new CALM styles** (preserve
+  calm-during-solves), event → a festive style. Keep the T113 tempo + T132 `{now:true}` instant swap.
+- **Victory** — on a real Arena win / topic-complete, fire B's **dubstep victory drop** (via the engine
+  hook T139 exposes) so the owner actually hears it (it currently "doesn't seem to exist" on a win); keep it
+  on the sfx bus (un-ducked).
+- **DoD (LIVE-verified — output feature):** all 12 styles audition in the Settings switcher and each is
+  audibly distinct; picking one swaps instantly + cleanly; per-screen routing plays sensible (calm solve,
+  energetic arena) styles; **a dubstep wub drop lands on a win**; reverts to per-screen on exit; `node -c`
+  clean; all gates green (assert the switcher offers all 12 contexts; assert the win path triggers the
+  victory drop); [A]-owned files. (Babysitter + owner confirm by ear.)
+
+### T134 — [B] Clean immediate context-swap (no layered overlap) + audible distinctness · status: DONE (`ea1ed5c`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). Clean swap: `renderVoice` hands its amp param back, scheduler
+tracks live voices on `M.active`, `releaseMusic()` on `swapNow()` ~75ms-releases active voices + music-bus
+fade + reverb dip → clean cut-in; default phrase swap unchanged. Distinctness: reworked all 4 contexts.
+Verified: `node -c` clean, `synth.test` 130 (swap drives activeVoices→0; default doesn't release early),
+`golden-synth` regenerated + still 10/10 distinct, CI green. **Owner confirms switching now works + likes
+menu/arena.** *(The distinctness rework is superseded by the owner's 12-style request — T139/T140.)*
+
+> Owner live (sampling the T129 switcher): **"it sounds like the songs play over each other rather than
 switching. or do they just sound really similar…?"** Both hypotheses are partly true and BOTH are
 engine-side (`synth.js`):
 - **(a) Overlap on the immediate swap.** `swapNow()` (T132) / `setContext(name,{now:true})` resets the
@@ -2765,8 +2845,40 @@ device render path, which is B-owned.
   once it lands. (Babysitter: confirm the headless check actually fails on a non-rendering backend, and
   confirm against the owner's live observation — green gates are necessary-not-sufficient here.)
 
-### T123 — [A] Accessibility pass: text legibility over the FX backdrop (AA floor + honest gate) · status: OPEN · OWNER-PRIORITY
-Owner: "we may need another accessibility pass — we have light grey text on light purple now." **Root
+### T142 — [A] Restore the FX backdrop that T123's scrim killed — keep AA via LOCAL protection, not a global slab · status: OPEN · OWNER-PRIORITY · REGRESSION
+Owner (screenshot, build `63876e4`): **"this build killed the nice background :-("**. T123's a11y fix put a
+**semi-opaque dark scrim on `.app`** (`background:rgba(14,17,22,.88)`) — but `.app` is ~the full phone width,
+so the full-bleed FX backdrop (which the owner loves) is now a near-solid dark slab with only thin purple
+gutters. A **uniform** scrim can't keep BOTH (a light scrim fails AA over the backdrop's bright pixels;
+verified: even ~40% over white → ~mid-grey, muted text fails). **Almost all text is ALREADY inside dark
+cards** (event banner, tree nodes, Halves summary, every button) and never needed the global scrim — so:
+- **Remove the global `.app` scrim** → the full backdrop reads again (owner's "nice background" back).
+- **Protect only the genuinely floating-on-backdrop text** with a LOCAL treatment (a translucent-dark
+  pill/backing behind the element, ample for AA): audit the home + other screens for text that sits directly
+  on the backdrop — at least the **stat row** ("24.0K Goblin Gold · N Momentum") and the **`build` stamp**;
+  check screen titles/subtitles, the tree's connector gaps (nodes are carded — fine), and any settings/
+  results text not in a card. The cards already give the rest its contrast.
+- **Keep the honest gate** but reframe it for the new mechanism: `contrast.test` should assert the
+  floating-text elements have a **local** dark backing sufficient for `--muted`/`--text` AA over the
+  worst-case (white) backdrop pixel — NOT that a global `.app` scrim exists. It must still FAIL if a
+  floating row is left unprotected. (Shared-primitive change — removing the `.app` background — ships with
+  its invariant.)
+- **DoD (LIVE-verified):** the FX backdrop is fully visible again (owner confirms the "nice background" is
+  back) AND all body/label text clears AA (floating rows have local backing; carded text unchanged); honest
+  `contrast.test` updated to the per-element mechanism + still fails on an unprotected floating row; `node -c`
+  clean; all gates green; [A]-owned files. (Babysitter: confirm against the owner's screenshot — green gates
+  necessary-not-sufficient; the bar is the owner seeing the backdrop AND readable text.)
+
+### T123 — [A] Accessibility pass: text legibility over the FX backdrop (AA floor + honest gate) · status: DONE (`63876e4`, CI green) — superseded by T142 (scrim too heavy)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). Dark scrim `background:rgba(14,17,22,.88)` on `.app` pulls the
+worst-case bright backdrop pixel under text dark enough for `--muted` to clear AA (~4.95:1 over white);
+backdrop still reads in gutters + faintly through + the z-58 celebration; dropped `.build` `opacity:.7`.
+**Honest gate:** `contrast.test` derives the scrim, composites over the brightest backdrop pixel (white),
+asserts AA against THAT (fails on no/weak scrim). Shared-primitive (`.app`) change ships with its invariant.
+Verified: `node -c` clean, `contrast.test` 10 (fail without scrim), CI green. *(Owner: backdrop now dimmed
+~88% behind text for legibility — say if you want it brighter.)*
+
+> Owner: "we may need another accessibility pass — we have light grey text on light purple now." **Root
 cause (the recurring backdrop theme):** T112's full-bleed FX backdrop replaced the near-black
 background behind text with a **light purple** scene, but all `--muted`/grey text was tuned for AA
 against the dark `--bg`, and **`contrast.test.js` still tests against `--bg` (dark) — so it passes while
