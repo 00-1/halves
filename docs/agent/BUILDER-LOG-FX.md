@@ -13,6 +13,24 @@ increment, no per-phase wait.** New files only (`synth.js`, `test/synth.test.js`
 **zero edits to `sound.js` or any existing Halves file** (the [A] wiring is phase 6).
 No deps/bundler; no sample assets; deploy-safe; all existing gates green.
 
+### Increment 4/5 — RHYTHM/VARIATION + the single lookahead scheduler · DONE
+Structured, evolving variation — no obvious loops (T119 §4):
+- **`euclid(k,n)`** (Toussaint even-spread grooves) + `rotate` (phase/fills);
+  **`markovNext`** (a 2nd-order transition-table walk); **motif transforms**
+  (`transposeMotif`/`invertMotif`/`retrograde`); **`phraseSeed`** (stable per phrase,
+  evolves across phrases); **`densityAt`** (rises across a phrase — breathes/arrives).
+- **`stepEvents`** (pure, deterministic): pad chord on the downbeat, bass on 1 & 3,
+  a Euclid-gated Markov-walk **lead** (chord-anchored on strong beats), the Euclid
+  **kit** (kick/hat/snare) — density scaled by `intensity()`.
+- **The single lookahead scheduler** (Chris Wilson "two clocks"): `Synth.setMusic(spec)`
+  / `start()` / `stop()` / `musicPlaying()` / `intensity(x)`. **One `setInterval`**,
+  schedules precise times vs `ctx.currentTime`, **drops missed steps on a stall**
+  (anti-burst), **idles on stop** — never a timer per part.
+- Tests +20 (now **92**): Euclid count+even-spread+edges, rotate, Markov determinism,
+  motif transforms, phraseSeed evolve, density rise, stepEvents structure; scheduler
+  = **one timer**, schedules voices, **deterministic per seed**, **idles on stop**,
+  **anti-burst** (a stalled clock doesn't flood), `intensity` thickens the lead.
+
 ### Increment 3/5 — HARMONY (modes · progressions · voice-leading · bass-root) · DONE
 Gives the music somewhere to go (T119 §3) — pure music theory, no audio nodes:
 - **Modes** (`MODES`): ionian/major, dorian, phrygian, lydian, mixolydian,

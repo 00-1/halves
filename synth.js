@@ -283,6 +283,138 @@
     return out;
   }
 
+  // ---- rhythm & variation (T119 §4, increment 4) — structured, evolving ------
+  // Replace random sprinkles with structure-plus-controlled-surprise: Euclidean
+  // grooves, a Markov melodic walk, motif transforms, and a density that evolves
+  // over a phrase — all seeded so a performance is deterministic yet never an
+  // obvious loop (each phrase re-seeds from phraseSeed).
+
+  // Euclid(k,n): spread k onsets as evenly as possible over n steps (Toussaint) —
+  // the generator of most world-music grooves. Returns an n-length 0/1 array.
+  function euclid(k, n){
+    n = Math.max(1, n | 0); k = Math.max(0, Math.min(n, k | 0));
+    const out = new Array(n); let bucket = 0;
+    for(let i = 0; i < n; i++){ bucket += k; if(bucket >= n){ bucket -= n; out[i] = 1; } else out[i] = 0; }
+    return out;
+  }
+  function rotate(a, by){ const n = a.length; if(!n) return a.slice(); by = ((by % n) + n) % n; return a.slice(by).concat(a.slice(0, by)); }
+
+  // A (2nd-order) Markov step over a transition table keyed by "a,b" (falls back to
+  // "b", then "*"); each row is [[next, weight], …]. Deterministic given `rnd`.
+  function markovNext(table, a, b, rnd){
+    const row = table[a + "," + b] || table["" + b] || table["*"];
+    if(!row || !row.length) return a;
+    let total = 0; for(const it of row) total += it[1];
+    let r = rnd() * total, acc = 0;
+    for(const it of row){ acc += it[1]; if(r < acc) return it[0]; }
+    return row[row.length - 1][0];
+  }
+
+  // Motif development — transforms that make variation sound *composed*.
+  function transposeMotif(m, n){ return m.map(d => d + n); }
+  function invertMotif(m, axis){ const ax = axis == null ? (m.length ? m[0] : 0) : axis; return m.map(d => 2 * ax - d); }
+  function retrograde(m){ return m.slice().reverse(); }
+
+  // A stable per-phrase seed so each phrase differs but a run is reproducible.
+  function phraseSeed(seed, phrase){
+    let h = ((seed >>> 0) ^ Math.imul((phrase | 0) + 1, 2654435761)) >>> 0;
+    h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13;
+    return (h >>> 0) || 1;
+  }
+  // Density rises across a phrase (sparse → fuller) so the music breathes/arrives.
+  function densityAt(spec, step){ const phraseLen = 16 * spec.harmony.length; const pos = (step % phraseLen) / phraseLen; return spec.density * (0.55 + 0.6 * pos); }
+
+  // Snap a note to the nearest tone of a chord (≤ a tritone) — anchors the lead.
+  function nearestChordTone(midi, chord){
+    const pcs = chord.map(m => ((m % 12) + 12) % 12); let best = midi, bestD = 99;
+    for(const pc of pcs){ let cand = midi + ((((pc - (midi % 12)) % 12) + 12) % 12); if(cand - midi > 6) cand -= 12; const dd = Math.abs(cand - midi); if(dd < bestD){ bestD = dd; best = cand; } }
+    return best;
+  }
+  // A weighted stepwise interval (a Markov walk): mostly steps, rare leaps.
+  function leadStep(rnd){ const r = rnd(); return r < 0.34 ? -1 : r < 0.68 ? 1 : r < 0.80 ? -2 : r < 0.92 ? 2 : r < 0.97 ? 0 : (r < 0.985 ? -3 : 3); }
+
+  // Normalise a high-level music spec into the scheduler's runtime form.
+  function normalizeMusic(spec){
+    spec = spec || {};
+    const root = spec.root == null ? 60 : spec.root, mode = spec.mode || "ionian", tempo = spec.tempo || 96;
+    const harmony = spec.harmony || harmonyFor({ root: root, mode: mode, progression: spec.progression, padOct: spec.padOct, bassOct: spec.bassOct });
+    return {
+      tempo: tempo, seed: (spec.seed | 0) || 1, harmony: harmony, root: root, mode: mode,
+      barDur: (60 / tempo) * 4,
+      density: spec.density == null ? 0.4 : spec.density,
+      leadOct: spec.leadOct == null ? 1 : spec.leadOct,
+      patches: Object.assign({ bass: "bass", pad: "pad", lead: "lead" }, spec.patches),
+      kick:  spec.kick  || euclid(spec.kickK == null ? 4 : spec.kickK, 16),
+      hat:   spec.hat   || euclid(spec.hatK  == null ? 8 : spec.hatK,  16),
+      snare: spec.snare || rotate(euclid(2, 16), 4),
+      leadEuclid: spec.leadEuclid || euclid(spec.leadK == null ? 7 : spec.leadK, 16)
+    };
+  }
+
+  // Pure: the events to schedule on one 16th-note step (deterministic given rnd +
+  // the small melodic state `st`). pad on the downbeat, bass on 1 & 3, a Euclid-
+  // gated Markov-walk lead (chord-anchored on strong beats), and the Euclid kit.
+  function stepEvents(spec, step, rnd, intensity, st){
+    st = st || { deg: 0 };
+    const SPB = 16, s = step % SPB, bar = Math.floor(step / SPB);
+    const chord = spec.harmony[bar % spec.harmony.length];
+    const dens = Math.min(1, densityAt(spec, step) * (1 + (intensity || 0) * 0.8));
+    const ev = [];
+    if(s === 0) for(const m of chord.voiced) ev.push({ role:"pad", patch: spec.patches.pad, midi: m, dur: spec.barDur });
+    if(s === 0 || s === 8) ev.push({ role:"bass", patch: spec.patches.bass, midi: chord.bass, dur: 0.9 });
+    if(spec.leadEuclid[s] && rnd() < dens){
+      st.deg += leadStep(rnd);
+      if(st.deg > 6) st.deg = 6; if(st.deg < -6) st.deg = -6;
+      let midi = degToMidi(spec.root, spec.mode, st.deg, spec.leadOct);
+      if(s % 4 === 0) midi = nearestChordTone(midi, chord.chord);
+      ev.push({ role:"lead", patch: spec.patches.lead, midi: midi, dur: 0.16 });
+    }
+    if(spec.kick[s]) ev.push({ role:"drum", piece:"kick" });
+    if(spec.hat[s]) ev.push({ role:"drum", piece:"hat" });
+    if(spec.snare && spec.snare[s]) ev.push({ role:"drum", piece:"snare" });
+    return ev;
+  }
+
+  // The single lookahead scheduler (Chris Wilson "two clocks"): one setInterval,
+  // schedules precise times against ctx.currentTime, drops missed steps on a stall
+  // (anti-burst), idles on stop. Drives ALL voices — never a timer per part.
+  const TICK_MS = 25, LOOKAHEAD = 0.1, MAX_STEPS_PER_TICK = 8;
+  const M = { timer:null, spec:null, want:null, step:0, next:0, rnd:null, phrase:0, st:{ deg:0 }, intensity:0 };
+  function reseedMusic(){ M.rnd = mulberry32(phraseSeed(M.spec.seed | 0, M.phrase)); }
+  function playEvent(ev, when){
+    if(ev.role === "drum"){ if(!E.muted) renderDrum(E.ctx, E.drum, ev.piece, when, E.noiseBuf); }
+    else play(ev.patch, when, { midi: ev.midi, dur: ev.dur, bus: "music" });
+  }
+  function musicTick(){
+    if(!E.ctx) return;
+    const now = E.ctx.currentTime;
+    if(M.next < now) M.next = now + 0.02;                 // stalled → resync, drop the backlog
+    let sched = 0;
+    while(M.next < now + LOOKAHEAD && sched < MAX_STEPS_PER_TICK){
+      const phraseLen = 16 * M.spec.harmony.length;
+      if(M.step % phraseLen === 0){ if(M.want !== M.spec) M.spec = M.want; M.phrase = Math.floor(M.step / phraseLen); reseedMusic(); }
+      const evs = stepEvents(M.spec, M.step, M.rnd, M.intensity, M.st);
+      for(const ev of evs) playEvent(ev, M.next);
+      M.next += (60 / M.spec.tempo) / 4;                  // one 16th note
+      M.step++; sched++;
+    }
+  }
+  function startScheduler(){
+    if(M.timer || !E.ready || E.muted || !M.want || typeof setInterval === "undefined") return;
+    if(!M.spec){ M.spec = M.want; M.step = 0; M.phrase = 0; M.st = { deg: 0 }; reseedMusic(); }
+    M.next = E.ctx.currentTime + 0.06;
+    M.timer = setInterval(musicTick, TICK_MS);
+  }
+  function setMusic(spec){
+    const ns = normalizeMusic(spec); M.want = ns;
+    if(!M.spec){ M.spec = ns; M.step = 0; M.phrase = 0; M.st = { deg: 0 }; reseedMusic(); }
+    startScheduler(); return api;
+  }
+  function start(){ startScheduler(); return api; }
+  function stop(){ if(M.timer){ clearInterval(M.timer); M.timer = null; } return api; }
+  function musicPlaying(){ return !!M.timer; }
+  function intensity(x){ M.intensity = Math.max(0, Math.min(1, x || 0)); return api; }
+
   // ---- space: a Feedback-Delay-Network reverb (T119 §6, increment 2) ---------
   // 4 delay lines, each damped by a lowpass, recombined through a unitary
   // (Hadamard) feedback matrix scaled by `decay<1` so it is dense but stable —
@@ -416,6 +548,7 @@
   const api = {
     // runtime API
     mount: mount, play: play, drum: drum, setReverb: setReverb, duck: duck,
+    setMusic: setMusic, start: start, stop: stop, musicPlaying: musicPlaying, intensity: intensity,
     setMuted: setMuted, isMuted: isMuted, capabilities: capabilities, dispose: dispose,
     output: function(){ return E.master; },     // the [A] wire can re-route this into Sound's master
     // budget/data
@@ -426,6 +559,10 @@
     // harmony (increment 3)
     MODES: MODES, MODE_MOOD: MODE_MOOD, degToMidi: degToMidi, chordMidi: chordMidi,
     bassMidi: bassMidi, voiceLead: voiceLead, harmonyFor: harmonyFor,
+    // rhythm & variation (increment 4)
+    euclid: euclid, rotate: rotate, markovNext: markovNext, phraseSeed: phraseSeed,
+    transposeMotif: transposeMotif, invertMotif: invertMotif, retrograde: retrograde,
+    densityAt: densityAt, stepEvents: stepEvents, normalizeMusic: normalizeMusic,
     // introspection (tests / the [A] wire)
     buses: function(){ return { master: E.master, limiter: E.limiter, music: E.music, drum: E.drum, sfx: E.sfx, reverb: E.reverb, musicSend: E.musicSend, drumSend: E.drumSend }; },
     noiseBuffer: function(){ return E.noiseBuf; }

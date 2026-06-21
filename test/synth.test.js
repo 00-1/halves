@@ -140,10 +140,10 @@ ok(clap.types.bufsrc === 3, "clap = several staggered noise bursts");
 let timers = 0; const realSI = global.setInterval; global.setInterval = () => { timers++; return 1; };
 const r6 = freshRecord(); const S6 = load(); S6.mount({ ctx: StubCtx(r6) });
 S6.play("pad", 1); S6.drum("kick", 1);
-ok(timers === 0, "the engine core starts NO timer/scheduler (no leak; the scheduler is a later increment)");
+ok(timers === 0, "one-shot play()/drum() start NO timer (only the music scheduler does)");
 global.setInterval = realSI;
 const src = read("synth.js");
-ok(!/setInterval|requestAnimationFrame/.test(src), "synth.js core has no setInterval/RAF (one-shot voices only)");
+ok(!/requestAnimationFrame/.test(src), "synth.js uses no requestAnimationFrame (audio is clock-scheduled, not RAF)");
 S6.setMuted(true);
 ok(S6.isMuted() === true && Math.abs(S6.buses().master.gain.value) < 1e-9, "mute zeroes the master gain");
 ok(S6.play("pad", 1) === 0, "a muted engine schedules no voice");
@@ -234,6 +234,72 @@ ok(JSON.stringify(H) === JSON.stringify(Synth.harmonyFor({ root: 60, mode: "ioni
 let ledTotal = 0, rootTotal = 0; let pv = null, rv2 = null;
 for(const c of H){ if(pv){ ledTotal += motion(pv, c.voiced); rv2 && (rootTotal += motion(rv2, c.chord)); } pv = c.voiced; rv2 = c.chord; }
 ok(ledTotal <= rootTotal, "the voice-led pad moves less across the progression than naive root-position");
+
+// =====================================================================
+// 9) RHYTHM & VARIATION (increment 4): Euclid, Markov, motif, scheduler
+// =====================================================================
+const onsets = a => a.reduce((s, v) => s + v, 0);
+const gaps = a => { const idx = a.map((v, i) => v ? i : -1).filter(i => i >= 0); const g = []; for(let i = 0; i < idx.length; i++) g.push(((idx[(i + 1) % idx.length] - idx[i]) + a.length) % a.length || a.length); return g; };
+// Euclid: exactly k onsets, spread as evenly as possible (max gap − min gap ≤ 1)
+ok(onsets(Synth.euclid(3, 8)) === 3 && onsets(Synth.euclid(5, 16)) === 5, "euclid(k,n) places exactly k onsets");
+const g38 = gaps(Synth.euclid(3, 8));
+ok(Math.max.apply(null, g38) - Math.min.apply(null, g38) <= 1, "euclid spreads onsets evenly (tresillo-class)");
+ok(Synth.euclid(4, 4).every(v => v === 1) && Synth.euclid(0, 8).every(v => v === 0), "euclid edge cases (k=n all on, k=0 all off)");
+ok(JSON.stringify(Synth.rotate([1, 0, 0, 1, 0], 2)) === JSON.stringify([0, 1, 0, 1, 0]), "rotate shifts a pattern (phase/fills)");
+
+// Markov: deterministic given seed; walks the table's domain
+const mtable = { "0,1": [[2, 3], [0, 1]], "1,2": [[1, 1]], "*": [[0, 1]] };
+const got = []; let ma = 0, mb = 1; const mr = Synth.mulberry32(11);
+for(let i = 0; i < 6; i++){ const nx = Synth.markovNext(mtable, ma, mb, mr); got.push(nx); ma = mb; mb = nx; }
+ok(got.every(x => typeof x === "number"), "markovNext walks a 2nd-order transition table");
+ok(Synth.markovNext(mtable, 0, 1, Synth.mulberry32(7)) === Synth.markovNext(mtable, 0, 1, Synth.mulberry32(7)), "markovNext is deterministic for a seed");
+
+// Motif development transforms
+ok(JSON.stringify(Synth.transposeMotif([0, 2, 4], 5)) === JSON.stringify([5, 7, 9]), "transpose shifts a motif");
+ok(JSON.stringify(Synth.invertMotif([0, 2, 4], 0)) === JSON.stringify([0, -2, -4]), "invert mirrors a motif about an axis");
+ok(JSON.stringify(Synth.retrograde([0, 2, 4])) === JSON.stringify([4, 2, 0]), "retrograde reverses a motif");
+
+// phraseSeed: deterministic + evolves per phrase
+ok(Synth.phraseSeed(42, 0) === Synth.phraseSeed(42, 0) && Synth.phraseSeed(42, 0) !== Synth.phraseSeed(42, 1), "phraseSeed is stable per phrase but evolves across phrases");
+// density rises across a phrase (breathes / arrives)
+const dspec = { harmony: Synth.harmonyFor({ root: 60, mode: "ionian", progression: [0, 5, 3, 4] }), density: 0.5 };
+ok(Synth.densityAt(dspec, 63) > Synth.densityAt(dspec, 0), "density rises across a phrase (sparse → fuller)");
+
+// stepEvents: pad on the downbeat, bass on 1 & 3, drums from the Euclid kit
+const mspec = Synth.normalizeMusic({ tempo: 96, root: 60, mode: "ionian", progression: [0, 5, 3, 4], seed: 1, density: 1 });
+const e0 = Synth.stepEvents(mspec, 0, Synth.mulberry32(1), 0, { deg: 0 });
+ok(e0.some(x => x.role === "pad") && e0.some(x => x.role === "bass"), "the downbeat lays the pad chord + bass root");
+const e8 = Synth.stepEvents(mspec, 8, Synth.mulberry32(1), 0, { deg: 0 });
+ok(e8.some(x => x.role === "bass") && !e8.some(x => x.role === "pad"), "beat 3 re-strikes the bass (not the pad)");
+
+// --- the single lookahead scheduler: one timer, schedules, idles, deterministic ---
+function runMusic(seed, ticks, jumpAtEnd){
+  const r = freshRecord(); const S = load();
+  const realSI = global.setInterval, realCI = global.clearInterval; let tick = null, ints = 0, clrs = 0;
+  global.setInterval = (fn) => { ints++; tick = fn; return 1; }; global.clearInterval = () => { clrs++; };
+  const ctx = StubCtx(r); ctx.currentTime = 10;
+  S.mount({ ctx: ctx }); S.setMusic({ tempo: 96, root: 60, mode: "ionian", progression: [0, 5, 3, 4], seed: seed, density: 0.6 }); S.start();
+  const oneTimer = ints; const playing = S.musicPlaying();
+  for(let k = 0; k < ticks; k++){ ctx.currentTime += 0.2; tick(); }
+  let burstAdded = 0;
+  if(jumpAtEnd){ ctx.currentTime += 10000; const pre = r.list.length; tick(); burstAdded = r.list.length - pre; }
+  S.stop(); const cleared = clrs, stillPlaying = S.musicPlaying();
+  global.setInterval = realSI; global.clearInterval = realCI;
+  const seq = r.list.filter(n => n._type === "osc").map(n => Math.round(n.frequency.value));
+  return { ints: oneTimer, playing: playing, seq: seq, cleared: cleared, stillPlaying: stillPlaying, burstAdded: burstAdded };
+}
+const A = runMusic(42, 10, true), B = runMusic(42, 10, false), C = runMusic(43, 10, false);
+ok(A.ints === 1 && A.playing, "setMusic+start runs exactly ONE lookahead scheduler");
+ok(A.seq.length > 0, "the scheduler schedules voices as the clock advances");
+ok(JSON.stringify(A.seq) === JSON.stringify(B.seq), "a performance is deterministic for a seed");
+ok(JSON.stringify(A.seq) !== JSON.stringify(C.seq), "a different seed → a different performance");
+ok(A.cleared >= 1 && !A.stillPlaying, "stop() clears the single interval (idles, no leak)");
+ok(A.burstAdded < 200, "a stalled clock drops the backlog — no note flood (anti-burst, " + A.burstAdded + " nodes)");
+
+// intensity raises density (denser toward the boss — the shared FX signal)
+let dense = 0, calm = 0; const rg1 = Synth.mulberry32(5), rg2 = Synth.mulberry32(5);
+for(let s = 0; s < 64; s++){ if(Synth.stepEvents(mspec, s, rg1, 0, { deg: 0 }).some(x => x.role === "lead")) calm++; if(Synth.stepEvents(mspec, s, rg2, 1, { deg: 0 }).some(x => x.role === "lead")) dense++; }
+ok(dense >= calm, "intensity() thickens the lead (denser toward the boss: " + dense + " ≥ " + calm + ")");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
