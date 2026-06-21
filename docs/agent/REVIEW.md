@@ -1,6 +1,15 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T69` (audio volume raised, no clipping). Master `VOL`
+**Current verdict:** `APPROVED — T71` (calmer music + distinct per-topic styles + an Arena
+theme). Independently verified: **no style exceeds 95 BPM** (was up to 115; max now 95),
+busy styles softened (every density ≤ 0.36, drums thinned); **all 15 topics map to 15
+DISTINCT styles** (indices 0–14, none missing, zero collisions — incl. 3 new gentle styles
+Tide Pool/Lantern Way/Meadow); a dedicated **"Hero's Arena"** theme exists and `#arena`
+routes to it (was the menu loop). T69 behaviour preserved (no clipping, mute/visibility) and
+the T33 voice cap unchanged. `test/sound.test.js` grew to **20 checks — all pass**; `node -c`
+clean. ("Feels calm enough" is the owner's ear; the objective bar is met.) T71 → DONE.
+
+**Previously approved (done):** `T69` (audio volume raised, no clipping). Master `VOL`
 0.16→**0.30** (in the louder band), `musicGain` 0.07→**0.09** (music stays a balanced
 background under SFX). Independently verified via the new `test/sound.test.js` (stub
 AudioContext): **all 11 checks pass** — master = VOL, music balanced, **worst-case output
@@ -66,9 +75,9 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T71` → `T67` → `T66` → `T68` → `T52` → `T53` →
+**Next-task order:** **`T67` → `T66` → `T68` → `T52` → `T53` →
 `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
-`T59`/`T60`/`T61`). **Do `T71` next** — calmer music + per-topic variation + Arena theme. Then:
+`T59`/`T60`/`T61`). **Do `T67` next** — hero detail view (full owned boost list + "X/Y collected"). Then:
 - **`T69`** — tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep music balanced, no
   clipping). **`T71`** — calmer music (cap bpm ~95, soften busy styles) + a distinct style
   per topic + a dedicated Arena theme (Arena currently plays the menu style). Both audio,

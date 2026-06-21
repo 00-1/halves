@@ -1665,7 +1665,7 @@ raises the bar from *correct* to *genuinely clear & useful to a 10-year-old*.
   correctness); all gates green (no new leaks/phantom/plural); concise; no regressions;
   deploy green. (Babysitter re-reads every topic's full hint set for genuine helpfulness.)
 
-### T71 — Calmer music + more per-topic variation + an Arena theme · status: OPEN
+### T71 — Calmer music + more per-topic variation + an Arena theme · status: DONE
 Owner: "the music is still sometimes a bit fast/stressful — make it more **calming**. Add
 more **variation** in music style across topics. Maybe **Arena-specific** music." Context
 (`sound.js`): 12 topic styles + 1 menu style; **tempo is static** per style
