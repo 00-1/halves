@@ -38,6 +38,15 @@ const startBlock = html.slice(html.indexOf('id="start"'), html.indexOf('id="summ
 ok(!/id="fxBackdrop"/.test(startBlock), "(1) the backdrop is full-bleed — NOT confined to #start (no dead FX margins)");
 ok(html.indexOf('id="fxBackdrop"') < html.indexOf('class="app"'), "(1) the backdrop sits behind .app (a body-level full-viewport layer)");
 ok(!/id="fxBurst"/.test(startBlock), "(1) the burst overlay is app-level (not confined to #start)");
+// T149 — THE celebration bug: #fxBurst was trapped inside #resetModal (.modal.hidden →
+// display:none → a never-shown 0×0 canvas). It MUST be a top-level body sibling of .app
+// (like #fxBackdrop), NOT inside ANY modal, so it always renders.
+ok(html.indexOf('id="fxBurst"') < html.indexOf('class="app"'), "(1) T149: #fxBurst is TOP-LEVEL (before .app, a body-level layer) — not trapped in a modal");
+(function(){
+  // no `.modal ... #fxBurst ... </div>` nesting: the burst must not sit inside a modal
+  const mi = html.indexOf('class="modal'); const bi = html.indexOf('id="fxBurst"');
+  ok(bi >= 0 && (mi < 0 || bi < mi), "(1) T149: #fxBurst appears BEFORE any .modal block (never a display:none modal child)");
+})();
 
 // ---- (2) CSS: full-viewport backdrop behind .app, burst overlay on top -------
 ok(/\.fx-backdrop\{[^}]*position:fixed/.test(css) && /\.fx-backdrop\{[^}]*z-index:-1/.test(css), "(2) the backdrop is a FIXED full-viewport layer behind .app (z-index:-1)");

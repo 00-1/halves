@@ -4440,3 +4440,25 @@ verified: migration (fresh→60, old 8→80, new value preserved); sound.test as
 notes: **owner by ear** — SFX should now cut clearly over the music at the top of the range; if 1.0× still
 isn't enough, the noted follow-up is lifting the per-note `g` in sound.js (still clip-safe). Next per
 `NEXT.md`: **`T147`** (move the FX/celebration tester out of Audio into a Graphics section).
+
+## T149 — THE celebration bug: move #fxBurst OUT of the display:none reset modal  [HANDOFF]
+commit: (this commit) — [A], OWNER-PRIORITY · BUG · ROOT-CAUSED (browser-proven by the babysitter's
+Playwright render, after T125/T126/T133/T136/T137/T138 all missed it).
+root cause: `<canvas id="fxBurst">` was the **last child of `#resetModal`** (`<div class="modal hidden">`,
+the "Clear all data?" confirm). `.modal.hidden{display:none}` → the celebration canvas was removed from
+rendering (clientWidth/Height 0×0) except while that modal was open (≈never). The engine painted a perfect
+~20%-coverage shower into a canvas the browser never displayed. The backing buffer LOOKED fine (sized via
+the `innerWidth` fallback → why `dimensions()` read a real size, and why every Node gate + the owner-readout
+stayed misleading). The engine work (T133/T138) + my resize wiring (T125/T137) were all correct — this one
+placement was the only thing wrong.
+changed (A-owned): **index.html** — moved the single `<canvas id="fxBurst" class="fx-burst">` line OUT of
+`#resetModal` to **top level**, a body-level sibling of `.app` directly after `#fxBackdrop` (exactly like
+the working backdrop). `#fxBackdrop` + `#fxCanvas` were already top-level. No other change (it's
+`position:fixed; z-index:59` so placement only affects whether it's in a display:none subtree).
+how I verified: **test/fx-wiring.test.js (75→77)** — asserts `#fxBurst` is TOP-LEVEL (before `.app`) and
+appears BEFORE any `.modal` block (never a display:none modal child) — the regression guard for THIS bug.
+`node -c` n/a; **full 34-gate suite green**. (Babysitter's Playwright: 0×0 in the modal → 393×852 at body,
+19.6% lit celebration coverage at dpr 2.75 — the shower the owner will finally see.)
+notes / questions: this is the crux the headless gates couldn't catch (they can't see `display:none`/0×0) —
+B's **T150** Playwright harness will close that gap. **Owner:** a win / topic-run / new item / the Settings
+tester should now throw a bold visible shower. Next per `NEXT.md`: `T147` (FX tester → a Graphics section).

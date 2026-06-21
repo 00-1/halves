@@ -17,6 +17,11 @@
      .app, decorative only. Driven by the home state on #start and the live Arena
      region/tier on #arena; idle + hidden on every other screen. -->
 <canvas id="fxBackdrop" class="fx-backdrop hidden" aria-hidden="true"></canvas>
+<!-- T149 — celebration-burst overlay (FXGL/T94/T133/T136): TOP-LEVEL (body sibling of
+     .app), NOT inside any modal. It was trapped in #resetModal (.modal.hidden →
+     display:none) so the shower painted into a never-displayed 0×0 canvas — THE
+     celebration-invisible bug. Top-level + position:fixed (z59) → always rendered. -->
+<canvas id="fxBurst" class="fx-burst" aria-hidden="true"></canvas>
 <div class="app">
 
   <!-- ENTRY / TAP TO BEGIN (provides the fullscreen + audio user gesture) -->
@@ -317,9 +322,6 @@
       <button class="btn ghost" id="resetCancel">Cancel</button>
     </div>
   </div>
-
-  <!-- T110: celebration-burst overlay (FXGL/T94) — on top, taps pass through -->
-  <canvas id="fxBurst" class="fx-burst" aria-hidden="true"></canvas>
 </div>
 
 <script src="icons.js"></script>
