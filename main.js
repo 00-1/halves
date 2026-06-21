@@ -142,7 +142,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), arena:$("arena"), practice:$("practice") };
+  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), heroDetail:$("heroDetail"), arena:$("arena"), practice:$("practice") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -636,18 +636,39 @@
         '<div class="hero-hint">🔒 '+esc(h.unlockHint)+'</div></div></div>';
     }
     const st = Hs.effectiveStats(h, col), rating = Math.round(Hs.rating(h, col));
-    const items = C.CATALOG.filter(it => col[it.id] && it.boost && it.boost.hero === h.id);
-    const shown = items.slice(0, 12);
-    const chips = shown.map(it => '<span class="hero-chip r-'+it.rarity+'">'+esc(it.flavour)+'</span>').join("") +
-      (items.length > shown.length ? '<span class="hero-chip more">+'+(items.length - shown.length)+' more</span>' : '');
+    const owned = C.CATALOG.filter(it => col[it.id] && it.boost && it.boost.hero === h.id).length;
+    // Compact list card — full boost list lives in the tappable detail view (T67).
     return '<div class="hero-card unlocked t-'+h.type.toLowerCase()+'" data-hero="'+esc(h.id)+'">'+
       '<div class="hero-port"><canvas class="pix" width="48" height="48"></canvas></div>'+
       '<div class="hero-info">'+
         '<div class="hero-name"><span class="hn"><i class="typedot"></i>'+esc(h.name)+'</span><span class="hero-rating">★ '+rating+'</span></div>'+
         '<div class="hero-stats">'+statChip("PWR",st.power)+statChip("GRD",st.guard)+statChip("SPD",st.speed)+statChip("FOC",st.focus)+'</div>'+
-        '<div class="hero-items">'+(items.length ? '<span class="hero-il">Boosted by '+items.length+':</span> '+chips
-                                                  : '<span class="hero-none">No items yet — collect to boost.</span>')+'</div>'+
+        '<div class="hero-items">'+(owned ? '<span class="hero-il">Boosted by '+owned+'</span> <span class="hero-tap">tap for details ›</span>'
+                                          : '<span class="hero-none">No items yet — collect to boost.</span>')+'</div>'+
       '</div></div>';
+  }
+  // Hero detail (T67): big portrait + full stats + the COMPLETE owned boost list
+  // (scrollable, untruncated) + an X/Y collected summary. Lazy: built on open.
+  const STAT_ABBR = { power:"PWR", guard:"GRD", speed:"SPD", focus:"FOC" };
+  function renderHeroDetail(id){
+    const Hs = window.Heroes; if(!Hs) return false;
+    const h = Hs.byId(id), col = loadCollected();
+    if(!h || !Hs.isHeroUnlocked(h, col)) return false;   // only unlocked heroes have a detail
+    const st = Hs.effectiveStats(h, col), rating = Math.round(Hs.rating(h, col));
+    const all = C.CATALOG.filter(it => it.boost && it.boost.hero === h.id);
+    const owned = all.filter(it => col[it.id]);
+    $("hdHead").className = "hd-head t-" + h.type.toLowerCase();
+    $("hdName").innerHTML = '<span class="hn"><i class="typedot"></i>'+esc(h.name)+'</span>'+
+      '<span class="hd-type">'+esc(h.type)+'</span><span class="hero-rating">★ '+rating+'</span>';
+    $("hdStats").innerHTML = statChip("PWR",st.power)+statChip("GRD",st.guard)+statChip("SPD",st.speed)+statChip("FOC",st.focus);
+    $("hdProg").textContent = owned.length + " / " + all.length + " boosts collected";
+    $("hdList").innerHTML = owned.length
+      ? owned.map(it => '<div class="hd-boost r-'+it.rarity+'"><span class="hb-name">'+esc(it.flavour || it.name)+'</span>'+
+          '<span class="hb-amt">+'+it.boost.amount+' '+(STAT_ABBR[it.boost.stat] || it.boost.stat)+'</span></div>').join("")
+      : '<div class="hero-none">No boosts yet — collect items that boost '+esc(h.name)+'.</div>';
+    $("hdList").scrollTop = 0;
+    C.drawIcon($("hdPort"), "hero:"+h.id, HERO_PAL[h.type], "familiar");
+    return true;
   }
   function renderHeroes(){
     const Hs = window.Heroes; if(!Hs){ $("heroList").innerHTML = ""; return; }
@@ -1182,6 +1203,10 @@
     if(h === "inventory"){ renderInventory(); show("inventory"); }
     else if(h === "best-times"){ renderSummary(); show("summary"); }
     else if(h === "heroes"){ renderHeroes(); show("heroes"); }
+    else if(h.indexOf("hero/") === 0){
+      if(renderHeroDetail(h.slice(5))) show("heroDetail");
+      else { location.hash = "#/heroes"; return; }   // unknown/locked → back to the list
+    }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; renderArena(); show("arena"); }
     else { renderTabs(); renderBest(); renderStartState(); renderGold(); renderMomentum(); show("start"); }
   }
@@ -1207,6 +1232,11 @@
   $("invBack").addEventListener("click", navStart);
   $("heroesBtn").addEventListener("click", () => { location.hash = "#/heroes"; });
   $("heroesBack").addEventListener("click", navStart);
+  $("hdBack").addEventListener("click", () => { location.hash = "#/heroes"; });
+  $("heroList").addEventListener("click", e => {
+    const card = e.target.closest(".hero-card.unlocked"); if(!card) return;
+    location.hash = "#/hero/" + card.dataset.hero;
+  });
   $("arenaBtn").addEventListener("click", () => { location.hash = "#/arena"; });
   $("arenaBack").addEventListener("click", navStart);
   $("arenaFight").addEventListener("click", startBattle);

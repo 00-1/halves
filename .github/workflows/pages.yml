@@ -46,6 +46,8 @@ jobs:
         run: node test/toasts.test.js
       - name: Audio levels test (gate)
         run: node test/sound.test.js
+      - name: Hero detail test (gate)
+        run: node test/hero-detail.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

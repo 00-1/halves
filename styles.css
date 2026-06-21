@@ -334,6 +334,28 @@ canvas.pix{image-rendering:pixelated}
 .hero-chip.r-uncommon{border-color:#3fce8c}.hero-chip.r-rare{border-color:#3f97d8}
 .hero-chip.r-epic{border-color:#9a5cf6}.hero-chip.r-legendary{border-color:#f0ad3c}
 .hero-chip.more{color:var(--muted)}
+.hero-card.unlocked{cursor:pointer}
+.hero-tap{font-family:var(--mono);font-size:10px;color:var(--amber);font-weight:700}
+
+/* ---------- HERO DETAIL (T67) ---------- */
+#heroDetail{align-items:center;padding:20px 10px}
+.hd-head{display:flex;gap:14px;width:100%;max-width:380px;align-items:center;margin-top:14px;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.hd-port{flex:0 0 auto;width:64px;height:64px;border-radius:10px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center}
+.hd-port canvas{image-rendering:pixelated;width:64px;height:64px}
+.hd-meta{flex:1 1 auto;min-width:0}
+.hd-name{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--display);font-weight:700;font-size:18px}
+.hd-type{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.hd-prog{margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700}
+.hd-list{margin-top:14px;width:100%;max-width:380px;text-align:left;flex:1 1 auto;min-height:0;overflow-y:auto;
+  display:flex;flex-direction:column;gap:6px}
+.hd-boost{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--surface);border:1px solid var(--line);border-left-width:3px;border-radius:10px;padding:8px 12px}
+.hb-name{font-family:var(--mono);font-size:12px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb-amt{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--amber);flex:0 0 auto}
+.hd-boost.r-uncommon{border-left-color:#3fce8c}.hd-boost.r-rare{border-left-color:#3f97d8}
+.hd-boost.r-epic{border-left-color:#9a5cf6}.hd-boost.r-legendary{border-left-color:#f0ad3c}
 
 /* ---------- ARENA (T24) ---------- */
 #arena{align-items:center;padding:28px 10px 32px}

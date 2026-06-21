@@ -2276,3 +2276,39 @@ notes / questions: "calmer enough" is the owner's ear — the objective bars (bp
   cap, softened density/drums, distinct per-topic styles, routed Arena theme) are
   met. Region-varied Arena music was the optional/nice-to-have; left bounded to one
   calm Arena theme. Next per REVIEW order: **T67** (hero detail — UX cluster).
+
+## T67 — Hero detail view (full boost list + collected summary)  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - index.html — new **`#heroDetail`** screen: big portrait canvas (`#hdPort`),
+    name/type/rating (`#hdName`), full stats (`#hdStats`), an **X/Y collected**
+    summary (`#hdProg`), and a **scrollable boost list** (`#hdList`) + Back.
+  - main.js — registered the screen; **`renderHeroDetail(id)`** (lazy, on open)
+    draws the **T51 portrait** (`C.drawIcon(cv,"hero:"+id,HERO_PAL[type],"familiar")`),
+    full PWR/GRD/SPD/FOC, **the COMPLETE owned boost list untruncated** (one row per
+    item with its `+amount STAT`), and an **`owned / total` summary computed from the
+    catalogue** (per-hero total ~74–103; e.g. bram **/93**). Routing: **`#/hero/<id>`**
+    (unlocked only; unknown/locked → falls back to `#/heroes`). The Heroes **list
+    card is now compact** — "Boosted by N · tap for details ›" instead of the cramped
+    12-chip "+N more" cut-off; the whole unlocked card is tappable
+    (`#heroList` click → `#/hero/<id>`); `#hdBack` → `#/heroes`.
+  - styles.css — hero-detail layout (`.hd-head`/`.hd-port`/`.hd-meta`/`.hd-name`/
+    `.hd-prog`/`.hd-list` scroll region/`.hd-boost` rows with rarity left-border),
+    `.hero-card.unlocked{cursor:pointer}` + `.hero-tap`.
+### Unowned display (owner-confirmed)
+Per the spec: show **owned boosts in full** + the **X / Y count** of how many exist
+for this hero; **no long list of locked tiles** (each hero is boosted by ~80+
+items). The default surface is owned-in-full + the count.
+how I verified:
+  - `node test/hero-detail.test.js` (NEW, 12th gate) → **ALL 13 PASS**: list card is
+    compact ("tap for details", **no "+N more"**); tapping routes to `#/hero/<id>`;
+    the detail shows the **full owned list untruncated** (17 owned → 17 rows, no
+    "more"); **X/Y summary = "17 / 93 boosts collected"** matches the real catalogue
+    counts; full stats shown; **portrait drawn via `hero:<id>`** (T51 path); Back
+    returns to the list; an unknown id **falls back** to `#/heroes` (no crash).
+  - `node -c main.js` OK; **82 `$("id")` refs all present**; all twelve gates green
+    (incl. perf — the one new `#heroList` listener is wired once at init, no growth).
+    360px-safe (detail list is the sole scroll region, Back pinned). No regressions.
+notes / questions: left the optional collapsible "still to find" out (the spec's
+  default surface is owned-in-full + the count). Next per REVIEW order: **T66**
+  (set the Arena to 120 tiers — 10 regions × 12).
