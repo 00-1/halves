@@ -536,13 +536,15 @@ readiness). *(Events brought forward by the owner 2026-06-21 — slotted after t
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
 - **Builder A — next: `T111`** [A] (**`T107` DONE — cache-busting shipped; `T100`/`T104`/`T99` DONE**).
-  **`T111` FIRST — quick owner-flagged UI polish** (do this before T110; it's small and the owner is
-  looking at it now). (a) **Hero-DETAIL page still rounded** — T100 missed it; extend the
-  `[data-ui="pixel"]` restyle to `#heroDetail`'s `.hd-head`/`.hd-port`/`.hero-stat` chips/`.hb-row`
-  boost rows (squared + hard frame, reversible, clean-text). (b) **Nav tidy** — rename **Settings →
-  `Setup`** (shorter; owner's pick overrides) and lay the 7 nav buttons so the **Exit/Screen button is
-  no longer orphaned** on its own row (one row if they fit at 360px, else a balanced 4+3). Full DoD in
-  BACKLOG `T111`. **Then → `T110` — FX wiring pass 1 (make B's engine visible).** With T107 done,
+  **`T111` FIRST — owner-flagged UI polish** (do this before T110; the owner is looking at it now).
+  (a) **COMPLETE the T100 pixel restyle across ALL screens** — T100 only covered a subset, so several
+  screens still show rounded boxes: **hero-detail** (`.hd-head`/`.hd-port`/`.hero-stat`/`.hb-row`),
+  **results** (`.slow-item` rows + `.rankline canvas` badge), then **sweep** summary/inventory/arena/
+  practice/settings/modal for any other rounded chrome — do NOT just patch the named screens (3
+  screenshots so far; catch the rest in one pass). All gated on `[data-ui="pixel"]` (classic
+  unchanged), clean-text. (b) **Nav tidy** — rename **Settings → `Setup`** (shorter; owner's pick
+  overrides) and lay the 7 nav buttons so the **Exit/Screen button is no longer orphaned** (one row if
+  they fit at 360px, else a balanced 4+3). Full DoD in BACKLOG `T111`. **Then → `T110` — FX wiring pass 1 (make B's engine visible).** With T107 done,
   deploys are trustworthy, so wire the FX the owner has been waiting to see. **Mount `FXGL`** (add
   `<script src="fxgl.js">` — the
   T107 bust auto-versions it; register `test/fxgl.test.js` as a CI gate) on a backdrop canvas behind

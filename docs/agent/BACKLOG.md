@@ -1865,16 +1865,25 @@ per SFX voice). **Raise it to clearly audible.**
   (Babysitter: recompute the worst-case voice sum × VOL ≤ 1.0 and confirm the new VOL is much
   higher than 0.30.)
 
-### T111 — [A] UI polish: restyle the hero-DETAIL page + tidy the nav (no orphan Exit, shorter Settings) · status: OPEN
-Owner (2 screenshots): three follow-ups to T99/T100.
-- **Hero-detail page still uses rounded boxes (T100 coverage gap).** T100's `[data-ui="pixel"]` block
-  restyled `.hero-card` (the heroes **list**) but **not** the hero **DETAIL** screen (`#heroDetail`),
-  which uses different selectors: **`.hd-head`** (the big hero card), **`.hd-port`** (border-radius:10px
-  port), the **`.hero-stat`** stat chips (`23 PWR · 8 GRD · 7 SPD · 5 FOC`), and the **boost rows**
-  (`.hb-row`/`.hb-name`/`.hb-amt`). Extend the pixel restyle to these: squared radius (`--ui-radius`) +
-  hard 1–2px frame / `box-shadow:none`, matching T100's panels. **Keep it reversible** (gate every rule
-  on `[data-ui="pixel"]`; `data-ui="classic"` unchanged) and **clean-text** (no pixel font). Grep the
-  `#heroDetail` render for any other rounded container and cover it so the whole page reads consistent.
+### T111 — [A] UI polish: COMPLETE the T100 pixel restyle (every screen) + tidy the nav · status: OPEN
+Owner (3 screenshots, and counting): T100 shipped the `[data-ui="pixel"]` restyle but only covered a
+**subset** of selectors, so several screens still show rounded "web-2.0" boxes. **Do a full sweep — do
+NOT just patch the two/three screens named here.** Grep EVERY screen's render + `styles.css` for any
+container with a non-token `border-radius` and/or a soft blur `box-shadow` that should read as game
+chrome, and bring them all under the pixel tokens in one pass.
+- **Known gaps to fix (non-exhaustive — find the rest):**
+  - **Hero-DETAIL screen (`#heroDetail`):** `.hd-head` (the big hero card), `.hd-port` (radius:10px
+    port), `.hero-stat` stat chips (`23 PWR…`), the boost rows `.hb-row`/`.hb-name`/`.hb-amt`.
+  - **Results screen (`#results`):** **`.slow-item`** (the "Slowest Answers" rows — still rounded) and
+    **`.rankline canvas`** (the rank-badge box, `border-radius:8px` → the "Kobold" emblem).
+  - Then **audit the remaining screens** — `#summary`, `#inventory`, `#arena`, `#practice`,
+    `#settings`, the collectible/rank **modal** — for any other rounded card/row/chip/badge and cover
+    it too. The goal: **no screen still reads soft/rounded** under `data-ui="pixel"`.
+- **How:** extend the T100 `[data-ui="pixel"]` block — squared radius (`--ui-radius`) + hard 1–2px
+  frame / `box-shadow:none`, matching T100's panels. **Every rule stays gated on `[data-ui="pixel"]`**
+  (so `data-ui="classic"` is byte-for-byte the old look) and **clean-text** (no pixel font; labels/
+  numerals keep `--display`/`--mono`). Pixel-art badge canvases may keep `image-rendering:pixelated`;
+  just square their frame.
 - **Nav: no orphaned Exit + shorter "Settings".** The home `#navRow` has 7 labelled buttons (Best/
   Items/Heroes/Arena/Sound/Settings/Screen); **"Settings" (8 chars) overflows**, pushing the 7th button
   (**Screen/Exit**, the fullscreen toggle) onto its **own row**. Fix BOTH: **rename the Settings label
@@ -1883,13 +1892,16 @@ Owner (2 screenshots): three follow-ups to T99/T100.
   **one row** if they fit at 360px (7×44px + gaps ≈ 344px < 360, so short labels should fit), else a
   **balanced 2-row grid** (e.g. 4+3), never a single button alone. Keep the fullscreen button's
   emoji/label sync working (⛶ Screen ⇄ Exit) and gating-hide intact.
-- **DoD:** the hero-detail card, port, stat chips, and boost rows read **squared/hard-framed** like the
-  rest under `data-ui="pixel"` (and revert cleanly under `classic`); the nav shows **no orphaned single
-  button** (Exit/Screen inline) and the **Settings label fits** (shortened); AA contrast holds (gate
-  green), ≥44px targets, 360px-safe, reversible; `node -c` clean; all gates green (extend
-  `ui-restyle.test.js` to assert the hero-detail selectors are gated + the nav has no lone-button row /
-  the shortened label). (Babysitter: eyeball the hero-detail page reads consistent + the nav is one
-  tidy block.)
+- **DoD:** **every screen** reads squared/hard-framed under `data-ui="pixel"` — hero-detail (card/port/
+  stat chips/boost rows), results (`.slow-item`, `.rankline canvas`), and a swept `#summary`/
+  `#inventory`/`#arena`/`#practice`/`#settings`/modal with **no remaining rounded card/row/chip/badge**
+  (a grep for non-token `border-radius` on chrome containers should come back clean or justified); all
+  of it **reverts byte-for-byte under `classic`**; the nav shows **no orphaned single button** (Exit/
+  Screen inline) and the **Settings label fits** (shortened); AA contrast holds (gate green), ≥44px
+  targets, 360px-safe, reversible; `node -c` clean; all gates green (extend `ui-restyle.test.js` to
+  assert the newly-covered selectors are gated + the nav has no lone-button row / shortened label).
+  (Babysitter: spot-check hero-detail, results, summary, inventory, arena all read consistent; nav is
+  one tidy block.)
 
 ### T110 — [A] FX wiring pass 1: mount FXGL + home backdrop + celebration bursts · status: OPEN
 **Make B's built-but-unwired FX engine VISIBLE** (owner's "bring the grit / put it everywhere"
