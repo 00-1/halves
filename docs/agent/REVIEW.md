@@ -82,6 +82,16 @@ existing `collector:25/75/150` ids** (migration), renaming the 150 tier, varied 
 names, thousands-formatted descs. `evaluateCollector` is already threshold-based — no
 logic change. Full spec in BACKLOG "T55".
 
+**Then `T56` — pixel-art the app mark + topic glyphs (owner-reported).** The brand mark
+and the 15 topic glyphs (`mode.glyph`: `x/2`, `a×b`, `n%`, `x²`, …) are typographic and
+look "too sleek" beside the pixel-art icons; owner wants them **re-rendered as pixel art
+but keeping the maths operators recognisable**. Build a small procedural **pixel bitmap
+font** (digits, `x a b n`, `× ÷ + − ± / % ½ ¾ ²`, `100`/`1k`) in its own module, driven
+by structured per-mode glyph tokens, and use it for the entry/start marks, the
+guide/practice titles, and toasts — plus a **procedurally-generated favicon /
+apple-touch-icon** (none exists today) via a runtime data-URL. Static (no RAF),
+AA-contrast, 360px-safe, crisp at both big and small sizes. Full spec in BACKLOG "T56".
+
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
 gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
 (beatable only at near-full collection), 50 procedural icon categories with

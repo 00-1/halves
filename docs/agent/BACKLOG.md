@@ -1226,3 +1226,47 @@ a misnomer (only ~14%). Extend it into a long ladder up to **10,000**.
   are varied + correctly formatted; the icon-variation gate still passes; `node -c`
   clean; no regressions; deploy green. (Babysitter recomputes the granted set at several
   counts and checks the ids/migration + naming.)
+
+### T56 — Pixel-art the app mark + topic glyphs (keep the maths operators) · status: OPEN
+Owner: "the main app icon and the individual topic icons look too sleek for the pixel
+image-gen style of the other images in the game. I **do** like the relevant
+mathematical operators being shown — is there a way to replace these with pixel
+image-gen but keep the operators in them?" Today the brand **mark** and every topic
+**glyph** are typographic HTML — `mode.glyph` strings like
+`x<span class="slash">/</span>2`, `a<span class="slash">×</span>b`, `n%`, `x²`,
+`½n` — styled by `.mark`/`.slash` (`styles.css` ~43) and rendered on the entry +
+start marks, the guide/practice titles (`.g-glyph`), and toasts (`.t-glyph`). They
+read as clean vector type, not pixel art. **Re-render the operators as pixel art while
+keeping each operator clearly recognisable.**
+- **New pixel-glyph renderer.** A small procedural **pixel bitmap font** for exactly
+  the symbols the glyphs use — digits `0-9`, the compound tokens `100`/`1k`, letters
+  `x a b n`, and operators `× ÷ + − ± / % ½ ¾ ²` — drawn chunky on a pixel grid to a
+  canvas (`image-rendering:pixelated`), in the game palette (operator in `--amber`
+  accent, operands in `--text`, matching the old mark's amber-slash look). It must
+  compose the multi-token marks (`x/2`, `a×b`, `+100`, `n%`, `x²`, `¾`, `½n`, …) into
+  one legible pixel mark. Live in its own module (e.g. `glyphs.js`/`window.Glyphs`,
+  loaded in `index.html`); pure + deterministic.
+- **Drive it from structured glyph data.** Parsing the HTML `glyph` strings is brittle;
+  prefer adding a structured token list per mode in `modes.js` (e.g. `glyphTokens`)
+  that the renderer consumes, while keeping the existing `glyph` HTML as a fallback so
+  nothing else breaks. The pixel mark must visually match each topic's current operator.
+- **Apply everywhere the mark/glyph shows:** the **entry** brand mark (static `x/2`),
+  the **start** per-topic mark (`renderMark`, `main.js` ~268), the **guide title** and
+  **practice title** glyphs, and the **toast** glyph — all become the pixel rendering.
+- **Real app icon (favicon / home-screen).** There is **no favicon today**. Generate one
+  procedurally from the same renderer — draw the `x/2` mark to an offscreen canvas and
+  set it as the page icon via a `<link rel="icon">` data-URL at runtime (plus
+  `apple-touch-icon` + a `theme-color`). No binary asset / build step needed.
+- **Quality bars.** Pixel marks are **static** (draw once per render; no RAF), legible
+  and **WCAG-AA** on their background (the amber/text on `--bg` already pass — keep it),
+  **360px-safe**, and crisp at the big entry/start size *and* the small title/toast
+  size (scale the grid, stay pixelated). Don't regress layout where the marks sit.
+- **DoD:** the entry + start marks, the guide/practice titles, and the toast all render
+  the operators as pixel art that still **clearly shows the correct operator for each of
+  the 15 topics** (spot-checked: `x/2`, `a×b`, `2×x`, `a+b`, `a±b`, `+100`, `+1k`, `×÷`,
+  `÷×`, `½n`, `a/b`, `%`, `n%`, `¾`, `x²`); a procedurally-generated favicon +
+  apple-touch-icon are set (visible page icon); the renderer is its own module, pure,
+  deterministic, static (no RAF); contrast holds (AA), 360px-safe, crisp/pixelated at
+  both sizes; `node -c` clean; no console errors; no regressions to the marks/titles/
+  toasts; deploy green. (Babysitter checks each topic's pixel mark encodes the right
+  operator, the favicon is set, and the draw is static/contrast-safe.)
