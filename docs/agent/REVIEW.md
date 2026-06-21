@@ -204,7 +204,11 @@ readiness). *(Events brought forward by the owner 2026-06-21 — slotted after t
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 **Tech-tree block (T83+T84) COMPLETE.** **Do `T85` next** (Settings + gating block, Phase 6.9) —
 a Settings screen + **Clear-all-data** behind a serious **countdown + numpad-code** confirm (wipes
-every `halves.*` key → genuine first-run; also the QA reset for the gating). Then **`T86`**
+every `halves.*` key → genuine first-run; also the QA reset for the gating). **Then `T91`
+(PRIORITY BUGFIX)** — the T81 event banner is too tall and breaks the home layout (page scrolls,
+picker starved to nothing, selected-topic mark stranded above it): make the banner a compact strip
+(keep it prominent + art/name/Play-CTA/UTC-countdown), fit `#start` to one screen, keep the picker
+≥3 rows, reorder banner above the mark. Then **`T86`**
 (onboarding engine: unlock-state model + first-run single-question intro + Inventory gate +
 one-time highlight; **migration-safe — never re-gate existing players**) → **`T87`** (wire the
 remaining gates: Practice/Heroes/Arena/Event-banner/Gold). Then the **Arena 3v3 block** (Phase

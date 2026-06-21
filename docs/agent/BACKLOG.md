@@ -1620,6 +1620,44 @@ to return to a genuine first-run state to test the T86/T87 onboarding gating.
   (Babysitter: confirm the wipe is total + first-run-true, the confirmation can't be fat-fingered,
   and cancel is safe.)
 
+### T91 — BUGFIX: the event banner breaks the home-screen layout (priority) · status: OPEN
+Owner-reported (screenshot): the T81 event banner is **far too tall** and breaks the `#start`
+layout. Three concrete symptoms: **(a)** the home page now **scrolls** (should fit one screen);
+**(b)** the topic **picker is starved to ~nothing** (the `picker-wrap`/`picker` is `flex:1 1
+auto; min-height:0`, so the oversized banner collapses it); **(c)** the **selected-topic mark**
+(`#mark`, the big `×÷`) sits **above** the banner, stranded away from the selector. Live order is
+`#mark` → `#tag` → `#eventBanner` (big card: 96×64 art + tag + **2-line blurb** + a large
+**`.eb-play`** block + countdown) → `#pickerViews` → `#picker-wrap`.
+- **Make the banner a COMPACT strip** while keeping it **prominent + functional** (T81 owner rule:
+  front-and-centre, not hidden; must keep the **emblem art + event name + a Play CTA that routes to
+  the live event + the UTC countdown**). Concretely: shrink the art, **drop or 1-line-clamp the
+  blurb on the home banner** (the full blurb already shows on the event/play screen), make Play a
+  **normal inline button** beside the countdown (not a big block), trim padding/margins. Target a
+  **bounded banner height** (≈ ≤96px) so it stops dominating.
+- **The `#start` screen must fit one viewport (no page scroll)** at representative phone sizes
+  (e.g. **360×640** and **390×844**), and the **picker must keep a usable minimum height** showing
+  **≥3 topic rows** and scrolling for the rest (give `.picker`/`.picker-wrap` a sensible
+  `min-height` so it can't collapse to zero).
+- **Fix the stranded mark (symptom c).** Reorder so the selected-topic indicator reads sensibly —
+  recommend **move `#eventBanner` to the very top of `#start` (above `#mark`)** so it's
+  `event banner → topic mark/tag → toggle → picker` (banner is genuinely first; the mark stays
+  adjacent to its selector). Alternatively shrink `#mark` on `#start`. Builder's call within the
+  one-screen-fit requirement; Babysitter checks it reads cleanly.
+- **Don't regress the Events guarantees.** The banner must still render on `#start`, carry art +
+  name + Play CTA → `startEvent`, and the live **00:00 UTC** countdown; owned-today still reads
+  "reward earned". Keep `events.test.js`'s banner assertions passing (update them if the DOM
+  order/structure changes, but preserve "banner on home · routes · UTC countdown").
+- **DoD:** the event banner is a compact strip (bounded height, no 2-line blurb hogging space,
+  inline Play); the `#start` screen **fits one screen without scrolling** at 360×640 and 390×844;
+  the **picker keeps ≥3 rows of usable height** (can't collapse to nothing); the selected-topic
+  mark no longer reads as stranded (banner reordered above the mark, or mark shrunk); the banner
+  keeps art + name + Play-routes-to-live-event + UTC countdown (Events gates still green); 360px-
+  safe; `node -c` clean; no console errors; **all gates green** (extend a test to assert the
+  banner has a bounded height / no home-banner blurb overflow and the picker has a min-height, as
+  far as the headless model allows). (Babysitter: verify on the live build that the home screen
+  fits one viewport, the topic list shows multiple rows, the banner is compact-but-prominent, and
+  the Play CTA + countdown still work.)
+
 ### T86 — Onboarding gating I: unlock-state model + first-run intro + Inventory gate + highlight · status: OPEN
 The onboarding engine + the first gate (promoted from IDEAS I4). Pure, local, migration-safe.
 - **Unlock-state model** in `localStorage` (e.g. `halves.unlocked`) with pure helpers
