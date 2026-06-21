@@ -10,16 +10,12 @@
 
 ---
 
-**Builder A → `T149` (THE celebration fix — move `#fxBurst` out of the display:none modal) → `T146` (declutter home) → `T148` (SFX volume range) → `T147` (FX tester → Graphics) → `T124` (fractions)**
-**⚠ `T149` FIRST — ROOT CAUSE FOUND via a real headless-browser render (Playwright), after 6 engine rounds
-missed it.** `<canvas id="fxBurst">` (index.html:321) is the last child of `#resetModal` (`<div class="modal
-hidden">`) and `.modal.hidden{display:none}` → the celebration canvas is `display:none` (clientSize 0×0)
-except while the "Clear all data?" modal is open. The engine renders perfectly (~20% coverage) into a canvas
-the browser never shows. **Fix:** move that one `<canvas>` line OUT of `#resetModal` to **top level** (after
-`#fxBackdrop` / body-level, like the working backdrop). **Browser-proven:** 0×0 in the modal → 393×852 at
-body, 19.6% celebration coverage at dpr 2.75. (The engine T133/T138 work was all correct.) Then → `T146`
-(drop Sound icon + Exit→Setup), `T148` (SFX 0→1.0× range), `T147` (FX tester→Graphics), `T124` (fractions).
-*(`T140` 12-style picker landed `9e706f3` — Babysitter reviewing.)*
+**Builder A → `T124` (fraction glyphs) → then the roadmap (`T101` → Android → Arena 3v3 → content → `T72`)**
+The whole audio/FX/menu block is cleared and **browser-verified**: celebration renders (T149 — `#fxBurst` was
+trapped in a `display:none` modal; moved to top-level, proven 0×0→393×852, 19.6% coverage), 12-style picker
+(T140), home declutter (T146), FX tester→Graphics (T147), SFX range (T148), backdrop (T142), nav-trap (T143).
+**`T124`** — fraction tree-glyphs bigger/clearer using node width (owner-flagged illegible). Then → `T101`
+(Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`. *(All recent A pushes APPROVED.)*
 **`T148` — owner: "sound fx volume doesn't go high enough."** Diagnosed: NOT the SFX engine — the slider
 maps `slider/100` → max **0.10 gain**, but `sound.js`'s `sfxBus` accepts up to **`SFX_MAX=1.0`** (10× more
 headroom; current peak ≈ −36 dB). **Fix:** map the SFX slider to 0→1.0× (not /100), louder default
@@ -50,17 +46,19 @@ exempting only `.build` from the contrast gate, keeping `.readouts`/`res-label` 
 menu→menu/event→festive + the dubstep victory fires on a win; depends on T139) → **`T124`** (fraction glyphs)
 → `T101` → `T102`/`T103` (Android) → content → `T72`.
 
-**Builder B → `T150` (autonomous BROWSER-RENDER harness — Playwright) — the process fix the owner asked for.**
-*(`T139` 12-style palette DONE `efef4b4`; `T138` engine work was correct — the real celebration bug was
-[A]-side markup, T149, found via a real browser.)* **T150:** build a B-owned headless-browser render gate
-(new file; loads the app read-only) that, at a phone viewport @ **dpr 2.75**, loads the app, fails on any
-console/page error, fires the **real celebration**, and asserts **`#fxBurst.clientWidth>0` + visible lit
-coverage** (would have caught T149 instantly), checks the backdrop renders, and saves screenshots. **Confirmed
-runnable in-env:** global `playwright` at `/opt/node22/lib/node_modules/playwright` + Chromium at
-`/opt/pw-browsers` (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`); serve via a local `http.server`. Make it an
-**additional, browser-guarded gate** (skips cleanly with no browser so Node-only CI still passes); prove it by
-re-nesting `#fxBurst` in the modal → the gate FAILS. Full DoD `BACKLOG.md` T150. **B-owned only** (new
-`test/browser/…` files); never touch existing Halves files; never push `claude/agent`.
+**Builder B → `T151` (synth output DIVERGES — the real "audio sounds bad") → `T150` (browser-render harness)**
+**⚠ `T151` FIRST — Babysitter BROWSER-MEASURED it** (AnalyserNode on `Synth.output()`): the master output
+grows **exponentially in EVERY context, no switch needed** — `menu` peaks `0.36→1.93→7.42→33.6→159` over 3 s
+(~×4.5 / 0.33 s; switching diverges *less* → the switch is NOT the cause). The limiter then clamps a 30–160×
+signal → escalating distortion = the owner's "sounds bad." **Fix the feedback instability in `synth.js`**
+(suspects: FDN reverb spectral radius ≥ 1 via damping/summing; a reverb send→return LOOP into a bus; or
+voice/gain accumulation — one context over ~5 s must SETTLE to a bounded tail). **Add a peak-BOUND gate**
+(offline render / `AnalyserNode`: peak ≤ ~2 over ≥5 s; must FAIL on today's build). **Then `T150`** — the
+Playwright browser-render harness (loads app @ dpr 2.75, fires the real celebration, asserts
+`#fxBurst.clientWidth>0` + lit coverage — would've caught T149; guarded so Node-only CI still passes; in-env:
+global `playwright` at `/opt/node22/lib/node_modules/playwright` + Chromium at `/opt/pw-browsers`). Full DoD:
+`BACKLOG.md` T151/T150. **B-owned only** (new `test/browser/…` + `synth.js`/`fxgl.js` tests); never touch
+existing Halves files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

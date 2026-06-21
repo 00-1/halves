@@ -2658,6 +2658,34 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
+### T151 — [B] Synth output DIVERGES exponentially (feedback instability) — the real "audio sounds bad" · status: OPEN · OWNER-PRIORITY · BUG · BROWSER-MEASURED
+Owner: **"the audio switching sounds bad. but I think the problem may be the switching rather than the
+audio. I wonder if this is something you can confirm yourself too?"** **Confirmed autonomously — and it's
+worse than the switch:** the Babysitter tapped an `AnalyserNode` on `Synth.output()` in headless Chromium and
+measured the peak amplitude over time. **The synth master output grows EXPONENTIALLY in every context, even
+with no switch** (normal audio peaks ≤ 1.0):
+- `menu`, NO switch, peaks over 3s: `0.36 · 0.48 · 0.82 · 0.61 · 0.92 · 1.93 · 7.42 · 33.6 · 159.5` → ~×4.5
+  every 0.33 s (doubles ~every 0.14 s) = a runaway feedback blowup.
+- `menu→menu {now}` → 55.9; `lofi→dubstep {now}` → 33.4 (switching actually diverges a bit *less* — the
+  voice-release resets some energy — so the **switch is not the cause**; continuous play is worst).
+The brickwall limiter (sound.js, after `Synth.output()`) then clamps a 30–160×-too-hot signal → escalating
+distortion/pumping = what the owner hears as "sounds bad," most noticeable around a switch.
+- **Find + fix the instability in `synth.js`.** Exponential growth ⇒ a feedback path with effective gain > 1.
+  Prime suspects: **(a) the FDN reverb** — verify the feedback **spectral radius < 1** (the Hadamard matrix
+  scaled by `0.5×decay` should be unitary×decay≈0.78, but the **damping lowpass or summing may add gain**;
+  the tail must decay, not grow); **(b) a send/return LOOP** — confirm the reverb RETURN goes to `master`
+  only, NOT back into a bus that feeds the reverb SEND (music bus → reverb → … → music bus would self-feed);
+  **(c) voice/gain accumulation** — voices or a gain node not being cleaned up so energy piles up. Render a
+  single context for ~5 s and confirm the tail **settles to a bounded steady state**.
+- **Add a headless RMS/peak-BOUND gate** (this class was invisible to all Node gates): render/measure the
+  engine output (offline render, or via the T150 browser harness / an `AnalyserNode`) for several seconds per
+  context and **assert peak stays bounded** (e.g. ≤ ~2.0, never the 30–160 measured here) — so a divergence
+  can never ship again.
+- **DoD (browser/offline-MEASURED):** the synth output stays **bounded** (peak ≤ ~2) over ≥5 s in every
+  context and across switches; a peak-bound gate proves it (and FAILS on today's build); `node -c` clean;
+  all gates green; **B-owned only** (`synth.js` + tests + `BUILDER-LOG-FX.md`). (Babysitter re-measures with
+  the AnalyserNode probe; bar = bounded output + the owner's ear.)
+
 ### T138 — [B] Celebration invisible: CPU-path particles shrank under the DPR downscale · status: DONE (`8145505`, CI green) — OWNER RE-TEST
 **DONE 2026-06-21** — APPROVED (REVIEW.md). **Real cause (DPR downscale):** the 2D buffer is `dpr×res×CSS`
 (~2.75× on the Poco X3) and the browser downscales it, so 6–18 buffer-px particles showed at ~2–6 screen px =
@@ -2795,7 +2823,12 @@ pixels, and screenshots.
   stop round-tripping rendering bugs through the owner.) *(Coordinates with A's T149: after T149, this gate
   goes green; it's the regression guard.)*
 
-### T148 — [A] SFX volume can't go loud enough: the slider uses the music's 0–0.10× scale, but the SFX bus goes to 1.0 · status: OPEN · OWNER-PRIORITY
+### T148 — [A] SFX volume can't go loud enough: the slider uses the music's 0–0.10× scale, but the SFX bus goes to 1.0 · status: DONE (`8a2b1a9`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). SFX slider remapped to the real `SFX_MAX=1.0` range (was capped
+at 0.10); louder default; `halves.sfxVol` migrated. CI green; `sound.test` updated. *(Loudness itself is
+audio — owner's ear; structurally the range is opened.)*
+
+> Original spec below.
 Owner: **"sound fx volume doesn't go high enough. probably cos it's using the old sound system which was
 always super quiet. probably sound effects should move to the new system that music moved to."** **Diagnosed
 — NO re-engineering needed:** the root cause is the **slider mapping**, not the SFX engine. `sound.js`'s
@@ -2818,7 +2851,12 @@ moving SFX into the synth engine is unnecessary; just open up the range.)
   `node -c` clean; all gates green (assert the SFX slider maps to ~`SFX_MAX`, not 0.10); [A]-owned files.
   (Babysitter + owner confirm by ear.)
 
-### T146 — [A] Declutter the home nav: drop the Sound icon + move Exit INTO Setup · status: OPEN · OWNER-PRIORITY
+### T146 — [A] Declutter the home nav: drop the Sound icon + move Exit INTO Setup · status: DONE (`8a2b1a9`, CI green, BROWSER-VERIFIED)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). Sound + Fullscreen/Exit removed from the home nav (Audio reachable
+from Setup; Fullscreen moved into Setup). Babysitter browser-verified: no `soundBtnMenu`/`exitBtn` ids on
+home; nav row = Best·Items·Heroes·Arena·Setup; Settings has the Audio link; no page errors.
+
+> Original spec below.
 Owner (live, after T143): **"if sound is now a sub menu of setup, we can get rid of the sound icon from the
 main screen. let's also get rid of the exit button and add that to setup too."** Now that audio has its own
 menu, the home bottom row (Best · Items · Heroes · Arena · **Sound** | Setup · **Exit**) is cluttered.
@@ -2835,7 +2873,12 @@ menu, the home bottom row (Best · Items · Heroes · Arena · **Sound** | Setup
   all gates green (cross-check no dangling `soundBtnMenu`/home-Exit refs; assert Setup links to `#/audio`);
   [A]-owned. (Babysitter + owner confirm via screenshot.)
 
-### T147 — [A] Move the FX/celebration tester out of the Audio menu into a GRAPHICS section · status: OPEN · OWNER-PRIORITY
+### T147 — [A] Move the FX/celebration tester out of the Audio menu into a GRAPHICS section · status: DONE (`ae0b7e4`, CI green, BROWSER-VERIFIED)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). FX/celebration tester moved out of `#audio` into a Graphics
+section. Babysitter browser-verified: Settings shows a Graphics section; the FX tester is no longer in the
+Audio menu; no page errors.
+
+> Original spec below.
 Owner (live): **"the fx test is now in the sound menu which seems wrong. should be in a graphics section."**
 Correct — the celebration tester is a *visual* test, not audio.
 - **Move the celebration tester** (Item / Rank up / Arena win / Big burst + the `dimensions()`/`isReady()`
@@ -2848,7 +2891,14 @@ Correct — the celebration tester is a *visual* test, not audio.
   (Babysitter + owner confirm.) *(Note for the owner: the celebration RENDER fix is `8145505`/in HEAD
   `daa64f5` — if they tested an older build they wouldn't have seen it; re-test on the current build.)*
 
-### T140 — [A] Music switcher + routing for the 12 styles (audition all incl. dubstep victory; victory fires) · status: OPEN · OWNER-PRIORITY
+### T140 — [A] Music switcher + routing for the 12 styles (audition all incl. dubstep victory; victory fires) · status: DONE (`9e706f3`, CI green, BROWSER-VERIFIED)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). The music picker lists all **12 styles**; per-screen routing +
+dubstep-victory wiring. Babysitter browser-verified: the picker renders 12 buttons (Neon Lobby · Lo-Fi Study
+· Ambient Drift · Chiptune Rush · Synthwave Cruise · Tropical Pluck · Festival · Hypno Techno · Liquid DnB ·
+Phrygian Onslaught · 8-Bit Boss March · Dubstep Victory); no page errors. *(Switching the styles exposed the
+T151 synth-divergence bug — separate [B] fix; the picker itself is correct.)*
+
+> Original spec below.
 Depends on T139 (B's final style list). The owner wants **all 12 styles in the launcher** to audition, and
 the **dubstep victory to actually fire on a win**.
 - **Switcher (Settings)** — extend the T129 music switcher from 4 buttons to **all 12 styles** B defines

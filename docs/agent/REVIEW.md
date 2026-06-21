@@ -1073,16 +1073,13 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T146` (declutter home: drop Sound icon + Exit→Setup) → `T148` (SFX volume range fix) →
-  `T147` (FX tester → a Graphics section) → `T140` (12-style picker — UNBLOCKED) → `T124` (fractions)** [A]
-  (**`T143`/`T144`/`T145`/`T142`/`T137`/… DONE**). *(Read `NEXT.md` fresh — canonical.)* Owner after using the
-  new Audio menu: **`T146`** — "sound is now a sub-menu → drop the Sound icon from the main screen; also drop
-  the Exit button and add it to Setup" (remove home `#soundBtnMenu` + home Exit; make Audio reachable FROM
-  Setup; Exit action in Setup; re-balance the home nav row). **`T147`** — "the fx test is in the sound menu,
-  seems wrong → should be in a graphics section" (move the celebration tester out of `#audio` into a Graphics
-  sub-section). **Then `T140`** (now unblocked — B's 12 styles built `efef4b4`): list all 12 in the music
-  picker + per-screen routing + dubstep victory fires on a win. Then → **`T124`** (fraction glyphs) →
-  **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content
+- **Builder A — next: `T124` (fraction glyphs) → then the roadmap (`T101` → Android → Arena 3v3 → content).**
+  [A] (**`T149`/`T140`/`T146`/`T147`/`T148`/`T143`/… all DONE — browser-verified**). *(Read `NEXT.md` fresh —
+  canonical.)* The whole audio/FX/menu block is cleared: celebration renders (T149, browser-verified), 12-style
+  picker (T140), home declutter (T146), FX tester→Graphics (T147), SFX range (T148), backdrop (T142),
+  nav-trap (T143). **`T124`** — fraction tree-glyphs bigger/clearer using node width (owner-flagged
+  illegible). Then → **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) →
+  content
   **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
@@ -1101,17 +1098,19 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T138` (celebration invisible — DIAGNOSED) — B's sole remaining task.** *(`T139`
-  12-style palette DONE `efef4b4`; `T141`/`T134` DONE.)* Owner's tester readout = **`1038×2305`** (ready,
-  full-size) → NOT resize/occlusion. Fns fire (buttons restart music) + `renderFrame` draws, but particles are
-  **4–8 device px** (`seedCelebrate fxgl.js:276`) drawn into a 1038×2305 buffer the browser **downscales
-  ~2.75× → ~1.5–3 screen px** = drawn (count-golden passes) but invisible. **Fix:** scale the CPU-path draw
-  `size` up (× effective DPR / fraction of `min(w,h)`); add a **real visibility golden** (in-bounds, on-screen
-  size ≥ a real threshold, alpha>0 — not a fillRect count). **⚠ Don't tunnel on size** — owner doubts 3px is
-  *fully* invisible; also verify the RAF loop runs/presents for the full burst (not one frame), alpha/colour,
-  lifetime; if bolder particles still show nothing, fix the loop. Full DoD: `BACKLOG.md` T138. **B-owned only**
-  (`fxgl.js` + tests/goldens + `BUILDER-LOG-FX.md`); never touch existing Halves files; never push
-  `claude/agent`.
+- **Builder B — next: `T151` (synth output DIVERGES — the real "audio sounds bad") → `T150` (browser-render
+  harness).** *(`T139`/`T138`/`T141`/`T134` DONE; celebration fully fixed via [A] `T149`.)* **`T151` FIRST —
+  Babysitter BROWSER-MEASURED it:** an `AnalyserNode` on `Synth.output()` shows the master output growing
+  **exponentially in every context, even with no switch** — `menu` peaks `0.36→1.93→7.42→33.6→159` over 3 s
+  (~×4.5 / 0.33 s; switching diverges *less*, so the switch isn't the cause). The limiter clamps a 30–160×
+  signal → escalating distortion = "sounds bad." **Fix the feedback instability** (suspects: FDN reverb
+  spectral radius ≥ 1 via the damping/summing; a reverb send→return LOOP back into a bus; or voice/gain
+  accumulation — render one context ~5 s, the tail must SETTLE). **Add a peak-BOUND gate** (offline render /
+  the T150 harness / `AnalyserNode`: peak ≤ ~2 over ≥5 s, fails on today's build). **Then `T150`** — the
+  Playwright browser-render harness (loads the app @ dpr 2.75, fires the real celebration, asserts
+  `#fxBurst.clientWidth>0` + lit coverage — would've caught T149; guarded/opt-in so Node CI still passes).
+  Full DoD: `BACKLOG.md` T151/T150. **B-owned only** (`synth.js`/`fxgl.js` + new `test/browser/…` + tests +
+  `BUILDER-LOG-FX.md`); never touch existing Halves files; never push `claude/agent`.
   - *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless browser to CI —
     kept out of scope to keep CI Node-only.)*
 
