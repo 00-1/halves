@@ -6,6 +6,40 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T126 — FXGL: a BIG "celebration" burst mode (loads of particles) ([B])
+
+**Status: DONE — handed off for review.** B-owned files only (`fxgl.js`,
+`test/fxgl.test.js`); **zero edits to any existing Halves file** (the [A] wire is
+T125). Off stand-by: the owner wants celebrations with "loads of particles" — the
+T94 burst (cap 256) reads as too subtle.
+
+### What shipped
+- **`FXGL.celebrate(opts)`** (and `controller.celebrate`) — a big firework/shower:
+  `seedCelebrate` seeds **far more, bigger, longer-lived** particles with a **tall
+  upward launch + gravity fall** and a **bright festive default palette**, capped at
+  a new **`CELEBRATE_CAP = 800`** (vs the burst's 256).
+- **Reuses the entire T94 burst pipeline** — same particle shape, same **closed-form
+  in-shader trajectory** (the burst VS/FS, instanced, one draw/frame — **no
+  per-particle JS**, so 800 stays in the Poco-X3 budget), same transient subsystem.
+  Refactored `burst()`/`celebrate()` to share `_ignite()`, so the celebration
+  **inherits every invariant**: seeded/deterministic, **auto-stops + frees its
+  buffer**, single-RAF/no-leak, coalesces with in-flight bursts.
+- **Reduced motion → a calmer, smaller, shorter shower**; **`setQuality` degrades the
+  count** (cap scales with the quality particle budget); GPU→CPU fallback intact.
+- **No regression**: `burst()` still caps at 256; the ambient field is untouched.
+- Tests +14 (now **116**): `CELEBRATE_CAP` ceiling, seedCelebrate caps/deterministic/
+  bigger-and-longer-than-burst/reduced-smaller/bright-default; `celebrate()` fires
+  hundreds, one RAF, one instanced draw/frame, auto-stops + frees buffer, `setQuality`
+  degrades the count; `burst()` 256 cap not regressed.
+
+### Hand-off to Builder A (T125 wire)
+- Fire `FXGL.celebrate({ x, y, palette?, seed })` on the big win moments (Arena
+  victory / a legendary unlock) instead of (or alongside) the smaller `burst()`. It
+  auto-stops, so no teardown. `seed` from the event for determinism; `palette` can
+  follow rarity (defaults bright/festive).
+
+---
+
 ## T120 — `synth.js` generative-audio engine (phased build per T119) — ALL 5 DONE
 
 **Owner directive (2026-06-21): run continuously through phases 1→5, one push per

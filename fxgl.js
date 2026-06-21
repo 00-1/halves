@@ -49,6 +49,7 @@
   // velocity drag), animated in-shader from a static buffer, so a burst stays a
   // one-time upload + one draw call and auto-stops when its particles expire.
   const BURST_CAP = 256;            // hard ceiling on live burst particles
+  const CELEBRATE_CAP = 800;        // higher ceiling for the big celebration shower (T126)
   const BURST_GRAVITY = 1.2;        // screen-fractions / s²  (down = +y)
   const BURST_DRAG = 1.6;           // velocity damping rate (1/s)
 
@@ -235,6 +236,46 @@
         size: lerp(2, szMax, rng()),
         r: col[0], g: col[1], b: col[2],
         life: lerp(0.6, lMax, rng()),
+        vrot: lerp(-spin, spin, rng()),
+        birth: 0
+      };
+    }
+    return out;
+  }
+
+  // Seed a BIG celebration burst (T126) — the owner's "loads of particles": many
+  // more, bigger, longer-lived, a tall firework/shower (strong upward launch +
+  // gravity fall), bright multi-colour by default. Same particle shape + closed-
+  // form trajectory as seedBurst, so it rides the SAME instanced/in-shader path
+  // (the higher count stays in budget) and the SAME auto-stop/no-leak machinery.
+  // Deterministic from `seed`; reduced motion → a calmer, shorter shower.
+  function seedCelebrate(opts, reduced, cap){
+    opts = opts || {};
+    const x0 = clamp01(opts.x != null ? opts.x : 0.5);
+    const y0 = clamp01(opts.y != null ? opts.y : 0.6);    // a touch low → launches up into view
+    const want = (opts.count != null) ? (opts.count | 0) : 500;
+    const scale = reduced ? 0.3 : 1;
+    const n = Math.max(0, Math.min(cap | 0, Math.round(want * scale)));
+    const rng = makeRng((opts.seed | 0) || 0x9e3a17c5);
+    let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor)
+             : [[255, 217, 138], [255, 255, 255], [120, 220, 255], [255, 140, 200], [180, 255, 160]];   // bright, festive
+    if(!pool.length) pool = [[255, 255, 255]];
+    const sMax = reduced ? 0.5 : 1.4;       // wider, faster spray
+    const up = reduced ? 0.3 : 0.9;         // tall fountain launch
+    const lMax = reduced ? 1.0 : 2.4;       // longer-lived (a real shower)
+    const spin = reduced ? 2 : 11;
+    const szMax = reduced ? 6 : 14;         // bigger flakes
+    const out = new Array(n);
+    for(let i = 0; i < n; i++){
+      const ang = rng() * TAU, spd = lerp(0.2, sMax, rng());
+      const col = pool[(rng() * pool.length) | 0];
+      out[i] = {
+        x0: x0, y0: y0,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - lerp(up * 0.5, up, rng()),  // strong upward launch → arc + fall
+        size: lerp(4, szMax, rng()),
+        r: col[0], g: col[1], b: col[2],
+        life: lerp(1.0, lMax, rng()),
         vrot: lerp(-spin, spin, rng()),
         birth: 0
       };
@@ -1190,23 +1231,40 @@
     if(this.rafId && !this.burst_.active){ this.caf(this.rafId); this.rafId = 0; }
     return this;
   };
-  // Fire a brief celebration burst (T94). Purpose = CELEBRATION. Capped, seeded
-  // (deterministic), reduced-motion → a calm flourish, auto-stops with no RAF
-  // leak. Coalesces with an in-flight burst (rapid gains stack up to the cap).
-  Controller.prototype.burst = function(opts){
-    if(!this.ready || !this.backend) return this;
-    const seeded = seedBurst(opts, this.reduced, BURST_CAP);
-    if(!seeded.length) return this;
+  // Ignite a set of seeded particles into the transient burst subsystem: stamp
+  // their birth at the current burst clock, coalesce with any in-flight burst
+  // (rapid gains stack), trim to the celebration ceiling (oldest dropped), upload
+  // once, and pump the single RAF. Shared by burst() and celebrate(); both inherit
+  // the auto-stop / no-leak / single-RAF machinery.
+  Controller.prototype._ignite = function(seeded){
+    if(!this.ready || !this.backend || !seeded || !seeded.length) return this;
     if(!this.burst_.active){ this.burst_.parts = []; this.burst_.elapsed = 0; this.burst_.maxDeath = 0; this.burst_.startTs = 0; this.burst_.active = true; }
     const birth = this.burst_.elapsed;
     for(let i = 0; i < seeded.length; i++) seeded[i].birth = birth;
     let parts = this.burst_.parts.concat(seeded);
-    if(parts.length > BURST_CAP) parts = parts.slice(parts.length - BURST_CAP);   // drop oldest
+    if(parts.length > CELEBRATE_CAP) parts = parts.slice(parts.length - CELEBRATE_CAP);   // drop oldest
     this.burst_.parts = parts;
     this.burst_.maxDeath = Math.max(this.burst_.maxDeath, burstMaxDeath(seeded));
     this.backend.setBurst(parts);
     this._pump();
     return this;
+  };
+  // Fire a brief celebration burst (T94). Purpose = CELEBRATION. Capped (256),
+  // seeded (deterministic), reduced-motion → a calm flourish, auto-stops with no
+  // RAF leak. Coalesces with an in-flight burst (rapid gains stack up to the cap).
+  Controller.prototype.burst = function(opts){
+    if(!this.ready || !this.backend) return this;
+    return this._ignite(seedBurst(opts, this.reduced, BURST_CAP));
+  };
+  // Fire a BIG celebration shower (T126): hundreds of bigger, longer-lived, bright
+  // particles (firework/fountain) — same instanced/in-shader path, same auto-stop/
+  // no-leak invariants, just a much higher ceiling. `setQuality` degrades the count
+  // (the cap scales with the quality particle budget) so it stays in the Poco-X3 budget.
+  Controller.prototype.celebrate = function(opts){
+    if(!this.ready || !this.backend) return this;
+    const q = QUALITY[Math.max(0, Math.min(2, this.quality))];
+    const cap = Math.max(0, Math.min(CELEBRATE_CAP, Math.round(CELEBRATE_CAP * q.particles)));
+    return this._ignite(seedCelebrate(opts, this.reduced, cap));
   };
   Controller.prototype.resize = function(){ this._applyResize(); if(this.backend && this._isStill() && this.derived) this._renderOnce(); return this; };
   Controller.prototype.dispose = function(){ this.stop(); this.burst_.active = false; if(this.rafId){ this.caf(this.rafId); this.rafId = 0; } if(this.backend) this.backend.dispose(); this.backend = null; this.ready = false; return this; };
@@ -1227,24 +1285,25 @@
   function setQuality(q){ if(active) active.setQuality(q); return active; }
   function dispose(){ if(active){ active.dispose(); active = null; } }
   function burst(opts){ if(active) active.burst(opts); return active; }
+  function celebrate(opts){ if(active) active.celebrate(opts); return active; }
   function setHomeState(state){ if(active) active.setHomeState(state); return active; }
   function setArenaState(state){ if(active) active.setArenaState(state); return active; }
 
   window.FXGL = {
     // runtime API
-    mount: mount, setScene: setScene, setHomeState: setHomeState, setArenaState: setArenaState, start: start, stop: stop, burst: burst,
+    mount: mount, setScene: setScene, setHomeState: setHomeState, setArenaState: setArenaState, start: start, stop: stop, burst: burst, celebrate: celebrate,
     setQuality: setQuality, dispose: dispose, resize: function(){ if(active) active.resize(); },
     capabilities: capabilities, active: function(){ return active; },
     Controller: Controller,
     // budget constants
-    PARTICLE_CAP: PARTICLE_CAP, BURST_CAP: BURST_CAP, BURST_GRAVITY: BURST_GRAVITY, BURST_DRAG: BURST_DRAG,
+    PARTICLE_CAP: PARTICLE_CAP, BURST_CAP: BURST_CAP, CELEBRATE_CAP: CELEBRATE_CAP, BURST_GRAVITY: BURST_GRAVITY, BURST_DRAG: BURST_DRAG,
     HOME_PARTICLE_MAX: HOME_PARTICLE_MAX, QUALITY: QUALITY, KIND: KIND, BAYER: BAYER,
     // pure math (headless-tested)
     bayer4: bayer4, parseColor: parseColor, toHex: toHex, luma: luma,
     buildRamp: buildRamp, rampIndex: rampIndex, quantizePixel: quantizePixel,
     gridToImage: gridToImage, gridColors: gridColors,
     makeRng: makeRng, seedParticles: seedParticles, animateParticle: animateParticle,
-    seedBurst: seedBurst, burstPos: burstPos, burstMaxDeath: burstMaxDeath,
+    seedBurst: seedBurst, seedCelebrate: seedCelebrate, burstPos: burstPos, burstMaxDeath: burstMaxDeath,
     deriveScene: deriveScene, deriveHomeScene: deriveHomeScene, seedFromHome: seedFromHome,
     deriveArenaScene: deriveArenaScene, seedFromArena: seedFromArena, arenaIntensity: arenaIntensity, ARENA_PARTICLE_MAX: ARENA_PARTICLE_MAX, ARENA_REGIONS: ARENA_REGIONS,
     // shader sources (so a wiring task / tests can inspect them)

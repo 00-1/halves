@@ -390,5 +390,46 @@ acRm.setArenaState({ region: 7, tier: 6, bossProximity: 0.8 });
 acRm.start();
 ok(arm === 0 && !acRm.isAnimating(), "reduced-motion Arena biome is a static still (no RAF)");
 
+// =====================================================================
+// 11) BIG celebration shower (T126) — loads of particles, same invariants
+// =====================================================================
+// seedCelebrate: many more, bigger, longer-lived; capped at the higher ceiling
+const cel = FXGL.seedCelebrate({ count: 500, seed: 3 }, false, FXGL.CELEBRATE_CAP);
+const brst = FXGL.seedBurst({ count: 500, seed: 3 }, false, FXGL.BURST_CAP);
+ok(FXGL.CELEBRATE_CAP > FXGL.BURST_CAP && FXGL.CELEBRATE_CAP >= 600, "CELEBRATE_CAP is a much higher ceiling (" + FXGL.CELEBRATE_CAP + ")");
+ok(FXGL.seedCelebrate({ count: 99999, seed: 1 }, false, FXGL.CELEBRATE_CAP).length === FXGL.CELEBRATE_CAP, "seedCelebrate caps at CELEBRATE_CAP");
+ok(cel.length > brst.length, "a celebration seeds far more particles than a plain burst (" + cel.length + " > " + brst.length + ")");
+const avg = (a, f) => a.reduce((s, p) => s + f(p), 0) / a.length;
+ok(avg(cel, p => p.size) > avg(brst, p => p.size), "celebration particles are bigger");
+ok(avg(cel, p => p.life) > avg(brst, p => p.life), "celebration particles live longer (a real shower)");
+ok(JSON.stringify(FXGL.seedCelebrate({ count: 200, seed: 9 }, false, FXGL.CELEBRATE_CAP)) === JSON.stringify(FXGL.seedCelebrate({ count: 200, seed: 9 }, false, FXGL.CELEBRATE_CAP)), "seedCelebrate is deterministic for a seed");
+ok(FXGL.seedCelebrate({ count: 500, seed: 3 }, true, FXGL.CELEBRATE_CAP).length < cel.length, "reduced motion → a calmer, smaller shower");
+// bright default palette (festive) when none is supplied
+ok(cel.some(p => p.b > 200) && cel.some(p => p.r > 200), "celebration defaults to a bright, festive palette");
+
+// controller.celebrate: a big overlay, single RAF, one draw/frame, auto-stops, frees the buffer
+const crec = { texImage2D: 0, drawArraysInstanced: 0, drawArrays: 0, bufferData: 0 };
+let cq = [], ccaf = 0;
+const cc = new FXGL.Controller(stubCanvas(), { gl: makeGL(crec), raf: cb => { cq.push(cb); return cq.length; }, caf: () => { ccaf++; }, width: 360, height: 640, dpr: 1, quality: 2, reducedMotion: false });
+cc.celebrate({ x: 0.5, y: 0.6, count: 600, seed: 7 });
+ok(cc.isBursting() && cc.burstCount() > 256, "celebrate() fires hundreds of particles (" + cc.burstCount() + " > the burst cap)");
+ok(cq.length === 1, "celebrate() pumps exactly ONE rAF (single loop)");
+let cts = 0, cf = 0;
+while(cq.length && cf < 400){ const cb = cq.shift(); cts += 80; cb(cts); cf++; }
+ok(crec.drawArraysInstanced === cf, "one instanced draw per frame (no per-particle JS — " + cf + " frames)");
+ok(!cc.isBursting() && cq.length === 0 && cc.burstCount() === 0, "the celebration auto-stops, idles the RAF, frees its buffer (no leak)");
+
+// setQuality degrades the celebration count (Poco-X3 budget)
+const lo = new FXGL.Controller(stubCanvas(), { gl: makeGL({}), raf: () => {}, caf: () => {}, width: 360, height: 640, dpr: 1, quality: 0, reducedMotion: false });
+lo.celebrate({ count: 800, seed: 1 });
+const hiCtrl = new FXGL.Controller(stubCanvas(), { gl: makeGL({}), raf: () => {}, caf: () => {}, width: 360, height: 640, dpr: 1, quality: 2, reducedMotion: false });
+hiCtrl.celebrate({ count: 800, seed: 1 });
+ok(lo.burstCount() < hiCtrl.burstCount() && lo.burstCount() <= Math.round(FXGL.CELEBRATE_CAP * FXGL.QUALITY[0].particles), "setQuality(0) degrades the celebration count (" + lo.burstCount() + " < " + hiCtrl.burstCount() + ")");
+
+// the plain burst() path is NOT regressed (still capped at 256)
+const reg = new FXGL.Controller(stubCanvas(), { gl: makeGL({}), raf: () => {}, caf: () => {}, width: 360, height: 640, dpr: 1, reducedMotion: false });
+reg.burst({ count: 99999, seed: 2 });
+ok(reg.burstCount() === FXGL.BURST_CAP, "burst() still caps at BURST_CAP (256) — no regression");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FXGL CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
