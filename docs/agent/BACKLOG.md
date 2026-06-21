@@ -1561,12 +1561,13 @@ hero's owned boost items into `.hero-items` as chips capped at 12 with a **"+N m
   card is acceptable if cleaner) showing the **big portrait** (the T51 creature-blob via
   `C.drawIcon(cv,"hero:"+id,HERO_PAL[type],"familiar")`), full stats (PWR/GRD/SPD/FOC), and
   the **complete owned boost list scrollable, untruncated** (no "+N more" cut-off).
-- **Unowned boosts (owner unsure — Babysitter recommendation, adjustable):** show the
-  **owned** boosts in full, plus a **progress summary** of how many boost-items exist for
-  this hero and how many are collected (e.g. "44 / 87 boosts collected") and/or a
-  **collapsible "still to find"** — rather than a long list of locked tiles (each hero is
-  boosted by ~80+ items, so a full locked list would overwhelm). Goal: show what you have
-  prominently, hint at what's left, without clutter. (Flagged for owner confirm.)
+- **Unowned boosts (owner-confirmed — REQUIRED):** show the **owned** boosts in full, plus
+  a **progress summary** stating **how many boost-items exist for this hero in total and how
+  many are collected** — e.g. "44 / 93 boosts collected" (the real per-hero total ranges
+  ~74–103; compute it, don't hard-code). **Do NOT render a long list of locked/unowned
+  tiles** (each hero is boosted by ~80+ items). A small **collapsible "still to find"** is
+  optional but the default surface is: owned boosts in full + the `X / Y` count. Goal: show
+  what you have prominently and make the full scope legible, without clutter.
 - **Keep the list view tidy:** the hero *list* card can show a compact summary (portrait,
   name, rating, stats, "Boosted by N — tap for details") instead of the long chip overflow.
 - **DoD:** an unlocked hero opens a detail view with its portrait + full stats + the

@@ -57,8 +57,8 @@ UX cluster.)
   `arena.test.js` to 120 + final tier 120 ⇔ near-full collection. No procedural naming.
 - **`T67` — hero detail view** (owner: hero boost-item list is long & partially hidden via
   "+N more"). Give heroes a detail screen with the full **owned** boost list untruncated +
-  portrait + stats; for unowned, Babysitter recommends a "X/Y collected" summary (not a
-  giant locked list) — owner to confirm.
+  portrait + stats; for unowned, show an **"X / Y collected" summary** with the real
+  per-hero total (~74–103, computed) — **not** a giant locked list. **Owner-confirmed.**
 - Sequenced early because T62 sets the hint standard that T58's playbook and the new-topic
   batches (T59–T61) must follow. Then T52–T56. Detailed blocks below are in spec order;
   follow this line for sequence.
