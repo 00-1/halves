@@ -68,6 +68,16 @@ Builder and the Babysitter approved it. Defense: **any change to a shared layout
 regression into a gate failure. Builders add the assertion with the change; the Babysitter rejects a
 shared-layout change that ships without one.
 
+**Output-feature rule (codified from T118 → T125 → T128 — "green gates, broken feature"):** our
+source-grep / stub headless gates verify that wiring *calls exist*, NOT that audio actually swaps, a
+sound actually plays, or pixels actually render. Three times a task shipped green while the live feature
+was broken (T118 layout, T125 invisible burst, T128 music/wub/celebration). **For any feature whose
+result is rendered pixels or audible sound, "all gates green" is NECESSARY-NOT-SUFFICIENT** — the
+Builder must **verify on the live build** (and say which device / how) and, where feasible, add a check
+stronger than a source-grep (e.g. assert the controller is `ready`+sized before it draws; assert
+distinct per-context specs, not just that a setter is called). The Babysitter does not mark an
+output-feature task DONE on green gates alone — it confirms against the owner's live observation.
+
 ## brickmap
 
 Borrow **recipes, not the engine** (see BACKLOG Phase 6.12): B reads brickmap's `bm-render`

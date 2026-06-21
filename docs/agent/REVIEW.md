@@ -863,15 +863,18 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T123`** [A] · **OWNER-PRIORITY** (**`T127` DONE — &amp; fix; `T125`/`T121`/`T122`
-  all DONE**). *(Read `NEXT.md` fresh — canonical.)* **`T123`** — a11y: muted/grey text fails AA over the
-  purple FX backdrop; add a **contrast floor** (dark scrim/dim behind content, keep the atmosphere) so
-  text clears AA, and make **`contrast.test` honest** (test against the worst-case backdrop luminance,
-  not the dark `--bg` token — it should fail on today's grey-on-purple, pass after).
-  → **`T124`** (fraction tree-glyphs still illegible —
-  contrast floor/scrim + honest `contrast.test`) → **`T124`** (fraction tree-glyphs still illegible —
-  bigger/clearer using the node width) → **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA +
-  perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
+- **Builder A — next: `T128`** [A] · **OWNER-PRIORITY · LIVE BUGS** (**`T127`/`T125`/`T121`/`T122` DONE**).
+  *(Read `NEXT.md` fresh — canonical.)* **`T128` — three owner-tested live bugs the green gates miss
+  (MUST verify in a real browser):** (1) **music never swaps** per screen — `musicSpec()` passes no
+  `progression` so every context shares the engine's default chords → use `Synth.setContext(name)`'s
+  distinct contexts + apply the T113 tempo; (2) **no wub on win** — verify `play("wub")` fires AND
+  wobbles (LFO may only run in the scheduler → flag [B] if a one-shot can't wobble); (3) **no
+  celebration visuals** (still, post-T125) — repro live; likely the 2nd WebGL context (`#fxBurst`)
+  failing vs the working backdrop → consider sharing one canvas/context (flag [B] if engine-level).
+  Full DoD `T128` (live-verified — gates are necessary-not-sufficient here). → **`T123`** (a11y contrast
+  floor + honest `contrast.test`) → **`T124`** (fraction tree-glyphs bigger/clearer using node width) →
+  **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) →
+  content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):

@@ -2451,6 +2451,44 @@ cramped blob, and the **wider tree-v2 nodes (96px)** leave the fraction under-us
   live node size — must read as the fraction, not a blob — this is the 2nd attempt after T104, get it
   clearly right.)
 
+### T128 — [A] LIVE BUGS: music never swaps context · no wub on win · no celebration visuals · status: OPEN · OWNER-PRIORITY · BUG
+Owner tested the live build (synth music is loud + nice): **"music never changes — same as menu in
+topics/arena (I expected different); no dubstep wub on victory; no celebration visuals, not even
+subtle."** All THREE pass our headless gates yet fail live — **the gates verify the wiring *calls*
+exist in source, not that music swaps / the wub sounds / pixels render.** ⇒ **This task MUST be verified
+in a real browser (the owner's symptoms are the bar), not by green gates.** Babysitter leads below.
+- **(1) Music never changes per screen.** `show(name)→musicForScreen(name)` looks correct (game→solve,
+  arena→arena), and the engine swaps `M.spec=M.want` at a phrase boundary. BUT the wiring builds partial
+  specs via `musicSpec()` that pass **no `progression`**, so the engine falls back to the SAME default
+  `[0,5,3,4]` for every context → solve/menu/arena share harmony and differ only by mode/tempo/density
+  (too subtle / maybe not swapping at all). **Fix:** drive the engine's **distinct built-in contexts**
+  — prefer **`Synth.setContext("solve"|"menu"|"arena"|"event")`** (synth.js CONTEXTS already define
+  per-context `progression`/reverb/patches — incl. the Arena's **wub bass**) instead of
+  `setMusic(musicSpec())`; apply the T113 tempo multiplier on top (a tempo override / `Synth.setTempo`).
+  Then **confirm LIVE** the music is audibly different in a topic vs the Arena vs the menu, and that it
+  actually swaps on screen change (if the phrase-boundary swap is too slow/never fires, make a context
+  change swap promptly).
+- **(2) No wub on victory.** `wubSting()→Sy.play("wub", null, {midi:36,dur:0.6,bus:"music"})` is wired
+  on Arena win + topic-complete. Verify **live** it actually fires AND sounds like a wub: check
+  `Synth.play` honours `opts.midi`/`dur`/`bus`, and that the **`wub` patch's LFO→filter wobble** actually
+  triggers via `play()` (the patch defines the LFO, but `play()` may not run the ambient-style LFO path —
+  if the wobble only happens in the scheduler, `play("wub")` gives a flat bass, not a "wub wub"). If the
+  patch/engine needs a change to wobble on a one-shot, that's a **[B] fxgl/synth** fix — flag it.
+- **(3) No celebration visuals (still, after T125's resize fix).** The burst overlay renders nothing
+  live. Repro in-browser and find why: is `fxBurst` actually `ready` with a live backend when
+  `celebrate()` fires? Does a **second WebGL context** (`#fxBurst` separate from the working `#fxBackdrop`)
+  fail/never present on the device? Is the canvas occluded / 0-opacity / mis-stacked? Likely fixes: share
+  ONE canvas/context for backdrop+burst (composite the burst over the backdrop), or ensure the burst
+  context initialises + presents. (If it's an engine limitation, the burst-on-shared-context may be a
+  **[B]** change — flag it.) The bar: a **visible** shower on a real win/run/item.
+- **DoD:** verified **on the live build** (state which device/how): (1) topic / Arena / menu music are
+  **audibly distinct** and swap on screen change; (2) a **wub fires + wobbles** on an Arena win and a
+  topic-complete; (3) a **visible particle celebration** appears on a win/run/new-item. `node -c` clean;
+  all gates green; **and** add checks that are more than source-greps where feasible (e.g. assert the
+  wiring calls `setContext`/distinct progressions per screen; a headless check the burst controller is
+  `ready` + sized before `celebrate`). (Babysitter: I will treat green gates as necessary-not-sufficient
+  here — confirm against the owner's three live symptoms.)
+
 ### T123 — [A] Accessibility pass: text legibility over the FX backdrop (AA floor + honest gate) · status: OPEN · OWNER-PRIORITY
 Owner: "we may need another accessibility pass — we have light grey text on light purple now." **Root
 cause (the recurring backdrop theme):** T112's full-bleed FX backdrop replaced the near-black
