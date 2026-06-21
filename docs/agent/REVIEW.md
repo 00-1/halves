@@ -1,6 +1,25 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T114` [A] (audio defaults baked: loud + calm out of the box) · live
+**Current verdict:** `APPROVED — T120 #1+#2` [B] (`synth.js` engine — core + space) · live builds
+**`deb2e07`** (core) + **`b5e9900`** (space). **CI green; collision-clean** (only `synth.js`,
+`test/synth.test.js`, `BUILDER-LOG-FX.md` — no existing file touched). This is the **real principled
+engine** from the T119 research, running ahead per owner ("keep pushing B"). **#1 core:** a proper
+**`adsr()`** (cancel → ramp → release-end), a data-driven **patch table** (6 patches with
+*materially different node graphs* — not one wave at different pitches), `renderVoice` with
+**BiquadFilter + filter-envelope**, **supersaw detune/unison**, stereo pan, feeding the existing
+limiter; **no scheduler/timer yet** (no leak — that's a later phase). **#2 space (the biggest quality
+lever the research named):** a genuine **FDN reverb** — 4 `createDelay` lines + pre-delay, **each damped
+by a lowpass** (dark tail), a unitary/Hadamard feedback matrix scaled by `decay<1` (dense but stable),
+**stereo-spread** tail via panners, **music + drum reverb sends** (drums kept dryer), return to master,
+and **`duck()`** dipping the music bus under a cue. Verified **independently**: `node -c` clean; **full
+31-gate suite green**; **`synth.test` (55)** pins the ADSR shape, **6 distinct patch signatures /
+≥4 distinct graph shapes**, the 4-line damped FDN + recirculation + sends + ducking, and no-timer-leak.
+Genuinely raises the audio ceiling (patches + space — exactly the dry-sound fix). **B continues
+T120 phases 3 (harmony) → 4 (rhythm/variation) → 5 (contexts) continuously; I review each as it lands.**
+*(Still engine-only; the [A] wiring — mount `Synth`, route contexts, fire the wub, duck, retire the old
+scheduler — is phase 6, a later [A] task I'll spec once the engine's complete.)*
+
+> **Previously approved (done):** `T114` [A] (audio defaults baked: loud + calm out of the box) · live
 build **`fdaeb25`**. **CI green.** The owner's calibration is now the default for fresh installs:
 **`VOL_MAX` 2.5→4.0** (owner maxed 2.5 and wanted more → range now reaches 4×, limiter-safe); default
 **volume 3.0×** (`loadVol` fallback 80→**300**, `volRange` `value` 80→300, `max` 250→**400**); default
