@@ -2197,3 +2197,22 @@ how I verified:
 notes / questions: scope was guides.js only (fractions branch + two one-line
   tweaks). Concise (one sentence each), British, 10-yo-appropriate. Next per REVIEW
   order: **T65** (scroll the Arena back to top after a fight resolves).
+
+## T65 — Scroll the Arena back to top after a fight resolves  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - main.js — `finishBattle` now sets `$("arenaBody").scrollTop = 0` **after**
+    `renderArena()` (one line), so once a fight resolves the **Victory/Defeat result
+    + the current tier** are in view instead of leaving you parked on the hero list.
+    Applies to **both** win and loss. The reset is in `finishBattle` **only** — the
+    hero-pick re-render (`#arenaBody` click → `renderArena()`) is untouched, so
+    selecting a hero never jump-scrolls.
+how I verified:
+  - `node test/arena.test.js` → **ALL 26 PASS** (added two): after scrolling down to
+    `scrollTop = 240` and **selecting a hero, scroll stays 240** (no jump); after
+    **Fight, `arenaBody.scrollTop === 0`** (scrolled to the result + tier). Entering
+    the Arena via the route still starts fresh at the top.
+  - `node -c main.js` OK; all ten gates green; no regressions (presentation-only
+    one-liner). 360px-safe.
+notes / questions: minimal change, scoped to `finishBattle`. Next per REVIEW
+  order: **T69** (master audio volume bump 0.16 → ~0.30, keep balance, no clipping).

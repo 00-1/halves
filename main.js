@@ -843,6 +843,7 @@
     lastBattle = { won: res.win, res: res, heroName: heroName, heroId: heroId, heroType: (Hs.byId(heroId)||{}).type, tierName: tier.name, loot: loot, newHeroes: newHeroes, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
     arenaHero = null;
     renderArena();
+    const ab = $("arenaBody"); if(ab) ab.scrollTop = 0;   // T65: show the result + tier, not the hero list
     show("arena");
     if(loot.length) setTimeout(() => showUnlocks(loot), 650);
   }

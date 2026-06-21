@@ -138,11 +138,15 @@ ok(E.canAttempt(2, { "tier:1": 1 }) === true, "tier 2 attemptable once tier 1 cl
   // pick the first hero card, then Fight
   const heroId = (els.arenaBody._html.match(/data-hero="([^"]+)"/) || [])[1];
   ok(!!heroId, "an unlocked hero card is offered");
+  // (T65) scroll down, then pick a hero — the pick re-render must NOT jump scroll
+  els.arenaBody.scrollTop = 240;
   (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
+  ok(els.arenaBody.scrollTop === 240, "selecting a hero keeps the current scroll (no jump)");
   const gameActiveBefore = els.game.classList.contains("active");
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
   ok(els.game.classList.contains("active") === false && gameActiveBefore === false, "Fight never activates the game screen (no question round)");
   ok(els.arena.classList.contains("active"), "after Fight, still on the Arena screen");
+  ok(els.arenaBody.scrollTop === 0, "after a fight the Arena scrolls back to the top (T65)");
   ok(/Victory!/.test(els.arenaBody._html), "instant Victory shown");
   ok(JSON.parse(store["halves.collected"])["tier:1"], "win granted tier:1 marker");
 })();
