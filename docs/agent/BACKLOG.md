@@ -1826,3 +1826,15 @@ rank in one round. Babysitter reviewed retroactively: a genuine **fix** (ranks a
 old exact-match needed playing worse to backfill + could skip the `rank:darkwizard`/`archmage`
 hero unlocks). Verified: rankIndex 10 → 11 ranks, rankIndex 2 → 3; additive, migration-safe,
 no Arena-calibration impact (full-drill-set ceiling unchanged). All 16 gates green. Ledger record.
+
+### T77 — (UNPLANNED, owner-prompted Builder directly) Drop "Play again" from results · status: DONE
+Owner prompted the Builder directly (outside this queue). `74ac75e`: removed the results-
+screen `#againBtn` ("Play again") + its click wiring; only "Back" (`#menuBtn`, now a solid
+primary) remains. Babysitter reviewed retroactively: `node -c` clean, **no dangling
+references** to `againBtn` anywhere (no test/handler refs); replay still reachable via Best
+Times. Safe; no regressions. Ledger record.
+
+---
+
+> **Future ideas** the owner wants captured but **not yet queued** live in
+> `docs/agent/IDEAS.md` (a parking lot — NOT tasks; the Builder never builds from it).
