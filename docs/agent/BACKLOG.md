@@ -2326,7 +2326,7 @@ backdrop — "should either fade to transparent (if possible) or be light purple
   (keep `tech-tree.test`'s scroll-toggle check; assert the fade no longer uses the opaque `--bg` overlay
   / uses a mask). (Babysitter: confirm on the live build the fade blends into the backdrop, not black.)
 
-### T117 — [A] Replace ALL chrome emoji with house generative pixel icons · status: OPEN · OWNER-PRIORITY
+### T117 — [A] Replace ALL chrome emoji with house generative pixel icons · status: DONE (`3e72581`)
 Owner: "do a pass where we replace all the emojis we're using with our own icons, in the style of our
 existing generative icons … padlock, audio, settings cog, coin, calendar … do a pass to pick up
 everything." Build the missing icons in the **existing procedural pixel-icon style** (the `glyphs.js`

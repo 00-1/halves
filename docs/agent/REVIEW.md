@@ -1,6 +1,24 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T120 #1+#2+#3` [B] (`synth.js` engine — core + space + harmony) · live
+**Current verdict:** `APPROVED — T117` [A] (all chrome emoji → house generative pixel icons) · live
+build **`3e72581`**. **CI green.** New A-owned **`icons.js`** (`window.Icons`): 9×9 hand-pixelled
+bitmaps rendered as **1-bit SVG `mask-image`s** so each icon **inherits its context colour** via
+`currentColor` (gold coin, muted lock, mint check…) — on-brand, no image assets, no-build. `span(name)`
+emits a **decorative `aria-hidden`** `.px-ic` span; `installCSS()` injects a mask rule per icon at boot;
+a safe `ic()` helper no-ops if `icons.js` is absent. Covers the full swept set (lock/soundOn/soundOff/
+cog/coin/calendar/swords/flag/map/star/…/backspace/close/check/play). **a11y/behaviour preserved:**
+node-state badges still map **distinct icons per state** (locked=lock · unlocked=play · mastered=star ·
+done=check), the Sound/Settings/Fullscreen buttons keep their `aria-label`, the numpad **⌫→backspace
+icon** keeps `data-k="back"`. Verified **independently**: my own emoji sweep of every shipped file →
+**0 targeted chrome emoji remain** (only `▾` left = the allow-listed T116 scroll-cue); the **`→`
+answer/flow arrows + hint `↑`/`↓` are untouched** (content, not chrome); `node -c` clean; **full 32-gate
+suite green** incl. the new **`icons.test` (47)** (API + each icon renders a non-empty SVG mask + the
+no-emoji-remains sweep + the content-arrow allow-list) and `cache-bust` updated (icons.js versioned).
+All **[A]-owned files** (icons.js is UI chrome — A's domain; no collision with B's engines). T117 → DONE.
+*(Owner: the padlock/speaker/cog/coin/calendar etc. are now house pixel icons; eyeball they read clearly
+on the Poco X3.)*
+
+> **Previously approved (done):** `T120 #1+#2+#3` [B] (`synth.js` engine — core + space + harmony) · live
 builds `deb2e07` (core) + `b5e9900` (space) + **`04756b8`** (harmony). **#3 harmony:** `MODES` are
 musically correct (`lydian` ♯4, `phrygian` ♭2, `dorian` ♮6 vs `minor` ♭6), **grouped by mood**
 (bright/calm/dark for context selection); octave-aware `degToMidi`, diatonic `chordMidi` triads, chord
@@ -752,15 +770,14 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T117`** [A] (**`T114` DONE — audio defaults baked; `T118`/`T116`/`T115`/`T113`/
-  `T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**). *(Read `NEXT.md` fresh before starting
-  — canonical.)* **`T117`** — replace ALL chrome emoji with **house generative pixel icons** (padlock/
-  speaker/cog/coin/calendar + the full swept set per the audit; KEEP the `→` answer-arrows + hint
-  `↑/↓`; icons `aria-hidden`, controls keep `aria-label`, node-state badges keep state; new gate: no
-  targeted emoji remain). Full DoD `T117`. **Then → `T121`** (tree scroll-fade: mask content to reveal
-  the purple backdrop, not a black band — owner) → **`T101`** (Start delay) → **`T102`/`T103`** (Android
+- **Builder A — next: `T121`** [A] (**`T117` DONE — emoji→pixel icons; `T114`/`T118`/`T116`/`T115`/
+  `T113`/`T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**). *(Read `NEXT.md` fresh before
+  starting — canonical.)* **`T121`** — tree scroll-fade reads black over the purple FX backdrop; **mask
+  the tree content to fade to transparent** (reveal the backdrop), tied to `can-scroll` state — not the
+  `--bg` overlay. Full DoD `T121`. **Then → `T101`** (Start delay) → **`T102`/`T103`** (Android
   PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**. *(The deeper
-  principled audio rebuild is the **B** track — `T120` synth engine — below.)*
+  principled audio rebuild is the **B** track — `T120` synth engine — below; its **[A] wiring** slots in
+  once the engine's complete.)*
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):

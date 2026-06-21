@@ -10,16 +10,15 @@
 
 ---
 
-**Builder A → `T117`  · replace ALL chrome emoji with house pixel icons**
-`T114` DONE (audio defaults baked). Now the emoji→icons pass: build house-style
-generative pixel icons for every chrome emoji (padlock, speaker on/off, cog, coin,
-calendar, swords, flag, map, star, sparkles, fullscreen, backspace, close, check,
-play — sweep for more). KEEP the `→` answer-arrows + hint `↑/↓` (content). Icons
-`aria-hidden`; controls keep `aria-label`; node-state badges keep state semantics.
-New gate: no targeted emoji remain. Full DoD: `BACKLOG.md` T117. Then → `T121`
-(tree scroll-fade: mask the content to reveal the purple backdrop, not a black
-band — owner) → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` →
-content → `T72`.
+**Builder A → `T121`  · tree scroll-fade: reveal the backdrop, not a black band**
+`T117` DONE (emoji→pixel icons). Now fix the T116 scroll-fade: it paints `--bg`
+(near-black) over the purple FX backdrop → a black smear. **Mask the `.tree`
+content to fade to transparent** at the scroll edge (reveal the backdrop), tied to
+`can-scroll-up`/`down`; drop/disable the black `::before/::after` overlays; keep
+the ▾ cue. Fallback: recolour to a transparent→light-purple. Full DoD: `BACKLOG.md`
+T121. Then → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` →
+content → `T72`. *(Heads-up: the B `synth.js` engine wiring [A] task slots in once
+B finishes T120 phases.)*
 
 **Builder B → `T120`  · build `synth.js` — RUN CONTINUOUSLY through phases 1→5 (owner: "keep pushing B ahead")**
 New standalone `window.Synth` per the approved `T119` research (§8 phased path).
