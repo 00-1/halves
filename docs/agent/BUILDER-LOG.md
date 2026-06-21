@@ -4526,3 +4526,21 @@ notes / questions: **babysitter (browser):** Start (incl. fullscreen) should fee
   Node-only gate can't hear "no music" — B's T150 Playwright harness + an audio-start assert would catch
   this class, like it caught T149's invisible canvas.) Next per `NEXT.md`: `T124` (done) → `T152[A]`
   (blocked on B's T152[B] small-particle engine) → Android.
+
+## (status note) — [A] queue cleared through T101; T152[A] blocked, T102 is next (fresh-budget handoff)
+All currently-actionable [A] tasks are DONE + on `main` + approved/browser-verified: the audio/FX/menu/a11y/
+perf block (T149 celebration-canvas-out-of-modal, T143 audio menu + Music/SFX volumes, T140 12-style picker,
+T146 declutter, T147 graphics section, T148 SFX range, T142 backdrop, T137 tester, T123 contrast, T124
+fractions, T144/T145 pills, T128/T129/T132 music swap, T135 volume, T131 golden gates, T101 jank-defer + its
+music-start FIX `9d6175b`).
+- **`T152[A]` is BLOCKED** on B's `T152[B]` (small-particle engine option), which sits behind B's `T151`
+  (changes-requested — `ambient` still diverges) + `T150` in B's queue. When `T152[B]` lands: at each
+  `fxCelebrate*` call site, replace the fixed `{x:0.5,y:0.55}` with the SOURCE element's normalized centre
+  via `getBoundingClientRect()` (inventory→toast, run→rank badge, mastery→topic node, arena-win→enemy
+  portrait), passing the existing rarity/rank/topic palette + the small-size option (BACKLOG T152 table).
+- **`T102` (Android PWA+TWA) is the next UNBLOCKED task** — a substantial foundation piece deliberately left
+  for a fresh budget (a service worker on a live app is a footgun: it must offline-cache the versioned
+  `?v=<sha>` assets BUT keep `build.json` network-first so the T54 update flow still works; plus maskable
+  manifest icons need real no-build assets created from the procedural mark; plus a Bubblewrap TWA project +
+  `/.well-known/assetlinks.json` + documented AAB side-load steps). Starting it half-way risks a stale-cache
+  live-site regression, so it's handed off intact rather than rushed.
