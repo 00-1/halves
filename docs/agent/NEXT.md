@@ -11,9 +11,9 @@
 ---
 
 **Builder A → `T128`  · LIVE BUGS: music swap (per-screen) · no wub · no celebration**
-`T129` DONE (switcher landed — it proved the engine swap is distinct but lags to a phrase boundary; the
-fix for the lag is **[B] T132**, in flight — wire `{now:true}` from the switcher + per-screen routing the
-moment T132 lands; **don't block on it**, do T128's other parts now). **T128 — VERIFY IN A REAL BROWSER
+`T129` DONE (switcher landed). **[B] `T132` immediate-swap lever has now LANDED (`995cd28`):
+`Synth.setContext(name,{now:true})` swaps the generator in ≤1 step.** Wire `{now:true}` into the T129
+switcher AND per-screen routing so a screen change / style pick swaps **instantly**. **T128 — VERIFY IN A REAL BROWSER
 (gates pass while these are broken).** Owner: in topics/arena the music is the SAME as menu; no wub on
 victory; no celebration particles at all. **(1) Music:** route each screen through the engine's
 **distinct built-in contexts** — `Synth.setContext("solve"/"menu"/"arena"/"event")` (the same
@@ -28,18 +28,12 @@ Then → `T131` (quick: register golden-fx/golden-synth gates in `pages.yml`) �
 floor) → `T124` (fraction glyphs) → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` →
 content → `T72`.
 
-**Builder B → `T132`  · OFF STAND-BY — `synth.js` immediate-context-swap lever (`setContext(name,{now:true})`)**
-`T130` golden harness DONE (`ba919db`, CI green). **T132 — the engine gap A's T129 surfaced; it's the
-true root of the owner's "music never changes".** The scheduler adopts `M.spec = M.want` **only at a
-phrase boundary** (`synth.js:395`; the immediate path fires only on first-ever music, `!M.spec`), so a
-deliberate `setContext` lags up to ~one phrase (~8–11s). Add **`Synth.setContext(name,{now:true})`** (and/
-or `Synth.swapNow()`): when `now`, set `M.want` then **force `M.spec = M.want` now** + re-align the phrase
-counter (reset `M.step` to a bar/phrase start) so the new context takes effect on the **next scheduled
-step** (≤1 step, not ≤1 phrase) — **no click/dropout** (respect lookahead; let scheduled notes finish,
-switch the generator now). Default (no `now`) behaviour unchanged. **Add a golden/unit assertion** (extend
-`test/golden-synth.test.js` or `synth.test.js`) that the next step after a `{now:true}` switch already
-matches the target context + differs from the prior. Full DoD: `BACKLOG.md` T132. **B-owned files only**
-(`synth.js` + tests + `BUILDER-LOG-FX.md`); never touch existing Halves files; never push `claude/agent`.
+**Builder B → STAND BY (engine reactive-only).** `T132` immediate-swap lever DONE (`995cd28`, CI green —
+`setContext(name,{now:true})`/`swapNow()`, ≤1-step swap, default preserved, golden scores unchanged).
+`T130` golden harness DONE (`ba919db`). Nothing queued. Hold until A's T128 surfaces another real
+**engine** gap (e.g. the wub LFO can't wobble in a one-shot `play()`, or FXGL needs an engine-side
+single-canvas composite for the celebration 2nd-context bug) — I'll file it and point this line at it.
+**B-owned files only**; never touch existing Halves files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

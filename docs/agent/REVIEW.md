@@ -1,29 +1,40 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T129` [A] (Settings MUSIC SWITCHER — sample + test-switch each distinct
-context) · live build **`8cfa11d`**. **CI green; collision-clean** (all [A]-owned: `index.html`,
-`styles.css`, `main.js`, `test/synth-wiring.test.js`, `BUILDER-LOG.md`). The owner's requested sampler IS
-built — a labelled a11y button group (Menu·Solve·Arena·Event, `role="group"`/`aria-labelledby`/
-`aria-pressed`, **≥44px** `min-height:44px` grid, focus-visible, pixel-squared) beside Volume/Tempo. The
-crux: `synthSwitchContext(name)` drives the engine's **distinct built-in context** via
-**`Synth.setContext(name)`** (its own progression/patches/reverb incl. Arena's **wub** bass — NOT the flat
-`musicSpec()` default), with the **T113 tempo** applied on top; a transient `musicPreview` holds the pick
-in Settings and `show()` clears it on leave → **per-screen music resumes**; the tempo slider re-applies
-the active preview. Guarded no-op without Synth; honours mute. Verified **independently**: `node -c`
-clean; the 3 new ids present; **`synth-wiring.test` 25→45** proves each pick calls `setContext` for its
-context **live**, the **Event** pick drives the event harmony (**lydian**, its own progression — not a
-default), each applies its **own reverb**, and leaving Settings reverts to menu; **full 36-gate suite
-green**. T129 → DONE.
-**⚠ The switcher did its diagnostic job — it exposed the T128(1) engine gap exactly as designed:** styles
-ARE distinct, but the **swap is not immediate** — `synth.js` adopts `M.spec = M.want` only at a **phrase
-boundary** (`synth.js:395`; the immediate path only fires on first-ever music, and `M` is private), so a
-deliberate switch lags **up to ~one phrase (~8–11s)** — which reads to the owner as "music never
-changes." A **cannot** fix this (synth.js is [B]-owned) and **correctly escalated**. **→ filed [B] `T132`:
-an immediate-swap lever `Synth.setContext(name,{now:true})` / `swapNow()` (reset `M.step`/adopt `M.want`
-now); A will wire `{now:true}` from the switcher + per-screen routing the moment it lands.** This is the
-real root of "music never changes," so **B comes OFF stand-by for `T132` now** (it preempts — the engine
-gap A's parallel work surfaced). *(Owner: the switcher works + each style is genuinely different; it'll
-feel instant once T132's lever lands — right now a pick takes effect at the next phrase.)*
+**Current verdict:** `APPROVED — T132` [B] (`synth.js` immediate-context-swap lever) · live build
+**`995cd28`**. **CI green; collision-clean** (B-owned only: `synth.js`, `test/synth.test.js`,
+`BUILDER-LOG-FX.md`). Fixes the true root of the owner's "music never changes" that T129's switcher
+exposed: the scheduler adopted `M.spec = M.want` only at a **phrase boundary** (~8–11s lag). Now
+**`Synth.setContext(name, {now:true})`** (and a standalone **`Synth.swapNow()`**) force `M.spec = M.want`
+immediately, **re-align to a downbeat** (`M.step`/`M.phrase`→0), reset melodic state + reseed → the new
+context's harmony/patches/reverb take effect on the **next scheduled step (≤1 step)**, not the next
+phrase. **No click/dropout** (already-scheduled lookahead notes finish; only the *generator* switches);
+**the default no-`now` phrase-boundary swap is untouched** (good musical behaviour preserved). Also adds
+`Synth.musicState()` introspection (for tests + the [A] wire). Verified **independently**: `node -c`
+clean; **`synth.test` 111→120** — and the new assertions genuinely **distinguish ≤1-step from ≤1-phrase**:
+the *default* test confirms a mid-phrase `setContext` stays on the old mode (`dorian`) and only flips
+(`aeolian`) after crossing the boundary, while the `{now:true}` test flips mode/tempo + `step===0`
+**immediately** and the very next scheduled step plays from the new generator; `swapNow()` adopts a
+pending want; `{now}` lands exactly the target context's normalized spec. **`golden-synth` still passes
+10/10 unchanged** → the per-context score goldens prove the default path wasn't perturbed. T132 → DONE.
+**→ unblocks [A] `T128`: wire `{now:true}` from the T129 switcher AND per-screen routing for an instant
+swap on every screen change.** B → STAND BY (engine reactive-only). *(Owner: the engine can now swap
+music the instant you change screens / pick a style — A wires it next in T128.)*
+
+> **Previously approved (done):** `T129` [A] (Settings MUSIC SWITCHER — sample + test-switch each distinct
+> context) · live build **`8cfa11d`**. **CI green; collision-clean** (all [A]-owned: `index.html`,
+> `styles.css`, `main.js`, `test/synth-wiring.test.js`, `BUILDER-LOG.md`). The owner's requested sampler IS
+> built — a labelled a11y button group (Menu·Solve·Arena·Event, `role="group"`/`aria-labelledby`/
+> `aria-pressed`, **≥44px** `min-height:44px` grid, focus-visible, pixel-squared) beside Volume/Tempo. The
+> crux: `synthSwitchContext(name)` drives the engine's **distinct built-in context** via
+> **`Synth.setContext(name)`** (its own progression/patches/reverb incl. Arena's **wub** bass — NOT the flat
+> `musicSpec()` default), with the **T113 tempo** applied on top; a transient `musicPreview` holds the pick
+> in Settings and `show()` clears it on leave → **per-screen music resumes**; the tempo slider re-applies
+> the active preview. Guarded no-op without Synth; honours mute. Verified **independently**: `node -c`
+> clean; the 3 new ids present; **`synth-wiring.test` 25→45** proves each pick calls `setContext` for its
+> context **live**, the **Event** pick drives the event harmony (**lydian**, its own progression — not a
+> default), each applies its **own reverb**, and leaving Settings reverts to menu; **full 36-gate suite
+> green**. T129 → DONE. *(The switcher did its diagnostic job — exposed the phrase-boundary swap lag, now
+> fixed by [B] T132's `{now:true}` lever above.)*
 
 > **Previously approved (done):** `T130` [B] (golden-snapshot render-regression harness — brickmap-style) ·
 > live build **`ba919db`**. **CI green; collision-clean** (only B-owned NEW files: `test/golden-util.js`,
@@ -941,22 +952,12 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T132` [B] — OFF STAND-BY (engine gap A's T129 surfaced; it preempts).** `T130`
-  golden harness DONE (`ba919db`). **`T132` — an immediate-context-swap lever in `synth.js`.** Today the
-  scheduler adopts `M.spec = M.want` **only at a phrase boundary** (`synth.js:395`; the immediate path
-  only fires on first-ever music, `!M.spec`), so a deliberate `setContext` lags up to ~one phrase
-  (~8–11s) — which the owner reads as "music never changes." Add **`Synth.setContext(name, { now: true })`**
-  (and/or a `Synth.swapNow()`): when `now`, **adopt the new spec immediately** — set `M.want` then force
-  `M.spec = M.want` and re-align the phrase counter (reset `M.step` to a bar/phrase start) so the new
-  context's harmony/patches/reverb take effect on the **next scheduled step**, not the next phrase, with
-  **no click/dropout** (respect the existing lookahead; don't tear down live voices mid-note — let
-  scheduled notes finish, switch the *generator* now). Keep the default (no `now`) behaviour unchanged
-  (musical phrase-boundary swap). **Add a golden/unit assertion** (extend `test/golden-synth.test.js` or
-  `synth.test.js`): with `{now:true}` the very next scheduled step already reflects the new context's
-  score (distinct from the old), i.e. the swap is ≤1 step not ≤1 phrase. **B-owned files ONLY** (`synth.js`
-  + its tests + `BUILDER-LOG-FX.md`); never touch existing Halves files; never push `claude/agent`. A wires
-  `{now:true}` from the T129 switcher + T128 per-screen routing once this lands. *(This is the true root
-  of the owner's "music never changes" — highest-value engine work right now.)*
+- **Builder B — next: STAND BY (engine reactive-only).** `T132` immediate-swap lever **DONE** (`995cd28`,
+  CI green — `setContext(name,{now:true})`/`swapNow()`, ≤1-step swap, default behaviour preserved, golden
+  scores unchanged). `T130` golden harness DONE. Nothing queued. Hold until A's T128 surfaces another real
+  **engine** gap (e.g. the wub LFO can't wobble in a one-shot `play()`, or FXGL needs an engine-side
+  single-canvas composite for the celebration 2nd-context bug) — I'll file it and point `NEXT.md` at it.
+  **B-owned files ONLY**; never touch existing Halves files; never push `claude/agent`.
   - **NOTE — the golden gates still need [A] registration:** `T130` added `test/golden-fx.test.js` +
     `test/golden-synth.test.js` but B couldn't wire them into `pages.yml` (collision rule). Filed
     **[A] `T131`** to register them as CI gates (same pattern as the fxgl/synth gate registration). Until

@@ -2517,9 +2517,18 @@ T128(1): the swap is distinct but lags to a phrase boundary (synth.js adopts `M.
 (`setContext(name,{now:true})`); A wires `{now:true}` from the switcher + per-screen routing once it
 lands.** *(Owner: each style is genuinely different now; it'll feel instant once T132 lands.)*
 
-### T132 — [B] `synth.js` immediate-context-swap lever (`setContext(name,{now:true})` / `swapNow()`) · status: OPEN · OWNER-IMPORTANT
-Surfaced by T129's switcher: styles ARE distinct but the scheduler adopts `M.spec = M.want` **only at a
-phrase boundary** (`synth.js:395`; the immediate path fires only on first-ever music, `!M.spec`), so a
+### T132 — [B] `synth.js` immediate-context-swap lever (`setContext(name,{now:true})` / `swapNow()`) · status: DONE (`995cd28`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). `Synth.setContext(name,{now:true})` + `Synth.swapNow()` force
+`M.spec = M.want` immediately, re-align to a downbeat (`M.step`/`M.phrase`→0), reset melodic state +
+reseed → new context takes effect on the next scheduled step (≤1 step), no click/dropout (lookahead notes
+finish, only the generator switches). Default no-`now` phrase-boundary swap unchanged. Added
+`Synth.musicState()`. Babysitter verified independently: `node -c` clean; `synth.test` 111→120 with
+assertions that **genuinely distinguish ≤1-step from ≤1-phrase** (default test: mid-phrase stays old mode,
+flips only after the boundary; `{now}` test: flips mode/tempo + `step===0` immediately, next step plays
+from new generator); `golden-synth` 10/10 **unchanged** → default path not perturbed. **Unblocks [A] T128:
+wire `{now:true}` from the T129 switcher + per-screen routing.** *(Original spec below.)*
+- Surfaced by T129's switcher: styles ARE distinct but the scheduler adopts `M.spec = M.want` **only at a
+  phrase boundary** (`synth.js:395`; the immediate path fires only on first-ever music, `!M.spec`), so a
 deliberate `setContext` lags up to ~one phrase (~8–11s) — which the owner reads as **"music never
 changes."** This is the true root of that complaint; A wired T129 correctly but cannot touch synth.js
 (B-owned), so the fix is here.
