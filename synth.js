@@ -95,7 +95,7 @@
   // ---- the voice renderer (impure: builds nodes; pure-structured) ------------
   // Render one patch voice at (freq, t0) for `dur` seconds into `dest`. Returns the
   // release-end time. The graph: osc(s) → [filter(+env,+LFO)] → amp(ADSR) → [pan] → dest.
-  function renderVoice(ctx, dest, patch, freq, t0, dur){
+  function renderVoice(ctx, dest, patch, freq, t0, dur, onVoice){
     const amp = ctx.createGain();
     // optional stereo placement (width arrives properly in the Space increment)
     if(patch.pan != null && ctx.createStereoPanner){
@@ -164,6 +164,7 @@
     if(patch.amp){ env.a = patch.amp.a; env.d = patch.amp.d; env.s = patch.amp.s; env.r = patch.amp.r; }
     const rel = adsr(amp.gain, t0, dur, env);
     for(const o of oscs){ try{ o.start(t0); o.stop(rel + 0.05); }catch(e){} }
+    if(onVoice) onVoice(amp.gain, rel);   // hand the amp param back so an immediate swap can release it
     return rel;
   }
 
@@ -346,7 +347,7 @@
       patches: Object.assign({ bass: "bass", pad: "pad", lead: "lead" }, spec.patches),
       kick:  spec.kick  || euclid(spec.kickK == null ? 4 : spec.kickK, 16),
       hat:   spec.hat   || euclid(spec.hatK  == null ? 8 : spec.hatK,  16),
-      snare: spec.snare || rotate(euclid(2, 16), 4),
+      snare: spec.snare || rotate(euclid(spec.snareK == null ? 2 : spec.snareK, 16), 4),
       leadEuclid: spec.leadEuclid || euclid(spec.leadK == null ? 7 : spec.leadK, 16)
     };
   }
@@ -379,11 +380,28 @@
   // schedules precise times against ctx.currentTime, drops missed steps on a stall
   // (anti-burst), idles on stop. Drives ALL voices — never a timer per part.
   const TICK_MS = 25, LOOKAHEAD = 0.1, MAX_STEPS_PER_TICK = 8;
-  const M = { timer:null, spec:null, want:null, step:0, next:0, rnd:null, phrase:0, st:{ deg:0 }, intensity:0 };
+  const M = { timer:null, spec:null, want:null, step:0, next:0, rnd:null, phrase:0, st:{ deg:0 }, intensity:0, active:[] };
   function reseedMusic(){ M.rnd = mulberry32(phraseSeed(M.spec.seed | 0, M.phrase)); }
+  // Render a scheduled music voice on the music bus, registering its amp param so an
+  // immediate swap can release it (drums are short → not tracked).
   function playEvent(ev, when){
-    if(ev.role === "drum"){ if(!E.muted) renderDrum(E.ctx, E.drum, ev.piece, when, E.noiseBuf); }
-    else play(ev.patch, when, { midi: ev.midi, dur: ev.dur, bus: "music" });
+    if(E.muted) return;
+    if(ev.role === "drum"){ renderDrum(E.ctx, E.drum, ev.piece, when, E.noiseBuf); return; }
+    const patch = (typeof ev.patch === "string") ? PATCHES[ev.patch] : ev.patch;
+    if(!patch) return;
+    renderVoice(E.ctx, E.music, patch, hz(ev.midi), when, ev.dur, function(g, rel){ if(M.active.length < 128) M.active.push({ g: g, until: rel }); });
+  }
+  // Immediate-swap cleanup (T134): quickly fade the currently-sounding music voices
+  // and tame the multi-second FDN-reverb tail so a switch CUTS IN CLEANLY instead of
+  // the old pad/tail ringing over the new context. Only the immediate path calls this;
+  // the default phrase-boundary swap keeps its natural musical ring.
+  function releaseMusic(){
+    if(!E.ctx) return;
+    const now = E.ctx.currentTime;
+    for(const v of M.active){ try{ if(v.g.cancelAndHoldAtTime) v.g.cancelAndHoldAtTime(now); else v.g.cancelScheduledValues(now); v.g.setTargetAtTime(0.0001, now, 0.025); }catch(e){} }   // ~75ms release
+    M.active = [];
+    if(E.music){ const g = E.music.gain; try{ g.cancelScheduledValues(now); g.setValueAtTime(1, now); g.setTargetAtTime(0.0001, now, 0.015); g.setTargetAtTime(1, now + 0.06, 0.03); }catch(e){} }   // brief bed dip→in
+    if(E.reverb && E.reverb.output){ const r = E.reverb.output.gain; try{ r.cancelScheduledValues(now); r.setValueAtTime(1, now); r.setTargetAtTime(0.0001, now, 0.02); r.setTargetAtTime(1, now + 0.13, 0.06); }catch(e){} }   // kill the carry-over tail
   }
   function musicTick(){
     if(!E.ctx) return;
@@ -398,6 +416,7 @@
       M.next += (60 / M.spec.tempo) / 4;                  // one 16th note
       M.step++; sched++;
     }
+    if(M.active.length) M.active = M.active.filter(v => v.until > now - 0.3);   // prune finished voices
   }
   function startScheduler(){
     if(M.timer || !E.ready || E.muted || !M.want || typeof setInterval === "undefined") return;
@@ -420,18 +439,23 @@
   // patches · kit · reverb) so solve is CALM and Arena DRIVES *by construction*.
   // The calm-vs-energetic invariants are enforced as tests.
   function hashStr(s){ let h = 2166136261 >>> 0; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  // The four contexts are deliberately spread across EVERY audible lever — register
+  // (root/leadOct), instrumentation (lead patch + drumless/kit), tempo, density and
+  // mode — not just mode, so they read as clearly different songs (T134). The firm
+  // calm-solve ↔ energetic-arena rule still holds.
   const CONTEXTS = {
-    // CALM: slow, sparse, consonant, soft, wet — Dorian/pentatonic, soft pad + pluck
-    solve: { tempo: 80,  mode: "dorian",   progression: [0, 5, 3, 4], density: 0.26, reverb: 0.36,
-             kickK: 2, hatK: 4, leadK: 5, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "pluck" } },
-    menu:  { tempo: 88,  mode: "ionian",   progression: [0, 3, 4, 0], density: 0.30, reverb: 0.30,
-             kickK: 3, hatK: 6, leadK: 6, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "bell" } },
-    // BRIGHT: floating Lydian for the event/wonder context
-    event: { tempo: 100, mode: "lydian",   progression: [0, 4, 5, 3], density: 0.42, reverb: 0.30,
-             kickK: 4, hatK: 8, leadK: 7, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "bell" } },
-    // ENERGETIC: fast, dense, dark Aeolian, driving Euclid kit + the WUB bass, dry
-    arena: { tempo: 120, mode: "aeolian",  progression: [0, 5, 6, 4], density: 0.60, reverb: 0.16,
-             kickK: 4, hatK: 12, leadK: 9, leadOct: 1, patches: { pad: "pad", bass: "wub", lead: "lead" } }
+    // CALM & INTIMATE: slow, low, DRUMLESS, sparse, wet — a soft Dorian pad + pluck
+    solve: { tempo: 72,  mode: "dorian",   root: 50, progression: [0, 5, 3, 4], density: 0.22, reverb: 0.42,
+             kickK: 0, hatK: 0, snareK: 0, leadK: 4, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "pluck" } },
+    // BRIGHT & WELCOMING: mid tempo, a high BELL lead, light kit, major (Ionian)
+    menu:  { tempo: 96,  mode: "ionian",   root: 60, progression: [0, 3, 4, 0], density: 0.34, reverb: 0.26,
+             kickK: 4, hatK: 6, snareK: 2, leadK: 6, leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "bell" } },
+    // FESTIVE & SPARKLY: fast, HIGH floating Lydian, dense, busy hats, a bright pluck
+    event: { tempo: 112, mode: "lydian",   root: 65, progression: [0, 4, 5, 3], density: 0.50, reverb: 0.30,
+             kickK: 4, hatK: 12, snareK: 3, leadK: 8, leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "pluck" } },
+    // ENERGETIC & DARK: fast, low, dense, dark Phrygian, full driving kit + the WUB bass, dry
+    arena: { tempo: 124, mode: "phrygian", root: 45, progression: [0, 5, 6, 4], density: 0.62, reverb: 0.16,
+             kickK: 6, hatK: 12, snareK: 2, leadK: 9, leadOct: 1, patches: { pad: "pad", bass: "wub", lead: "lead" } }
   };
   function setContext(name, opts){
     const c = CONTEXTS[name]; if(!c) return api;
@@ -448,6 +472,7 @@
   // *generator* switches now. The default (phrase-boundary) swap is left untouched.
   function swapNow(){
     if(!M.want) return api;
+    releaseMusic();                  // T134: cut the old voices + reverb tail so it doesn't overlap
     M.spec = M.want;
     M.step = 0; M.phrase = 0;        // re-align to a phrase start → enters on a downbeat
     M.st = { deg: 0 };
@@ -609,7 +634,7 @@
     // runtime API
     mount: mount, play: play, drum: drum, setReverb: setReverb, duck: duck,
     setMusic: setMusic, setContext: setContext, swapNow: swapNow, sting: sting, start: start, stop: stop, musicPlaying: musicPlaying, intensity: intensity,
-    musicState: function(){ return { spec: M.spec, want: M.want, step: M.step, phrase: M.phrase, playing: !!M.timer }; },   // introspection (tests / the [A] wire)
+    musicState: function(){ return { spec: M.spec, want: M.want, step: M.step, phrase: M.phrase, playing: !!M.timer, activeVoices: M.active.length }; },   // introspection (tests / the [A] wire)
     setMuted: setMuted, isMuted: isMuted, capabilities: capabilities, dispose: dispose,
     output: function(){ return E.master; },     // the [A] wire can re-route this into Sound's master
     // budget/data

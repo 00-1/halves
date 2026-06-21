@@ -6,6 +6,52 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T134 — clean immediate context-swap (no overlap) + audible distinctness ([B])
+
+**Status: DONE — handed off for review.** B-owned files only (`synth.js`,
+`test/synth.test.js`, `test/golden/synth_score_*.json`); **zero edits to any existing
+Halves file.** Off stand-by: owner live on the T129 switcher — *"sounds like the
+songs play over each other rather than switching, or they sound really similar."*
+Both real, both engine-side (the live wiring drives `Sy.setContext` + `Sy.swapNow`
+on my `CONTEXTS`, so these land).
+
+### (a) Clean swap — no layered overlap
+The T132 instant `swapNow()` reset the generator but left the old voices + the
+multi-second FDN-reverb tail ringing **over** the new context (and rapid taps piled
+tails up). Fix (immediate path only — the default phrase swap keeps its musical ring):
+- **Track the live music voices** (`renderVoice` now hands its amp param back; the
+  scheduler registers each on `M.active`, pruned as they end).
+- **`releaseMusic()`** on `swapNow()`: fast ~75ms release of every active voice
+  (`cancelAndHoldAtTime`→`setTargetAtTime`, no click), a brief music-bus fade-out→in,
+  and a dip of the **reverb output** to kill the carry-over tail — so a switch **cuts
+  in cleanly**.
+
+### (b) Audible distinctness
+`solve/menu/event` were too alike (shared pad+bass+pluck/bell, close tempo, differing
+only by mode). Reworked all four `CONTEXTS` to spread across **every** audible lever
+(register/instrumentation/tempo/density/kit), keeping calm-solve ↔ energetic-arena:
+- **solve** — 72 BPM, low (root 50) Dorian, **DRUMLESS**, sparse, wet, soft pad+pluck (intimate).
+- **menu** — 96 BPM, Ionian, a **high bell** lead, light kit (welcoming).
+- **event** — 112 BPM, **high** Lydian, dense, busy hats, bright pluck (festive/sparkly).
+- **arena** — 124 BPM, low **Phrygian** (darker), full driving kit + the **wub** bass, dry (energetic).
+- Added `snareK` to `normalizeMusic` (so solve can be fully drumless).
+
+### Verification
+`node -c` clean; `synth.test.js` **130** (+10): the immediate swap releases voices
+(`activeVoices→0`) + taps the reverb/bus fades; the **default swap does NOT** release
+early (ring intact); the four contexts differ on 4 distinct tempos / roots / modes,
+solve drumless, varied lead instrumentation. `golden-synth` scores **regenerated**
+(intentional content change) and **still mutually distinct**. All gates green.
+*(Headless proves the mechanism + distinctness; the owner's ear is the final check —
+flagged.)*
+
+### Hand-off to Builder A
+- No API change needed — the existing `setContext(name)` + `swapNow()` path now cuts
+  cleanly and the contexts are clearly distinct. (For a deliberate switch keep using
+  `swapNow()`/`{now:true}`; screen-driven music may use the default phrase swap.)
+
+---
+
 ## T133 — make the overlay CELEBRATION actually render on-device ([B], engine gap)
 
 **Status: DONE — handed off for review.** B-owned files only (`fxgl.js`,

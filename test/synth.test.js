@@ -390,7 +390,7 @@ function schedRun(){
   h.S.setContext("arena");
   ok(h.S.musicState().spec.mode === "dorian", "default setContext does NOT swap mid-phrase (≤1-phrase lag preserved)");
   h.run(100);   // cross the phrase boundary
-  ok(h.S.musicState().spec.mode === "aeolian", "default setContext adopts at the next phrase boundary (unchanged behaviour)");
+  ok(h.S.musicState().spec.mode === "phrygian", "default setContext adopts at the next phrase boundary (unchanged behaviour)");
   h.restore();
 })();
 // {now:true}: the generator switches IMMEDIATELY (≤1 step), re-aligned to a downbeat
@@ -400,7 +400,7 @@ function schedRun(){
   ok(h.S.musicState().spec.mode === "dorian", "solve playing mid-phrase (before the instant switch)");
   h.S.setContext("arena", { now: true });
   const st = h.S.musicState();
-  ok(st.spec.mode === "aeolian" && st.spec.tempo === 120 && st.step === 0,
+  ok(st.spec.mode === "phrygian" && st.spec.tempo === 124 && st.step === 0,
      "setContext(name,{now:true}) swaps the generator IMMEDIATELY — new mode/tempo, re-aligned to step 0 (≤1 step, not ≤1 phrase)");
   const before = h.oscs(); h.run(1);
   ok(h.oscs() > before, "the very next scheduled step plays from the new (arena) generator");
@@ -427,6 +427,38 @@ function schedRun(){
      "{now} adopts exactly the target context's spec (mode/tempo/density match arena)");
   h.restore();
 })();
+
+// =====================================================================
+// 13) T134 — clean immediate swap (no overlap) + audible distinctness
+// =====================================================================
+// (a) the immediate swap RELEASES the old voices + tames the reverb tail
+(function(){
+  const h = schedRun();
+  h.S.setContext("event"); h.S.start(); h.run(12);
+  ok(h.S.musicState().activeVoices > 0, "active music voices accumulate while playing");
+  const rv = h.S.buses().reverb.output.gain; const rvBefore = rv._calls.length;
+  h.S.setContext("solve", { now: true });
+  ok(h.S.musicState().activeVoices === 0, "an immediate swap RELEASES the old voices (no pile-up / overlap)");
+  ok(rv._calls.length > rvBefore, "the immediate swap tames the reverb carry-over tail");
+  ok(h.S.buses().music.gain._calls.filter(x => x[0] === "tgt").length >= 2, "the music bus is faded out→in across the swap (clean cut, no click)");
+  h.restore();
+})();
+// the default (phrase-boundary) swap does NOT release voices early (musical ring kept)
+(function(){
+  const h = schedRun();
+  h.S.setContext("event"); h.S.start(); h.run(12);
+  const va = h.S.musicState().activeVoices;
+  h.S.setContext("solve");
+  ok(h.S.musicState().activeVoices === va, "the default phrase-boundary swap does NOT release voices early (ring intact)");
+  h.restore();
+})();
+// (b) the four contexts differ across MULTIPLE audible levers, not just mode
+const CXS = ["solve", "menu", "event", "arena"].map(n => Synth.CONTEXTS[n]);
+ok(new Set(CXS.map(c => c.tempo)).size === 4, "all four contexts have distinct tempos (72/96/112/124)");
+ok(new Set(CXS.map(c => c.root)).size === 4, "all four sit in distinct registers (root)");
+ok(new Set(CXS.map(c => c.mode)).size === 4, "all four use distinct modes");
+ok(Synth.CONTEXTS.solve.kickK === 0 && Synth.CONTEXTS.solve.hatK === 0, "solve is DRUMLESS (an intimate calm bed) — a strong contrast vs the kit contexts");
+ok(new Set(CXS.map(c => c.patches.lead + "/" + (c.leadOct || 1))).size >= 3, "lead instrumentation/register varies across contexts");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
