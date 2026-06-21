@@ -3794,3 +3794,32 @@ notes / questions: **OWNER ear-check on the Poco X3:** (1) solves should now fee
   Next per the LOCKED sequence: **`T116`** (restore the tree scroll-cue) → `T117` (chrome emoji →
   pixel icons) → `T101`–`T103` → `T89`/`T90`. *(T114 — bake the calibrated volume/tempo — still waits
   on the owner's reported values; ideally now, since the music is final.)*
+
+## T116 — Restore the tree's scroll-affordance (the "more below" fade + cue)  [HANDOFF]
+commit: (this commit, on main) — [A] task. Owner: "we've lost the scrollable indicators — the gradient
+that shows the topic tree can be scrolled." Regression: the fade affordance was bound to the old list
+`.picker-wrap`; T96 (tree-only home) dropped the toggling JS, so `#modeTree` (which scrolls) had no
+affordance — now obvious since T112/T106 make the tree taller.
+changed:
+  - **index.html** — wrapped `#modeTree` in **`.picker-wrap` (`id="treeWrap"`)** + a **`.scroll-cue`**
+    (`▾`), **reusing the existing fade CSS** (no new pattern).
+  - **styles.css** — moved the home spacing to the wrapper: `.picker-wrap` `margin-top 16→12`,
+    `min-height 148→150`; `.tree` `margin-top 12→0` (it stays the `overflow-y:auto` scroller inside,
+    `min-height:150` kept so it can't be starved). The fade gradients / cue / `pointer-events:none` /
+    reduced-motion guard were already present and now apply to the tree.
+  - **main.js** — **`updateTreeScroll()`** toggles `can-scroll-up` (`scrollTop > 0`) /
+    `can-scroll-down` (`scrollTop + clientHeight < scrollHeight − 1`) from the live metrics. Called at
+    the end of **`renderTree()`** (content height changed) and wired to the tree's **`scroll`**
+    (passive) + **`resize`** / **`orientationchange`** / **`fullscreenchange`** (T112's fill-height /
+    fullscreen toggle changes `clientHeight`).
+  - **test/tech-tree.test.js** (now **33 checks**) — (h): `#modeTree` is wrapped with a cue;
+    `updateTreeScroll` toggles the classes; with content (400) overflowing the viewport (300) the
+    **bottom** fade/cue shows and the top is hidden; scrolling to the bottom flips it (top shows,
+    bottom clears); the fades are `pointer-events:none`; the cue honours reduced-motion.
+how I verified:
+  - **`node test/tech-tree.test.js` → ALL 33 PASSED**; `node -c` clean; **full 30-gate suite green**
+    (events `.tree` min-height + banner→tree order still hold; home-layout green).
+notes / questions: **eyeball:** when the tree overflows, a soft **bottom gradient + bobbing `▾`**
+  should say "more below," and a **top gradient** should appear once you scroll down; both vanish at
+  the ends; taps still hit nodes. Tracks re-render + resize/fullscreen. Next per the LOCKED sequence:
+  **`T117`** (replace chrome emoji with house pixel icons) → `T101`–`T103` → `T89`/`T90`.

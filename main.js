@@ -486,6 +486,17 @@
       if(m && cv) nodeIcon(m, cv);
     });
     renderTopicInfo();
+    updateTreeScroll();   // T116: content height changed → refresh the scroll-fade affordance
+  }
+  // T116 — show the "more below"/"more above" fade + cue only when the tree actually
+  // overflows, tracked from the live scroll metrics (re-wired to #modeTree after T96
+  // made the home tree-only; the old affordance was bound to the dropped list wrap).
+  function updateTreeScroll(){
+    const wrap = $("treeWrap"), tree = elModeTree; if(!wrap || !tree) return;
+    const up = tree.scrollTop > 0;
+    const down = tree.scrollTop + tree.clientHeight < tree.scrollHeight - 1;
+    wrap.classList.toggle("can-scroll-up", up);
+    wrap.classList.toggle("can-scroll-down", down);
   }
   // The single compact selected-topic row (T96): glyph · name · have/total · best
   // (or the unlock requirement if locked). Replaces the old big top mark/tag + the
@@ -599,6 +610,12 @@
     const t = e.target.closest(".tnode"); if(!t) return;
     selectMode(t.dataset.mode);
   });
+  // T116 — keep the tree's scroll-fade affordance in sync with real scroll state +
+  // any height change (T112's fill-height / fullscreen toggle changes clientHeight).
+  elModeTree.addEventListener("scroll", updateTreeScroll, { passive: true });
+  window.addEventListener("resize", updateTreeScroll);
+  window.addEventListener("orientationchange", updateTreeScroll);
+  ["fullscreenchange","webkitfullscreenchange"].forEach(ev => document.addEventListener(ev, updateTreeScroll));
 
   // ---- topic guides (T27): a short "how to beat it" panel per topic ----------
   function openGuide(m){

@@ -34,8 +34,13 @@
   <section id="start" class="screen">
     <!-- compact today's-event banner, front-and-centre at the very top (T91) -->
     <div class="event-banner hidden" id="eventBanner"></div>
-    <!-- the tech tree is the only home picker now; it takes the reclaimed space -->
-    <div class="tree" id="modeTree" aria-label="Topic tech tree"></div>
+    <!-- the tech tree is the only home picker now; it takes the reclaimed space.
+         T116: wrapped so the scroll-fade affordance (edge gradients + "more below"
+         cue) shows when the tree overflows. -->
+    <div class="picker-wrap" id="treeWrap">
+      <div class="tree" id="modeTree" aria-label="Topic tech tree"></div>
+      <span class="scroll-cue" aria-hidden="true">▾</span>
+    </div>
     <!-- one compact selected-topic row: glyph · name · have/total · best (T96) -->
     <div class="topic-info" id="topicInfo"></div>
     <div class="readouts">

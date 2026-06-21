@@ -82,8 +82,8 @@ body{
 .eb-play:active{transform:scale(.96)}
 /* scrollable, grouped mode picker (wrapper carries the scroll-affordance fades).
    T91: a real min-height (~3 rows) so the banner can never starve it to nothing. */
-.picker-wrap{position:relative;width:100%;max-width:360px;margin-top:16px;
-  flex:1 1 auto;min-height:148px;display:flex;flex-direction:column}
+.picker-wrap{position:relative;width:100%;max-width:360px;margin-top:12px;
+  flex:1 1 auto;min-height:150px;display:flex;flex-direction:column}
 .picker{width:100%;flex:1 1 auto;min-height:0;overflow-y:auto;
   display:flex;flex-direction:column;gap:14px;text-align:left;padding:2px}
 /* T84 — List ⇆ Tree view toggle + the data-driven tech tree (360px-safe). */
@@ -91,7 +91,7 @@ body{
 /* T106 — tech-tree v2: rows fill the width (1–3 PARTS abreast), bigger nodes, and
    two directional, state-coloured connectors (vertical amber CHAIN between topics,
    horizontal purple MASTERY between parts). */
-.tree{width:100%;max-width:360px;margin-top:12px;flex:1 1 auto;min-height:150px;overflow-y:auto;display:flex;
+.tree{width:100%;max-width:360px;margin-top:0;flex:1 1 auto;min-height:150px;overflow-y:auto;display:flex;
   flex-direction:column;align-items:center;gap:0;padding:4px 2px}
 .tree-row{display:flex;align-items:center;justify-content:center;gap:0;width:100%}
 .tpart{display:flex;align-items:center;justify-content:center;flex:0 0 auto}

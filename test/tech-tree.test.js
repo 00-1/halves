@@ -111,5 +111,19 @@ ok(/data-parts="2"/.test(tree) && !/data-parts="0"/.test(tree), "(g) a topic wit
 const widths = (tree.match(/data-parts="(\d+)"/g) || []).map(s => Number(s.replace(/\D/g, "")));
 ok(widths.length === spineLen && widths.some(w => w === 1) && widths.some(w => w >= 2), "(g) rows span varying widths (1- AND multi-part rows present, " + spineLen + " rows)");
 
+// (h) T116 — the tree's scroll-affordance (fade + cue) is re-wired to live scroll
+const ihtml = read("index.html"), tcss = read("styles.css");
+ok(/<div class="picker-wrap" id="treeWrap">\s*<div class="tree" id="modeTree"/.test(ihtml) && /class="scroll-cue"/.test(ihtml), "(h) #modeTree is wrapped in .picker-wrap with a scroll-cue (reuses the existing fade CSS)");
+ok(/function updateTreeScroll\(/.test(main) && /can-scroll-up/.test(main) && /can-scroll-down/.test(main), "(h) updateTreeScroll() toggles the fade classes from scroll metrics");
+// give the tree real scroll metrics (content 400 > viewport 300) and drive a scroll
+els.modeTree.clientHeight = 300; els.modeTree.scrollHeight = 400; els.modeTree.scrollTop = 0;
+(els.modeTree._h.scroll||[]).forEach(f=>f());
+ok(els.treeWrap.classList.contains("can-scroll-down") && !els.treeWrap.classList.contains("can-scroll-up"), "(h) overflow → bottom fade/cue shown, top fade hidden");
+// scroll to the bottom → the top fade appears and the bottom one clears (tracks real scroll)
+els.modeTree.scrollTop = 400; (els.modeTree._h.scroll||[]).forEach(f=>f());
+ok(els.treeWrap.classList.contains("can-scroll-up") && !els.treeWrap.classList.contains("can-scroll-down"), "(h) scrolled to the bottom → top fade shown, bottom cleared");
+ok(/\.picker-wrap::before,\.picker-wrap::after\{[^}]*pointer-events:none/.test(tcss), "(h) the edge fades are pointer-events:none (taps still hit the nodes)");
+ok(/prefers-reduced-motion[\s\S]{0,60}\.scroll-cue\{animation:none/.test(tcss), "(h) the bobbing cue honours reduced-motion");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " TECH-TREE CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
