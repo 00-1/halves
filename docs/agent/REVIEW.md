@@ -1,6 +1,15 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T125` [A] (celebrations FIXED — they render now + fire BIG on every
+**Current verdict:** `APPROVED — T127` [A] (BUG: literal "&amp;" in locked-topic text — double-escape) ·
+live build **`ed16b68`**. **CI green.** The one-line fix exactly as diagnosed: `renderTopicInfo`
+(`main.js:572`) was `esc(unlockReq(m))` but `unlockReq()` **already** returns escaped HTML → `&amp;amp;`
+→ rendered "&amp;"; now `unlockReq(m)` un-escaped (matching the correct `:727` caller). Verified: `node
+-c` clean; **full 33-gate suite green**; `tech-tree.test` (36) adds a check that a gating name with `&`
+("Add & Subtract") renders a **single** entity (not `&amp;amp;`) **and** a source guard that no
+`esc(unlockReq(` remains. No XSS regression (dynamic parts still escaped inside `unlockReq`). All
+**[A]-owned files**. T127 → DONE. *(Owner: the locked-topic subline now reads "Add & Subtract".)*
+
+> **Previously approved (done):** `T125` [A] (celebrations FIXED — they render now + fire BIG on every
 win/run/item) · live build **`c2296cf`**. **CI green.** Fixes the bug I diagnosed **and** delivers the
 owner's "loads of particles, constant." **Render fix (the crux of "nothing at all"):** all three
 celebration fns route through a new `fxBigBurst(opts)` that **`.resize()`s the controller THEN fires**,
@@ -854,11 +863,12 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T127`** [A] · **quick BUG** (**`T125` DONE — celebrations fixed + big; `T121`/
-  `T122`/`T120`-wiring all DONE**). *(Read `NEXT.md` fresh — canonical.)* **`T127`** — literal "&amp;"
-  in locked-topic subline: **double-escape** at `main.js:572` (`esc(unlockReq(m))`; `unlockReq` already
-  escapes) — drop the redundant `esc()`; quick audit for siblings; test a `&`-name renders one `&`.
-  → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
+- **Builder A — next: `T123`** [A] · **OWNER-PRIORITY** (**`T127` DONE — &amp; fix; `T125`/`T121`/`T122`
+  all DONE**). *(Read `NEXT.md` fresh — canonical.)* **`T123`** — a11y: muted/grey text fails AA over the
+  purple FX backdrop; add a **contrast floor** (dark scrim/dim behind content, keep the atmosphere) so
+  text clears AA, and make **`contrast.test` honest** (test against the worst-case backdrop luminance,
+  not the dark `--bg` token — it should fail on today's grey-on-purple, pass after).
+  → **`T124`** (fraction tree-glyphs still illegible —
   contrast floor/scrim + honest `contrast.test`) → **`T124`** (fraction tree-glyphs still illegible —
   bigger/clearer using the node width) → **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA +
   perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.

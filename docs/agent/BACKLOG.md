@@ -2342,7 +2342,7 @@ it). Mirror the FX-wiring pattern; consume `Synth`'s API only (never edit `synth
   (Babysitter: confirm on the live build there's ONE music engine = Synth, solves are calm, Arena drives,
   a win wubs, ducking works, and the sliders/mute still rule it — then it's owner ear-check time.)
 
-### T127 — [A] BUG: "&amp;" shows literally in locked-topic text (double-escape) · status: OPEN · BUG
+### T127 — [A] BUG: "&amp;" shows literally in locked-topic text (double-escape) · status: DONE (`ed16b68`)
 Owner (screenshot): the topic-info subline reads **"Master Add &amp; Subtract first"** — the `&` in the
 topic name "Add & Subtract" renders as the literal entity. **Cause = double-escape:** `unlockReq(m)`
 (`main.js:449`) already returns **escaped HTML** (`'Master '+esc(req.name)+' first'`), but

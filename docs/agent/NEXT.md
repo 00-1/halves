@@ -10,13 +10,14 @@
 
 ---
 
-**Builder A → `T127`  · quick BUG: literal "&amp;" in locked-topic text (double-escape)**
-`T125` DONE (celebrations render + big on every event 🎆). **T127:** the topic-info subline shows
-"Master Add &amp; Subtract first" — `renderTopicInfo` (`main.js:572`) does `esc(unlockReq(m))` but
-`unlockReq` **already** escapes → double-escape. **Fix:** drop the redundant `esc()` at :572 (match
-:727's un-escaped use). Quick audit for the same pattern; add a test that a `&`-name renders one `&`.
-Full DoD: `BACKLOG.md` T127. Then → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101`
-(Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
+**Builder A → `T123`  · a11y: text legibility over the FX backdrop (AA floor + honest gate)**
+`T127` DONE (&amp; fix). **T123:** muted/grey text now fails AA over the purple full-bleed FX backdrop,
+but `contrast.test` still checks against the dark `--bg` token (false pass). Add a **contrast floor** —
+a dark scrim/dim behind the content column so muted text clears **AA** while the atmosphere still
+shows (don't black it out); and make **`contrast.test` honest** (test at-risk colours vs the worst-case
+backdrop luminance — must fail on today's grey-on-purple, pass after). Full DoD: `BACKLOG.md` T123.
+Then → `T124` (fraction glyphs bigger/clearer) → `T101` (Start delay) → `T102`/`T103` (Android) →
+`T89`/`T90` → content → `T72`.
 
 **Builder B → STAND BY  · `T126` celebration burst DONE; both engines complete**
 `FXGL.celebrate()` (800-cap firework/shower) shipped & approved; synth engine done.
