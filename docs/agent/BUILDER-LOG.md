@@ -1529,3 +1529,33 @@ how I verified:
 notes / questions: forgiving by design — the count only recomputes on play (lazy),
   so missed days are subtracted when you return (no countdown/guilt). Next per
   REVIEW order: T32 (per-question Practice/Review view).
+
+## T27 — Per-topic "how to beat it" guides  [HANDOFF]
+commit: 8ce7c9d (on main)
+changed:
+  - guides.js (NEW) — `window.Guides` with `{ intro, tips:[2–4], example }` for
+    **all 15 modes** (halves, times, doubles, addsub, addsub2, bonds, bonds2,
+    placevalue, placevalue2, fractionsof, fractionsof2, percentages, percentages2,
+    fractions, squares). Seed style; British English (maths/take away/per cent,
+    `·` decimals); Part-2 guides add what's new. Every example/tip verified against
+    the live question sets.
+  - index.html — load `guides.js` (after modes.js); add `#guideModal`.
+  - main.js — a "?" `mr-guide` control on **every** picker row (incl. **locked**
+    topics — a preview of what's coming); `openGuide(m)` renders intro + tips +
+    "Try this" example into the modal; close via button or backdrop. The "?" click
+    is intercepted **before** row-select, so it never selects/starts a round.
+  - styles.css — `.mr-guide` (round "?" chip) + the guide modal/typography.
+how I verified:
+  - node -c (guides/main/collectibles) OK; CSS balanced; icon test green; no
+    TODO/stub; catalogue/names unchanged.
+  - Content checks: **all 15 modes have a guide** with intro + **2–4 tips** +
+    example; British-English check (no US "math"); I re-derived **every worked
+    example/tip against the live SRC sets** — all correct (e.g. 64+27→91, 143−57→86,
+    72→28 bond, ⅔ of 18=12, 75% of 60=45, 2/5=0·4, 8²=64, 450÷1000=0·45).
+  - **DOM harness (10 checks, ALL PASSED):** every row renders a "?" control;
+    clicking it opens the modal with the correct intro + 2+ tips + the worked
+    example; it opens for an **unlocked** topic (halves) AND a **locked** one
+    (squares, as a preview); close works; **all 15 guides render via the UI**.
+notes / questions: guides are data in `guides.js` for easy audit/edit. (Babysitter
+  audits each guide's wording + correctness.) Next per REVIEW order: T32 (Practice/
+  Review view), which builds on these per-question approach notes.
