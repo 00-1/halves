@@ -345,5 +345,29 @@ ok(started === 0 && !Ss.musicPlaying(), "sting('victory') is a one-shot — it s
 ok(rs.list.filter(n => n._type === "osc").length >= 4, "the victory sting fires a wub + a bright arpeggio");
 ok(Ss.buses().music.gain._calls.length > duckBefore, "the sting ducks the music bed under the cue");
 
+// =====================================================================
+// 11) Mute idles the scheduler / unmute resumes (the T122-wiring-surfaced fix)
+// =====================================================================
+(function(){
+  const r = freshRecord(); const S = load();
+  const si = global.setInterval, ci = global.clearInterval; let tk = null, clr = 0;
+  global.setInterval = (fn) => { tk = fn; return 1; }; global.clearInterval = () => { clr++; };
+  const ctx = StubCtx(r); ctx.currentTime = 10; S.mount({ ctx: ctx });
+  S.setMusic({ tempo: 96, root: 60, mode: "ionian", seed: 1 }); S.start();
+  ok(S.musicPlaying(), "the music scheduler runs once started");
+  S.setMuted(true);
+  ok(!S.musicPlaying() && clr >= 1, "mute IDLES the scheduler (no silent voices spawned — CPU/battery)");
+  S.setMuted(false);
+  ok(S.musicPlaying(), "unmute RESUMES the current context");
+  global.setInterval = si; global.clearInterval = ci;
+})();
+(function(){
+  const r = freshRecord(); const S = load(); const si = global.setInterval; let started = 0;
+  global.setInterval = () => { started++; return 1; };
+  const ctx = StubCtx(r); S.mount({ ctx: ctx }); S.setMuted(true); S.setMuted(false);
+  ok(started === 0 && !S.musicPlaying(), "unmute with no music set starts no scheduler (clean)");
+  global.setInterval = si;
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

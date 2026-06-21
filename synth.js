@@ -571,7 +571,14 @@
     return renderDrum(E.ctx, E.drum, piece, when != null ? when : E.ctx.currentTime, E.noiseBuf);
   }
 
-  function setMuted(m){ E.muted = !!m; if(E.master){ try{ E.master.gain.value = E.muted ? 0 : MASTER_VOL; }catch(e){} } }
+  // Mute zeroes the master AND idles the music scheduler (so a muted app spawns
+  // no silent voices — CPU/battery on the Poco-X3 budget); unmute resumes the
+  // current context. Mirrors sound.js's setMuted contract (the [A] wire calls both).
+  function setMuted(m){
+    E.muted = !!m;
+    if(E.master){ try{ E.master.gain.value = E.muted ? 0 : MASTER_VOL; }catch(e){} }
+    if(E.muted) stop(); else startScheduler();   // startScheduler is a no-op if no music was set
+  }
   function isMuted(){ return E.muted; }
   function capabilities(){
     let webaudio = false;

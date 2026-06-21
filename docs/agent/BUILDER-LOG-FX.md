@@ -14,6 +14,18 @@ increment, no per-phase wait.** New files only (`synth.js`, `test/synth.test.js`
 No deps/bundler; no sample assets; deploy-safe; **`test/synth.test.js` = 107 checks**;
 all existing gates green. Increments 1–3 already APPROVED; 4–5 below.
 
+### Follow-up — engine gap surfaced by the T122 [A] wiring · FIXED
+Reviewing the landed T122 audio wiring (it mounts `Synth` on `sound.js`'s ctx,
+reroutes `output()`→Sound's master, and calls `Synth.setMuted()` from the sound
+toggle), I found a real engine bug: my `setMuted()` only changed the master gain —
+it left the **lookahead scheduler running**, so a muted app kept **spawning silent
+voices every step** (wasted CPU/battery on the Poco-X3 budget) and music wouldn't
+resume on unmute if booted muted. **Fix:** `setMuted(true)` now `stop()`s the
+scheduler and `setMuted(false)` resumes the current context — mirroring `sound.js`'s
+`setMuted` contract (the [A] wire calls both). Tests +4 (now **111**): mute idles the
+scheduler, unmute resumes, unmute-with-no-music stays clean. `node -c` clean; all
+gates green. B-owned files only.
+
 ### The engine, end to end
 The full `window.Synth` API: `mount · setContext · setMusic · start/stop ·
 musicPlaying · intensity(x) · play · drum · sting · setReverb · duck · setMuted ·
