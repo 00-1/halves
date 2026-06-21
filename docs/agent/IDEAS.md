@@ -35,17 +35,25 @@ day-counter / `localDay`) to reuse. "Today-only" therefore keys off the device c
 - **A new dedicated tab** for event rewards (alongside Topics / Awards / Loot in the
   inventory), and they likely form their own **collectible category** ("Events").
 
-**Design implication that MUST be handled (because buffs are time-limited):**
-- Event buffs are **missable** (you might not have played an event yet), so the Arena
-  **def-calibration must NOT gate any tier behind event-only buffs** — otherwise a
-  player who skipped an event is *blocked* from clearing the Arena until it recurs. Keep
-  the **"near-full collection clears tier 120" bar on the non-event drill+loot set**;
-  event buffs are **bonus headroom on top** (they make tiers easier, never required).
-  i.e. exclude the Events category from the `bestRating`/`bestAdvRating` envelope that
-  sets the def cap (or ensure the cap is computed without them). Events recur on the
-  cycle, so they're obtainable over time — but progression must never *require* them.
-- This preserves every existing Arena invariant (T23/T43/T47/T66) while still making
-  event buffs genuinely valuable.
+**Owner decision (2026-06-21) — event buffs MAY gate Arena tiers:** event buffs are
+**full collection members** and it's **fine for high tiers to require them**. Rationale
+(owner): it's only a **~2-week recurring gate** (events cycle, so the buff is always
+obtainable again — never a permanent lock), and we **already** gate collectibles behind
+much longer time investments — e.g. the **75-day "Peak Momentum"** milestone. So event
+buffs simply join the collection the Arena calibration considers; the top tiers naturally
+come to need near-full (including events). *(Babysitter had suggested excluding them —
+owner overruled, correctly: the 75-day precedent makes a 2-week gate mild.)*
+
+**Invariants that still hold regardless (NOT about event-gating):** these are about the
+difficulty-curve shape and are independent of whether events are required —
+- **tiers 1–5 still winnable at 0 items** (a brand-new player can always start climbing);
+- **def monotonic non-decreasing**; **no tier gated behind its OWN loot** (T23/T43/T47/T66).
+  Adding event buffs to the collection only raises the high-end ceiling; it doesn't touch
+  these. Just re-prove them when events ship (the `arena.test.js` suite already does).
+- One thing to confirm at build time: a tier whose `def` rises because of event buffs must
+  not become **un-attemptable** for a player who hasn't done the event yet *and can't until
+  it recurs* — acceptable per the owner (come back in ≤2 weeks), just make the UI **explain
+  it** ("this foe needs an event buff — next event in N days") so it doesn't read as a bug.
 
 **Open questions to resolve before queuing (don't decide now):**
 - **Rotation schedule.** A fixed ordered list of N events cycling every 2 weeks,
