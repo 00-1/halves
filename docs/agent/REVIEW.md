@@ -1,15 +1,23 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T124` [A] (full-size slashed fraction glyphs — legible at node size) · live
-build **`583130c`**. **CI green; collision-clean** ([A]-owned: `glyphs.js`, `test/glyphs.test.js`,
-`BUILDER-LOG.md`). Resolves the owner's repeated "fractions still illegible" — the `f12`-style slashed vulgar
-fractions are now drawn full-size. **🌐 BROWSER-VERIFIED (screenshot @ dpr 2.75):** the home tree's top
-**`x/2`** Halves node, the **`1/2n`** node, and the **`a/b`** fractions node all render as **crisp, readable
-slashed fractions** at node size. `glyphs.test` updated; full suite + CI green. T124 → DONE. *(Same render
-also confirmed T142 backdrop restored, T146 nav decluttered to Best+Setup, T145 plain build stamp, T144
-readout at top — all good.)* **A's status note** (`6d8e97f`, in its own log — allowed): queue cleared through
-T124; `T152[A]` correctly BLOCKED on B's `T152[B]` (in progress); proposes `T102` next — **good dependency
-reasoning, confirmed:** A → `T102` (Android PWA) now; pivot to `T152[A]` when `T152[B]` lands.
+**Current verdict:** `APPROVED — T152[B]` [B] (small/fine particles + spread + off-centre emission) · live
+build **`a2f9475`**. **CI green; collision-clean** (B-owned: `fxgl.js`, `test/golden-fx.test.js`,
+`test/golden/fx_small_offcentre.json`, `BUILDER-LOG-FX.md`). The engine half of the owner's celebration
+redesign: `sizePx`/`sizeScale` (small/fine, **DPR-aware** so crisp not sub-pixel — the T138 lesson),
+`spreadMul` (<1 hugs the source), arbitrary `{x,y}` emission + `palette` — and **defaults byte-identical** so
+existing celebrations + goldens are unchanged. **🌐 BROWSER-VERIFIED** (small off-centre burst at
+`{x:0.25,y:0.30,sizePx:4,spread:0.6}`, dpr 2.75): lit centroid **cx=0.25** (exactly the emitted x → off-centre
+works), particles **small** (max lit run ~25 device px ≈ 9 css, vs the bold ~18px default), 1% coverage
+(visible/fine). Also `node -c` clean; `golden-fx` 28→35 (the new `fx_small_offcentre` golden); `fxgl.test`
+124. T152[B] → DONE. **→ A's `T152[A]` (wire per-trigger positions + rarity/context colour) is now UNBLOCKED.**
+B → STAND BY.
+
+> **Previously approved (done):** `T124` [A] (full-size slashed fraction glyphs — legible at node size) · live
+> build **`583130c`**. **CI green; collision-clean** ([A]-owned: `glyphs.js`, `test/glyphs.test.js`,
+> `BUILDER-LOG.md`). The `f12`-style slashed vulgar fractions are now full-size. **🌐 Browser-verified
+> (screenshot @ dpr 2.75):** the `x/2` Halves node, `1/2n`, and `a/b` nodes all render as crisp readable
+> slashed fractions. T124 → DONE. *(Same render confirmed T142 backdrop, T146 nav, T145 build stamp, T144
+> readout-at-top.)*
 
 > **Previously approved (done):** `T151 + T150` [B] (synth divergence fixed across ALL styles + a real
 > browser/audio test harness) · live build **`44ea919`**. **CI green; collision-clean** (B-owned: `synth.js`,

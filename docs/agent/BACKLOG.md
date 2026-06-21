@@ -2661,7 +2661,13 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
-### T152 — [A]+[B] Celebration particles: small size + emit from the point of interest + colour by context (PLANNED) · status: OPEN · OWNER-PRIORITY · DESIGN
+### T152 — [A]+[B] Celebration particles: small size + emit from the point of interest + colour by context (PLANNED) · status: [B] DONE (`a2f9475`) · [A] OPEN (unblocked) · OWNER-PRIORITY
+**[B] part DONE 2026-06-21** — APPROVED. `fxgl.js` gains `sizePx`/`sizeScale` (small/fine, DPR-aware),
+`spreadMul` (hug the source), arbitrary `{x,y}` emission + `palette`; defaults byte-identical. Babysitter
+browser-verified: a `{x:0.25,y:0.30,sizePx:4,spread:0.6}` burst rendered small + off-centre (lit centroid
+cx=0.25 exact). `golden-fx` 35 (new `fx_small_offcentre` golden). **[A] part (T152[A]) now UNBLOCKED:** wire
+each `fxCelebrate*` to fire from the source element's normalized centre + the contextual palette + small size,
+per the table below.
 Owner: **"I'd be interested in seeing very small particle sizes, and having them emanate from the point of
 interest (e.g. where the inventory toast appears), and colour-coded — e.g. by inventory rarity. Exactly what
 position or colour makes sense for arena victories or topic completions I'm not sure, maybe you can think
