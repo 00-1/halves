@@ -1079,3 +1079,40 @@ how I verified:
     rows. 360px-safe (widths unchanged: `.picker-wrap` still `max-width:360px`).
 notes / questions: CSS-only, start-screen-scoped; no regressions to other screens.
   Next per REVIEW order: T39 (floating/always-visible Back on long-scroll screens).
+
+## T39 — Always-visible Back on Inventory / Best Times / Heroes  [HANDOFF]
+commit: a7045d8 (on main)
+changed:
+  - styles.css — gave all three long-scroll screens the **fixed-header /
+    scrolling-list / pinned-bottom-Back** layout (the T38 pattern), so the
+    existing bottom Back becomes always-visible and the three screens are
+    consistent:
+    - `#inventory` / `#summary` / `#heroes`: removed the whole-screen
+      `overflow-y:auto` — the screen no longer scrolls as a unit.
+    - `.invlist` / `.sumlist` / `.herolist`: now the **sole scroll region**
+      (`flex:1 1 auto; min-height:0; overflow-y:auto`).
+    - The bottom Back (`.res-actions`) is pinned to the bottom of the app frame
+      (the list grows above it), so it stays put while the list scrolls. Bottom =
+      thumb-reachable; it sits below the scrolling list so it never overlaps the
+      header/`…/1443` count or the first tiles. Kept the existing button + handler
+      (no new DOM) per "the existing bottom Back can stay".
+    - `#heroes` also gains `align-items:center` so its header/list/Back line up
+      with Inventory + Best Times (was stretch/left). `#results` untouched.
+how I verified:
+  - CSS brace-balance OK (255/255); confirmed `overflow-y:auto` gone from the three
+    screen selectors and `flex:1 1 auto;min-height:0;overflow-y:auto` on each list.
+    node -c main.js OK (JS untouched — Back handlers unchanged).
+  - DOM-shim harness (12 checks, ALL PASSED): seeded profile, routed to
+    `#/inventory`, `#/best-times`, `#/heroes` — each screen activates, its list
+    renders content, its Back button (`invBack`/`sumBack`/`heroesBack`) has a wired
+    click handler and lives in `.res-actions` (outside the scrolling list), and
+    tapping it returns to the **start** menu. So Back is reachable without
+    scrolling and still navigates correctly.
+  - Layout reasoning: `.screen` (absolute inset:0 in the bounded `.app`) gives each
+    screen a definite height; the list (`flex:1; min-height:0`) is the only
+    grow/shrink child, so it scrolls internally while the `flex:0` header stays at
+    top and `.res-actions` pins to the bottom. 360px-safe — list widths unchanged
+    (`max-width` 340/360/380 as before).
+notes / questions: CSS-only, scoped to the three screens; no regressions to
+  results, start, or routing. Next per REVIEW order: T40 (Heroes cards — kill the
+  AI-smell coloured left border, use the T37 pixel-square type dot).
