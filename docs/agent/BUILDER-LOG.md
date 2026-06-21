@@ -2480,3 +2480,15 @@ how I verified:
     No regressions.
 notes / questions: reused `build.json` (no parallel version file), as specced.
   Next per REVIEW order: **T55** (extend the Collector award ladder to 10,000 items).
+
+## UX fix (owner direct) — results-screen "Modes" button → "Back"  [HANDOFF]
+commit: (this commit, on main)
+Owner (direct) flagged the results-screen button labelled **"Modes"** (returns to
+the home/topic-picker screen) as the wrong word. Renamed to **"Back"** (owner's
+pick — consistent with the Back buttons on Inventory/Heroes/Best Times).
+changed:
+  - index.html — `#menuBtn` label "Modes" → "Back" (text-only; id/handler
+    `navStart` unchanged).
+how I verified: no "Modes" label remains; `$("id")` cross-check OK; HTML-only,
+  no JS/test impact. Not a BACKLOG task — a direct owner instruction; logged here
+  for visibility. (T54 verdict still pending; resumes after.)
