@@ -264,10 +264,13 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 **Gating block (T86+T87) COMPLETE.** **Do `T96` next** (home-screen overhaul — owner-reported via
-screenshot): top-align `#start` (kill the empty top band), **remove the List/Tree toggle → tree-only
-home picker** (list stays on Best Times) so the tree gets real space, **fix the oversized banner
-Play/"Again" button**, and collapse the nav into **one row of bigger icon-buttons** (degrading as
-gating hides items); still fits one screen (T91). Then **`T92`** (event reward tiers: keep an easy participation reward but add **skip-proof**
+screenshot): top-align `#start` (kill the empty top band + consolidate the selected-topic mark into
+the info row), **remove the List/Tree toggle → tree-only home picker** (list stays on Best Times)
+so the tree gets real space, **fix the oversized banner Play/"Again" button**, and collapse the nav
+into **one row of bigger icon-buttons** (degrading as gating hides items); still fits one screen
+(T91). Then **`T97`** (UI-direction **research**, doc only — a "gamey, less web-2.0" UI that fits
+our aesthetic; **buttons-first** restyle plan; the actual restyle is a later task on owner go).
+Then **`T92`** (event reward tiers: keep an easy participation reward but add **skip-proof**
 "did well" + "extremely well" tiers — **sequenced before the Arena** so its re-calibration sees the
 full reward set). Then the **Arena 3v3 block** (Phase 6.10): **`T88`** (deterministic 1–3 vs 3
 battle model + enemy teams + re-calibration + invariant sim-proofs — the crux; design in IDEAS I5)

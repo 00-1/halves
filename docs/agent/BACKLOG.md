@@ -1754,6 +1754,53 @@ cramped (~4 nodes visible), and the nav links sprawl over two rows. Rebalance `#
 
 ---
 
+## Phase 6.14 — UI direction research (owner-requested, 2026-06-21)
+
+### T97 — Deep research: a "gamey, less web-2.0" UI direction that fits our aesthetic (doc only) · status: OPEN
+Owner: **not convinced by the current rounded buttons** — wants the UI **more "gamey", less "web
+2.0"**, and asked to **research what UI options fit our aesthetic before committing**. Produce a
+rigorous design-research doc (e.g. `docs/UI-DIRECTION-RESEARCH.md`). **Doc only — read the code/CSS
+to be accurate; ZERO behaviour/style change ships.** Be concrete (name styles, real techniques,
+component-by-component treatments, references) — a vague survey is a DoD failure.
+- **(1) Honest audit of the current UI.** Characterise the "web 2.0" feel precisely from the live
+  CSS: heavy **`border-radius`** everywhere, soft drop-shadows, flat dark-mode "cards", pill/rounded
+  buttons (`.btn`, `.btn.alt`, `.pv-btn`, link buttons), rounded panels/modals/numpad keys. Say
+  where it reads generic-web-app vs game.
+- **(2) What "gamey" means for US — candidate UI languages.** Evaluate options that fit *our*
+  specific aesthetic (pixel glyphs/icons, chiptune SFX, RPG metagame, the brickmap-grit FX
+  direction, 10–11yo audience): **(a) pixel/8-bit UI** (chunky beveled/`9-slice` borders, hard or
+  pixel-stepped corners, dithered edges/shadows — matches our pixel art); **(b) 16-bit JRPG menu**
+  (bordered "window" panels, double-line frames, corner ornaments); **(c) exposed-tech / terminal
+  HUD** (mono, hairline rules, tabular readouts, telemetry framing — brickmap's language, and we
+  already lean mono); **(d) modern "juicy" game UI** (bold, high-contrast, **angular/beveled**, low
+  rounding — clean but not pixel). For each: how it maps to our components, and how it harmonises
+  with the **existing pixel generators** + the **T82/Phase-6.12 FX grit** (they must read as one
+  language).
+- **(3) Component-by-component treatments.** Show the range for each: **buttons** (the owner's
+  gripe — pill → rounded-rect → **beveled-pixel** → sharp-bordered), **panels/cards**, **modals**,
+  the **numpad keys**, **nav**, **toasts**, the **tree nodes** (T84). Concrete CSS/canvas approaches
+  for each (e.g. CSS pixel-bevel via box-shadows / hard borders / `image-rendering`; a 9-slice
+  border image drawn procedurally; `clip-path` for angular corners). No-build only.
+- **(4) Constraints (weigh honestly).** Must stay **legible/readable** (kids — pixel UI can hurt
+  text legibility; keep body text clean), **accessible** (visible focus, **≥44px tap targets**,
+  contrast **AA**), **no-build** (CSS/canvas, no asset pipeline), **360px-safe**, and **theme-able/
+  reversible** (drive via CSS variables so it can be toggled/rolled back). Flag the legibility-vs-
+  pixel tension explicitly.
+- **(5) Recommendation + phased, reversible restyle plan.** Rank the options; give a **clear pick**
+  (or a coherent blend — e.g. "beveled, low-radius buttons + bordered panels + mono HUD, body text
+  stays clean"); define a **buttons-first** first step (the owner's specific gripe), then panels →
+  modals → numpad → nav → tree nodes; keep it CSS-variable-driven so it's reversible. Note how it
+  must **co-design with the FX layer** (Phase 6.12) so UI + atmosphere read as one.
+- **DoD:** the doc **substantively answers (1)–(5)** — a real audit, named UI languages with
+  concrete per-component CSS/canvas techniques, options weighed against legibility/a11y/no-build/
+  360px + consistency with our pixel art and the FX direction, ending in a **ranked recommendation +
+  a buttons-first reversible phased plan**. **Doc only:** no CSS/JS/HTML change, all gates green,
+  deploy-safe. (Babysitter: verify it's concrete not a listicle, the recommendation is real +
+  reversible + harmonises with the FX direction, and the kid-legibility/a11y constraints are
+  honoured.)
+
+---
+
 ## Phase 6.11 — Event reward tiers (owner-reported, 2026-06-21)
 
 ### T92 — Events: tier the reward by performance (participation · did well · did extremely well) · status: OPEN
