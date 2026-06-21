@@ -6,6 +6,58 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T119 — Deep generative-audio research → principles + recommended engine ([B], doc)
+
+**Status: DONE — handed off for review.** New file only
+(`docs/research-generative-audio.md`); **zero edits to any existing Halves file**
+(`sound.js` untouched — integration is an [A] task, like the FX wiring). Off
+stand-by: the owner asked for deep research into generative audio because the
+music is "too simple and doesn't seem to be progressing."
+
+### What shipped
+- **`docs/research-generative-audio.md`** — a substantive, *applied* survey + a
+  concrete recommended architecture. Grounded in a real diagnosis of `sound.js`
+  (one `osc→gain` instrument played 18 ways: same envelope, no filters/ADSR,
+  static root, uniformly-random "lead", dry mono, no buses) and stays inside our
+  hard constraints (pure WebAudio, **no sample assets**, no-build, one lookahead
+  scheduler, Poco-X3 CPU budget, Node-verifiable).
+- Covers all **7 mandated areas** with concrete WebAudio node-graph code, not
+  hand-waving: (1) **synthesis depth** — real ADSR, BiquadFilter + filter-envelope
+  + LFO (the wub worked example), detune/unison, FM, additive, noise percussion,
+  waveshaping; (2) **patch/instrument design** — a declarative patch abstraction so
+  contexts differ by *instrument*; (3) **harmony** — chord progressions,
+  voice-leading (nearest-tone mapper), bass-follows-root, modes-for-mood table,
+  harmonic rhythm; (4) **variation** — 2nd-order Markov, Euclidean rhythms
+  (`euclid(k,n)`), evolving density, phrase-seeded determinism, motif development;
+  (5) **calm vs energetic** — a precise lever table (attack/harmonic-rhythm/
+  density/mode/cutoff/tempo/percussion/reverb) + boss-proximity morph; (6) **mixing
+  & space** — bus structure, **reverb** (recommend a light FDN, synth-IR convolver
+  as upgrade — `makeIR()` included), stereo width, sidechain ducking, per-context
+  balance; (7) **constraints** — incl. headless-testability.
+- **Recommendation (the point):** build a **new standalone B-owned module
+  `synth.js` (`window.Synth`)** mirroring the `fxgl.js` pattern (A wires it), not a
+  `sound.js` rewrite — with a full API sketch, an internal architecture diagram,
+  how calm-solve/wub/distinct-Arena/per-context-character fall out of it, a phased
+  build path (each a reviewable [B] increment), and a headless test plan. Flags
+  **patches (§1–2)** and **reverb/space (§6)** as the two highest-impact first
+  steps.
+- **8 cited references** (Chris Wilson "Two Clocks", MDN advanced techniques,
+  Toussaint Euclidean rhythms, Monotron/wub, modes-for-mood, Markov music,
+  WebAudio reverb/IR), web-researched and linked inline.
+
+### Verification
+Doc-only (no new JS this round — prototyping is optional per the DoD; the build is
+the sequenced follow-up). `sound.js` and every existing file untouched; full Halves
+gate suite still green (B changed only a new doc + this log).
+
+### Hand-off / next (Builder B)
+- The doc ends with a phased, reviewable build plan. Await the Babysitter's verdict
+  + which increment to build first (recommended: engine core + patches, then
+  reverb/space). When sequenced, I build `synth.js` + `test/synth.test.js`
+  (B-owned), never touching `sound.js`; [A] wires it.
+
+---
+
 ## T108 — Semantic Arena-biome backdrop derivation (engine side; [B])
 
 **Status: DONE — handed off for review.** Edited only B-owned files
