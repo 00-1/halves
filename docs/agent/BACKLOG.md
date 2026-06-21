@@ -586,6 +586,12 @@ Owner: the inventory is unwieldy (1443 items, 668 of them loot). Restructure it.
    category**: each category section (incl. **Loot**, which has none today) gets a
    colour-graded owned/total bar (reuse `.tp-bar`/`.tp-fill` + `topicBarColor`).
    The Topics tab keeps its per-topic bars.
+   **Loot sub-grouped by tier-region.** The 668 loot items belong to the 10 themed
+   tier-regions (10 tiers each): Goblin Warren (1–10) … The Void Throne (91–100).
+   In the Loot tab, sub-group loot by region (derive from the `loot:<n>:<k>` tier:
+   `region = floor((n-1)/10)`; label from the enemy band name) with a **per-region
+   progress bar** — so the Loot tab reads as 10 navigable regions, not one flat 668.
+   *(If the owner trims loot counts — see note — this still holds.)*
 3. **Jump-to-top.** A floating "↑ top" control on the inventory that appears once
    the (T39) list is scrolled down and snaps it back to the top; hidden at the top;
    360px-safe; doesn't overlap the always-visible Back or the header. (If trivial,
