@@ -18,10 +18,11 @@ old `sound.js` music scheduler** (ONE scheduler; keep `sfx()`). Route screens to
 contexts (`#game`→solve **calm**, home→menu, `#arena`→arena +`intensity()` from
 boss-proximity, event→event); start-on-enter/stop-on-leave. Fire the **wub** once on
 a real win; **duck** music under SFX; the T113 **volume/tempo sliders + mute** drive
-the combined output. Full DoD: `BACKLOG.md` T122. Then → `T121` (scroll-fade reveals
-the backdrop **+ coin icon gold**) → `T123` (a11y: grey text now fails AA over the
-purple backdrop — add a contrast floor + make the contrast gate honest) → `T101`
-(Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
+the combined output. Full DoD: `BACKLOG.md` T122. Then the visual-readability batch →
+`T121` (scroll-fade reveal **+ coin gold + calendar green**) → `T123` (a11y: grey
+text fails AA over the purple backdrop — contrast floor + honest gate) → `T124`
+(fraction tree-glyphs still illegible — draw them bigger/clearer using the node
+width) → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
 **Builder B → STAND BY  · `T120` synth engine COMPLETE (all 5 phases approved)**
 Engine done + headless-perfect but standalone; the value is the [A] wiring (T122),

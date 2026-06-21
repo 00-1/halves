@@ -801,9 +801,10 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   `sfx()`); route each screen to its context (`#game`→**solve calm**, home→**menu**, `#arena`→**arena**
   +`intensity()` from boss-proximity, event→**event**), start-on-enter/stop-on-leave; fire the **wub**
   once on a real win; **duck** music under SFX; the **T113 volume/tempo sliders + mute** drive the
-  combined output. Full DoD `T122`. **Then → `T121`** (tree scroll-fade reveal + coin icon gold) →
-  **`T123`** (a11y pass: grey text now fails AA over the purple FX backdrop — add a contrast floor/scrim
-  + make `contrast.test` honest against the backdrop) → **`T101`** (Start delay) → **`T102`/`T103`**
+  combined output. Full DoD `T122`. **Then the visual-readability batch → `T121`** (scroll-fade reveal +
+  **coin gold + calendar green**) → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
+  contrast floor/scrim + honest `contrast.test`) → **`T124`** (fraction tree-glyphs still illegible —
+  bigger/clearer using the node width; T104 follow-up) → **`T101`** (Start delay) → **`T102`/`T103`**
   (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →

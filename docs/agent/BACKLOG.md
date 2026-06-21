@@ -2342,6 +2342,28 @@ it). Mirror the FX-wiring pattern; consume `Synth`'s API only (never edit `synth
   (Babysitter: confirm on the live build there's ONE music engine = Synth, solves are calm, Arena drives,
   a win wubs, ducking works, and the sliders/mute still rule it — then it's owner ear-check time.)
 
+### T124 — [A] Fraction tree-glyphs still illegible — make them bigger/clearer using the node width · status: OPEN
+Owner (screenshot, tech-tree): the fraction topic glyphs are **still bad at node size** — esp. the
+**second** (the standalone Fractions node), and "there's a lot of horizontal space for it to take up
+that could make it more clear." T104 replaced the stacked vulgar-fraction with a **5-wide diagonal
+slash** + SMALL (3×4) digits — better than the stack, but at the ~node glyph size it's still a tiny
+cramped blob, and the **wider tree-v2 nodes (96px)** leave the fraction under-using the available room.
+- **Affected glyphs:** `fractionsof` (`½n`) and `fractions` (the standalone `¾`/`½`), and any other
+  fraction token (`f12`/`f34`). The slashed `a/b` (Fractions II) reads fine — it uses full-size chars.
+- **Make the fraction read clearly at node size — use the space.** Draw the fraction **larger** (bigger
+  numerator/denominator — ideally the full-size digit set, not the 3×4 SMALL one — with a clear slash or
+  bar), scaling to use the node's horizontal width instead of a cramped 5-cell box. For `½n`, the `½`
+  should be an unambiguous, legible fraction sitting beside a full-size `n`. Whatever reads cleanly as
+  the right fraction; keep the amber accent.
+- **Check the worst case = the tree node (~the size in the screenshot)**, plus the topic-info row + any
+  other place the glyph renders. Other (non-fraction) glyphs unchanged.
+- **DoD:** the Fractions (`¾`) and Fractions-of (`½n`) marks are **unambiguously readable as fractions
+  at the tree-node size** (the owner can tell which fraction at a glance), using the node's width; the
+  slashed `a/b` still fine; favicon/other marks unaffected; `node -c` clean; `glyphs.test` updated for
+  the new fraction rendering; all gates green; 360-safe. (Babysitter: compare the fraction nodes at the
+  live node size — must read as the fraction, not a blob — this is the 2nd attempt after T104, get it
+  clearly right.)
+
 ### T123 — [A] Accessibility pass: text legibility over the FX backdrop (AA floor + honest gate) · status: OPEN · OWNER-PRIORITY
 Owner: "we may need another accessibility pass — we have light grey text on light purple now." **Root
 cause (the recurring backdrop theme):** T112's full-bleed FX backdrop replaced the near-black
@@ -2371,13 +2393,15 @@ dark-bg assumption; see ORCHESTRATION's "shared quality rule".) Do a real pass.
   `node -c` clean; all gates green; 360-safe. (Babysitter: eyeball the home/Arena text is readable over
   the backdrop, and confirm the contrast gate genuinely tests against the backdrop, not the dark token.)
 
-### T121 — [A] Small visual polish: scroll-fade reveals the backdrop + the coin icon is gold · status: OPEN
-**(b) Coin icon → gold (owner).** The T117 pixel icons all render in the muted/grey inherited colour,
-which the owner is happy with **except the coin** — "keep that gold like the text." The coin appears
-next to the gold amount (home gold bar, results `resGold`, reward toasts). Give **only `.px-ic.coin`**
-the amber/gold colour so the mask fills gold (`color`/`background: var(--amber)` per the mask technique
-icons.js uses — the others stay muted). Coin reads gold everywhere it appears; no other icon changes.
-**(a) Scroll-fade (below) — the original T121.**
+### T121 — [A] Small visual polish: scroll-fade reveals the backdrop + coloured status icons (coin gold, calendar green) · status: OPEN
+**(b) Status icons take their text colour (owner).** The T117 pixel icons all render in the muted/grey
+inherited colour, which is fine **except the two status icons that sit beside coloured amounts**: the
+**coin** (next to the gold amount — "keep that gold like the text") and the **momentum calendar** (next
+to the green/mint "N Momentum" — "make it green to match its accompanying text, same as the gold
+coin"). Give **`.px-ic.coin` = `var(--amber)`** (gold) and **`.px-ic.calendar` = `var(--mint)`** (green)
+so each mask fills its status colour (per the mask technique icons.js uses); **all other icons stay
+muted**. They appear in the home gold/momentum bars (+ coin in results `resGold` / reward toasts) — set
+it globally so they're coloured everywhere. **(a) Scroll-fade (below) — the original T121.**
 Owner (screenshot): the T116 scroll-fade is back but it's a **black band** over the new purple FX
 backdrop — "should either fade to transparent (if possible) or be light purple matching the bg."
 **Cause:** `.picker-wrap::before/::after` paint `linear-gradient(var(--bg), transparent)` and `--bg` is
@@ -2395,10 +2419,12 @@ backdrop — "should either fade to transparent (if possible) or be light purple
 - **DoD:** **(a)** when the tree scrolls, the top/bottom edge **fades into the purple backdrop (no black
   band)**, appears only where there's more to scroll, and tracks scroll state; taps still hit nodes; the
   cue still shows; reduced-motion safe; 360px-safe; works under `data-ui="pixel"`; assert the fade no
-  longer uses the opaque `--bg` overlay / uses a mask. **(b)** the **coin icon renders gold** (`.px-ic.coin`
-  = `var(--amber)`) everywhere it appears; all other icons unchanged (still muted). `node -c` clean; all
-  gates green (keep `tech-tree.test`'s scroll-toggle; extend `icons.test` to assert the coin gets the
-  amber rule). (Babysitter: confirm the fade blends into the backdrop not black, and the coin reads gold.)
+  longer uses the opaque `--bg` overlay / uses a mask. **(b)** the **coin icon renders gold**
+  (`.px-ic.coin` = `var(--amber)`) and the **momentum calendar renders green** (`.px-ic.calendar` =
+  `var(--mint)`) everywhere they appear; all other icons unchanged (still muted). `node -c` clean; all
+  gates green (keep `tech-tree.test`'s scroll-toggle; extend `icons.test` to assert coin=amber +
+  calendar=mint). (Babysitter: confirm the fade blends into the backdrop not black, the coin reads gold,
+  and the calendar reads green.)
 
 ### T117 — [A] Replace ALL chrome emoji with house generative pixel icons · status: DONE (`3e72581`)
 Owner: "do a pass where we replace all the emojis we're using with our own icons, in the style of our
