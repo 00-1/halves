@@ -348,8 +348,10 @@ canvas.pix{image-rendering:pixelated}
 .ah-name{font-family:var(--display);font-weight:700;font-size:15px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .arena-hero.sel .ah-name{color:var(--amber)}
 .ah-rating{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700;flex:0 0 auto}
-.ah-mu{margin-top:5px;font-family:var(--mono);font-size:11px;font-weight:700}
+.ah-mu{margin-top:5px;font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .mu.adv{color:var(--mint)}.mu.weak{color:#d05a4a}.mu.neu{color:var(--muted)}
+.ah-power{font-family:var(--mono);font-size:11px;font-weight:700}
+.ah-power.win{color:var(--mint)}.ah-power.loss{color:var(--muted)}
 .arena-empty{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;padding:18px 10px;line-height:1.5}
 .arena-result{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px;text-align:center}
 .arena-result.win{border-color:var(--mint);background:rgba(74,222,154,.08)}
@@ -359,6 +361,7 @@ canvas.pix{image-rendering:pixelated}
 .ar-sub{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:4px}
 .ar-maths{font-family:var(--mono);font-size:12px;color:var(--text);margin-top:8px;line-height:1.5}
 .ar-maths b{color:var(--amber)}
+.ar-hint{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
 .ar-new{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--mint);margin-top:8px}
 
 /* ---------- PRACTICE / REVIEW (T32) ---------- */

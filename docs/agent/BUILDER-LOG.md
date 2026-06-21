@@ -1807,3 +1807,55 @@ how I verified:
 notes / questions: I wired the new test as a CI gate (this bug slipped past the
   existing gates, so a permanent guard is justified) — easy to drop if unwanted.
   Next per REVIEW: **T47** (Arena → instant pure-stat check, drop the maths round).
+
+## T47 — Arena: pure stat check, NOT a maths drill  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - enemies.js — replaced the perf-scaled `resolveBattle` with a pure
+    **`statBattle(hero, tier, collected)`**: win iff `round(rating × matchup) ≥
+    tier.def`. Removed `computePerf` (and the now-unused `clamp`). This is exactly
+    the old `battlePower` at `perf = 1`, so the T23/T43 def-calibration and
+    buff-gating invariants are unchanged by construction.
+  - main.js — **deleted the `BATTLE_MODE` synthetic mode + `BATTLE_LEN`** and the
+    whole `battleCtx` round path. `startBattle()` (the Fight button) now resolves
+    **instantly** via `E.statBattle` → `finishBattle(heroId, tier, res)` — no
+    `beginRound`, no `show("game")`, no questions. `finishBattle` takes the result
+    directly, grants `tier:n` + its loot + collector/meta milestones + the Arena
+    gold payoff (`tierGold`) on a win, and surfaces Victory/Defeat. Dropped the
+    `if(battleCtx)` branch in `finish()` and the `battleCtx` clears in
+    `start()`/`startPractice()`. Arena UI now shows each hero's **effective power
+    (⚔ rating×matchup) vs the tier's DEF** and the matchup, and on a loss a clear
+    "collect more buffs (drill the topics) or pick the advantage-type hero" hint.
+  - styles.css — `.ah-power` (per-hero power vs def, win/loss tint), `.ar-hint`
+    (defeat guidance); `.ah-mu` now a flex row to hold matchup + power.
+  - test/arena.test.js — NEW Node proof (24 checks); wired as a fifth Pages gate.
+### Why the invariants still hold
+Old `battlePower = round(rating × matchup × (0.4 + 0.6·perf))`; at `perf = 1`
+that's `round(rating × matchup)` = `statBattle`. The buff-gating was proven at
+max perf, so stat-only == that proven case: no tier becomes unbeatable and the
+final-tier ⇔ full-collection rule is preserved.
+how I verified:
+  - `node -c enemies.js main.js` OK; **0 stale refs** to resolveBattle/computePerf/
+    BATTLE_MODE/battleCtx anywhere.
+  - `node test/arena.test.js` → **ALL 24 PASS**: (a) win == `round(rating×matchup)
+    ≥ def` for every hero with **no perf field**; (b) tiers 1–5 winnable by the
+    starter (bram) base stats, 0 items; (c) **no tier gated behind its own loot**
+    (all 100 beatable on drill-items + earlier loot); (d) tier 100 **unbeatable
+    with 0 items**, beatable at full-minus-final-loot (**roon 410 ≥ 410**), and
+    **removing ONE champion boost flips it to a loss**; (e) `canAttempt` still
+    requires `tier:n-1`; (f) `statBattle` present / perf machinery gone /
+    `BATTLE_MODE` gone / Fight path has no `beginRound`; def monotonic + boss
+    hardest (calibration intact). **Live DOM drive:** route to `#/arena`, pick a
+    hero, click Fight → the **game screen never activates** (no question round),
+    stays on Arena, shows **instant Victory**, and grants `tier:1`.
+  - All five gates green (icon + perf + contrast + inventory + arena). Normal topic
+    drills unaffected (start/finish/Practice paths untouched bar the battleCtx
+    removal). 360px-safe. No regressions.
+notes / questions: **Deliberate behaviour change:** an instant Arena fight no
+  longer bumps **Momentum** (the daily-practice counter) — momentum now reflects
+  actual drilling, matching "the Arena adds no drilling". Easy to restore if the
+  owner wants Arena visits to count as daily activity. The def endpoint is **410**
+  now (not the 392 in the old T43 log) — that drift happened in later tasks as the
+  catalogue grew (T25 etc.) and recalibrated def; **unchanged by T47** (I didn't
+  touch calibration). Next per REVIEW: **T49** (Practice — promote button, fix
+  hints, surface guide).

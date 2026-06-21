@@ -612,14 +612,13 @@
     });
   }
 
-  // ---- arena (T24) --------------------------------------------------------
-  // The Arena reuses the drill engine for a "battle round": a shuffled mix of
-  // questions from every unlocked topic. The win is decided purely by
-  // Enemies.resolveBattle(hero, tier, perf, REAL collected set) — perf scales
-  // within a band (0.4…1.0) but can never substitute for missing hero rating, so
-  // clearing the Arena genuinely demands a near-complete collection (T23/T43).
-  const BATTLE_LEN = 12;
-  let arenaHero = null, lastBattle = null, battleCtx = null, practiceCtx = null;
+  // ---- arena (T24, reworked T47) -----------------------------------------
+  // The Arena is a PURE STAT CHECK — no maths round. You win iff your hero's
+  // effective rating × type-matchup clears the tier's defence
+  // (Enemies.statBattle over the REAL collected set). Drilling the topics is
+  // where buffs are earned; the Arena is the payoff. Clearing it still demands a
+  // near-complete collection (the win == the old max-perf win, T23/T43).
+  let arenaHero = null, lastBattle = null, practiceCtx = null;
 
   // ---- per-question best-time store (halves.qbest) for the Practice view -----
   let memQbest = null;
@@ -666,17 +665,6 @@
     }).join("");
   }
   function openPractice(){ if(!isUnlocked(mode)) return; renderPractice(mode.id); show("practice"); }
-  const BATTLE_MODE = {
-    id: "battle", name: "Arena", eyebrow: "Battle — solve fast!", expr: false,
-    build: function(){
-      const pool = [];
-      MODES.filter(isUnlocked).forEach(m => {
-        m.build().forEach(q => pool.push({ p:q.p, a:q.a, _mode:m }));   // tag the source mode
-      });
-      for(let i = pool.length - 1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
-      return pool.slice(0, Math.min(BATTLE_LEN, pool.length));
-    }
-  };
 
   function matchupLabel(mu){
     return mu > 1 ? '<span class="mu adv">▲ Advantage ×1.5</span>'
@@ -696,12 +684,13 @@
 
     let html = "";
     if(lastBattle){
-      const r = lastBattle, f = (0.4 + 0.6 * r.res.perf);
+      const r = lastBattle;
       html += '<div class="arena-result '+(r.won ? "win" : "loss")+'">'+
         '<div class="ar-title">'+(r.won ? "Victory!" : "Defeated")+'</div>'+
         '<div class="ar-sub">'+esc(r.heroName)+' vs '+esc(r.tierName)+'</div>'+
-        '<div class="ar-maths">'+Math.round(r.res.rating)+' ★ × '+r.res.matchup+' × '+f.toFixed(2)+
-          ' perf = <b>'+r.res.battlePower+'</b> vs DEF <b>'+r.res.def+'</b></div>'+
+        '<div class="ar-maths">'+Math.round(r.res.rating)+' ★ × '+r.res.matchup+
+          ' = power <b>'+r.res.power+'</b> vs DEF <b>'+r.res.def+'</b></div>'+
+        (r.won ? "" : '<div class="ar-hint">Not strong enough — collect more buffs (drill the topics) or pick the advantage-type hero.</div>')+
         (r.goldEarn > 0 ? '<div class="ar-gold">🪙 +'+esc(fmtGold(r.goldEarn))+' '+esc(GOLD_LABEL)+'</div>' : '')+
         (r.newHeroes.length ? '<div class="ar-new">★ New hero: '+r.newHeroes.map(esc).join(", ")+'!</div>' : '')+
         '</div>';
@@ -720,10 +709,12 @@
         html += '<div class="arena-pick">Choose your champion</div><div class="arena-heroes">';
         heroes.forEach(h => {
           const rating = Math.round(Hs.rating(h, col)), mu = E.matchup(h.type, tier.type);
+          const power = Math.round(Hs.rating(h, col) * mu), wins = power >= tier.def;
           html += '<div class="arena-hero t-'+h.type.toLowerCase()+(arenaHero === h.id ? " sel" : "")+'" data-hero="'+esc(h.id)+'">'+
             '<div class="ah-top"><span class="ah-name"><i class="typedot"></i>'+esc(h.name)+'</span>'+
               '<span class="ah-rating">★ '+rating+'</span></div>'+
-            '<div class="ah-mu">'+matchupLabel(mu)+'</div></div>';
+            '<div class="ah-mu">'+matchupLabel(mu)+
+              '<span class="ah-power '+(wins ? "win" : "loss")+'">⚔ '+power+' vs '+tier.def+'</span></div></div>';
         });
         html += '</div>';
       }
@@ -733,18 +724,14 @@
     $("arenaFight").textContent = cleared ? "Cleared" : (arenaHero ? "Fight!" : "Pick a hero");
   }
 
+  // Fight resolves INSTANTLY from hero stats (T47) — no maths round.
   function startBattle(){
-    const E = window.Enemies, col = loadCollected();
+    const E = window.Enemies, Hs = window.Heroes, col = loadCollected();
     if(!E || col["tier:" + E.TIER_COUNT]) return;                 // cleared
-    if(!arenaHero || !window.Heroes.isHeroUnlocked(arenaHero, col)) return;
-    battleCtx = { heroId: arenaHero, tier: E.currentTier(col), prevMode: mode };
-    practiceCtx = null;
-    lastBattle = null;
-    mode = BATTLE_MODE;
-    order = mode.build();
-    elEyebrow.innerHTML = mode.eyebrow;
-    sfx("roundStart");
-    beginRound();
+    if(!arenaHero || !Hs.isHeroUnlocked(arenaHero, col)) return;
+    const tier = E.currentTier(col);
+    const res = E.statBattle(arenaHero, tier, col);
+    finishBattle(arenaHero, tier, res);
   }
 
   // Grant any hero/arena milestones now satisfied (unlock-all-heroes + tier
@@ -758,42 +745,33 @@
     return meta;
   }
 
-  // Resolve a finished battle round purely from the REAL collected set, grant the
-  // tier + its loot on a win, and surface the result. (Called from finish().)
-  function finishBattle(){
-    const bc = battleCtx; battleCtx = null;
+  // Apply a resolved stat-check: grant the tier + its loot on a win, award gold,
+  // and surface the result. `res` comes from Enemies.statBattle (T47 — no perf).
+  function finishBattle(heroId, tier, res){
     const E = window.Enemies, Hs = window.Heroes;
-    const total = (performance.now() - startTime) / 1000;
-    const n = order.length, score = times.filter(t => t.miss === 0).length;
-    const perf = E.computePerf(score, n, n ? total / n : total);
     const col = loadCollected();
-    const res = E.resolveBattle(bc.heroId, bc.tier, perf, col);
-    const heroName = (C.HERO_NAMES && C.HERO_NAMES[bc.heroId]) || bc.heroId;
+    const heroName = (C.HERO_NAMES && C.HERO_NAMES[heroId]) || heroId;
     const goldBefore = loadGold();
-    let earn = roundGold;                              // per-question gold even on a loss
-    let loot = [], newHeroes = [];
+    let earn = 0, loot = [], newHeroes = [];
     if(res.win){
       const before = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col)).map(h => h.id);
-      col["tier:" + bc.tier.n] = { ts: Date.now() };
-      E.tierLoot(bc.tier.n).forEach(id => { if(!col[id]) col[id] = { ts: Date.now() }; });
+      col["tier:" + tier.n] = { ts: Date.now() };
+      E.tierLoot(tier.n).forEach(id => { if(!col[id]) col[id] = { ts: Date.now() }; });
       const more = C.evaluateCollector(Object.keys(col).length, id => !!col[id]);
       more.forEach(it => col[it.id] = { ts: Date.now() });
       const meta = grantMeta(col);   // tier-defeat + unlock-all-heroes milestones
-      earn += tierGold(bc.tier.n, goldMult(col));   // deeper = more
-      loot = E.tierLoot(bc.tier.n).map(id => C.byId(id)).filter(Boolean).concat(more).concat(meta);
+      earn = tierGold(tier.n, goldMult(col));   // the Arena payoff — deeper = more
+      loot = E.tierLoot(tier.n).map(id => C.byId(id)).filter(Boolean).concat(more).concat(meta);
       newHeroes = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col) && before.indexOf(h.id) < 0).map(h => h.name);
       sfx("topic100");
     } else {
       sfx("roundComplete");
     }
     const wealth = earnGold(earn, col);               // grants any wealth milestones into col
-    const mo = bumpMomentum(col);                      // a battle is playing too
     saveCollected(col);
-    loot = loot.concat(wealth).concat(mo.milestones);
-    if(mo.wentUp) momentumToast(mo.state);
-    lastBattle = { won: res.win, res: res, heroName: heroName, tierName: bc.tier.name, loot: loot, newHeroes: newHeroes, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
+    loot = loot.concat(wealth);
+    lastBattle = { won: res.win, res: res, heroName: heroName, tierName: tier.name, loot: loot, newHeroes: newHeroes, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
     arenaHero = null;
-    mode = (bc.prevMode && bc.prevMode.id !== "battle") ? bc.prevMode : (byId(loadLastMode()) || MODES[0]);
     renderArena();
     show("arena");
     if(loot.length) setTimeout(() => showUnlocks(loot), 650);
@@ -813,7 +791,7 @@
   }
   function start(){
     if(!isUnlocked(mode)) return;   // locked topics aren't playable
-    battleCtx = null; practiceCtx = null;
+    practiceCtx = null;
     order = mode.build();
     elEyebrow.innerHTML = mode.eyebrow;
     sfx("roundStart");
@@ -823,7 +801,7 @@
   // still timed; grants ONLY that question's Beat/Spark + updates qbest.
   function startPractice(modeId, q){
     const m = byId(modeId); if(!m || !isUnlocked(m) || !q) return;
-    mode = m; battleCtx = null; practiceCtx = { modeId: modeId, prompt: q.p };
+    mode = m; practiceCtx = { modeId: modeId, prompt: q.p };
     order = [{ p:q.p, a:q.a }];
     sfx("roundStart");
     beginRound();
@@ -956,7 +934,6 @@
   // ---- results -----------------------------------------------------------
   function finish(){
     cancelAnimationFrame(raf);
-    if(battleCtx){ finishBattle(); return; }       // Arena battle round → resolve, not results
     if(practiceCtx){ finishPractice(); return; }   // Practice attempt → grade just that question
     const total = (performance.now()-startTime)/1000;
     const score = times.filter(t => t.miss === 0).length;   // clean first-try answers

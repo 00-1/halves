@@ -35,8 +35,6 @@
   const DEF_GROWTH = 1.062;  // per-tier geometric growth of the ramp
   const CAP_FRAC = 0.92;     // headroom under the theoretical max so wins don't need literal perfection
 
-  function clamp(v, lo, hi){ return v < lo ? lo : (v > hi ? hi : v); }
-
   // ---- themed names (T44) -------------------------------------------------
   // Regions (weakest→strongest), the rank-title ladder within a region, and a
   // named boss overriding each region's 10th tier (tiers 10/20/…/100).
@@ -173,37 +171,25 @@
   })();
 
   // ---- battle resolution (pure) -------------------------------------------
-  // Win if battlePower ≥ tier.def, where
-  //   battlePower = round( rating(hero, collected) × matchup × (0.4 + 0.6·perf) ).
-  function resolveBattle(hero, tier, perf, collected){
+  // Pure stat check (Arena, T47): win iff effective power ≥ tier.def, where
+  //   power = round( rating(hero, collected) × matchup(hero.type, tier.type) ).
+  // No perf, no questions — the Arena is a payoff for what you've collected and
+  // climbed, not another maths drill. This is exactly the old battlePower at
+  // perf=1, so the T23/T43 def-calibration + buff-gating invariants are unchanged.
+  function statBattle(hero, tier, collected){
     const heroObj = (typeof hero === "string") ? H.byId(hero) : hero;
     const rating = H.rating(heroObj, collected || {});
     const mu = H.matchup(heroObj.type, tier.type);
-    const p = clamp(perf, 0, 1);
-    const factor = 0.4 + 0.6 * p;
-    const battlePower = Math.round(rating * mu * factor);
+    const power = Math.round(rating * mu);
     return {
-      win: battlePower >= tier.def,
-      battlePower: battlePower,
+      win: power >= tier.def,
+      power: power,
       rating: rating,
       matchup: mu,
-      perf: p,
       def: tier.def,
       hero: heroObj.id,
       tier: tier.n
     };
-  }
-
-  // Map a finished drill round to perf ∈ [0,1]. `target` is a calm per-answer
-  // baseline (seconds); answering faster than it lifts perf, slower lowers it.
-  // Arena (T24) may pass a hero-tuned target; default is a gentle 3.0s.
-  const PERF_TARGET = 3.0;
-  function computePerf(score, total, avgAnswerTime, target){
-    target = (typeof target === "number" && target > 0) ? target : PERF_TARGET;
-    const clean = total > 0 ? score / total : 0;
-    const t = avgAnswerTime > 0 ? avgAnswerTime : target;
-    const pace = clamp(target / t, 0.5, 1.3);
-    return clamp(clean * pace, 0, 1);
   }
 
   // ---- public api ---------------------------------------------------------
@@ -224,7 +210,7 @@
   window.Enemies = {
     TIERS, TIER_COUNT,
     byTier, tierLoot, tierRegion, regionLabel, canAttempt, currentTier,
-    resolveBattle, computePerf,
+    statBattle,
     matchup: H.matchup, beats: H.beats
   };
 })();
