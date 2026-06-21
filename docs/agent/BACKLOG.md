@@ -2658,6 +2658,38 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
+### T152 — [A]+[B] Celebration particles: small size + emit from the point of interest + colour by context (PLANNED) · status: OPEN · OWNER-PRIORITY · DESIGN
+Owner: **"I'd be interested in seeing very small particle sizes, and having them emanate from the point of
+interest (e.g. where the inventory toast appears), and colour-coded — e.g. by inventory rarity. Exactly what
+position or colour makes sense for arena victories or topic completions I'm not sure, maybe you can think
+about it and plan it."** **State today:** the celebrations ALREADY colour by rarity/rank (`fxCelebrate` uses
+`collectibles.paletteFor(rarity)`; `fxCelebrateRank` uses the rank colour; `fxCelebrateWin` uses gold) — but
+they all fire from **`x:0.5, y:0.55`** (screen centre) at the bold ~18px size, so the colour-coding doesn't
+read as "from the thing." So the new work is **(1) small/fine particles** and **(2) emit from the source
+element**; colour is mostly already there (refine per below).
+- **Babysitter's design (the plan the owner asked for):**
+  | trigger | EMIT FROM (normalized centre of…) | COLOUR | size/feel |
+  |---|---|---|---|
+  | **inventory item gained** | the **reward/unlock toast** element | the item's **rarity** palette (already: common grey→legendary gold) | small/fine; count scales with rarity (legendary = denser) |
+  | **topic run complete (rank)** | the **rank badge** on the results screen (`rank:` icon / the "Archmage · 61.4s" row) | the **rank's** colour (already `rk.color`) + gold accent | small/fine spray upward |
+  | **topic mastery** (a topic fully done) | the **topic's node** in the tree if visible, else the mastery banner | the **topic's accent** colour (`paletteFor(m.pal)`) | a slightly fuller sparkle |
+  | **arena victory** | the **defeated enemy's portrait** (burst from the vanquished foe), expanding outward | **gold** + the enemy's/hero's accent | the biggest of the set — more particles, wider spread, still finer than today |
+  Rationale: particles **come from the thing that caused them** (toast / rank / foe / topic) and **wear that
+  thing's colour**, so a reward reads instantly; magnitude scales with significance (common puff → legendary/
+  boss shower). Keep it tasteful (the a11y/reduced-motion + `setQuality` budgets still apply).
+- **[B] engine (`fxgl.js`):** add a **particle-size option** (small/fine — `sizePx`/`scale`, **DPR-aware via
+  T138** so "small" is crisp on-screen, never sub-pixel) + a **spread** control; confirm arbitrary `{x,y}`
+  emission + `palette` (both already accepted) work from off-centre points; extend the T138/T150 visibility
+  check to an **off-centre, small-size** burst (in-bounds, on-screen size ≥ a small-but-real floor).
+- **[A] wiring (`main.js`):** at each call site replace `x:0.5,y:0.55` with the **source element's normalized
+  centre** (`el.getBoundingClientRect()` → `/innerWidth,/innerHeight`) per the table, pass the small-size
+  option + the existing rarity/rank/topic palette; arena win → the enemy portrait rect + gold/hero palette.
+- **DoD (browser-verified):** each celebration **emanates from its source element**, is **small/fine**, and
+  **wears the contextual colour**; verified in the browser (fire each, assert the burst centroid is near the
+  source rect, not screen-centre, and particles are small-but-visible); `node -c` clean; all gates green;
+  collision-clean ([B] `fxgl.js`+tests; [A] `main.js`). (Babysitter browser-verifies positions/colours; owner
+  eyeballs the feel.) *(Polish — sequence after the audio bug T151 + the harness T150.)*
+
 ### T151 — [B] Synth output DIVERGES exponentially (feedback instability) — the real "audio sounds bad" · status: OPEN · OWNER-PRIORITY · BUG · BROWSER-MEASURED
 Owner: **"the audio switching sounds bad. but I think the problem may be the switching rather than the
 audio. I wonder if this is something you can confirm yourself too?"** **Confirmed autonomously — and it's
@@ -2670,6 +2702,10 @@ with no switch** (normal audio peaks ≤ 1.0):
   voice-release resets some energy — so the **switch is not the cause**; continuous play is worst).
 The brickwall limiter (sound.js, after `Synth.output()`) then clamps a 30–160×-too-hot signal → escalating
 distortion/pumping = what the owner hears as "sounds bad," most noticeable around a switch.
+**Corroboration — owner: "the switcher doesn't fully switch, seems like elements of the previous music
+continue."** Consistent with the same root cause: an **unstable/growing reverb tail never decays**, so after a
+switch the previous context's energy lingers (T134's voice-release clears the dry voices but cannot clear a
+runaway reverb). The fix below must therefore ALSO make a switch **fully clear** the old context.
 - **Find + fix the instability in `synth.js`.** Exponential growth ⇒ a feedback path with effective gain > 1.
   Prime suspects: **(a) the FDN reverb** — verify the feedback **spectral radius < 1** (the Hadamard matrix
   scaled by `0.5×decay` should be unitary×decay≈0.78, but the **damping lowpass or summing may add gain**;
@@ -2682,9 +2718,11 @@ distortion/pumping = what the owner hears as "sounds bad," most noticeable aroun
   context and **assert peak stays bounded** (e.g. ≤ ~2.0, never the 30–160 measured here) — so a divergence
   can never ship again.
 - **DoD (browser/offline-MEASURED):** the synth output stays **bounded** (peak ≤ ~2) over ≥5 s in every
-  context and across switches; a peak-bound gate proves it (and FAILS on today's build); `node -c` clean;
-  all gates green; **B-owned only** (`synth.js` + tests + `BUILDER-LOG-FX.md`). (Babysitter re-measures with
-  the AnalyserNode probe; bar = bounded output + the owner's ear.)
+  context and across switches; a peak-bound gate proves it (and FAILS on today's build); **AND a switch fully
+  clears** — after a `{now}` swap the previous context's energy/tail decays to near-zero within ~1–2 s (no
+  lingering old material — the owner's "doesn't fully switch"); `node -c` clean; all gates green; **B-owned
+  only** (`synth.js` + tests + `BUILDER-LOG-FX.md`). (Babysitter re-measures with the AnalyserNode probe; bar
+  = bounded output + a clean switch + the owner's ear.)
 
 ### T138 — [B] Celebration invisible: CPU-path particles shrank under the DPR downscale · status: DONE (`8145505`, CI green) — OWNER RE-TEST
 **DONE 2026-06-21** — APPROVED (REVIEW.md). **Real cause (DPR downscale):** the 2D buffer is `dpr×res×CSS`
