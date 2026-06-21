@@ -1,6 +1,23 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T79` (Event play mode — cross-topic gauntlet) · live build
+**Current verdict:** `APPROVED — T80` (best-attempt board: event entries + live-window lockout) ·
+live build **`135b9a6`**. Events now appear on the Best Times board: a new **event best-attempt
+store keyed by EVENT id** (`halves.eventBest`, same `rank` order as topic boards) so the best
+**persists across the 14-day recurrence**; `finishEvent` records it. A "Daily Events" section
+renders **today's** event **LIVE + routable** (`data-event`, amber, shows its best) and the other
+13 **LOCKED** (visible, "Live in N days", **no `data-event`** → not routable). `isRetryable(id) =
+Events.isLive(id)`; the `sumList` tap routes only live `data-event` rows into `startEvent`. Good
+defensive fix: `start()`/`startPractice()` now clear `eventCtx` so an abandoned event can't
+misroute a later `finish()`. `EventPlay` gains `isRetryable` + `bestOf`. Verified
+**independently**: full **20-gate suite green** (`events.test.js` now 62), incl. a DOM drive that
+proves lockout/routing AND **best-persistence across a simulated 14-day recurrence** (prior best
+survives the gap, routable again, beating it updates the stored best, reward stays owned). `node
+-c` clean; migration-safe (new key, additive). **Non-blocking nit (tracked → fixed in T81):** the
+live row's inline `background:var(--amber)1f` is invalid (resolves to `#F5B544 1f`, dropped), so
+the subtle amber tint silently doesn't apply — purely cosmetic (the row is still marked by its
+amber rankdot + "Live today"); added as a **required carry-over fixup in T81's DoD**. T80 → DONE.
+
+**Previously approved (done):** `T79` (Event play mode — cross-topic gauntlet) · live build
 **`67f9fe2`**. `events.js` gains a pure, dependency-injected **`buildGauntlet(eventId, modes)`** —
 a **deterministic** per-event set (seed = `hashStr(id) ^ artSeed`): each topic's fixed pool is
 **canonicalised to a TOTAL order** (numeric collator + raw-string tie-break) so `build()`'s
@@ -121,12 +138,13 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T80` next** (best-attempt board + live-window lockout) — events appear on the
-best-attempt board; `isRetryable` true **iff live today**, else the entry renders **locked**
-(visible, not routable into play); best attempt **persists across the 14-day recurrence** so you
-can beat it next time. Then `T81` (art/copy/music + the **prominent home banner** — owner: a
-front-and-centre home-screen CTA, not hidden in menus). Specs in BACKLOG Phase 6.5; this line is
-authoritative.
+**Do `T81` next** (event presentation — the LAST Events task) — compelling per-event procedural
+art + copy + **new event music** + the **prominent home banner** (owner: a front-and-centre
+home-screen CTA, not hidden in menus). **Includes a required carry-over fixup:** the T80 live-row
+`background:var(--amber)1f` is invalid CSS (dropped) → replace with a valid low-alpha amber.
+After the Events block, **`T82`** (visual-direction deep research, Phase 6.7 — doc only), then
+content extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store). Specs in BACKLOG; this
+line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

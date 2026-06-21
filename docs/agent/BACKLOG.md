@@ -1362,7 +1362,7 @@ The actual game. Reuses the existing round/clock/scoring engine; adds the event 
   that event is live** and is **idempotent**; offline-safe; no leaks. Extend `events.test.js`.
   `node -c` clean; every `$("id")` used exists in `index.html`; **all gates green**.
 
-### T80 — Best-attempt board: event entries + live-window lockout · status: OPEN
+### T80 — Best-attempt board: event entries + live-window lockout · status: DONE
 - Events appear on the **best-attempt board**. An event entry is **playable/retryable only
   during its live window** (today, recurring every 14 days). **Outside the window it renders
   locked** on the best-of screen — visible (so the player knows it exists / recurs) but
@@ -1395,6 +1395,12 @@ existing art).
   When the player already owns today's reward, the banner stays but reads as
   done/come-back-tomorrow (still visible, not nagging). **Do NOT** add any Arena
   event-gate-explanation UI (owner: unnecessary — see phase note).
+- **Carry-over fixup from T80 (required).** The live-event row on the best-attempt board uses an
+  invalid inline style `background:var(--amber)1f` — after `var()` substitution this is
+  `#F5B544 1f` (two tokens), so it's **dropped** and the intended subtle amber tint never
+  applies. Replace it with a valid low-alpha amber (e.g. an `rgba()`/`color-mix()` token or a
+  predefined `--amber-weak` custom property) so the live row gets its tint. Confirm the value
+  actually parses.
 - **DoD:** the per-event art is **distinct across all 14** (assert variation, e.g. ≥90%
   pairwise-distinct grids) and **static/deterministic**; the event music **passes the sound
   gate** (calm/volume invariants hold; extend `sound.test.js` or the music gate); the
