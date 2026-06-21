@@ -2273,13 +2273,47 @@ named schools). No user-facing/code references exist. (NB: this spec deliberatel
 > Owner intent: add more topics over time, but **add genuinely new content** (new
 > procedural art, new names, new guides) rather than diluting what exists. The
 > inventory grows → the Arena auto-scales (see below) → we must keep the invariants
-> intact. T58 documents the process; T59–T61 add the Wave-2 topics following it. **All
-> of Phase 7 comes AFTER T50/T52–T56** (the current improvements).
+> intact. **COMBINED (owner, 2026-06-21):** this phase now also **restructures existing
+> topics** — scaling back over-hard Part 1s and adding Part 2/3 deepenings where there's
+> genuine depth — **designed together with the new topics** as one curriculum (T58 = the
+> unified blueprint; **T59–T61 will be re-batched to match it**). Anti-dilution still rules:
+> a new part only where the curriculum has real depth (T106's tree handles varying depth).
 
-### T58 — Content-extension playbook (`docs/CONTENT-EXTENSION.md`) · status: OPEN
+### T58 — UNIFIED content blueprint: existing-topic rebalance + Part-3s + new topics (`docs/CONTENT-EXTENSION.md`) · status: OPEN
 Write the canonical doc for **how to extend the game with new topics/content** without
-breaking the coupled systems, and how to do it with **new content, not dilution**. Doc
-only (plus reading the code to be accurate); no behaviour change.
+breaking the coupled systems, with **new content, not dilution** — **AND** (owner, 2026-06-21:
+"combine this work with the introduction of the new topics") design the **existing-topic
+restructuring together with the new topics as ONE curriculum map**, resolving overlaps. Doc
+only (plus reading the code to be accurate); no behaviour change. **Reflect the CURRENT Arena
+calibration** — the **T88 team-sim `FOE_BUDGET`** auto-derives from the live collectible pool, so
+adding content auto-scales the Arena (re-prove invariants on the grown set); the older
+`statBattle`/def-formula text below is legacy and should be updated to the team model.
+
+**Existing-topic restructuring (combine with the new topics — Babysitter analysis from the live
+question sets, 2026-06-21):** two levers — **(a)** where **Part 1 is overly hard, scale it back**
+(gentler on-ramp) and move the harder content to **Part 2/3**; **(b)** where a topic has **lots of
+content / real depth, add a Part 3**. Per the **anti-dilution rule**, add a part ONLY for genuine
+depth — NOT to force a uniform 3-wide tree (T106 handles varying depth).
+- **Rebalance candidates (P1 currently too hard → split):**
+  - **Place Value** — P1 today blends whole **AND** decimal ×÷10/100. Scale **P1 → whole ×÷10/100
+    only** (on-ramp); **P2 → decimal ×÷10/100**; **P3 → ×÷100/1000, answers <1, 3-dp**.
+  - **Fractions (→decimal)** — P1 today includes eighths/twentieths/sixteenths. Scale **P1 →
+    common (½ ¼ ⅕ tenths)**; **P2 → eighths/twentieths/sixteenths**; **P3 → equivalent / ordering**.
+  - **Squares** — P1 today runs to 13²–15² + 20²/25²/30². Scale **P1 → 2²–12² recall**; **P2 →
+    extension squares (13²–15², 20²/25²/30²)**; **P3 → cubes &/or √ of perfect squares**.
+  - **Times** (softer) — P1 is the deliberately-hard 6/7/8/9 core; consider a **gentler on-ramp**
+    + push 2-digit× to P2/P3 *(coordinate with Larger ×/÷)*.
+- **Part-3 deepenings (genuine depth, from IDEAS I6):** **Fractions of → reverse / find-the-whole**;
+  **Percentages of → % increase/decrease**; **Add & Subtract → decimal ± / 4-digit / multi-step**.
+- **Leave bounded (no new part — dilution):** **Halves · Doubles · Number Bonds**.
+- **RESOLVE OVERLAPS (each skill in ONE place, not both):** Add&Sub decimal-P3 ↔ **Money** (Wave-2);
+  Place-Value ×÷1000-P3 ↔ **Larger ×/÷** (Wave-2); Times-extension ↔ **Larger ×/÷**. The blueprint
+  must decide each.
+- **Deliverable = the FINAL topic map:** every topic with its **P1/P2/P3** (rebalanced) **+ the new
+  Wave-2 topics**, the unlock chain, which skill lives where, and a build order (re-batch T59–T61
+  to match). Each existing-P1 rebalance is a **content edit** (curated set changes) → re-curate per
+  `QUESTION-SETS.md`; each new part/topic = the full anti-dilution kit (icons/names/guide/glyph/
+  `explain`/`masterSecs`).
 - **The coupling map (explain, accurate to the code).** A new topic adds collectibles
   (`init` · `mastery` · `flawless` · `4×speed` · per-question `Solved`+`Spark`, ≈ 7+2N
   for N questions). Collectibles carry **boosts** (hero+stat) → raise **hero ratings** →

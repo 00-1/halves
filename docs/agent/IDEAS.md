@@ -506,5 +506,6 @@ go deeper") and honest.
   **Arena auto-scales** (T88 calibration already auto-derives from the pool — re-prove on the
   grown set). T106 (tree v2) should render whatever depth exists from the live `requires` data.
 
-*(Status: captured, NOT queued. When the owner picks which P3s to build, promote as curated
-content tasks — likely grouped like the Wave-2 batches.)*
+*(Status: combined per owner 2026-06-21 — this analysis now feeds **BACKLOG T58** (the unified
+content blueprint), which designs the existing-topic rebalance + Part-3s **together with** the new
+Wave-2 topics. T58 is authoritative; T59–T61 re-batched to match.)*
