@@ -1773,3 +1773,37 @@ notes / questions: I used **10px** for the four bumped rules (the DoD's hard flo
   prefers larger. Suggested value taken as-is since the Babysitter had pre-verified
   it. Next per REVIEW: **T48** (inventory tab regression), then **T47** (Arena
   pure stat check).
+
+## T48 — Inventory regression: item tiles + bars-at-top on every tab  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - main.js — unified the three inventory tabs onto **one layout** (`invTabHtml`):
+    a single progress-bar block at the very top (one `tp-row` per section, reusing
+    `tp-head`/`tp-bar`/`tp-fill`/`topicBarColor`), then the `invCell` tiles grouped
+    by the **same sections** below, each under a plain `<h4>` header with **no
+    per-section bar**. Replaced `invSection` (which interleaved a bar above each
+    section's tiles) with `invBarRow` + `invTileGroup`. **Topics tab regression
+    fixed:** it now renders each topic's `C.modeItems(m.id)` tiles below the bars
+    (it previously rendered bars only). Awards + Loot now collect all their bars
+    into the top block instead of one-bar-per-section.
+  - test/inventory.test.js — NEW DOM-shim test (24 assertions across all 3 tabs).
+  - .github/workflows/pages.yml — added it as a fourth gate (guards this exact
+    regression — Topics losing its tiles — from recurring).
+how I verified:
+  - `node -c main.js` OK; no stub; `invSection` fully removed (0 refs).
+  - `node test/inventory.test.js` → **ALL 24 PASS**: every tab has exactly **one**
+    `.topic-prog` bar block, it sits **above** the tiles, **every `tp-bar` precedes
+    every `inv-grid`** (no bar beside tiles), and tiles render (`inv-cell`). Topics
+    shows real owned tiles **with a `<canvas>`** (regression fixed) and its Halves
+    bar reads **3/59** matching the seeded owned count. Lazy-render preserved: Loot
+    region tiles ("· tiers …") are absent on Topics/Awards and appear **only** when
+    the Loot tab is opened. Section order is identical between the bar block and the
+    tiles (both built from one `sections` array).
+  - All four gates green together (icon + perf + contrast + inventory). Preserved:
+    `invCell` owned/locked markup + `r-<rarity>` classes, `drawInvCanvases` over
+    `.inv-cell.owned canvas`, jump-to-top (`updateInvTop`), `invList.scrollTop = 0`
+    on switch, `invMeta` total. No collectibles/earning change. 360px-safe (grid
+    unchanged minmax(64px,1fr)). No regressions.
+notes / questions: I wired the new test as a CI gate (this bug slipped past the
+  existing gates, so a permanent guard is justified) — easy to drop if unwanted.
+  Next per REVIEW: **T47** (Arena → instant pure-stat check, drop the maths round).

@@ -30,6 +30,8 @@ jobs:
         run: node test/perf.test.js
       - name: Contrast test (gate)
         run: node test/contrast.test.js
+      - name: Inventory layout test (gate)
+        run: node test/inventory.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

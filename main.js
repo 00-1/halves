@@ -478,46 +478,60 @@
       (owned ? '<canvas class="pix" width="48" height="48"></canvas><span class="inv-name">'+esc(it.flavour)+'</span>'
              : '<span class="q">?</span>')+'</div>';
   }
-  // A titled section: header (title + owned/total), a graded bar, then the tiles.
-  function invSection(title, items, col){
-    if(!items.length) return "";
-    const got = items.filter(it => col[it.id]).length, pct = got / items.length;
-    return '<div class="inv-cat"><h4>'+esc(title)+' <span>'+got+'/'+items.length+'</span></h4>'+
+  // One progress-bar row for a section (reuses the Topics-tab tp-row styling).
+  function invBarRow(label, got, total){
+    const isDone = total > 0 && got === total, pct = total ? got / total : 0;
+    return '<div class="tp-row'+(isDone ? " done" : "")+'">'+
+      '<div class="tp-head"><span class="tp-name">'+esc(label)+'</span>'+
+        '<span class="tp-prog">'+got+'/'+total+'</span>'+
+        '<span class="tp-state">'+(isDone ? "✓" : "")+'</span></div>'+
       '<div class="tp-bar"><div class="tp-fill" style="width:'+(pct*100).toFixed(1)+
-        '%;background:'+topicBarColor(pct, got === items.length)+'"></div></div>'+
+        '%;background:'+topicBarColor(pct, isDone)+'"></div></div></div>';
+  }
+  // One titled tile group: header (title + owned/total) then the tiles — NO bar
+  // (all bars live in the top block now, T48).
+  function invTileGroup(title, items, col){
+    if(!items.length) return "";
+    const got = items.filter(it => col[it.id]).length;
+    return '<div class="inv-cat"><h4>'+esc(title)+' <span>'+got+'/'+items.length+'</span></h4>'+
       '<div class="inv-grid">'+items.map(it => invCell(it, col)).join("")+'</div></div>';
   }
-  // Topics tab — per-topic completion rows with their own bars.
+  // One consistent tab layout (T48): a single progress-bar block at the very top
+  // (one row per section), then the item tiles grouped by the SAME sections below.
+  // `sections` = [{ label, items }] in the order both blocks share.
+  function invTabHtml(blockTitle, summary, sections, col){
+    const bars = sections.map(s =>
+      invBarRow(s.label, s.items.filter(it => col[it.id]).length, s.items.length)).join("");
+    const block = '<div class="inv-cat"><h4>'+esc(blockTitle)+' <span>'+esc(summary)+'</span></h4>'+
+      '<div class="topic-prog">'+bars+'</div></div>';
+    const tiles = sections.map(s => invTileGroup(s.label, s.items, col)).join("");
+    return block + tiles;
+  }
+  // Topics tab — bars-at-top per topic, then each topic's tiles below.
   function invTopicsHtml(col){
-    let done = 0;
-    const rows = MODES.map(m => {
-      const items = C.modeItems(m.id), total = items.length;
-      const got = items.filter(it => col[it.id]).length, isDone = total > 0 && got === total;
-      if(isDone) done++;
-      const pct = total ? got / total : 0;
-      return '<div class="tp-row'+(isDone ? " done" : "")+'">'+
-        '<div class="tp-head"><span class="tp-name">'+esc(m.name)+'</span>'+
-          '<span class="tp-prog">'+got+'/'+total+'</span>'+
-          '<span class="tp-state">'+(isDone ? "✓" : "")+'</span></div>'+
-        '<div class="tp-bar"><div class="tp-fill" style="width:'+(pct*100).toFixed(1)+
-          '%;background:'+topicBarColor(pct, isDone)+'"></div></div></div>';
-    }).join("");
-    return '<div class="inv-cat"><h4>Topics <span>'+done+'/'+MODES.length+' at 100%</span></h4>'+
-      '<div class="topic-prog">'+rows+'</div></div>';
+    const sections = MODES.map(m => ({ label:m.name, items:C.modeItems(m.id) })).filter(s => s.items.length);
+    const done = sections.filter(s => s.items.every(it => col[it.id])).length;
+    return invTabHtml("Topics", done + "/" + sections.length + " at 100%", sections, col);
   }
-  // Awards tab — the drill-earned categories, each a section with a bar.
+  // Awards tab — bars-at-top per drill-earned category, then the tiles below.
   function invAwardsHtml(col){
-    return AWARD_CATS.map(n => invSection(n, C.CATALOG.filter(it => it.cat === n), col)).join("");
+    const sections = AWARD_CATS.map(n => ({ label:n, items:C.CATALOG.filter(it => it.cat === n) }))
+      .filter(s => s.items.length);
+    let got = 0, total = 0;
+    sections.forEach(s => { got += s.items.filter(it => col[it.id]).length; total += s.items.length; });
+    return invTabHtml("Awards", got + "/" + total, sections, col);
   }
-  // Loot tab — sub-grouped into the 10 themed tier-regions, each with a bar.
+  // Loot tab — bars-at-top per themed tier-region, then the tiles below.
   function invLootHtml(col){
     const E = window.Enemies, loot = C.CATALOG.filter(it => it.cat === "Loot");
     const byRegion = {};
     loot.forEach(it => { const r = Math.floor(((it.tier || 1) - 1) / 10); (byRegion[r] = byRegion[r] || []).push(it); });
-    return Object.keys(byRegion).map(Number).sort((a, b) => a - b).map(r => {
+    const sections = Object.keys(byRegion).map(Number).sort((a, b) => a - b).map(r => {
       const label = (E && E.regionLabel) ? E.regionLabel(r) : ("Region " + (r + 1));
-      return invSection(label + " · tiers " + (r*10+1) + "–" + (r*10+10), byRegion[r], col);
-    }).join("");
+      return { label: label + " · tiers " + (r*10+1) + "–" + (r*10+10), items: byRegion[r] };
+    });
+    const got = sections.reduce((a, s) => a + s.items.filter(it => col[it.id]).length, 0);
+    return invTabHtml("Loot", got + "/" + loot.length, sections, col);
   }
 
   function drawInvCanvases(){
