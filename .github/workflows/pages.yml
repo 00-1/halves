@@ -90,6 +90,10 @@ jobs:
         run: node test/fxgl.test.js
       - name: FX wiring test (gate)
         run: node test/fx-wiring.test.js
+      - name: FXGL golden-render test (gate)
+        run: node test/golden-fx.test.js
+      - name: Synth golden-score test (gate)
+        run: node test/golden-synth.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info
