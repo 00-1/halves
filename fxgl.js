@@ -994,8 +994,10 @@
   CPUBackend.prototype.setData = function(derived){ this.derived = derived; };
   CPUBackend.prototype.setBurst = function(parts){ this.burst = parts; this.burstCount = parts.length; };
   CPUBackend.prototype.resize = function(w, h){ this.w = Math.max(1, w | 0); this.h = Math.max(1, h | 0); };
-  // Frame: the dithered scene still (if any) + a modest, capped 2D celebration
-  // flourish (the no-GPU path stays light — filled motes, no GPU particles).
+  // Frame: the dithered scene still (if any) + an animated 2D particle pass for
+  // burst()/celebrate() via fillRect. This is BOTH the no-GPU fallback AND the
+  // deliberate Canvas2D overlay (T133): a 2D context always presents, so the z-58
+  // celebration renders on devices that refuse a 2nd WebGL/WebGPU context.
   CPUBackend.prototype.renderFrame = function(o){
     const ctx = this.ctx; if(!ctx) return;
     if(o.sceneOn && this.derived) this._still();
@@ -1118,6 +1120,12 @@
   };
   Controller.prototype._init = function(){
     const o = this.opts;
+    // Forced Canvas2D backend (T133) — the overlay CELEBRATION path. A 2D context
+    // has no per-document GL-context-count limit, so it ALWAYS initialises +
+    // presents; mobile GPUs (the Poco-X3 target) commonly refuse/lose a SECOND
+    // WebGL/WebGPU context, which is why the z-58 #fxBurst overlay rendered nothing
+    // live. This bypasses GL entirely and still animates bursts via fillRect.
+    if(o.backend === "2d" || o.canvas2d){ this._initCanvas2D(); return; }
     // Forced/injected backend (tests + explicit caller choice).
     if(o.gl){ this._use(new GLBackend(o.gl)); return; }
     if(o.device && o.gpuContext){ this._use(new GPUBackend(o.device, o.gpuContext, o.format || "bgra8unorm")); return; }
@@ -1146,10 +1154,18 @@
     let gl = null;
     try{ gl = cv && cv.getContext && cv.getContext("webgl2"); }catch(e){}
     if(gl){ try{ this._use(new GLBackend(gl)); return; }catch(e){} }
+    this._initCanvas2D();
+  };
+  Controller.prototype._initCanvas2D = function(){
+    const o = this.opts, cv = this.canvas;
     let ctx2d = o.ctx2d || null;
     try{ if(!ctx2d) ctx2d = cv && cv.getContext && cv.getContext("2d"); }catch(e){}
     this._use(new CPUBackend(ctx2d));
   };
+  // The drawing-buffer size of the active backend — the [A] wire / tests assert the
+  // overlay reaches a real (non-1×1) size before celebrating (the invisible trap).
+  Controller.prototype.dimensions = function(){ return this.backend ? { w: this.backend.w | 0, h: this.backend.h | 0 } : { w: 0, h: 0 }; };
+  Controller.prototype.isReady = function(){ return !!this.ready; };
   // The ambient scene animates only when started AND not reduced-motion; the
   // loop also runs while a burst is alive. Single source of truth for the RAF.
   Controller.prototype._ambientLoops = function(){ return this.running && !this.reduced && !!this.derived; };

@@ -6,6 +6,54 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T133 — make the overlay CELEBRATION actually render on-device ([B], engine gap)
+
+**Status: DONE — handed off for review.** B-owned files only (`fxgl.js`,
+`test/fxgl.test.js`, `test/golden-fx.test.js` + a new golden); **zero edits to any
+existing Halves file.** Off stand-by: A's T125 `fxBigBurst`→resize→`celebrate()`
+wiring is correct + tested but shows **nothing live** — `#fxBurst` is a **2nd
+WebGL/WebGPU context**, which mobile GPUs (the Poco-X3 target) commonly refuse/lose,
+so the z-58 overlay never presents.
+
+### The fix (route b: a Canvas2D overlay — always presents)
+The diagnosis is a GPU-context-count limit, not a logic bug. A **Canvas2D** context
+has **no** such limit, so it reliably inits + presents. The engine's `CPUBackend`
+already draws particles via `fillRect`; I added a way to **force** it:
+- **`FXGL.mount(canvas, { backend: "2d" })`** (or `{ canvas2d: true }`) → `_init`
+  selects the **Canvas2D backend up front**, bypassing WebGL/WebGPU entirely (no 2nd
+  GL context is ever requested). It still **animates** `burst()`/`celebrate()` (the
+  loop drives `renderFrame` → `fillRect` per particle, the same closed-form
+  trajectory as the GL path), auto-stops, frees its buffer, honours
+  reduced-motion/`setQuality`.
+- Hardened the GPU fallback too: `_initSync` now routes its no-GL fallback through
+  the shared `_initCanvas2D()`.
+- Added `controller.dimensions()` + `isReady()` so the overlay's **ready + non-1×1
+  size** can be asserted before it draws (the invisible trap).
+
+### Verify (break the "green-but-invisible" trap)
+- Headless: the forced-2D overlay reaches **ready + sized 360×640**, and a
+  celebration **actually draws** — **9632 `fillRect`s across the shower**, 600 in a
+  single mid-shower frame (a regression to "renders nothing" makes these 0 → fail).
+- **A new golden `fx_celebrate_2d_frame`** snapshots the real Canvas2D-overlay frame
+  (the drawn-rect distribution in an 8×6 grid + count) — so a future "renders
+  nothing" collapses it to empty and **fails CI**.
+- Tests: `fxgl.test.js` **124** checks; `golden-fx.test.js` **19**. `node -c` clean;
+  all gates green. *(Headless proves it draws; final on-device confirmation is the
+  owner's live check after A re-points `#fxBurst` — flagged below.)*
+
+### Hand-off to Builder A
+- Mount the **`#fxBurst` overlay with `{ backend: "2d" }`** (a Canvas2D context at
+  z-58, in front of the panels) instead of the failing 2nd GL context; keep the
+  backdrop (`#fxBackdrop`) on WebGL/WebGPU as-is. `celebrate()` then presents the
+  shower over the UI. (The backdrop stays the single GL context; the overlay is 2D —
+  no context-count conflict.) Register the two golden gates in `pages.yml` (still the
+  [A] step, as for the other gates).
+
+### Next (Builder B)
+- Back to reactive stand-by unless another engine gap surfaces.
+
+---
+
 ## T132 — `synth.js` immediate context-swap lever ([B], engine gap from T129)
 
 **Status: DONE — handed off for review.** B-owned files only (`synth.js`,

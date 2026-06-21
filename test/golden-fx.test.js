@@ -83,6 +83,37 @@ gold("fx_scene_frost", sceneSig(c => c.setScene({ grid: S.buildGrid(4), seed: 4,
 gold("fx_burst", particleSig(FXGL.seedBurst({ x: 0.5, y: 0.4, count: 120, seed: 9 }, false, FXGL.BURST_CAP), 0.5));
 gold("fx_celebrate", particleSig(FXGL.seedCelebrate({ x: 0.5, y: 0.6, count: 600, seed: 7 }, false, FXGL.CELEBRATE_CAP), 0.8));
 
+// T133: a golden of the ACTUAL Canvas2D-overlay celebrate frame (the on-device path).
+// Buckets the fillRects the 2D backend draws into an 8×6 grid — a regression to
+// "renders nothing" (the green-but-invisible trap) collapses this to empty and fails CI.
+function cap2d(){
+  const rec = { rects: [] };
+  const ctx = { _a: 1, clearRect: () => {}, fillRect: (x, y, w, h) => { rec.rects.push([x, y, w, h]); },
+    createImageData: (w, h) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }), putImageData: () => {} };
+  Object.defineProperty(ctx, "fillStyle", { get(){ return "#000"; }, set(){} });
+  Object.defineProperty(ctx, "globalAlpha", { get(){ return ctx._a; }, set(v){ ctx._a = v; } });
+  return { ctx: ctx, rec: rec };
+}
+function celebrate2dFrame(){
+  const cp = cap2d(); const q = [];
+  const ov = new FXGL.Controller(stubCanvas(360, 640), { backend: "2d", ctx2d: cp.ctx, raf: cb => { q.push(cb); return q.length; }, caf: () => {}, width: 360, height: 640, dpr: 1, quality: 2, reducedMotion: false });
+  ok(ov.backendName() === "cpu-still" && ov.dimensions().w === 360, "the celebrate golden renders through the sized Canvas2D overlay");
+  ov.celebrate({ x: 0.5, y: 0.6, count: 600, seed: 7 });
+  q.shift()(1000);                 // t=0 frame (fade-in)
+  cp.rec.rects.length = 0;
+  q.shift()(1600);                 // t≈0.6 — a representative full frame
+  const GW = 8, GH = 6, grid = Array.from({ length: GH }, () => new Array(GW).fill(0));
+  for(const r of cp.rec.rects){
+    const cx = r[0] + r[2] / 2, cy = r[1] + r[3] / 2;
+    const gx = Math.max(0, Math.min(GW - 1, Math.floor(cx / 360 * GW))), gy = Math.max(0, Math.min(GH - 1, Math.floor(cy / 640 * GH)));
+    grid[gy][gx]++;
+  }
+  return { drawn: cp.rec.rects.length, grid: grid };
+}
+const c2d = celebrate2dFrame();
+ok(c2d.drawn > 100, "the 2D celebrate frame draws 100+ particles (not invisible — " + c2d.drawn + ")");
+gold("fx_celebrate_2d_frame", c2d);
+
 // celebrate is visibly bigger than burst at its peak (a real shower) — a property
 // golden, not just a pixel one
 const burstPeak = particleSig(FXGL.seedBurst({ count: 200, seed: 1 }, false, FXGL.BURST_CAP), 0.4).alive;

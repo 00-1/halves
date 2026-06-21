@@ -431,5 +431,44 @@ const reg = new FXGL.Controller(stubCanvas(), { gl: makeGL({}), raf: () => {}, c
 reg.burst({ count: 99999, seed: 2 });
 ok(reg.burstCount() === FXGL.BURST_CAP, "burst() still caps at BURST_CAP (256) — no regression");
 
+// =====================================================================
+// 12) Canvas2D overlay (T133): the celebration ALWAYS renders (no 2nd GL context)
+// =====================================================================
+function cap2d(){
+  const rec = { rects: [], cleared: 0 };
+  const ctx = { _fill: "#000", _a: 1,
+    clearRect: () => { rec.cleared++; },
+    fillRect: (x, y, w, h) => { rec.rects.push([x | 0, y | 0, w | 0, h | 0]); },
+    createImageData: (w, h) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }),
+    putImageData: () => {} };
+  Object.defineProperty(ctx, "fillStyle", { get(){ return ctx._fill; }, set(v){ ctx._fill = v; } });
+  Object.defineProperty(ctx, "globalAlpha", { get(){ return ctx._a; }, set(v){ ctx._a = v; } });
+  return { ctx: ctx, rec: rec };
+}
+const cp = cap2d();
+let ovq = [];
+const ov = new FXGL.Controller(stubCanvas(360, 640), { backend: "2d", ctx2d: cp.ctx, raf: cb => { ovq.push(cb); return ovq.length; }, caf: () => {}, width: 360, height: 640, dpr: 1, quality: 2, reducedMotion: false });
+// forced Canvas2D even though we did NOT pass a gl — and it's NOT a GL backend
+ok(ov.backendName() === "cpu-still", "backend:'2d' forces the Canvas2D backend (no WebGL/WebGPU 2nd context)");
+ok(ov.isReady() === true, "the overlay controller reaches ready");
+ok(ov.dimensions().w > 1 && ov.dimensions().h > 1, "the overlay canvas is sized (not 1×1) before drawing (" + ov.dimensions().w + "×" + ov.dimensions().h + ")");
+// celebrate → the loop animates → particles are ACTUALLY drawn (breaks green-but-invisible)
+ov.celebrate({ x: 0.5, y: 0.6, count: 600, seed: 7 });
+ok(ov.isBursting() && ovq.length === 1, "celebrate() on the 2D overlay starts the single RAF");
+let ovt = 0, ovframes = 0;
+while(ovq.length && ovframes < 400){ const cb = ovq.shift(); ovt += 100; cb(ovt); ovframes++; }
+ok(cp.rec.rects.length > 300, "the 2D overlay DREW hundreds of celebration particles across the shower (" + cp.rec.rects.length + " rects — not invisible)");
+ok(cp.rec.cleared > 0, "the overlay clears to transparent each frame (z-58 over the UI)");
+ok(!ov.isBursting() && ovq.length === 0 && ov.burstCount() === 0, "the 2D celebration auto-stops and frees its buffer (no leak)");
+
+// a single mid-shower frame draws a non-trivial number of live particles
+const cp2 = cap2d(); let oq2 = [];
+const ov2 = new FXGL.Controller(stubCanvas(360, 640), { backend: "2d", ctx2d: cp2.ctx, raf: cb => { oq2.push(cb); return oq2.length; }, caf: () => {}, width: 360, height: 640, dpr: 1, quality: 2, reducedMotion: false });
+ov2.celebrate({ x: 0.5, y: 0.6, count: 600, seed: 7 });
+const f1 = oq2.shift(); f1(1000);            // t=0 (fade-in)
+cp2.rec.rects.length = 0;
+const f2 = oq2.shift(); f2(1500);            // t≈0.5 — a full frame
+ok(cp2.rec.rects.length > 100, "a single mid-shower 2D frame draws 100+ live particles (" + cp2.rec.rects.length + ")");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FXGL CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
