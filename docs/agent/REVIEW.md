@@ -1,6 +1,30 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T99` [A] (home top-band + nav + banner N/3) · live build
+**Current verdict:** `APPROVED — T94` [B] (celebration-burst capability for `fxgl.js`) · live build
+**`4a58b3f`**. **CI green.** Second Builder-B handoff — **collision rule honoured** (only the 3
+B-owned files: `fxgl.js`, `test/fxgl.test.js`, `BUILDER-LOG-FX.md`; **zero edits to any existing
+Halves file**). Adds a brief, transient **celebration burst** to the engine: new public
+`FXGL.burst({ x, y, count, seed, palette })` (plus internal `seedBurst`/`burstPos`/`burstMaxDeath`)
+animated **in-shader from a static buffer** via a **closed-form drag trajectory** (`exp(-k·lt)` — same
+recipe in both the GLSL and WGSL paths), so a burst is a one-time upload + one instanced draw/frame.
+Verified **independently** (not just trusting the log): `node -c` clean; **full fxgl gate green (67
+checks, +21 for the burst)**. The three spec-critical invariants are each pinned by a test, and I
+re-ran them:
+- **Capped** — `seedBurst` and a live controller `burst()` both clamp to **`BURST_CAP = 256`** even at
+  `count: 99999` (separate budget from the `PARTICLE_CAP = 512` ambient field).
+- **Seeded + deterministic** — same seed → byte-identical buffer; different seed → different burst
+  (closed-form trajectory, no per-frame RNG).
+- **Auto-stops, no leak** — particles self-expire (`alpha 0` before birth / after `birth+life`); the
+  controller idles the RAF and **releases the burst buffer** on completion (`burstCount() → 0`,
+  `rafId → 0`); a burst **over a running ambient scene** still keeps **one** RAF in flight and **never
+  re-uploads** the scene textures; reduced-motion fires a calmer (scaled-down) flourish that also
+  auto-stops cleanly.
+Standalone (no edits to Halves needed); **[A] wiring is a later task** (fire on reward/loot/event
+gains). T94 → DONE. Builder B pointer advances to the **T95 engine side** (semantic home backdrop).
+
+---
+
+**Previously approved (done):** `T99` [A] (home top-band + nav + banner N/3) · live build
 **`a3608c0`**. Landed in two passes: the layout/nav came in `d1ac5e0` (good), I changes-requested the
 missing third deliverable (premature "Reward earned" tag), and the fix landed in `a3608c0`. **CI
 green on `a3608c0`.** All three deliverables now correct:
@@ -413,12 +437,15 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   — home backdrop after `T100`, Arena biome after `T89`/`T90`. Owns ALL existing Halves files; log
   = `BUILDER-LOG.md`. *(If A is mid-task, finish it
   first.)*
-- **Builder B — next: `T94` [B]** (add a **celebration-burst capability** to `fxgl.js` — brief,
-  capped, seeded particle burst; new API on the B-owned engine, headless-tested). Then the engine
-  side of `T95`. Creates/edits **only B-owned files** (`fxgl.js`, its tests) + brickmap; **never
-  edits existing Halves files**; log = `BUILDER-LOG-FX.md`. *(T93 DONE — `fxgl.js` engine shipped.)*
-  **Unblocked for [A]:** the FX **wiring** tasks (mount `FXGL` + register its CI gate) can now be
-  specced — home backdrop after `T100`, Arena biome after `T88`–`T90`.
+- **Builder B — next: `T95` [B]** (the **engine side** of the semantic home backdrop — a new
+  capability on `fxgl.js` that derives a calm ambient scene from **live home state** passed in by the
+  caller: progress/streak/today's-event mood → palette + particle kind/density, deterministic from a
+  state-derived seed, capped, single-RAF, reduced-motion-safe). New API on the B-owned engine,
+  headless-tested. Creates/edits **only B-owned files** (`fxgl.js`, its tests) + brickmap; **never
+  edits existing Halves files**; the [A] side reads home state and calls it. Log = `BUILDER-LOG-FX.md`.
+  *(T93 + T94 DONE — engine + celebration burst shipped.)* **Unblocked for [A]:** the FX **wiring**
+  tasks (mount `FXGL`, fire `FXGL.burst()` on reward/loot/event gains, + register its CI gate) can now
+  be specced — home backdrop after `T100`, Arena biome after `T88`–`T90`.
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —

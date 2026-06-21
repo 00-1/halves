@@ -2240,14 +2240,16 @@ and record what was borrowed in `docs/agent/BUILDER-LOG-FX.md`.
 > engine sides of **T94** (celebration) / **T95** (home backdrop) are likewise [B] (FX logic) →
 > [A] (mount on the win/gain hooks + home). Babysitter specs each [A] wiring task when ready.
 
-### T94 — Celebration FX: wins + collectible/loot/event gains · status: OPEN
+### T94 — Celebration FX: wins + collectible/loot/event gains · status: [B] engine DONE (`4a58b3f`) · [A] wiring (T94w) PENDING
 **Purpose = amplify reward.** Heightened, *brief* particle/flourish moments so earning *feels* like
 something — on **Arena wins** (the T90 playout's victory) and on **earning a collectible / loot /
 event reward** (inventory gains). Builds on the T93 layer (GPU particles) and/or extends `fx.js`.
-> **Two-builder split:** **T94 [B] (NEXT for Builder B):** add a **celebration-burst capability** to
-> `fxgl.js` (a brief, capped, seeded particle-burst mode — new API on the B-owned engine; NEW-file-
-> only, no edits to existing Halves files; headless test). **T94w [A]:** wire that burst onto the
-> real win/collectible-gain hooks (`main.js`) once T93 is mounted. Babysitter specs T94w when ready.
+> **Two-builder split:** **T94 [B] — DONE (`4a58b3f`):** `FXGL.burst({x,y,count,seed,palette})` — a
+> brief, capped (`BURST_CAP=256`), seeded/deterministic, auto-stopping particle burst on the B-owned
+> engine (closed-form drag trajectory, single-RAF, reduced-motion-safe; 67-check gate). **T94w [A]
+> (PENDING):** wire that burst onto the real win/collectible-gain hooks (`main.js`) once `FXGL` is
+> mounted — fire on Arena wins + collectible/loot/event-reward gains, reduced-motion → calm flourish,
+> never covers key text. Sequence after the FX-mount wiring; Babysitter to slot into A's queue.
 - Fire on the existing win/unlock moments (don't invent new ones); reduced-motion → a calm
   reduced flourish; never obscures the question/result text; respects the toast system.
 - **DoD:** a distinct celebratory burst on Arena wins AND on collectible/loot/event-reward gains
