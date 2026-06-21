@@ -21,13 +21,9 @@ Arena-calib impact); and `74ac75e` dropped results "Play again" (clean, no dangl
 standalone `scenery.js`, 10 themed backdrops behind the tier card; the `rgba(8,10,14,0.64)`
 scrim keeps text AA over the brightest scene cell (`--text` 13.3:1, `--muted` 5.83:1); 7 checks.
 
-**(Note re off-script work:** prompting the Builder directly bypasses this review queue — it
-worked out fine here (both changes sound + gate-green), just flagging it so the ledger stays
-accurate. Recorded as T75/T76 DONE in BACKLOG.)
-
-**`T74` — topic unlock must require genuine engagement (owner) — is next:** skipping every
-question still grants `init:<mode>` (`test:()=>true`) and unlocks the next topic; gate it on
-answering at least a threshold (default: half) — some skips OK, not 100%. Full spec in BACKLOG.
+**(Note re off-script work:** prompting the Builder directly bypasses this review queue; the
+four direct changes so far were all sound + gate-green, recorded as T75/T76/T77 DONE in
+BACKLOG. Flagging only so the ledger stays accurate.)
 
 **Previously approved (done):** `T52` (procedural enemy sprites) · build `f3cc9ae` — standalone
 `monsters.js`, high variation (≥90% distinct), region/type-themed, bosses bigger+crowned;
@@ -58,9 +54,9 @@ to `.85`.)
 
 **Next-task order:** **`T73` → `T55` → `T56`**, then content extension
 (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness).
-**Do `T73` next** — replace the coloured left-border accents (.hd-boost, .map-row) with a coloured square. Then `T55` (Collector->10k), `T56` (pixel mark/glyphs + favicon).  Specs in BACKLOG; this line is authoritative.
-**`T73`** (replace the coloured left-border accents with a square), `T55` (Collector→10k),
-`T56` (pixel mark/glyphs + favicon). Specs in BACKLOG; this line is authoritative.
+**Do `T73` next** — replace the coloured left-border accents (`.hd-boost`, `.map-row`) with a
+coloured square. Then `T55` (Collector→10k), `T56` (pixel mark/glyphs + favicon). Specs in
+BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**
