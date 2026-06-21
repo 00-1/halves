@@ -53,8 +53,10 @@ BGS.forEach(name => {
 function toHex(a){ return "#" + a.map(x => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, "0")).join(""); }
 ok(!/\.app\{[^}]*background:\s*rgba/.test(css), "T142: NO global .app scrim (the full-bleed backdrop reads again — owner's 'nice background' back)");
 // the rows that float directly on the backdrop (backdrop shows only on #start/#arena);
-// everything else is carded (e.g. .topic-info has background:var(--surface)).
-const FLOATERS = ["\\.readouts", "\\.build", "#arena \\.res-label"];
+// everything else is carded (e.g. .topic-info has background:var(--surface)). T145:
+// the `.build` dev stamp is EXEMPT (owner accepts its low contrast) — but the real UI
+// floating text (the gold/momentum row + the Arena title) MUST keep its backing.
+const FLOATERS = ["\\.readouts", "#arena \\.res-label"];
 FLOATERS.forEach(sel => {
   const m = css.match(new RegExp(sel + "\\{[^}]*background:\\s*rgba\\((\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*([\\d.]+)\\)"));
   ok(!!m, "T142: floating row '" + sel.replace(/\\/g, "") + "' has a LOCAL contrast backing (unprotected ⇒ FAIL)");
@@ -64,9 +66,9 @@ FLOATERS.forEach(sel => {
     ok(ratio(muted, eff) >= 4.5, "T142: '" + sel.replace(/\\/g, "") + "' backing → --muted " + ratio(muted, eff).toFixed(2) + ":1 over the brightest backdrop (AA)");
   }
 });
-// over-backdrop muted text must not be opacity-dimmed below the floor (the `.build`
-// stamp used opacity:.7, which lightened it under its backing → sub-AA).
-ok(!/\.build\{[^}]*opacity:\s*0?\.[0-9]/.test(css), "T142: the build stamp isn't opacity-dimmed (would drop --muted under AA over its backing)");
+// T145 — the `.build` dev stamp is EXEMPT: it carries NO pill backing (plain text,
+// owner accepts the low contrast). Confirm it isn't given a local dark backing.
+ok(!/\.build\{[^}]*background:\s*rgba/.test(css), "T145: the build stamp has NO pill backing (plain dev text, exempt from the contrast floor)");
 
 // (b) hierarchy: muted must read dimmer than text on the page background
 ok(lum(muted) < lum(text), "--muted stays dimmer than --text (hierarchy preserved)");

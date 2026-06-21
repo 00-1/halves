@@ -171,8 +171,9 @@ body{
    dark enough for --muted AA (≈4.93:1). Replaces T123's global .app slab (which made
    the full-bleed backdrop a dark slab) — contrast.test asserts this per element. */
 .readouts{background:rgba(14,17,22,.88);border-radius:11px;padding:7px 16px}
-.build{align-self:center;background:rgba(14,17,22,.88);border-radius:9px;padding:4px 12px}
 #arena .res-label{display:inline-block;align-self:center;background:rgba(14,17,22,.88);border-radius:8px;padding:4px 12px}
+/* T145 — the `.build` dev stamp is left PLAIN (no pill): the owner accepts its low
+   contrast (dev-only info), so it's exempt from the contrast floor (see contrast.test). */
 .readouts .goldbar,.readouts .momentumbar{margin-top:0;min-height:0}
 /* T96 — one row of bigger icon nav buttons; degrades as gating hides items. */
 /* T111 — uniform wider buttons (min-width 60) so the seven nav buttons wrap to a

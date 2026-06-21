@@ -32,7 +32,13 @@
 
   <!-- START (T96: top-aligned, tree-only picker, compact info row, one-line nav) -->
   <section id="start" class="screen">
-    <!-- compact today's-event banner, front-and-centre at the very top (T91) -->
+    <!-- T144 — the gold/momentum readout is a header stat bar at the very TOP
+         (keeps its T142 local pill backing so it's legible over the backdrop). -->
+    <div class="readouts">
+      <span class="goldbar" id="goldBar"></span>
+      <span class="momentumbar" id="momentumBar"></span>
+    </div>
+    <!-- compact today's-event banner, front-and-centre near the top (T91) -->
     <div class="event-banner hidden" id="eventBanner"></div>
     <!-- the tech tree is the only home picker now; it takes the reclaimed space.
          T116: wrapped so the scroll-fade affordance (edge gradients + "more below"
@@ -43,10 +49,6 @@
     </div>
     <!-- one compact selected-topic row: glyph · name · have/total · best (T96) -->
     <div class="topic-info" id="topicInfo"></div>
-    <div class="readouts">
-      <span class="goldbar" id="goldBar"></span>
-      <span class="momentumbar" id="momentumBar"></span>
-    </div>
     <div class="start-actions">
       <button class="btn" id="startBtn">Start</button>
       <button class="btn alt" id="practiceBtn">Practice</button>

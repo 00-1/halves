@@ -4360,3 +4360,26 @@ notes / questions: **babysitter + owner LIVE:** open the Audio menu via the Soun
   the defaults to taste), tester no longer restarts the song. Volume balance (music 0.05× vs SFX 0.08×) is a
   starting point; both sliders + the limiter make it safe to push. Next per `NEXT.md`: **`T144`** (move the
   gold/momentum pill to the TOP of `#start`) → `T140` (12-style picker, after B's T139).
+
+## T144 + T145 — Move the gold/momentum pill to the TOP + drop the build-stamp pill  [HANDOFF]
+commit: (this commit, on main) — [A], OWNER-PRIORITY (small home-screen pill tweaks; the DoD says do them
+together). Owner: (T144) "the goblin gold / momentum pill should move to the top of the page"; (T145) "I
+don't like the build info pill at the bottom — get rid of the black pill and leave those hard to read,
+they're just for me anyway."
+changed (A-owned only):
+  - **T144 — index.html** — moved the `.readouts` (gold · momentum) row to the **very TOP of `#start`**
+    (above the event banner + tree, as a header stat bar). It keeps its T142 local dark pill backing, so it
+    stays legible over the FX backdrop.
+  - **T145 — styles.css** — removed the `.build` dev-stamp's T142 pill backing (`background`/radius/padding)
+    → the stamp is plain text again (the owner accepts its low contrast; it's dev-only).
+  - **test/contrast.test.js** — dropped `.build` from the floating-text set (it's exempt) while KEEPING the
+    per-element AA assertion for the real UI floating text (`.readouts` + `#arena .res-label`); added a check
+    that `.build` carries NO pill backing. The gate still FAILS if `.readouts`/`res-label` lose their backing.
+  - **test/home-layout.test.js** — asserts the readout now sits at the TOP of `#start` (above the banner).
+how I verified: `node -c` n/a (HTML/CSS/tests); **full 34-gate suite green** (contrast 12 — `.build` exempt,
+  `.readouts`+`res-label` still gated + the gate still fails on an unprotected row; home-layout 29 — readout
+  at top). [A]-owned files only.
+notes / questions: **owner screenshot:** the gold/momentum pill is now the top header bar of the home page
+  (legible over the backdrop); the build stamp at the bottom is plain low-contrast text (no pill). Next per
+  `NEXT.md`: **`T140`** (extend the music picker to B's 12 styles + per-screen routing + the dubstep victory —
+  now unblocked by T139's owner-approved palette).

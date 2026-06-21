@@ -26,11 +26,13 @@ ok(!/body\{[^}]*align-items:center/.test(css), "(1) body no longer vertically ce
 // the keypad+Skip block never shrinks → Skip stays on-screen even if space is tight
 ok(/\.pad\{[^}]*flex:0 0 auto/.test(css), "(1) T118: the numpad (#pad) is flex:0 0 auto — the Skip key can't be clipped; the stage gives first");
 
-// ---- (2) the event banner is pinned to the top of #start --------------------
+// ---- (2) the gold/momentum readout is at the TOP, then the banner, then the tree --
 const startBlock = html.slice(html.indexOf('id="start"'), html.indexOf('id="summary"'));
+const readoutsIdx = startBlock.indexOf('class="readouts"');
 const bannerIdx = startBlock.indexOf('id="eventBanner"');
 const treeIdx = startBlock.indexOf('id="modeTree"');
-ok(bannerIdx >= 0 && treeIdx >= 0 && bannerIdx < treeIdx, "(2) the event banner is the first element of #start (above the tree)");
+ok(readoutsIdx >= 0 && bannerIdx >= 0 && readoutsIdx < bannerIdx, "(2) T144: the gold/momentum readout is at the TOP of #start (above the event banner)");
+ok(bannerIdx >= 0 && treeIdx >= 0 && bannerIdx < treeIdx, "(2) the event banner sits above the tree");
 ok(/\.event-banner\{[^}]*margin-top:0/.test(css), "(2) the banner has no top margin — it sits flush at the top");
 ok(/#start\{[^}]*padding:12px/.test(css), "(2) #start top padding trimmed (12px) so the banner is pinned high");
 
