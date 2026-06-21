@@ -326,6 +326,51 @@ RPG mechanic. It makes the **12 heroes** and the **whole collection** matter far
 single-hero check, and the enemy-team idea reuses existing lower-tier enemy defs (scales for free).
 Genuinely additive and in-domain — worth doing well.
 
+**Owner decisions (2026-06-21, round 2) — LOCKED:** **deterministic auto-resolve** (decisions
+#1 win-by-attrition, #2 no-RNG, #4 auto-resolve below are all settled this way), and the owner
+**delegated the calibration** to the Babysitter ("you figure out how to keep it levelled… beatable
+only with near-max loadouts"). Calibration design authored below.
+
+### Calibration design (Babysitter-authored, owner-delegated 2026-06-21)
+Goal: a deterministic 3v3 auto-resolve whose **top is beatable only with near-max loadouts**,
+while **every existing invariant still holds** (tiers 1–5 winnable with a starter team at 0 items ·
+curve monotonic · no tier behind its own loot · final tier ⇔ near-full, one boost flips it).
+
+**Battle model (deterministic, zero RNG).** 6 combatants — 3 heroes + 3 foes — each `{atk, hp,
+spd, type}`. Turn order by `spd` (fixed index tie-break). On a combatant's turn it picks a target
+by a **fixed rule** (best type-matchup vs the target; tie → lowest current `hp`; tie → index) and
+deals `damage = max(1, round(atk × matchup(att,tgt) − tgt_mitigation))`; a combatant at `hp ≤ 0`
+is removed. Loop rounds until one side has no survivors. **Win = ≥1 hero alive.** Same inputs →
+same result, so it simulates + gates in Node exactly like today's stat check.
+
+**Stat sourcing.** Each hero's `atk/hp/spd` are **monotone-increasing functions of the collected
+loadout** (extends today's buff→`rating`). Enemy team = the **tier foe** (scales with tier on the
+existing power/`def` curve) **+ 2 "adds" at `tier−k`** (weaker, but they scale *relative* to the
+tier, so the top stays hard; floor at tier 1, so low tiers' adds are near-trivial).
+
+**Leveling recipe (how "near-max only" is guaranteed).**
+1. Define a **monotone** `BestTeamPower(loadout)` = max over 3-hero subsets of a team aggregate of
+   `atk/hp/spd`. Monotone in the loadout (more buffs ⇒ never weaker).
+2. Tune the enemy-team strength curve `E(tier)` (foe scaling + the 2 adds) so the **deterministic
+   sim** yields: `E(1..5)` < starter-team-at-0-items ⇒ early-winnable; `E` strictly increasing ⇒
+   monotone curve; the **top region (~109–120)** wins **only** near-max, with **tier 120 ⇔
+   near-full** and **removing any one champion boost flips it**; and for **every tier n**, beatable
+   with power earnable from tiers `< n` + non-tier sources ⇒ **no tier behind its own loot**.
+3. **Monotonicity is the linchpin** (it's what makes the curve well-defined): damage monotone in
+   `atk`, survival monotone in `hp`; the targeting + turn-order rules must **not** be anti-monotone
+   — so **cap `spd`'s swing on turn order** and keep damage a smooth monotone function. Where a
+   buff could *flip a win to a loss* (overkill waste, a turn-order inversion), **damp that
+   mechanic** until the sim is monotone in the loadout.
+4. **The sim is the source of truth; the scalar only guides tuning.** Extend `arena.test.js` to
+   **simulate every tier across a loadout lattice** (0 · partial · near-full · full · full-minus-
+   one-champion-boost) and assert all four invariants. If a non-monotone or off-curve outcome
+   appears, **fix the mechanic, not the test.**
+
+**Net effect (what the owner asked for).** With 3 heroes, "near-max" now means *your three best
+heroes each near-fully buffed* — a genuine team-wide **collection-completion** check, so the
+ceiling rises (more depth) while tiers 1–5 stay open to newcomers. The single-hero `statBattle`
+becomes the 1v1 special case of the same sim, so migration is clean.
+
 **What it changes (and the care it needs).** Today a battle is a **pure, deterministic stat check**
 (`statBattle`: win iff `round(rating×matchup) ≥ def`, T47) — and *that determinism is exactly what
 lets the Arena invariants be PROVEN in `arena.test.js`*. A 3v3 turn-based fight must preserve that
@@ -366,5 +411,8 @@ win condition + determinism first: (1) the deterministic 3v3 battle model + re-c
 invariant proofs (the crux); (2) team-selection UI; (3) the watchable turn playout/FX; (4) the
 <3-heroes / early-game handling. Don't queue until 1–7 above are decided.
 
-*(Status: captured, NOT queued. The gating crux is #3 — keep it deterministic and re-prove the
-invariants, or the whole calibrated-Arena guarantee is at risk.)*
+*(Status: captured, NOT queued — but **design-resolved**: deterministic auto-resolve is LOCKED and
+the calibration approach is authored above. **Ready to promote on the owner's "go"** (then it
+becomes: design-doc → deterministic battle model + re-calibration + invariant sim-proofs → team
+UI → playout/FX → early-game <3-heroes handling). The crux remains keeping the sim monotone so the
+invariants stay provable.)*
