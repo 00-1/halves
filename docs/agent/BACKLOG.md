@@ -697,7 +697,7 @@ loot); `def100` from max rating excluding tier-100 loot.
   unwinnable until every non-final-loot boost is owned and winnable once it is.
   Pure logic, no DOM.
 
-### T24 — Arena mode (`#/arena`) · status: BLOCKED
+### T24 — Arena mode (`#/arena`) · status: DONE
 Pick an unlocked hero → see tier + matchup hint → play a battle round (reuse the
 drill engine over unlocked topics) → resolve → show the result maths → on win
 grant `tier:n` + its **loot batch** (in the unlock modal) + advance (+ any hero
