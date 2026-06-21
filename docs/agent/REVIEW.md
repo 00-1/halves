@@ -1,31 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `CHANGES REQUESTED — T51` (the feature is correct — one test fix
-needed). The hero-portrait restoration itself is **right and independently verified**:
-`heroSprite` restores the mirrored creature-blob (generalised to `G=16`), and `buildIcon`
-routes only `"hero:"`-prefixed ids to it **before** the category lookup. Babysitter ran
-the proper **pre-T51 vs T51** comparison over **all 795 catalogue items**: the 12 hero
-portraits are **66/66 pairwise distinct** (the "weird faces" are back), and item icons are
-**byte-identical** (0 role diffs, 0 colour diffs) — items provably untouched; catalogue
-size unchanged; `node -c` clean. **Do not touch `collectibles.js`/`main.js`.**
+**Current verdict:** `APPROVED — T51` (varied hero portraits restored; follow-up made the
+item-invariance gate permanent). The feature was verified last round — `heroSprite`
+restores the mirrored creature-blob (`G=16`), `buildIcon` routes only `"hero:"`-prefixed
+ids to it; pre-T51-vs-T51 over all 795 items showed **66/66 hero portraits pairwise
+distinct** and item icons **byte-identical**. The earlier CHANGES flagged the new gate's
+item-invariance check as vacuous (it diffed `collectibles.js` against `HEAD`, which is the
+same commit in CI). The follow-up (`acc70a2`) replaced it with **permanent invariants**:
+(a) `C.CATALOG.every(it => !/^hero:/.test(it.id))` — no item id can route to the hero
+blob, and (b) an **embedded snapshot baseline** of item role grids. Babysitter
+re-verified independently: all 8 checks pass; the two baselines **match the live engine
+and are non-trivial** (180/172 non-zero cells of 256, so they'd catch any shape change);
+the routing invariant holds (0 real ids `hero:`-prefixed) and is meaningfully protective.
+`node -c` clean; wired as the 8th Pages gate. T51 → DONE.
 
-The one problem is in **`test/hero-icons.test.js`** (the new gate). Its item-invariance
-check (lines ~49–64) compares the working tree against `cp.execSync("git show
-HEAD:collectibles.js")`. At your authoring time HEAD was the *parent*, so it was a valid
-before/after check — but as a **permanent CI gate, HEAD == this commit**, so it diffs
-`collectibles.js` against **itself** and passes vacuously. The "items unchanged" gate
-therefore protects nothing going forward.
-- **Fix:** replace the HEAD-diff with a **permanent invariant** that can't go vacuous —
-  assert **no `CATALOG` id is `hero:`-prefixed** (`C.CATALOG.every(it => !/^hero:/.test(it.id))`),
-  so item ids can never route to the hero blob; you may also keep an item-icon
-  byte-check against an **embedded committed baseline** if you want a snapshot, but the
-  routing invariant is the key permanent guard. Keep the (valid) hero pairwise-distinct,
-  symmetry, determinism, and "hero ≠ familiar item critter" checks as-is.
-- Re-run all gates and re-handoff. (Babysitter re-confirms the gate now fails if an item
-  id were ever `hero:`-prefixed, and re-runs the hero-distinct / item-identical checks.)
-
-**After T51 lands — `T50` — generated icons on nav buttons + hero portrait in the Arena
-picker (owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
+**Do `T50` next — generated icons on nav buttons + hero portrait in the Arena picker
+(owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
 "subtle and boring" — give each a small **procedural pixel icon** (reuse the existing
 `C.drawIcon` system + a fitting category preset with a fixed seed; no new art), legible
 and non-wrapping at 360px. And the Arena "choose your champion" cards show no portrait
