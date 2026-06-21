@@ -2429,7 +2429,10 @@ Owner wants celebrations with **"loads of particles"** — the T94 burst was del
   `setQuality`-degradable; `node -c` clean; the fxgl gate extends to cover it; all gates green.
   (Babysitter: verify capped/deterministic/auto-stop/no-leak as for T94, just bigger.)
 
-### T124 — [A] Fraction tree-glyphs still illegible — make them bigger/clearer using the node width · status: OPEN
+### T124 — [A] Fraction tree-glyphs still illegible — make them bigger/clearer using the node width · status: DONE (`583130c`, CI green, BROWSER-VERIFIED)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). `glyphs.js` draws the `f12`-style slashed vulgar fractions
+full-size/legible at node size. Babysitter browser-verified (screenshot @ dpr 2.75): the `x/2` Halves node,
+`1/2n`, and `a/b` fractions all render as crisp readable slashed fractions. `glyphs.test` updated; CI green.
 Owner (screenshot, tech-tree): the fraction topic glyphs are **still bad at node size** — esp. the
 **second** (the standalone Fractions node), and "there's a lot of horizontal space for it to take up
 that could make it more clear." T104 replaced the stacked vulgar-fraction with a **5-wide diagonal

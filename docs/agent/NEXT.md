@@ -10,14 +10,16 @@
 
 ---
 
-**Builder A → `T124` (fraction glyphs) → `T152[A]` (celebration point-emission, after B's engine part) → roadmap (Android → Arena 3v3 → content → `T72`)**
-*(`T101` jank-defer + music-start fix DONE `9d6175b` — APPROVED; music-after-Start playback is owner-ear-
-pending since headless can't confirm audio playback, possible async-resume race to watch.)* **`T124`** —
-fraction tree-glyphs bigger/clearer using node width (owner-flagged illegible). **Then `T152[A]`** (after B's
-small-size engine option): fire each `fxCelebrate*` from the **source element's normalized centre**
-(`getBoundingClientRect()`) — inventory→toast, run→rank badge, mastery→topic node, arena-win→enemy portrait —
-with the existing rarity/rank/topic palette + small size (BACKLOG T152 table). Then → `T102`/`T103` (Android)
-→ `T89`/`T90` → content → `T72`.
+**Builder A → `T102` (Android PWA — installable) → pivot to `T152[A]` when B's `T152[B]` lands → roadmap (`T103`/Arena 3v3/content → `T72`)**
+*(`T124` fraction glyphs DONE `583130c` — browser-verified legible; `T101` DONE. `T152[A]` celebration
+point-emission is BLOCKED on B's `T152[B]` small-particle option, in progress.)* **`T102`** — the PWA/
+installability part of Android (manifest, service-worker for offline, installable parity) — **the no-owner-
+needed part; if you hit anything needing Play-Store credentials/signing (that's `T103`/`T72`), STOP and flag
+it** (owner is away). **As soon as B pushes `T152[B]`**, pivot to **`T152[A]`** (small celebration polish the
+owner's keen on — don't make it wait behind all of Android): fire each `fxCelebrate*` from the **source
+element's normalized centre** (`getBoundingClientRect()`) — inventory→toast, run→rank badge, mastery→topic
+node, arena-win→enemy portrait — with the existing rarity/rank/topic palette + small size (BACKLOG T152
+table). Then → `T89`/`T90` (Arena 3v3) → content → `T72`.
 
 **Builder B → `T152[B]` (small-particle engine option) → then STAND BY (reactive).**
 *(`T151` audio divergence FIXED `44ea919` — Babysitter re-measured: every style bounded ~1.0–1.5, ambient

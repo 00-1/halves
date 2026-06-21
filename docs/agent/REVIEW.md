@@ -1,24 +1,25 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T151 + T150` [B] (synth divergence fixed across ALL styles + a real
-browser/audio test harness) · live build **`44ea919`**. **CI green; collision-clean** (B-owned: `synth.js`,
-`test/synth.test.js`, `test/browser/{_harness,audio.test,render.test}.js`, screenshots `.gitignore`,
-`BUILDER-LOG-FX.md`). **The audio "sounds bad" is FIXED.** Completion of the divergence fix: **(1)** the
-Butterworth-Q non-resonant damping (from `2f8d1a9`) + **(2)** dropped `ambient`'s `reverbDecay: 0.9` and
-**capped FDN decay below the measured ~0.82 stability cliff** (even a passive filter develops a pole > unit
-circle above that). **🌐 BABYSITTER RE-MEASURED (AnalyserNode, 5 s/style):** `ambient` **1096 → ~1.2 peak**,
-`menu` ~1.3, `dnb` ~1.35, `ambient→dubstep {now}` ~1.5 and the switch **CLEARS cleanly** — every style now
-**BOUNDED** (no divergence; the owner's distortion + "doesn't fully switch" both resolved). **And B built the
-process fix (`T150`) + replaced the false-greening analytic gate with a REAL one:** `test/browser/audio.test.js`
-renders each style's reverb through a true **`OfflineAudioContext`** (5 s, continuous excitation) and asserts
-**peak ≤ 2.0** (with a teeth-check that the old 0.9 diverges); `test/browser/render.test.js` loads the REAL
-app @ dpr 2.75, fires the REAL celebration, and asserts **`#fxBurst.clientWidth > 0` AND lit coverage ≥ 2000**
-(would've caught T149's `0×0`/`display:none` modal instantly); `_harness.js` self-serves read-only + resolves
-Playwright + **skips clean with no browser so Node-only CI is unaffected**. Verified: `node -c` clean (all 3
-browser files); `synth.test` 161; my independent measurement confirms boundedness. **T151 → DONE; T150 →
-DONE** (the autonomous render+audio gates now guard this whole class of bug). B → `T152[B]` (small-particle
-option). *(`2f8d1a9` was the partial fix — bounded menu/lofi/dubstep but `ambient` still hit 1096; I
-re-measured + bounced it, B completed it here.)*
+**Current verdict:** `APPROVED — T124` [A] (full-size slashed fraction glyphs — legible at node size) · live
+build **`583130c`**. **CI green; collision-clean** ([A]-owned: `glyphs.js`, `test/glyphs.test.js`,
+`BUILDER-LOG.md`). Resolves the owner's repeated "fractions still illegible" — the `f12`-style slashed vulgar
+fractions are now drawn full-size. **🌐 BROWSER-VERIFIED (screenshot @ dpr 2.75):** the home tree's top
+**`x/2`** Halves node, the **`1/2n`** node, and the **`a/b`** fractions node all render as **crisp, readable
+slashed fractions** at node size. `glyphs.test` updated; full suite + CI green. T124 → DONE. *(Same render
+also confirmed T142 backdrop restored, T146 nav decluttered to Best+Setup, T145 plain build stamp, T144
+readout at top — all good.)* **A's status note** (`6d8e97f`, in its own log — allowed): queue cleared through
+T124; `T152[A]` correctly BLOCKED on B's `T152[B]` (in progress); proposes `T102` next — **good dependency
+reasoning, confirmed:** A → `T102` (Android PWA) now; pivot to `T152[A]` when `T152[B]` lands.
+
+> **Previously approved (done):** `T151 + T150` [B] (synth divergence fixed across ALL styles + a real
+> browser/audio test harness) · live build **`44ea919`**. **CI green; collision-clean** (B-owned: `synth.js`,
+> `test/synth.test.js`, `test/browser/*`, `BUILDER-LOG-FX.md`). **Audio "sounds bad" FIXED:** Butterworth-Q
+> damping + dropped `ambient`'s `reverbDecay:0.9` + capped FDN decay below the ~0.82 cliff. **🌐 Babysitter
+> re-measured (AnalyserNode, 5 s/style): every style BOUNDED** — `ambient` 1096→~1.2, switches clear cleanly
+> (the partial `2f8d1a9` left ambient diverging; I bounced it, B completed it). **`T150` too:**
+> `audio.test.js` (real `OfflineAudioContext`, peak ≤ 2) + `render.test.js` (real app, fires celebration,
+> asserts `#fxBurst.clientWidth>0` + coverage — catches the T149 class) + `_harness.js` (self-serves,
+> skips-clean w/o browser). `synth.test` 161; `node -c` clean. **T151 → DONE; T150 → DONE.**
 
 > **`APPROVED — T101` (with the fix `9d6175b`)** [A] (defer the audio-graph off first paint + restore the
 > music-start). The original `d795031` jank-defer dropped the music-start (`warmAudio` wired the synth but
