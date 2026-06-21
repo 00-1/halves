@@ -1071,7 +1071,7 @@ only tiny seed jitter. The old drawer lives at `git show f1d8e92~1:collectibles.
   deploy green. (Babysitter diffs item-icon grids pre/post to prove items untouched and
   eyeballs that the 12 hero grids differ from one another.)
 
-### T50 — Generated icons on nav buttons + hero portrait in the Arena picker · status: OPEN
+### T50 — Generated icons on nav buttons + hero portrait in the Arena picker · status: OPEN (do AFTER T57)
 Owner: "the Best times / Inventory / Hero / Arena buttons are very subtle and boring
 — nice if they get generated icons. Selecting a hero doesn't show the hero's icon —
 let's include that." Two parts, both using the **existing procedural pixel-icon
@@ -1271,7 +1271,7 @@ keeping each operator clearly recognisable.**
   toasts; deploy green. (Babysitter checks each topic's pixel mark encodes the right
   operator, the favicon is set, and the draw is static/contrast-safe.)
 
-### T57 — Scrub the specific school/town/county references from the docs · status: OPEN
+### T57 — Scrub the specific school/town/county references from the docs · status: OPEN ⭐ NEXT (owner-elevated ahead of T50)
 Owner: remove the named-school and place references from the codebase, keeping only the
 generic "11+" and the exam board. Babysitter sweep: the only occurrences are in
 **`docs/research-11plus.md`** — the **parenthetical at lines ~4–5** (two named grammar
@@ -1295,3 +1295,85 @@ named schools). No user-facing/code references exist. (NB: this spec deliberatel
   (Babysitter re-greps the repo and confirms the exam-board/11+ context survived. Note:
   earlier commit *messages* in history may still contain the names — see REVIEW for the
   history-rewrite decision; this task only cleans the working tree.)
+
+---
+
+## Phase 7 — Content extension (new topics + the playbook for adding them)
+
+> Owner intent: add more topics over time, but **add genuinely new content** (new
+> procedural art, new names, new guides) rather than diluting what exists. The
+> inventory grows → the Arena auto-scales (see below) → we must keep the invariants
+> intact. T58 documents the process; T59–T61 add the Wave-2 topics following it. **All
+> of Phase 7 comes AFTER T50/T52–T56** (the current improvements).
+
+### T58 — Content-extension playbook (`docs/CONTENT-EXTENSION.md`) · status: OPEN
+Write the canonical doc for **how to extend the game with new topics/content** without
+breaking the coupled systems, and how to do it with **new content, not dilution**. Doc
+only (plus reading the code to be accurate); no behaviour change.
+- **The coupling map (explain, accurate to the code).** A new topic adds collectibles
+  (`init` · `mastery` · `flawless` · `4×speed` · per-question `Solved`+`Spark`, ≈ 7+2N
+  for N questions). Collectibles carry **boosts** (hero+stat) → raise **hero ratings** →
+  the **Arena def calibration** (forward pass in `enemies.js`, ~123–171) recomputes at
+  load: per-tier caps = `bestAdvRating(type, owned)×ADV_MULT`, suffix-min envelope, and
+  the **final boss def = `round(bestRating(all drill + loot 1..99) × ADV_MULT)`**.
+- **What auto-scales (NO manual change):** the Arena **difficulty** — because the
+  calibration is dynamic, adding drill items with boosts raises the ceiling and the
+  boss def automatically, so "tier 100 ⇔ near-full collection" keeps holding; the
+  **Collector ladder** (to 10k, T55); lazy inventory; per-topic completion milestones.
+  **Record the decision:** the Arena stays **100 tiers** — it grows in *difficulty*, not
+  *length*; variety comes from new enemy art (T52) / loot themes, not more tiers. (State
+  this as the policy unless the owner later chooses tier growth.)
+- **What needs intentional NEW content per wave (the anti-dilution rule):** new
+  **procedural icon categories/archetypes** (so new items don't recycle the existing
+  ~50); new **name templates / word banks** (so names stay diverse — no new repeated
+  adjectives); a **guide** + a **method-only, number-specific `explain()` branch** (T49
+  standard); structured **glyph tokens** for the pixel mark (T56); unlock-chain
+  placement; a `masterSecs` difficulty tier.
+- **The add-a-topic checklist** (ordered, copy-pasteable) + **the invariants to
+  re-verify every time** (the CI gates: arena buff-gating, hints method-only+grammar,
+  icon-variation, contrast AA, perf; plus numpad-enterable numeric answers in the
+  calibrated ranges from `docs/research-11plus.md`).
+- **DoD:** `docs/CONTENT-EXTENSION.md` exists, is accurate to the current code (coupling
+  map + auto-scale list + checklist + invariants + anti-dilution rule + the 100-tier
+  decision), and is referenced by T59–T61; no code/behaviour change; deploy green.
+  (Babysitter checks the coupling description matches `enemies.js`/`collectibles.js` and
+  that the checklist is complete.)
+
+### T59 — Wave-2 topics, Batch A: Rounding + Larger ×/÷ (with new content) · status: OPEN
+Add two topics **following T58**, with genuinely new content. Specs/calibration come
+from `docs/research-11plus.md` (these are already researched). Topics: **Rounding** (to
+10/100/1000 and decimal places) and **Larger ×/÷** (2-digit × 1-digit, ÷ with
+remainders-as-decimals where appropriate — numeric, numpad-enterable).
+- **Per topic:** fixed curated question set (calibrated, numeric answers within the
+  numpad length guard); unlock-chain placement (append after the current last topic);
+  `masterSecs` tier; a **guide** + a **method-only, number-specific `explain()` branch**
+  (T49 standard — gated by `hints.test.js`); structured **glyph + glyph tokens** (T56).
+- **New content (anti-dilution):** add **≥1 new procedural icon category/archetype** and
+  **new name-bank entries** so this batch's collectibles draw on fresh art + names, not
+  only the existing pools. (Document what's new.)
+- **Re-verify the coupled systems:** the Arena gates must still pass with the larger item
+  pool — tiers 1–5 winnable at 0 items, no tier behind its own loot, tier 100 ⇔
+  near-full, one champion boost flips it; plus hints/icon-variation/contrast/perf gates.
+- **DoD:** both topics playable + unlock in chain; mastery/flawless/speed/per-question
+  collectibles registered with fresh icons/names; guide + hints correct (method-only,
+  no answer leak, grammar-clean) for every question; **all CI gates green** (arena
+  invariants re-proven on the grown pool); 360px-safe; no regressions; deploy green.
+  (Babysitter re-runs the arena buff-gating suite + hints scan on the new questions and
+  checks the new icon category/names are actually new.)
+
+### T60 — Wave-2 topics, Batch B: Measures — Money, Time, Metric (with new content) · status: OPEN
+As T59, for the **measures** group: **Money** (£/p, change, totals), **Time** (durations
+in minutes, elapsed — numeric/minutes per the existing no-colon-key constraint), and
+**Metric units** (mm/cm/m/km, g/kg, ml/l conversions — numeric). Same per-topic
+deliverables, the **anti-dilution new-content rule** (new icon category + names for this
+batch), and the **same re-verification of all gates**. DoD mirrors T59. (Babysitter
+checks the answers are numpad-enterable and the time/metric framings respect the
+numeric-only numpad — no colon/unit keys.)
+
+### T61 — Wave-2 topics, Batch C: Reasoning — Ratio, Mean, Sequences (with new content) · status: OPEN
+As T59, for the **reasoning** group: **Ratio** (simplify / share in a ratio → numeric
+parts), **Mean** (average of a small set), and **Sequences** (next term / nth-term
+value — numeric). Same per-topic deliverables, the **anti-dilution new-content rule**
+(new icon category + names), and the **same re-verification of all gates**. DoD mirrors
+T59. (Babysitter re-checks the maths of each curated set + the hints, and the new
+content.)

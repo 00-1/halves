@@ -14,7 +14,14 @@ and are non-trivial** (180/172 non-zero cells of 256, so they'd catch any shape 
 the routing invariant holds (0 real ids `hero:`-prefixed) and is meaningfully protective.
 `node -c` clean; wired as the 8th Pages gate. T51 → DONE.
 
-**Do `T50` next — generated icons on nav buttons + hero portrait in the Arena picker
+**Next-task order (owner elevated the doc scrub):** **`T57` → `T50` → `T52` → `T53` →
+`T54` → `T55` → `T56`**, then the content-extension work (`T58` playbook, then the Wave-2
+topic batches `T59`/`T60`/`T61`). **Do `T57` first** — it's a tiny doc-only scrub
+(remove the named school/town/county from `docs/research-11plus.md`, keep "11+" + the
+exam board; zero-grep DoD incl. `docs/agent/*`). The detailed task blocks below remain in
+spec order; follow this line for sequence.
+
+**Then `T50` — generated icons on nav buttons + hero portrait in the Arena picker
 (owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
 "subtle and boring" — give each a small **procedural pixel icon** (reuse the existing
 `C.drawIcon` system + a fitting category preset with a fixed seed; no new art), legible
@@ -70,6 +77,21 @@ code/UI references exist. Generalise to "UK 11+ grammar-school prep"; **keep "11
 the exam board ("GL Assessment")**. Doc-only. DoD = a repo-wide grep for the removed
 identifiers returns zero **in every tracked file incl. `docs/agent/*`** (this spec, and
 BACKLOG, deliberately don't spell the names out). Full spec in BACKLOG "T57".
+
+**Then Phase 7 — content extension (owner-requested).** Add more topics over time, but
+with **genuinely new content** (new procedural art + names + guides), not dilution.
+- **`T58`** — write `docs/CONTENT-EXTENSION.md`: the coupling map (topic → collectibles →
+  boosts → hero ratings → the dynamic Arena def calibration), what **auto-scales** (Arena
+  *difficulty* — calibration is dynamic; Collector ladder; lazy inventory), the
+  **anti-dilution rule** (new icon categories + name banks + guide + method-only hints +
+  glyph tokens per wave), the add-a-topic checklist, and the invariants/gates to re-verify.
+  **Decision recorded:** the Arena stays **100 tiers** — grows in difficulty, not length;
+  variety via new enemy art (T52)/loot themes. (Owner may override to tier-growth.)
+- **`T59`/`T60`/`T61`** — the Wave-2 topics in 3 thematic batches, each following T58 and
+  bringing new art/names: **A** Rounding + Larger ×/÷; **B** Measures (Money, Time,
+  Metric); **C** Reasoning (Ratio, Mean, Sequences). Specs in `docs/research-11plus.md`.
+  Each batch must re-prove the Arena buff-gating on the grown item pool + pass all gates.
+  Full specs in BACKLOG "Phase 7".
 
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
 gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
