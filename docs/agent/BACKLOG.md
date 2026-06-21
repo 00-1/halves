@@ -1378,3 +1378,47 @@ value — numeric). Same per-topic deliverables, the **anti-dilution new-content
 (new icon category + names), and the **same re-verification of all gates**. DoD mirrors
 T59. (Babysitter re-checks the maths of each curated set + the hints, and the new
 content.)
+
+---
+
+## Phase 8 — Hint quality (deep, number-specific) — do EARLY (after T57)
+
+### T62 — Deep, place-value-aware practice hints (fit the actual operation) · status: OPEN
+Owner (screenshot, "half of **500**"): the hint said *"Split 500 into tens and ones,
+halve each part, then add them"* — but **500 has no tens or ones; it's 5 hundreds, and an
+odd number of them, so the half lands on a 250-style half-hundred.** This is the T49
+phantom-structure bug at a bigger magnitude (T49 only guarded operands `<10`). The whole
+**halves** set is affected — `100`, `180`, `360`, `500`, `1000` all wrongly say "tens and
+ones". Make the advice **genuinely match the specific number's place structure and the
+exact operations the student performs.**
+- **Halves — rebuild the explanation to be place-value-aware (the core work).** Branch on
+  the actual number:
+  - **Single digit:** even → halve directly; odd → the half ends in ·5 (as now).
+  - **Round numbers (trailing zeros — 90, 100, 500, 1000, 250…):** work in the largest
+    unit actually present (tens / hundreds / thousands); if the **count of that unit is
+    odd**, say the half lands on a 5 / 50 / 500 (e.g. 500 = 5 hundreds → odd → a 250-style
+    half-hundred; 90 = 9 tens → odd → ends in 5). **Never name a place finer than the
+    number has** (no "tens and ones" for a round hundred/thousand).
+  - **Mixed numbers (48, 45, 144, 360, 524…):** split into the **place chunks that are
+    actually present** (e.g. 360 → 300 + 60; 45 → 40 + 5; 144 → 100 + 40 + 4), halve each,
+    add; flag the ·5 ending only when the **ones digit is odd**.
+  - Method only — never state the answer (T49 standard); one concise British sentence.
+- **Sweep EVERY other topic for the same class of defect** — any hint that names structure
+  the specific number lacks or gives an approach that doesn't fit the actual operands
+  (check doubles for round hundreds/thousands, place-value, bonds, etc.). Fix each so the
+  advice is precisely appropriate to that question's operation. Keep concise + correct.
+- **Strengthen the gate (`hints.test.js`) for ALL magnitudes:** assert no halves/doubles
+  hint names a place value **finer than the number's smallest nonzero place** — concretely
+  (a) a multiple of 100 must not say "tens and ones"/"ones"/"tens" as split targets, (b) a
+  multiple of 10 must not say "ones", and add explicit must-pass cases for **`half of 500`**
+  (reads as hundreds, odd-count, no "tens and ones", no `250`) and **`half of 1000`**.
+  Keep the existing no-answer-leak (token + words) and singular/plural checks.
+- **DoD:** every halves hint matches its number's real place structure and the actual
+  halving operation (Babysitter dumps all 26 halves hints and reads each); the
+  round-hundred/thousand and odd-unit cases are handled (500/1000/100/90 correct); all
+  other topics swept and any mismatched advice fixed; the extended Node gate proves no
+  phantom place-value at any magnitude + no answer leak across every question in every
+  topic; concise, British, mathematically correct; all CI gates green; no regressions;
+  deploy green. (Babysitter reads the full halves dump + a cross-topic sample for
+  appropriateness and correctness, and confirms the gate now fails on a phantom-place
+  hint at the hundreds magnitude.)
