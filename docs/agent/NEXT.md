@@ -10,15 +10,13 @@
 
 ---
 
-**Builder A → `T135` (volume recalibration — UNBLOCKED, owner confirmed max 0.10×) → `T123`**
-`T136` DONE (`f4040e6`, CI green) — `#fxBurst` now mounts `{backend:"2d"}`, so the celebration overlay
-renders on-device (owner to confirm live). **T135 — owner: the new (louder) synth engine makes the 3.0×
-volume default too hot.** Set `#volRange` →
-`min=0 max=10 step=1 value=5` (range 0.00×–0.10×, default 0.05× mid-slider); `loadVol()` default → 5.
-**⚠ Migrate:** existing users have `halves.vol=300` (old 3.0×) stored — on load clamp any `vol>10` down to
-the new default 5 so a returning user isn't deafened / the slider isn't fed out-of-range. Live-verify the
-default + migration. Then → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` (Start delay) →
-`T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
+**Builder A → `T123` (a11y contrast floor over the FX backdrop)**
+Audio/FX block wrapped (T128/T132 music swap, T128 wub, T133+T136 celebration, T135 volume). **T123 —
+the recurring a11y theme:** T112's full-bleed FX backdrop turned panels light purple, so light-grey text
+now sits on light backgrounds. Restore an **AA contrast floor** for body/label text over the backdrop AND
+make `contrast.test` **honest** (assert real computed ratios against the actual rendered background, not a
+stale constant). Then → `T124` (fraction glyphs) → `T101` (Start delay) → `T102`/`T103` (Android) →
+`T89`/`T90` → content → `T72`.
 
 **Builder B → `T134` (clean swap + distinctness — OWNER on it now)** · *(T133 celebration DONE `3e7da28`)*
 **T134 — owner live on the switcher:

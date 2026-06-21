@@ -2670,8 +2670,14 @@ live-confirmation pending** — finishing a run / Arena win / new item should no
   the engine side); only [A]-owned files touched. (Babysitter: confirm against the owner's live "I finally
   see celebrations.")
 
-### T135 — [A] Volume recalibration for the louder synth engine (default 0.05×, max 0.10×) · status: OPEN · OWNER-PRIORITY · UNBLOCKED
-Owner: "volume is much higher now that we have the new audio. that's good, but let's move the default to
+### T135 — [A] Volume recalibration for the louder synth engine (default 0.05×, max 0.10×) · status: DONE (`09b6d9b`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). `#volRange` → `min=0 max=10 step=1 value=5` (0.00×–0.10×,
+default 0.05×); `loadVol()` fresh default → 5; **migration**: `loadVol` returns 5 for fresh OR any stored
+`v>10` (old `300`=3.0× → 5) — a clamp-on-read (idempotent; every reader goes through `loadVol`, no bypass).
+master gain/`fmtVol`/limiter unchanged. Babysitter verified: `node -c` clean; `sound.test` 38 pass; CI
+green; migration logic-checked (fresh→5, 300→5, 10→10, 0→0, 11→5 — none deafening). *(Original spec below.)*
+
+> Owner: "volume is much higher now that we have the new audio. that's good, but let's move the default to
 0.05× and adjust the volume slider range to make the new max." **Owner confirmed the new MAX = `0.10×`**
 (2026-06-21). The new synth engine is intrinsically far louder than the old SFX-calibrated scale, so the
 3.0× default is now too hot.

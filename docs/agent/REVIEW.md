@@ -1,16 +1,26 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T136` [A] (wire the celebration overlay — mount `#fxBurst` with
-`{backend:"2d"}`) · live build **`f4040e6`**. **CI green; collision-clean** (all [A]-owned: `main.js`,
-`test/fx-wiring.test.js`, `BUILDER-LOG.md`). The one-line activation of B's T133: `setupFx` now mounts the
-burst overlay with **`{ backend: "2d" }`** (Canvas2D — always presents, no 2nd-GL-context for mobile GPUs
-to refuse) while the **backdrop `#fxBackdrop` stays on its WebGL path**; the T125 resize-before-fire is
-kept. Verified **independently**: `node -c` clean; both `#fxBurst`+`#fxBackdrop` canvas ids present in
-`index.html`; `fx-wiring.test` 54→58 (asserts the burst mounts `2d` and the backdrop does **not**); **full
-suite green locally + CI green** (`f4040e6`). T136 → DONE. **🎆 OWNER: finishing a topic run / winning an
-Arena fight / gaining a new inventory item should now throw a VISIBLE particle shower — please confirm
-(this closes the long-standing "no celebration visuals").** A → `T135` (volume recalibration, fully specced
-below).
+**Current verdict:** `APPROVED — T135` [A] (recalibrate volume for the louder synth — default 0.05×, max
+0.10×, migrate) · live build **`09b6d9b`**. **CI green; collision-clean** (all [A]-owned: `index.html`,
+`main.js`, `test/sound.test.js`, `BUILDER-LOG.md`). Exactly the owner's spec: `#volRange` → `min=0 max=10
+step=1 value=5` (0.00×–0.10×, default 0.05× mid-slider); `loadVol()` fresh default → 5; master gain
+(`vol/100`), `fmtVol`, the limiter/`VOL_MAX` all unchanged (only the slider range + default moved). The
+**migration is correct + robust**: `loadVol()` returns 5 for a fresh profile **or** any stored `v > 10`
+(the old-scale `300` = 3.0× → 5), so a returning user is **not deafened** and the slider isn't fed an
+out-of-range value; it's a **clamp-on-read** (idempotent — every `halves.vol` reader goes through `loadVol`,
+no bypass) so even the stale stored `300` can never take effect. Verified **independently**: `node -c`
+clean; `sound.test` 38 pass; **CI green**; and a **logic check** of the migration across cases — fresh→5,
+`300`→5, `5`→5, `10`→10, `0`→0, `11`→5 (all → 0.00×–0.10×, none deafening). T135 → DONE. **🔊 OWNER: volume
+now defaults to 0.05× with the slider topping out at 0.10× — and your old loud setting won't carry over.**
+A → `T123` (a11y contrast floor).
+
+> **Previously approved (done):** `T136` [A] (wire the celebration overlay — mount `#fxBurst` with
+> `{backend:"2d"}`) · live build **`f4040e6`**. **CI green; collision-clean** ([A]-owned: `main.js`,
+> `test/fx-wiring.test.js`, `BUILDER-LOG.md`). One-line activation of B's T133 — `setupFx` mounts the burst
+> overlay with `{backend:"2d"}` (Canvas2D, always presents) while the backdrop stays WebGL; T125
+> resize-before-fire kept. Verified: `node -c` clean; both canvas ids present; `fx-wiring.test` 54→58 (burst
+> mounts `2d`, backdrop does not); full suite + CI green. T136 → DONE. **🎆 closes "no celebration visuals"
+> (owner to confirm live).**
 
 > **Previously approved (done):** `T133` [B] (Canvas2D overlay so the celebration renders on-device) · live
 > build **`3e7da28`**. **CI green; collision-clean** (B-owned only: `fxgl.js`, `test/fxgl.test.js`,
@@ -964,16 +974,15 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T135` (volume recalibration — UNBLOCKED) → `T123`** [A]
-  (**`T136`/`T133`(activated)/`T131`/`T128`(1)+(2)/`T129`/… DONE**). *(Read `NEXT.md` fresh — canonical.)*
-  `T136` DONE (`f4040e6`, CI green) — `#fxBurst` now mounts `{backend:"2d"}`, so the celebration overlay
-  renders on-device (owner to confirm). **`T135`** — UNBLOCKED (owner confirmed
-  **MAX = 0.10×**): the new (louder) synth engine makes the 3.0× volume default too hot → `#volRange`
-  `min=0 max=10 step=1 value=5` (0.00×–0.10×, default 0.05× mid-slider); `loadVol()` default → 5; **migrate
-  stored old-scale values** (`halves.vol=300` = old 3.0×) by clamping any `vol>10` down to 5 so returning
-  users aren't deafened. Live-verify default + migration. Then → **`T123`** (a11y contrast
-  floor) → **`T124`** (fraction glyphs) → **`T101`** (Start delay) → **`T102`/`T103`** (Android) →
-  **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
+- **Builder A — next: `T123` (a11y contrast floor over the FX backdrop)** [A]
+  (**`T135`/`T136`/`T133`(activated)/`T131`/`T128`(1)+(2)/`T129`/… DONE**). *(Read `NEXT.md` fresh —
+  canonical.)* The audio/FX block is essentially wrapped: music swaps per-screen + instantly (T128/T132),
+  victory wub (T128), celebration renders (T133+T136), volume recalibrated (T135). **`T123` — the recurring
+  a11y theme:** T112's full-bleed FX backdrop replaced the near-black panels with light purple, so light-grey
+  text now sits on light backgrounds → restore an **AA contrast floor** for body/label text over the
+  backdrop **and** make `contrast.test` *honest* (assert real computed ratios against the actual rendered
+  background, not a stale constant). Then → **`T124`** (fraction glyphs) → **`T101`** (Start delay) →
+  **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
