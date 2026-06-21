@@ -35,6 +35,19 @@ them concise. Babysitter gate: a Node assertion over every question in every top
 the hint never contains the answer and never names absent structure (no "tens" on a
 single-digit halves/doubles). Full spec in BACKLOG "T49".
 
+**Then `T51` — restore the varied hero portraits (owner-reported regression).** "The
+hero icons used to look like weird faces, now they're all the same turtle creature —
+bring the old ones back." Root cause (confirmed in git history): pre-T36 heroes used
+`s_sprite`, a per-hero **mirrored creature blob** (varied "weird faces"); the T36 icon
+overhaul re-pointed heroes at the **`"familiar"` critter preset** (fixed body params →
+one repeated turtle). Restore a dedicated hero-portrait drawer (the old creature-blob,
+adapted to the current `G=16`), seed it per hero so all 12 differ, and route `"hero:"`
+ids to it **without touching the `"familiar"` item category or any item icons**. Old
+code: `git show f1d8e92~1:collectibles.js` (`s_sprite`, ~line 246). **Sequenced before
+T50** so the Arena portraits T50 adds are already the correct faces. Babysitter diffs
+item-icon grids pre/post to prove items untouched and checks the 12 hero grids differ.
+Full spec in BACKLOG "T51".
+
 **Then `T50` — generated icons on nav buttons + hero portrait in the Arena picker
 (owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
 "subtle and boring" — give each a small **procedural pixel icon** (reuse the existing

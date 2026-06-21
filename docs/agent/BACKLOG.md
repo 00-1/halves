@@ -1036,6 +1036,41 @@ ignoring the actual number's structure. Four parts:
   no-phantom-structure assertion across all topics and reads a sample of hints/guides
   for quality and mathematical correctness.)
 
+### T51 — Restore the varied hero portraits (un-regress the "weird faces") · status: OPEN
+(Built **before T50** so the hero art is already correct when T50 adds portraits to the
+Arena.) Owner: "the hero icons regressed — they used to look like weird faces, now
+they're all the same turtle creature. Bring the old ones back." **Babysitter root
+cause (confirmed in git history):** pre-T36 the hero portrait forced
+`s_sprite` — a per-hero **mirrored creature blob** (symmetric, seeded, varied → the
+distinctive "weird faces"), called as `drawIcon(cv,"hero:"+id,pal,0)` (style 0). The
+T36 icon overhaul (`f1d8e92`) replaced the 10 fixed styles with ~50 category presets
+and re-pointed heroes at the **`"familiar"` critter preset**, which has *fixed* body
+params (`bodyW:5,bodyH:5,feet:2,tail:1`) — so every hero is the same turtle shape with
+only tiny seed jitter. The old drawer lives at `git show f1d8e92~1:collectibles.js`
+(`s_sprite`, ~line 246: left half filled with a centre-weighted probability, mirrored,
+~30% accent).
+- **Restore a dedicated hero-portrait drawer** = the old mirrored-creature-blob,
+  **adapted to the current `G = 16` grid** (the falloff/mirror generalise from G), in
+  `collectibles.js`. Seed it from the hero id so **each of the 12 heroes is visibly
+  distinct** ("weird faces"), painted with the per-type `HERO_PAL` (class colour) via
+  the existing `paintGrid`/`shiftPalette`.
+- **Route hero portraits to it, NOT the item category.** Heroes must stop using the
+  `"familiar"` critter preset. Detect the `"hero:"` id prefix inside `buildIcon`/
+  `drawIcon` (or add a dedicated `catId`/entry point) so `drawIcon(cv,"hero:"+id,
+  HERO_PAL[type], …)` produces the blob portrait. **Do NOT modify the `"familiar"`
+  category itself or any of the ~50 item archetypes/presets — item icons must be
+  byte-for-byte unchanged.**
+- **Both hero surfaces use the one path:** the Heroes screen (`renderHeroes`, ~611) and
+  the Arena picker/result (post-T50) — fixing the draw path fixes them together.
+- **DoD:** the 12 hero portraits are **visibly varied** (not one repeated critter) and
+  render in the restored creature-blob/face style, deterministic per hero (stable
+  across loads), class-coloured; **item icons are unchanged** (assert the role/colour
+  grids for a sample of catalogue ids — incl. the `"familiar"` *item* category — are
+  identical before/after, and the icon-variation CI gate still passes); Heroes screen +
+  Arena both show the varied faces; `node -c` clean; no console errors; no regressions;
+  deploy green. (Babysitter diffs item-icon grids pre/post to prove items untouched and
+  eyeballs that the 12 hero grids differ from one another.)
+
 ### T50 — Generated icons on nav buttons + hero portrait in the Arena picker · status: OPEN
 Owner: "the Best times / Inventory / Hero / Arena buttons are very subtle and boring
 — nice if they get generated icons. Selecting a hero doesn't show the hero's icon —
@@ -1058,8 +1093,11 @@ engine, same 8-bit aesthetic.
   cards (`.arena-hero`, built in `renderArena`) currently show only name/rating/matchup
   — **no portrait**, unlike the Heroes-list cards. Add the hero portrait to each pick
   card: a `<canvas class="pix">` drawn with the **same call the Heroes screen uses** —
-  `C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], "familiar")` — via a post-render
-  `querySelectorAll` loop (mirror `renderHeroes` lines ~609–611). Also show the chosen
+  `C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], …)` — via a post-render
+  `querySelectorAll` loop (mirror `renderHeroes` lines ~609–611). **Note:** T51 (done
+  first) restores the varied hero-face draw path, so this call produces the proper
+  per-hero portrait, not the old repeated critter — use the same call `renderHeroes`
+  uses after T51, don't re-pin `"familiar"`. Also show the chosen
   hero's portrait in the **battle/Victory result** header if it fits cleanly. **Build
   on the post-T47 Arena** (T47 reworks the Arena flow/UI first; add portraits to the
   reworked picker, do not reintroduce anything T47 removed).
