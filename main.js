@@ -1868,7 +1868,19 @@
   function soundOn(){ try{ return localStorage.getItem("halves.sound") !== "off"; }catch(e){ return true; } }
   function saveSound(on){ try{ localStorage.setItem("halves.sound", on ? "on" : "off"); }catch(e){} }
   function audioUnlock(){ if(window.Sound && window.Sound.unlock) window.Sound.unlock(); }
-  function applySoundPref(){ if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!soundOn()); }
+  function applySoundPref(){ if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!soundOn()); applyAudioPrefs(); }
+  // T113 — owner-calibrated Volume + Tempo (persisted slider positions). Volume is
+  // stored 0–250 (→ ×0..2.5 master gain; the limiter keeps the top end clip-safe);
+  // tempo is stored 40–100 (→ ×0.40..1.00 BPM multiplier).
+  function loadVol(){ const v = parseInt(localStorage.getItem("halves.vol"), 10); return isFinite(v) ? v : 80; }
+  function loadTempo(){ const v = parseInt(localStorage.getItem("halves.tempo"), 10); return isFinite(v) ? v : 100; }
+  function saveVol(v){ try{ localStorage.setItem("halves.vol", String(v)); }catch(e){} }
+  function saveTempo(v){ try{ localStorage.setItem("halves.tempo", String(v)); }catch(e){} }
+  function applyAudioPrefs(){
+    const S = window.Sound; if(!S) return;
+    if(S.setVolume) S.setVolume(loadVol() / 100);
+    if(S.setTempo) S.setTempo(loadTempo() / 100);
+  }
   // Guarded SFX trigger — a no-op if the engine is absent or muted.
   function sfx(name, arg){ const S = window.Sound; if(S && S[name]) S[name](arg); }
   // Keep every 🔊/🔇 button (entry + start menu) in sync, and toggle the pref.
@@ -1884,16 +1896,42 @@
   SOUND_BTNS.forEach(id => { const b = $(id); if(b) b.addEventListener("click", toggleSound); });
 
   // ---- Settings screen + "Clear all data" (T85) --------------------------
-  function renderSettings(){ syncSoundButtons(); }
+  // T113 — show the exact, reportable slider values (×multiplier).
+  function fmtVol(slider){ return (slider / 100).toFixed(2) + "×"; }
+  function fmtTempo(slider){ return (slider / 100).toFixed(2) + "×"; }
+  function renderSettings(){
+    syncSoundButtons();
+    const vr = $("volRange"), tr = $("tempoRange");
+    if(vr){ vr.value = loadVol(); const vv = $("setVolVal"); if(vv) vv.textContent = fmtVol(loadVol()); }
+    if(tr){ tr.value = loadTempo(); const tv = $("setTempoVal"); if(tv) tv.textContent = fmtTempo(loadTempo()); }
+  }
   $("settingsBtn").addEventListener("click", () => { location.hash = "#/settings"; });
   $("settingsBack").addEventListener("click", navStart);
   $("setSound").addEventListener("click", toggleSound);
+  // T113 — live audio sliders: drag → hear it change immediately, exact value shown,
+  // persisted. The Test-sound button plays a representative chime to judge volume.
+  (function wireAudioSliders(){
+    const vr = $("volRange"), tr = $("tempoRange"), test = $("setTest");
+    if(vr) vr.addEventListener("input", () => {
+      const v = parseInt(vr.value, 10) || 0; saveVol(v);
+      const vv = $("setVolVal"); if(vv) vv.textContent = fmtVol(v);
+      audioUnlock(); if(window.Sound && window.Sound.setVolume) window.Sound.setVolume(v / 100);
+    });
+    if(tr) tr.addEventListener("input", () => {
+      const v = parseInt(tr.value, 10) || 100; saveTempo(v);
+      const tv = $("setTempoVal"); if(tv) tv.textContent = fmtTempo(v);
+      audioUnlock(); if(window.Sound && window.Sound.setTempo) window.Sound.setTempo(v / 100);
+      if(window.Sound && window.Sound.setMusic) window.Sound.setMusic("menu");   // ensure menu music is audible while calibrating
+    });
+    if(test) test.addEventListener("click", () => { audioUnlock(); sfx("correct", 6); });
+  })();
 
   // Wipe every halves.* key → a genuine first-run. Prefix-scan (catches every key,
   // incl. per-mode boards and any future key) with an enumerated fallback, then
   // drop the in-memory caches and reload so nothing survives.
   const KNOWN_KEYS = ["halves.collected","halves.stats","halves.gold","halves.streak",
-    "halves.eventBest","halves.qbest","halves.mode","halves.pickerView","halves.sound"];
+    "halves.eventBest","halves.qbest","halves.mode","halves.pickerView","halves.sound",
+    "halves.vol","halves.tempo"];
   function clearAllData(){
     try{
       const keys = [];

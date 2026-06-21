@@ -192,6 +192,15 @@
     <div class="res-label">Settings</div>
     <div class="settings-body">
       <button class="set-row" id="setSound"><span>Sound</span><span class="set-val" id="setSoundVal">On</span></button>
+      <div class="set-row set-slider">
+        <label for="volRange"><span>Volume</span><span class="set-val" id="setVolVal">—</span></label>
+        <input type="range" id="volRange" min="0" max="250" step="5" value="80" aria-label="Volume">
+      </div>
+      <div class="set-row set-slider">
+        <label for="tempoRange"><span>Music tempo</span><span class="set-val" id="setTempoVal">—</span></label>
+        <input type="range" id="tempoRange" min="40" max="100" step="5" value="100" aria-label="Music tempo">
+      </div>
+      <button class="set-row" id="setTest"><span>Test sound</span><span class="set-val">▶ Play</span></button>
       <div class="set-danger">
         <h4>Danger zone</h4>
         <p>Clear all data wipes every bit of progress saved on this device — heroes, items,

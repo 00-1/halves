@@ -19,8 +19,16 @@
   // LIMIT_DB, ratio 20) sits on master→destination, transparent at normal levels
   // and clamping any pathological peak below 0 dBFS — so clipping is impossible by
   // construction, not just by estimate.
-  const VOL = 0.80;                 // master volume
-  const LIMIT_DB = -1.5;            // brickwall ceiling (≈0.84 linear, safely < 1.0)
+  // T113 — master volume is now RUNTIME-settable over a WIDE range (the Settings
+  // slider), with the brickwall limiter as the clip-safe net. Past passes (T69/98)
+  // failed because the engine runs at ~half scale (peaks ≈0.51 at 0.80) so small
+  // bumps did nothing; the slider reaches genuinely loud (up to VOL_MAX) and the
+  // limiter clamps the peaks. A global TEMPO multiplier scales every style's BPM.
+  let vol = 0.80;                   // master volume (default; owner-calibrated via the slider)
+  const VOL_MAX = 2.5;              // the slider can push well past full scale (limiter-safe)
+  let tempoMult = 1.0;              // global music-tempo multiplier (bpm × tempoMult)
+  const TEMPO_MIN = 0.4, TEMPO_MAX = 1.0;
+  const LIMIT_DB = -1.5;            // brickwall ceiling (the louder range cannot clip)
 
   // MIDI note number → frequency (A4=69=440Hz, equal temperament).
   function hz(midi){ return 440 * Math.pow(2, (midi - 69) / 12); }
@@ -76,7 +84,7 @@
         if(!AC) return;                       // no Web Audio (very old browsers) — silent
         ctx = new AC();
         master = ctx.createGain();
-        master.gain.value = muted ? 0 : VOL;
+        master.gain.value = muted ? 0 : vol;
         // Brickwall safety limiter: master → limiter → destination. Threshold near
         // 0 dBFS with a high ratio + fast attack so it's inaudible until a peak
         // would clip, then hard-clamps it. Guards the louder VOL against clipping.
@@ -102,10 +110,26 @@
 
   function setMuted(m){
     muted = !!m;
-    if(master){ try{ master.gain.value = muted ? 0 : VOL; }catch(e){} }
+    if(master){ try{ master.gain.value = muted ? 0 : vol; }catch(e){} }
     if(muted) stopMusic(); else startScheduler();   // music stops on mute, resumes on unmute
   }
   function isMuted(){ return muted; }
+  // T113 — live master volume (wide range; the limiter keeps the top end clip-safe).
+  function setVolume(v){
+    v = +v; if(!isFinite(v)) return vol;
+    vol = Math.max(0, Math.min(VOL_MAX, v));
+    if(master && !muted){ try{ master.gain.value = vol; }catch(e){} }   // applies LIVE
+    return vol;
+  }
+  function getVolume(){ return vol; }
+  // T113 — live global music-tempo multiplier (scales every style's BPM). Applies
+  // to whatever is playing from the next scheduled step (no restart needed).
+  function setTempo(m){
+    m = +m; if(!isFinite(m)) return tempoMult;
+    tempoMult = Math.max(TEMPO_MIN, Math.min(TEMPO_MAX, m));
+    return tempoMult;
+  }
+  function getTempo(){ return tempoMult; }
 
   function play(spec){
     if(muted || !ctx || !master || !spec || !spec.v || !spec.v.length) return;
@@ -217,7 +241,7 @@
       const style = STYLES[mCur];
       const voices = stepVoices(style, mStep, mRnd);
       for(const v of voices) musicVoice(v, mNext);
-      mNext += (60 / style.bpm) / 4;
+      mNext += (60 / (style.bpm * tempoMult)) / 4;
       mStep++;
       scheduled++;
     }
@@ -252,6 +276,7 @@
 
   window.Sound = {
     unlock, setMuted, isMuted, play, sfxSpec,
+    setVolume, getVolume, setTempo, getTempo, VOL_MAX, TEMPO_MIN, TEMPO_MAX,   // T113 live audio sliders
     correct: combo => play(sfxSpec("correct", { combo: combo })),
     skip: () => play(sfxSpec("skip")),
     item: rarity => play(sfxSpec("item", { rarity: rarity })),

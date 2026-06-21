@@ -63,6 +63,27 @@ S.setMuted(false);
 ok(Math.abs(master.gain.value - VOL) < 1e-9, "unmute restores master gain to VOL");
 ok(S.musicPlaying(), "unmute resumes the music scheduler");
 
+// ---- T113: live Volume + Tempo sliders (a WIDE range, calibratable by ear) ----
+const ssrc = read("sound.js"), msrc = read("main.js"), hsrc = read("index.html");
+ok(typeof S.setVolume === "function" && typeof S.setTempo === "function", "T113: live setVolume/setTempo are exposed");
+ok(S.VOL_MAX >= 2 && S.VOL_MAX <= 3, "T113: the volume range reaches genuinely LOUD (VOL_MAX " + S.VOL_MAX + " ≥ 2× — fixes the 'tiny bump' problem)");
+// setVolume drives the master gain LIVE, across a wide range that passes today's 0.80
+S.setVolume(1.6); ok(Math.abs(master.gain.value - 1.6) < 1e-9, "T113: setVolume(1.6) sets the master gain LIVE to 1.6 (> 0.80 — genuinely louder)");
+S.setVolume(99);  ok(Math.abs(master.gain.value - S.VOL_MAX) < 1e-9, "T113: setVolume clamps to VOL_MAX (" + master.gain.value + ") — the limiter keeps it clip-safe");
+S.setVolume(0.80);
+ok(/createDynamicsCompressor/.test(ssrc) && /master\.connect\(limiter\)/.test(ssrc), "T113: the brickwall limiter still sits on master→limiter→destination (no clip at max)");
+// tempo multiplier scales the scheduler BPM step, clamped to a clearly-slower floor
+ok(/style\.bpm \* tempoMult/.test(ssrc), "T113: the scheduler step scales BPM by the tempo multiplier (bpm × tempoMult)");
+S.setTempo(0.5); ok(Math.abs(S.getTempo() - 0.5) < 1e-9, "T113: setTempo(0.5) slows the music to 0.5×");
+S.setTempo(0.05); ok(S.getTempo() === S.TEMPO_MIN && S.TEMPO_MIN <= 0.5, "T113: tempo clamps to TEMPO_MIN " + S.TEMPO_MIN + " (range goes clearly slower than 1.0×)");
+S.setTempo(1.0);
+// UI wiring: the Settings sliders + Test button exist, update live + persist
+ok(/id="volRange"[^>]*type="range"|type="range"[^>]*id="volRange"/.test(hsrc) && /id="tempoRange"/.test(hsrc) && /id="setTest"/.test(hsrc), "T113: Settings has Volume + Tempo range inputs and a Test-sound button");
+ok(/addEventListener\("input"/.test(msrc) && /setVolume\(v \/ 100\)/.test(msrc) && /setTempo\(v \/ 100\)/.test(msrc), "T113: dragging a slider calls setVolume/setTempo LIVE (input listeners)");
+ok(/saveVol\(/.test(msrc) && /saveTempo\(/.test(msrc) && /halves\.vol/.test(msrc) && /halves\.tempo/.test(msrc), "T113: both sliders persist (halves.vol / halves.tempo)");
+ok(/function applyAudioPrefs/.test(msrc) && /applyAudioPrefs\(\)/.test(msrc.slice(msrc.indexOf("function applySoundPref"))), "T113: the saved Volume/Tempo are applied on boot");
+ok(/setVolVal[\s\S]{0,80}fmtVol|fmtVol\([\s\S]{0,40}setVolVal/.test(msrc) || /setVolVal"\)/.test(msrc), "T113: the exact volume value is shown (reportable)");
+
 // visibility: hidden stops music + suspends; visible resumes
 hidden = true; visHandler && visHandler();
 ok(!S.musicPlaying(), "tab hidden stops the music scheduler");

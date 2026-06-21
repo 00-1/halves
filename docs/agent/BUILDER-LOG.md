@@ -3710,3 +3710,48 @@ notes / questions: **eyeball the live tree on the Poco X3:** multi-part topics s
   fill the width, the lever is a wider/horizontal single-node style (say the word). Next per the
   pointer: shipping/perf block **`T101`** (Start→fullscreen delay) → `T102` (Android PWA+TWA) →
   `T103` (perf research) → `T89`/`T90` (Arena 3v3).
+
+## T113 — Audio: live Volume + Tempo sliders in Settings (owner-calibrated)  [HANDOFF]
+commit: (this commit, on main) — [A] task · OWNER-PRIORITY. Audio volume/tempo failed multiple
+blind passes (T69/T71/T98); per the babysitter's root-cause, the engine runs at ~half scale (peaks
+≈0.51 at VOL 0.80) so the −1.5 dB limiter never engaged and small VOL bumps did ~nothing. Fix =
+**instrument it**: live, persisted sliders with exact values so the owner calibrates by ear and
+reports back (→ T114 bakes the defaults).
+changed:
+  - **sound.js** — master volume is now a **runtime variable** `vol` (was a const), settable LIVE
+    over a **wide range** via **`setVolume(v)`** (clamped `0..VOL_MAX=2.5` — reaches genuinely loud,
+    well past the old 0.80; the brickwall limiter on `master→limiter→destination` keeps the top end
+    **clip-safe**). Added a **global tempo multiplier** `tempoMult` + **`setTempo(m)`** (clamped
+    `TEMPO_MIN 0.4 .. TEMPO_MAX 1.0`) applied in the scheduler step (`(60/(bpm × tempoMult))/4`) so
+    it slows whatever's playing from the next step — no restart. Exposed
+    `setVolume/getVolume/setTempo/getTempo/VOL_MAX/TEMPO_MIN/TEMPO_MAX`. Mute/unmute still works
+    alongside (uses `vol`).
+  - **index.html** — Settings gains a **Volume** `range` (0–250 → ×0..2.5), a **Music tempo**
+    `range` (40–100 → ×0.40..1.00), each with a live exact-value readout, and a **Test sound**
+    button.
+  - **main.js** — `loadVol/loadTempo/saveVol/saveTempo` (keys `halves.vol` / `halves.tempo`),
+    **`applyAudioPrefs()`** (called from `applySoundPref`, so the saved values apply on boot once the
+    context exists). `renderSettings()` seeds the sliders + value labels. Live `input` handlers:
+    drag → **persist + update the readout (`1.60×` / `0.70×`) + `setVolume`/`setTempo` immediately**
+    (the tempo handler also (re)starts menu music so it's audible while calibrating). The **Test**
+    button unlocks audio + plays a representative correct-answer chime. Added the two keys to the
+    clear-data `KNOWN_KEYS` fallback.
+  - **styles.css** — `.set-slider` rows: a labelled row + a `range` input with a **≥44px** tap
+    target, amber thumb on a hairline track, keyboard `:focus-visible` ring; **squared track/thumb
+    under `[data-ui="pixel"]`**.
+  - **test/sound.test.js** (now **44 checks**) — asserts: `setVolume` drives the master gain LIVE
+    across a wide range (1.6 applies; clamps to `VOL_MAX`), the limiter still wired (clip-safe at
+    max); the scheduler scales BPM by `tempoMult` and `setTempo` clamps to the slower floor; and the
+    UI wiring (the two range inputs + Test button exist, `input` handlers call `setVolume/setTempo`
+    live, both persist to `halves.vol`/`halves.tempo`, and the saved values apply on boot).
+how I verified:
+  - **`node test/sound.test.js` → ALL 44 PASSED**; **settings-reset green**; `node -c` clean;
+    **full 30-gate suite green** incl. contrast AA (no new small fonts). Engine math is unit-tested;
+    the audible behaviour needs ears.
+notes / questions: **OWNER — please calibrate on the Poco X3 and report two numbers:** open
+  **Settings**, drag **Volume** until it's right (the readout shows e.g. `1.60×`), tap **Test
+  sound** to judge; drag **Music tempo** until the in-level music feels calm (e.g. `0.70×`) — menu
+  music plays in Settings so you hear it. **Tell the babysitter the two `×` values** and **T114**
+  will set them as the defaults. Range note: Volume reaches **2.5×** (limiter-safe); Tempo goes down
+  to **0.40×**. Next per the LOCKED sequence: **`T101`** (Start→fullscreen delay) → `T102` (Android
+  PWA+TWA) → `T103` (perf) → `T89`/`T90`. *(T114 is blocked on your reported values.)*
