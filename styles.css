@@ -72,6 +72,40 @@ body{
   flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
 .picker{width:100%;flex:1 1 auto;min-height:0;overflow-y:auto;
   display:flex;flex-direction:column;gap:14px;text-align:left;padding:2px}
+/* T84 — List ⇆ Tree view toggle + the data-driven tech tree (360px-safe). */
+.picker-views{display:flex;gap:6px;width:100%;max-width:360px;margin-top:18px;justify-content:center}
+.pv-btn{flex:0 0 auto;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.04em;
+  color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:9px;
+  padding:7px 16px;cursor:pointer;transition:color .15s,border-color .15s}
+.pv-btn.active{color:var(--bg);background:var(--amber);border-color:var(--amber)}
+.tree{width:100%;flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;
+  align-items:center;gap:0;padding:4px 2px}
+.tree-row{display:flex;align-items:center;justify-content:center;gap:0;position:relative}
+/* vertical spine connector between consecutive rows */
+.tree-row:not(:last-child)::after{content:"";position:absolute;left:50%;bottom:-14px;width:2px;height:14px;
+  transform:translateX(-50%);background:var(--line)}
+.tree-row{margin-bottom:14px}
+.tcol{display:flex;align-items:center;justify-content:center}
+.tlink{width:18px;height:2px;background:var(--line);flex:0 0 auto}
+.tnode{display:flex;flex-direction:column;align-items:center;gap:3px;width:84px;padding:10px 6px;cursor:pointer;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:12px;position:relative;
+  font-family:var(--mono);transition:border-color .15s,transform .1s}
+.tnode:active{transform:scale(.97)}
+.tnode.active{border-color:var(--amber);background:var(--surface-2)}
+.tnode .tn-ico{height:22px;width:auto;image-rendering:pixelated}
+.tnode .tn-badge{position:absolute;top:-7px;right:-7px;width:18px;height:18px;line-height:18px;text-align:center;
+  font-size:10px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line)}
+.tnode .tn-prog{font-size:10px;color:var(--muted);font-weight:700}
+.tnode.st-locked{opacity:.5}
+.tnode.st-unlocked .tn-badge{color:var(--amber)}
+.tnode.st-mastered{border-color:#9a5cf6}
+.tnode.st-mastered .tn-badge{color:#cda9ff}
+.tnode.st-done{border-color:var(--mint)}
+.tnode.st-done .tn-badge{color:var(--mint)}
+.tree-detail{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:10px;
+  width:100%;max-width:360px;text-align:center}
+.tree-detail .td-name{font-family:var(--display);font-weight:700;font-size:15px;color:var(--text)}
+.tree-detail .td-meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
 /* edge fades + a bobbing cue, shown only when there is more to scroll to */
 .picker-wrap::before,.picker-wrap::after{content:"";position:absolute;left:0;right:0;height:26px;
   pointer-events:none;opacity:0;transition:opacity .2s ease;z-index:1}

@@ -2920,3 +2920,47 @@ interpretation note (for the babysitter — there's a small spec tension): the s
   rather Guide be lock-gated (and drop locked previews, or keep a `?` only on locked
   rows), it's a one-line flip in `renderStartState` + restoring the row markup — say the
   word. Next per REVIEW order: **T84** (the data-driven tech-tree view).
+
+## T84 — Tech-tree view for the topic selector (data-driven, icon-node, 360px-safe)  [HANDOFF]
+commit: (this commit, on main) — completes the Phase 6.8 tech-tree block (T83–T84)
+Goal: visualise the EXISTING unlock chain as a tech tree — a new view of data we
+already compute, never a hand-maintained edge list — toggleable with the list (which
+stays as the a11y fallback).
+changed:
+  - **main.js** — `techGraph()` derives the graph from **live data**: the **spine** =
+    modes without `requires`, ordered by following **`unlockedBy`** from the root; the
+    **branches** = modes with **`requires:"mastery:<id>"`** hung off their Part-1 parent.
+    Orphans append gracefully (no crash on a malformed chain). `nodeState(m)` ∈
+    {locked·unlocked·mastered·done} from `isUnlocked()` + `modeProgress()` + the owned
+    `mastery:<id>`. `renderTree()` lays out **rows of `[spine node] —tlink— [branch
+    node]`** (≤2 wide → 360px-safe), each node a **focusable `<button>`** (not a canvas
+    blob) with the topic icon, a state badge and `have/total`. A single swappable
+    **`nodeIcon(m,cv)`** hook draws the T56 pixel glyph today (richer T82 art drops in
+    later without touching layout). A **selected-node detail panel** (`#treeDetail`)
+    shows name + `have/total` (or the unlock requirement if locked); the **Play/Practice/
+    Guide actions are the shared T83 buttons**. Tapping a node = `selectMode` (locked =
+    preview only; Start stays disabled, never starts from here). `selectMode`/`applyRoute`
+    now call view-agnostic **`renderPicker()`**; **`setPickerView()`** toggles list⇆tree
+    and **persists** the choice (`halves.pickerView`, **list is the default fallback**).
+    `window.TechTree = { graph, state, view }` exposed for tests.
+  - **index.html** — a **List ⇆ Tree** toggle (`#pickerViews`, role=tablist), the
+    `#modeTree` container alongside `#modeTabs` in `.picker-wrap`, and `#treeDetail`.
+  - **styles.css** — `.picker-views`/`.pv-btn` toggle, `.tree`/`.tree-row`/`.tnode`
+    (state-coloured: amber ▶ · violet ★ mastered · mint ✓ done · dimmed 🔒), spine +
+    branch connectors, `.tree-detail`. 360px-safe; reuses the existing scroll region.
+how I verified:
+  - `node test/tech-tree.test.js` (NEW, **22nd gate**) → **ALL 20 PASS**: the graph is
+    **derived from data** (every spine edge == `unlockedBy`, every branch ==
+    `requires:"mastery:<parent>"`, all 15 modes once); states read live data (fresh
+    profile: only halves unlocked); toggling to **Tree shows the tree + hides the list**
+    and renders a **focusable node per mode**; the choice **persists**; **locked nodes are
+    preview-only** (tapping never starts a round, Start stays disabled, the detail panel
+    shows the requirement); toggling back **restores the accessible list**; nodes route
+    through the **single `nodeIcon()` hook**; no parallel edge list.
+  - Booted the app: tree = **10 spine rows + 5 branches**, 14 locked + 1 ▶ on a fresh
+    profile; selecting an unlocked node enables Start and the panel reads "Halves · 0/59
+    collected". `node -c` clean; **full 22-gate suite green**; no regressions.
+notes / questions: list stays the **default** view (a11y fallback) with Tree one tap
+  away + remembered. Because it renders from data it auto-grows with Wave-2 (≤2-wide rows
+  keep 360px-safe at ~23 nodes). **Phase 6.8 tech-tree block is complete (T83–T84).** Next
+  per REVIEW order: **content extension T58** (the playbook) → Wave-2 batches T59/T60/T61.

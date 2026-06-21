@@ -66,6 +66,8 @@ jobs:
         run: node test/events.test.js
       - name: Guide action test (gate)
         run: node test/guide-action.test.js
+      - name: Tech-tree view test (gate)
+        run: node test/tech-tree.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

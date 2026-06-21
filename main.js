@@ -164,7 +164,7 @@
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
-        elMark=$("mark"), elTag=$("tag"), elModeTabs=$("modeTabs");
+        elMark=$("mark"), elTag=$("tag"), elModeTabs=$("modeTabs"), elModeTree=$("modeTree");
 
   function show(name){
     // stop the game clock RAF whenever we leave the game screen (e.g. browser
@@ -212,6 +212,8 @@
 
   let mode = byId(loadLastMode()) || MODES[0];
   if(!isUnlocked(mode)) mode = MODES.find(isUnlocked) || MODES[0];
+  // Picker view: the grouped list (a11y fallback, default) or the T84 tech tree.
+  let pickerView = (function(){ try{ return localStorage.getItem("halves.pickerView") === "tree" ? "tree" : "list"; }catch(e){ return "list"; } })();
 
   // A locked topic's compact requirement, for a picker row subline.
   function unlockReq(m){
@@ -285,6 +287,88 @@
     wrap.classList.toggle("can-scroll-up", el.scrollTop > 1);
     wrap.classList.toggle("can-scroll-down", el.scrollHeight - el.clientHeight - el.scrollTop > 1);
   }
+
+  // ---- tech-tree view (T84): a data-driven visualisation of the SAME unlock
+  // chain the list shows — never a hand-maintained parallel edge list. Nodes =
+  // modes; edges derive from `unlockedBy` (the importance spine) and
+  // `requires:"mastery:<id>"` (the Part-1 → Part-2 branch). State + progress come
+  // from the live `isUnlocked()` / `modeProgress()`. The list stays as the a11y
+  // fallback; this is a toggleable alternate view.
+  function techGraph(){
+    const spineModes = MODES.filter(m => !m.requires);     // the main chain (no mastery gate)
+    const order = [], seen = new Set();
+    let cur = spineModes.find(m => !m.unlockedBy) || spineModes[0];
+    while(cur && !seen.has(cur.id)){
+      order.push(cur); seen.add(cur.id);
+      cur = spineModes.find(m => m.unlockedBy === order[order.length-1].id);
+    }
+    spineModes.forEach(m => { if(!seen.has(m.id)){ order.push(m); seen.add(m.id); } });  // graceful: append orphans
+    const branchOf = {};
+    MODES.filter(m => m.requires).forEach(m => {
+      const mm = /^mastery:(.+)$/.exec(m.requires);
+      if(mm && byId(mm[1])) branchOf[mm[1]] = m;
+    });
+    return { spine: order, branchOf: branchOf };
+  }
+  function nodeState(m){
+    if(!isUnlocked(m)) return "locked";
+    const p = modeProgress(m);
+    if(p.total > 0 && p.have === p.total) return "done";
+    if(loadCollected()["mastery:" + m.id]) return "mastered";
+    return "unlocked";
+  }
+  const NODE_BADGE = { locked:"🔒", unlocked:"▶", mastered:"★", done:"✓" };
+  // Swappable icon hook — today the topic's T56 pixel glyph; a richer per-topic
+  // emblem (T82 direction) can drop in here later without touching the layout.
+  function nodeIcon(m, cv){
+    if(cv && window.Glyphs && m.glyphTokens) Glyphs.draw(cv, m.glyphTokens, { body:"#E6E9EF", accent:"#F5B544" });
+  }
+  function treeNodeHtml(m){
+    const st = nodeState(m), p = modeProgress(m);
+    return '<button class="tnode st-'+st+(m.id===mode.id ? " active" : "")+'" data-mode="'+esc(m.id)+'" '+
+      'role="tab" aria-label="'+esc(m.name)+' — '+st+'">'+
+      '<canvas class="pix tn-ico" width="36" height="22"></canvas>'+
+      '<span class="tn-badge" aria-hidden="true">'+NODE_BADGE[st]+'</span>'+
+      '<span class="tn-prog">'+p.have+'/'+p.total+'</span></button>';
+  }
+  function renderTree(){
+    const g = techGraph();
+    elModeTree.innerHTML = g.spine.map(m => {
+      const branch = g.branchOf[m.id];
+      return '<div class="tree-row">'+
+        '<div class="tcol">'+treeNodeHtml(m)+'</div>'+
+        (branch ? '<div class="tlink" aria-hidden="true"></div><div class="tcol">'+treeNodeHtml(branch)+'</div>' : '')+
+        '</div>';
+    }).join("");
+    elModeTree.querySelectorAll(".tnode").forEach(btn => {
+      const m = byId(btn.dataset.mode), cv = btn.querySelector("canvas");
+      if(m && cv) nodeIcon(m, cv);
+    });
+    renderTreeDetail();
+  }
+  // Selected-node detail panel: name, progress (or the unlock requirement if
+  // locked). The Play/Practice/Guide actions are the shared #start buttons (T83).
+  function renderTreeDetail(){
+    const el = $("treeDetail"); if(!el) return;
+    if(pickerView !== "tree"){ el.classList.add("hidden"); el.innerHTML = ""; return; }
+    el.classList.remove("hidden");
+    const m = mode, locked = !isUnlocked(m), p = modeProgress(m);
+    el.innerHTML = '<span class="td-name">'+esc(m.name)+'</span>'+
+      '<span class="td-meta">'+(locked ? '🔒 '+unlockReq(m) : p.have+' / '+p.total+' collected')+'</span>';
+  }
+  // Render whichever picker view is active (keeps selectMode view-agnostic).
+  function renderPicker(){ if(pickerView === "tree") renderTree(); else renderTabs(); }
+  function setPickerView(v){
+    pickerView = (v === "tree") ? "tree" : "list";
+    try{ localStorage.setItem("halves.pickerView", pickerView); }catch(e){}
+    const tree = pickerView === "tree";
+    elModeTabs.classList.toggle("hidden", tree);
+    elModeTree.classList.toggle("hidden", !tree);
+    const lb = $("pvList"), tb = $("pvTree");
+    if(lb){ lb.classList.toggle("active", !tree); lb.setAttribute("aria-selected", String(!tree)); }
+    if(tb){ tb.classList.toggle("active", tree); tb.setAttribute("aria-selected", String(tree)); }
+    renderPicker();
+  }
   // Paint a topic's glyph with the procedural pixel font (T56) into `el`, sized
   // by an internal cell scale (CSS height upscales it, kept crisp by
   // image-rendering:pixelated). Falls back to the old `glyph` HTML if Glyphs or
@@ -339,7 +423,7 @@
     const m = byId(id); if(!m) return;
     mode = m;
     if(isUnlocked(m)) saveLastMode(id);   // don't make a locked topic the default
-    renderTabs(); renderMark(); renderBest(); renderStartState();
+    renderPicker(); renderMark(); renderBest(); renderStartState();
   }
 
   // Enable Start/Practice only for an unlocked topic. The Guide button is a peer
@@ -374,6 +458,16 @@
     // mark + enables the Guide button, while Start/Practice stay gated by unlock.
     const t = e.target.closest(".mode-row"); if(!t) return;
     selectMode(t.dataset.mode);
+  });
+  // Tech-tree (T84): tapping a node SELECTS it (like a list row) — locked nodes
+  // are preview-only (Start stays disabled); they never start a round from here.
+  elModeTree.addEventListener("click", e => {
+    const t = e.target.closest(".tnode"); if(!t) return;
+    selectMode(t.dataset.mode);
+  });
+  // List ⇆ Tree view toggle (persisted).
+  $("pickerViews").addEventListener("click", e => {
+    const b = e.target.closest(".pv-btn"); if(b) setPickerView(b.dataset.view);
   });
 
   // ---- topic guides (T27): a short "how to beat it" panel per topic ----------
@@ -1493,7 +1587,7 @@
       else { location.hash = "#/heroes"; return; }   // unknown/locked → back to the list
     }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
-    else { renderTabs(); renderBest(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); show("start"); }
+    else { renderPicker(); renderBest(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); show("start"); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
@@ -1675,7 +1769,7 @@
 
   // ---- init ---------------------------------------------------------------
   if(window.FX && window.FX.init) window.FX.init($("fxCanvas"));
-  renderTabs();
+  setPickerView(pickerView);   // render the saved view (list default) + toggle state
   renderMark();
   renderBrand();
   installFavicon();
@@ -1699,6 +1793,8 @@
   window.Practice = { recordQbest: recordQbest, qTileColor: qTileColor };
   // Toast queue API (T64) — cap/queue exposed for the Node tests.
   window.Toasts = { CAP: TOAST_CAP, enqueue: enqueueToast, shown: () => toastShown, queued: () => toastQ.length };
+  // Tech-tree API (T84) — the data-derived graph + node state, for the Node tests.
+  window.TechTree = { graph: techGraph, state: nodeState, view: () => pickerView };
   // Event play API (T79) — start today's live event gauntlet (used by the Events
   // tab now, the best-attempt board in T80 / the home banner in T81, and tests).
   window.EventPlay = { start: startEvent, active: () => !!eventCtx,
