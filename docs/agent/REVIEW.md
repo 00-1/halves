@@ -1,6 +1,26 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T81` (event presentation — emblem art · music · home banner) ·
+**Current verdict:** `APPROVED — T82` (visual-direction deep research · **doc only**) · build
+**`7278b94`**. New `docs/VISUAL-DIRECTION-RESEARCH.md` (339 lines); **only the doc + BUILDER-LOG
+changed** — zero `.js`/CSS/HTML/gate touched (verified), so all gates stand. Substantively
+answers (1)–(7): §1 aesthetic teardown → 7 voxel-free techniques w/ real impl + cost (Bayer
+dither, palette-ramp LUTs, instanced particle splats, atmospheric fog, banding, mono HUD, chunky
+forms); §2 a build-ON inventory of every generator + a grid→texture→shader composition plan
+(guardrail honoured); §3 all 5 stacks scored vs the **3 crown jewels** w/ a scorecard; §4 real
+Android delivery (TWA/Bubblewrap → AAB, manifest+SW+assetlinks, API 26, **WebGL2 baseline /
+WebGPU progressive**, cheap-tablet fill-rate, clean COPPA) tied to T72; §5 perf principles +
+degrade ladder + keeping `perf.test` meaningful; §6 a **Node-verification-preserving** gating
+plan (pure-fn + budget-invariant + WebGL-stub tests) w/ honest limits; §7 ranked pick + phased
+A/B/C plan w/ explicit **spike success AND kill criteria** ("revert = one commit"). **Recommends
+(a) hybrid DOM + WebGL2 FX layer + (e) TWA delivery**, composing — never replacing — our seeded
+generators. **Honesty noted + correct:** discloses `00-1/brickmap` is out of the Builder's GitHub
+scope (halves-only), so it didn't read the source — teardown is from the owner screenshots +
+standard techniques, inventing no internals, flagging re-verification if the repo is scoped in.
+Doc-only, deploy-safe, all gates green. T82 → DONE. **Open questions raised for the owner** (relayed
+in chat): primary cert device; strictly-Node vs one elective Playwright visual check; WebGPU
+appetite; confirm the brickmap=Rust/wgpu attribution.
+
+**Previously approved (done):** `T81` (event presentation — emblem art · music · home banner) ·
 live build **`4990953`**. **🎉 Completes the Phase 6.5 Events block (T78→T81).** New standalone
 `eventart.js` (`window.EventArt`): a seeded **heraldic-crest emblem** generator — its own visual
 language (anti-dilution, not a reskin), static draw. `sound.js` adds a dedicated calm event
@@ -155,15 +175,14 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Events block (T78→T81) COMPLETE.** **Do `T82` next** — visual-direction **deep research**
-(Phase 6.7, **doc only**): learn FROM brickmap's performant visual character (no voxels),
-Android-primary; weigh rendering-stack options against our 3 crown jewels (a11y / no-build /
-Node-verification); **build ON our existing generative art**; end with a ranked recommendation +
-a reversible first-spike. Then the **tech-tree** block (Phase 6.8): **`T83`** (promote the guide
-to a Play/Practice-peer button) → **`T84`** (data-driven, icon-node, 360px-safe tech-tree view +
-selected-node panel; renders from live `unlockedBy`/`requires`/`isUnlocked`/`have-total`, never a
-parallel edge list; swappable `nodeIcon()` for later T82 art). Then content extension
-`T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store). Specs in BACKLOG; this line is authoritative.
+**Do `T83` next** (tech-tree block, Phase 6.8) — promote the topic guide out of the per-row `?`
+into a **first-class button alongside Play + Practice** for the selected topic (gated like
+Start/Practice; remove the orphaned `.mr-guide`, keep locked-preview guides working). Then
+**`T84`** (data-driven, icon-node, 360px-safe tech-tree view + selected-node panel; renders from
+live `unlockedBy`/`requires`/`isUnlocked`/`have-total`, never a parallel edge list; swappable
+`nodeIcon()` so richer T82 art drops in later; keep the scrollable list as the a11y fallback).
+Then content extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store — folds in the T82
+TWA/manifest/SW plan). Specs in BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

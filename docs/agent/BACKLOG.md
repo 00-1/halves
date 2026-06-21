@@ -1432,7 +1432,7 @@ existing art).
 > (phone) shots show the look working as a **menu backdrop**: a dithered, particle-rich field
 > under a gradient sky. None of this needs voxels.
 
-### T82 — Deep research: bring brickmap's performant visual character into Halves (doc only) · status: OPEN
+### T82 — Deep research: bring brickmap's performant visual character into Halves (doc only) · status: DONE
 Produce a rigorous research + design doc (e.g. `docs/VISUAL-DIRECTION-RESEARCH.md`) on how to
 give Halves a brickmap-grade visual character **without** adopting a voxel engine, with
 **Android as the primary target** and web as the dev surface. **Doc only — read code/repos to be
