@@ -58,6 +58,8 @@ jobs:
         run: node test/version.test.js
       - name: Topic-init gate test (gate)
         run: node test/init-gate.test.js
+      - name: Collector ladder test (gate)
+        run: node test/collector.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

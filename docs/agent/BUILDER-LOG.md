@@ -2587,3 +2587,33 @@ notes / questions: same square pattern applied to both lists for consistency, pe
   spec. (Anti-recurrence noted for the T58 playbook: avoid colour-coded rounded
   left-borders.) Next per REVIEW order: **T55** (extend the Collector ladder to
   10,000), then **T56** (pixel mark/glyphs + favicon).
+
+## T55 — Extend the Collector award ladder to 10,000 items  [HANDOFF]
+commit: (this commit, on main)
+Owner: the Collector ladder dead-ended at 150 ("Completionist" was a misnomer at
+~14% of the catalogue). Extended to a 12-tier ramp ending at **10,000**.
+changed:
+  - collectibles.js — replaced the 3-tier list with **25, 75, 150, 300, 500, 750,
+    1000, 1500, 2500, 5000, 7500, 10000**. **Existing ids `collector:25/75/150`
+    kept with their original rarities** (rare/epic/legendary) → migration-safe; the
+    150 tier renamed **"Completionist" → "Magpie"** (display-only, id unchanged).
+    New tiers 300+ are additive, all legendary. Names are characterful + **varied**
+    (Curator, Hoarder, Magpie, Antiquarian, Archivist, Loremaster, Vaultkeeper,
+    Reliquarian, Hoard-Lord, Treasure Dragon, Grand Conservator, Keeper of the
+    Myriad). Descriptions format thousands ("Collect 2,500 items.").
+  - No logic change — `evaluateCollector(count, has)` is already `count >= it.n`.
+  - test/hero-icons.test.js — its pinned drill catalogue size **795 → 804** (the 9
+    new collector items; baseline icon snapshots unaffected).
+how I verified:
+  - `node test/collector.test.js` (NEW, 18th gate) → **ALL 20 PASS**: starts 25,
+    **ends 10000**, strictly ascending, **`collector:25/75/150` preserved**, 150 no
+    longer "Completionist"; `evaluateCollector` grants **exactly tiers ≤ count** at
+    0/24/25/200/1000/3000/9999/10000/99999 (none above), **owned tiers not
+    re-granted**, huge count grants every tier + no phantom; **thousands formatted**;
+    names distinct.
+  - **icon-variation gate still green** (new collector ids auto-generate icons);
+    **all eighteen gates pass**; `node -c` clean. Awards-tab Collector section
+    (post-T48 bars-at-top, lazy-render) renders the longer list fine at 360px. No
+    regressions.
+notes / questions: headroom above the current ~1154 catalogue is intentional
+  (future items). Next per REVIEW order: **T56** (pixel mark/topic glyphs + favicon).

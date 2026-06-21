@@ -172,9 +172,27 @@
     desc:"Reach 100% on every topic." });
 
   // collector (evaluated against how much you've collected; handled separately)
-  [[25,"rare","Curator"],[75,"epic","Hoarder"],[150,"legendary","Completionist"]].forEach(([n,r,nm]) =>
+  // Collector ladder, 25 → 10,000 (T55). Existing ids collector:25/75/150 keep
+  // their rarity (migration-safe); the 150 tier is renamed off "Completionist"
+  // (it's no longer completion). New tiers (300+) are purely additive, all
+  // legendary, with headroom above the current catalogue for future items.
+  const comma = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  [
+    [25,   "rare",      "Curator"],
+    [75,   "epic",      "Hoarder"],
+    [150,  "legendary", "Magpie"],
+    [300,  "legendary", "Antiquarian"],
+    [500,  "legendary", "Archivist"],
+    [750,  "legendary", "Loremaster"],
+    [1000, "legendary", "Vaultkeeper"],
+    [1500, "legendary", "Reliquarian"],
+    [2500, "legendary", "Hoard-Lord"],
+    [5000, "legendary", "Treasure Dragon"],
+    [7500, "legendary", "Grand Conservator"],
+    [10000,"legendary", "Keeper of the Myriad"]
+  ].forEach(([n,r,nm]) =>
     add({ id:"collector:"+n, name:nm, rarity:r, cat:"Collector", modeId:null, n:n,
-      desc:"Collect "+n+" items." }));
+      desc:"Collect "+comma(n)+" items." }));
 
   // hero + arena milestones (Phase 3) — evaluated against collected state +
   // the live hero-unlock count via evaluateMeta (see main.js wiring).
