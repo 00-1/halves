@@ -1869,7 +1869,12 @@ per SFX voice). **Raise it to clearly audible.**
 Owner (screenshot): **every screen wastes a band at the top.** Cause: `.app{height:100dvh;
 max-height:780px}` — on a tall phone (Poco-X3 floor) the app is **capped at 780px** and the
 leftover (+ `env(safe-area-inset-top)`) becomes a dead band at the top of every `position:absolute;
-inset:0` screen. Reclaim it; pin the event banner to the very top of `#start`; tidy the nav.
+inset:0` screen. **Owner confirmed it's worse in FULLSCREEN:** non-fullscreen the content is almost
+at the top, but **entering fullscreen makes the viewport taller** (browser chrome gone → `100dvh`
+grows), so the 780px-capped, centered app leaves an **even bigger** top band. **The fix must
+fill/top-align the app at the fullscreen (taller) viewport too** — so verify it both
+non-fullscreen AND in fullscreen on the Poco X3. Reclaim it; pin the event banner to the very top
+of `#start`; tidy the nav.
 - **Reclaim top space globally.** Let `.app` use the **full viewport height on phones** so screens
   start at the very top (e.g. raise/drop the `max-height:780px` cap for phone widths, or top-align
   the app so any leftover falls to the bottom, not the top). Account for `env(safe-area-inset-top)`.
