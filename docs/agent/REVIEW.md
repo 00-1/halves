@@ -1,18 +1,15 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T27` (per-topic guides — all 15, Babysitter-audited
-maths all correct, British, well-pitched). **Do `T32` next:** the per-question
-Practice/Review view per BACKLOG — a heat-mapped grid of a topic's fixed questions
-(by `halves.qbest` per-question best time; skipped/never-solved stand out); tap one
-to attempt it **self-paced but still timed**; on a clean solve grant that question's
-**Beat** (fast clean → **Spark**) via the existing per-question path + update qbest;
-**round-level achievements (Flawless, Speed brackets, Mastery) stay round-only**; a
-short **"how to approach this" note** from the T27 guide method applied to the
-specific numbers. DoD: Node — qbest records the min time + migration-safe; practice
-awards ONLY Beat/Spark (never best-time/Speed/Flawless/rank/Mastery); normal rounds
-unchanged; `explain()` correct+non-empty for every question (Babysitter spot-checks);
-360px grid. Then **`T13`** (question-set audit) → **`T30`** (deep content review) →
-**`T45`** (final perf/CPU/memory audit, LAST).
+**Current verdict:** `APPROVED — T32` (practice/review view — awards only Beat/Spark,
+qbest correct, explain() correct for all 317 Qs). **🏁 Phase 4 complete.** **Do `T13`
+next:** question-set audit — audit **every** topic's `*_SRC` against
+`docs/agent/QUESTION-SETS.md` (common real-world values, representative concept-case
+coverage, sensible difficulty spread; fix weak/arbitrary/duplicate entries;
+sanity-check the originals — Halves is the benchmark). Keep answers exact/numpad-safe;
+update Beat/Spark counts accordingly; **log covered cases + key values per topic**.
+Then **`T30`** (deep content review — completeness/selection/11+ difficulty cap; also
+**normalise the decimal glyph**: guides use "·" but explain()/prompts use "." — pick
+one for the whole app) → **`T45`** (final perf/CPU/memory audit, LAST).
 **Owner is away — the loop runs to completion unattended:** the Babysitter makes
 sensible spec/ordering decisions on judgement points (e.g. this T27-before-T32
 reorder) rather than blocking; the Builder escalates only genuine blockers in
@@ -32,6 +29,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T32 — Per-question Practice / Review view → APPROVED — Phase 4 complete
+New `#practice` screen + `explain()` + `halves.qbest` store. Verified (Node + DOM shim): node -c OK; no stub. **`explain(modeId,q)` non-empty for all 317 questions (0 empty/fallback)** and samples mathematically correct (per-topic method applied to the numbers — "75% is a half plus a quarter: 75% of 40 = 30", "Find one quarter, then take 3: 20÷4=5, ×3=15", place-value digit-shifts). **`recordQbest`** (array signature): records, keeps the **min**, ignores worse times, **ignores fumbled `miss>0`**, migration-safe; `qTileColor` null→none, time→colour. **Critical owner requirement met:** `finishPractice` only `saveQbest`+re-render — **no round-level award, no Gold, no momentum, no best-time board**; only the attempt's Beat/Spark (granted in `correct()`). Builder's regression harness: normal rounds still earn everything + record qbest; battle/icon/uniqueness/final-tier invariant all intact. **Non-blocking nit (→T30):** guides use "·" decimals, explain()/prompts use "." — normalise. No regressions.
 
 ### T27 — Per-topic "how to beat it" guides → APPROVED
 New `guides.js` (`window.Guides`), guideModal added, "?" control on every picker row (incl. locked = preview). Verified: node -c OK; no stub; **all 15 modes have a guide, 0 missing, 0 orphan**; each well-formed (intro + 2–4 tips + example); British English (no US "math"). **Babysitter maths audit (every guide, line-by-line): ALL correct** — e.g. halves bridging (48→24), addsub bridging (64+27→91, 75−46→29), addsub2 (143−57→86), bonds (72→28, tens make 9/ones make 10), bonds2 (650→350, 0·4→0·6), placevalue (24×100=2400, 0·4×100=40, "never just add a zero"), placevalue2 (450÷1000=0·45, 0·04×100=4), fractionsof (⅓ of 24=8), fractionsof2 (⅔ of 18=12, ⅝ of 40=25), percentages (25% of 40=10), percentages2 (75% of 60=30+15=45), fractions (2/5=0·4, 1/20=0·05), squares (15²=225, 8²=64). Pedagogy well-pitched for Year 5/6. DOM harness: "?" opens the modal for unlocked + locked topics, all 15 render. No regressions. Unblocks T32.

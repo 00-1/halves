@@ -307,7 +307,7 @@ overflow-y:auto`, but mobile scrollbars are hidden). Add a clear affordance.
 
 ## Phase 2.6 — Content quality
 
-### T13 — Question-set audit pass · status: BLOCKED
+### T13 — Question-set audit pass · status: OPEN
 > Babysitter will open this once a few topics exist (and may run a frequency/
 > curation research pass first to inform it). Goal: make every topic's set as
 > well-considered as Halves.
@@ -799,7 +799,7 @@ start screen + a **non-blocking** acknowledgement when it goes up. Migration-saf
   exactly at threshold, once each, including 75 at the cap, and never revoke on a
   dip. No timers/notifications; no regressions; deploy green.
 
-### T32 — Per-question Practice / Review view · status: BLOCKED (spec CONFIRMED by owner)
+### T32 — Per-question Practice / Review view · status: DONE
 Replaces the old "relaxed mode" idea (owner-chosen). Mitigates the one
 well-documented harm of timed drills (TTRS's main critique; Boaler on timed-test
 anxiety) **and** doubles as a precise mastery tool. **Depends on T27** (for the
