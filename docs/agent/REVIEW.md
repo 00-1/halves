@@ -1,6 +1,17 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T88` [A] (Arena 3v3 battle model + calibration — the crux) · live
+**Current verdict:** `APPROVED — T98` [A] (audio too quiet — raised + limiter) · live build
+**`5c26f9b`**. `VOL` **0.30 → 0.80** (≈2.7× louder; mute/unmute still toggles 0↔VOL) **plus a
+brickwall LIMITER** (DynamicsCompressor, −1.5 dB, knee 0, ratio 20, 3 ms attack) on
+`master→limiter→destination` — so clipping is impossible **by construction**, not by estimate;
+graceful direct-wire fallback if `createDynamicsCompressor` is unavailable. Verified: `node -c`
+clean; **full 26-gate suite green**; `sound.test.js` (+ limiter assertions) confirms `VOL=0.80` in
+the 0.70–0.85 band, exactly one compressor wired master→limiter→out (no direct master→destination),
+brickwall config (ratio≥20, hard knee, −1.5 dB, fast attack), and **worst-case pre-limiter peak
+≈0.508 < 1.0** (limiter is a backstop, not a crutch). T98 → DONE. *(Owner to confirm it's
+comfortably loud on the Poco X3.)*
+
+**Previously approved (done):** `T88` [A] (Arena 3v3 battle model + calibration — the crux) · live
 build **`f5b44fa`**. (A finished this in-flight before switching to the front-end polish, as noted.)
 Faithfully implements the **IDEAS I5** calibration: a deterministic `simulateTeams` (spd order,
 fixed targeting best-matchup→lowest-hp→ord, `max(1,round(atk×matchup))`, wipe-to-decision, **zero
@@ -344,8 +355,8 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T98`** [A] (front-end polish, prioritised ahead of the Arena — owner just
-  flagged these): **`T98`** raise the too-quiet audio (`VOL 0.30`→~0.8, no clip) → **`T99`** reclaim
+- **Builder A — next: `T99`** [A] (front-end polish; **`T98` DONE — audio raised to 0.80 + limiter**):
+  **`T99`** reclaim
   the wasted top band on ALL screens (`.app max-height:780px` cap) + pin the event banner to the
   top + tidy the nav (label Sound/Settings, fullscreen inline) so the tree expands → **`T100`**
   **`T104`** (fix the unreadable stacked fraction glyphs ½/¾ — slashed/clearer, legible at node

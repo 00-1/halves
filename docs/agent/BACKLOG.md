@@ -1851,7 +1851,7 @@ Keep an easy **participation** reward, but add **two more performance-gated tier
 > annoyances the owner just flagged. Order: **`T98` (audio) → `T99` (reclaim top space + nav) →
 > `T100` (gamey UI restyle)**.
 
-### T98 — [A] BUGFIX: audio is far too quiet (raise the volume) · status: OPEN
+### T98 — [A] BUGFIX: audio is far too quiet (raise the volume) · status: DONE
 Owner: "the audio is insanely low, barely audible." Live levels (`sound.js`): **`VOL = 0.30`**
 master, SFX voices peak ~`0.16`, `musicGain 0.09` — the master is the bottleneck (≈0.048 effective
 per SFX voice). **Raise it to clearly audible.**
