@@ -2745,7 +2745,13 @@ cut 10 NEW music styles (keep them distinct) including the dubstep victory. Put 
   the log) so T140 can list + route them. (Babysitter + owner audition each in the switcher — output
   feature, gates necessary-not-sufficient.)
 
-### T149 — [A] THE celebration bug: `#fxBurst` is trapped inside the `display:none` reset modal — move it to top level · status: OPEN · OWNER-PRIORITY · BUG · ROOT-CAUSED (browser-proven)
+### T149 — [A] THE celebration bug: `#fxBurst` is trapped inside the `display:none` reset modal — move it to top level · status: DONE (`9c211a3`, CI green, BROWSER-VERIFIED)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). A moved `<canvas id="fxBurst">` out of `#resetModal` to top-level
+(body sibling of `.app`); `fx-wiring.test` +9 asserts it's not inside a modal. **Babysitter BROWSER-VERIFIED**
+(headless Chromium, 393×852 @ dpr 2.75): on load parent=`BODY`, clientSize `393×852` (was `0×0`); clicking the
+REAL "Item" tester paints **21.8% lit coverage**, no errors. `node -c` clean, `fx-wiring` 77, full suite + CI
+green. **The 6-round celebration saga is closed — the engine (T133/T138) was always correct; one misplaced
+`<canvas>` was the whole bug.**
 **Found by an actual headless-browser render (Playwright), not a guess — after T125/T126/T133/T136/T137/T138
 all missed it.** `<canvas id="fxBurst">` (index.html:321) is the **last child of `#resetModal`** (`<div class=
 "modal hidden">`, the "Clear all data?" confirm modal). `.modal.hidden{display:none}` → the celebration

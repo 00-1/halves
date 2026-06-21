@@ -1,20 +1,28 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T143` [A] (dedicated scrollable Audio menu + separate Music/SFX volumes —
-nav-trap fix) · live build **`59e2c28`** (in green HEAD `daa64f5`). **CI green; collision-clean** ([A]-owned:
+**Current verdict:** `APPROVED — T149` [A] (THE celebration fix — `#fxBurst` moved out of the `display:none`
+reset modal) · live build **`9c211a3`**. **CI green; collision-clean** ([A]-owned: `index.html`,
+`test/fx-wiring.test.js`, `BUILDER-LOG.md`). The end of the 6-round celebration saga: `<canvas id="fxBurst">`
+was the last child of `#resetModal` (`.modal.hidden{display:none}`) → the shower painted into a
+never-displayed `0×0` canvas. A moved it **top-level** (body sibling of `.app`, position:fixed z59), so it's
+always rendered; `fx-wiring.test` +9 asserts `#fxBurst` is NOT inside a modal. **🌐 BROWSER-VERIFIED by the
+Babysitter (the new rule, first use):** headless Chromium at the Poco-X3 viewport (393×852 @ dpr 2.75) — on
+load `#fxBurst`'s parent is `BODY` and `clientSize = 393×852` (was `0×0`), and **clicking the REAL "Item"
+tester button through the app UI paints 21.8% lit coverage**, no page/console errors. Also `node -c` clean;
+`fx-wiring.test` 77; full suite + CI green. T149 → DONE. **🎆 OWNER: celebrations now render for real (wins /
+runs / items / the tester) — confirmed in-browser, not asking you to test.** The engine work (T133/T138) was
+correct all along; this one misplaced `<canvas>` was the whole bug. *(Pending review: `T140` 12-style picker
+`9e706f3`, `T146`+`T148` `8a2b1a9` — Babysitter reviewing next, browser-verifying the UI ones.)*
+
+> **Previously approved (done):** `T143` [A] (dedicated scrollable Audio menu + separate Music/SFX volumes —
+> nav-trap fix) · live build **`59e2c28`** (in green HEAD `daa64f5`). **CI green; collision-clean** ([A]-owned:
 `index.html`, `main.js`, `sound.js`, `styles.css`, `home-layout.test`, `sound.test`, `synth-wiring.test`,
-`BUILDER-LOG.md`). Fixes the owner's **navigation trap** ("config goes off the bottom, can't scroll, can't go
-back"): both the Settings and the new **`#audio`** menu bodies are now a **`.scroll-body` (`overflow-y:auto`,
-momentum scroll)** so **Back is always reachable**. The home Sound button now **opens the dedicated Audio
-menu** (`location.hash="#/audio"`) with the **mute toggle moved inside** it, plus the music picker, tempo, the
-FX tester, and — the other owner ask — **separate Music + SFX volume sliders** (`#musicVolRange` default 5 =
-0.05× on the Synth music path; `#sfxVolRange` default **8 = 0.08×**, louder so SFX aren't lost under the
-music; old `halves.vol` migrates; mute silences both). Also **`ensureAudioReady`** unlocks audio **without**
-`musicForScreen`, so the FX tester no longer restarts the music. Verified independently: `node -c` clean
-(`main.js`+`sound.js`); the new ids (`musicVolRange`/`sfxVolRange`/`setMusicVolVal`/`setSfxVolVal`/`audio`)
-all present; full suite + CI green (`sound.test`/`synth-wiring`/`home-layout` updated). T143 → DONE. **🔊
-OWNER: the Sound button now opens a scrollable Audio menu (mute inside) with independent Music/SFX volume — go
-back any time, and SFX sit louder over the music.**
+> `BUILDER-LOG.md`). Fixes the **navigation trap**: Settings + the new **`#audio`** menu bodies are now
+> `.scroll-body` (`overflow-y:auto`) so **Back is always reachable**. The home Sound button opens the Audio
+> menu (mute toggle inside, + music picker, tempo, FX tester) and **separate Music + SFX volume sliders**
+> (`#musicVolRange` 0.05×, `#sfxVolRange` louder); `halves.vol` migrates; mute silences both;
+> `ensureAudioReady` stops the tester restarting music. Verified: `node -c` clean, new ids present, full suite
+> + CI green. T143 → DONE.
 > **Plus `APPROVED — T144`+`T145`** [A] · live build **`daa64f5`**. **CI green; collision-clean**
 > (`index.html`/`styles.css`/`contrast.test`/`home-layout.test`). **T144:** the `.readouts` gold/momentum
 > readout is now a header stat bar at the **very top** of `#start` (above the event banner), keeping its T142
