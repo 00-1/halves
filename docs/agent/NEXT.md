@@ -10,7 +10,16 @@
 
 ---
 
-**Builder A → `T143` (Audio gets its own SCROLLABLE menu + separate Music/SFX volumes — fixes the nav trap) → `T144` (gold/momentum pill to TOP) → `T140` (12-style picker, after B's T139) → `T124` (fractions)**
+**Builder A → `T146` (declutter home: drop Sound icon + move Exit into Setup) → `T147` (FX tester → a Graphics section) → `T140` (12-style picker — UNBLOCKED) → `T124` (fractions)**
+*(`T143` scrollable Audio menu + separate Music/SFX vols DONE `59e2c28`; `T144` gold pill to top + `T145`
+drop build pill DONE `daa64f5`.)* Owner (live, after using the new Audio menu): **(T146)** "sound is now a
+sub-menu — get rid of the Sound icon from the main screen; also get rid of the Exit button and add it to
+Setup" → remove home `#soundBtnMenu` + the home Exit, make the Audio menu reachable FROM Setup, put an Exit
+action in Setup, re-balance the home nav row. **(T147)** "the fx test is in the sound menu which seems wrong
+— should be in a graphics section" → move the celebration tester out of `#audio` into a **Graphics** section/
+sub-menu. **Then `T140`** (now unblocked — B's 12 styles are built `efef4b4`): list all 12 in the music picker
++ per-screen routing + dubstep victory fires on a win. Then → `T124` (fraction glyphs) → `T101` →
+`T102`/`T103` (Android) → content → `T72`. **(Celebration render fix `8145505` is in HEAD — owner re-test.)**
 *(`T142` backdrop DONE `42aac3b`; `T137` tester DONE; `T123` a11y DONE.)* **⚠ `T143` FIRST — the owner is
 TRAPPED in Settings: "config menu goes off the bottom, can't scroll, can't go back."** (1) **Make Settings +
 the new Audio menu `overflow-y:auto`** within the safe-area height so **Back is always reachable** (priority).

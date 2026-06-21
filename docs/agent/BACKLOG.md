@@ -2745,6 +2745,36 @@ cut 10 NEW music styles (keep them distinct) including the dubstep victory. Put 
   the log) so T140 can list + route them. (Babysitter + owner audition each in the switcher — output
   feature, gates necessary-not-sufficient.)
 
+### T146 — [A] Declutter the home nav: drop the Sound icon + move Exit INTO Setup · status: OPEN · OWNER-PRIORITY
+Owner (live, after T143): **"if sound is now a sub menu of setup, we can get rid of the sound icon from the
+main screen. let's also get rid of the exit button and add that to setup too."** Now that audio has its own
+menu, the home bottom row (Best · Items · Heroes · Arena · **Sound** | Setup · **Exit**) is cluttered.
+- **Remove the home `Sound` nav button** (`#soundBtnMenu`). Its only job was to open `#/audio` — so **make
+  the Audio menu reachable from inside Setup** (an "Audio" / "Sound" row in Settings that routes to `#/audio`)
+  so audio is genuinely a sub-menu of Setup. (Keep the entry-screen `#soundBtn` mute toggle as-is.)
+- **Remove the home `Exit` button** and **add an Exit action inside Setup** (e.g. a row in Settings, near or
+  in the danger area, that does what the old home Exit did — confirm the exact behaviour, full-screen exit /
+  back-to-entry).
+- Re-balance the home nav row (now Best · Items · Heroes · Arena · Setup) so spacing/centring still looks
+  right (it was built for the old count — see the home-layout/T96 work).
+- **DoD (LIVE-verified):** the home bottom row no longer shows Sound or Exit; the Audio menu is reachable
+  from Setup; an Exit action lives in Setup and works; no orphaned route/handler/`$("id")`; `node -c` clean;
+  all gates green (cross-check no dangling `soundBtnMenu`/home-Exit refs; assert Setup links to `#/audio`);
+  [A]-owned. (Babysitter + owner confirm via screenshot.)
+
+### T147 — [A] Move the FX/celebration tester out of the Audio menu into a GRAPHICS section · status: OPEN · OWNER-PRIORITY
+Owner (live): **"the fx test is now in the sound menu which seems wrong. should be in a graphics section."**
+Correct — the celebration tester is a *visual* test, not audio.
+- **Move the celebration tester** (Item / Rank up / Arena win / Big burst + the `dimensions()`/`isReady()`
+  readout) **out of `#audio`** into a **Graphics/Visual section** — either a new `#graphics` sub-menu of Setup
+  (mirroring the Audio menu pattern, scrollable, Back reachable) or a clearly-labelled "Graphics" block in
+  Settings. Keep the `ensureAudioReady`-style guard so firing a test doesn't disturb music.
+- Leave room to grow (future graphics toggles — reduced-motion, FX quality — can live here later).
+- **DoD:** the FX/celebration tester is in a Graphics section (not the Audio menu); still fires each
+  celebration + shows the size readout; reachable + Back works; `node -c` clean; all gates green; [A]-owned.
+  (Babysitter + owner confirm.) *(Note for the owner: the celebration RENDER fix is `8145505`/in HEAD
+  `daa64f5` — if they tested an older build they wouldn't have seen it; re-test on the current build.)*
+
 ### T140 — [A] Music switcher + routing for the 12 styles (audition all incl. dubstep victory; victory fires) · status: OPEN · OWNER-PRIORITY
 Depends on T139 (B's final style list). The owner wants **all 12 styles in the launcher** to audition, and
 the **dubstep victory to actually fire on a win**.
@@ -2766,7 +2796,15 @@ the **dubstep victory to actually fire on a win**.
   victory drop); [A]-owned files. (Babysitter + owner confirm by ear.) *(The picker now lives in the
   dedicated Audio menu from T143.)*
 
-### T143 — [A] Audio gets its OWN scrollable menu (Sound button opens it) + separate Music/SFX volumes + fixes · status: OPEN · OWNER-PRIORITY · BUG(navigation trap)
+### T143 — [A] Audio gets its OWN scrollable menu (Sound button opens it) + separate Music/SFX volumes + fixes · status: DONE (`59e2c28`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). New scrollable `#audio` menu opened by the home Sound button
+(`#/audio`); mute toggle moved inside; Settings + Audio bodies are `.scroll-body overflow-y:auto` → Back
+always reachable. Separate `#musicVolRange` (def 5=0.05×, Synth music path) + `#sfxVolRange` (def 8=0.08×,
+louder) volumes; `halves.vol` migrates; mute silences both. `ensureAudioReady` unlocks audio without
+`musicForScreen` (FX tester no longer restarts music). Babysitter verified: node -c clean, new ids present,
+full suite + CI green. *(Owner follow-ups → T146/T147.)*
+
+> Original spec below.
 Owner (live): **(a)** "we need separate volume controls for sounds and music, cos the sounds are getting
 lost now." **(b)** "the config menu now goes off the bottom of the page, and it's not possible to scroll. so
 I can't go back. maybe sound controls should live in their own menu. our sound button can open that menu
@@ -2794,7 +2832,11 @@ restarts the music when tapped.
   longer restarts the music; `node -c` clean; all gates green (assert the Sound button routes to the menu;
   assert two volume params; assert the scroll container); [A]-owned files. (Babysitter + owner confirm live.)
 
-### T144 — [A] Move the Goblin-Gold/Momentum readout pill to the TOP of the home page · status: OPEN · OWNER-PRIORITY
+### T144 — [A] Move the Goblin-Gold/Momentum readout pill to the TOP of the home page · status: DONE (`daa64f5`, CI green)
+**DONE 2026-06-21** — APPROVED. `.readouts` is now a header stat bar at the very top of `#start` (above the
+event banner), keeping its T142 pill backing. Verified: ids present, full suite + CI green.
+
+> Original spec below.
 Owner (live): **"the goblin gold / momentum pill should move to the top of the page."** Currently the
 `.readouts` row sits low (above the Start row). Move it to the **top** of the home screen (above the event
 banner / topic tree, as a header stat bar) while keeping its T142 local dark pill backing (so it stays
@@ -2803,7 +2845,12 @@ legible over the backdrop) and a11y/layout intact.
   backing); no layout/scroll regression (respects the T112 safe-area height); `node -c` clean; all gates
   green; [A]-owned files. (Babysitter + owner confirm via screenshot.)
 
-### T145 — [A] Drop the build-stamp pill (dev-only — owner accepts low contrast) · status: OPEN · quick
+### T145 — [A] Drop the build-stamp pill (dev-only — owner accepts low contrast) · status: DONE (`daa64f5`, CI green)
+**DONE 2026-06-21** — APPROVED. `.build` pill backing removed (plain text); `contrast.test` exempts `.build`
+while keeping `.readouts`/`res-label` protected (still fails if those lose backing). Verified: full suite + CI
+green.
+
+> Original spec below.
 Owner (live): **"I don't like the build info pill at the bottom. maybe get rid of the black pill and leave
 those hard to read. they're just for me anyway."** The `.build` stamp ("build <sha> · <ago>") is dev-only
 info, so the owner explicitly opts it OUT of the contrast floor.

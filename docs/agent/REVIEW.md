@@ -1,23 +1,37 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T138` [B] (celebration visible on-device — the real cause was DPR downscale)
-· live build **`8145505`** (refines `cda6fd6`). **CI green; collision-clean** (B-owned: `fxgl.js`,
-`test/golden-fx.test.js`, `fx_celebrate_visibility.json`, `fx_celebrate_2d_frame.json`, `BUILDER-LOG-FX.md`).
-**B found THE real cause (matching the original theory + resolving the tester's sized-but-blank case):** the
-2D buffer is `dpr×res × CSS` (~2.75× on the Poco X3) and the browser **downscales it back**, so particles
-drawn at 6–18 **buffer** px showed at only ~2–6 **screen** px and faded out — drawn (count-golden passed) but
-invisible. **Primary fix:** the CPU 2D path now **scales the draw size by the buffer/CSS factor**
-(`pxScale = dpr×res`, set on resize) so a particle renders at a **constant ~6–18 SCREEN px regardless of DPR**
-(floor 2), and celebration sizes were bumped to 6–18 for boldness. The earlier `_ignite` re-fit + `canPresent`
-are kept as defence for the other candidates. **The visibility GATE is now even stronger:** it rasterises each
-rect+alpha into an in-bounds buffer and measures **BOTH lit coverage AND on-screen particle size** — at
-1038×2305 the celebrate frame paints **~572k lit px (24%) at ~17.8 screen-px particles**; it **fails on a
-1×1/zero-coverage frame AND if particles shrink below ~8 screen px** (so a DPR-downscale regression can't come
-back). Verified independently: `node -c` clean; `fxgl.test` 124 + `golden-fx` 28; full suite + CI green;
-golden = `{litPx:572000, screenPx:18}`. T138 → DONE. **🎆 OWNER: re-tap a celebration tester button — you
-should now see a BOLD shower (~24% coverage, ~18px motes); in-game wins/runs/items too.** B → STAND BY.
-*(Good engine work: B self-continued off the cautious first pass, found the true DPR cause, and made the gate
-guard particle SIZE — exactly the structural fix.)*
+**Current verdict:** `APPROVED — T143` [A] (dedicated scrollable Audio menu + separate Music/SFX volumes —
+nav-trap fix) · live build **`59e2c28`** (in green HEAD `daa64f5`). **CI green; collision-clean** ([A]-owned:
+`index.html`, `main.js`, `sound.js`, `styles.css`, `home-layout.test`, `sound.test`, `synth-wiring.test`,
+`BUILDER-LOG.md`). Fixes the owner's **navigation trap** ("config goes off the bottom, can't scroll, can't go
+back"): both the Settings and the new **`#audio`** menu bodies are now a **`.scroll-body` (`overflow-y:auto`,
+momentum scroll)** so **Back is always reachable**. The home Sound button now **opens the dedicated Audio
+menu** (`location.hash="#/audio"`) with the **mute toggle moved inside** it, plus the music picker, tempo, the
+FX tester, and — the other owner ask — **separate Music + SFX volume sliders** (`#musicVolRange` default 5 =
+0.05× on the Synth music path; `#sfxVolRange` default **8 = 0.08×**, louder so SFX aren't lost under the
+music; old `halves.vol` migrates; mute silences both). Also **`ensureAudioReady`** unlocks audio **without**
+`musicForScreen`, so the FX tester no longer restarts the music. Verified independently: `node -c` clean
+(`main.js`+`sound.js`); the new ids (`musicVolRange`/`sfxVolRange`/`setMusicVolVal`/`setSfxVolVal`/`audio`)
+all present; full suite + CI green (`sound.test`/`synth-wiring`/`home-layout` updated). T143 → DONE. **🔊
+OWNER: the Sound button now opens a scrollable Audio menu (mute inside) with independent Music/SFX volume — go
+back any time, and SFX sit louder over the music.**
+> **Plus `APPROVED — T144`+`T145`** [A] · live build **`daa64f5`**. **CI green; collision-clean**
+> (`index.html`/`styles.css`/`contrast.test`/`home-layout.test`). **T144:** the `.readouts` gold/momentum
+> readout is now a header stat bar at the **very top** of `#start` (above the event banner), keeping its T142
+> pill backing. **T145:** the `.build` dev stamp is **plain (no pill)** — owner opted it out of the contrast
+> floor; `contrast.test` now exempts `.build` while keeping `.readouts`/`res-label` protected (still fails if
+> those lose backing). Verified: ids present, full suite + CI green. **T144/T145 → DONE.**
+
+> **Previously approved (done):** `T138` [B] (celebration visible on-device — the real cause was DPR downscale)
+> · live build **`8145505`** (refines `cda6fd6`). **CI green; collision-clean** (B-owned: `fxgl.js`,
+> `test/golden-fx.test.js`, `fx_celebrate_visibility.json`, `fx_celebrate_2d_frame.json`, `BUILDER-LOG-FX.md`).
+> **Real cause (DPR downscale):** the 2D buffer is `dpr×res×CSS` (~2.75× on the Poco X3) and the browser
+> downscales it back, so 6–18 buffer-px particles showed at ~2–6 screen px and faded = invisible. **Fix:** the
+> CPU 2D path scales draw size by `pxScale = dpr×res` → constant ~6–18 SCREEN px (floor 2); sizes bumped to
+> 6–18. `_ignite` re-fit + `canPresent` kept as defence. **Stronger gate:** measures lit coverage AND
+> on-screen particle size (`{litPx:572000≈24%, screenPx:18}`; fails on 1×1/blank AND below ~8 screen px).
+> Verified: `node -c` clean; `fxgl.test` 124 + `golden-fx` 28; full suite + CI green. T138 → DONE. **🎆 owner
+> re-test → a BOLD shower.**
 
 > **Previously approved (done):** `T139` [B] (the owner-approved 12-style music palette) · live build
 > **`efef4b4`**. **CI green; collision-clean** (B-owned: `synth.js`, `test/synth.test.js`, 12
@@ -1051,19 +1065,16 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T143` (Audio's own SCROLLABLE menu + separate Music/SFX volumes — fixes the nav trap)
-  → `T144` (gold/momentum pill to TOP) → `T140` (12-style picker, after B's T139) → `T124` (fractions)** [A]
-  (**`T142`/`T137`/`T123`/`T135`/… DONE**). *(Read `NEXT.md` fresh — canonical.)* **⚠ `T143` FIRST — owner is
-  TRAPPED: "config menu goes off the bottom, can't scroll, can't go back."** (1) Settings + a new Audio menu
-  `overflow-y:auto` so **Back is always reachable** (priority); (2) the home **Sound button opens a dedicated
-  Audio menu** (mute toggle moves inside) holding the music picker, tempo, tester, and (3) **separate Music +
-  SFX volume sliders** ("sounds are getting lost" — Music gain on the `Synth.output()` path [A] wires; SFX
-  gain in `sound.js`; replace the single T135 master; migrate `halves.vol`); (4) fix the **tester restarting
-  music** (`fireCelebrationTest` must not call `musicForScreen`). Then **`T144`+`T145`** (small pill tweaks:
-  move `.readouts` gold/momentum pill to TOP of `#start` keeping its backing; **drop the `.build` dev-stamp
-  pill** — owner OK with low contrast — exempt only `.build` from the contrast gate). Then **`T140`** (picker
-  lists all 12 + per-screen routing + dubstep victory fires on a win — needs B's T139 names). Then → **`T124`** (fraction glyphs)
-  → **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content
+- **Builder A — next: `T146` (declutter home: drop Sound icon + Exit→Setup) → `T147` (FX tester → a Graphics
+  section) → `T140` (12-style picker — UNBLOCKED) → `T124` (fractions)** [A]
+  (**`T143`/`T144`/`T145`/`T142`/`T137`/… DONE**). *(Read `NEXT.md` fresh — canonical.)* Owner after using the
+  new Audio menu: **`T146`** — "sound is now a sub-menu → drop the Sound icon from the main screen; also drop
+  the Exit button and add it to Setup" (remove home `#soundBtnMenu` + home Exit; make Audio reachable FROM
+  Setup; Exit action in Setup; re-balance the home nav row). **`T147`** — "the fx test is in the sound menu,
+  seems wrong → should be in a graphics section" (move the celebration tester out of `#audio` into a Graphics
+  sub-section). **Then `T140`** (now unblocked — B's 12 styles built `efef4b4`): list all 12 in the music
+  picker + per-screen routing + dubstep victory fires on a win. Then → **`T124`** (fraction glyphs) →
+  **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content
   **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
