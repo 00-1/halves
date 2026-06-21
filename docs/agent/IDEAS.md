@@ -82,7 +82,19 @@ difficulty-curve shape and are independent of whether events are required —
 
 ---
 
-## I2 — Renderer rethink: move the UI into a graphical engine (e.g. brickmap)? (owner musing, 2026-06-21)
+## I2 — Visual character from brickmap — ✅ PROMOTED to BACKLOG (research, T82) on 2026-06-21
+
+> **Owner refined + promoted (2026-06-21, round 2).** Pivot is **learn FROM brickmap, not use
+> its engine**: bring its **performant, distinctive visual character** into Halves — **no
+> voxels**. Strategy clarified: **Halves is primarily an Android app; web is dev convenience.**
+> Guardrail: **our existing generative art (icons, hero portraits, monsters, scenery, glyphs) is
+> already a strength and must NOT be lost — build ON it.** Aesthetic targets (owner screenshots):
+> monochrome per-biome palettes, ordered dithering, particle splats, atmospheric gradients,
+> exposed-tech mono HUD — at ~95–111 fps. Now a **deep-research doc task: BACKLOG T82** (Phase
+> 6.7). This lands almost exactly on the "hybrid FX layer" kernel below — the recommended first
+> spike. Notes below retained for provenance; **BACKLOG T82 is authoritative.**
+
+## I2 (original) — Renderer rethink: move the UI into a graphical engine (e.g. brickmap)? (owner musing, 2026-06-21)
 
 **The idea (owner).** Move Halves out of HTML/DOM and into a graphical renderer for a more
 unique aesthetic + more graphical options — possibly **brickmap** (`00-1/brickmap`, our own

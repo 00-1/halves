@@ -1409,6 +1409,80 @@ existing art).
 
 ---
 
+## Phase 6.7 — Visual direction (deep research; promoted from IDEAS I2, 2026-06-21)
+
+> Owner refined the renderer idea: **learn FROM brickmap, don't necessarily use its engine.**
+> What's wanted is brickmap's **highly-performant, distinctive visual character** brought into
+> Halves — **NOT voxels**. Owner also clarified strategy: **Halves is primarily an Android app;
+> web is just a convenient dev/preview surface.** And a guardrail (owner, 2026-06-21): **our
+> existing generative art is already a real strength — the procedural icons, hero portraits,
+> monsters, region scenery and pixel glyphs must NOT be lost in this review; the new direction
+> builds ON them.** This is research only (a doc) — no engine commitment yet.
+>
+> Aesthetic reference (owner-shared brickmap screenshots): tight **monochromatic per-biome
+> palettes** (frost-blue · rust/neon-magenta · magma-amber), heavy **ordered/Bayer dithering**,
+> thousands of cheap **particle "splats"**, **atmospheric depth gradients**, chunky geometric
+> forms, and an **exposed-tech monospace HUD** — all at ~95–111 fps / ~10 ms. The portrait
+> (phone) shots show the look working as a **menu backdrop**: a dithered, particle-rich field
+> under a gradient sky. None of this needs voxels.
+
+### T82 — Deep research: bring brickmap's performant visual character into Halves (doc only) · status: OPEN
+Produce a rigorous research + design doc (e.g. `docs/VISUAL-DIRECTION-RESEARCH.md`) on how to
+give Halves a brickmap-grade visual character **without** adopting a voxel engine, with
+**Android as the primary target** and web as the dev surface. **Doc only — read code/repos to be
+accurate; ZERO code/behaviour change.** Be concrete and honest (name real techniques, libraries,
+APIs, perf targets, delivery mechanisms) — a hand-wavy survey is a DoD failure.
+- **(1) Aesthetic teardown → transferable techniques.** From the brickmap look (and its repo,
+  `00-1/brickmap`), name the **specific, voxel-free techniques** worth adopting and map each to
+  Halves surfaces (menu/home backdrop, Arena scenes, battle FX, screen transitions, toasts,
+  loading): **ordered/Bayer dithering** post-process; **palette quantisation + per-theme
+  monochrome ramps**; **instanced particle "splats"**; **atmospheric gradient/depth fog**;
+  banding-as-a-feature; the **exposed-tech mono HUD** (we already lean pixel/mono). For each:
+  what it'd look like on a 2D maths game and a rough cost.
+- **(2) Build ON our existing generative art — do NOT discard it.** Explicitly inventory what we
+  already have as visual character — the procedural **icons** (`collectibles.js`), **hero
+  portraits**, **monsters** (`monsters.js`), **region scenery** (`scenery.js`), **pixel glyphs**
+  (`glyphs.js`) — and show how the new direction **composes with / elevates** them (e.g. the
+  same seeded generators rendered through a dithered, palette-driven, particle-augmented layer)
+  rather than replacing them. Losing these is a non-goal.
+- **(3) Rendering-stack options for "Android-primary, web-for-dev."** Evaluate at least: (a) DOM
+  + a **WebGL2/canvas FX layer** (hybrid — keep DOM for text/input, GPU for atmosphere);
+  (b) a full **2D WebGL renderer** (PixiJS or hand-rolled); (c) a **cross-platform engine**
+  targeting native Android + web (Rust/wgpu+Bevy like brickmap; Godot web/Android export;
+  Flutter+Flame; Unity); (d) **native Android** (Kotlin + GL/Vulkan) with a separate web dev
+  build; (e) **PWA/TWA wrap** of the current app + an FX layer. Score each on **perf, aesthetic
+  ceiling, effort, risk**, and — critically — impact on our **three crown jewels**: DOM-grade
+  **text/input accessibility** (kids' app), the **no-build deploy velocity**, and the
+  **JS-logic-in-Node verification model** that the two-agent loop relies on.
+- **(4) Android delivery specifics.** For the leading options: how it ships to **Play Store**
+  (TWA/Bubblewrap vs engine export vs native), **bundle size**, **cold-start**, min-SDK /
+  device reach on **cheap tablets**, availability of **WebGPU/WebGL/Vulkan** across the long
+  tail, and **"Designed for Families"/COPPA** implications. Tie back to T72.
+- **(5) Performance principles to adopt regardless of stack.** Brickmap's "move less data" —
+  instancing/batching, palette compression, static draws, a real **frame budget on mid-range
+  Android** — and how we keep the `perf.test.js` gate meaningful for a GPU/particle layer.
+- **(6) Keep vs rebuild + how verification adapts.** What's portable (content/logic/calibration,
+  the seeded generators) vs what's rewritten (UI layer); an **accessibility plan** for text/input
+  if rendering moves off DOM; and how the **two-agent gates** adapt (can logic still gate in
+  Node? how do we gate visuals/perf — golden images? frame-time budgets?).
+- **(7) Recommendation + phased, reversible plan.** Rank the options; give a **clear pick**; and
+  define a **small, reversible first spike** — almost certainly the **hybrid FX layer**: a
+  dithered, palette-driven, particle-rich **atmospheric backdrop behind the existing menu**,
+  reusing our seeded generators, proven on a **real mid-range Android device**. State explicit
+  **success criteria and a kill criterion** for the spike. Plus risks/unknowns + open questions
+  for the owner.
+- **DoD:** the doc exists and **substantively answers (1)–(7)** — concrete techniques, named
+  libraries/APIs/engines, real perf targets and Android-delivery mechanisms, each stack option
+  weighed honestly against the three crown jewels, an explicit inventory of our existing
+  generative art with a **build-on-not-replace** plan, and a **ranked recommendation + a
+  reversible first-spike definition with success/kill criteria.** **Doc only:** no `.js`/CSS/
+  HTML behaviour change, every existing gate still green, deploy safe. (Babysitter: verify each
+  of (1)–(7) is genuinely addressed — not a listicle — the existing-art guardrail is honoured,
+  Android-primary is treated seriously, and the recommendation is concrete + reversible, not a
+  fork-in-the-road punt.)
+
+---
+
 ### T57 — Scrub the specific school/town/county references from the docs · status: DONE
 Owner: remove the named-school and place references from the codebase, keeping only the
 generic "11+" and the exam board. Babysitter sweep: the only occurrences are in
