@@ -4087,3 +4087,38 @@ how I verified:
 notes / questions: **eyeball:** preview a locked topic gated on "Add & Subtract" — the subline now
   reads **"Master Add & Subtract first"** (one ampersand), not "&amp;". Next per `NEXT.md`: **`T123`**
   (a11y contrast floor) → `T124` (fraction glyphs) → `T101` (Start delay) → Android block.
+
+## T129 — Settings MUSIC SWITCHER (sample styles + test switching) — the T128 instrument  [HANDOFF]
+commit: (this commit, on main) — [A] task, OWNER-PRIORITY. Owner: "add a music switcher to Settings so
+I can sample all our audio styles and test the switching works." Also the diagnostic for T128's "music
+never swaps": if picking a style audibly changes the music, the engine swap works.
+changed (A-owned only):
+  - **index.html** — a new `.set-row.set-music` in Settings (beside Volume/Tempo): a labelled
+    `#musicSwitch` button group (`role="group"`, `aria-labelledby`) with **four real `<button>`s** —
+    **Menu · Solve · Arena · Event** (`data-music`, `aria-pressed`), plus a `#setMusicVal` "Auto/<style>"
+    readout.
+  - **styles.css** — `.music-switch`/`.mus-btn`: a 4-col grid of ≥44px, keyboard-operable pixel buttons;
+    the picked style highlights via `[aria-pressed="true"]` (amber); `data-ui="pixel"` squared.
+  - **main.js** — **`synthSwitchContext(name)`**: drives the engine's **distinct built-in context** via
+    **`Synth.setContext(name)`** (its own progression/patches/reverb — incl. the Arena **wub** bass —
+    NOT `musicSpec()`), then applies the **T113 tempo** on top (`setMusic` with `c.tempo × tempoMult`).
+    A transient **`musicPreview`** holds the picked style while in Settings; `show()` clears it on leave
+    so **per-screen music resumes**; the tempo slider re-applies the active preview at the new tempo.
+    Guarded no-op if `Synth` absent/unwired; honours mute (the engine is muted ⇒ silent).
+how I verified:
+  - **test/synth-wiring.test.js (now 45 checks)** — the stub Synth gained `setContext`/`CONTEXTS`/
+    `setReverb`/`hashStr`; new (6)+boot checks prove the switcher is a labelled a11y group of 4 ≥44px
+    pixel buttons; that picking each style calls **`Synth.setContext('menu'|'solve'|'arena'|'event')`**
+    live; that the Event pick drives the event context's OWN harmony (lydian, its progression — not a
+    flat default) and each context applies its own reverb; and that **leaving Settings reverts** to the
+    per-screen (menu) music. **`node -c` clean; full 34-gate suite green.**
+notes / questions — **⚠ FLAG FOR [B] (engine gap this surfaced, exactly as T129/T128 anticipated):**
+  the switcher correctly calls `setContext` (styles ARE distinct), BUT the **swap is not immediate** —
+  synth.js applies `M.spec = M.want` **only at a phrase boundary** (`synth.js:395`); the immediate-set
+  path (`:404`/`:410`) only fires on the first-ever music (`!M.spec`), and `M` is private/unexported, so
+  **A has no way to force a prompt swap without editing synth.js (B-owned — I must not).** ⇒ a deliberate
+  switch can lag up to ~one phrase (~8–11s). **Suggested [B] lever:** a `Synth.setContext(name, { now:
+  true })` (or a `Synth.swapNow()`) that resets `M.step`/`M.spec` to take the new `M.want` immediately;
+  A will wire `{ now:true }` from the switcher the moment it lands. (This is the T128(1) "prompt swap"
+  the switcher was built to expose.) Next per `NEXT.md`: **`T128`** (per-screen routing → distinct
+  contexts via setContext + verify wub wobble + celebration) → `T123` (a11y) → `T124` → `T101`.

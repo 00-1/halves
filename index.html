@@ -205,6 +205,15 @@
         <label for="tempoRange"><span>Music tempo</span><span class="set-val" id="setTempoVal">—</span></label>
         <input type="range" id="tempoRange" min="40" max="100" step="5" value="50" aria-label="Music tempo">
       </div>
+      <div class="set-row set-music">
+        <label id="musicLabel"><span>Music style</span><span class="set-val" id="setMusicVal">Auto</span></label>
+        <div class="music-switch" id="musicSwitch" role="group" aria-labelledby="musicLabel">
+          <button type="button" class="mus-btn" data-music="menu"  aria-pressed="false">Menu</button>
+          <button type="button" class="mus-btn" data-music="solve" aria-pressed="false">Solve</button>
+          <button type="button" class="mus-btn" data-music="arena" aria-pressed="false">Arena</button>
+          <button type="button" class="mus-btn" data-music="event" aria-pressed="false">Event</button>
+        </div>
+      </div>
       <button class="set-row" id="setTest"><span>Test sound</span><span class="set-val"><span class="px-ic play"></span> Play</span></button>
       <div class="set-danger">
         <h4>Danger zone</h4>

@@ -13,7 +13,7 @@ function read(f){ return fs.readFileSync(path.join(__dirname, "..", f), "utf8");
 let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
-const html = read("index.html"), main = read("main.js"), ssrc = read("sound.js"), wf = read(".github/workflows/pages.yml");
+const html = read("index.html"), main = read("main.js"), ssrc = read("sound.js"), wf = read(".github/workflows/pages.yml"), css = read("styles.css");
 
 // ---- (1) mount + one shared chain ------------------------------------------
 ok(/<script src="synth\.js"><\/script>/.test(html), "(1) index.html loads synth.js");
@@ -39,22 +39,45 @@ ok(/DUCK_SFX/.test(main) && /window\.Synth\.duck\(\)/.test(main), "(4) the loude
 ok(/window\.Synth\.setMuted\(!on\)/.test(main), "(4) mute silences Synth too (applySoundPref)");
 ok(/synthTempoMult\(\)/.test(main) && /loadTempo\(\) \/ 100/.test(main), "(4) the T113 tempo slider drives the Synth context tempo");
 
+// ---- (6) T129 — Settings MUSIC SWITCHER: sample + test-switch each distinct context
+ok(/id="musicSwitch"/.test(html) && /role="group"/.test(html) && /aria-labelledby="musicLabel"/.test(html), "(6) T129: Settings has a labelled music-switcher button group");
+["menu","solve","arena","event"].forEach(n => ok(new RegExp('data-music="' + n + '"').test(html), "(6) T129: the switcher offers the '" + n + "' style"));
+ok((html.match(/<button type="button" class="mus-btn"/g) || []).length === 4 && /aria-pressed="false"/.test(html), "(6) T129: styles are 4 real, keyboard-operable <button>s with aria-pressed");
+ok(/\.music-switch \.mus-btn\{[^}]*min-height:44px/.test(css), "(6) T129: each style button is a ≥44px tap target");
+ok(/\.mus-btn\[aria-pressed="true"\]/.test(css), "(6) T129: the picked style is visibly highlighted (aria-pressed styling)");
+ok(/\[data-ui="pixel"\] \.music-switch \.mus-btn/.test(css), "(6) T129: the switcher is data-ui=\"pixel\" styled (matches the chrome)");
+// the wiring drives the engine's DISTINCT contexts via setContext (NOT musicSpec)
+ok(/function synthSwitchContext\(name\)\{[\s\S]{0,160}!Sy \|\| !Sy\.setContext \|\| !synthWired\) return false/.test(main), "(6) T129: synthSwitchContext is a guarded no-op when Synth is absent/unwired");
+ok(/function synthSwitchContext\([\s\S]{0,260}Sy\.setContext\(name\)/.test(main), "(6) T129: it drives the engine's distinct context via Synth.setContext(name) (not musicSpec)");
+ok(/function synthSwitchContext\([\s\S]{0,320}synthTempoMult\(\)[\s\S]{0,200}c\.tempo \*/.test(main), "(6) T129: the T113 tempo multiplier is applied on top of the context tempo");
+
 // ---- (5) the gates are registered in CI ------------------------------------
 ok(/test\/synth\.test\.js/.test(wf), "(5) Builder-B's engine gate test/synth.test.js is registered in CI");
 ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wiring.test.js is registered in CI");
 
 // ============ live boot: drive the wiring with stub Sound + Synth ============
 (function boot(){
-  const sy = { mounts: [], musics: [], starts: 0, stops: 0, intensities: [], plays: [], ducks: 0, muted: null, routedTo: null };
+  const sy = { mounts: [], musics: [], starts: 0, stops: 0, intensities: [], plays: [], ducks: 0, muted: null, routedTo: null, contexts: [], reverbs: [] };
   global.window = {};
   const masterNode = { _isMaster: true };
   const stubCtx = { _isCtx: true, currentTime: 0, state: "running", resume(){}, suspend(){} };
+  // the engine's DISTINCT built-in contexts (mirrors synth.js CONTEXTS shape — each
+  // a different mode/progression/reverb, incl. Arena's wub bass patch).
+  const CTX = {
+    menu:  { tempo: 88,  mode: "ionian",   progression: [0,3,4,0], reverb: 0.30, patches: { bass: "bass" } },
+    solve: { tempo: 80,  mode: "dorian",   progression: [0,5,3,4], reverb: 0.36, patches: { bass: "bass" } },
+    arena: { tempo: 120, mode: "aeolian",  progression: [0,5,6,4], reverb: 0.16, patches: { bass: "wub"  } },
+    event: { tempo: 100, mode: "lydian",   progression: [0,4,5,3], reverb: 0.30, patches: { bass: "bass" } }
+  };
   global.window.Synth = {
     mount(o){ sy.mounts.push(o); return this; },
     output(){ return { disconnect(){}, connect(t){ sy.routedTo = t; } }; },
     setMusic(s){ sy.musics.push(s); return this; }, start(){ sy.starts++; return this; }, stop(){ sy.stops++; return this; },
     intensity(x){ sy.intensities.push(x); return this; }, play(p, w, o){ sy.plays.push({ p: p, o: o }); return this; },
-    duck(){ sy.ducks++; return this; }, setMuted(m){ sy.muted = m; return this; }
+    duck(){ sy.ducks++; return this; }, setMuted(m){ sy.muted = m; return this; },
+    setContext(name){ sy.contexts.push(name); const c = CTX[name]; if(c) sy.reverbs.push(c.reverb); return this; },   // real setContext applies the context's reverb
+    setReverb(w){ sy.reverbs.push(w); return this; },
+    CONTEXTS: CTX, hashStr(s){ let h = 2166136261 >>> 0; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
   };
   let store = {};
   global.window.Sound = {
@@ -117,6 +140,21 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
   ok(sy.plays.some(p => p.p === "wub"), "boot: a real Arena win fires the Synth wub win-sting");
+
+  // T129 — the Settings music switcher samples + switches each DISTINCT context live
+  route("#/settings");
+  const ctxBefore = sy.contexts.length;
+  const clickMus = name => (els.musicSwitch._h.click||[]).forEach(f => f({ target:{ closest:s => (s === ".mus-btn" ? { dataset:{ music: name } } : null) } }));
+  ["menu","solve","arena","event"].forEach(clickMus);
+  ["menu","solve","arena","event"].forEach(n => ok(sy.contexts.indexOf(n) >= 0, "boot: T129 — picking '" + n + "' calls Synth.setContext('" + n + "') (the distinct built-in context)"));
+  ok(sy.contexts.length - ctxBefore >= 4, "boot: T129 — each pick switches the live music via setContext");
+  const lastPick = sy.musics[sy.musics.length - 1];
+  ok(lastPick && lastPick.mode === "lydian" && lastPick.progression && lastPick.progression.join() === "0,4,5,3", "boot: T129 — the Event pick drove the event context's OWN harmony (lydian, its progression), not a flat default");
+  ok(sy.reverbs.length >= 4, "boot: T129 — each context applies its own reverb (distinct space, not identical)");
+  // leaving Settings drops the preview → per-screen music resumes
+  route("#/");
+  const reverted = sy.musics[sy.musics.length - 1];
+  ok(reverted && reverted.mode === "ionian", "boot: T129 — leaving Settings reverts to the per-screen (menu) music");
 })();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH-WIRING CHECKS PASSED" : fails + "/" + checks + " FAILED"));

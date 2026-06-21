@@ -295,7 +295,7 @@
   // slider + the limiter govern both). Synth is the only music scheduler now;
   // sound.js keeps the SFX. Each screen plays a context (solve=calm · menu · arena
   // ·event); a win fires the wub; SFX duck the music. Guarded no-op if Synth absent.
-  let synthWired = false, curScreen = "entry";
+  let synthWired = false, curScreen = "entry", musicPreview = null;   // musicPreview: T129 Settings switcher's transient picked style
   function setupSynth(){
     if(synthWired) return;
     const Sy = window.Synth, S = window.Sound;
@@ -339,6 +339,23 @@
       Sy.start();
     }catch(e){}
   }
+  // T129 — drive the engine's DISTINCT built-in context (its own progression /
+  // patches / reverb — incl. the Arena's wub bass) via Synth.setContext, with the
+  // T113 tempo multiplier applied on top. This is what the Settings music switcher
+  // uses to SAMPLE + test-switch styles (and what T128 will route per-screen to);
+  // unlike musicSpec() it carries a per-context progression, so styles differ.
+  function synthSwitchContext(name){
+    const Sy = window.Synth; if(!Sy || !Sy.setContext || !synthWired) return false;
+    const c = Sy.CONTEXTS && Sy.CONTEXTS[name]; if(!c) return false;
+    try{
+      Sy.setContext(name);                                         // the distinct context (sets its progression/patches/reverb)
+      const t = synthTempoMult();
+      if(Sy.setMusic) Sy.setMusic(Object.assign({ seed: Sy.hashStr ? Sy.hashStr(name) : 1 }, c,
+        { tempo: Math.max(20, Math.round(c.tempo * (isFinite(t) && t > 0 ? t : 1))) }));   // T113 tempo on top
+      if(Sy.start) Sy.start();
+      return true;
+    }catch(e){ return false; }
+  }
   // The win-sting: Synth's wub on a real win (Arena victory / topic-complete),
   // ducking the music so it lands. (Replaces sound.js's removed wub.)
   function wubSting(){
@@ -358,6 +375,7 @@
     // stop the game clock RAF whenever we leave the game screen (e.g. browser
     // back mid-round), so it never loops on a hidden screen.
     if(name !== "game" && raf){ cancelAnimationFrame(raf); raf = 0; }
+    if(name !== "settings") musicPreview = null;   // T129: leaving Settings drops the transient style preview → per-screen music resumes
     Object.values(screens).forEach(s => s.classList.remove("active"));
     screens[name].classList.add("active");
     fxSetScreen(name);     // T110/T112: full-bleed backdrop — home scene on #start, Arena scene on #arena, idle elsewhere
@@ -2018,6 +2036,17 @@
     const vr = $("volRange"), tr = $("tempoRange");
     if(vr){ vr.value = loadVol(); const vv = $("setVolVal"); if(vv) vv.textContent = fmtVol(loadVol()); }
     if(tr){ tr.value = loadTempo(); const tv = $("setTempoVal"); if(tv) tv.textContent = fmtTempo(loadTempo()); }
+    musicPreview = null; syncMusicSwitch();   // T129: fresh entry → "Auto" (per-screen music), nothing pre-selected
+  }
+  // T129 — the Settings music switcher: reflect the picked style (or "Auto").
+  const MUSIC_LABELS = { menu: "Menu", solve: "Solve", arena: "Arena", event: "Event" };
+  function syncMusicSwitch(){
+    const grp = $("musicSwitch"); if(grp && grp.querySelectorAll){
+      const btns = grp.querySelectorAll(".mus-btn");
+      (btns.forEach ? btns : Array.prototype.slice.call(btns)).forEach(b =>
+        b.setAttribute("aria-pressed", b.dataset.music === musicPreview ? "true" : "false"));
+    }
+    const val = $("setMusicVal"); if(val) val.textContent = musicPreview ? MUSIC_LABELS[musicPreview] : "Auto";
   }
   $("settingsBtn").addEventListener("click", () => { location.hash = "#/settings"; });
   $("settingsBack").addEventListener("click", navStart);
@@ -2034,9 +2063,21 @@
     if(tr) tr.addEventListener("input", () => {
       const v = parseInt(tr.value, 10) || 100; saveTempo(v);
       const tv = $("setTempoVal"); if(tv) tv.textContent = fmtTempo(v);
-      audioUnlock(); musicForScreen(curScreen);   // T122: re-derive the current context at the new tempo (audible live)
+      audioUnlock();
+      // re-derive at the new tempo: a previewed style keeps playing, else the screen's context
+      if(musicPreview) synthSwitchContext(musicPreview); else musicForScreen(curScreen);
     });
     if(test) test.addEventListener("click", () => { audioUnlock(); sfx("correct", 6); });
+    // T129 — the music switcher: tap a style → hear that distinct context immediately.
+    const musGrp = $("musicSwitch");
+    if(musGrp) musGrp.addEventListener("click", e => {
+      const btn = e.target.closest && e.target.closest(".mus-btn"); if(!btn) return;
+      const name = btn.dataset.music; if(!name) return;
+      audioUnlock();
+      musicPreview = name;
+      synthSwitchContext(name);   // distinct built-in context (Synth.setContext) + the T113 tempo
+      syncMusicSwitch();
+    });
   })();
 
   // Wipe every halves.* key → a genuine first-run. Prefix-scan (catches every key,

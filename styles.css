@@ -280,6 +280,17 @@ body{
 [data-ui="pixel"] .set-slider input[type=range]::-webkit-slider-thumb{border-radius:var(--ui-radius)}
 [data-ui="pixel"] .set-slider input[type=range]::-moz-range-track{border-radius:var(--ui-radius)}
 [data-ui="pixel"] .set-slider input[type=range]::-moz-range-thumb{border-radius:var(--ui-radius)}
+/* T129 — Music style switcher: a labelled row of pixel buttons to sample + test
+   each distinct engine context (Menu / Solve / Arena / Event). ≥44px tap targets,
+   keyboard-operable, the picked style highlighted via aria-pressed. */
+.set-music{flex-direction:column;align-items:stretch;gap:10px;cursor:default}
+.set-music>label{display:flex;align-items:center;justify-content:space-between;width:100%}
+.music-switch{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.music-switch .mus-btn{min-height:44px;padding:8px 6px;font-family:var(--mono);font-size:12px;font-weight:700;
+  color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:11px;cursor:pointer}
+.music-switch .mus-btn:focus-visible{outline:var(--focus,2px solid var(--amber));outline-offset:2px}
+.music-switch .mus-btn[aria-pressed="true"]{color:var(--bg);background:var(--amber);border-color:var(--amber)}
+[data-ui="pixel"] .music-switch .mus-btn{border-radius:var(--ui-radius)}
 .set-danger{border:1px solid var(--coral);border-radius:14px;padding:16px;background:rgba(255,107,107,.06)}
 .set-danger h4{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral);margin-bottom:8px}
 .set-danger p{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px}
