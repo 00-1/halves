@@ -2464,7 +2464,7 @@ dark-bg assumption; see ORCHESTRATION's "shared quality rule".) Do a real pass.
   `node -c` clean; all gates green; 360-safe. (Babysitter: eyeball the home/Arena text is readable over
   the backdrop, and confirm the contrast gate genuinely tests against the backdrop, not the dark token.)
 
-### T121 — [A] Small visual polish: scroll-fade reveals the backdrop + coloured status icons (coin gold, calendar green) · status: OPEN
+### T121 — [A] Small visual polish: scroll-fade reveals the backdrop + coloured status icons (coin gold, calendar green) · status: DONE (scroll-fade `0972c77` + icons `b662840`)
 **(b) Status icons take their text colour (owner).** The T117 pixel icons all render in the muted/grey
 inherited colour, which is fine **except the two status icons that sit beside coloured amounts**: the
 **coin** (next to the gold amount — "keep that gold like the text") and the **momentum calendar** (next

@@ -13,6 +13,13 @@ quality degrade. The engine side of "loads of particles" is ready. T126 → DONE
 `celebrate()` on EVERY win/run/item — AND fixes the rendering bug (the burst controller is never
 resized → likely why the owner sees "nothing at all"; that's the crux, before size).** B → stand by.
 
+> **Also confirmed done:** `T121` [A] FULLY DONE — scroll-fade **`0972c77`** (masks the `.tree` content
+to transparent at the scroll edges via `mask-image`, 3 can-scroll rules → reveals the purple backdrop,
+no black `--bg` smear; 34-check tech-tree gate) + coloured icons **`b662840`** (coin gold / calendar
+green). *(Record correction: I'd mis-tracked the scroll-fade as "pending" after reviewing the icons —
+it had actually landed first in `0972c77`. Verified now: correct, gates green, ancestor of green CI.
+That stale pointer is why A had nothing to pick up; fixed — A → T125.)*
+
 > **Previously approved (done):** `T122` [A] (🎙 the new synth engine is WIRED & AUDIBLE) · live build
 **`a4e81b8`**. **CI green.** The payoff: B's `synth.js` is now the **live music engine**. **One audio
 chain:** `Synth.mount({ctx})` reuses `sound.js`'s **existing AudioContext** and its output routes **into
@@ -832,12 +839,12 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T121` (finish part a — scroll-fade)** [A] (**`T122` DONE; T121 part (b)
-  coin-gold/calendar-green DONE `b662840`**). *(Read `NEXT.md` fresh before starting — canonical.)*
-  **`T121(a)`** mask the tree scroll-fade to reveal the backdrop (not a black `--bg` smear) → **`T125`**
-  (**BIG celebrations on EVERY win/run/item** — remove the `FX_RANK_MIN` gate, fire **T126**'s big burst
-  on every topic-run/Arena-victory/new-item; owner-priority; bursts are the overlay → **no contrast
-  dep**, so it doesn't wait on T123) → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
+- **Builder A — next: `T125`** [A] · **OWNER-PRIORITY · BUG** (**`T121` FULLY DONE — scroll-fade
+  `0972c77` + coloured icons `b662840`; `T122`/`T120`-wiring all DONE**). *(Read `NEXT.md` fresh —
+  canonical.)* **`T125` — FIX the celebration burst (it doesn't render: `fxBurst` never resized →
+  stale/0 buffer → "nothing at all" on a win) THEN fire `FXGL.celebrate()` BIG on EVERY topic-run/Arena-
+  win/new-item** (delete `FX_RANK_MIN`). Bursts are the overlay → **no contrast dep**, doesn't wait on
+  T123. Full DoD `T125`. → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
   contrast floor/scrim + honest `contrast.test`) → **`T124`** (fraction tree-glyphs still illegible —
   bigger/clearer using the node width) → **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA +
   perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
