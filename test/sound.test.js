@@ -65,10 +65,12 @@ ok(!/setTempo|tempoMult|TEMPO_MIN/.test(ssrc), "T122: sound.js no longer owns te
 hidden = true; visHandler && visHandler(); ok(S.ctx().state === "suspended", "tab hidden suspends the shared AudioContext");
 hidden = false; visHandler && visHandler(); ok(S.ctx().state === "running", "tab visible resumes the shared AudioContext");
 
-// ---- T114: the owner-calibrated DEFAULTS live in main.js (saved prefs win) ---
-ok(/function loadVol\(\)\{[\s\S]{0,90}: 300;/.test(msrc), "T114: fresh-profile default volume = 300 (3.0×)");
+// ---- T135/T114: the owner-calibrated DEFAULTS live in main.js (saved prefs win) ---
+// T135 — recalibrated for the louder synth: fresh volume = 5 (0.05×), and a stale
+// OLD-scale value (>10, e.g. 300) migrates DOWN to 5 so a returning user isn't blasted.
+ok(/function loadVol\(\)\{[\s\S]{0,240}return 5;/.test(msrc) && /v > 10\) return 5/.test(msrc), "T135: fresh/over-range volume = 5 (0.05×) — old-scale values migrate down");
 ok(/function loadTempo\(\)\{[\s\S]{0,90}: 50;/.test(msrc), "T114: fresh-profile default tempo = 50 (0.5×)");
-ok(/id="volRange"[^>]*max="400"/.test(hsrc) && /id="volRange"[^>]*value="300"/.test(hsrc) && /id="tempoRange"[^>]*value="50"/.test(hsrc), "T114: the sliders reach 4.0× and default to 3.0× / 0.5×");
+ok(/id="volRange"[^>]*max="10"/.test(hsrc) && /id="volRange"[^>]*step="1"/.test(hsrc) && /id="volRange"[^>]*value="5"/.test(hsrc) && /id="tempoRange"[^>]*value="50"/.test(hsrc), "T135: the volume slider is 0–10 (0.00×–0.10×), default 5 (0.05×); tempo default 50");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SOUND CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

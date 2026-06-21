@@ -2001,12 +2001,18 @@
   function saveSound(on){ try{ localStorage.setItem("halves.sound", on ? "on" : "off"); }catch(e){} }
   function audioUnlock(){ if(window.Sound && window.Sound.unlock) window.Sound.unlock(); setupSynth(); musicForScreen(curScreen); }
   function applySoundPref(){ const on = soundOn(); if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!on); if(window.Synth && window.Synth.setMuted) window.Synth.setMuted(!on); applyAudioPrefs(); }
-  // T113 — owner-calibrated Volume + Tempo (persisted slider positions). Volume is
-  // stored 0–250 (→ ×0..2.5 master gain; the limiter keeps the top end clip-safe);
-  // tempo is stored 40–100 (→ ×0.40..1.00 BPM multiplier).
-  // T114 — owner-calibrated fresh-profile defaults: volume 3.0× (slider 300, of a
-  // 0–400 range), tempo 0.5× (slider 50). A saved halves.vol/halves.tempo wins.
-  function loadVol(){ const v = parseInt(localStorage.getItem("halves.vol"), 10); return isFinite(v) ? v : 300; }
+  // T113 — owner-calibrated Volume + Tempo (persisted slider positions).
+  // T135 — RECALIBRATED for the louder generative synth: Volume is stored 0–10
+  // (→ ×0.00..0.10 master gain; the limiter keeps it clip-safe), fresh default 5
+  // (0.05×, mid-slider). Returning users have the OLD 0–400 value stored (e.g. 300 =
+  // 3.0×, now deafening) → clamp anything over the new max down to the default so
+  // they aren't blasted / the slider isn't fed out-of-range. Tempo is stored 40–100
+  // (→ ×0.40..1.00 BPM multiplier), fresh default 50. A saved pref otherwise wins.
+  function loadVol(){
+    const v = parseInt(localStorage.getItem("halves.vol"), 10);
+    if(!isFinite(v) || v > 10) return 5;   // fresh profile OR a stale old-scale value → the new default (0.05×)
+    return v;
+  }
   function loadTempo(){ const v = parseInt(localStorage.getItem("halves.tempo"), 10); return isFinite(v) ? v : 50; }
   function saveVol(v){ try{ localStorage.setItem("halves.vol", String(v)); }catch(e){} }
   function saveTempo(v){ try{ localStorage.setItem("halves.tempo", String(v)); }catch(e){} }

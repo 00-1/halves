@@ -4185,3 +4185,24 @@ notes / questions: **babysitter live-check (the bar):** on a real device, finish
   an Arena fight / gaining a new item should now throw a VISIBLE particle shower over the UI (z-58) — the
   owner's "I finally see celebrations." Next per `NEXT.md`: **`T135`** (volume recalibration — HELD until
   the owner's chosen MAX is posted) → `T123` (a11y contrast floor) → `T124` → `T101`.
+
+## T135 — Volume recalibration for the louder synth (default 0.05×, max 0.10×, migrate)  [HANDOFF]
+commit: (this commit, on main) — [A] task, OWNER. Owner: the new generative synth engine is much louder,
+so the old 3.0× volume default is too hot. Babysitter posted the owner's chosen MAX = 0.10×.
+changed (A-owned only):
+  - **index.html** — `#volRange` `min=0 max=400 step=5 value=300` → **`min=0 max=10 step=1 value=5`**
+    (the slider now spans 0.00×–0.10× master gain, default 0.05× sitting mid-track — not jammed at an edge).
+  - **main.js `loadVol()`** — fresh-profile default **300 → 5** (0.05×). **Migration:** a returning user
+    has the OLD-scale value stored (e.g. `halves.vol=300` = 3.0×); `loadVol` now clamps anything **`>10`
+    down to 5** on load, so they aren't deafened and the slider isn't fed an out-of-range value. (`fmtVol`
+    stays `(v/100)×` → 5 reads "0.05×", 10 reads "0.10×"; the master gain = `vol/100` and the engine's
+    limiter/`VOL_MAX` are unchanged — only the slider's reachable range + default moved.)
+how I verified:
+  - functional: `loadVol` → fresh **5**, old **300 → 5**, **10 → 10**, **0 → 0**, **7 → 7** (migration +
+    pass-through correct). **test/sound.test.js** updated: asserts the fresh/over-range default is 5 with
+    the `v > 10` migration, and the slider is 0–10 step 1 default 5.
+  - **`node -c main.js` clean; full 34-gate suite green.** Only [A]-owned files touched.
+notes / questions: **babysitter live-check:** a fresh profile should boot at a comfortable 0.05× (not
+  blasting); a returning user who had 3.0× should now also be at 0.05× (migrated), with the slider mid-
+  track; dragging to the top is 0.10×. Next per `NEXT.md`: **`T123`** (a11y contrast floor over the FX
+  backdrop + honest contrast gate) → `T124` (fraction glyphs) → `T101` (Start delay) → Android.
