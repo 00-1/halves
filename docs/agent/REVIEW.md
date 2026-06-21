@@ -1,14 +1,16 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T43` (loot trimmed to 250; all battle invariants
-re-verified; catalogue 1025). **Do `T42` next:** tabbed inventory per BACKLOG —
-tab bar under the count; **Loot its own tab, sub-grouped by the 10 tier-regions**
-(`region = floor((n-1)/10)`); **lazy-render** (only the active tab's tiles in the
-DOM); a colour-graded owned/total **progress bar on every category incl. Loot**;
-**jump-to-top** button when scrolled. Keep Back (T39) always-visible; names/icons
-render inside tabs; 360px-safe. Then **`T44`** (tier rename — owner-approved, FINAL
-mapping in BACKLOG) → **`T24` (Arena)** → **`T36`** (icons) → `T25`/`T26` → Phase 4.
-Specs in BACKLOG.
+**Current verdict:** `APPROVED — T42` (tabbed inventory — Topics/Awards/Loot,
+lazy-rendered, per-category bars, loot in 10 regions, jump-to-top). **Do `T44`
+next:** apply the owner-approved tier names — in `enemies.js` set the 10 regions
+(Goblin Warren · Gallowmarch · Gloamwood · Haunted Marsh · Frostpeak Caverns ·
+Drownholm · Cinderwaste · Stormspire · Dragon's Roost · The Void Throne), the rank
+ladder (Runt…Overlord), and the 10 named bosses (Goblin King · The Highwayman · Old
+Mother Bramble · Gurgle, King of the Bog · The Frost Jarl · Bonecaller · Cindermaw ·
+Voltan, Lord of Storms · the Elder Wyrm · The Void Sovereign) per the naming rule in
+BACKLOG; **display-only**, tier numbers/def/loot/battle logic unchanged. (The
+inventory Loot-region labels read from `Enemies.regionLabel`, so they update
+automatically.) Then **`T24` (Arena)** → **`T36`** (icons) → `T25`/`T26` → Phase 4.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -24,6 +26,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T42 — Inventory tabs + per-category bars + jump-to-top → APPROVED
+`renderInventory` rewritten into a tabbed, lazy-rendered view. Verified: node -c (main/enemies/collectibles) OK; no TODO/stub; new ids `#invTabs`/`#invTop` present, main.js id cross-check clean (52, 0 missing); `.inv-tabs`/`.inv-tab`/`.jump-top` CSS present. enemies.js exports `tierRegion`(1→0,10→0,11→1,100→9 ✓) + `regionLabel`; loot groups into **exactly 10 regions** with correct labels and counts (10+10+15+20+20+30+30+35+40+40 = 250). Loot-region labels read via `Enemies.regionLabel` ⇒ T44-proof. Builder's DOM-shim harness (19 checks): 3 tabs (Topics default), **lazy-render** (Topics/Awards build no loot tiles; Loot tiles only on opening the Loot tab), a progress bar on every Awards category + every Loot region, jump-to-top hidden at top / shows >200px / returns to top, header count over whole catalogue, inv-cell tap-to-inspect intact. Back (T39) + names (T35) untouched; 360px-safe. No regressions.
 
 ### T43 — Trim tier loot to 250 → APPROVED
 Batch formula `3+floor((n-1)/12)` (668) → `1+floor((n-1)/25)` (**250**); rarer-with-depth unchanged; defs recompute from the smaller set. Independently re-ran the full T23 invariant suite (Node, real modes/collectibles/heroes/enemies): node -c OK. **loot=250**, catalogue 775→**1025**, all 1025 item names **still globally unique**. Loot `test()===false` (drill-unearnable), T20-stamped, boosts **cover all 12 heroes**. **(a)** tiers 1–5 winnable by bram/0 items/perf .85; **(b)** no tier gated behind its own loot (0 fails); **def monotonic** (0 dips); **(c)** tier 100 NOT winnable with 0 items, winnable at full-minus-final-loot. Defs 11→392 (t99 291 < t100 392). main.js inventory totals adapt from `CATALOG.length`. No regressions.

@@ -571,7 +571,7 @@ archetype family (12) per the DESIGN-names coupling note (add Tool + Garment poo
   icons; collectible earning unaffected; 360px-safe; no regressions; deploy green.
   (Babysitter re-runs the variation test + eyeballs a montage.)
 
-### T42 — Inventory tabs + per-category progress bars + jump-to-top · status: BLOCKED (after T35; touches renderInventory)
+### T42 — Inventory tabs + per-category progress bars + jump-to-top · status: DONE
 Owner: the inventory is unwieldy (1443 items, 668 of them loot). Restructure it.
 1. **Tabs.** A tab bar under the "INVENTORY x/total" header splits the content;
    **Loot gets its own tab.** Suggested: **Topics** (the existing per-topic
