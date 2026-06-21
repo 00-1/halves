@@ -4410,3 +4410,33 @@ notes / questions: **owner by ear:** open Audio → the picker lists all 12 styl
   swaps instantly; Dubstep fires its drop; solves are calm (Lo-Fi), Arena drives, events are festive; a real
   win lands the dubstep drop. Next per `NEXT.md` (reordered): **`T146`** (declutter home) → `T148` (SFX
   range) → `T147` (FX tester → Graphics section).
+
+## T146 — Declutter the home nav: drop Sound + Fullscreen, move them INTO Setup  [HANDOFF]
+commit: (this commit) — [A], OWNER-PRIORITY. Owner (after T143): "if sound is now a sub-menu of setup, get
+rid of the sound icon from the main screen; also get rid of the exit button and add it to setup too."
+changed (A-owned): **index.html** — removed the home `#soundBtnMenu` (Sound) + `#fsBtn` (the fullscreen
+toggle, which shows "Exit" in fullscreen) from the home nav row (now Best · Items · Heroes · Arena · Setup,
+auto-recentred by the existing flex layout). Setup already had an **"Audio" row** (`#openAudio`→`#/audio`,
+from T143); added a **"Fullscreen" toggle row** (`#fsToggle`, Enter/Exit). **main.js** — `setupFullscreenBtn`
+retargeted to `#fsToggle` (updates `#fsToggleVal` Enter/Exit); removed the orphaned `#soundBtnMenu`
+references in `syncSoundButtons` + its click wiring (entry-screen `#soundBtn` mute toggle kept). No dangling
+route/handler/`$("id")`.
+verified: home-layout (26) — Sound/Fullscreen nav buttons gone, Audio+Fullscreen reachable from Setup, the
+boot opens `#/audio` from the Setup Audio row; icons (51) + nav-icons updated. Full 34-gate suite green.
+
+## T148 — SFX volume range: map the slider to the real 0→SFX_MAX (1.0×), not music's 0.10×  [HANDOFF]
+commit: (this commit) — [A], OWNER-PRIORITY. Owner: "sound fx volume doesn't go high enough." Diagnosed (per
+the babysitter): NOT the engine — `sound.js`'s `sfxBus` accepts up to `SFX_MAX=1.0`, but T143's slider mapped
+`sfxVol/100` → max 0.10× gain (~10× of headroom unused; SFX peak ≈ −36 dB).
+changed (A-owned): **index.html** — `#sfxVolRange` → `min=0 max=100 step=5 value=60` (so `/100` = 0→1.0×,
+default **0.60×** — clearly over the music; music slider stays 0–10 → 0.10×, the asymmetry reflecting that
+SFX are intrinsically quieter). **main.js** — `loadSfxVol`/`saveSfxVol` use a new 0–100 key `halves.sfxLvl`
+(default 60) and **migrate T143's old 0–10 `halves.sfxVol` ×10**, so returning users get the louder mapping
+(old 8 → 80 = 0.80×, not 0.08×). The SFX gain is `setSfxVolume(loadSfxVol()/100)` → up to `SFX_MAX`. `fmtVol`
+(÷100) shows the right ×. Music volume + mute unaffected; the brickwall limiter still governs the SFX+music
+sum, so the higher gain stays clip-safe.
+verified: migration (fresh→60, old 8→80, new value preserved); sound.test asserts the SFX slider maps to
+~`SFX_MAX` (0–100→/100), default 60, the ×10 migration. `node -c` clean; full 34-gate suite green.
+notes: **owner by ear** — SFX should now cut clearly over the music at the top of the range; if 1.0× still
+isn't enough, the noted follow-up is lifting the per-note `g` in sound.js (still clip-safe). Next per
+`NEXT.md`: **`T147`** (move the FX/celebration tester out of Audio into a Graphics section).

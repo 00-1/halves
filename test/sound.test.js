@@ -70,15 +70,20 @@ hidden = false; visHandler && visHandler(); ok(S.ctx().state === "running", "tab
 // Fresh music vol = 5 (0.05×, the loud synth); SFX vol = 8 (louder, so blips aren't
 // lost under the music). The old single `halves.vol` migrates (in-range → music level).
 ok(/function loadMusicVol\(\)[\s\S]{0,220}\? 5 :/.test(msrc) && /halves\.musicVol/.test(msrc), "T143: fresh-profile music volume = 5 (0.05×)");
-ok(/function loadSfxVol\(\)[\s\S]{0,160}return 8/.test(msrc) && /halves\.sfxVol/.test(msrc), "T143: fresh-profile SFX volume = 8 (louder than music — blips aren't lost)");
+// T148 — the SFX slider maps to the REAL 0→SFX_MAX(1.0×) range (not music's 0.10×):
+// fresh default 60 (0.60×), stored as 0–100 (`halves.sfxLvl`), migrating T143's 0–10 ×10.
+ok(/function loadSfxVol\(\)[\s\S]{0,320}return 60/.test(msrc) && /halves\.sfxLvl/.test(msrc), "T148: fresh-profile SFX volume = 60 (0.60× — clearly over the music)");
+ok(/old \* 10/.test(msrc), "T148: the old 0–10 halves.sfxVol migrates ×10 to the new 0–100 scale (returning users get the louder mapping)");
+ok(/setSfxVolume\(loadSfxVol\(\) \/ 100\)/.test(msrc), "T148: the SFX gain = sfxLvl/100 → up to SFX_MAX (1.0×), not capped at music's 0.10×");
 ok(/function migVol\(\)[\s\S]{0,160}v <= 10\)/.test(msrc), "T143: the old single halves.vol migrates (in-range → the music level)");
 ok(/function loadTempo\(\)\{[\s\S]{0,90}: 50;/.test(msrc), "T114: fresh-profile default tempo = 50 (0.5×)");
-ok(/id="musicVolRange"[^>]*max="10"/.test(hsrc) && /id="sfxVolRange"[^>]*max="10"/.test(hsrc) && /id="tempoRange"[^>]*value="50"/.test(hsrc), "T143: separate Music + SFX volume sliders (0–10); tempo default 50");
+ok(/id="musicVolRange"[^>]*max="10"/.test(hsrc) && /id="sfxVolRange"[^>]*max="100"/.test(hsrc) && /id="sfxVolRange"[^>]*value="60"/.test(hsrc) && /id="tempoRange"[^>]*value="50"/.test(hsrc), "T143/T148: Music slider 0–10 (0.10× max); SFX slider 0–100 (1.0× max, default 60); tempo default 50");
 
 // ---- T143: the dedicated Audio menu + the navigation-trap (scroll) fix --------
 const css143 = read("styles.css");
 ok(/<section id="audio" class="screen">/.test(hsrc), "T143: a dedicated Audio menu screen exists");
-ok(/sm\.addEventListener\("click", \(\) => \{ location\.hash = "#\/audio"; \}\)/.test(msrc), "T143: the home Sound button OPENS the Audio menu (#/audio), not an inline toggle");
+ok(/oa\.addEventListener\("click", \(\) => \{ location\.hash = "#\/audio"; \}\)/.test(msrc) && /id="openAudio"/.test(hsrc), "T146: the Audio menu is reachable from Setup (the #openAudio row routes to #/audio)");
+ok(!/id="soundBtnMenu"/.test(hsrc), "T146: the home Sound nav button is removed (audio is a Setup sub-menu now)");
 ok(/h === "audio"\)\{ renderAudio\(\); show\("audio"\); \}/.test(msrc), "T143: #/audio routes to the Audio menu");
 ok(/id="setSound"/.test(hsrc.slice(hsrc.indexOf('id="audio"'))), "T143: the mute toggle (#setSound) lives INSIDE the Audio menu");
 // the navigation-trap fix: both menus' bodies SCROLL within the safe-area height

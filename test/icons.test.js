@@ -53,9 +53,9 @@ ok(/Icons\.installCSS\(\)/.test(main), "(c) main.js installs the icon masks at b
 ok(/function ic\(name\)\{ return \(window\.Icons/.test(main), "(c) main.js has a SAFE ic() inline-icon helper (no-op if icons.js is absent)");
 // node-state badges map each state to a distinct pixel icon (state semantics kept)
 ok(/locked:"lock"[\s\S]{0,60}unlocked:"play"[\s\S]{0,40}mastered:"star"[\s\S]{0,40}done:"check"/.test(main), "(c) node-state badges map each state (locked/unlocked/mastered/done) to a distinct icon");
-// a11y: the nav icon buttons keep their aria-label (icon is decorative)
-ok(/id="soundBtnMenu" aria-label="Toggle sound"/.test(html) && /id="settingsBtn" aria-label="Settings"/.test(html) && /id="fsBtn" aria-label="Toggle fullscreen"/.test(html),
-   "(c) nav icon buttons keep their aria-label (the pixel icon is decorative)");
+// a11y: the Setup nav icon button keeps its aria-label (icon is decorative). T146 —
+// Sound + Fullscreen moved into Setup (the home Sound/Fullscreen nav buttons are gone).
+ok(/id="settingsBtn" aria-label="Settings"/.test(html), "(c) the Setup nav icon button keeps its aria-label (the pixel icon is decorative)");
 // the numpad backspace still carries its key behaviour (data-k="back") with an icon
 ok(/data-k="back"><span class="px-ic backspace">/.test(html), "(c) the numpad ⌫ key is now a backspace pixel icon (key behaviour intact)");
 

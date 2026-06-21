@@ -60,9 +60,9 @@
       <button class="navbtn" id="invBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Items</span></button>
       <button class="navbtn" id="heroesBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Heroes</span></button>
       <button class="navbtn" id="arenaBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Arena</span></button>
-      <button class="navbtn" id="soundBtnMenu" aria-label="Toggle sound"><span class="px-ic soundOn nav-emoji"></span><span class="nav-lbl">Sound</span></button>
+      <!-- T146 — Sound + Fullscreen moved INTO Setup (audio is its own sub-menu now;
+           fullscreen toggle lives in Settings), decluttering the home nav row. -->
       <button class="navbtn" id="settingsBtn" aria-label="Settings"><span class="px-ic cog nav-emoji"></span><span class="nav-lbl">Setup</span></button>
-      <button class="navbtn" id="fsBtn" aria-label="Toggle fullscreen"><span class="px-ic fullscreen nav-emoji"></span><span class="nav-lbl">Screen</span></button>
     </div>
     <div class="build" id="buildInfo"></div>
   </section>
@@ -199,6 +199,7 @@
     <div class="res-label">Settings</div>
     <div class="settings-body scroll-body">
       <button class="set-row" id="openAudio"><span>Audio</span><span class="set-val"><span class="px-ic soundOn"></span> Open</span></button>
+      <button class="set-row" id="fsToggle"><span>Fullscreen</span><span class="set-val"><span class="px-ic fullscreen"></span> <span id="fsToggleVal">Enter</span></span></button>
       <div class="set-danger">
         <h4>Danger zone</h4>
         <p>Clear all data wipes every bit of progress saved on this device — heroes, items,
@@ -223,7 +224,7 @@
       </div>
       <div class="set-row set-slider">
         <label for="sfxVolRange"><span>Sound FX volume</span><span class="set-val" id="setSfxVolVal">—</span></label>
-        <input type="range" id="sfxVolRange" min="0" max="10" step="1" value="8" aria-label="Sound FX volume">
+        <input type="range" id="sfxVolRange" min="0" max="100" step="5" value="60" aria-label="Sound FX volume">
       </div>
       <div class="set-row set-slider">
         <label for="tempoRange"><span>Music tempo</span><span class="set-val" id="setTempoVal">—</span></label>

@@ -1997,12 +1997,14 @@
   }
 
   // In-menu fullscreen toggle (T18) — hidden where unsupported.
+  // T146 — the fullscreen toggle now lives INSIDE Settings (the home nav button was
+  // removed). Same behaviour: enter/exit fullscreen, label reflects the state.
   (function setupFullscreenBtn(){
-    const btn = $("fsBtn"); if(!btn) return;
+    const btn = $("fsToggle"); if(!btn) return;
     if(!fsSupported()){ btn.classList.add("hidden"); return; }
-    const sync = () => { const lbl = btn.querySelector(".nav-lbl");                          // T99 labelled nav button
-      if(lbl) lbl.textContent = fsActive() ? 'Exit' : 'Screen'; else btn.innerHTML = ic("fullscreen")+' '+(fsActive() ? 'Exit' : 'Screen'); };
-    btn.addEventListener("click", () => { fsActive() ? fsExit() : fsEnter(); });
+    const sync = () => { const lbl = $("fsToggleVal");
+      if(lbl) lbl.textContent = fsActive() ? 'Exit' : 'Enter'; };
+    btn.addEventListener("click", () => { fsActive() ? fsExit() : fsEnter(); sync(); });
     ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
       .forEach(ev => document.addEventListener(ev, sync));
     sync();
@@ -2036,10 +2038,21 @@
   // stored 40–100 (→ ×0.40..1.00), default 50. A saved pref otherwise wins.
   function migVol(){ const v = parseInt(localStorage.getItem("halves.vol"), 10); return (isFinite(v) && v >= 0 && v <= 10) ? v : null; }
   function loadMusicVol(){ const v = parseInt(localStorage.getItem("halves.musicVol"), 10); if(isFinite(v) && v >= 0 && v <= 10) return v; const m = migVol(); return m == null ? 5 : m; }
-  function loadSfxVol(){ const v = parseInt(localStorage.getItem("halves.sfxVol"), 10); if(isFinite(v) && v >= 0 && v <= 10) return v; return 8; }
+  // T148 — the SFX slider now maps to the REAL SFX range (0→SFX_MAX=1.0× via /100,
+  // not the music's 0.10× scale): the sfxBus had ~10× unused headroom, so SFX were
+  // way too quiet. Stored under a new 0–100 key (`halves.sfxLvl`); migrate T143's old
+  // 0–10 `halves.sfxVol` ×10 so returning users get the louder mapping (not 8/100).
+  // Louder default 60 (0.60×) — SFX clearly cut over the music; limiter keeps it safe.
+  function loadSfxVol(){
+    const v = parseInt(localStorage.getItem("halves.sfxLvl"), 10);
+    if(isFinite(v) && v >= 0 && v <= 100) return v;
+    const old = parseInt(localStorage.getItem("halves.sfxVol"), 10);   // T143's 0–10 → ×10 to the new 0–100 scale
+    if(isFinite(old) && old >= 0 && old <= 10) return Math.min(100, old * 10);
+    return 60;
+  }
   function loadTempo(){ const v = parseInt(localStorage.getItem("halves.tempo"), 10); return isFinite(v) ? v : 50; }
   function saveMusicVol(v){ try{ localStorage.setItem("halves.musicVol", String(v)); }catch(e){} }
-  function saveSfxVol(v){ try{ localStorage.setItem("halves.sfxVol", String(v)); }catch(e){} }
+  function saveSfxVol(v){ try{ localStorage.setItem("halves.sfxLvl", String(v)); }catch(e){} }
   function saveTempo(v){ try{ localStorage.setItem("halves.tempo", String(v)); }catch(e){} }
   function applyAudioPrefs(){
     const S = window.Sound; if(S && S.setSfxVolume) S.setSfxVolume(loadSfxVol() / 100);   // SFX bus
@@ -2049,18 +2062,15 @@
   // Guarded SFX trigger — a no-op if the engine is absent or muted.
   const DUCK_SFX = { item:1, gold:1, mastery:1, topic100:1, topicUnlock:1 };
   function sfx(name, arg){ const S = window.Sound; if(S && S[name]) S[name](arg); if(DUCK_SFX[name] && window.Synth && window.Synth.duck) window.Synth.duck(); }
-  // The sound buttons (T143): the ENTRY button toggles mute; the HOME (menu) button
-  // OPENS the dedicated Audio menu (the mute toggle now lives inside it).
+  // The sound state (T143/T146): the ENTRY button toggles mute; the home Sound nav
+  // button is gone — audio is a sub-menu of Setup now (the mute toggle lives inside).
   function syncSoundButtons(){
     const on = soundOn();
     const sb = $("soundBtn"); if(sb) sb.innerHTML = ic(on ? "soundOn" : "soundOff")+' Sound '+(on ? 'on' : 'off');   // entry screen
-    const sm = $("soundBtnMenu"); if(sm){ const e = sm.querySelector(".nav-emoji");          // home nav button (now opens Audio)
-      if(e){ e.className = "px-ic soundOn nav-emoji"; } else sm.innerHTML = ic("soundOn"); }
     const sv = $("setSoundVal"); if(sv) sv.textContent = on ? "On" : "Off";                 // the Audio-menu mute row
   }
   function toggleSound(){ saveSound(!soundOn()); syncSoundButtons(); applySoundPref(); }
   { const sb = $("soundBtn"); if(sb) sb.addEventListener("click", toggleSound); }                         // entry → toggle mute
-  { const sm = $("soundBtnMenu"); if(sm) sm.addEventListener("click", () => { location.hash = "#/audio"; }); }   // home → open the Audio menu
 
   // ---- Settings + Audio menus (T85/T143) + "Clear all data" --------------------
   function fmtVol(slider){ return (slider / 100).toFixed(2) + "×"; }

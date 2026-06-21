@@ -36,21 +36,19 @@ ok(bannerIdx >= 0 && treeIdx >= 0 && bannerIdx < treeIdx, "(2) the event banner 
 ok(/\.event-banner\{[^}]*margin-top:0/.test(css), "(2) the banner has no top margin — it sits flush at the top");
 ok(/#start\{[^}]*padding:12px/.test(css), "(2) #start top padding trimmed (12px) so the banner is pinned high");
 
-// ---- (3) tidy nav: Sound/Settings/Fullscreen are LABELLED, no icon-only util -
+// ---- (3) tidy nav: T146 declutter — Setup is the only labelled-icon nav button now
+// (Sound + Fullscreen moved INTO Setup); the four primary buttons are untouched.
 ok(!/navbtn util/.test(html), "(3) the icon-only `.util` nav buttons are gone (no bare-emoji buttons)");
-[["soundBtnMenu","Sound"],["settingsBtn","Setup"],["fsBtn","Screen"]].forEach(([id, lbl]) => {
-  const re = new RegExp('id="' + id + '"[^>]*>\\s*<span class="px-ic [^"]*"></span><span class="nav-lbl">' + lbl + '</span>');
-  ok(re.test(html), "(3) #" + id + " is a labelled nav button (T117 pixel icon + \"" + lbl + "\")");
-});
+ok(new RegExp('id="settingsBtn"[^>]*>\\s*<span class="px-ic [^"]*"></span><span class="nav-lbl">Setup</span>').test(html), "(3) #settingsBtn is a labelled nav button (pixel icon + \"Setup\")");
+ok(!/id="soundBtnMenu"/.test(html) && !/id="fsBtn"/.test(html), "(3) T146: the home Sound + Fullscreen nav buttons are removed (decluttered)");
+ok(/id="openAudio"/.test(html) && /id="fsToggle"/.test(html), "(3) T146: Audio + Fullscreen are reachable from inside Setup instead");
 ok(!/\.navbtn\.util\{/.test(css), "(3) the .navbtn.util icon-only style is removed");
 ok(/\.navbtn \.px-ic\{/.test(css) && /\.navbtn \.nav-lbl\{/.test(css), "(3) the pixel-icon + label spans are styled to match the primary buttons");
 // the four primary buttons are untouched (still icon-canvas + label)
 ["statsBtn","invBtn","heroesBtn","arenaBtn"].forEach(id =>
   ok(new RegExp('id="' + id + '"[^>]*>\\s*<canvas').test(html), "(3) primary #" + id + " still leads with its pixel-icon canvas"));
-
-// the sync code targets the inner spans (so a toggle never wipes the label)
-ok(/soundBtnMenu"\);[\s\S]{0,80}querySelector\("\.nav-emoji"\)/.test(main), "(3) syncSoundButtons updates the .nav-emoji span (keeps the label)");
-ok(/querySelector\("\.nav-lbl"\)[\s\S]{0,200}'Exit'[\s\S]{0,20}'Screen'/.test(main), "(3) the fullscreen toggle updates the .nav-lbl span (keeps the icon)");
+// the Setup-menu fullscreen toggle updates its value label (keeps the icon)
+ok(/fsToggleVal"\)[\s\S]{0,80}'Exit'[\s\S]{0,20}'Enter'/.test(main), "(3) T146: the Setup fullscreen toggle updates its value label (Enter/Exit)");
 
 // ---- live boot: the labelled buttons exist, and a sound toggle preserves the
 // label while flipping only the emoji ----------------------------------------
@@ -87,18 +85,13 @@ ok(/querySelector\("\.nav-lbl"\)[\s\S]{0,200}'Exit'[\s\S]{0,20}'Screen'/.test(ma
     documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
   ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","monsters.js","scenery.js","eventart.js","fx.js","sound.js","main.js"].forEach(f => new Function(read(f))());
 
-  const sm = els.soundBtnMenu;
-  ok(!!sm, "boot: the labelled sound button mounts");
-  // syncSoundButtons ran during init → the icon span's CLASS carries the sound state
-  // (T117: a px-ic soundOn/soundOff pixel icon), the text label untouched.
-  const emoji = sm._kids[".nav-emoji"];
-  ok(emoji && /sound(On|Off)/.test(emoji.className), "boot: the sound icon span is a px-ic soundOn/soundOff (" + (emoji && emoji.className) + "), not the whole button");
-  // T143 — the home Sound button now OPENS the dedicated Audio menu (the mute toggle
-  // moved INSIDE it); clicking it routes to #/audio rather than toggling.
+  // T146 — the home Sound nav button is gone; audio is reached from Setup. Opening
+  // Settings then the "Audio" row routes to the dedicated Audio menu (#/audio).
+  const oa = els.openAudio;
+  ok(!!oa, "boot: the Setup 'Audio' row mounts (audio is a Setup sub-menu)");
   global.window.location.hash = "";
-  (sm._h.click||[]).forEach(f => f({}));
-  ok(global.window.location.hash === "#/audio", "boot: T143 — the home Sound button opens the Audio menu (#/audio), not an inline mute toggle");
-  ok(!(".nav-lbl" in sm._kids) || sm._kids[".nav-lbl"]._t === "", "boot: the sound button's text label is never overwritten");
+  (oa._h.click||[]).forEach(f => f({}));
+  ok(global.window.location.hash === "#/audio", "boot: T146 — the Setup 'Audio' row opens the Audio menu (#/audio)");
 })();
 
 // ---- (4) the event banner shows N/3 reward PROGRESS, not a premature binary ---
