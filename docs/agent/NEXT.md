@@ -24,16 +24,18 @@ normalized centre** (`getBoundingClientRect()`) — inventory→toast, run→ran
 arena-win→enemy portrait — with the existing rarity/rank/topic palette + small size (BACKLOG T152 table).
 Then → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → `T151` (synth output DIVERGES — the real "audio sounds bad") → `T150` (browser-render harness) → `T152[B]` (small-particle engine option)**
-**⚠ `T151` FIRST — Babysitter BROWSER-MEASURED it** (AnalyserNode on `Synth.output()`): the master output
-grows **exponentially in EVERY context, no switch needed** — `menu` peaks `0.36→1.93→7.42→33.6→159` over 3 s
-(~×4.5 / 0.33 s; switching diverges *less* → the switch is NOT the cause). The limiter then clamps a 30–160×
-signal → escalating distortion = the owner's "sounds bad." **Fix the feedback instability in `synth.js`**
-(suspects: FDN reverb spectral radius ≥ 1 via damping/summing; a reverb send→return LOOP into a bus; or
-voice/gain accumulation — one context over ~5 s must SETTLE to a bounded tail). **Add a peak-BOUND gate**
-(offline render / `AnalyserNode`: peak ≤ ~2 over ≥5 s; must FAIL on today's build). **ALSO make a switch FULLY
-CLEAR** — owner: "the switcher doesn't fully switch, elements of the previous music continue" = the same
-runaway reverb tail; after a `{now}` swap the old context must decay to ~0 within ~1–2 s. **Then `T150`** — the
+**Builder B → `T151` FINISH (PARTIAL fix — `ambient` still diverges to 1096) → `T150` (browser harness) → `T152[B]` (small-particle option)**
+**⚠ `T151` re-pushed `2f8d1a9` is PARTIAL.** The Butterworth-Q damping fix is correct + fixed `menu`/`lofi`/
+`dubstep` (Babysitter re-measured: peak ~1.0; the `{now}` switch now CLEARS cleanly ✓). **BUT `ambient`
+(`reverbDecay: 0.9`) STILL DIVERGES** — AnalyserNode peaks `0.36 · 1.73 · 9.4 · 90 · 284 · 1096` over ~4 s.
+**Your gate FALSE-GREENED it:** the analytic `simulateFDN` model declares 0.9 stable, but real Web Audio
+diverges → **don't trust the model.** **Fix:** (1) bound EVERY style incl. `ambient`/decay 0.9 — find the
+remaining >1 loop-gain empirically, or lower `FDN_DECAY_MAX`/`ambient.reverbDecay` to a measured-safe value;
+(2) **replace the analytic gate with a REAL `OfflineAudioContext` render** (actual `BiquadFilter`s) per style,
+assert peak ≤ ~2 over ≥5 s — the analytic model can't be trusted. **ALSO confirm a `{now}` switch FULLY
+CLEARS** — owner: "doesn't fully switch, elements of the previous music continue" (same runaway tail; my
+measure shows lofi→dubstep already clears once bounded). I'll re-measure ALL 12 with the AnalyserNode. **Then
+`T150`** — the
 Playwright browser-render harness (loads app @ dpr 2.75, fires the real celebration, asserts
 `#fxBurst.clientWidth>0` + lit coverage — would've caught T149; guarded so Node-only CI still passes; in-env:
 global `playwright` at `/opt/node22/lib/node_modules/playwright` + Chromium at `/opt/pw-browsers`). **Then

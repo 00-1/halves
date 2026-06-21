@@ -1,24 +1,29 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `CHANGES REQUESTED — T101` [A] (defer the audio-graph off first paint) · live build
-**`d795031`**. **CI green, but a real regression the gates can't see: MUSIC NO LONGER STARTS AFTER START.**
-The jank-defer idea is good — keep it — but it **dropped the music-start call**. T101 replaced the Start
-handler's `audioUnlock()` with `Sound.unlock()` (sync) + a deferred `warmAudio = () => { setupSynth();
-applySoundPref(); }`. But: **(1)** `setupSynth` only mounts the synth (`synthWired = true`) — it does NOT call
-`musicForScreen`; **(2)** the old `audioUnlock()` it replaced did `ensureAudioReady(); if(!playing)
-musicForScreen(curScreen)` — i.e. it **started the music**; **(3)** the Start handler's `applyRoute()`/
-`startIntro()` runs `show()` → `musicForScreen()` **before** the deferred `setupSynth`, so that call early-
-returns on the `!synthWired` guard (`main.js:350`). Net: after Start the synth gets wired a frame later but
-**nothing ever calls `musicForScreen` again** → **the first round / menu is silent** (SFX work; music doesn't
-start until the next screen change). The code comment even claims "music starts a frame later" — but the code
-doesn't do it. **Confirmed by static trace** (`setupSynth` has no `musicForScreen`; old `audioUnlock` did;
-the `show→musicForScreen` runs pre-wire). *(I attempted a live browser check too — the harness hit transient
-zombie-Chromium flakiness this session; the code path is unambiguous, so I'm not blocking on the live read.)*
-**FIX (small):** make the deferred work actually start the music — `warmAudio = () => { setupSynth();
-applySoundPref(); musicForScreen(curScreen); }` (or call `audioUnlock()` in the RAF). Keep the sync
-unlock+fullscreen + the defer. **Add a guard** if feasible (assert the post-Start deferred path calls
-`musicForScreen`). Re-push; I'll browser-verify `Synth.musicState().playing === true` after Start. T101 stays
-OPEN.
+**Current verdict:** `CHANGES REQUESTED — T151` [B] (fix the synth divergence — non-resonant FDN damping) ·
+live build **`2f8d1a9`**. **CI green, but the fix is PARTIAL — I re-measured and `ambient` still blows up.**
+The diagnosis is excellent and right: the FDN damping lowpass had a **resonant Q=1 (+2 dB peak)** multiplying
+the feedback loop gain over unity; B set it to **Butterworth (Q=0.707, no peak)** → for `decay 0.78` the loop
+is now stable. **🌐 BABYSITTER RE-MEASURED** (AnalyserNode on `Synth.output()`, 4 s/context): **`menu`
+bounded (peak ~1.0, was 159 ✓)**, **`lofi→dubstep {now}` bounded (~0.9) and the switch CLEARS cleanly ✓** —
+but **`ambient` (which ships `reverbDecay: 0.9`) STILL DIVERGES: peaks `0.36 · 1.73 · 3.24 · 9.4 · 27.9 ·
+90.1 · 284 · 1096` over ~4 s.** So high-decay styles are NOT fixed. **Why CI passed anyway:** B's new gate
+uses an **analytic `simulateFDN` model** that *declares* 0.9 stable — but the real Web Audio diverges, so the
+**model gave a FALSE GREEN** (the model's "loop gain ≤ decay" misses some remaining excess gain in the real
+filter). This is precisely the trap the browser-verify rule exists for. **FIX (B):** (1) bound **every** style
+incl. `ambient`/`decay 0.9` — either find the remaining >1 loop-gain source empirically, or lower
+`FDN_DECAY_MAX`/`ambient.reverbDecay` to a measured-safe value; (2) **make the gate measure REAL audio** —
+render the FDN through an `OfflineAudioContext` (real `BiquadFilter`s) for ~5 s per style and assert peak ≤ ~2
+— do NOT trust the analytic model (it false-greened). I'll re-measure all 12 with the AnalyserNode. T151 stays
+OPEN. *(menu/lofi/dubstep + the clean-switch are genuinely fixed — good progress, just not complete.)*
+
+> **`CHANGES REQUESTED — T101`** [A] (defer the audio-graph off first paint) · build **`d795031`** — **A
+> re-pushed a fix `9d6175b` (pending re-review).** **CI green, but a real regression the gates can't see: MUSIC NO LONGER STARTS AFTER START.**
+> The jank-defer dropped the **music-start**: `warmAudio = () => { setupSynth(); applySoundPref(); }` wires the
+> synth but never calls `musicForScreen`, and the old `audioUnlock()` it replaced did (`if(!playing)
+> musicForScreen(curScreen)`); the Start handler's `show→musicForScreen` runs before the deferred wire (early-
+> returns on `!synthWired`) → **music silent after Start**. **Fix:** add `musicForScreen(curScreen)` to
+> `warmAudio`. **→ A re-pushed `9d6175b`; re-review (browser-verify `musicState().playing` after Start) below.**
 
 > **Previously approved (done):** `T149` [A] (THE celebration fix — `#fxBurst` moved out of the `display:none`
 > reset modal) · live build **`9c211a3`**. **CI green; collision-clean** ([A]-owned: `index.html`,
