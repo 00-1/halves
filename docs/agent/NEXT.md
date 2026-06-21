@@ -10,12 +10,13 @@
 
 ---
 
-**Builder A → `T118`  · 🛑 BUILD ONLY THIS · BUG (core loop)**
-Skip key is cut off on `#game`. Fix `.app` height vs the body safe-area insets:
-`height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))`.
-Keep T99 top-pin + T112 fill-screen; Skip fully visible/tappable; add the layout
-assertion. Full DoD: `BACKLOG.md` T118. (Skipped 3×, in flight as T115/T116 — do
-it NOW, before T114/T117/anything.)
+**Builder A → `T114`  · quick (owner-calibrated audio defaults)**
+`T118` DONE (Skip bug fixed). Now bake the owner's audio calibration: `VOL_MAX`
+2.5→4.0; default **volume 3.0×** (`loadVol` fallback + `volRange` value 80→300,
+`volRange` max 250→400); default **tempo 0.5×** (`loadTempo` fallback + `tempoRange`
+value 100→50). Update `sound.test` (default band + `VOL_MAX`). Saved prefs
+untouched. Full DoD: `BACKLOG.md` T114. Then → `T117` (chrome emoji → pixel icons)
+→ `T101` (Start delay) → Android block.
 
 **Builder B → `T120`  · build `synth.js`, phase 1 (engine core + patches)**
 New standalone `window.Synth` per the approved `T119` research (§8 phased path).

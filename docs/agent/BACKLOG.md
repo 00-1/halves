@@ -2151,7 +2151,7 @@ just the default. Act on both:
   `VOL_MAX = 4.0`); all gates green. (Babysitter: confirm a cleared profile boots loud (~3×) + calm
   (0.5×) and the slider now goes past 2.5×.)
 
-### T118 — [A] BUGFIX: #game overflows (Skip key cut off below the fold) — T112 regression · status: OPEN · BUG · DO FIRST
+### T118 — [A] BUGFIX: #game overflows (Skip key cut off below the fold) — T112 regression · status: DONE (`7a271a8`)
 Owner (screenshot, timed level): the Skip key is **cut off at the bottom** of the game/solve screen,
 with a large empty gap above the keypad. **Root cause (T112 regression):** `body` pads by the
 safe-area insets (`padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom)`) AND T112 set

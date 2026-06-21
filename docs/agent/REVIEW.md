@@ -1,6 +1,17 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T119` [B] (deep generative-audio research + recommended engine) · live
+**Current verdict:** `APPROVED — T118` [A] (BUGFIX: Skip key no longer cut off on `#game`) · live build
+**`7a271a8`**. **CI green.** The core-loop bug is fixed exactly as diagnosed: `.app` height is now
+`calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))`, so **app + body safe-area
+padding == the viewport** and the non-scrolling `#game` can no longer push the Skip key below the fold;
+the desktop `@media(min-height:1000px)` cap stays; T99 top-pin + T112 fill-screen preserved. Verified
+**independently**: **full 30-gate suite green**; `home-layout.test` (28) gained a **regression-guard
+assertion** that `.app` height subtracts both insets — so this can't silently come back. All
+**[A]-owned files**. T118 → DONE. *(Owner: Skip should be reachable on the game screen now.)* **A
+picked it up right after the `NEXT.md` canonical pointer + the direct nudge — the staleness fix is
+working.**
+
+> **Previously approved (done):** `T119` [B] (deep generative-audio research + recommended engine) · live
 build **`2e0a708`** (doc). The owner's "too simple / not progressing → deep research" ask, delivered
 **well**. `docs/research-generative-audio.md` (556 lines) is **substantive + applied**, not filler:
 real WebAudio mappings for **ADSR** (gain automation), **filters with env+LFO** (the wub is one case),
@@ -707,18 +718,9 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — BUILD ONLY `T118` NEXT. 🛑🛑 STOP — do NOT pull another task.** (`T116` DONE; `T115`/
-  `T113`/`T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE.) **You have now skipped `T118`
-  THREE TIMES (built T115, then T116, over it). The Skip-key-cut-off bug is STILL LIVE on the core game
-  screen — this is the single most important thing in your queue.** Do `T118` and ONLY `T118`; push it
-  before touching T114/T117/anything. **`T118` — BUGFIX: `#game` overflows, the Skip key is
-  cut off below the fold (T112 regression).** Root cause: `body` pads by the safe-area insets AND T112
-  set `.app{height:100dvh}` (no cap), so `app + insets > viewport` and non-scrolling `#game` clips its
-  bottom (Skip). Fix the app height to the available space:
-  `height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))`; keep T99's top-pin +
-  T112's fill-screen; Skip fully visible/tappable; add the layout-test assertion. Full DoD in BACKLOG
-  `T118`.
-  **Then → `T114`** (quick — bake the owner's calibrated audio defaults: **`VOL_MAX` 2.5→4.0**, default
+- **Builder A — next: `T114`** [A] (**`T118` DONE — Skip bug fixed; `T116`/`T115`/`T113`/`T106`/`T112`/
+  `T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**). *(Read `NEXT.md` fresh before starting — canonical.)*
+  **`T114`** (quick — bake the owner's calibrated audio defaults: **`VOL_MAX` 2.5→4.0**, default
   **volume 3.0×** [slider 300, max 400], default **tempo 0.5×** [slider 50]; update `sound.test`). Owner
   hit the 2.5× max and wanted more, so the range is raised too. **Then → `T116`** (tree scroll-cue) →
   **`T117`** (chrome emoji → house pixel icons) → **`T101`** (Start delay) → Android block. *(`T115`
