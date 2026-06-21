@@ -1,6 +1,33 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T113` [A] (live Volume + Tempo sliders — the audio finally instrumented)
+**Current verdict:** `APPROVED — T115` [A] (music with character — calm solves, wub, distinct Arena) ·
+live build **`8d3f2b0`**. **CI green.** A real increment (not trivial): a genuine **`wub()`** — saw bass
+→ lowpass with a ~7 Hz **LFO on the cutoff** (Q 9, 600 Hz sweep) = a dubstep wobble — wired to **both**
+win moments (`sfx("wub")` on Arena victory `:1262` and on a topic-complete/mastery unlock `:1611`). The
+15 topic = **solve** styles are reworked **calm by design** (the firm rule): bpm 58–68 (slower than the
+menu), density ≤0.18, **no driving kick/snare** (rests + soft hats only), **soft sine/triangle pad/bell
+leads** (never a harsh square), modal scales; the **Arena** theme is the opposite — driving kick/snare,
+denser, punchy square lead. Verified **independently**: `node -c` clean; **full 30-gate suite green**;
+`sound.test` (now 61) asserts every solve style calm-slow + sparse + no-driving-drums + soft-timbre +
+slower-than-menu, the Arena driving/distinct, and all 15 styles distinct. All **[A]-owned files**. T115
+→ DONE.
+
+> **BUT — the owner wants MORE (and is right): "too simple, doesn't seem to be progressing → do deep
+> research into generative audio + apply principles."** T115 improves the *config* (scale/density/
+> timbre per context) but the **synthesis is still basic** — bare oscillators + linear-ramp envelopes,
+> **no ADSR depth, no filter/space/reverb, no harmony/chord-progression, no evolving variation**. So
+> distinct *configs* still risk sounding samey. The real next tier needs a **principled rebuild** →
+> filed **`T119` [B] (deep generative-audio research)** and routed to **Builder B** (idle; built the FX
+> engine; engine/research is its wheelhouse). See B's pointer.
+
+> **⚠ Builder A SKIPPED `T118` AGAIN** (built T115 while T118 was pointer #1 — 2nd skip of T118; the
+> core-loop **Skip-key-cut-off bug is STILL LIVE on `main`**). T115 is correct so approved, **but T118
+> is now urgent** — hard re-pointed below. *(Owner: if A keeps slipping past it, a one-line "build ONLY
+> T118 next" nudge to A would force it, like T107.)*
+
+---
+
+**Previously approved (done):** `T113` [A] (live Volume + Tempo sliders — the audio finally instrumented)
 · live build **`8d6e42f`**. **CI green.** The **different approach** the owner asked for: stop guessing,
 let the owner calibrate. Acts on the root cause I found — `VOL_MAX = 2.5` so the **volume slider reaches
 genuinely LOUD** (well past full scale; the −1.5 dB limiter keeps it clip-safe), fixing the "tiny bump
@@ -655,20 +682,21 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T118`** [A] · **BUG — DO FIRST** (**`T113` DONE — audio sliders shipped; owner
-  calibrating; `T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**).
-  **`T118` — BUGFIX: `#game` overflows, the Skip key is cut off below the fold (T112 regression).**
-  Root cause: `body` pads by the safe-area insets AND T112 set `.app{height:100dvh}` (no cap), so
-  `app + insets > viewport` and non-scrolling `#game` clips its bottom (Skip). Fix the app height to
-  the available space: `height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))`;
-  keep T99's top-pin + T112's fill-screen; Skip fully visible/tappable. Full DoD in BACKLOG `T118`.
+- **Builder A — BUILD ONLY `T118` NEXT. 🛑 STOP — do NOT pull another task.** (`T115` DONE; `T113`/
+  `T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE.) **You have skipped `T118` TWICE
+  (built T114-skip… no — built T115 over it). The Skip-key-cut-off bug is STILL LIVE on the core
+  game screen.** Fix it before anything else. **`T118` — BUGFIX: `#game` overflows, the Skip key is
+  cut off below the fold (T112 regression).** Root cause: `body` pads by the safe-area insets AND T112
+  set `.app{height:100dvh}` (no cap), so `app + insets > viewport` and non-scrolling `#game` clips its
+  bottom (Skip). Fix the app height to the available space:
+  `height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))`; keep T99's top-pin +
+  T112's fill-screen; Skip fully visible/tappable; add the layout-test assertion. Full DoD in BACKLOG
+  `T118`.
   **Then → `T114`** (quick — bake the owner's calibrated audio defaults: **`VOL_MAX` 2.5→4.0**, default
   **volume 3.0×** [slider 300, max 400], default **tempo 0.5×** [slider 50]; update `sound.test`). Owner
-  hit the 2.5× max and wanted more, so the range is raised too. **Then → `T115`** — music with
-  CHARACTER: **calm solves [FIRM RULE]**, real per-context variety (stop
-  the "all sounds the same"), a synth **"wub" win-sting** on topic-complete/battle-win, distinct Arena
-  theme. **`T114`** (set the owner-calibrated volume/tempo as defaults) is BLOCKED on the owner
-  reporting T113's values — slot it once they do (ideally after T115).
+  hit the 2.5× max and wanted more, so the range is raised too. **Then → `T116`** (tree scroll-cue) →
+  **`T117`** (chrome emoji → house pixel icons) → **`T101`** (Start delay) → Android block. *(`T115`
+  music-character DONE; the deeper principled audio rebuild is the **B** track below — `T119`.)*
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
@@ -686,18 +714,34 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: STAND BY (engine queue exhausted; do NOT invent a new engine capability).**
-  T93·T94·T95·T108 are all DONE and headless-perfect but **all unwired** — more engine code would be
-  padding. **Keep watching `origin/claude/agent`** per your self-continue loop: the moment the [A] FX
-  wiring lands and surfaces a real engine gap (an API the integration actually needs, a bug, a missing
-  hook), **that becomes your next task** and preempts standby. **Optional, only if you want movement
-  while idle:** light **brickmap-side hardening** (in the `brickmap` repo — keep edits minimal: a perf
-  note, a recipe doc, or a small fix) — never touch existing Halves files, never push to claude/agent.
-  Otherwise idle quietly. *(Babysitter is recommending the owner pull an FX-wiring [A] task forward
-  right after `T107` so your four capabilities become visible and your next work is grounded.)*
-  **FX [A] wiring tasks (for Builder A, when sequenced):** mount `FXGL` + register its CI gate; home
-  backdrop via `setHomeState(liveState)`; fire `FXGL.burst()` on Arena wins + collectible/loot/event
-  gains (**T94w**); Arena biome via `setArenaState`/`deriveArenaScene` (after `T89`/`T90`).
+- **Builder B — next: `T119` [B] — DEEP GENERATIVE-AUDIO RESEARCH (off stand-by; new domain).** The
+  owner: the music is "too simple and doesn't seem to be progressing" → wants **deep research into
+  generative audio + applied principles**. This is **engine/research work — your wheelhouse** (you
+  built the `fxgl.js` engine the same way). Produce **`docs/research-generative-audio.md`**: a
+  thorough, *applied* survey of the techniques that make browser (WebAudio) generative music genuinely
+  rich, varied, and mood-appropriate — then a **recommended architecture** for Halves. Cover, with
+  concrete WebAudio mappings (not hand-waving): **(1) synthesis depth** — real ADSR envelopes (gain
+  automation), `BiquadFilter` lowpass/highpass with **envelope + LFO modulation** (the "wub" is one
+  case), detune/unison, FM/AM, additive, noise-based percussion, waveshaping; **(2) instrument/patch
+  design** — distinct timbres (pad, pluck, bass, bell, lead, kit) so contexts differ by *instrument*,
+  not just notes; **(3) harmony & musicality** — chord progressions, voice-leading, bass-follows-root,
+  modes for mood (lydian/major bright · dorian/phrygian/minor dark · pentatonic safe), harmonic rhythm;
+  **(4) variation algorithms** — Markov chains, Euclidean rhythms, probability/density control, seeded
+  determinism that **evolves** (so loops aren't obvious), motif development; **(5) calm vs energetic**
+  (our firm rule) — what *specifically* makes music calm (slow harmonic rhythm, soft attacks, sparse,
+  consonant, low-pass, space) vs driving (Arena); **(6) MIXING & SPACE** — bus structure, **reverb**
+  (algorithmic feedback-delay or a synthesized-impulse `ConvolverNode`) + stereo width — likely the
+  single biggest quality lever vs our dry sound — sidechain/duck music under SFX, per-context balance;
+  **(7) constraints** — pure WebAudio, **no sample assets**, no-build, single lookahead scheduler
+  (Chris Wilson "two clocks"), Android-Chrome CPU budget on the Poco X3, headless-testability (graph
+  structure / scheduling / determinism). Web-research real references where you can; cite them.
+  **End with a concrete recommendation:** evolve `sound.js` vs a **new standalone B-owned audio-engine
+  module** (mirroring `fxgl.js` — A would wire it), the voice/patch abstraction, and how
+  calm-solves + the wub + a distinct Arena + real per-context character fall out of it. **B-owned files
+  ONLY** — write the doc (and, if you prototype, a NEW module + its headless test); **never touch
+  `sound.js` or any existing Halves file** (integration is [A]). Log = `BUILDER-LOG-FX.md` (or a new
+  `BUILDER-LOG-AUDIO.md`). After the research, the build path follows the recommendation → next [B]
+  task. *(This supersedes "stand by"; it's the principled rebuild beyond A's T115 config-level pass.)*
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —

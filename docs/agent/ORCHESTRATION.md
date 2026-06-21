@@ -12,10 +12,12 @@ files the other never touches, so `main` never conflicts.
 - **Builder A (existing) — Halves gameplay/UI + all integration.** Access: `00-1/halves`.
   Owns **every EXISTING Halves file** and does **all wiring/integration**. Works **[A]**
   tasks. Handoff log: `docs/agent/BUILDER-LOG.md`.
-- **Builder B (new) — FX engine + brickmap.** Access: `00-1/halves` **and**
-  `00-1/brickmap`. Creates **NEW standalone modules** in Halves (the WebGL2/WebGPU FX
-  engine) and does **brickmap** work (borrow its `bm-render` WGSL dither/palette/particle
-  techniques). Works **[B]** tasks. Handoff log: `docs/agent/BUILDER-LOG-FX.md` (NEW file).
+- **Builder B (new) — ENGINE & RESEARCH (FX · audio · brickmap).** Access: `00-1/halves` **and**
+  `00-1/brickmap`. Creates **NEW standalone modules** in Halves (the WebGL2/WebGPU FX engine `fxgl.js`;
+  and — from 2026-06-21 — the **generative-audio research + engine**, a NEW B-owned module, never
+  `sound.js`) and does **brickmap** work + deep technical **research docs**. Works **[B]** tasks.
+  Handoff logs: `docs/agent/BUILDER-LOG-FX.md` (and may add `BUILDER-LOG-AUDIO.md`). **Never edits an
+  existing Halves file** (`sound.js` included) — integration of any B engine is an **[A]** task.
 
 ## Collision-avoidance rules (non-negotiable)
 

@@ -2178,7 +2178,42 @@ bites (worse with an Android gesture-nav inset). The `flex:1` stage absorbing th
   can't silently regress again). (Babysitter: confirm Skip is reachable on the live build + the home
   still fills top-to-bottom.)
 
-### T115 — [A] Music with CHARACTER: calm solves · real variety · a "wub" win-sting · distinct Arena · status: OPEN · OWNER-PRIORITY
+### T119 — [B] DEEP generative-audio research → principles + recommended engine architecture · status: OPEN · OWNER-PRIORITY
+Owner: "can we do a task of deep research into generative audio and apply some principles here? what we
+have so far is too simple and doesn't seem to be progressing." Routed to **Builder B** (idle; built the
+`fxgl.js` engine — deep engine/research is its strength). Deliverable: **`docs/research-generative-
+audio.md`** — an *applied* survey + a concrete recommendation, then the engine that follows.
+- **Diagnosis to build on:** our synth is bare oscillators + linear-ramp gain envelopes, no filters/
+  ADSR/reverb/harmony/variation. A's T115 improved per-context *config* (scale/density/timbre) but the
+  *synthesis* is still simple, so distinct configs still risk sounding samey. Real depth needs new
+  techniques, not more tweaks.
+- **Research agenda (concrete WebAudio mappings, with references where possible):** (1) **synthesis
+  depth** — ADSR via gain automation, `BiquadFilter` LP/HP with envelope + LFO mod (the wub is one
+  case), detune/unison, FM/AM, additive, noise percussion, waveshaping; (2) **patch/instrument design**
+  — distinct timbres (pad/pluck/bass/bell/lead/kit) so contexts differ by *instrument*; (3) **harmony**
+  — chord progressions, voice-leading, bass-follows-root, modes-for-mood, harmonic rhythm; (4)
+  **variation** — Markov/Euclidean/probability/seeded-evolving patterns/motif development (no obvious
+  loops); (5) **calm vs energetic** — exactly what makes solve music calm vs Arena driving (our firm
+  rule); (6) **MIXING & SPACE** — bus structure, **reverb** (algorithmic FDN or synth-impulse
+  Convolver) + stereo width (likely the biggest quality lever vs our dry sound), duck-music-under-SFX,
+  per-context balance; (7) **constraints** — pure WebAudio, **NO sample assets**, no-build, single
+  lookahead scheduler, Android-Chrome CPU budget (Poco X3), headless-testability.
+- **Recommendation (the point of the doc):** evolve `sound.js` vs a **new standalone B-owned audio-
+  engine module** (mirror `fxgl.js`; A wires it) — with the voice/patch abstraction and how calm-solves
+  + the wub + distinct Arena + genuine per-context character fall out. This decides the build path.
+- **Scope/ownership:** **B-owned files ONLY** — the doc (+ a NEW module + headless test if B
+  prototypes). **NEVER touch `sound.js`/any existing Halves file** (integration is an [A] task, like the
+  FX wiring). No sample assets. Keep no-build + Node-verifiable.
+- **DoD:** `docs/research-generative-audio.md` exists and is **substantive + applied** (concrete
+  WebAudio techniques + references, not generic), covers the 7 areas, and ends with a **clear,
+  actionable recommendation + architecture** Halves can build to (distinct patches, reverb/space,
+  harmony, evolving variation, calm-solve + wub + Arena). If B prototypes, the module is B-owned + has a
+  headless test (graph/scheduler/determinism/patch-distinctness) and touches no existing file. `node -c`
+  clean on any new JS; all gates green. (Babysitter: judge the doc for genuine depth/applicability — it
+  must give a builder enough to make the audio sound *good*, not just different — then sequence the
+  build.)
+
+### T115 — [A] Music with CHARACTER: calm solves · real variety · a "wub" win-sting · distinct Arena · status: DONE (`8d3f2b0`) · *(config-level pass; the principled rebuild is the T119 [B] track)*
 Owner: the generative music "all sounds the same," there are no interesting variations, and **during
 solves it's too fast/stressful**. Make the music **context-appropriate and distinctive** — not one
 samey texture. **FIRM DESIGN RULE (record it): SOLVE music must be CALM** — solving is the
