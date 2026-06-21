@@ -465,7 +465,7 @@
     arena:     { label: "Phrygian Onslaught", tempo: 124, mode: "phrygian",  root: 45, progression: [0, 5, 6, 4], density: 0.62, reverb: 0.16, kickK: 6, hatK: 12, snareK: 2, leadK: 9,  leadOct: 1, patches: { pad: "pad", bass: "wub",  lead: "lead" } },
     // — 10 new —
     lofi:      { label: "Lo-Fi Study",       tempo: 76,  mode: "dorian",     root: 50, progression: [0, 5, 3, 4], density: 0.24, reverb: 0.42, kickK: 1, hatK: 3,  snareK: 0, leadK: 4,  leadOct: 1, swing: 0.2,  patches: { pad: "pad", bass: "bass", lead: "pluck" } },
-    ambient:   { label: "Ambient Drift",     tempo: 60,  mode: "lydian",     root: 55, progression: [0, 3, 0, 4], density: 0.14, reverb: 0.55, reverbDecay: 0.9, kickK: 0, hatK: 0, snareK: 0, leadK: 3, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "bell" } },
+    ambient:   { label: "Ambient Drift",     tempo: 60,  mode: "lydian",     root: 55, progression: [0, 3, 0, 4], density: 0.14, reverb: 0.55, kickK: 0, hatK: 0, snareK: 0, leadK: 3, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "bell" } },
     chiptune:  { label: "Chiptune Rush",     tempo: 150, mode: "pentatonic", root: 60, progression: [0, 4, 5, 3], density: 0.60, reverb: 0.04, kickK: 4, hatK: 8,  snareK: 2, leadK: 11, leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "chip" } },
     synthwave: { label: "Synthwave Cruise",  tempo: 112, mode: "aeolian",    root: 50, progression: [0, 5, 3, 4], density: 0.42, reverb: 0.34, kickK: 4, hatK: 8,  snareK: 4, leadK: 7,  leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "lead" } },
     dubstep:   { label: "Dubstep Victory",   tempo: 140, mode: "pentminor",  root: 36, progression: [0, 0, 5, 3], density: 0.40, reverb: 0.14, kickK: 4, hatK: 6,  snareK: 2, leadK: 6,  leadOct: 1, wobble: 2,  victory: true, patches: { pad: "pad", bass: "wub", lead: "lead" } },
@@ -547,18 +547,28 @@
   // "cheap" tell). Built ONCE at mount; buses send into it.
   const FDN_TIMES = [0.0297, 0.0371, 0.0411, 0.0437];   // mutually-prime-ish (s)
   const FDN_HADAMARD = [[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]];
-  // T151 — the damping lowpass MUST be non-resonant. Web Audio interprets a
-  // BiquadFilter "lowpass" Q in dB (linear = 10^(Q/20)); the default Q=1 is a
-  // +2 dB RESONANT peak (~1.25× linear) sitting AT the cutoff — and that peak
-  // multiplies the feedback loop gain. With the unitary matrix scaled by
-  // `decay`, the loop gain at the cutoff becomes `decay × 1.25`, which exceeds 1
-  // for any `decay ≥ ~0.8` (e.g. ambient's 0.9 → ~1.13 → exponential blow-up;
-  // even 0.78 sits at ~0.975, razor-thin). Q = -3.0103 dB is linear 0.7071, a
-  // maximally-flat Butterworth: gain ≤ 1 everywhere, so the loop gain is ≤ decay
-  // < 1 UNCONDITIONALLY (stable for every style's tail). See test/synth.test.js
-  // "T151 divergence" gate for the numeric proof.
-  const FDN_DAMP_Q = -3.0103;   // dB → linear 0.7071 (Butterworth, no resonant peak)
-  const FDN_DECAY_DEFAULT = 0.78, FDN_DECAY_MAX = 0.95;
+  // T151 — TWO independent fixes keep the FDN feedback BOUNDED (it was diverging
+  // exponentially — browser-measured `Synth.output()` hit 159× in 3 s):
+  //
+  // (1) NON-RESONANT damping. Web Audio reads a "lowpass" Q in dB (linear =
+  //     10^(Q/20)); the default Q=1 is a +2 dB RESONANT peak (~1.25× linear) AT the
+  //     cutoff that multiplies the feedback loop gain. Q = -3.0103 dB = linear 0.7071
+  //     is a maximally-flat Butterworth — measured real-Web-Audio peak gain is
+  //     exactly 1.0 (passive). This alone fixed the default 0.78 tail (159 → ~1.0).
+  //
+  // (2) A MEASURED-SAFE decay CAP. Even with a perfectly passive filter the real FDN
+  //     develops a pole outside the unit circle above ~0.82 (the ideal "0.5·H is
+  //     orthonormal ⇒ stable for decay<1" misses real biquad/fractional-delay gain).
+  //     Measured via OfflineAudioContext (real BiquadFilters, 5 s continuous
+  //     excitation at the 0.22 send level): 0.78 is SOLIDLY bounded (~0.45 every run),
+  //     0.80 sits right ON the cliff (0.45 one run, 2.4 the next — excitation-
+  //     dependent), and ≥0.82 diverges (2.4 → 9.9 → 30+). So the tail decay is CLAMPED
+  //     to 0.78 (the default) — comfortably below the cliff. (ambient, which wanted a
+  //     long 0.9 tail, keeps its washy identity via its high reverb SEND 0.55 + slow
+  //     60 BPM instead.) Authoritative proof: test/browser/audio.test.js renders all
+  //     12 styles' REAL reverb bounded ≤ 2, and 0.9 divergent.
+  const FDN_DAMP_Q = -3.0103;   // dB → linear 0.7071 (Butterworth, measured passive: peak gain 1.0)
+  const FDN_DECAY_DEFAULT = 0.78, FDN_DECAY_MAX = 0.78;   // 0.78: measured-safe (0.80 marginal, ≥0.82 diverges)
   function makeReverb(ctx, opts){
     opts = opts || {};
     const decay = opts.decay == null ? FDN_DECAY_DEFAULT : opts.decay;   // feedback gain (<1 → stable)

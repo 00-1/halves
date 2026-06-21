@@ -6,53 +6,71 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## T151 — synth output DIVERGES exponentially: the FDN damping-lowpass resonance ([B], OWNER-PRIORITY BUG)
+## T151 — synth output DIVERGES exponentially: non-resonant damping + a measured decay cap ([B], OWNER-PRIORITY BUG)
 
 **Owner-priority, browser-measured.** The Babysitter tapped an `AnalyserNode` on
 `Synth.output()` (= `E.master`, pre-limiter) in headless Chromium: the master output
 grew **exponentially in every context, even with no switch** (menu peaked
-`0.36→1.93→7.42→33.6→159` over 3 s, ~×4.5 / 0.33 s). The brickwall limiter then
-clamped a 30–160× signal → escalating distortion = the owner's "audio sounds bad."
+`0.36→1.93→7.42→33.6→159` over 3 s). The brickwall limiter then clamped a 30–160×
+signal → escalating distortion = the owner's "audio sounds bad."
 
-### Root cause — the damping lowpass's resonant Q ate the whole stability margin
-The engine's only feedback path is the **FDN reverb**. The Hadamard matrix scaled by
-`0.5·decay` is orthonormal×0.78 (spectral radius 0.78) — provably stable *on its own*.
-The instability was the **damping lowpass**: Web Audio reads a `"lowpass"` Q **in dB**
-(linear = `10^(Q/20)`), and the **default Q=1** is a **+2 dB RESONANT peak (~1.25×
-linear) sitting AT the cutoff**. That peak multiplies the feedback loop gain, so the
-effective loop gain becomes `decay × 1.25`:
-- `decay 0.78` → **0.975** — razor-thin (rings hugely; tips over with the browser's
-  exact biquad rounding + continuous broadband excitation),
-- `decay 0.9` (ambient ships `reverbDecay: 0.9`) → **~1.13** → genuine exponential
-  blow-up. A numeric impulse-response sim confirmed: peak **0.281 @ 0.78**, but
-  **52 732 @ 0.85**, **3.96e10 @ 0.9**, **1.7e16 @ 0.95**.
+### Two independent fixes (the first alone was a PARTIAL fix — see below)
+The engine's only feedback path is the **FDN reverb**. **(1)** Its **damping lowpass**
+ran at the Web-Audio **default Q=1**, which (Web Audio reads a `"lowpass"` Q in dB,
+linear `10^(Q/20)`) is a **+2 dB RESONANT peak (~1.25× linear) AT the cutoff** that
+multiplies the feedback loop gain (`decay×1.25 > 1` for any `decay ≳ 0.8`). Set it to
+**Q = −3.0103 dB = linear 0.7071, maximally-flat Butterworth** — *measured* real-Web-
+Audio peak gain is exactly **1.0** (passive). **(2)** But that alone was a **partial
+fix** (Babysitter re-measured: menu/lofi/dubstep bounded ✓, but `ambient` — `reverbDecay
+0.9` — still blew up to 1096). Even with a perfectly *passive* filter the real FDN
+grows a pole outside the unit circle above ~0.82 (the ideal "`0.5·H` orthonormal ⇒
+stable for decay<1" misses real biquad / fractional-delay gain). So the tail decay is
+**CLAMPED to 0.78** (`FDN_DECAY_MAX`, the default), comfortably below the cliff.
 
-### The fix (one line of intent) — make the damping filter non-resonant
-Set the FDN damping lowpass **Q = −3.0103 dB (linear 0.7071, maximally-flat
-Butterworth)** → gain ≤ 1 at every frequency → loop gain ≤ `decay` < 1
-**unconditionally**. Impulse peak is now a flat **0.228 for every decay 0.78→0.95**
-(the max clamp), tail → 1e-7. No musical downside — it removes an unwanted metallic
-3.6 kHz ring. Named the magic numbers (`FDN_DAMP_Q`, `FDN_DECAY_DEFAULT`,
-`FDN_DECAY_MAX`) and routed the two `0.78` literals through the constant.
+### How decay 0.9 false-greened my first gate — and the fix
+My first gate was an **analytic** sample-level FDN sim; it *declared* 0.9 stable, but
+the **real Web Audio diverged** — the idealised model missed the excess gain. Replaced
+it with TWO honest gates, measured against an OfflineAudioContext ground truth
+(real `BiquadFilter`s, 5 s continuous excitation @ the 0.22 send level):
+`peak 0.45 @ decay 0.78 · 0.45↔2.4 @ 0.80 (ON the cliff) · 2.4 @ 0.82 · 9.9 @ 0.83`.
+- **`test/synth.test.js`** (Node, in CI) — a **constant invariant**: `dampQ ≤ 0`,
+  `decayMax ≤ 0.78`, and **every** style's effective decay ≤ 0.78. Can't false-green
+  (it checks the shipped constants vs the measured-safe envelope, no simulation).
+- **`test/browser/audio.test.js`** (real audio, opt-in) — renders **all 12 styles'
+  ACTUAL reverb** (`Synth.makeReverb`) through an `OfflineAudioContext` for 5 s and
+  asserts **peak ≤ 2** (measured worst **0.586**). Teeth: the same render at the old
+  unclamped `0.9` **diverges** (peak 6.0e6 ≫ 2) — the exact case the analytic model
+  false-greened.
 
-### The peak-BOUND gate (this class was invisible to every Node gate)
-- Exposed `Synth.reverbParams()` → the FDN topology + `dampQ` + each style's decay.
-- New **divergence gate** in `test/synth.test.js`: a faithful sample-level FDN
-  impulse-response sim (RBJ biquad w/ Web Audio's dB-Q) asserts the tail is **bounded
-  (peak ≤ 2) AND decays** for every style's decay + the 0.95 clamp. It has **teeth**:
-  it also simulates the pre-fix resonant default (Q=+1 dB) and asserts **it diverges**
-  (peak 9.9e5 ≫ 2) — so a regression back to a resonant Q fails the gate.
+`ambient` keeps its washy identity via its high reverb **SEND (0.55)** + slow 60 BPM,
+not a longer decay. Exposed `Synth.reverbParams()` (FDN topology + `dampQ` + decays).
 
 ### Verify
-- `node -c synth.js` clean. `test/synth.test.js` **154** (was 144; +10 for the gate),
-  `golden-synth` 19, `synth-wiring` 52, `sound` 50 — all green; full suite green.
+- `node -c synth.js` clean. `test/synth.test.js` **161**, `golden-synth` 19,
+  `synth-wiring` 52, `sound` 50, full Node suite — all green. Real-audio gate: **14**
+  checks, all 12 styles bounded ≤ 0.586 in REAL Web Audio.
 - 🔊 **Babysitter re-measure:** the `AnalyserNode` peak on `Synth.output()` should now
-  stay bounded (≤ ~2) over ≥5 s in every context and across switches.
+  stay bounded (≤ ~2) over ≥5 s in **every** context incl. `ambient`, and across switches.
 
-### Next (Builder B)
-- **T150** — the Playwright browser-render harness (`test/browser/…`): load the app
-  @ dpr 2.75, fire the real celebration, assert `#fxBurst.clientWidth>0` + lit
-  coverage (would've caught T149); guarded/opt-in so Node CI stays Node-only.
+---
+
+## T150 — autonomous BROWSER-RENDER gate (Playwright) — catch "rendered but invisible" ([B], PROCESS-FIX)
+
+Our whole Node suite is stub-only — it can't see a rendered pixel or `display:none`,
+which is exactly how the celebration bug (T149) hid through six rounds. New B-owned,
+**opt-in** browser gate (skips cleanly → Node-only CI unaffected):
+- **`test/browser/render.test.js`** — loads the REAL app in headless Chromium at a
+  **phone viewport + dpr 2.75**, captures JS errors (resource-load noise filtered),
+  fires the **real celebration** (the production FX-tester handler), and asserts
+  `#fxBurst.clientWidth>0` **AND** measured lit-pixel coverage (~3.8e5 px). **Teeth:**
+  re-nests `#fxBurst` in a `display:none` wrapper → asserts `clientWidth===0` (the
+  exact T149 signature) → the gate would have caught T149 instantly. Saves screenshots.
+- **`test/browser/_harness.js`** — shared Playwright resolve + read-only static server.
+- Run: `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node test/browser/render.test.js`.
+
+**[A] hand-off:** these browser gates are opt-in (skip without a browser). If we ever
+add a headless browser to CI, register `test/browser/*.test.js` in `pages.yml` (an [A]
+task) for a real regression guard; until then they run on demand / locally.
 
 ---
 

@@ -520,75 +520,48 @@ ok(typeof Synth.setReverbDecay === "function", "setReverbDecay is exposed");
 })();
 
 // ===========================================================================
-// T151 — DIVERGENCE GATE: the synth master output must stay BOUNDED (no runaway
-// feedback). The browser measured `Synth.output()` growing exponentially in every
-// context (menu peaks 0.36→159 over 3 s) — a feedback path with loop gain > 1. The
-// only feedback in the engine is the FDN reverb; its sole instability is the damping
-// LOWPASS. Web Audio reads a "lowpass" Q in dB (linear = 10^(Q/20)); the DEFAULT Q=1
-// is a +2 dB RESONANT peak (~1.25× linear) AT the cutoff that multiplies the loop
-// gain, so `decay × 1.25 > 1` for any decay ≥ ~0.8 (ambient ships 0.9 → blow-up).
-// This gate faithfully simulates the FDN at the engine's CONFIGURED params and proves
-// the impulse response stays bounded AND decays for every style's decay (and the max
-// clamp). It FAILS on the pre-fix build (resonant default Q) — verified below by also
-// simulating the resonant path and asserting IT diverges (the gate has teeth).
+// T151 — DIVERGENCE GUARD (constant invariant). The synth master output diverged
+// exponentially (browser: `Synth.output()` hit 159× in 3 s) via the FDN reverb's
+// feedback. The fix is TWO measured constants in synth.js; this Node gate asserts
+// they stay inside the empirically-validated SAFE envelope. (An earlier version of
+// this gate simulated the FDN analytically and FALSE-GREENED decay 0.9 — the
+// idealised "0.5·H orthonormal ⇒ stable" model misses real biquad / fractional-delay
+// gain, so the real Web Audio still diverged. The AUTHORITATIVE proof now lives in
+// the real-audio OfflineAudioContext gate: test/browser/audio.test.js renders every
+// style's actual reverb and asserts peak ≤ 2. This Node guard is the cheap CI
+// backstop that the shipped CONSTANTS never leave the safe range.)
+//
+// Measured (OfflineAudioContext, real BiquadFilters, 5 s continuous excitation @ the
+// 0.22 send level): 0.78 SOLID (~0.45 every run) · 0.80 ON THE CLIFF (0.45↔2.4,
+// excitation-dependent) · 0.82 → 2.4 · 0.83 → 9.9. → cap at 0.78, below the cliff.
 // ===========================================================================
 (function(){
-  const SR = 44100;
-  // RBJ "lowpass" biquad with Web Audio's dB-Q convention (linear Q = 10^(QdB/20)).
-  function lowpassCoef(f0, QdB){
-    const Q = Math.pow(10, QdB / 20);
-    const w0 = 2 * Math.PI * f0 / SR, cw = Math.cos(w0), sw = Math.sin(w0), al = sw / (2 * Q);
-    const a0 = 1 + al;
-    return { b0: (1 - cw) / 2 / a0, b1: (1 - cw) / a0, b2: (1 - cw) / 2 / a0, a1: -2 * cw / a0, a2: (1 - al) / a0 };
-  }
-  function mkBiquad(c){ let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-    return function(x){ const y = c.b0 * x + c.b1 * x1 + c.b2 * x2 - c.a1 * y1 - c.a2 * y2; x2 = x1; x1 = x; y2 = y1; y1 = y; return y; }; }
-  // Simulate the FDN reverb's impulse response for `secs`; return {peak, tail}
-  // (tail = max |out| in the final 0.5 s — a decaying tail ⇒ tail ≪ peak ⇒ stable).
-  function simulateFDN(p, decay, QdB, secs){
-    const dly = p.times.map(t => new Float64Array(Math.max(1, Math.round(t * SR)))), idx = [0, 0, 0, 0];
-    const lp = [0, 1, 2, 3].map(() => mkBiquad(lowpassCoef(p.dampHz, QdB)));
-    const N = Math.round(SR * secs), tailFrom = N - Math.round(SR * 0.5);
-    let peak = 0, tail = 0;
-    for(let n = 0; n < N; n++){
-      const inp = n === 0 ? 1 : 0;                       // impulse
-      const d = [0, 1, 2, 3].map(i => dly[i][idx[i]]);
-      const dd = [0, 1, 2, 3].map(i => lp[i](d[i]));     // damped delay outputs
-      for(let j = 0; j < 4; j++){
-        let fb = 0; for(let i = 0; i < 4; i++) fb += p.hadamard[j][i] * 0.5 * decay * dd[i];
-        dly[j][idx[j]] = inp + fb; idx[j] = (idx[j] + 1) % dly[j].length;
-      }
-      const out = dd[0] + dd[1] + dd[2] + dd[3], a = Math.abs(out);
-      if(a > peak) peak = a;
-      if(n >= tailFrom && a > tail) tail = a;
-      if(!isFinite(a) || a > 1e6) return { peak: a, tail: a };   // already diverged — bail
-    }
-    return { peak: peak, tail: tail };
-  }
-
+  const SAFE_DECAY_CEILING = 0.78;   // measured: ≤0.78 solidly bounded; 0.80 marginal; ≥0.82 diverges
   const P = Synth.reverbParams();
   ok(typeof P === "object" && P.times.length === 4, "reverbParams() exposes the FDN topology (4 lines)");
-  // The damping lowpass MUST be non-resonant: a "lowpass" Q in dB ≤ 0 (linear ≤ 1)
-  // has no resonant peak, so its gain is ≤ 1 everywhere → loop gain ≤ decay < 1.
-  ok(P.dampQ <= 0, "the FDN damping lowpass Q is non-resonant (≤ 0 dB → no peak): Q=" + P.dampQ + " dB");
 
-  // (a) every style's decay (+ the max clamp) stays bounded AND decays over 5 s.
-  const decays = Array.from(new Set(P.styleDecays.concat([P.decayDefault, P.decayMax]))).sort((x, y) => x - y);
-  let allBounded = true, worst = 0, worstAt = 0;
-  for(const dec of decays){
-    const r = simulateFDN(P, dec, P.dampQ, 5);
-    if(!(r.peak <= 2)){ allBounded = false; }
-    if(r.peak > worst){ worst = r.peak; worstAt = dec; }
-    ok(r.peak <= 2, "FDN bounded at decay=" + dec + " (impulse peak " + r.peak.toFixed(3) + " ≤ 2)");
-    ok(r.tail < r.peak * 0.5 + 1e-9, "FDN tail DECAYS at decay=" + dec + " (last-0.5s " + r.tail.toExponential(2) + " ≪ peak)");
-  }
-  ok(allBounded, "the synth reverb is bounded for ALL style decays (worst peak " + worst.toFixed(3) + " @ decay " + worstAt + ")");
+  // (1) the damping lowpass MUST be non-resonant (Q in dB ≤ 0 → linear ≤ 1 → no peak
+  //     → measured passive gain 1.0). A resonant Q multiplies the loop gain over 1.
+  ok(P.dampQ <= 0, "the FDN damping lowpass Q is non-resonant (≤ 0 dB → no resonant peak): Q=" + P.dampQ + " dB");
 
-  // (b) teeth: the SAME simulation at the resonant DEFAULT Q (=+1 dB, the pre-fix
-  // build) DIVERGES at ambient's decay (0.9) — so the bounded result above is a real
-  // proof, and a regression back to the resonant default would FAIL this gate.
-  const resonant = simulateFDN(P, 0.9, 1, 5);
-  ok(resonant.peak > 100, "the gate has teeth: the pre-fix resonant default Q=+1 dB DIVERGES at decay 0.9 (peak " + resonant.peak.toExponential(2) + " ≫ 2)");
+  // (2) the decay CAP stays at/under the measured-safe ceiling (the real FDN grows a
+  //     pole outside the unit circle above ~0.82 even with a passive filter).
+  ok(P.decayMax <= SAFE_DECAY_CEILING + 1e-9,
+     "the FDN decay cap is measured-safe (decayMax " + P.decayMax + " ≤ " + SAFE_DECAY_CEILING + ")");
+
+  // (3) NO style can request a tail past the cap — and the clamp enforces it anyway.
+  //     (styleDecays are the raw per-style values; the engine clamps to decayMax.)
+  let worst = 0, worstStyle = "";
+  Synth.STYLE_IDS.forEach(function(id, i){
+    const raw = P.styleDecays[i], eff = Math.min(raw, P.decayMax);
+    if(eff > worst){ worst = eff; worstStyle = id; }
+    ok(eff <= SAFE_DECAY_CEILING + 1e-9, "style '" + id + "' effective decay " + eff + " ≤ " + SAFE_DECAY_CEILING + " (safe)");
+  });
+  ok(worst <= SAFE_DECAY_CEILING + 1e-9, "EVERY style's effective FDN decay is bounded (worst " + worst.toFixed(3) + " @ '" + worstStyle + "') — incl. ambient (was 0.9 → diverged)");
+
+  // (4) the previously-shipped raw ambient value (0.9) is OUTSIDE the safe envelope —
+  //     proving this guard has teeth (a regression back to it would FAIL here).
+  ok(0.9 > SAFE_DECAY_CEILING, "the guard has teeth: the old ambient decay 0.9 is above the safe ceiling " + SAFE_DECAY_CEILING + " → would FAIL this gate");
 })();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH CHECKS PASSED" : fails + "/" + checks + " FAILED"));
