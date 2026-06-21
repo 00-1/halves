@@ -206,6 +206,10 @@ body{
   display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .linkbtn:hover,.linkbtn:active{color:var(--amber);border-color:var(--amber)}
 .mr-ico{width:16px;height:16px;flex:0 0 auto}
+/* T86 — one-time spotlight pulse when a feature ungates (calm, reduced-motion safe) */
+.linkbtn.pulse{color:var(--amber);animation:feat-pulse 1s ease-in-out 2}
+@keyframes feat-pulse{0%,100%{text-shadow:none;transform:none}50%{text-shadow:0 0 12px var(--amber);transform:scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.linkbtn.pulse{animation:none}}
 
 /* ---------- SUMMARY ---------- */
 /* Fixed header + scrolling list + pinned bottom Back (T39): the screen no longer

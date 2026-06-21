@@ -58,6 +58,9 @@ function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } els
   global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
     addEventListener(e,f){ addCount++; (docH[e]=docH[e]||[]).push(f); }, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
     documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
+  // an established (legacy) profile so all features are ungated (T86 onboarding only
+  // gates a genuinely fresh profile; this test navigates into Inventory/Heroes/Arena)
+  store["halves.unlocked"] = JSON.stringify({ legacy:1 });
   ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
   const route = h => { global.window.location.hash = h; (winH.hashchange||[]).forEach(f=>f()); };
   const tabEv = t => ({ target:{ closest:s => (s===".inv-tab" ? { dataset:{ tab:t } } : null) } });

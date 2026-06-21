@@ -3003,3 +3003,47 @@ notes / questions: folded the **mute toggle into Settings** (the babysitter-opti
   extra) while keeping the existing home 🔊 button. Next per REVIEW order: **T86**
   (onboarding gating engine + first-run intro + Inventory gate + highlight — migration-safe,
   never re-gate existing players).
+
+## T86 — Onboarding gating I: unlock-state model + first-run intro + Inventory gate + highlight  [HANDOFF]
+commit: (this commit, on main) — Phase 6.9 settings/gating block, task 2 of 3
+Goal: the onboarding engine + the first gate — a fresh profile starts with extra
+features gated and unlocks them by progressing; **migration-safe** (legacy players
+are never re-gated). Access layer only — earning/collection/Arena untouched.
+changed:
+  - **main.js** — **unlock-state model** in `halves.unlocked`: `isFeatureUnlocked(id)`
+    / `unlockFeature(id)` / `needsIntro()`. **Migration:** at load, an existing record
+    wins; else a profile **with progress** (`profileHasProgress()` = any collected /
+    `stats.games>0` / any board) is **stamped `{legacy:1}` → all unlocked**; a genuinely
+    fresh profile is gated and **NOT persisted yet** (so it can still migrate to legacy
+    if progress later appears — avoids a probe-boot stamping a stale empty record).
+    **First-run intro:** `startIntro()` runs **ONE trivial question** ("half of 12" =
+    6 — numeric/numpad-safe, in the halves set) via a new `introCtx`; `finish()` branches
+    to `finishIntro()` which flags `introDone`, **unlocks the Inventory** and queues its
+    one-time highlight (the reward — this question's collectible — is granted in
+    `correct()`; skipping still completes it, never trapping). The entry **Play** drops a
+    fresh profile straight into the intro (`needsIntro() ? startIntro() : applyRoute()`).
+    **Gating:** `applyGates()` hides gated nav (`#invBtn` for now) until unlocked, and the
+    `#/inventory` route is **guarded** (deep-link blocked while gated). **Highlight:**
+    `firePendingHighlight()` pulses the revealed nav control + raises a calm **coachmark
+    toast** ("Inventory unlocked — your rewards live here"), persisted to fire **once**.
+    `window.Onboard` exposed for tests.
+  - **styles.css** — `.linkbtn.pulse` one-time spotlight (`@keyframes feat-pulse`,
+    reduced-motion safe).
+  - **test/perf.test.js** — seeds `halves.unlocked={legacy:1}` (it navigates into the
+    now-gated Inventory/Heroes/Arena, so it must boot as an established player).
+how I verified:
+  - `node test/onboarding.test.js` (NEW, **24th gate**) → **ALL 23 PASS**: a **FRESH**
+    profile → Inventory gated (nav hidden + **deep-link blocked**); launch drops into a
+    **single** question ("1 / 1"); solving it returns home, **unlocks + reveals the
+    Inventory**, grants the first reward (`solve:halves:12`), **raises a one-time
+    coachmark**, persists `{inventory, inventoryHi, introDone}`, and the highlight
+    **fires only once**; a **LEGACY** profile (progress, no record) is **stamped legacy →
+    all features unlocked, never re-gated**, can open the Inventory, and is **not** forced
+    through the intro; unlock-state **persists across a reload**.
+  - **Arena invariants untouched** — `arena.test.js` green (gating is access-layer; no
+    enemies/heroes/collectibles change). `node -c` clean; **full 24-gate suite green**.
+notes / questions: the migration treats "has any collected/stats/board" as legacy; the
+  fresh-but-unpersisted record means an established player who somehow lacked a record
+  still resolves to legacy on first load. Next per REVIEW order: **T87** (wire the
+  remaining gates — Practice/Heroes/Arena/Event-banner/Gold — with the same once-highlight,
+  migration-safe).

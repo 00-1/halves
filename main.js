@@ -215,6 +215,57 @@
   // Picker view: the grouped list (a11y fallback, default) or the T84 tech tree.
   let pickerView = (function(){ try{ return localStorage.getItem("halves.pickerView") === "tree" ? "tree" : "list"; }catch(e){ return "list"; } })();
 
+  // ---- onboarding gating (T86) -------------------------------------------
+  // On a genuinely FRESH profile, the extra features start gated and unlock one
+  // at a time as you progress (a gentle tutorial). MIGRATION-SAFE: a legacy
+  // profile (any existing collected / stats / board) is treated as fully unlocked
+  // and is NEVER re-gated. Pure + local (`halves.unlocked`). This is an ACCESS
+  // layer only — earning, the collection, and the Arena invariants are untouched.
+  function loadUnlocked(){
+    let u; try{ u = JSON.parse(localStorage.getItem("halves.unlocked")); }catch(e){ u = null; }
+    return (u && typeof u === "object") ? u : null;
+  }
+  function saveUnlocked(u){ try{ localStorage.setItem("halves.unlocked", JSON.stringify(u)); }catch(e){} }
+  function profileHasProgress(){
+    if(Object.keys(loadCollected()).length) return true;
+    const s = loadStats(); if(s && s.games > 0) return true;
+    return MODES.some(m => loadBoard(m.id).length > 0);
+  }
+  let unlocked = (function(){
+    const u = loadUnlocked();
+    if(u) return u;                                          // an existing record wins
+    if(profileHasProgress()){ const l = { legacy:1 }; saveUnlocked(l); return l; }  // legacy → stamp + all open
+    return {};   // genuinely fresh → gated, NOT persisted yet (so it can still migrate to legacy if progress appears)
+  })();
+  function isFeatureUnlocked(id){ return !!(unlocked.legacy || unlocked[id]); }
+  function unlockFeature(id){ if(isFeatureUnlocked(id)) return false; unlocked[id] = 1; saveUnlocked(unlocked); return true; }
+  function needsIntro(){ return !unlocked.legacy && !unlocked.introDone; }   // fresh profile still owes the intro
+
+  // Gated nav controls (T86 wires the Inventory; the rest land in T87).
+  const GATED = [{ feature:"inventory", btn:"invBtn", msg:"Inventory unlocked — your rewards live here" }];
+  function applyGates(){
+    GATED.forEach(g => { const b = $(g.btn); if(b) b.classList.toggle("hidden", !isFeatureUnlocked(g.feature)); });
+  }
+  // One-time spotlight + coachmark toast when a feature ungates (persisted → fires once).
+  let pendingHighlight = null;
+  function firePendingHighlight(){
+    const id = pendingHighlight; pendingHighlight = null;
+    if(!id || unlocked[id + "Hi"]) return;
+    const cfg = GATED.find(g => g.feature === id); if(!cfg) return;
+    unlocked[id + "Hi"] = 1; saveUnlocked(unlocked);
+    const b = $(cfg.btn);
+    if(b){ b.classList.add("pulse"); setTimeout(() => { if(b.classList) b.classList.remove("pulse"); }, 2600); }
+    enqueueToast(() => {
+      const t = document.createElement("div");
+      t.className = "toast coach";
+      t.innerHTML = '<span class="t-glyph">✨</span><div class="t-txt"><span class="t-tag">Unlocked</span>'+
+        '<span class="t-name">'+esc(cfg.msg)+'</span></div>';
+      $("toasts").appendChild(t);
+      requestAnimationFrame(() => t.classList.add("show"));
+      return t;
+    }, 2800, 1600);
+  }
+
   // A locked topic's compact requirement, for a picker row subline.
   function unlockReq(m){
     if(m.requires){
@@ -918,7 +969,7 @@
   // (Enemies.statBattle over the REAL collected set). Drilling the topics is
   // where buffs are earned; the Arena is the payoff. Clearing it still demands a
   // near-complete collection (the win == the old max-perf win, T23/T43).
-  let arenaHero = null, lastBattle = null, practiceCtx = null, arenaMapOpen = false, eventCtx = null;
+  let arenaHero = null, lastBattle = null, practiceCtx = null, arenaMapOpen = false, eventCtx = null, introCtx = false;
 
   // ---- per-question best-time store (halves.qbest) for the Practice view -----
   let memQbest = null;
@@ -1154,11 +1205,31 @@
   }
   function start(){
     if(!isUnlocked(mode)) return;   // locked topics aren't playable
-    practiceCtx = null; eventCtx = null;   // a normal round is neither practice nor an event
+    practiceCtx = null; eventCtx = null; introCtx = false;   // a normal round is none of these
     order = mode.build();
     elEyebrow.innerHTML = mode.eyebrow;
     sfx("roundStart");
     beginRound();
+  }
+  // ---- first-run onboarding intro (T86): ONE trivially-easy question. Solving it
+  // grants the first reward and unlocks the Inventory (the first ungated feature).
+  function startIntro(){
+    const m = byId("halves") || MODES[0];
+    mode = m; introCtx = true; practiceCtx = null; eventCtx = null;
+    order = [{ p:"12", a:6, _mode:m }];   // "half of 12" — numeric, non-negative, numpad-safe; in the halves set
+    elEyebrow.innerHTML = m.eyebrow;
+    sfx("roundStart");
+    beginRound();
+  }
+  function finishIntro(){
+    cancelAnimationFrame(raf);
+    introCtx = false;
+    // complete onboarding step 1: the reward (this question's Beat/Spark) was
+    // granted in correct(); now flag the intro done + ungate the Inventory and
+    // queue its one-time highlight. Skipping still completes it (never trap).
+    unlocked.introDone = 1; saveUnlocked(unlocked);
+    if(unlockFeature("inventory")) pendingHighlight = "inventory";
+    location.hash = "#/"; applyRoute();
   }
   // ---- Practice / Review (T32): attempt one question at a time, self-paced but
   // still timed; grants ONLY that question's Beat/Spark + updates qbest.
@@ -1366,6 +1437,7 @@
   // ---- results -----------------------------------------------------------
   function finish(){
     cancelAnimationFrame(raf);
+    if(introCtx){ finishIntro(); return; }          // first-run intro → unlock the Inventory
     if(practiceCtx){ finishPractice(); return; }   // Practice attempt → grade just that question
     if(eventCtx){ finishEvent(); return; }          // Event gauntlet → grant the event reward
     const total = (performance.now()-startTime)/1000;
@@ -1579,6 +1651,8 @@
   // ---- hash routing for the static screens --------------------------------
   function applyRoute(){
     const h = (location.hash || "").replace(/^#\/?/, "");
+    // gated features can't be deep-linked into until unlocked (access layer)
+    if(h === "inventory" && !isFeatureUnlocked("inventory")){ location.hash = "#/"; return; }
     if(h === "inventory"){ renderInventory(); show("inventory"); }
     else if(h === "best-times"){ renderSummary(); show("summary"); }
     else if(h === "heroes"){ renderHeroes(); show("heroes"); }
@@ -1588,7 +1662,7 @@
     }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
     else if(h === "settings"){ renderSettings(); show("settings"); }
-    else { renderPicker(); renderBest(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); show("start"); }
+    else { renderPicker(); renderBest(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); applyGates(); show("start"); firePendingHighlight(); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
@@ -1780,7 +1854,10 @@
       audioUnlock();
       applySoundPref();
       if(useFs) fsEnter();
-      applyRoute();
+      // A fresh profile is dropped straight into the one-question intro (T86);
+      // everyone else (incl. legacy) goes to the menu / honours the deep link.
+      if(needsIntro()) startIntro();
+      else applyRoute();
     }
     if(!fsSupported()){           // iOS Safari etc. — single "Play", no fullscreen
       fsBtn.classList.add("hidden");
@@ -1846,6 +1923,7 @@
   renderGold();
   renderMomentum();
   renderEventBanner();                  // T81: today's event front-and-centre
+  applyGates();                         // T86: hide gated features on a fresh profile
   setInterval(tickEventBanner, 1000);   // live UTC countdown (only ticks on home)
   applySoundPref();   // honour the saved mute pref on load (no-op until T16)
   // Goblin Gold module API (also used by the Node tests).
@@ -1861,6 +1939,9 @@
   window.Toasts = { CAP: TOAST_CAP, enqueue: enqueueToast, shown: () => toastShown, queued: () => toastQ.length };
   // Tech-tree API (T84) — the data-derived graph + node state, for the Node tests.
   window.TechTree = { graph: techGraph, state: nodeState, view: () => pickerView };
+  // Onboarding API (T86) — gating state + the first-run hook, for the Node tests.
+  window.Onboard = { isFeatureUnlocked: isFeatureUnlocked, needsIntro: needsIntro,
+    startIntro: startIntro, state: () => unlocked };
   // Event play API (T79) — start today's live event gauntlet (used by the Events
   // tab now, the best-attempt board in T80 / the home banner in T81, and tests).
   window.EventPlay = { start: startEvent, active: () => !!eventCtx,
