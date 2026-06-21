@@ -18,26 +18,47 @@ const M = global.window.MODES, G = global.window.Guides;
 
 // numeric tokens in a string (integers + decimals), as Numbers
 function tokens(s){ return (s.match(/\d+(?:\.\d+)?/g) || []).map(Number); }
+// word-number + denominator-word value scanning (catches answers leaked in WORDS)
+const WORDNUM = { one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9, ten:10, eleven:11, twelve:12 };
+const DENOM = { half:2, halves:2, third:3, thirds:3, quarter:4, quarters:4, fifth:5, fifths:5, sixth:6, sixths:6,
+  seventh:7, sevenths:7, eighth:8, eighths:8, tenth:10, tenths:10, hundredth:100, hundredths:100 };
+const PLURAL_UNITS = ["tenths","hundredths","quarters","eighths","fifths","thirds","sixths","sevenths","halves","twentieths","sixteenths"];
+// any "<word-number> <denominator-word>" phrase in the hint, as numeric values
+function wordPhraseValues(s){
+  const out = [], words = s.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/);
+  for(let i = 0; i < words.length - 1; i++){
+    if(WORDNUM[words[i]] != null && DENOM[words[i+1]] != null) out.push(WORDNUM[words[i]] / DENOM[words[i+1]]);
+  }
+  return out;
+}
 
-let leaks = 0, empties = 0, phantom = 0, sampleLeak = "", samplePhantom = "";
+let leaks = 0, empties = 0, phantom = 0, wordLeaks = 0, plural = 0;
+let sampleLeak = "", samplePhantom = "", sampleWord = "", samplePlural = "";
+const approx = (x, y) => Math.abs(x - y) < 1e-9;
 M.forEach(m => {
   let qs = []; try{ qs = m.build(); }catch(e){}
   qs.forEach(q => {
     const hint = G.explain(m.id, q);
     if(!hint || !hint.trim()){ empties++; return; }
-    // (b) no answer token
     const a = Number(q.a);
+    // (b) no answer as a numeric token
     if(tokens(hint).some(t => t === a)){ leaks++; if(!sampleLeak) sampleLeak = m.id + " «" + q.p + "»→ " + hint; }
+    // (b2) no answer leaked in WORDS (e.g. "five tenths" == 0.5)
+    if(wordPhraseValues(hint).some(v => approx(v, a))){ wordLeaks++; if(!sampleWord) sampleWord = m.id + " «" + q.p + "»→ " + hint; }
     // (c) phantom structure: single-operand halves/doubles with operand < 10 must not say "ten"
-    if((m.id === "halves" || m.id === "doubles")){
+    if(m.id === "halves" || m.id === "doubles"){
       const n = parseFloat(String(q.p));
       if(!isNaN(n) && n < 10 && /\bten/i.test(hint)){ phantom++; if(!samplePhantom) samplePhantom = m.id + " «" + q.p + "»→ " + hint; }
     }
+    // (e) singular/plural: never "1 <plural-unit>" (e.g. "1 tenths")
+    if(PLURAL_UNITS.some(u => new RegExp("\\b1 " + u + "\\b").test(hint))){ plural++; if(!samplePlural) samplePlural = m.id + " «" + q.p + "»→ " + hint; }
   });
 });
 ok(empties === 0, "every question yields a non-empty hint (" + empties + " empty)");
 ok(leaks === 0, "no hint contains its answer as a number token" + (sampleLeak ? " — e.g. " + sampleLeak : ""));
+ok(wordLeaks === 0, "no hint reveals its answer in WORDS (e.g. 'five tenths')" + (sampleWord ? " — e.g. " + sampleWord : ""));
 ok(phantom === 0, "no 'ten' in any single-digit (<10) halves/doubles hint" + (samplePhantom ? " — e.g. " + samplePhantom : ""));
+ok(plural === 0, "no '1 <plural>' singular/plural slip (e.g. '1 tenths')" + (samplePlural ? " — e.g. " + samplePlural : ""));
 
 // (d) the owner's exact regression: "half of 5"
 const halves = M.find(m => m.id === "halves");

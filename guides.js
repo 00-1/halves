@@ -221,14 +221,15 @@
         if(pct === 75) return "75% is a half plus a quarter — take both of " + amt + ".";
         return pct + "% — build it up from one tenth of " + amt + "."; }
       case "fractions": { const m = p.match(/(\d+)\/(\d+)/); if(!m) break; const nu = +m[1], d = +m[2];
-        if(d === 10) return nu + " tenths — read it straight off as a decimal.";
-        if(d === 100) return nu + " hundredths — two decimal places.";
-        if(d === 20) return "Twentieths are half a tenth: find " + nu + "/10, then halve.";
-        if(d === 5)  return "Each fifth is two tenths — count " + nu + " of them.";
-        if(d === 4)  return "Quarters come from halving twice — count " + nu + " quarters.";
-        if(d === 8)  return "Eighths come from halving three times — count " + nu + " eighths.";
-        if(d === 16) return "Sixteenths halve an eighth — keep halving and count " + nu + ".";
-        if(d === 2)  return "One half as a decimal is five tenths.";
+        const s = nu === 1 ? "" : "s";   // singular unit noun when there's just one
+        if(d === 2)  return "It sits exactly halfway between 0 and 1 — write that midpoint as a decimal.";
+        if(d === 10) return nu + " tenth" + s + " — read it straight off as a decimal.";
+        if(d === 100) return nu + " hundredth" + s + " — that's two decimal places.";
+        if(d === 20) return "A twentieth is half a tenth — find " + nu + "/10, then halve.";
+        if(d === 5)  return "A fifth is a pair of tenths — convert " + nu + "/5 to tenths, then read the decimal.";
+        if(d === 4)  return "A quarter is half of a half — from halving twice, count " + nu + " quarter" + s + ".";
+        if(d === 8)  return "An eighth comes from halving three times — count " + nu + " eighth" + s + ".";
+        if(d === 16) return "A sixteenth halves an eighth — keep halving, then count " + nu + ".";
         return "Turn " + nu + "/" + d + " into tenths you know, then read off the decimal."; }
       case "squares": { const m = p.match(/(\d+)/); if(!m) break; const n = +m[1];
         return "A square is the number times itself — multiply " + n + " by " + n + "."; }

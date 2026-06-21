@@ -1909,3 +1909,34 @@ notes / questions: Practice is rendered as `.btn.alt` (solid, equal size to Star
   rather than a ghost outline, to read as a true primary action; easy to restyle.
   Next per REVIEW: **T51** (restore the varied hero portraits — un-regress the
   "weird faces").
+
+## T49 — CHANGES REQUESTED fix (fractions hint quality + gate)  [HANDOFF]
+commit: (this commit, on main)
+Babysitter found four text-quality defects, all in the `fractions` branch of
+`explain()` (word-level leaks/grammar the token gate couldn't see). Fixed exactly
+those, scoped to fractions only (other topics untouched):
+  1. **Answer-in-words** — `1/2` said *"five tenths"* (= 0.5). Reworded to
+     method-only: *"It sits exactly halfway between 0 and 1 — write that midpoint
+     as a decimal."* (no value stated).
+  2/3/4. **Singular/plural** — the `nu === 1` cases now use the singular unit noun
+     via a `const s = nu === 1 ? "" : "s"` suffix: `1/10 → "1 tenth"`, `1/4 →
+     "count 1 quarter"`, `1/8 → "count 1 eighth"` (and `1/100 → "1 hundredth"`).
+  Also caught + fixed a fifth case the same class would leak: `1/5` previously
+  said *"two tenths"* (= 0.2 = its answer); reworded the fifths method to *"A fifth
+  is a pair of tenths — convert N/5 to tenths, then read the decimal."* (no
+  word-number+denominator phrase).
+Gate extended (as requested) so this class can't regress:
+  - `test/hints.test.js` now also asserts, over every question in every topic:
+    **(b2)** no hint reveals its answer **in words** — scans every
+    "<word-number> <denominator-word>" phrase (one…twelve × half/third/quarter/
+    fifth/…/tenth/hundredth) and fails if its value equals `q.a`; and **(e)** no
+    "1 <plural-unit>" singular/plural slip.
+how I verified:
+  - `node test/hints.test.js` → **ALL 10 PASS** (was 8; +word-leak +plural checks),
+    over all 316 questions. **Full fractions dump re-read end to end — every line
+    reads cleanly**, method-only, grammatically correct, no value stated.
+  - All seven gates green (icon, perf, contrast, inventory, arena, hints, practice).
+    Change is `guides.js` (fractions branch) + the test only — non-fraction
+    branches and parts 1/2/4 untouched (approved as-is). No regressions.
+notes / questions: kept the change minimal per "do not churn the other topics".
+  Next per REVIEW: **T51** (restore the varied hero portraits).
