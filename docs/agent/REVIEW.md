@@ -1,20 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Previously approved (done):** `T51` (varied hero portraits restored; follow-up made the
-item-invariance gate permanent). The feature was verified last round — `heroSprite`
-restores the mirrored creature-blob (`G=16`), `buildIcon` routes only `"hero:"`-prefixed
-ids to it; pre-T51-vs-T51 over all 795 items showed **66/66 hero portraits pairwise
-distinct** and item icons **byte-identical**. The earlier CHANGES flagged the new gate's
-item-invariance check as vacuous (it diffed `collectibles.js` against `HEAD`, which is the
-same commit in CI). The follow-up (`acc70a2`) replaced it with **permanent invariants**:
-(a) `C.CATALOG.every(it => !/^hero:/.test(it.id))` — no item id can route to the hero
-blob, and (b) an **embedded snapshot baseline** of item role grids. Babysitter
-re-verified independently: all 8 checks pass; the two baselines **match the live engine
-and are non-trivial** (180/172 non-zero cells of 256, so they'd catch any shape change);
-the routing invariant holds (0 real ids `hero:`-prefixed) and is meaningfully protective.
-`node -c` clean; wired as the 8th Pages gate. T51 → DONE.
+**Current verdict:** `APPROVED — T62` (methodical, question-by-question hint audit across
+all 15 topics). Babysitter **dumped and read every hint for every question in every topic**
+(300+), not a sample. Halves is rebuilt place-value-aware: round numbers work in their real
+unit with odd-count → "half-hundred/half-ten/half-thousand" (the "half of 500" bug is
+fixed), mixed numbers split into the actual nonzero place chunks, never naming an absent
+place; doubles same; add/sub magnitude-aware (3-digit bridges the hundred); times gained
+the ×12 trick; bonds2 decimal branch keyed to 1-dp vs 2-dp. All other topics read and
+confirmed apt (no changes, justified per-topic in the log). Every hint is correct,
+method-only (no token or word answer-leak), and place-honest — independently re-scanned
+clean across all topics. Gate strengthened: place-value honesty at ALL magnitudes
+(plural place word only if that digit is nonzero) + explicit `half of 500`/`1000` cases;
+13 checks pass. One **minor, non-blocking** note: the twentieths method for `11/20`/`17/20`
+says "find 11/10 (17/10), then halve" — valid but an awkward improper fraction vs the clean
+`9/20`; offered as optional polish, not required. T62 → DONE.
 
-**Current verdict:** `APPROVED — T57` (scrubbed the specific school/town/county refs).
+**Previously approved (done):** `T57` (scrubbed the specific school/town/county refs).
 Babysitter re-verified independently: a **repo-wide `git grep`** for
 `salisbury|wiltshire|wordsworth|bishop|south wilts|sarum` on `origin/main` returns
 **ZERO** matches across **every** tracked file (incl. `docs/agent/*` + the new builder-log
@@ -27,11 +28,11 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T62` → `T63` → `T64` → `T65` → `T69` → `T67` → `T66` → `T68` →
-`T52` → `T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2
-batches `T59`/`T60`/`T61`). **`T69`** = tiny audio-volume bump (master `VOL` 0.16 → ~0.30,
-keep music balanced, no clipping). **Do `T62` next** — the methodical, question-by-question hint audit
-across ALL topics (the big one; sets the hint standard for T58/T59–T61). (`T66` 120-tier
+**Next-task order:** **`T63` → `T64` → `T65` → `T69` → `T67` → `T66` → `T68` → `T52` →
+`T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
+`T59`/`T60`/`T61`). **`T69`** = tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep
+music balanced, no clipping). **Do `T63` next** — surface the tap-to-reveal hint in normal
+rounds too (hidden by default; the T62 hint standard now applies everywhere). (`T66` 120-tier
 change before the arena work; **`T68` Arena wayfinding** — region progress, boss
 anticipation, a simple journey map — sits right after T66 so it's built on the final
 12-per-region structure; then the arena art T52/T53; `T67` hero detail rides with the UX

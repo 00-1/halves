@@ -1385,7 +1385,7 @@ content.)
 
 ## Phase 8 — Hint quality (deep, methodical, EVERY question) — do EARLY (after T57)
 
-### T62 — Methodical, question-by-question hint audit across ALL topics · status: OPEN
+### T62 — Methodical, question-by-question hint audit across ALL topics · status: DONE
 Owner: "I'm **not only talking about halves — we need to fix every bit of advice across
 all topics.** We may need to spend real time on this, methodically thinking about each
 question. I don't mind burning time on this — an agent needs to go through them one by
