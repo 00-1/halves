@@ -449,7 +449,7 @@ keeping the harder cases as the Part-2 stretch.
   Spark regenerate; no regression to the chain or other topics; deploy green.
   (Babysitter re-verifies the P1 arithmetic and the whole/decimal balance.)
 
-### T37 — Visual polish: Best-Times rank indicator + Inventory topic progress · status: OPEN
+### T37 — Visual polish: Best-Times rank indicator + Inventory topic progress · status: DONE
 Two related "show it with colour, not an AI-smell border" fixes (owner screenshots).
 1. **Best Times rows (`.sum-row`).** Today each card has a rounded coloured
    `border-left:4px` strip tinted by rank — the textbook "AI CSS" left-border-on-a-

@@ -1,15 +1,13 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T23` (enemy tiers/battle/loot verified — all
-invariants hold). **A batch of owner-requested UI polish jumps ahead of the rest of
-Phase 3.** Order: **`T37`** (Best-Times rank dot — kill the AI-smell rounded
-left-border — + Inventory topic progress bars/heatmap) → **`T38`** (start screen
-fits the viewport; the picker is the flexible scroll region) → **`T39`** (floating/
-always-visible Back on Inventory + Best Times + Heroes) → **`T35`** (diverse item
-names from DESIGN-names.md + fix the inventory name truncation) → then resume Phase
-3 at **`T24` (Arena)** so the 668 loot items become winnable → then **`T36`** (50
-icon categories + variation) → `T25`/`T26` → Phase 4. Do **T37 next.** Specs in
-BACKLOG. Keep the rank/heatmap colour-coding; just change the *form*.
+**Current verdict:** `APPROVED — T37` (rank dot + inventory progress bars — form
+changed, colour map kept). **Continue the UI-polish block. Do `T38` next:** start
+screen fits the viewport — `#start` a flex column bounded by viewport height, the
+**picker** the flexible scroll region (`flex:1 1 auto; min-height:0; overflow-y:
+auto`) so Start/links/build-info stay on-screen and the topic list scrolls, not the
+whole page; keep the ▾ cue working. Then **`T39`** (floating/always-visible Back on
+Inventory + Best Times + Heroes) → **`T35`** (diverse names + truncation) → **`T24`
+(Arena)** → **`T36`** (icons) → `T25`/`T26` → Phase 4. Specs in BACKLOG.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -25,6 +23,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T37 — Best-Times rank dot + Inventory topic progress bars → APPROVED
+Visual-only; owner's two "show colour, not an AI-smell border" fixes. Verified: node -c main.js OK; no TODO/stub; no new DOM ids. **Best Times:** `.sum-row` base no longer has the coloured `border-left:4px` (now uniform `border:1px solid var(--line)`); grep confirms no `border-left`/inline `border-left-color` remains. Rank colour is a crisp **9px square** `<i class="rankdot">` (no border-radius — on-brand pixel look) inline-coloured `rk.color`; not-played = `.rankdot.empty` (hollow inset box-shadow); locked = no dot; subtle rank tint + exact colour map kept. **Inventory:** topic rows gain `.tp-bar`/`.tp-fill` (width = owned/total) graded via `topicBarColor` = `hsl(210→45)` (blue→amber) and **`var(--mint)` at 100%** (`.tp-row.done` mint border); fraction text retained. Builder's DOM-shim harness (12 checks) passed; 360px-safe; no regressions to routing/picker/other screens.
 
 ### T23 — Enemy tiers + battle logic + tier loot → APPROVED
 New `enemies.js` (window.Enemies), loaded after heroes.js. Independently verified (Node, real modes/collectibles/heroes/enemies): node -c all OK; no TODO/stub; loot never earned via drills. **100 tiers**, def 11→551, **monotonic non-decreasing (0 dips)**. Battle invariants over the real data: **(b) no tier gated behind its own loot** — every tier's def beatable with the best advantage hero on drill-items + loot 1..n−1 at perfect perf (0 failures); **(a)** tiers 1–5 winnable by starter bram with 0 items at perf 0.85; **(c)** tier 100 **not** winnable by any hero with 0 items, **winnable** at full-minus-final-loot collection. **668 loot items** all `test()===false` (drill-unearnable), all T20-stamped (style∈[0,10), flavour, valid hero+stat boost) with boosts covering **all 12 heroes**; `registerItem` idempotent; "Loot" added to CATS. Catalogue 775→**1443**. `evaluate()` excludes loot (regression-checked). Pure logic, no DOM. (Arena UI + loot-granting = T24.)
