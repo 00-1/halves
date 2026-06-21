@@ -45,6 +45,10 @@ body{
   background:linear-gradient(180deg,var(--text),var(--muted));-webkit-background-clip:text;background-clip:text;color:transparent;
   display:flex;align-items:baseline;gap:.04em;justify-content:center}
 .mark .slash{color:var(--amber);-webkit-text-fill-color:var(--amber);font-weight:400;transform:translateY(-.02em)}
+/* T56 — procedural pixel-font glyph (canvas) replaces the typographic mark. */
+.mark canvas{height:clamp(54px,18vw,92px);width:auto;image-rendering:pixelated;display:block}
+.g-glyph canvas{height:22px;width:auto;image-rendering:pixelated;vertical-align:-4px;display:inline-block}
+.t-glyph canvas{height:24px;width:auto;image-rendering:pixelated;display:block}
 .tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:16px;font-weight:500}
 /* scrollable, grouped mode picker (wrapper carries the scroll-affordance fades) */
 .picker-wrap{position:relative;width:100%;max-width:360px;margin-top:22px;

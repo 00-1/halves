@@ -266,7 +266,55 @@
     wrap.classList.toggle("can-scroll-up", el.scrollTop > 1);
     wrap.classList.toggle("can-scroll-down", el.scrollHeight - el.clientHeight - el.scrollTop > 1);
   }
-  function renderMark(){ elMark.innerHTML = mode.glyph; elTag.textContent = mode.tag; }
+  // Paint a topic's glyph with the procedural pixel font (T56) into `el`, sized
+  // by an internal cell scale (CSS height upscales it, kept crisp by
+  // image-rendering:pixelated). Falls back to the old `glyph` HTML if Glyphs or
+  // the structured tokens are unavailable.
+  function paintGlyph(el, m, scale, opts){
+    if(!el) return;
+    const tokens = m && m.glyphTokens;
+    if(window.Glyphs && tokens){
+      const g = Glyphs.buildGrid(tokens);
+      const cv = document.createElement("canvas");
+      cv.width = g.w * scale; cv.height = g.h * scale;
+      el.innerHTML = "";
+      el.appendChild(cv);
+      Glyphs.draw(cv, tokens, opts);
+    } else {
+      el.innerHTML = (m && m.glyph) || "";
+    }
+  }
+  function renderMark(){ paintGlyph(elMark, mode, 10); elTag.textContent = mode.tag; }
+
+  // The entry/splash brand mark is the fixed Halves "x/2"; paint it once.
+  function renderBrand(){
+    const el = screens.entry && screens.entry.querySelector(".mark");
+    paintGlyph(el, byId("halves"), 10);
+  }
+
+  // Mint the favicon / home-screen icon from the same pixel renderer: draw the
+  // "x/2" mark, dark-bg-padded, onto an offscreen canvas and wire it up as a
+  // data-URL <link rel="icon"> (+ apple-touch-icon + theme-color) at runtime.
+  function installFavicon(){
+    if(!window.Glyphs || !document.createElement) return;
+    const halves = byId("halves");
+    if(!halves || !halves.glyphTokens) return;
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = 64;
+    if(!cv.getContext) return;
+    Glyphs.draw(cv, halves.glyphTokens, { bg:"#0E1116", body:"#E6E9EF", accent:"#F5B544", pad:8 });
+    let url; try { url = cv.toDataURL("image/png"); } catch(e){ return; }
+    const head = document.head || document.getElementsByTagName("head")[0];
+    if(!head) return;
+    [["icon", url], ["apple-touch-icon", url]].forEach(([rel, href]) => {
+      let link = document.querySelector('link[rel="'+rel+'"]');
+      if(!link){ link = document.createElement("link"); link.rel = rel; head.appendChild(link); }
+      link.href = href;
+    });
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if(!meta){ meta = document.createElement("meta"); meta.name = "theme-color"; head.appendChild(meta); }
+    meta.content = "#0E1116";
+  }
 
   function selectMode(id){
     const m = byId(id); if(!m) return;
@@ -306,7 +354,8 @@
   function openGuide(m){
     const g = m && window.Guides && window.Guides.get(m.id);
     if(!g){ return; }
-    $("guideTitle").innerHTML = '<span class="g-glyph">'+(m.glyph||"")+'</span> '+esc(m.name);
+    $("guideTitle").innerHTML = '<span class="g-glyph"></span> '+esc(m.name);
+    paintGlyph($("guideTitle").querySelector(".g-glyph"), m, 4);
     $("guideBody").innerHTML =
       '<p class="g-intro">'+esc(g.intro)+'</p>'+
       '<ul class="g-tips">'+g.tips.map(t => '<li>'+esc(t)+'</li>').join("")+'</ul>'+
@@ -496,9 +545,10 @@
       const pal = C.paletteFor("epic");   // topic toasts are epic-tinted
       const t = document.createElement("div");
       t.className = "toast r-epic topic";
-      t.innerHTML = '<span class="t-glyph">'+m.glyph+'</span>'+
+      t.innerHTML = '<span class="t-glyph"></span>'+
         '<div class="t-txt"><span class="t-tag">'+(part2 ? "Part 2 unlocked" : "Topic unlocked")+'</span>'+
         '<span class="t-name">'+esc(m.name)+'</span></div>';
+      paintGlyph(t.querySelector(".t-glyph"), m, 4);
       $("toasts").appendChild(t);
       sfx("topicUnlock");   // short fanfare
       requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, "epic", [pal.accent, pal.body]); });
@@ -728,7 +778,8 @@
       String(a.p).localeCompare(String(b.p), undefined, { numeric: true }));
     const qb = loadQbest()[modeId] || {};
     const solved = qs.filter(q => qb[q.p] != null).length;
-    $("practiceTitle").innerHTML = '<span class="g-glyph">' + (m.glyph || "") + '</span> ' + esc(m.name);
+    $("practiceTitle").innerHTML = '<span class="g-glyph"></span> ' + esc(m.name);
+    paintGlyph($("practiceTitle").querySelector(".g-glyph"), m, 4);
     $("practiceMeta").textContent = solved + " / " + qs.length + " solved";
     $("practiceGrid").innerHTML = qs.map(q => {
       const t = qb[q.p], col = qTileColor(t);
@@ -1426,6 +1477,8 @@
   if(window.FX && window.FX.init) window.FX.init($("fxCanvas"));
   renderTabs();
   renderMark();
+  renderBrand();
+  installFavicon();
   renderBest();
   renderStartState();
   drawMenuIcons();    // static procedural icons on the menu buttons (T50)

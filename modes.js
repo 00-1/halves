@@ -290,6 +290,31 @@
   };
   MODES.forEach(m => { if(TOPIC_MUSIC[m.id] != null) m.music = TOPIC_MUSIC[m.id]; });
 
+  // Structured glyph tokens for the procedural pixel-font renderer (glyphs.js /
+  // window.Glyphs; T56). Each token is a compact string: a single character in
+  // operand ink, a leading "*" marking the amber operator ACCENT, "fNM" for a
+  // stacked vulgar fraction N⁄M, or "sC" for a superscript. These mirror exactly
+  // the operator each topic showed in the old `glyph` HTML (kept as a fallback):
+  // the accented token is the one that used to live in the amber ".slash" span.
+  const TOPIC_GLYPHS = {
+    halves:       ["x","*/","2"],
+    times:        ["a","*×","b"],
+    doubles:      ["2","*×","x"],
+    addsub:       ["a","*+","b"],
+    addsub2:      ["a","*±","b"],
+    bonds:        ["+","*1","*0","*0"],
+    bonds2:       ["+","*1","*k"],
+    placevalue:   ["×","*÷"],
+    placevalue2:  ["*×","÷"],
+    fractionsof:  ["*f12","n"],
+    fractionsof2: ["a","*/","b"],
+    percentages:  ["*%"],
+    percentages2: ["n","*%"],
+    fractions:    ["*f34"],
+    squares:      ["x","*s2"]
+  };
+  MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
+
   window.MODES = MODES;
   window.MODE_GROUPS = MODE_GROUPS;
 })();

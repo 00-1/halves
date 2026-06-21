@@ -2617,3 +2617,52 @@ how I verified:
     regressions.
 notes / questions: headroom above the current ~1154 catalogue is intentional
   (future items). Next per REVIEW order: **T56** (pixel mark/topic glyphs + favicon).
+
+## T56 — Pixel-art the app mark + topic glyphs + favicon  [HANDOFF]
+commit: (this commit, on main)
+Goal: retire the typographic HTML glyphs (mono font + amber ".slash" span) in
+favour of a procedural **pixel bitmap font** drawn to canvas, and mint a real
+favicon / home-screen icon from the same renderer.
+changed:
+  - **glyphs.js (NEW, loaded first in index.html) / window.Glyphs** — a pure,
+    deterministic pixel font. `BIG` 5×7 cells for `0-9 x a b n k × ÷ + − ± / %`;
+    `SMALL` 3×4 cells (1‑4) for stacked vulgar fractions (num / bar / den) and
+    superscripts. `buildGrid(tokens) -> {w,h,cells,missing}` emits ink codes
+    **0 empty · 1 body · 2 accent**; `draw(canvas,tokens,opts)` is **static**
+    (image-smoothing off, integer cell, centred — no RAF). Token DSL: `"x"` body,
+    `"*×"` amber accent, `"f12"` fraction ½, `"s2"` superscript ². Unknown chars are
+    recorded in `missing` (never silently dropped).
+  - **modes.js** — added `glyphTokens` to all 15 modes (`TOPIC_GLYPHS` map), the
+    accented token mirroring exactly the old amber ".slash" symbol per topic
+    (e.g. halves `["x","*/","2"]`, times `["a","*×","b"]`, bonds `["+","*1","*0","*0"]`,
+    fractionsof `["*f12","n"]`, squares `["x","*s2"]`). The old `glyph` HTML is
+    **kept as a fallback**.
+  - **main.js** — `paintGlyph(el,mode,scale,opts)` clears `el` and appends a
+    pixel-font canvas (CSS upscales, `image-rendering:pixelated`), falling back to
+    `mode.glyph` HTML if Glyphs/tokens are missing. Wired into **renderMark** (start
+    mark), **openGuide** (guide title), **renderPractice** (practice title),
+    **showTopicToast** (toast), plus **renderBrand** (the fixed entry "x/2"). New
+    **installFavicon()** draws the "x/2" mark onto a 64×64 dark-padded canvas and
+    sets `<link rel="icon">` + `apple-touch-icon` (data-URL) + a `theme-color` meta
+    at runtime. Both called in init.
+  - **index.html** — loads `glyphs.js` before modes.js. (Static `.mark` HTML left in
+    place as the no-JS fallback; JS paints over it.)
+  - **styles.css** — `.mark canvas` (clamp 54‑92px), `.g-glyph canvas` (22px,
+    inline), `.t-glyph canvas` (24px) — all pixelated.
+how I verified:
+  - `node test/glyphs.test.js` (NEW, **19th gate**) → **ALL 27 PASS**: buildGrid
+    pure/deterministic, only ink 0/1/2; **every mode has glyphTokens with 0 missing
+    symbols** (each of `× ÷ + − ± / %` + stacked ½/¾ + superscript ² resolves to a
+    real bitmap); accent role honoured (`*`-token → ink 2, plain → ink 1, mixed
+    glyph carries both); **all 15 topic glyphs pairwise distinct**; module static
+    (no RAF/timers); index.html loads glyphs.js; paintGlyph used on mark + guide +
+    practice + toast + brand; favicon/apple-touch-icon/theme-color minted via
+    `Glyphs.draw`.
+  - ASCII-dumped all 15 grids — operators remain recognizable at the pixel grid.
+  - **All nineteen gates pass**; `node -c` clean on glyphs/modes/main. Canvas glyphs
+    are solid body + amber accent (no contrast-text concern); 360px-safe (CSS-scaled
+    canvases). No regressions to the other surfaces.
+notes / questions: kept the typographic `glyph` strings as a graceful fallback
+  rather than deleting them. Next per REVIEW order: content extension — **T58**
+  (content-extension playbook) → Wave-2 topic batches, with **Phase 6.5 Events**
+  brought forward by the owner.
