@@ -168,6 +168,16 @@
     add({ id:"collector:"+n, name:nm, rarity:r, cat:"Collector", modeId:null, n:n,
       desc:"Collect "+n+" items." }));
 
+  // hero + arena milestones (Phase 3) — evaluated against collected state +
+  // the live hero-unlock count via evaluateMeta (see main.js wiring).
+  [[10,"rare","Tier Climber"],[25,"epic","Tier Breaker"],[50,"epic","Tier Crusher"]].forEach(([n,r,nm]) =>
+    add({ id:"meta:tier"+n, name:nm, rarity:r, cat:"Milestone", modeId:null, meta:{ tier:n },
+      desc:"Defeat enemy tier "+n+" in the Arena." }));
+  add({ id:"meta:tier100", name:"Realm Champion", rarity:"legendary", cat:"Milestone", modeId:null, meta:{ tier:100 },
+    desc:"Defeat the final tier — The Void Sovereign." });
+  add({ id:"meta:allheroes", name:"Legendary Roster", rarity:"legendary", cat:"Milestone", modeId:null, meta:{ allHeroes:true },
+    desc:"Unlock all 12 heroes." });
+
   function sortItems(arr){
     return arr.slice().sort((a,b) => (RORDER[a.rarity]-RORDER[b.rarity]) || a.name.localeCompare(b.name));
   }
@@ -178,6 +188,7 @@
     for(const it of CATALOG){
       if(it.cat === "Collector") continue;
       if(it.need) continue;                          // topic milestones: see evaluateTopics
+      if(it.meta) continue;                          // hero/arena milestones: see evaluateMeta
       if(has(it.id)) continue;
       if(it.modeId && it.modeId !== ctx.mode.id) continue;
       let ok = false;
@@ -218,6 +229,21 @@
       if(nd.unlock != null   && counts.unlocked < nd.unlock) ok = false;
       if(nd.complete != null && counts.complete < nd.complete) ok = false;
       if(nd.completeAll      && !(counts.total > 0 && counts.complete >= counts.total)) ok = false;
+      if(ok) out.push(it);
+    }
+    return sortItems(out);
+  }
+
+  // Hero/arena milestones (Phase 3). `heroesUnlocked`/`heroesTotal` come from
+  // window.Heroes (main.js); tier milestones read the `tier:<n>` markers via `has`.
+  function evaluateMeta(heroesUnlocked, heroesTotal, has){
+    const out = [];
+    for(const it of CATALOG){
+      if(!it.meta || has(it.id)) continue;
+      const m = it.meta;
+      let ok = true;
+      if(m.tier != null && !has("tier:" + m.tier)) ok = false;
+      if(m.allHeroes && !(heroesTotal > 0 && heroesUnlocked >= heroesTotal)) ok = false;
       if(ok) out.push(it);
     }
     return sortItems(out);
@@ -944,7 +970,7 @@
     RANKS, RARITY, paletteFor, rankIndex,
     CATALOG, byId: id => byIdMap[id], modeItems,
     categories: () => CATS.slice(),
-    evaluate, evaluateCollector, evaluateTopics, evaluateQuestion, drawIcon,
+    evaluate, evaluateCollector, evaluateTopics, evaluateMeta, evaluateQuestion, drawIcon,
     // item layer (T20)
     HERO_IDS, HERO_NAMES, STAT_NAMES, boostLabel,
     // icon system (T36): ~50 categories over 12 archetypes + variation

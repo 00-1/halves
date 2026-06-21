@@ -178,3 +178,13 @@ Atom Learning, Exam Papers Plus, Pass Eleven Plus, PiAcademy, CGP, Bond 11+
 BBC Bitesize, Oxford Owl (curriculum & value ranges); TTRS, Komodo, DoodleMaths,
 Prodigy, Sumdog, Mathletics, Khan Academy (progression/reward design); SDT (Deci/
 Koestner/Ryan), Ed Week & leaderboard/anxiety studies (motivation cautions).
+
+## Phase 3 — Hero / Enemy metagame (the engagement layer)
+
+Phase 3 (heroes, items, the 100-tier Arena, currency) is the **engagement layer**
+that sits on top of the educational drills — it gives the practice a purpose
+(collect → upgrade → climb) without changing the maths. All battles still run
+through the existing numeric-answer drill engine over the player's unlocked
+topics. The collection gates progress: the final tier (The Void Sovereign) is
+calibrated to fall only at ~full collection, so the climb rewards broad, sustained
+practice rather than a single lucky round. See `docs/agent/DESIGN-heroes.md`.

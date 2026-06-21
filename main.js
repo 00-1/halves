@@ -559,6 +559,17 @@
     start();
   }
 
+  // Grant any hero/arena milestones now satisfied (unlock-all-heroes + tier
+  // defeats), writing them into `col`; returns the newly-earned items.
+  function grantMeta(col){
+    const Hs = window.Heroes;
+    const heroesU = Hs ? Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col)).length : 0;
+    const total = Hs ? Hs.HEROES.length : 12;
+    const meta = C.evaluateMeta(heroesU, total, id => !!col[id]);
+    meta.forEach(it => col[it.id] = { ts: Date.now() });
+    return meta;
+  }
+
   // Resolve a finished battle round purely from the REAL collected set, grant the
   // tier + its loot on a win, and surface the result. (Called from finish().)
   function finishBattle(){
@@ -577,8 +588,9 @@
       E.tierLoot(bc.tier.n).forEach(id => { if(!col[id]) col[id] = { ts: Date.now() }; });
       const more = C.evaluateCollector(Object.keys(col).length, id => !!col[id]);
       more.forEach(it => col[it.id] = { ts: Date.now() });
+      const meta = grantMeta(col);   // tier-defeat + unlock-all-heroes milestones
       saveCollected(col);
-      loot = E.tierLoot(bc.tier.n).map(id => C.byId(id)).filter(Boolean).concat(more);
+      loot = E.tierLoot(bc.tier.n).map(id => C.byId(id)).filter(Boolean).concat(more).concat(meta);
       newHeroes = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col) && before.indexOf(h.id) < 0).map(h => h.name);
       sfx("topic100");
     } else {
@@ -771,8 +783,10 @@
 
     const more = C.evaluateCollector(Object.keys(collected).length, has);
     more.forEach(it => collected[it.id] = { ts: Date.now() });
+    // hero/arena milestones (e.g. a drill round that unlocks the last hero)
+    const meta = grantMeta(collected);
     saveCollected(collected);
-    const unlocked = newly.concat(topics).concat(more);
+    const unlocked = newly.concat(topics).concat(more).concat(meta);
 
     // round-end stinger — play the most triumphant thing earned this round
     if(unlocked.some(it => /^topics:(one|all)100$/.test(it.id))) sfx("topic100");
