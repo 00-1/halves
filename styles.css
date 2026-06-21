@@ -278,11 +278,11 @@ canvas.pix{image-rendering:pixelated}
 .hero-name{font-family:var(--display);font-weight:700;font-size:15px;color:var(--text);display:flex;justify-content:space-between;gap:8px}
 .hero-name .hn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* type shown by the same crisp pixel-square dot as the T37 rank dot, not a
-   rounded type-coloured card border */
-.hero-name .typedot{display:inline-block;width:9px;height:9px;margin-right:7px;vertical-align:1px;background:var(--muted)}
-.hero-card.t-brawn .typedot{background:#d05a4a}
-.hero-card.t-arcane .typedot{background:#8a5cf6}
-.hero-card.t-cunning .typedot{background:#3fce8c}
+   rounded type-coloured card border (shared by heroes T40 + arena T24) */
+.typedot{display:inline-block;width:9px;height:9px;margin-right:7px;vertical-align:1px;background:var(--muted)}
+.t-brawn .typedot{background:#d05a4a}
+.t-arcane .typedot{background:#8a5cf6}
+.t-cunning .typedot{background:#3fce8c}
 .hero-rating{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700;flex:0 0 auto}
 .hero-hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px}
 .hero-stats{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
@@ -297,6 +297,39 @@ canvas.pix{image-rendering:pixelated}
 .hero-chip.r-uncommon{border-color:#3fce8c}.hero-chip.r-rare{border-color:#3f97d8}
 .hero-chip.r-epic{border-color:#9a5cf6}.hero-chip.r-legendary{border-color:#f0ad3c}
 .hero-chip.more{color:var(--muted)}
+
+/* ---------- ARENA (T24) ---------- */
+#arena{align-items:center;padding:28px 10px 32px}
+.arena-body{margin-top:14px;width:100%;max-width:380px;text-align:left;flex:1 1 auto;min-height:0;overflow-y:auto}
+.arena-tier{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.arena-tier.done{border-color:var(--amber);text-align:center}
+.at-region{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.at-name{font-family:var(--display);font-weight:700;font-size:20px;color:var(--text);margin-top:4px}
+.at-stats{display:flex;gap:14px;margin-top:8px;font-family:var(--mono);font-size:12px;font-weight:700}
+.at-type{color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.at-def{color:var(--amber)}
+.arena-pick{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:4px 2px 10px}
+.arena-heroes{display:flex;flex-direction:column;gap:8px}
+.arena-hero{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 13px;cursor:pointer;
+  transition:border-color .15s ease,background .15s ease,transform .1s ease}
+.arena-hero:active{transform:scale(.99)}
+.arena-hero.sel{border-color:var(--amber);background:var(--surface-2)}
+.ah-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ah-name{font-family:var(--display);font-weight:700;font-size:15px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arena-hero.sel .ah-name{color:var(--amber)}
+.ah-rating{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700;flex:0 0 auto}
+.ah-mu{margin-top:5px;font-family:var(--mono);font-size:11px;font-weight:700}
+.mu.adv{color:var(--mint)}.mu.weak{color:#d05a4a}.mu.neu{color:var(--muted)}
+.arena-empty{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;padding:18px 10px;line-height:1.5}
+.arena-result{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px;text-align:center}
+.arena-result.win{border-color:var(--mint);background:rgba(74,222,154,.08)}
+.arena-result.loss{border-color:#d05a4a;background:rgba(208,90,74,.08)}
+.ar-title{font-family:var(--display);font-weight:700;font-size:22px}
+.arena-result.win .ar-title{color:var(--mint)}.arena-result.loss .ar-title{color:#d05a4a}
+.ar-sub{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:4px}
+.ar-maths{font-family:var(--mono);font-size:12px;color:var(--text);margin-top:8px;line-height:1.5}
+.ar-maths b{color:var(--amber)}
+.ar-new{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--mint);margin-top:8px}
 
 /* ---------- MODAL (unlock / detail) ---------- */
 .modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;

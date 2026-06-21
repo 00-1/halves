@@ -58,7 +58,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes") };
+  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), arena:$("arena") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -475,6 +475,123 @@
     });
   }
 
+  // ---- arena (T24) --------------------------------------------------------
+  // The Arena reuses the drill engine for a "battle round": a shuffled mix of
+  // questions from every unlocked topic. The win is decided purely by
+  // Enemies.resolveBattle(hero, tier, perf, REAL collected set) — perf scales
+  // within a band (0.4…1.0) but can never substitute for missing hero rating, so
+  // clearing the Arena genuinely demands a near-complete collection (T23/T43).
+  const BATTLE_LEN = 12;
+  let arenaHero = null, lastBattle = null, battleCtx = null;
+  const BATTLE_MODE = {
+    id: "battle", name: "Arena", eyebrow: "Battle — solve fast!", expr: false,
+    build: function(){
+      const pool = [];
+      MODES.filter(isUnlocked).forEach(m => {
+        m.build().forEach(q => pool.push({ p:q.p, a:q.a, _mode:m }));   // tag the source mode
+      });
+      for(let i = pool.length - 1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+      return pool.slice(0, Math.min(BATTLE_LEN, pool.length));
+    }
+  };
+
+  function matchupLabel(mu){
+    return mu > 1 ? '<span class="mu adv">▲ Advantage ×1.5</span>'
+         : mu < 1 ? '<span class="mu weak">▼ Weak ×0.6</span>'
+         :          '<span class="mu neu">● Neutral ×1.0</span>';
+  }
+  function renderArena(){
+    const E = window.Enemies, Hs = window.Heroes;
+    if(!E || !Hs){ $("arenaBody").innerHTML = ""; return; }
+    const col = loadCollected();
+    const tier = E.currentTier(col);
+    const cleared = !!col["tier:" + E.TIER_COUNT];
+    $("arenaMeta").textContent = cleared ? "Cleared!" : ("Tier " + tier.n + " / " + E.TIER_COUNT);
+
+    const heroes = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col));
+    if(arenaHero && !heroes.some(h => h.id === arenaHero)) arenaHero = null;
+
+    let html = "";
+    if(lastBattle){
+      const r = lastBattle, f = (0.4 + 0.6 * r.res.perf);
+      html += '<div class="arena-result '+(r.won ? "win" : "loss")+'">'+
+        '<div class="ar-title">'+(r.won ? "Victory!" : "Defeated")+'</div>'+
+        '<div class="ar-sub">'+esc(r.heroName)+' vs '+esc(r.tierName)+'</div>'+
+        '<div class="ar-maths">'+Math.round(r.res.rating)+' ★ × '+r.res.matchup+' × '+f.toFixed(2)+
+          ' perf = <b>'+r.res.battlePower+'</b> vs DEF <b>'+r.res.def+'</b></div>'+
+        (r.newHeroes.length ? '<div class="ar-new">★ New hero: '+r.newHeroes.map(esc).join(", ")+'!</div>' : '')+
+        (r.won && !r.loot.length ? '' : '')+'</div>';
+    }
+    if(cleared){
+      html += '<div class="arena-tier done"><div class="at-name">⭐ Arena cleared — you defeated The Void Sovereign!</div>'+
+        '<div class="at-region">Every tier has fallen. Champion of the realm.</div></div>';
+    } else {
+      html += '<div class="arena-tier t-'+tier.type.toLowerCase()+'">'+
+        '<div class="at-region">'+esc(E.regionLabel(E.tierRegion(tier.n)))+' · Tier '+tier.n+'</div>'+
+        '<div class="at-name"><i class="typedot"></i>'+esc(tier.name)+'</div>'+
+        '<div class="at-stats"><span class="at-type">'+esc(tier.type)+'</span><span class="at-def">DEF '+tier.def+'</span></div></div>';
+      if(!heroes.length){
+        html += '<div class="arena-empty">Finish a drill round to unlock your first hero, then return to fight.</div>';
+      } else {
+        html += '<div class="arena-pick">Choose your champion</div><div class="arena-heroes">';
+        heroes.forEach(h => {
+          const rating = Math.round(Hs.rating(h, col)), mu = E.matchup(h.type, tier.type);
+          html += '<div class="arena-hero t-'+h.type.toLowerCase()+(arenaHero === h.id ? " sel" : "")+'" data-hero="'+esc(h.id)+'">'+
+            '<div class="ah-top"><span class="ah-name"><i class="typedot"></i>'+esc(h.name)+'</span>'+
+              '<span class="ah-rating">★ '+rating+'</span></div>'+
+            '<div class="ah-mu">'+matchupLabel(mu)+'</div></div>';
+        });
+        html += '</div>';
+      }
+    }
+    $("arenaBody").innerHTML = html;
+    $("arenaFight").disabled = cleared || !arenaHero || !heroes.length;
+    $("arenaFight").textContent = cleared ? "Cleared" : (arenaHero ? "Fight!" : "Pick a hero");
+  }
+
+  function startBattle(){
+    const E = window.Enemies, col = loadCollected();
+    if(!E || col["tier:" + E.TIER_COUNT]) return;                 // cleared
+    if(!arenaHero || !window.Heroes.isHeroUnlocked(arenaHero, col)) return;
+    battleCtx = { heroId: arenaHero, tier: E.currentTier(col), prevMode: mode };
+    lastBattle = null;
+    mode = BATTLE_MODE;
+    start();
+  }
+
+  // Resolve a finished battle round purely from the REAL collected set, grant the
+  // tier + its loot on a win, and surface the result. (Called from finish().)
+  function finishBattle(){
+    const bc = battleCtx; battleCtx = null;
+    const E = window.Enemies, Hs = window.Heroes;
+    const total = (performance.now() - startTime) / 1000;
+    const n = order.length, score = times.filter(t => t.miss === 0).length;
+    const perf = E.computePerf(score, n, n ? total / n : total);
+    const col = loadCollected();
+    const res = E.resolveBattle(bc.heroId, bc.tier, perf, col);
+    const heroName = (C.HERO_NAMES && C.HERO_NAMES[bc.heroId]) || bc.heroId;
+    let loot = [], newHeroes = [];
+    if(res.win){
+      const before = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col)).map(h => h.id);
+      col["tier:" + bc.tier.n] = { ts: Date.now() };
+      E.tierLoot(bc.tier.n).forEach(id => { if(!col[id]) col[id] = { ts: Date.now() }; });
+      const more = C.evaluateCollector(Object.keys(col).length, id => !!col[id]);
+      more.forEach(it => col[it.id] = { ts: Date.now() });
+      saveCollected(col);
+      loot = E.tierLoot(bc.tier.n).map(id => C.byId(id)).filter(Boolean).concat(more);
+      newHeroes = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col) && before.indexOf(h.id) < 0).map(h => h.name);
+      sfx("topic100");
+    } else {
+      sfx("roundComplete");
+    }
+    lastBattle = { won: res.win, res: res, heroName: heroName, tierName: bc.tier.name, loot: loot, newHeroes: newHeroes };
+    arenaHero = null;
+    mode = (bc.prevMode && bc.prevMode.id !== "battle") ? bc.prevMode : (byId(loadLastMode()) || MODES[0]);
+    renderArena();
+    show("arena");
+    if(res.win && loot.length) setTimeout(() => showUnlocks(loot), 650);
+  }
+
   // ---- game state ---------------------------------------------------------
   let order=[], idx=0, input="", mistakes=0, qMiss=0, combo=0,
       startTime=0, qStart=0, times=[], raf=0, locked=false;
@@ -499,11 +616,13 @@
     if(idx >= order.length){ finish(); return; }
     locked=false; input=""; qMiss=0;
     const it = order[idx];
+    const qm = it._mode || mode;   // battle rounds tag each question's source mode
     elStage.classList.remove("wrong");
     elPrompt.style.color=""; elPrompt.classList.remove("split");
     elGhost.classList.remove("go");
-    elPrompt.classList.toggle("expr", !!mode.expr);
-    elGhost.classList.toggle("expr", !!mode.expr);
+    elEyebrow.innerHTML = qm.eyebrow;
+    elPrompt.classList.toggle("expr", !!qm.expr);
+    elGhost.classList.toggle("expr", !!qm.expr);
     elPrompt.textContent = it.p;
     elGhost.textContent  = numStr(it.a);
     elCounter.textContent = (idx+1)+" / "+order.length;
@@ -593,6 +712,7 @@
   // ---- results -----------------------------------------------------------
   function finish(){
     cancelAnimationFrame(raf);
+    if(battleCtx){ finishBattle(); return; }   // Arena battle round → resolve, not results
     const total = (performance.now()-startTime)/1000;
     const score = times.filter(t => t.miss === 0).length;   // clean first-try answers
 
@@ -705,6 +825,7 @@
     if(h === "inventory"){ renderInventory(); show("inventory"); }
     else if(h === "best-times"){ renderSummary(); show("summary"); }
     else if(h === "heroes"){ renderHeroes(); show("heroes"); }
+    else if(h === "arena"){ lastBattle = null; arenaHero = null; renderArena(); show("arena"); }
     else { renderTabs(); renderBest(); renderStartState(); show("start"); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
@@ -729,6 +850,14 @@
   $("invBack").addEventListener("click", navStart);
   $("heroesBtn").addEventListener("click", () => { location.hash = "#/heroes"; });
   $("heroesBack").addEventListener("click", navStart);
+  $("arenaBtn").addEventListener("click", () => { location.hash = "#/arena"; });
+  $("arenaBack").addEventListener("click", navStart);
+  $("arenaFight").addEventListener("click", startBattle);
+  $("arenaBody").addEventListener("click", e => {
+    const card = e.target.closest(".arena-hero"); if(!card) return;
+    arenaHero = (arenaHero === card.dataset.hero) ? null : card.dataset.hero;
+    renderArena();
+  });
   // Switch inventory tabs (lazy-renders the chosen tab's tiles).
   $("invTabs").addEventListener("click", e => {
     const b = e.target.closest(".inv-tab"); if(!b || b.dataset.tab === invTab) return;
