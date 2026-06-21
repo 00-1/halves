@@ -2571,8 +2571,20 @@ just the per-screen routing; if it doesn't, the bug is deeper (engine/`setContex
   ones). (Babysitter: confirm on the live build that picking each style changes the music — this is also
   how the owner verifies T128.)
 
-### T128 — [A] LIVE BUGS: music never swaps context · no wub on win · no celebration visuals · status: OPEN · OWNER-PRIORITY · BUG
-Owner tested the live build (synth music is loud + nice): **"music never changes — same as menu in
+### T128 — [A] LIVE BUGS: music never swaps context · no wub on win · no celebration visuals · status: DONE (1)+(2) (`61654ed`); (3)→[B] T133 · OWNER-PRIORITY · BUG
+**(1)+(2) DONE 2026-06-21** — APPROVED (REVIEW.md). **(1)** `musicForScreen` now routes every screen
+through `synthSwitchContext` → `Synth.setContext(name)` (distinct built-in contexts — own progression/
+reverb/patches incl. Arena wub bass; solve varies per topic via seed), dead `musicSpec()`/`SYNTH_BPM`
+removed, **T132 `swapNow()`** wired → instant ≤1-step swap. **(2)** `wubSting()` now calls
+`Synth.sting("victory")` (wub swell + bell arp on the **un-ducked sfx bus**) instead of the old
+self-ducking wub-on-music-bus bug. Babysitter verified independently: `node -c` clean; distinct contexts
+backed by `golden-synth` distinctness + T132 ≤1-step test; `sting("victory")` confirmed a real un-ducked
+engine path (`synth.js:458`); `synth-wiring.test` 45→52 + `events.test` updated; full 34-gate suite green.
+**🔊 owner ear-check pending** (output features — necessary-not-sufficient gates). **(3) celebration →
+split to [B] `T133`** (overlay-context render, engine/device — A's `fxBigBurst`/`celebrate()` wiring is
+correct + tested, waiting on the overlay context). *(Original spec below.)*
+
+> Owner tested the live build (synth music is loud + nice): **"music never changes — same as menu in
 topics/arena (I expected different); no dubstep wub on victory; no celebration visuals, not even
 subtle."** All THREE pass our headless gates yet fail live — **the gates verify the wiring *calls*
 exist in source, not that music swaps / the wub sounds / pixels render.** ⇒ **This task MUST be verified
@@ -2608,6 +2620,35 @@ in a real browser (the owner's symptoms are the bar), not by green gates.** Baby
   wiring calls `setContext`/distinct progressions per screen; a headless check the burst controller is
   `ready` + sized before `celebrate`). (Babysitter: I will treat green gates as necessary-not-sufficient
   here — confirm against the owner's three live symptoms.)
+
+### T133 — [B] FXGL: make the overlay CELEBRATION actually render on-device (the z-58 burst) · status: OPEN · OWNER-PRIORITY
+Split from T128(3). The owner badly wants celebration ("a LOT more celebration… loads of particles") but
+sees **nothing** live, even after T125's resize fix. A's app-side wiring (`fxBigBurst` → resize +
+`FXGL.celebrate()` on every win / topic-run / new item) is correct + tested — the gap is in the engine/
+device render path, which is B-owned.
+- **The diagnosis (from A's T128 handoff):** `#fxBurst` is a **second WebGL/WebGPU context**, separate
+  from the working `#fxBackdrop`, and it presents nothing on-device — the leading cause is the **2nd GL
+  context failing to initialise/present** (mobile GPUs, e.g. the Poco X3 target, commonly refuse or lose a
+  second context). It **cannot** be solved by drawing on the backdrop canvas: that canvas is `z-index:-1`
+  (behind `.app`), so a burst there renders **behind the UI panels** — the celebration must present at the
+  **z-58 overlay**, in front of the panels.
+- **Fix (engine-owner's call) — must end with particles visibly on top of the UI on a real mobile browser.**
+  Candidate routes (pick/justify): (a) diagnose + repair the 2nd overlay context so it reliably inits +
+  presents, with a graceful fallback when a 2nd GL context is refused; (b) a **Canvas2D overlay** particle
+  renderer (no GL-context-count limit → always renders) that FXGL can mount at overlay z; (c) a
+  single-context scheme that still lands the burst in front of the UI. Keep the engine's
+  reduced-motion / `setQuality` budget / determinism rules.
+- **Verify for real (break the "green-but-invisible" trap):** confirm **on a real mobile browser** that a
+  win/run/item throws a visible shower; and add the **strongest feasible headless check** — e.g. assert the
+  overlay controller reaches `ready` + non-1×1 sized on the chosen backend before it draws, and a CPU-still
+  **golden** of the celebrate frame (extend `test/golden-fx.test.js`) so a regression to "renders nothing"
+  fails CI.
+- **DoD:** a visible particle celebration presents at the overlay layer (in front of the UI) on a real
+  device; the chosen backend has a refusal/loss fallback that still renders; headless `ready`+sized
+  assertion + a celebrate-frame golden added; `node -c` clean; all gates green; **B-owned files only**
+  (`fxgl.js` + its tests/goldens + `BUILDER-LOG-FX.md`) — A re-points `#fxBurst` at the working overlay
+  once it lands. (Babysitter: confirm the headless check actually fails on a non-rendering backend, and
+  confirm against the owner's live observation — green gates are necessary-not-sufficient here.)
 
 ### T123 — [A] Accessibility pass: text legibility over the FX backdrop (AA floor + honest gate) · status: OPEN · OWNER-PRIORITY
 Owner: "we may need another accessibility pass — we have light grey text on light purple now." **Root

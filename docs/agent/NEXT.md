@@ -10,30 +10,29 @@
 
 ---
 
-**Builder A → `T128`  · LIVE BUGS: music swap (per-screen) · no wub · no celebration**
-`T129` DONE (switcher landed). **[B] `T132` immediate-swap lever has now LANDED (`995cd28`):
-`Synth.setContext(name,{now:true})` swaps the generator in ≤1 step.** Wire `{now:true}` into the T129
-switcher AND per-screen routing so a screen change / style pick swaps **instantly**. **T128 — VERIFY IN A REAL BROWSER
-(gates pass while these are broken).** Owner: in topics/arena the music is the SAME as menu; no wub on
-victory; no celebration particles at all. **(1) Music:** route each screen through the engine's
-**distinct built-in contexts** — `Synth.setContext("solve"/"menu"/"arena"/"event")` (the same
-`synthSwitchContext` path T129 added; they carry per-context progressions/reverb/patches incl. Arena's
-wub bass) + apply the T113 tempo; add `{now:true}` once T132 lands so a screen change swaps instantly.
-Confirm live the music differs + swaps on screen change. **(2) Wub:** `wubSting()`→`Sy.play("wub",…)` —
-verify it fires AND wobbles (the LFO may only run in the scheduler, so a one-shot gives a flat bass — if
-so flag a [B] engine fix). **(3) Celebration:** still nothing after T125's resize — repro live; likely a
-2nd-WebGL-context (`#fxBurst`) failing vs the working backdrop — consider sharing ONE canvas/context
-(composite burst over backdrop); flag [B] if engine-level. Full DoD: `BACKLOG.md` T128 (live-verified).
-Then → `T131` (quick: register golden-fx/golden-synth gates in `pages.yml`) → `T123` (a11y contrast
-floor) → `T124` (fraction glyphs) → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` →
-content → `T72`.
+**Builder A → `T131`  · register the golden gates in `pages.yml` (quick)**
+`T128`(1)+(2) DONE (`61654ed`) — per-screen distinct contexts + instant `swapNow()`, victory wub on the
+un-ducked sfx bus. **(3) celebration is now [B] `T133`** (overlay-context render — engine; your wiring is
+already correct + waiting). **T131:** add `node test/golden-fx.test.js` + `node test/golden-synth.test.js`
+to the CI gate list in `.github/workflows/pages.yml` (same pattern as the fxgl/synth gate lines), run in
+**COMPARE** mode — **never set `UPDATE_GOLDEN` in CI**. Only `pages.yml` changes. Then → `T123` (a11y
+contrast floor over the backdrop) → `T124` (fraction glyphs) → `T101` (Start delay) → `T102`/`T103`
+(Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → STAND BY (engine reactive-only).** `T132` immediate-swap lever DONE (`995cd28`, CI green —
-`setContext(name,{now:true})`/`swapNow()`, ≤1-step swap, default preserved, golden scores unchanged).
-`T130` golden harness DONE (`ba919db`). Nothing queued. Hold until A's T128 surfaces another real
-**engine** gap (e.g. the wub LFO can't wobble in a one-shot `play()`, or FXGL needs an engine-side
-single-canvas composite for the celebration 2nd-context bug) — I'll file it and point this line at it.
-**B-owned files only**; never touch existing Halves files; never push `claude/agent`.
+**Builder B → `T133`  · OFF STAND-BY — FXGL: make the overlay CELEBRATION render on-device (z-58 burst)**
+`T132`/`T130` DONE. **T133 — the engine gap A's T128 surfaced; the owner badly wants celebration.** A's
+`fxBigBurst`→`celebrate()` wiring (T125) is correct + tested but shows **nothing live**: `#fxBurst` is a
+**2nd WebGL/WebGPU context** (separate from the working backdrop) that likely fails to init/present
+on-device (mobile GPUs often refuse a 2nd context). It can't draw on the backdrop canvas — that's
+`z-index:-1` (behind the UI); the celebration must present at the **z-58 overlay**, in front of the
+panels. **Your call:** (a) fix/diagnose the 2nd overlay context (+ a refusal/loss fallback), and/or (b) a
+**Canvas2D overlay** particle path (no GL-context-count limit — always renders) mounted at overlay z,
+and/or (c) a single-context scheme that still lands the burst in front of the UI. It must **actually
+present particles on a real mobile browser** (break the green-but-invisible trap): verify on-device AND add
+the strongest headless check feasible (overlay controller `ready`+sized on the chosen backend; a CPU-still
+celebrate-frame golden in `test/golden-fx.test.js`). Keep reduced-motion / `setQuality` budget rules. Full
+DoD: `BACKLOG.md` T133. **B-owned files only** (`fxgl.js` + tests/goldens + `BUILDER-LOG-FX.md`); never
+touch existing Halves files (A re-points `#fxBurst` once it lands); never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
