@@ -1270,3 +1270,24 @@ keeping each operator clearly recognisable.**
   both sizes; `node -c` clean; no console errors; no regressions to the marks/titles/
   toasts; deploy green. (Babysitter checks each topic's pixel mark encodes the right
   operator, the favicon is set, and the draw is static/contrast-safe.)
+
+### T57 — Scrub specific school/location references from the docs · status: OPEN
+Owner: "remove references to Salisbury, Wiltshire, Bishop Wordsworth's, etc. from the
+codebase — keep 11+ and the exam board." Babysitter sweep: the only occurrences are in
+**`docs/research-11plus.md`** (lines ~4–5 and ~17) — no user-facing/code references
+exist. Generalise the framing without losing the design rationale.
+- **Remove the named-school / place identifiers:** "Bishop Wordsworth's (School)",
+  "South Wilts Grammar", "Salisbury", "Wiltshire", and any equivalent local
+  identifiers. Replace with neutral phrasing, e.g. "UK 11+ grammar-school prep".
+- **Keep** the generic context: **"11+"** and the **exam board ("GL Assessment")** —
+  including the line that the relevant 11+ maths paper uses GL Assessment (≈50 q/50 min,
+  no calculator). The "switched from CEM in 2023" provenance may stay (exam-board
+  context, not a place) or be trimmed — Builder's call — but it must not reattach to a
+  named school.
+- **Scope:** doc-only edit; **no code/UX change**. Don't alter the design content,
+  calibrations, or topic specs — only the identifying school/place names.
+- **DoD:** a fresh `git grep -iE "salisbury|wiltshire|wordsworth|bishop|south wilts|sarum"`
+  across the whole repo returns **zero** matches; "11+" and "GL Assessment" remain; the
+  doc still reads coherently (no dangling "both", broken sentences); no other file
+  changed; deploy green. (Babysitter re-greps the repo for the identifiers and confirms
+  the exam-board/11+ context survived.)

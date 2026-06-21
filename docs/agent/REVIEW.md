@@ -76,6 +76,13 @@ guide/practice titles, and toasts — plus a **procedurally-generated favicon /
 apple-touch-icon** (none exists today) via a runtime data-URL. Static (no RAF),
 AA-contrast, 360px-safe, crisp at both big and small sizes. Full spec in BACKLOG "T56".
 
+**Then `T57` — scrub specific school/location references (owner-reported).** Remove
+"Bishop Wordsworth's", "South Wilts Grammar", "Salisbury", "Wiltshire" etc. — the only
+occurrences are in `docs/research-11plus.md` (~lines 4–5, 17); no code/UI references
+exist. Generalise to "UK 11+ grammar-school prep"; **keep "11+" and the exam board
+("GL Assessment")**. Doc-only; DoD = a repo-wide grep for the identifiers returns zero.
+Full spec in BACKLOG "T57".
+
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
 gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
 (beatable only at near-full collection), 50 procedural icon categories with
