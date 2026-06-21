@@ -2342,7 +2342,24 @@ it). Mirror the FX-wiring pattern; consume `Synth`'s API only (never edit `synth
   (Babysitter: confirm on the live build there's ONE music engine = Synth, solves are calm, Arena drives,
   a win wubs, ducking works, and the sliders/mute still rule it — then it's owner ear-check time.)
 
-### T125 — [A] BIG celebrations on EVERY win/run/item (wire T126's celebration burst everywhere) · status: OPEN · OWNER-PRIORITY
+### T125 — [A] FIX the celebration burst (it doesn't render) + fire BIG on EVERY win/run/item · status: OPEN · OWNER-PRIORITY · BUG
+**FIRST — the burst likely doesn't render at all (owner: "nothing at all, not even a small one" on an
+Arena win).** Babysitter diagnosis: the burst controller `fxBurst` is built once in `setupFx()` (on the
+ENTRY screen, **pre-fullscreen**) and is **never `resize()`d** — unlike the backdrop `fxBg`, which gets
+`resize()` on every screen change. `burst()` self-starts its RAF, so the path runs, **but it renders
+into a stale/wrong-sized (likely ~0/1×1) drawing buffer** after the Start→fullscreen viewport change →
+invisible. (If `#fxBurst` had no layout size at construction, the backend inits at 1×1 and never
+recovers.) **Fix the rendering:**
+- **Resize the burst controller.** Call `fxBurst.resize()` after construction (once laid out), on
+  **`window` resize**, on **`fullscreenchange`**, and **right before each `burst()`** (so the buffer
+  always matches the current viewport — esp. across the Start→fullscreen transition). Do the same audit
+  for `fxBg` if it's only resized on screen-change (a window/fullscreen resize should update it too).
+- **Verify it's actually firing + ready.** Confirm `fxBurst` is non-null and `ready` when
+  `fxCelebrateWin`/`fxCelebrate`/`fxCelebrateRank` run; confirm the RAF kicks and the backend draws.
+  Add an integration check (stub FXGL) that an Arena win + a run finish + a new item each invoke a
+  *rendering* burst on a correctly-sized controller (not a 1×1 buffer).
+**THEN — make it BIG + on EVERY moment (owner: "loads of particles", constant):** Celebration bursts are
+the **overlay** (`#fxBurst`, z-58) — **NO contrast dependency**, so this doesn't wait on T123.
 Owner (revised): "we need a LOT more celebration. **every arena victory** is a celebration. **every
 topic run** is a celebration. **every new inventory item.** I want loads of particles etc. I'm not
 seeing anything like that, unless it's super subtle." (Owner confirmed the Arena *backdrop* does exist
@@ -2363,12 +2380,16 @@ wait on T123.
   fast enough to not obscure); respects mute? (visual, so no) reduced-motion → a calmer reduced shower
   (engine handles it); idle when off-screen; perf budget holds on the Poco X3 (the higher cap is the
   T126 concern — A just fires it).
-- **DoD:** a **noticeable, particle-rich celebration fires on EVERY topic-run completion, EVERY Arena
-  victory, and EVERY new inventory item** (verified live — the owner's "loads of particles" is the bar);
-  scaled by rank but never absent on a completed run; never covers key text; reduced-motion-safe; idle
-  off-screen; `node -c` clean; all gates green (`fx-wiring.test` updated: gate removed → fires on every
-  run/win/item, uses the big burst). (Babysitter: confirm on the live build that finishing ANY run and
-  winning ANY Arena fight throws a big visible burst.)
+- **DoD:** **(0) the burst RENDERS** — `fxBurst` is resized (construction + window/fullscreenchange +
+  before each burst) so it draws into a correctly-sized buffer across the Start→fullscreen transition
+  (the root of "nothing at all"); a stub-FXGL integration check proves a win/run/item invokes a burst on
+  a non-1×1 controller. **(1)** a **noticeable, particle-rich celebration fires on EVERY topic-run
+  completion, EVERY Arena victory, and EVERY new inventory item** (verified live — the owner's "loads of
+  particles" is the bar); scaled by rank but never absent on a completed run; never covers key text;
+  reduced-motion-safe; idle off-screen; `node -c` clean; all gates green (`fx-wiring.test` updated: the
+  `FX_RANK_MIN` gate removed → fires on every run/win/item, uses T126's big burst, + the resize wiring).
+  (Babysitter: confirm on the live build that finishing ANY run and winning ANY Arena fight throws a big
+  **visible** burst — the rendering fix is the crux.)
 
 ### T126 — [B] FXGL: a bigger "celebration" burst mode (loads of particles, real shower) · status: OPEN · OWNER-PRIORITY
 Owner wants celebrations with **"loads of particles"** — the T94 burst was deliberately *brief + capped*
