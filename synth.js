@@ -88,14 +88,17 @@
     // the wub — resonant lowpass swept by an LFO (T115's win-sting, generalised)
     wub:   { engine:"sub",    wave:"sawtooth", gain:0.40, bus:"music",
              amp:{ a:0.005, d:0.05, s:0.85, r:0.1 }, filter:{ type:"lowpass", cut:600, q:12 },
-             lfo:{ rate:7, depth:700 } }
+             lfo:{ rate:7, depth:700 } },
+    // chip — a crisp fast square pluck for chiptune/8-bit arps (T139 addition)
+    chip:  { engine:"mono",   wave:"square", gain:0.24, bus:"music",
+             amp:{ a:0.001, d:0.06, s:0.0, r:0.02 }, filter:{ type:"lowpass", cut:4200, env:2, q:2 } }
   };
   const DRUM_PIECES = ["kick", "snare", "hat", "clap"];
 
   // ---- the voice renderer (impure: builds nodes; pure-structured) ------------
   // Render one patch voice at (freq, t0) for `dur` seconds into `dest`. Returns the
   // release-end time. The graph: osc(s) → [filter(+env,+LFO)] → amp(ADSR) → [pan] → dest.
-  function renderVoice(ctx, dest, patch, freq, t0, dur, onVoice){
+  function renderVoice(ctx, dest, patch, freq, t0, dur, onVoice, lfoRate){
     const amp = ctx.createGain();
     // optional stereo placement (width arrives properly in the Space increment)
     if(patch.pan != null && ctx.createStereoPanner){
@@ -148,7 +151,8 @@
         const o = ctx.createOscillator(); o.type = patch.wave || "sawtooth"; o.frequency.value = freq;
         o.connect(sink); oscs.push(o);
         if(patch.lfo && filter){                        // the wub: LFO → filter cutoff
-          const lfo = ctx.createOscillator(); lfo.type = "sine"; lfo.frequency.value = patch.lfo.rate || 7;
+          const lfo = ctx.createOscillator(); lfo.type = "sine";
+          lfo.frequency.value = (lfoRate != null && lfoRate > 0) ? lfoRate : (patch.lfo.rate || 7);   // tempo-synced wobble when provided
           const lg = ctx.createGain(); lg.gain.value = patch.lfo.depth || 500;
           lfo.connect(lg); lg.connect(filter.frequency); oscs.push(lfo);
         }
@@ -344,6 +348,9 @@
       barDur: (60 / tempo) * 4,
       density: spec.density == null ? 0.4 : spec.density,
       leadOct: spec.leadOct == null ? 1 : spec.leadOct,
+      wobble: spec.wobble || 0,          // wub LFO cycles-per-beat (0 = the patch default)
+      swing: spec.swing || 0,            // delay the off-16ths by this fraction (groove)
+      reverbDecay: spec.reverbDecay,     // optional per-style FDN tail length
       patches: Object.assign({ bass: "bass", pad: "pad", lead: "lead" }, spec.patches),
       kick:  spec.kick  || euclid(spec.kickK == null ? 4 : spec.kickK, 16),
       hat:   spec.hat   || euclid(spec.hatK  == null ? 8 : spec.hatK,  16),
@@ -389,7 +396,10 @@
     if(ev.role === "drum"){ renderDrum(E.ctx, E.drum, ev.piece, when, E.noiseBuf); return; }
     const patch = (typeof ev.patch === "string") ? PATCHES[ev.patch] : ev.patch;
     if(!patch) return;
-    renderVoice(E.ctx, E.music, patch, hz(ev.midi), when, ev.dur, function(g, rel){ if(M.active.length < 128) M.active.push({ g: g, until: rel }); });
+    // tempo-synced wub wobble: lock the LFO to `wobble` cycles per beat (T139)
+    let lfoRate;
+    if(patch.engine === "sub" && M.spec && M.spec.wobble) lfoRate = (M.spec.tempo / 60) * M.spec.wobble;
+    renderVoice(E.ctx, E.music, patch, hz(ev.midi), when, ev.dur, function(g, rel){ if(M.active.length < 128) M.active.push({ g: g, until: rel }); }, lfoRate);
   }
   // Immediate-swap cleanup (T134): quickly fade the currently-sounding music voices
   // and tame the multi-second FDN-reverb tail so a switch CUTS IN CLEANLY instead of
@@ -412,8 +422,12 @@
       const phraseLen = 16 * M.spec.harmony.length;
       if(M.step % phraseLen === 0){ if(M.want !== M.spec) M.spec = M.want; M.phrase = Math.floor(M.step / phraseLen); reseedMusic(); }
       const evs = stepEvents(M.spec, M.step, M.rnd, M.intensity, M.st);
-      for(const ev of evs) playEvent(ev, M.next);
-      M.next += (60 / M.spec.tempo) / 4;                  // one 16th note
+      const sixteenth = (60 / M.spec.tempo) / 4;
+      // swing: delay the off-16ths (odd steps) by a fraction of a 16th — the grid
+      // (M.next) stays even, only the scheduled time shifts (a real groove).
+      const when = (M.spec.swing && (M.step % 2 === 1)) ? M.next + sixteenth * M.spec.swing : M.next;
+      for(const ev of evs) playEvent(ev, when);
+      M.next += sixteenth;
       M.step++; sched++;
     }
     if(M.active.length) M.active = M.active.filter(v => v.until > now - 0.3);   // prune finished voices
@@ -460,10 +474,12 @@
   function setContext(name, opts){
     const c = CONTEXTS[name]; if(!c) return api;
     setReverb(c.reverb);
+    if(E.reverb && E.reverb.setDecay) E.reverb.setDecay(c.reverbDecay == null ? 0.78 : c.reverbDecay);   // per-style tail length
     setMusic(Object.assign({ seed: hashStr(name) }, c));
     if(opts && opts.now) swapNow();
     return api;
   }
+  function setReverbDecay(d){ if(E.reverb && E.reverb.setDecay) E.reverb.setDecay(d == null ? 0.78 : d); return api; }
   // Immediate context swap (T132): adopt the pending spec (`M.want`) RIGHT NOW —
   // re-aligned to a phrase start (clean downbeat entry) — so the new context's
   // harmony/patches/reverb take effect on the NEXT scheduled step (≤1 step), not
@@ -480,14 +496,33 @@
     return api;
   }
   // A brief one-shot STING (not the loop) — the victory wub-sting; ducks the music.
+  // A filtered-noise RISER (build): a bandpass swept upward + a swell, on the SFX bus.
+  function noiseRiser(t, dur){
+    if(!E.noiseBuf || !E.ctx.createBufferSource) return;
+    const ctx = E.ctx, src = ctx.createBufferSource(); src.buffer = E.noiseBuf; src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; if(bp.Q) bp.Q.value = 1.4;
+    bp.frequency.setValueAtTime(400, t); bp.frequency.exponentialRampToValueAtTime(7000, t + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + dur); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.1);
+    src.connect(bp); bp.connect(g); g.connect(E.sfx);
+    try{ src.start(t); src.stop(t + dur + 0.15); }catch(e){}
+  }
+  // A cue on the UN-DUCKED sfx bus (so it cuts THROUGH, not under, the music — T128).
+  // "victory"/"drop" = a real dubstep DROP: a noise riser builds, then a heavy sub-wub
+  // hit (tempo-synced wobble) + a kick + a bright stab land together — an audible drop.
   function sting(name){
     if(!E.ready || E.muted || !E.ctx) return api;
     const t = E.ctx.currentTime;
-    duck(0.6, 0.6);                                   // dip the bed under the cue
-    if(name === "victory"){
-      play("wub", t, { midi: 36, dur: 0.9, bus: "sfx" });                       // a low wub swell
-      [0, 4, 7, 12].forEach(function(iv, i){ play("bell", t + i * 0.08, { midi: 72 + iv, dur: 0.4, bus: "sfx" }); });  // rising bright arp
+    if(name === "victory" || name === "drop"){
+      duck(0.8, 1.1);                                  // pull the bed well down for the drop
+      noiseRiser(t, 0.42);                             // the build
+      const d = t + 0.44;                              // the drop point
+      renderVoice(E.ctx, E.sfx, PATCHES.wub, hz(28), d, 0.8, null, 12);   // heavy sub-wub drop (≈⅛ wobble @140)
+      renderDrum(E.ctx, E.sfx, "kick", d, E.noiseBuf);                    // the impact
+      play("lead", d, { midi: 60, dur: 0.5, bus: "sfx" });               // a bright stab
+      [0, 7, 12].forEach(function(iv, i){ play("bell", d + 0.14 + i * 0.09, { midi: 72 + iv, dur: 0.45, bus: "sfx" }); });  // a sparkle tail
     } else {
+      duck(0.5, 0.5);
       play("bell", t, { midi: 72, dur: 0.3, bus: "sfx" });
     }
     return api;
@@ -516,17 +551,20 @@
       pre.connect(dl);                                         // input feeds every line
     }
     // unitary feedback matrix: delay_j input += Σ H[j][i]·(0.5·decay)·damped_i
+    const fb = [];
     for(let j = 0; j < 4; j++) for(let i = 0; i < 4; i++){
       const g = ctx.createGain(); g.gain.value = FDN_HADAMARD[j][i] * 0.5 * decay;
-      damps[i].connect(g); g.connect(delays[j]);
+      damps[i].connect(g); g.connect(delays[j]); fb.push({ g: g, coef: FDN_HADAMARD[j][i] * 0.5 });
     }
     // wide stereo tail: alternate taps hard-ish L/R into the output
     for(let i = 0; i < 4; i++){
       if(ctx.createStereoPanner){ const p = ctx.createStereoPanner(); p.pan.value = (i % 2 === 0) ? -0.6 : 0.6; damps[i].connect(p); p.connect(output); }
       else damps[i].connect(output);
     }
-    return { input: input, output: output, delays: delays, damps: damps,
-             setDamp: function(f){ for(const d of damps) try{ d.frequency.value = f; }catch(e){} } };
+    return { input: input, output: output, delays: delays, damps: damps, fb: fb,
+             setDamp: function(f){ for(const d of damps) try{ d.frequency.value = f; }catch(e){} },
+             // T139: a longer/shorter tail per style — rescale the feedback gains (stays < 1 = stable).
+             setDecay: function(dec){ const d = Math.max(0, Math.min(0.95, dec)); for(const f of fb) try{ f.g.gain.value = f.coef * d; }catch(e){} } };
   }
 
   // ---- engine state + graph --------------------------------------------------
@@ -632,7 +670,7 @@
 
   const api = {
     // runtime API
-    mount: mount, play: play, drum: drum, setReverb: setReverb, duck: duck,
+    mount: mount, play: play, drum: drum, setReverb: setReverb, setReverbDecay: setReverbDecay, duck: duck,
     setMusic: setMusic, setContext: setContext, swapNow: swapNow, sting: sting, start: start, stop: stop, musicPlaying: musicPlaying, intensity: intensity,
     musicState: function(){ return { spec: M.spec, want: M.want, step: M.step, phrase: M.phrase, playing: !!M.timer, activeVoices: M.active.length }; },   // introspection (tests / the [A] wire)
     setMuted: setMuted, isMuted: isMuted, capabilities: capabilities, dispose: dispose,

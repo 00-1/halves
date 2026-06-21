@@ -6,6 +6,45 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T139 (part 1) — the no-regret engine ADDITIONS the 12-style palette needs ([B])
+
+**Status: additions DONE — CONTEXTS HELD for the owner's palette OK.** B-owned files
+only (`synth.js`, `test/synth.test.js`); **zero edits to any existing Halves file.**
+Per the pointer: don't finalise the 12 style rows until the owner thumbs-ups the
+T141 palette (a style may be swapped) — but build the additions that are wasted by no
+outcome. Done; the `CONTEXTS` swap + golden-distinctness-to-12 lands once the owner OKs.
+
+### Additions shipped (all tiny, opt-in, tested)
+1. **Tempo-synced wub wobble** — a context `wobble` (cycles-per-beat) locks the wub
+   LFO to the beat (`rate = tempo/60 × wobble`); `renderVoice` takes an optional
+   `lfoRate`, the scheduler computes it for `sub`-engine voices. (dubstep/dnb/techno)
+2. **`chip` patch** — a fast, snappy square pluck (`{a:.001,d:.06,s:0,r:.02}`,
+   bright filter) for chiptune/8-bit arps.
+3. **Swing** — a context `swing` field delays the off-16ths by a fraction (the grid
+   stays even, only the scheduled time shifts → a real groove). (lofi/tropical)
+4. **Per-context reverb decay** — `makeReverb` exposes `setDecay` (rescales the FDN
+   feedback, stays < 1 = stable); `Synth.setReverbDecay` + `setContext` apply a
+   style's `reverbDecay` (a long tail for ambient, short for dry styles).
+5. **The victory DROP** — `sting("victory")`/`"drop"` is now a real audible dubstep
+   drop: a filtered-**noise riser** builds, then a heavy **sub-wub** (tempo-synced
+   wobble) + a **kick** + a bright **stab** + a sparkle land together — on the
+   **un-ducked SFX bus** so it cuts THROUGH (the T128 lesson), ducking the music bed.
+   (Replaces the old subtle wub+bell the owner said "doesn't seem to exist".)
+
+### Verify
+`node -c` clean; `synth.test.js` **142** (+12): wobble locks to tempo×cycles, the
+chip square pluck, swing shifts off-beat timings, `setReverbDecay` rescales the tail,
+the victory drop is a one-shot full gesture (riser+sub-wub+kick+stab) that ducks the
+bed. All gates green; `golden-synth` unchanged (CONTEXTS untouched this push).
+
+### Next (on owner OK → T139 part 2)
+- Replace `CONTEXTS` with the agreed 12 (keep menu/arena; drop solve/event; the 10
+  new from `research-music-styles.md` §2, using `wobble`/`swing`/`reverbDecay`/`chip`),
+  extend `golden-synth` distinctness to all 12 (regen intentional), hand A the final
+  names/labels for T140.
+
+---
+
 ## T141 — research: musical styles → a concrete 12-style palette ([B], doc; precedes T139)
 
 **Status: DONE — handed off for review.** New B-owned file only

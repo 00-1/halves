@@ -32,7 +32,7 @@ function StubCtx(seedState){
     currentTime: 10, sampleRate: 48000, state: "running", destination: { _type: "destination" },
     resume(){ this.state = "running"; }, close(){},
     createGain(){ return rec("gain", { gain: mkParam() }); },
-    createOscillator(){ return rec("osc", { type: "", frequency: Object.assign(mkParam(), { _type: "osc.freq" }), detune: Object.assign(mkParam(), { _type: "osc.detune" }), start(){}, stop(){} }); },
+    createOscillator(){ return rec("osc", { type: "", frequency: Object.assign(mkParam(), { _type: "osc.freq" }), detune: Object.assign(mkParam(), { _type: "osc.detune" }), start(tt){ this._start = tt; }, stop(){} }); },
     createBiquadFilter(){ return rec("biquad", { type: "", frequency: Object.assign(mkParam(), { _type: "biquad.freq" }), Q: mkParam() }); },
     createDynamicsCompressor(){ return rec("comp", { threshold: mkParam(), knee: mkParam(), ratio: mkParam(), attack: mkParam(), release: mkParam() }); },
     createStereoPanner(){ return rec("panner", { pan: mkParam() }); },
@@ -459,6 +459,63 @@ ok(new Set(CXS.map(c => c.root)).size === 4, "all four sit in distinct registers
 ok(new Set(CXS.map(c => c.mode)).size === 4, "all four use distinct modes");
 ok(Synth.CONTEXTS.solve.kickK === 0 && Synth.CONTEXTS.solve.hatK === 0, "solve is DRUMLESS (an intimate calm bed) — a strong contrast vs the kit contexts");
 ok(new Set(CXS.map(c => c.patches.lead + "/" + (c.leadOct || 1))).size >= 3, "lead instrumentation/register varies across contexts");
+
+// =====================================================================
+// 14) T139 no-regret engine ADDITIONS (CONTEXTS held for owner OK)
+// =====================================================================
+// (1) tempo-synced wub wobble: the LFO locks to (tempo/60)*wobble Hz
+(function(){
+  const r = freshRecord(); const S = load(); const si = global.setInterval, ci = global.clearInterval; let tick = null;
+  global.setInterval = (fn) => { tick = fn; return 1; }; global.clearInterval = () => {};
+  const ctx = StubCtx(r); ctx.currentTime = 10; S.mount({ ctx: ctx });
+  S.setMusic({ tempo: 140, root: 36, mode: "phrygian", seed: 1, density: 1, wobble: 2, patches: { bass: "wub" }, kickK: 0, hatK: 0, snareK: 0, leadK: 0 });
+  S.start();
+  for(let k = 0; k < 4; k++){ ctx.currentTime += 0.2; tick(); }
+  global.setInterval = si; global.clearInterval = ci;
+  const expect = (140 / 60) * 2;
+  ok(r.list.some(n => n._type === "osc" && n.type === "sine" && Math.abs(n.frequency.value - expect) < 1e-6),
+     "tempo-synced wobble: the wub LFO locks to (tempo/60)*wobble (" + expect.toFixed(2) + " Hz)");
+})();
+// (2) the chip patch — a fast bright square pluck
+ok(Synth.PATCHES.chip && Synth.PATCHES.chip.wave === "square" && Synth.PATCHES.chip.amp.a <= 0.002 && Synth.PATCHES.chip.amp.s === 0,
+   "the chip patch is a fast, snappy square pluck (chiptune/8-bit)");
+(function(){
+  const r = freshRecord(); const S = load(); S.mount({ ctx: StubCtx(r) }); r.types = {}; r.list = [];
+  S.play("chip", 1, { midi: 72, dur: 0.1, bus: "music" });
+  ok(r.types.osc === 1 && r.list.some(n => n._type === "osc" && n.type === "square"), "chip builds a single square oscillator (mono)");
+})();
+// (3) swing shifts the off-beat voice timings
+function startTimes(swing){
+  const r = freshRecord(); const S = load(); const si = global.setInterval, ci = global.clearInterval; let tick = null;
+  global.setInterval = (fn) => { tick = fn; return 1; }; global.clearInterval = () => {};
+  const ctx = StubCtx(r); ctx.currentTime = 0; S.mount({ ctx: ctx });
+  S.setMusic({ tempo: 96, root: 60, mode: "ionian", seed: 1, density: 1, swing: swing, leadK: 8 }); S.start();
+  for(let k = 0; k < 8; k++){ ctx.currentTime += 0.2; tick(); }
+  global.setInterval = si; global.clearInterval = ci;
+  return r.list.filter(n => n._type === "osc" && n._start != null).map(n => Math.round(n._start * 1e5));
+}
+ok(Synth.normalizeMusic({ swing: 0.2 }).swing === 0.2, "swing is carried into the spec");
+ok(JSON.stringify(startTimes(0)) !== JSON.stringify(startTimes(0.3)), "swing shifts the off-beat voice timings (groove)");
+// (4) per-context reverb decay rescales the FDN feedback (shorter/longer tail)
+ok(typeof Synth.setReverbDecay === "function", "setReverbDecay is exposed");
+(function(){
+  const rv = Synth.makeReverb(StubCtx(freshRecord()), { decay: 0.78 });
+  const before = rv.fb[0].g.gain.value; rv.setDecay(0.4); const after = rv.fb[0].g.gain.value;
+  ok(Math.abs(after) < Math.abs(before), "reverb setDecay rescales the feedback (shorter tail: " + before.toFixed(3) + " → " + after.toFixed(3) + ")");
+})();
+// (5) the victory DROP — a real audible gesture on the un-ducked sfx bus
+(function(){
+  const r = freshRecord(); const S = load(); const si = global.setInterval; let started = 0; global.setInterval = () => { started++; return 1; };
+  const ctx = StubCtx(r); S.mount({ ctx: ctx });
+  const before = S.buses().music.gain._calls.length;
+  S.sting("victory");
+  global.setInterval = si;
+  ok(started === 0 && !S.musicPlaying(), "the victory drop is a one-shot (no music loop)");
+  ok(r.types.bufsrc >= 1, "the drop builds with a noise riser (filtered-noise sweep)");
+  ok(r.list.filter(n => n._type === "osc").length >= 5, "the drop is a full gesture (riser + sub-wub + kick + stab + sparkle)");
+  ok(r.list.some(n => n._type === "osc" && n.type === "sine"), "the drop fires the sub-wub (LFO present)");
+  ok(S.buses().music.gain._calls.length > before, "the drop ducks the music bed while playing on the un-ducked sfx bus (cuts through)");
+})();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
