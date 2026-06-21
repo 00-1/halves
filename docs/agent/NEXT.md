@@ -10,7 +10,17 @@
 
 ---
 
-**Builder A → `T128`  · LIVE BUGS (owner-tested): music never swaps · no wub · no celebration visuals**
+**Builder A → `T129`  · Settings MUSIC SWITCHER (sample styles + test switching) — the T128 instrument**
+`T127` DONE. **T129 FIRST** (owner-requested; it's the diagnostic for T128's "music never swaps"): add a
+music switcher to Settings beside the Volume/Tempo sliders — buttons/`<select>` for **Menu · Solve ·
+Arena · Event** that call the engine's **distinct** `Synth.setContext(name)` (NOT `musicSpec()`) and
+**audibly swap the music immediately**. If it doesn't switch promptly, that IS T128(1) — fix the swap
+(setContext + prompt swap, not just at a far phrase boundary). LIVE-verify each style is different.
+Reverts to per-screen music on exit. Full DoD: `BACKLOG.md` T129. Then → `T128` (the rest: confirm
+per-screen routing now swaps + the wub wobbles + celebration renders) → `T123` (a11y) → `T124`
+(fractions) → `T101` → `T102`/`T103` → `T89`/`T90` → content → `T72`.
+
+**Builder A — (after T129) → `T128`  · LIVE BUGS: music swap (per-screen) · no wub · no celebration**
 `T127` DONE. **T128 — VERIFY IN A REAL BROWSER (gates pass while these are broken).** Owner: in
 topics/arena the music is the SAME as menu; no wub on victory; no celebration particles at all.
 **(1) Music:** the wiring's `musicSpec()` passes no `progression` → engine defaults the SAME chords for

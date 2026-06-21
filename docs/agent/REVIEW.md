@@ -863,8 +863,11 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T128`** [A] · **OWNER-PRIORITY · LIVE BUGS** (**`T127`/`T125`/`T121`/`T122` DONE**).
-  *(Read `NEXT.md` fresh — canonical.)* **`T128` — three owner-tested live bugs the green gates miss
+- **Builder A — next: `T129`** [A] · **OWNER-PRIORITY** (**`T127`/`T125`/`T121`/`T122` DONE**). *(Read
+  `NEXT.md` fresh — canonical.)* **`T129` FIRST — Settings MUSIC SWITCHER** (Menu/Solve/Arena/Event via
+  the engine's distinct `Synth.setContext`, audibly swaps live) — the owner's requested sampler AND the
+  **diagnostic instrument for T128(1)**: if it switches, the engine's fine & T128 is just per-screen
+  routing; if not, the swap bug is deeper. LIVE-verify. **Then → `T128`** — the live bugs the green gates miss
   (MUST verify in a real browser):** (1) **music never swaps** per screen — `musicSpec()` passes no
   `progression` so every context shares the engine's default chords → use `Synth.setContext(name)`'s
   distinct contexts + apply the T113 tempo; (2) **no wub on win** — verify `play("wub")` fires AND

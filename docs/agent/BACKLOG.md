@@ -2451,6 +2451,30 @@ cramped blob, and the **wider tree-v2 nodes (96px)** leave the fraction under-us
   live node size — must read as the fraction, not a blob — this is the 2nd attempt after T104, get it
   clearly right.)
 
+### T129 — [A] Settings: a MUSIC SWITCHER to sample every style + test switching · status: OPEN · OWNER-PRIORITY
+Owner: "add a music switcher to Settings next to the other audio settings, so I can sample all our
+audio styles and test the switching works." Both a real feature AND the **diagnostic instrument for the
+T128 music-swap bug** — if this switcher audibly changes the music, the engine swap works and T128(1) is
+just the per-screen routing; if it doesn't, the bug is deeper (engine/`setContext`). Build it FIRST.
+- **A switcher row in Settings** (beside the Volume / Tempo sliders + Test-sound button). Lets the owner
+  pick a music style and **hear it immediately** — at minimum the engine's distinct contexts: **Menu ·
+  Solve · Arena · Event** (use the real `Synth.setContext("menu"/"solve"/"arena"/"event")`, the distinct
+  built-in contexts with their own progressions/patches — NOT the `musicSpec()` partial specs). Show
+  which is selected. (Optional: a "Topic ▸" cycle to sample the per-topic seeded solve variations.)
+- **It must actually switch live.** Tapping a style calls `setContext` (+ the T113 tempo) so the running
+  music swaps **promptly** (if the engine only swaps at a phrase boundary and that feels too slow/never,
+  that's the T128(1) bug surfaced here — fix so a deliberate switch is near-immediate). While in
+  Settings the switcher drives the music; on leaving Settings, normal per-screen music resumes.
+- **No-build + a11y:** plain buttons/`<select>`, labelled, ≥44px, keyboard-operable, `data-ui="pixel"`
+  styled; honours mute (no sound when muted); guarded no-op if `Synth` absent.
+- **DoD (LIVE-verified — output feature, gates necessary-not-sufficient):** Settings has a music
+  switcher that **audibly plays each distinct style** and **switches promptly** when you pick one;
+  reverts to per-screen music on exit; each style is genuinely different (proves/forces the per-context
+  distinctness from T128(1)); `node -c` clean; all gates green (assert the switcher calls
+  `Synth.setContext` with each of the 4 contexts; assert the contexts it uses are the engine's distinct
+  ones). (Babysitter: confirm on the live build that picking each style changes the music — this is also
+  how the owner verifies T128.)
+
 ### T128 — [A] LIVE BUGS: music never swaps context · no wub on win · no celebration visuals · status: OPEN · OWNER-PRIORITY · BUG
 Owner tested the live build (synth music is loud + nice): **"music never changes — same as menu in
 topics/arena (I expected different); no dubstep wub on victory; no celebration visuals, not even
