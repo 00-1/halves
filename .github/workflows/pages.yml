@@ -40,6 +40,8 @@ jobs:
         run: node test/practice.test.js
       - name: Hero portrait test (gate)
         run: node test/hero-icons.test.js
+      - name: Nav icons + Arena portraits test (gate)
+        run: node test/nav-icons.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

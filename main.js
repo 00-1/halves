@@ -276,6 +276,22 @@
 
   // Enable Start only for an unlocked topic.
   function renderStartState(){ const locked = !isUnlocked(mode); $("startBtn").disabled = locked; $("practiceBtn").disabled = locked; }
+
+  // Procedural pixel icon on each menu button (T50) — a fitting category preset +
+  // a fixed seed id, so each is stable across loads. Reuses C.drawIcon; no new art.
+  const MENU_ICONS = [
+    { id:"statsBtn",  cat:"scroll", pal:"epic" },
+    { id:"invBtn",    cat:"chest",  pal:"legendary" },
+    { id:"heroesBtn", cat:"helm",   pal:"rare" },
+    { id:"arenaBtn",  cat:"sword",  pal:"uncommon" }
+  ];
+  function drawMenuIcons(){
+    if(!C || !C.drawIcon) return;
+    MENU_ICONS.forEach(m => {
+      const btn = $(m.id), cv = btn && btn.querySelector("canvas");
+      if(cv) C.drawIcon(cv, "menu:" + m.id, C.paletteFor(m.pal), m.cat);
+    });
+  }
   elModeTabs.addEventListener("click", e => {
     // the "?" guide control opens a guide for any topic (incl. locked previews)
     const gb = e.target.closest(".mr-guide");
@@ -700,6 +716,7 @@
     if(lastBattle){
       const r = lastBattle;
       html += '<div class="arena-result '+(r.won ? "win" : "loss")+'">'+
+        (r.heroId ? '<canvas class="pix ar-port" width="48" height="48" data-hero="'+esc(r.heroId)+'" data-type="'+esc(r.heroType||"Brawn")+'"></canvas>' : "")+
         '<div class="ar-title">'+(r.won ? "Victory!" : "Defeated")+'</div>'+
         '<div class="ar-sub">'+esc(r.heroName)+' vs '+esc(r.tierName)+'</div>'+
         '<div class="ar-maths">'+Math.round(r.res.rating)+' ★ × '+r.res.matchup+
@@ -725,15 +742,24 @@
           const rating = Math.round(Hs.rating(h, col)), mu = E.matchup(h.type, tier.type);
           const power = Math.round(Hs.rating(h, col) * mu), wins = power >= tier.def;
           html += '<div class="arena-hero t-'+h.type.toLowerCase()+(arenaHero === h.id ? " sel" : "")+'" data-hero="'+esc(h.id)+'">'+
-            '<div class="ah-top"><span class="ah-name"><i class="typedot"></i>'+esc(h.name)+'</span>'+
+            '<canvas class="pix ah-port" width="40" height="40"></canvas>'+
+            '<div class="ah-body"><div class="ah-top"><span class="ah-name"><i class="typedot"></i>'+esc(h.name)+'</span>'+
               '<span class="ah-rating">★ '+rating+'</span></div>'+
             '<div class="ah-mu">'+matchupLabel(mu)+
-              '<span class="ah-power '+(wins ? "win" : "loss")+'">⚔ '+power+' vs '+tier.def+'</span></div></div>';
+              '<span class="ah-power '+(wins ? "win" : "loss")+'">⚔ '+power+' vs '+tier.def+'</span></div></div></div>';
         });
         html += '</div>';
       }
     }
     $("arenaBody").innerHTML = html;
+    // hero portraits on the pick cards + the result header (same draw path as the
+    // Heroes screen — "hero:" id → the restored creature-blob, T51).
+    $("arenaBody").querySelectorAll(".arena-hero canvas").forEach(cv => {
+      const card = cv.closest(".arena-hero"), h = card && Hs.byId(card.dataset.hero);
+      if(h) C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], "familiar");
+    });
+    const rp = $("arenaBody").querySelector(".ar-port");
+    if(rp && rp.dataset.hero) C.drawIcon(rp, "hero:"+rp.dataset.hero, HERO_PAL[rp.dataset.type] || HERO_PAL.Brawn, "familiar");
     $("arenaFight").disabled = cleared || !arenaHero || !heroes.length;
     $("arenaFight").textContent = cleared ? "Cleared" : (arenaHero ? "Fight!" : "Pick a hero");
   }
@@ -784,7 +810,7 @@
     const wealth = earnGold(earn, col);               // grants any wealth milestones into col
     saveCollected(col);
     loot = loot.concat(wealth);
-    lastBattle = { won: res.win, res: res, heroName: heroName, tierName: tier.name, loot: loot, newHeroes: newHeroes, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
+    lastBattle = { won: res.win, res: res, heroName: heroName, heroId: heroId, heroType: (Hs.byId(heroId)||{}).type, tierName: tier.name, loot: loot, newHeroes: newHeroes, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
     arenaHero = null;
     renderArena();
     show("arena");
@@ -1271,6 +1297,7 @@
   renderMark();
   renderBest();
   renderStartState();
+  drawMenuIcons();    // static procedural icons on the menu buttons (T50)
   renderBuild();
   renderGold();
   renderMomentum();

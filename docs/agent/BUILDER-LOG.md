@@ -2002,3 +2002,37 @@ how I verified:
 notes / questions: per the verdict I did not touch collectibles.js/main.js. Next
   per REVIEW: **T50** (generated icons on nav buttons + hero portrait in the Arena
   picker).
+
+## T50 — Generated icons on nav buttons + hero portrait in the Arena picker  [HANDOFF]
+commit: (this commit, on main)
+changed (presentation only — no icon/hero/battle/catalogue data touched):
+  - **(1) menu-button icons.** index.html gives `#statsBtn`/`#invBtn`/`#heroesBtn`/
+    `#arenaBtn` a `<canvas class="pix mr-ico">` before the label. main.js
+    `drawMenuIcons()` (called at boot) draws each with a **fitting existing category
+    preset + a fixed `"menu:<id>"` seed** (stable across loads) via `C.drawIcon`:
+    scroll·epic (Best times), chest·legendary (Inventory), helm·rare (Heroes),
+    sword·uncommon (Arena). `.linkbtn` is now `inline-flex` (icon+label, `nowrap`).
+  - **(2) Arena hero portraits.** `renderArena` pick cards (`.arena-hero`) now carry
+    an `.ah-port` canvas (card is flex: portrait + `.ah-body`); a post-render
+    `querySelectorAll(".arena-hero canvas")` loop draws each with the **same call
+    the Heroes screen uses** — `C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type],
+    "familiar")` → the restored T51 creature-blob. The Victory/Defeat result header
+    shows the chosen hero's portrait (`.ar-port`); `lastBattle` now carries
+    `heroId`/`heroType` for it.
+how I verified:
+  - `node test/nav-icons.test.js` (NEW, 9th gate) → **ALL 16 PASS**: each of the
+    four buttons has a `<canvas>` before its label and (via a drawIcon recorder
+    patched in before main.js captures it) **drew a stable icon with the real
+    `scroll`/`chest`/`helm`/`sword` category** and a `"menu:<id>"` seed; the Arena
+    pick cards emit `.ah-port` portrait canvases, and after a fight the result
+    header emits the chosen hero's `.ar-port` (`data-hero` matches); the Arena draw
+    call is **byte-identical to the Heroes-screen call** (`"hero:"+id`,
+    `HERO_PAL[type]`).
+  - `node -c main.js` OK; **74 `$("id")` refs all present**; all nine gates green
+    (icon, perf, contrast, inventory, arena, hints, practice, hero-icons,
+    nav-icons). 360px-safe (`.linkbtn` nowrap, 16px icons; pick card flex).
+    No regressions to the menu, Heroes screen, or the post-T47 Arena.
+notes / questions: menu icons drawn once at boot (static/deterministic — fixed
+  seeds). Category→button mapping picked for legibility (sword=Arena, chest=
+  Inventory, helm=Heroes, scroll=Best times); trivial to retune. Next per REVIEW:
+  **T52** (procedural enemy sprites — a new generator).
