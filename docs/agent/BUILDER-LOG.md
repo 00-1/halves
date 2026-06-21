@@ -3950,3 +3950,51 @@ notes / questions: **eyeball the live build:** at the scroll edges the tree node
   into the purple backdrop** (not a black band), only on the edge(s) with more content, with the `▾`
   cue. If a future backdrop is very light, the mask still tracks it (it reveals whatever's behind,
   not a fixed colour). Next per `NEXT.md`: **`T101`** (Start→fullscreen delay).
+
+## T122 — WIRE the synth.js engine into the app (make it audible) — phase 6  [HANDOFF]
+commit: (this commit, on main) — [A] task · OWNER-PRIORITY. The B-built `synth.js` (`window.Synth`,
+T120 #1–#5, 92-check engine) was standalone — nothing played it. This [A] wiring makes it the live
+**music** engine (the payoff). Consumes `Synth`'s API only — `synth.js` not edited.
+changed:
+  - **index.html** — loads `synth.js` (after sound.js, before main.js; T107 versions it).
+  - **sound.js** — now **SFX-ONLY**: **removed the entire music scheduler** (`STYLES`/`St`/scales/
+    `degMidi`/`stepVoices`/`musicTick`/`startScheduler`/`stopMusic`/`setMusic`/`styleIndexFor`/the
+    `setInterval` loop), the **tempo** machinery (`tempoMult`/`setTempo`/`getTempo`/`TEMPO_*`), and
+    the duplicate **`wub()`** (superseded by Synth's wub) — so there is **ONE music scheduler**
+    (Synth's). Kept the SFX engine, the master+brickwall limiter, the wide-range `setVolume`, mute,
+    and the ctx suspend/resume. **Exposes `ctx()` / `master()` / `limiter()`** for the wire.
+  - **main.js** — the **Synth wiring block** (mirrors the FX wiring, guarded no-op if Synth absent):
+    • **`setupSynth()`** (on the audio-unlock gesture) `Synth.mount({ ctx })` on **sound.js's existing
+      AudioContext**, then **routes `Synth.output()` into sound.js's `master`** → music + SFX share
+      **one chain**, so the **T113 volume slider + the limiter govern both**.
+    • **`musicForScreen(name)`** (from `show()`): `#game` → **`solve`** (or `event` in a gauntlet),
+      `#arena` → **`arena`** + `Synth.intensity(arenaBossProx())` (the same live boss-proximity the FX
+      uses), everything else → **`menu`**. One scheduler; swapping the spec is the only stop/start.
+    • **`musicSpec(context)`** — the **SOLVE context is CALM BY CONSTRUCTION** (slow base bpm 60,
+      `kickK:0`, empty snare → no driving drums; the firm rule), its **seed varies per topic** so
+      topics still differ; **Arena** drives (phrygian, full kit, faster); menu/event distinct. The
+      **T113 tempo slider** multiplies every context's base bpm (`synthTempoMult()`).
+    • **`wubSting()`** fires **Synth's wub** on the real win moments (Arena victory + topic-complete/
+      mastery) and **ducks**. SFX stings (`item/gold/mastery/topic100/topicUnlock`) **`Synth.duck()`**
+      the music. **Mute** sets `Synth.setMuted` too; a **visibilitychange** handler `Synth.stop()`s
+      when hidden (no leak), resumes the context when visible.
+  - **test/sound.test.js** — **rewritten SFX-only** (38 checks: volume+limiter, mute, the pure SFX
+    specs, the `ctx()`/`master()` exposure, and that **no music scheduler remains** in sound.js).
+    **test/synth-wiring.test.js (NEW, 25 checks)** + **pages.yml** — registered **`synth.test.js`
+    (B's 92-check engine gate)** AND this wiring gate, which proves the mount-on-shared-ctx + route
+    into master, the per-screen contexts, the calm solve spec, the wub-on-win, the duck/mute/tempo
+    wiring, and a **live boot** (stub Sound + Synth) showing it mounts on sound's ctx, routes into
+    sound's master, plays the menu/arena contexts (arena sets intensity), and **wubs on a real Arena
+    win**. Updated `events.test` (event → a Synth context) + `cache-bust` versions `synth.js`.
+how I verified:
+  - **`node test/synth-wiring.test.js` → ALL 25 PASSED**; **`synth.test.js` → 92**; **`sound.test`
+    → 38**; `node -c` clean. **Full 33-gate suite green.** One scheduler (sound's removed; Node-
+    asserted no `setInterval`/`STYLES`/`setMusic` in sound.js); guarded no-op if Synth/ctx absent.
+notes / questions: **OWNER ear-check on the Poco X3 — this is the payoff:** ONE music engine
+  (Synth); **solves CALM**, the **Arena drives + intensifies near a boss**, menu/event distinct; a
+  **win wubs once**; SFX **duck** the music; the **T113 volume/tempo sliders + mute** still rule it
+  (music routes through sound's master). Note the calibrated **0.5× tempo** default now scales ALL
+  contexts (so menu/arena are half their base bpm too) — if that's too slow for the Arena, the lever
+  is the per-context base in `SYNTH_BPM` or re-calibrating the slider. `Synth.setQuality()` is
+  available if the FDN reverb is heavy on Android (not wired yet — flag if needed). Next per
+  `NEXT.md`: **`T121`** (already shipped, awaiting verdict) → `T101` (Start delay) → Android block.

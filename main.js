@@ -259,19 +259,79 @@
     try{ fxBurst.burst({ x: 0.5, y: 0.32, count: 120, seed: ((tierN | 0) + 1) * 0x85ebca6b >>> 0, palette: ["#f5b544", "#ffd98a", "#ffffff"] }); }catch(e){}
   }
 
+  // ---- Synth wiring (T122) — the generative MUSIC engine ------------------
+  // Mount B's window.Synth on sound.js's EXISTING AudioContext, and re-route its
+  // output into sound.js's master so music + SFX share ONE chain (the T113 volume
+  // slider + the limiter govern both). Synth is the only music scheduler now;
+  // sound.js keeps the SFX. Each screen plays a context (solve=calm · menu · arena
+  // ·event); a win fires the wub; SFX duck the music. Guarded no-op if Synth absent.
+  let synthWired = false, curScreen = "entry";
+  function setupSynth(){
+    if(synthWired) return;
+    const Sy = window.Synth, S = window.Sound;
+    if(!Sy || !Sy.mount || !S || !S.ctx) return;
+    const ctx = S.ctx(); if(!ctx) return;
+    try{
+      Sy.mount({ ctx: ctx });
+      const out = Sy.output && Sy.output(), sMaster = S.master && S.master();
+      if(out && sMaster){ try{ out.disconnect(); }catch(e){} out.connect(sMaster); }   // Synth → Sound's master (one chain)
+      Sy.setMuted(!soundOn());
+      synthWired = true;
+    }catch(e){ synthWired = false; }
+  }
+  const SYNTH_BPM = { solve: 60, menu: 80, arena: 98, event: 88 };   // base tempo per context (× the T113 tempo slider)
+  function synthTempoMult(){ const v = loadTempo() / 100; return isFinite(v) ? v : 1; }
+  // A music spec per context. SOLVE is CALM BY CONSTRUCTION (slow, sparse, no
+  // driving kick/snare) — the firm rule; its seed varies per topic so topics still
+  // differ. Arena drives (dark mode, full kit). Menu/event are distinct + brighter.
+  function musicSpec(context){
+    const t = synthTempoMult();
+    if(context === "solve"){
+      const seed = ((typeof mode !== "undefined" && mode && typeof mode.music === "number" ? mode.music : 0) + 1) * 2654435761 >>> 0;
+      return { root: 50, mode: "dorian", tempo: Math.round(SYNTH_BPM.solve * t), density: 0.26, seed: seed,
+        kickK: 0, hatK: 2, snare: new Array(16).fill(0), leadK: 5, leadOct: 1 };   // no driving drums → calm
+    }
+    if(context === "arena") return { root: 45, mode: "phrygian", tempo: Math.round(SYNTH_BPM.arena * t), density: 0.5, seed: 7, kickK: 6, hatK: 8, leadK: 9 };
+    if(context === "event") return { root: 62, mode: "lydian", tempo: Math.round(SYNTH_BPM.event * t), density: 0.42, seed: 11, kickK: 4, hatK: 8 };
+    return { root: 57, mode: "ionian", tempo: Math.round(SYNTH_BPM.menu * t), density: 0.36, seed: 3, kickK: 4, hatK: 8 };   // menu
+  }
+  function arenaBossProx(){ const st = arenaFxState(); return st && st.facingBoss ? 1 : ((st && st.tierFrac) || 0); }
+  // Drive the music per screen (mirrors fxSetScreen): solve in-game, arena on the
+  // Arena (intensifying near a boss), menu everywhere else. One scheduler; swapping
+  // the spec is the only "stop/start" needed (no leak).
+  function musicForScreen(name){
+    curScreen = name;
+    const Sy = window.Synth; if(!Sy || !Sy.setMusic || !synthWired) return;
+    try{
+      const context = name === "game" ? (eventCtx ? "event" : "solve") : name === "arena" ? "arena" : "menu";
+      Sy.setMusic(musicSpec(context));
+      if(context === "arena" && Sy.intensity) Sy.intensity(arenaBossProx());
+      Sy.start();
+    }catch(e){}
+  }
+  // The win-sting: Synth's wub on a real win (Arena victory / topic-complete),
+  // ducking the music so it lands. (Replaces sound.js's removed wub.)
+  function wubSting(){
+    const Sy = window.Synth; if(!Sy || !synthWired) return;
+    try{ if(Sy.play) Sy.play("wub", null, { midi: 36, dur: 0.6, bus: "music" }); if(Sy.duck) Sy.duck(); }catch(e){}
+  }
+  // Idle the single music scheduler when the tab is hidden; resume the current
+  // context when visible (sound.js already suspends/resumes the shared ctx).
+  if(typeof document !== "undefined" && document.addEventListener){
+    document.addEventListener("visibilitychange", function(){
+      const Sy = window.Synth; if(!Sy) return;
+      try{ if(document.hidden){ if(Sy.stop) Sy.stop(); } else if(soundOn()){ musicForScreen(curScreen); } }catch(e){}
+    });
+  }
+
   function show(name){
     // stop the game clock RAF whenever we leave the game screen (e.g. browser
     // back mid-round), so it never loops on a hidden screen.
     if(name !== "game" && raf){ cancelAnimationFrame(raf); raf = 0; }
     Object.values(screens).forEach(s => s.classList.remove("active"));
     screens[name].classList.add("active");
-    fxSetScreen(name);   // T110/T112: full-bleed backdrop — home scene on #start, Arena scene on #arena, idle elsewhere
-    // music follows the screen: the topic's style in-game, the menu style elsewhere
-    if(window.Sound && window.Sound.setMusic){
-      if(name === "game") window.Sound.setMusic(eventCtx ? "event" : (typeof mode.music === "number" ? mode.music : mode.id));
-      else if(name === "arena") window.Sound.setMusic("arena");   // T71: dedicated Arena theme
-      else window.Sound.setMusic("menu");
-    }
+    fxSetScreen(name);     // T110/T112: full-bleed backdrop — home scene on #start, Arena scene on #arena, idle elsewhere
+    musicForScreen(name);  // T122: Synth music — solve (calm) in-game, arena on the Arena, menu elsewhere
   }
   function fmt(t){ return t.toFixed(1); }
   function numStr(n){ return String(n); }
@@ -1279,7 +1339,7 @@
     renderArena();
     const ab = $("arenaBody"); if(ab) ab.scrollTop = 0;   // T65: show the result + tier, not the hero list
     show("arena");
-    if(res.win){ fxCelebrateWin(tier.n); sfx("wub"); }   // T112 victory burst + T115 synth "wub" win-sting
+    if(res.win){ fxCelebrateWin(tier.n); wubSting(); }   // T112 victory burst + T122 Synth "wub" win-sting
     if(loot.length) setTimeout(() => showUnlocks(loot), 650);
   }
 
@@ -1629,7 +1689,7 @@
     else if(unlocked.some(it => it.cat === "Mastery")) sfx("mastery");
     else sfx("roundComplete");
     // T115 — the synth "wub" win-sting on a real topic-complete / mastery (level-up) moment
-    if(unlocked.some(it => it.cat === "Mastery" || /^topics:(one|all)100$/.test(it.id))) sfx("wub");
+    if(unlocked.some(it => it.cat === "Mastery" || /^topics:(one|all)100$/.test(it.id))) wubSting();
 
     // celebratory toast for any topic this round newly opened (chain or Part-2)
     MODES.forEach(m => { if(!wasUnlocked[m.id] && isUnlocked(m)) showTopicToast(m); });
@@ -1889,8 +1949,8 @@
   // ---- sound preference (persisted) + SFX engine (window.Sound) -----------
   function soundOn(){ try{ return localStorage.getItem("halves.sound") !== "off"; }catch(e){ return true; } }
   function saveSound(on){ try{ localStorage.setItem("halves.sound", on ? "on" : "off"); }catch(e){} }
-  function audioUnlock(){ if(window.Sound && window.Sound.unlock) window.Sound.unlock(); }
-  function applySoundPref(){ if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!soundOn()); applyAudioPrefs(); }
+  function audioUnlock(){ if(window.Sound && window.Sound.unlock) window.Sound.unlock(); setupSynth(); musicForScreen(curScreen); }
+  function applySoundPref(){ const on = soundOn(); if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!on); if(window.Synth && window.Synth.setMuted) window.Synth.setMuted(!on); applyAudioPrefs(); }
   // T113 — owner-calibrated Volume + Tempo (persisted slider positions). Volume is
   // stored 0–250 (→ ×0..2.5 master gain; the limiter keeps the top end clip-safe);
   // tempo is stored 40–100 (→ ×0.40..1.00 BPM multiplier).
@@ -1901,12 +1961,12 @@
   function saveVol(v){ try{ localStorage.setItem("halves.vol", String(v)); }catch(e){} }
   function saveTempo(v){ try{ localStorage.setItem("halves.tempo", String(v)); }catch(e){} }
   function applyAudioPrefs(){
-    const S = window.Sound; if(!S) return;
-    if(S.setVolume) S.setVolume(loadVol() / 100);
-    if(S.setTempo) S.setTempo(loadTempo() / 100);
+    const S = window.Sound; if(S && S.setVolume) S.setVolume(loadVol() / 100);
+    musicForScreen(curScreen);   // T122: the tempo slider drives Synth via the per-context spec
   }
   // Guarded SFX trigger — a no-op if the engine is absent or muted.
-  function sfx(name, arg){ const S = window.Sound; if(S && S[name]) S[name](arg); }
+  const DUCK_SFX = { item:1, gold:1, mastery:1, topic100:1, topicUnlock:1 };
+  function sfx(name, arg){ const S = window.Sound; if(S && S[name]) S[name](arg); if(DUCK_SFX[name] && window.Synth && window.Synth.duck) window.Synth.duck(); }
   // Keep every sound button (entry + start menu) in sync, and toggle the pref.
   const SOUND_BTNS = ["soundBtn", "soundBtnMenu"];
   function syncSoundButtons(){
@@ -1944,8 +2004,7 @@
     if(tr) tr.addEventListener("input", () => {
       const v = parseInt(tr.value, 10) || 100; saveTempo(v);
       const tv = $("setTempoVal"); if(tv) tv.textContent = fmtTempo(v);
-      audioUnlock(); if(window.Sound && window.Sound.setTempo) window.Sound.setTempo(v / 100);
-      if(window.Sound && window.Sound.setMusic) window.Sound.setMusic("menu");   // ensure menu music is audible while calibrating
+      audioUnlock(); musicForScreen(curScreen);   // T122: re-derive the current context at the new tempo (audible live)
     });
     if(test) test.addEventListener("click", () => { audioUnlock(); sfx("correct", 6); });
   })();
