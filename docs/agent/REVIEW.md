@@ -1,36 +1,30 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T128 (1)+(2)` [A] (per-screen music = distinct contexts + instant swap;
+**Current verdict:** `APPROVED — T131` [A] (register the golden gates in CI) · live build **`406acfe`**.
+**CI green; collision-clean** (only `.github/workflows/pages.yml`). Adds two gate steps — `node
+test/golden-fx.test.js` (FXGL golden-render) + `node test/golden-synth.test.js` (synth golden-score) — in
+**compare mode** (no `UPDATE_GOLDEN` in CI, exactly as required), alongside the existing `node test/*.js`
+gates. The golden harness (T130) is now **enforced on every push**: an FXGL CPU-still render or a synth
+context-score (incl. the distinctness golden that guards "all contexts sound the same") that changes
+unexpectedly now **fails the deploy**. Verified: the 4 lines are present at `pages.yml:93–96`; **CI run
+`27916460481` for `406acfe` is green** → both golden steps ran + passed in CI. T131 → DONE.
+
+> **Previously approved (done):** `T128 (1)+(2)` [A] (per-screen music = distinct contexts + instant swap;
 victory wub on the un-ducked SFX bus) · live build **`61654ed`**. **CI green; collision-clean** (all
-[A]-owned: `main.js`, `test/synth-wiring.test.js`, `test/events.test.js`, `BUILDER-LOG.md`). Both bugs
-**root-caused**, not patched: **(1) "music never changes"** — `musicForScreen` drove
-`setMusic(musicSpec())` and `musicSpec()` passed **no `progression`** → the engine defaulted the **same
-`[0,5,3,4]` chords for every context**, so solve/menu/arena differed only by tempo (≈inaudible). Now every
-screen routes through `synthSwitchContext` → **`Synth.setContext(name)`** (the engine's DISTINCT built-in
-contexts — own progression/reverb/patches incl. Arena's **wub bass** + dark aeolian) with the T113 tempo
-on top; **solve still varies per topic** (seed mixes `mode.music`); dead `musicSpec()`/`SYNTH_BPM`
-removed; **T132's `swapNow()`** wired so a screen change / style pick swaps in **≤1 step** (no phrase lag —
-also upgrades the T129 switcher to instant). **(2) "no wub on victory"** — the old `wubSting()` played the
-wub on `bus:"music"` then `duck()`ed that **same** bus → **the wub ducked itself**. Now it calls the
-engine's purpose-built **`Synth.sting("victory")`** — which I confirmed in `synth.js:458` genuinely plays
-a wub swell (midi 36, 0.9s) **+ a rising bell arp** on the **un-ducked `sfx` bus**, ducking only the music
-bed. Verified **independently** (output-feature rule — stronger than source-grep): `node -c` clean; the
-distinct-context claim is backed by **`golden-synth`'s distinctness golden** (4 contexts ≠) + T132's
-≤1-step swap test; `sting("victory")` is a real un-ducked-bus engine path (read the body, not just the
-call); `synth-wiring.test` 45→52 (per-screen `setContext` with each context's OWN harmony, `swapNow`
-called, a win fires `sting("victory")` not a self-ducked wub), `events.test` updated, **full 34-gate suite
-green**. T128 (1)+(2) → DONE. **🔊 OWNER EAR-CHECK:** topic vs Arena vs menu should now sound **genuinely
-different + swap instantly** on screen change, and a **wub + bells** should land on every win.
-**⚠ (3) celebration visuals — NOT done; correctly escalated to [B] `T133` (engine).** A could not repro/
-fix headlessly and the diagnosis is an engine/device issue: `#fxBurst` is a **2nd WebGL context** (separate
-from the working backdrop) that renders nothing live — likely the 2nd context fails to init/present
-on-device. **A corrected my earlier "composite over the backdrop" idea:** the backdrop canvas is
-`z-index:-1` (behind `.app`), so a burst drawn there renders **behind the UI** (wrong layer) — the
-celebration must be the **z-58 overlay**. A's wiring (`fxBigBurst` → resize + `celebrate()` on every win/
-run/item, T125) is correct + tested and will work the instant the overlay context renders. **→ filed [B]
-`T133`: make the overlay celebration actually present on-device** (fix/diagnose the 2nd context, or a
-Canvas2D/shared-context overlay at z-58 — B's call); **B OFF stand-by for it now** (owner badly wants
-celebration). T128's tail (T123/T124/…) continues for A.
+> [A]-owned: `main.js`, `test/synth-wiring.test.js`, `test/events.test.js`, `BUILDER-LOG.md`). Both bugs
+> **root-caused**, not patched: **(1) "music never changes"** — `musicForScreen` drove
+> `setMusic(musicSpec())` and `musicSpec()` passed **no `progression`** → the engine defaulted the **same
+> `[0,5,3,4]` chords for every context**, so solve/menu/arena differed only by tempo. Now every screen
+> routes through `synthSwitchContext` → **`Synth.setContext(name)`** (DISTINCT built-in contexts — own
+> progression/reverb/patches incl. Arena's **wub bass**) + the T113 tempo; **solve still varies per topic**;
+> dead `musicSpec()`/`SYNTH_BPM` removed; **T132's `swapNow()`** wired (≤1-step swap). **(2) "no wub on
+> victory"** — the old `wubSting()` played the wub on `bus:"music"` then `duck()`ed that **same** bus → **the
+> wub ducked itself**; now it calls **`Synth.sting("victory")`** (wub + bell arp on the **un-ducked sfx
+> bus**, confirmed at `synth.js:458`). Verified independently: `node -c` clean; `synth-wiring.test` 45→52,
+> `events.test` updated, full 34-gate suite green. T128 (1)+(2) → DONE. **(3) celebration → [B] `T133`**
+> (overlay-context render on-device — A's wiring is correct + waiting). *(Owner feedback after this:
+> switcher transitions overlap / sound similar → filed [B] `T134`; volume recalibration → [A], pending the
+> owner's new max.)*
 
 > **Previously approved (done):** `T132` [B] (`synth.js` immediate-context-swap lever) · live build
 **`995cd28`**. **CI green; collision-clean** (B-owned only: `synth.js`, `test/synth.test.js`,
@@ -948,17 +942,17 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T131`** [A] (**`T128`(1)+(2)`/`T129`/`T127`/`T125`/`T121`/`T122` DONE**). *(Read
-  `NEXT.md` fresh — canonical.)* `T128`(1) per-screen distinct contexts + instant `swapNow()` and (2) the
-  victory wub on the un-ducked sfx bus are **DONE** (`61654ed`); **(3) celebration is now [B] `T133`** (the
-  overlay-context render — engine/device, A's wiring is already correct + waiting). Next: **`T131`**
-  (quick: register the `golden-fx`/`golden-synth` gates in `pages.yml` — same pattern as the fxgl/synth
-  gate lines; CI must run them in COMPARE mode, never `UPDATE_GOLDEN`) → **`T123`** (a11y contrast floor
-  over the backdrop + honest `contrast.test`) → **`T124`** (fraction tree-glyphs bigger/clearer using node
-  width) → **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena
-  3v3) → content **`T58`–`T61`** → **`T72`**.
-  **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) →
-  content **`T58`–`T61`** → **`T72`**.
+- **Builder A — next: `T135` (volume recalibration — OWNER, pending the new max) → then `T123`** [A]
+  (**`T131`/`T128`(1)+(2)/`T129`/`T127`/`T125`/`T121`/`T122` DONE**). *(Read `NEXT.md` fresh — canonical.)*
+  `T131` (golden gates in CI, compare mode) DONE (`406acfe`, CI green). **`T135` — owner: with the new
+  (much louder) synth engine, the volume default of 3.0× is too hot; set the default to `0.05×` and rescale
+  the slider so its top is the new sensible max** (`volRange` is `min=0 max=400 step=5 value=300`,
+  `halves.vol` default 300 → ×`/100` master gain; `fmtVol` shows `(v/100)×`). **Hold `T135` until I post the
+  owner's chosen max** (I asked) — then update the default + slider `max`/`step` + the stored default
+  together, live-verify the slider feels right. Then → **`T123`** (a11y contrast floor over the backdrop +
+  honest `contrast.test`) → **`T124`** (fraction tree-glyphs bigger/clearer using node width) → **`T101`**
+  (Start delay) → **`T102`/`T103`** (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content
+  **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
@@ -976,8 +970,24 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T133` [B] — OFF STAND-BY (engine gap A's T128 surfaced; owner badly wants it).**
-  `T132`/`T130` DONE. **`T133` — make the overlay CELEBRATION actually render on-device.** A's
+- **Builder B — next: `T134` (clean swap + distinctness — owner is on it) → then `T133` (celebration).**
+  **`T134` — owner live: the music switcher "sounds like the songs play over each other rather than
+  switching, or they sound really similar."** Both are real and BOTH are engine-side: **(a) overlap** — the
+  T132/T128 immediate `swapNow()` resets the generator but does **not** release the currently-sounding
+  voices or the multi-second FDN-reverb tail, so the old pad chord + tail ring **over** the new context for
+  several seconds (and rapid switching piles them up). This is a side-effect of the instant-swap we just
+  shipped and it now affects **every** per-screen transition, not just the switcher. Fix: on the **immediate**
+  swap path, quickly release/fade the active music voices + tame the reverb carryover (e.g. a short 60–120ms
+  music-bus fade-out→in across the swap, and/or release held voices + briefly cut the reverb send) so a
+  switch **cuts in cleanly**; leave the default phrase-boundary swap's natural ring intact. **(b) too
+  similar** — `solve`/`menu`/`event` share instrumentation (pad+bass+pluck/bell), close tempo/density and
+  only differ by mode, so they sound alike (arena is the clear outlier). Strengthen the **audible** contrast
+  (vary register/instrumentation/tempo/density between solve·menu·event), keeping the calm-solve vs
+  energetic-arena rule + the golden-distinctness gate. **Verify on a real browser** (rapidly sample via the
+  Settings switcher → each style cuts in clean + is clearly different); add the strongest headless check
+  feasible (e.g. a swap doesn't leave >1 context's voices active; per-context distinctness stays). Full DoD:
+  `BACKLOG.md` T134. **B-owned only** (`synth.js` + tests + `BUILDER-LOG-FX.md`).
+  **`T133` (next) — make the overlay CELEBRATION actually render on-device.** A's
   `fxBigBurst` → resize + `celebrate()` wiring (T125) is correct + tested but shows **nothing live**: the
   `#fxBurst` overlay is a **2nd WebGL/WebGPU context** (separate from the working backdrop) that likely
   fails to init/present on-device (mobile GPUs commonly refuse a 2nd context). It **cannot** just draw on

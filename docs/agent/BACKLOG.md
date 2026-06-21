@@ -2491,8 +2491,13 @@ and owns the engines — study brickmap's golden-render, then build the Halves-a
   the harness actually catches a deliberately-mutated render/score, and that the distinctness golden is
   real — this is the gate that starts closing the output-verification gap.)
 
-### T131 — [A] Register the golden gates (`golden-fx` + `golden-synth`) in `pages.yml` · status: OPEN
-Follow-on from T130 (B built the harness but can't touch `pages.yml` — collision rule keeps it [A]-owned).
+### T131 — [A] Register the golden gates (`golden-fx` + `golden-synth`) in `pages.yml` · status: DONE (`406acfe`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). 4 lines added at `pages.yml:93–96`: `node test/golden-fx.test.js`
++ `node test/golden-synth.test.js` in compare mode (no `UPDATE_GOLDEN`). CI run `27916460481` for `406acfe`
+green → both golden steps ran + passed; the T130 harness is now enforced on every push. Only `pages.yml`
+touched.
+
+> Follow-on from T130 (B built the harness but can't touch `pages.yml` — collision rule keeps it [A]-owned).
 The two golden gates currently run only locally; enforce them on every push.
 - **Add to the CI gate list in `.github/workflows/pages.yml`** the two new tests **`node test/golden-fx.test.js`**
   and **`node test/golden-synth.test.js`** (same pattern as the existing `fxgl.test`/`synth.test` gate
@@ -2620,6 +2625,32 @@ in a real browser (the owner's symptoms are the bar), not by green gates.** Baby
   wiring calls `setContext`/distinct progressions per screen; a headless check the burst controller is
   `ready` + sized before `celebrate`). (Babysitter: I will treat green gates as necessary-not-sufficient
   here — confirm against the owner's three live symptoms.)
+
+### T134 — [B] Clean immediate context-swap (no layered overlap) + audible distinctness · status: OPEN · OWNER-PRIORITY
+Owner live (sampling the T129 switcher): **"it sounds like the songs play over each other rather than
+switching. or do they just sound really similar…?"** Both hypotheses are partly true and BOTH are
+engine-side (`synth.js`):
+- **(a) Overlap on the immediate swap.** `swapNow()` (T132) / `setContext(name,{now:true})` resets the
+  generator but does **not** release the currently-sounding music voices, and the FDN reverb has a
+  multi-second tail — so the old context's pad chord + reverb **ring over** the new context for several
+  seconds; rapidly tapping the switcher piles up tails ("songs over each other"). This is a side-effect of
+  the instant swap we just shipped (T132/T128) and now affects **every** per-screen transition, not just the
+  switcher. **Fix:** on the **immediate** swap path only, quickly release/fade the active music voices +
+  tame the reverb carryover (e.g. a short ~60–120ms music-bus fade-out→in across the swap, and/or release
+  held voices + briefly cut the reverb send) so a switch **cuts in cleanly**. Leave the default
+  phrase-boundary swap's natural ring intact (it's musical there).
+- **(b) Contexts sound similar.** `solve`/`menu`/`event` share instrumentation (pad + bass + pluck/bell),
+  close tempo (80/88/100) and density, differing mainly by mode — so to the ear they're alike (`arena` is
+  the clear outlier with its wub bass + dense fast dark aeolian). **Strengthen the audible contrast** between
+  solve·menu·event (vary register / instrumentation / tempo / density / drum kit), keeping the firm
+  calm-solve-vs-energetic-arena rule and the `golden-synth` distinctness gate.
+- **DoD (LIVE-verified — output feature):** on a real browser, rapidly switching via the Settings switcher
+  **cuts each style in cleanly** (no audible pile-up of the previous track) and **each of the four styles is
+  clearly different** by ear; the default (non-`now`) phrase swap is unchanged; add the strongest feasible
+  headless check (e.g. after an immediate swap, no more than one context's worth of music voices is active;
+  per-context scores stay mutually distinct — extend `synth.test.js`/`golden-synth.test.js`); `node -c`
+  clean; all gates green; **B-owned files only** (`synth.js` + tests + `BUILDER-LOG-FX.md`). (Babysitter:
+  confirm against the owner's ear — green gates necessary-not-sufficient.)
 
 ### T133 — [B] FXGL: make the overlay CELEBRATION actually render on-device (the z-58 burst) · status: OPEN · OWNER-PRIORITY
 Split from T128(3). The owner badly wants celebration ("a LOT more celebration… loads of particles") but

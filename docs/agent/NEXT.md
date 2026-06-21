@@ -10,29 +10,29 @@
 
 ---
 
-**Builder A → `T131`  · register the golden gates in `pages.yml` (quick)**
-`T128`(1)+(2) DONE (`61654ed`) — per-screen distinct contexts + instant `swapNow()`, victory wub on the
-un-ducked sfx bus. **(3) celebration is now [B] `T133`** (overlay-context render — engine; your wiring is
-already correct + waiting). **T131:** add `node test/golden-fx.test.js` + `node test/golden-synth.test.js`
-to the CI gate list in `.github/workflows/pages.yml` (same pattern as the fxgl/synth gate lines), run in
-**COMPARE** mode — **never set `UPDATE_GOLDEN` in CI**. Only `pages.yml` changes. Then → `T123` (a11y
-contrast floor over the backdrop) → `T124` (fraction glyphs) → `T101` (Start delay) → `T102`/`T103`
-(Android) → `T89`/`T90` → content → `T72`.
+**Builder A → `T135` (volume recalibration — OWNER; HOLD for the new max) → then `T123`**
+`T131` DONE (golden gates in CI). **T135 — owner: the new synth engine is much louder, so the 3.0× volume
+default is too hot. Set the default to `0.05×` and rescale the slider so its top is the new sensible max.**
+Today: `index.html` `volRange` = `min=0 max=400 step=5 value=300`; `halves.vol` default 300; master gain =
+`vol/100`; `fmtVol` = `(v/100)×`. Update the default + slider `max`/`step`/`value` + the stored default
+together. **⚠ HOLD until the Babysitter posts the owner's chosen MAX** (asked now) — don't guess the range.
+Then live-verify the slider feels right (default ≈0.05× sits usefully on the track, not jammed at the
+edge). Then → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` (Start delay) →
+`T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → `T133`  · OFF STAND-BY — FXGL: make the overlay CELEBRATION render on-device (z-58 burst)**
-`T132`/`T130` DONE. **T133 — the engine gap A's T128 surfaced; the owner badly wants celebration.** A's
-`fxBigBurst`→`celebrate()` wiring (T125) is correct + tested but shows **nothing live**: `#fxBurst` is a
-**2nd WebGL/WebGPU context** (separate from the working backdrop) that likely fails to init/present
-on-device (mobile GPUs often refuse a 2nd context). It can't draw on the backdrop canvas — that's
-`z-index:-1` (behind the UI); the celebration must present at the **z-58 overlay**, in front of the
-panels. **Your call:** (a) fix/diagnose the 2nd overlay context (+ a refusal/loss fallback), and/or (b) a
-**Canvas2D overlay** particle path (no GL-context-count limit — always renders) mounted at overlay z,
-and/or (c) a single-context scheme that still lands the burst in front of the UI. It must **actually
-present particles on a real mobile browser** (break the green-but-invisible trap): verify on-device AND add
-the strongest headless check feasible (overlay controller `ready`+sized on the chosen backend; a CPU-still
-celebrate-frame golden in `test/golden-fx.test.js`). Keep reduced-motion / `setQuality` budget rules. Full
-DoD: `BACKLOG.md` T133. **B-owned files only** (`fxgl.js` + tests/goldens + `BUILDER-LOG-FX.md`); never
-touch existing Halves files (A re-points `#fxBurst` once it lands); never push `claude/agent`.
+**Builder B → `T134` (clean swap + distinctness — OWNER on it now) · `T133` celebration just landed (in review)**
+`T133` (Canvas2D-overlay celebration) pushed `3e7da28` — under review. **T134 — owner live on the switcher:
+"songs play over each other rather than switching, or they sound really similar."** Both real, both
+engine-side: **(a) overlap** — the T132/T128 immediate `swapNow()` doesn't release the old voices/reverb
+tail, so the previous pad + multi-second FDN tail ring **over** the new context (rapid taps pile up); now
+affects **every** per-screen transition. Fix: on the **immediate** swap path, quickly release/fade active
+music voices + tame the reverb carryover (~60–120ms music-bus fade across the swap, and/or release voices +
+briefly cut the reverb send) → a clean cut-in; leave the default phrase-boundary swap's natural ring. **(b)
+too similar** — solve/menu/event share instrumentation + close tempo/density (arena's the outlier);
+strengthen the **audible** contrast (register/instrumentation/tempo/density) keeping calm-solve-vs-arena +
+the golden-distinctness gate. **Verify on a real browser** (rapid switcher sampling → clean cut-in + clearly
+different styles); add the strongest headless check feasible. Full DoD: `BACKLOG.md` T134. **B-owned only**
+(`synth.js` + tests + `BUILDER-LOG-FX.md`); never touch existing Halves files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
