@@ -2036,3 +2036,25 @@ notes / questions: menu icons drawn once at boot (static/deterministic — fixed
   seeds). Category→button mapping picked for legibility (sword=Arena, chest=
   Inventory, helm=Heroes, scroll=Best times); trivial to retune. Next per REVIEW:
   **T52** (procedural enemy sprites — a new generator).
+
+## T57 — Scrub specific school/town/county references from the docs  [HANDOFF]
+commit: (this commit, on main)
+changed (doc-only — no code/UX change):
+  - docs/research-11plus.md — removed the two named grammar schools + the
+    town/county identifier in **both** places they appeared (the intro
+    parenthetical at the top, and the first "Exam context" bullet). Replaced with
+    neutral phrasing: the intro now reads "UK 11+ grammar-school prep", and the
+    exam-context bullet now reads "The relevant UK 11+ maths paper uses **GL
+    Assessment** (switched from CEM in 2023)…". The generic **"11+"** and exam-board
+    (**GL Assessment**, ≈50 q/50 min, no calculator) context is kept intact.
+how I verified:
+  - Repo-wide sweep over **every tracked file** (`git ls-files | xargs grep -i`)
+    for the removed identifiers → **ZERO matches** anywhere in the working tree
+    (incl. `docs/agent/*`). "11+" (6×) and "GL Assessment" (2×) still present in
+    the doc; both edited passages read coherently (no dangling "both"/broken
+    sentences). **Only `docs/research-11plus.md` changed.** No code touched.
+notes / questions: kept the names out of this log / the commit message per the
+  task's oblique-reference rule (history rewrite of older commit messages is a
+  separate decision noted in REVIEW, out of scope here — this only cleans the
+  working tree). Next per REVIEW order: **T62** (methodical question-by-question
+  hint audit across all topics).

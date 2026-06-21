@@ -1,9 +1,8 @@
 # Halves — 11+ Drill Topics: Research & Design (v2)
 
 > Canonical design doc after two research passes. Expands the game into many
-> timed mental-maths "sub-operation" drills for UK 11+ prep (Bishop Wordsworth's
-> School & South Wilts Grammar, Salisbury). **Status: researched & specced — not
-> yet built. Awaiting scope sign-off.**
+> timed mental-maths "sub-operation" drills for UK 11+ grammar-school prep.
+> **Status: researched & specced — not yet built. Awaiting scope sign-off.**
 
 ## Goal
 
@@ -14,9 +13,9 @@ positive distances, times as elapsed minutes, so no minus/colon keys).
 
 ## Exam context
 
-- **Bishop Wordsworth's** & **South Wilts Grammar** both use **GL Assessment**
-  (switched from CEM in 2023). Maths paper ≈ **50 questions / 50 min**,
-  multiple-choice, **no calculator** (~1 min/question, multi-step).
+- The relevant UK 11+ maths paper uses **GL Assessment** (switched from CEM in
+  2023). Maths paper ≈ **50 questions / 50 min**, multiple-choice, **no
+  calculator** (~1 min/question, multi-step).
 - **≈70% of the paper is number/arithmetic**; the rest geometry (~10–14%), data
   (~6–8%), algebra/sequences (~4–6%), measures embedded throughout.
 - Mix of **direct computation** (~30–40%) and **worded** problems (~60–70%) that
