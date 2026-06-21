@@ -1,6 +1,13 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T70` (hint clarity pass — explanations now genuinely
+**Current verdict:** `APPROVED — T65` (Arena scrolls to top after a fight). One line in
+`finishBattle` — `$("arenaBody").scrollTop = 0` after `renderArena`, before `show`, so the
+result + current tier are visible (win or loss). Verified it's in `finishBattle` only, NOT
+in `renderArena`/the hero-click handler, so hero selection doesn't jump-scroll. `arena.test.js`
+extended to prove both: picking a hero with scroll at 240 keeps it (no jump), and after a
+Fight scrollTop === 0 — **all 26 checks pass**; `node -c` clean. T65 → DONE.
+
+**Previously approved (done):** `T70` (hint clarity pass — explanations now genuinely
 helpful, not just correct). Verified independently: the gate passes (13 checks) and my full
 cross-topic scan is clean (no token/word answer-leaks, no plural slips). The twentieths now
 use **"Scale 11/20 up to hundredths (×5 top and bottom), then read off two decimal places"**
@@ -50,9 +57,9 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T65` → `T69` → `T71` → `T67` → `T66` → `T68` → `T52` → `T53` →
+**Next-task order:** **`T69` → `T71` → `T67` → `T66` → `T68` → `T52` → `T53` →
 `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
-`T59`/`T60`/`T61`). **Do `T65` next** — tiny fix: reset `#arenaBody.scrollTop = 0` in
+`T59`/`T60`/`T61`). **Do `T69` next** — tiny audio-volume bump (master VOL 0.16 -> ~0.30), then T71 (calmer music).  Then:
 `finishBattle` (win or loss; NOT on hero-pick re-renders) so the result/tier shows after a
 fight. Then:
 - **`T69`** — tiny audio-volume bump (master `VOL` 0.16 → ~0.30, keep music balanced, no

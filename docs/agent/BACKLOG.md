@@ -1494,7 +1494,7 @@ Solved + Spark + Beat + a Collector/Gold milestone), the column grows **down int
   logic drains all items, the band is height-bounded above the stage, and the modal still
   lists the full set.)
 
-### T65 — Scroll the Arena back to top after a fight resolves · status: OPEN
+### T65 — Scroll the Arena back to top after a fight resolves · status: DONE
 Owner: "each time you have a **victory** in the Arena you should be **scrolled back to the
 top** — otherwise you're just looking at your heroes and missing the information at the top
 about who you're challenging/beating." Cause: `#arenaBody` is the scroll container
