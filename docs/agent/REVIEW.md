@@ -1,6 +1,18 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T82` (visual-direction deep research · **doc only**) · build
+**Current verdict:** `APPROVED — T83` (guide → first-class Play·Practice·Guide action) · live
+build **`fdd9313`**. A third **"Guide"** button joins Start + Practice in `.start-actions`;
+`renderStartState` gates it on `Guides.has(mode.id)` (enabled even for **locked** topics so
+their guide can still be previewed — Start/Practice stay lock-gated). The per-row **`?`**
+(`.mr-guide`) markup + handler are **removed**; picker rows (incl. locked) are now **selectable**
+for preview, and `start()` still hard-guards `isUnlocked`. CSS resized the action row
+(`flex:1 1 0; min-width:0`, gap 12→10, padding trimmed) so **three buttons fit at 360px**.
+Verified **independently**: `node -c` clean; **zero `mr-guide`/`data-guide` orphans** in
+js/css/html; **full 21-gate suite green** incl. the new `guide-action.test.js` (11 checks:
+peer placement, enable-with-guide, disable-without-guide, **locked-topic preview still opens**,
+modal open/close, orphan-removal). T83 → DONE.
+
+**Previously approved (done):** `T82` (visual-direction deep research · doc only) · build
 **`7278b94`**. New `docs/VISUAL-DIRECTION-RESEARCH.md` (339 lines); **only the doc + BUILDER-LOG
 changed** — zero `.js`/CSS/HTML/gate touched (verified), so all gates stand. Substantively
 answers (1)–(7): §1 aesthetic teardown → 7 voxel-free techniques w/ real impl + cost (Bayer
@@ -175,14 +187,17 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T83` next** (tech-tree block, Phase 6.8) — promote the topic guide out of the per-row `?`
-into a **first-class button alongside Play + Practice** for the selected topic (gated like
-Start/Practice; remove the orphaned `.mr-guide`, keep locked-preview guides working). Then
-**`T84`** (data-driven, icon-node, 360px-safe tech-tree view + selected-node panel; renders from
-live `unlockedBy`/`requires`/`isUnlocked`/`have-total`, never a parallel edge list; swappable
-`nodeIcon()` so richer T82 art drops in later; keep the scrollable list as the a11y fallback).
-Then content extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store — folds in the T82
-TWA/manifest/SW plan). Specs in BACKLOG; this line is authoritative.
+**Do `T84` next** (tech-tree view, Phase 6.8) — data-driven, icon-node, 360px-safe tech-tree on
+the picker + a selected-node panel; renders from live `unlockedBy`/`requires`/`isUnlocked`/
+`have-total` (**never a parallel edge list**); swappable `nodeIcon()` so richer T82 art drops in
+later; keep the scrollable list as the a11y fallback. Then the **Settings + gating block**
+(Phase 6.9): **`T85`** (Settings screen + Clear-all-data behind a serious countdown + numpad-code
+confirm — also the QA reset) → **`T86`** (onboarding engine: unlock-state model + first-run
+single-question intro + Inventory gate + one-time highlight; **migration-safe**) → **`T87`** (wire
+the remaining gates: Practice/Heroes/Arena/Event-banner/Gold). Then content extension
+`T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store; folds in the T82 TWA/manifest/SW plan).
+*(Owner may move the T85–T87 gating block ahead of T84 on request.)* Specs in BACKLOG; this line
+is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

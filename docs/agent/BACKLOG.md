@@ -1507,7 +1507,7 @@ APIs, perf targets, delivery mechanisms) — a hand-wavy survey is a DoD failure
 > without a rewrite. (Sequenced after T82 so the node-art question is informed; reorderable on
 > owner's word.)
 
-### T83 — Promote the topic guide to a first-class action (Play · Practice · Guide) · status: OPEN
+### T83 — Promote the topic guide to a first-class action (Play · Practice · Guide) · status: DONE
 Small, self-contained UX change. Today the "how to approach this" guide is reached via a tiny
 **`?`** on each picker row (`.mr-guide` → `openGuide` modal); Start ("Play") and Practice are the
 two first-class buttons (`startBtn` + `practiceBtn`, `index.html` ~39–40).
