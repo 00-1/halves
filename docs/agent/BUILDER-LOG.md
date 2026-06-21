@@ -1325,3 +1325,48 @@ how I verified:
     tier 1 still winnable by base bram — so the T23/T43 invariants are unaffected.
 notes / questions: pure display rename; the Arena tier UI (T24) will show these.
   Next per REVIEW order: **T24 (Arena)**.
+
+## T24 — Arena mode (#/arena)  [HANDOFF]
+commit: f1006df (on main)
+changed:
+  - main.js — the Arena: `BATTLE_MODE` (synthetic mode whose `build()` shuffles a
+    mix of questions from every unlocked topic, each tagged `_mode` for correct
+    eyebrow/expr); `renderArena` (tier card, unlocked-hero picker with rating +
+    `matchupLabel`, result panel with the battle maths); `startBattle` (sets the
+    battle context + runs `start()`); `finishBattle` (resolves + grants). `finish()`
+    branches to `finishBattle` when a battle is active; `nextQuestion` now reads the
+    per-question source mode (`it._mode || mode`) for eyebrow/expr (identical for
+    normal drills). Added `arena` to `screens`, the `#/arena` route, and the
+    arenaBtn/Back/Fight/hero-pick wiring.
+  - index.html — `#arena` screen (header + `#arenaBody` scroll region + pinned
+    Fight/Back) and the start-screen **Arena** link.
+  - styles.css — Arena styles; generalised the type pixel-dot (`.typedot` +
+    `.t-brawn/.t-arcane/.t-cunning .typedot`) so heroes (T40) and arena share it.
+  - **Win path (owner requirement):** `finishBattle` resolves via
+    `Enemies.resolveBattle(hero, tier, perf, loadCollected())` on the **real owned
+    set**; `perf = computePerf(score, n, total/n)` only scales the 0.4..1.0 band —
+    no perf-only shortcut. Win → grant `tier:n` + `tierLoot(n)` + collector
+    milestones (saved), surface new hero unlocks; loss → no progress.
+how I verified:
+  - node -c (main/enemies/collectibles/heroes) OK; CSS balance OK (296/296); no
+    TODO/stub; all six new DOM ids present in index.html (id cross-check clean).
+  - **Decision-invariant Node test (6 checks, ALL PASSED)** on the exact live
+    computation (`computePerf`→`resolveBattle` on the real col): (a) tier 1
+    winnable by base bram at a perfect round; (b) a **perfect, fast round with 0
+    items canNOT beat tier 100** (no perf shortcut) and base bram can't beat tier 50;
+    every tier winnable with pre-tier items (0 gated); (c) the champion at
+    full-minus-final-loot beats tier 100, and **removing one champion boost flips it
+    to a loss**.
+  - **Async DOM battle-drive harness (16 checks, ALL PASSED)** — booted the real
+    main.js over a DOM shim and *played actual battle rounds via synthetic
+    keydowns*: renders the tier-1 card/region/hero-picker/matchup; picking a hero
+    enables Fight; Fight starts the round; driving it to completion returns to the
+    Arena with a **Victory!** panel and **persists `tier:1` + `loot:1:0`** (and the
+    loot boosts its hero); a second drive — roon vs **The Void Sovereign** with only
+    tier markers owned — plays a **perfect** round and still shows **Defeated** with
+    **no `tier:100` granted**, proving the Arena is unbeatable without a near-full
+    collection.
+  - Normal drills unaffected: `finish()` battle-branch is guarded by `battleCtx`;
+    `nextQuestion`'s `it._mode||mode` is identical when there's no `_mode`.
+notes / questions: hero-unlock/defeat milestones + currency are T25/T26; T24
+  surfaces new hero unlocks inline in the result panel. Next: T36 (icons).
