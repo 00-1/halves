@@ -3195,3 +3195,35 @@ notes / questions: I can't measure pixel viewport fit headlessly — the one-scr
   (`.picker`/`.mode-row*`/`.scroll-cue`/`.best`/`.tree-detail`) remains and can be swept later.
   The list-style selector lives on **Best Times** (the a11y alternative). Next per REVIEW
   order: **T97** (UI-direction research, doc only), then the Arena 3v3 block / content wave.
+
+## T97 — Deep research: a "gamey, less web-2.0" UI direction (doc only)  [HANDOFF]
+commit: (this commit, on main) — [A] task; doc only, ZERO behaviour/style change
+Goal: research, before committing, a more "gamey / less web-2.0" UI that fits our
+aesthetic — the owner isn't convinced by the rounded buttons. Ends in a ranked
+recommendation + a buttons-first reversible plan, co-designed with the FX layer.
+changed:
+  - **docs/UI-DIRECTION-RESEARCH.md (NEW)** — substantively answers (1)–(5):
+    (1) an **honest audit** grounded in the live CSS (radius tally `12px×11 / 14px×8 /
+    999px pills`, 13 soft drop-shadows, flat dark cards, the `.btn{radius:14px}` amber
+    pill, Space Grotesk display) → diagnosis: **pixel/RPG content inside a soft rounded
+    web-app frame**; (2) four candidate languages — **(a) pixel/8-bit bevel, (b) 16-bit
+    JRPG window, (c) exposed-tech/mono HUD, (d) modern angular** — each mapped to our
+    components with **no-build CSS** (box-shadow bevels, `clip-path` cut/stepped corners,
+    procedural 9-slice via canvas→`border-image`) and weighed for harmony with our pixel
+    generators + the brickmap-grit FX; (3) **component-by-component** treatments (buttons,
+    panels, modals, numpad keys, nav, toasts, tree nodes) with concrete CSS; (4)
+    **constraints** weighed honestly — the **kid-legibility-vs-pixel tension** (frames
+    pixel-bevel, **body text stays clean**), a11y (visible 2px focus ring, ≥44px targets,
+    AA), no-build, 360px, and **reversible via CSS custom-props + a `data-ui` switch**;
+    (5) a **ranked recommendation** — a blend **exposed-tech HUD + pixel-bevel low-radius
+    buttons + bordered panels** — and a **buttons-first phased plan** (tokens → buttons →
+    panels → modals → numpad → nav/nodes), each step a single token swap (reversible), with
+    an explicit **co-design-with-FX** note (shared hard-edge language + per-biome palette).
+how I verified:
+  - **Doc only** — `git status` shows the **single new `.md`**; zero `.js`/CSS/HTML touched;
+    contrast/glyphs/events/tech-tree spot-checks green (full suite unaffected); deploy-safe.
+notes / questions: open questions for the owner are in §6 (retro pixel-bevel vs modern
+  angular for the button spike; how far past buttons to go; JRPG framing on big panels;
+  confirm the clean-text rule). Next per the **Builder A pointer**: **T88–T90 (Arena 3v3)**,
+  then content **T58–T61**, then **T72**, plus FX **wiring** tasks once B's `FXGL` engine +
+  the surfaces exist.
