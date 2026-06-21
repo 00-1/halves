@@ -6,6 +6,63 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T120 — `synth.js` generative-audio engine (phased build per T119) — increment 1/5
+
+**Status: increment 1 (ENGINE CORE) DONE — handed off for review.** New files only
+(`synth.js`, `test/synth.test.js`); **zero edits to `sound.js` or any existing Halves
+file** (the [A] wiring is phase 6). No deps/bundler; no sample assets; deploy-safe;
+all existing gates green.
+
+### What shipped (increment 1 — the voice/patch foundation)
+- **`synth.js` / `window.Synth`** — a self-contained Web Audio engine, the start of
+  the T119-recommended `synth.js` (mirrors the `fxgl.js` pattern: standalone, A wires
+  it). This increment is the **engine core**, the "biggest quality jump #1: real
+  patches":
+  - **Master chain** mirroring `sound.js`: `master(gain) → brickwall limiter
+    (DynamicsCompressor, −1.5 dB, ratio 20) → destination`, with **music / drum / sfx
+    submix buses → master**. `Synth.output()` exposes the master so the [A] wire can
+    re-route it into `Sound`'s master + reconcile the T113 volume/limiter.
+  - **`adsr(param, t0, dur, env)`** — a real Attack/Decay/Sustain/Release on any
+    `AudioParam` (amp gain *and* filter cutoff), exponential for amplitude, with a
+    held-sustain stage; short notes still complete attack+decay.
+  - **Voice renderer** `osc(s) → [filter (own envelope + optional LFO)] → amp(ADSR) →
+    [pan] → bus`, with four engine topologies: **mono**, **unison** (detuned
+    supersaw), **fm** (carrier+modulator → frequency), **sub** (the **wub** — resonant
+    lowpass swept by an LFO).
+  - **Patch table** — `pad · pluck · bass · bell · lead · wub` (genuinely different
+    *instruments*, not one osc reskinned) + a **noise-based drum kit** (`kick` with a
+    pitch-drop, `snare` = bandpassed noise + tonal body, `hat` = highpassed noise,
+    `clap` = staggered bursts), all over a **procedurally-filled** (seeded, no-asset)
+    noise buffer.
+  - `Synth.mount(opts?)` (lazy; `opts.ctx` injects a context for tests),
+    `Synth.play(patch, when?, opts?)`, `Synth.drum(piece, when?)`, `setMuted`/`isMuted`/
+    `capabilities`/`dispose`. **One-shot only this increment — no scheduler, no
+    timer/RAF** (the lookahead scheduler lands with the Contexts increment).
+
+### Verification
+`node -c` clean; `node test/synth.test.js` → **41 checks** via a recording
+AudioContext stub (same approach as `sound.test.js`): master→limiter→destination +
+3 buses wired once; **ADSR shape** (cancel→0→peak@a→sustain@a+d→hold→0, correct
+release-end, short-note safety); **patch→graph** per engine (pad=3 detuned oscs+LP+pan;
+bell=FM carrier+mod→freq; wub=saw+LFO→cutoff, resonant Q; bass=mono low-cut; pluck
+filter-envelope sweep); **patch distinctness** (6/6 distinct signatures, ≥4 distinct
+graph shapes); **drum kit** (kick pitch-drop tonal, hat/snare/clap noise-based);
+**budget** (no timer/RAF in core, mute zeroes master + suppresses voices); **no sample
+assets / no deps / never calls `window.Sound`**. Full existing Halves suite still green.
+
+### Next increments (T120, one reviewable push each)
+2. **Space** — FDN reverb (4–8 delay lines + damping LP) + sends + stereo width +
+   ducking (T119 §6, the biggest quality lever vs today's dry sound).
+3. **Harmony** — key/mode, chord progressions, voice-leading, bass-follows-root.
+4. **Rhythm/variation** — Euclidean kit, 2nd-order Markov melody, motif development,
+   evolving + phrase-seeded density (the single lookahead scheduler lands here).
+5. **Contexts** — calm-solve set, menu, Arena + `intensity()`, event, victory wub-sting,
+   with the calm-vs-energetic invariants as tests.
+Then **phase 6 = [A] wiring** (Babysitter specs it): mount `Synth`, route contexts,
+fire the win-sting + duck, retire the old music scheduler.
+
+---
+
 ## T119 — Deep generative-audio research → principles + recommended engine ([B], doc)
 
 **Status: DONE — handed off for review.** New file only
