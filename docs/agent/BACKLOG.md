@@ -1112,7 +1112,7 @@ engine, same 8-bit aesthetic.
   the hero portrait id/pal matches the Heroes screen, and the menu layout holds at
   360px.)
 
-### T52 — Procedural enemy sprites in the Arena (new generator, high variation) · status: OPEN
+### T52 — Procedural enemy sprites in the Arena (new generator, high variation) · status: DONE
 Owner: "add an icon for the enemies in the Arena — a new image gen, something with lots
 of variation." The Arena tier card (`.arena-tier`, `main.js` ~702) shows only the
 enemy's name/type/def — **no art**. Add a **new procedural monster-sprite generator**

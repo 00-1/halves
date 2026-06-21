@@ -1,129 +1,43 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T68` (Arena wayfinding) · build **`6efff87`**. The tier card
-now shows region name + "region N/10 · tier P/12" + a row of pips (cleared/current/boss
-marked); "⚔ Boss next: <name>" at pos 11 and a "Region boss" banner at the boss tier; a
-toggleable **journey map** of all 10 regions (conquered ✓ / "you are here" / locked, each
-with its boss landmark); and a "🏁 Region conquered! Next: <region>" moment on beating a
-boss (skipped on the final tier). All driven from `E.REGION_SIZE`/`tierRegion`/`TIER_COUNT`
-— verified region/pos/boss/region-clear maths + that it crosses region boundaries.
-`wayfinding.test.js` (13 checks) green; CSS uses the AA palette; map toggle resets on arena
-entry; preserves the T65 scroll; `node -c` clean. **Minor non-blocking note:** locked map
-rows use `opacity:.7`, nudging the dimmed `--muted` boss/tag text slightly under AA (region
-*name* stays `--text`) — acceptable de-emphasis of not-yet-reached content; `.7`→`.85` would
-fix if the owner wants. T68 → DONE.
+**Current verdict:** `APPROVED — T52` (procedural enemy sprites in the Arena) · build
+**`f3cc9ae`**. New standalone `monsters.js` (separate from the item-icon system — confirmed
+no `C.drawIcon` reuse): a seeded, vertically-symmetric blob with region-biased horns/eyes/
+feet/spots, RPS-type palette tinting, and **bosses bigger + crowned + never single-eyed**.
+Drawn on the tier card (64px foe) and the battle-result header (hero-vs-enemy); static (no
+RAF), deterministic. `monster-variation.test.js` (9 checks) green: ≥90% pairwise distinct
+(40/40), 779/780 pairs differ substantially, every region boss differs from its grunt
+(10/10) & renders bigger (10/10), 45/45 region pairs distinct, type-tinted palette, no
+collectibles reuse, no RAF. `node -c` clean on `monsters.js` + `main.js`. T52 → DONE.
 
-**Previously approved (done):** `T66` (Arena → 120 tiers, 10 regions × 12) · build `2eb669a`. `TIER_COUNT` 100→120, `REGION_SIZE` 12, boss at each region's 12th tier;
-all 10 hand-named regions/bosses kept, +1 rank title ("Tyrant"); `DEF_GROWTH` retuned
-1.062→1.051; inventory Loot grouping updated to 12-tier regions. **Independently re-proved
-every buff-gating invariant at 120:** no tier gated behind its own loot (all 120); tiers
-1–5 winnable at 0 items; tier 120 unbeatable at 0 items; def monotonic (0 dips, 11→491);
-the 10 bosses at 12/24/…/120; all 120 names non-blank. `arena.test.js` updated to 120
-(dynamic `TIER_COUNT`) incl. final-tier full-collection + one-boost-flip — **29 checks
-pass**; `node -c` clean. T66 → DONE.
+**Previously approved (done):** `T68` (Arena wayfinding) · build `6efff87` — region header
+(region N/10 · tier P/12) + pips, "⚔ Boss next" + facing-boss banners, a toggleable journey
+map (10 regions: conquered/here/locked + boss landmarks), and a region-clear moment naming
+the next region. All from the Enemies region API; `wayfinding.test.js` (13) green. (Minor
+non-blocking: locked map rows `opacity:.7` dims `--muted` slightly under AA — owner may bump
+to `.85`.)
 
-**Previously approved (done):** `T67` (hero detail view) · build `d7eb533`. A new
-`#/hero/<id>` screen: list card collapsed to "Boosted by N — tap for details ›" (no more
-"+N more" cut-off); the detail shows the T51 portrait, full stats, the **complete owned
-boost list untruncated/scrollable**, and an **"X / Y boosts collected"** summary with the
-real per-hero total (verified bram = 17/93). No giant locked list (owner-confirmed);
-unknown/locked hero → back to the list; lazy-built on open. All `$("id")`s exist;
-`hero-detail.test.js` (13 checks) green as a new gate; `node -c` clean. T67 → DONE.
+**Earlier approvals — all DONE on `main` (build SHA · summary):**
+- `T66` · `2eb669a` — Arena → 120 tiers (10 regions × 12); every buff-gating invariant
+  re-proved at 120 (no tier behind own loot, tier 120 ⇔ near-full, one boost flips); 29 checks.
+- `T67` · `d7eb533` — hero detail view: full owned boost list untruncated + "X/Y collected"
+  (real per-hero total); 13 checks.
+- `T71` — calmer music (all styles ≤95 BPM, busy ones softened) + 15 distinct per-topic
+  styles + a dedicated "Hero's Arena" theme; 20 sound checks.
+- `T69` — audio volume raised (master 0.30, music 0.09), no clipping (worst-case ~0.19); 11 checks.
+- `T65` — Arena scrolls to top after a fight (in `finishBattle` only); 26 arena checks.
+- `T70` — hint clarity pass (twentieths → scale-to-hundredths; vague phrasings made concrete).
+- `T64` — mid-round toasts capped (2) + queued + band height-bounded; 7 checks.
+- `T63` — tap-to-reveal hint surfaced in normal rounds (clock/scoring untouched); 14 checks.
+- `T62` — methodical place-value-aware hint audit across all 15 topics (every hint read); 13 checks.
+- `T57` — scrubbed the school/town/county names (repo-wide grep zero); doc-only.
+- `T50` — procedural icons on the 4 menu buttons + Arena hero portraits; 16 checks.
 
-**Previously approved (done):** `T71` (calmer music + distinct per-topic styles + an Arena
-theme). Independently verified: **no style exceeds 95 BPM** (was up to 115; max now 95),
-busy styles softened (every density ≤ 0.36, drums thinned); **all 15 topics map to 15
-DISTINCT styles** (indices 0–14, none missing, zero collisions — incl. 3 new gentle styles
-Tide Pool/Lantern Way/Meadow); a dedicated **"Hero's Arena"** theme exists and `#arena`
-routes to it (was the menu loop). T69 behaviour preserved (no clipping, mute/visibility) and
-the T33 voice cap unchanged. `test/sound.test.js` grew to **20 checks — all pass**; `node -c`
-clean. ("Feels calm enough" is the owner's ear; the objective bar is met.) T71 → DONE.
-
-**Previously approved (done):** `T69` (audio volume raised, no clipping). Master `VOL`
-0.16→**0.30** (in the louder band), `musicGain` 0.07→**0.09** (music stays a balanced
-background under SFX). Independently verified via the new `test/sound.test.js` (stub
-AudioContext): **all 11 checks pass** — master = VOL, music balanced, **worst-case output
-peak ≈ 0.191 ≤ 0.9 (no clipping)**, mute zeroes master + stops music, unmute restores,
-tab-hidden stops / visible resumes. Builder added a clean `musicPlaying()` accessor for
-testability; wired as the 11th Pages gate; `node -c` clean. ("Louder/calmer enough" is the
-owner's ear; the objective bar is met.) T69 → DONE.
-
-**Previously approved (done):** `T65` (Arena scrolls to top after a fight). One line in
-`finishBattle` — `$("arenaBody").scrollTop = 0` after `renderArena`, before `show`, so the
-result + current tier are visible (win or loss). Verified it's in `finishBattle` only, NOT
-in `renderArena`/the hero-click handler, so hero selection doesn't jump-scroll. `arena.test.js`
-extended to prove both: picking a hero with scroll at 240 keeps it (no jump), and after a
-Fight scrollTop === 0 — **all 26 checks pass**; `node -c` clean. T65 → DONE.
-
-**Previously approved (done):** `T70` (hint clarity pass — explanations now genuinely
-helpful, not just correct). Verified independently: the gate passes (13 checks) and my full
-cross-topic scan is clean (no token/word answer-leaks, no plural slips). The twentieths now
-use **"Scale 11/20 up to hundredths (×5 top and bottom), then read off two decimal places"**
-(no improper fractions, works for all n incl. 11/20·17/20); fifths scale to tenths;
-quarters/eighths/sixteenths explain reaching the unit then "add up N quarter(s)/eighth(s)";
-times' fallback is now "add one more lot to a nearby fact you know"; 75% is "add half of N
-and a quarter of N". Read the full fractions dump — all clear + correct + method-only.
-`node -c` clean; no regressions. T70 → DONE.
-
-**Previously approved (done):** `T64` — mid-round toasts capped (2 visible) + queued + band
-height-bounded so they never cover the `#prompt`; no item dropped; `toasts.test.js` (7) green
-as the 10th gate. `T63` — tap-to-reveal hint now shown in normal rounds too.
-Babysitter verified independently: the `practiceCtx` gate is removed so the toggle +
-method note appear in **both** normal drills and Practice; the note is **hidden by default,
-reset per question**, and holds the correct method via `explain(qm.id, it)` — `qm` is the
-question's source mode (`it._mode || mode`, line 866), more robust than `mode.id`. Only the
-note/toggle display changed, so the **clock and scoring are untouched** (revealing a hint
-just costs time — Mastery/Speed stay honest); Practice unchanged. `node -c` clean; the
-flipped `practice.test.js` (normal round now shows the toggle, note hidden + populated) —
-**all 14 checks pass**. T63 → DONE.
-
-**Previously approved (done):** `T62` — methodical, question-by-question hint audit across
-all 15 topics). Babysitter **dumped and read every hint for every question in every topic**
-(300+), not a sample. Halves is rebuilt place-value-aware: round numbers work in their real
-unit with odd-count → "half-hundred/half-ten/half-thousand" (the "half of 500" bug is
-fixed), mixed numbers split into the actual nonzero place chunks, never naming an absent
-place; doubles same; add/sub magnitude-aware (3-digit bridges the hundred); times gained
-the ×12 trick; bonds2 decimal branch keyed to 1-dp vs 2-dp. All other topics read and
-confirmed apt (no changes, justified per-topic in the log). Every hint is correct,
-method-only (no token or word answer-leak), and place-honest — independently re-scanned
-clean across all topics. Gate strengthened: place-value honesty at ALL magnitudes
-(plural place word only if that digit is nonzero) + explicit `half of 500`/`1000` cases;
-13 checks pass. One **minor, non-blocking** note: the twentieths method for `11/20`/`17/20`
-says "find 11/10 (17/10), then halve" — valid but an awkward improper fraction vs the clean
-`9/20`; offered as optional polish, not required. T62 → DONE.
-
-**Previously approved (done):** `T57` (scrubbed the specific school/town/county refs).
-Babysitter re-verified independently: a **repo-wide `git grep`** for
-`salisbury|wiltshire|wordsworth|bishop|south wilts|sarum` on `origin/main` returns
-**ZERO** matches across **every** tracked file (incl. `docs/agent/*` + the new builder-log
-entry); **"11+"** (6×) and **"GL Assessment"** both survive; the prose reads coherently
-(named schools → "UK 11+ grammar-school prep", "both use" → "the relevant 11+ maths paper
-uses"); doc-only change (research doc + builder log), no code touched. T57 → DONE.
-
-**Previously approved (done):** `T50` — procedural icons on the four menu buttons (real
-`scroll`/`chest`/`helm`/`sword` presets, static draw) + hero portraits on the Arena pick
-cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
-(16 checks) green as the 9th Pages gate; layout-safe; no regressions.
-
-**Next-task order:** **`T52` → `T53` →
-`T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
-`T59`/`T60`/`T61`), then **`T72`** (Play Store readiness: research doc + PWA foundation).
-**Do `T52` next** — procedural enemy sprites in the Arena (new generator, themed per region/type, bosses special). Then T53 scenery, T54-T56, then content (T58, T59-T61), then T72.
-- **`T66`** (120 tiers) sits before the arena work; **`T68`** (Arena wayfinding — region
-  progress, boss anticipation, a simple journey map) right after T66 so it's built on the
-  final 12-per-region structure; then the arena art `T52`/`T53`. **`T67`** (hero detail)
-  rides with the UX cluster.
-- **`T66` — set the Arena to 120 tiers** (owner reconsidered ~1000; chose 120, close to 100,
-  all names hand-crafted). 10 regions × 12, boss at each region's 12th tier (keep the 10
-  named regions/bosses, add ~2 rank titles), retune `DEF_GROWTH` for the new length, update
-  `arena.test.js` to 120 + final tier 120 ⇔ near-full collection. No procedural naming.
-- **`T67` — hero detail view** (owner: hero boost-item list is long & partially hidden via
-  "+N more"). Give heroes a detail screen with the full **owned** boost list untruncated +
-  portrait + stats; for unowned, show an **"X / Y collected" summary** with the real
-  per-hero total (~74–103, computed) — **not** a giant locked list. **Owner-confirmed.**
-- Sequenced early because T62 sets the hint standard that T58's playbook and the new-topic
-  batches (T59–T61) must follow. Then T52–T56. Detailed blocks below are in spec order;
-  follow this line for sequence.
+**Next-task order:** **`T53` → `T54` → `T55` → `T56`**, then content extension (`T58`
+playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness:
+research doc + PWA foundation). **Do `T53` next** — procedural region scenery (per-location
+backdrop behind the tier card, dimmed so AA text contrast holds; static, redraw on region
+change). Remaining specs are in BACKLOG; this line is the authoritative sequence.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**
@@ -134,80 +48,8 @@ the rest, and the batch order doubles as a sensible unlock-chain / difficulty pr
 Arena buff-gating once on the grown pool. Not per-topic (too much overhead) nor one mega
 task (unreviewable).
 
-**Reference — `T50` (DONE above) / generated icons on nav buttons + hero portrait in the
-Arena picker (owner-reported).** The Best times / Inventory / Heroes / Arena menu buttons are
-"subtle and boring" — give each a small **procedural pixel icon** (reuse the existing
-`C.drawIcon` system + a fitting category preset with a fixed seed; no new art), legible
-and non-wrapping at 360px. And the Arena "choose your champion" cards show no portrait
-— add the hero portrait with the **same call the Heroes screen uses**
-(`C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], "familiar")`), plus the chosen hero's
-portrait in the result header. Presentation only; build on the **post-T47** Arena. Full
-spec in BACKLOG "T50".
-
-**Then `T52` — procedural enemy sprites in the Arena (owner-reported).** "Add an icon
-for the enemies — a new image gen with lots of variation." Add a **new** monster-sprite
-generator (separate from the item-icon system; e.g. `monsters.js`/`window.Monsters`),
-deterministic per tier, with high variation, **themed by the 10 regions** and tinted by
-RPS type, **bosses bigger/special**; draw it on the tier card + battle-result header.
-Static (no RAF). Wire an enemy-variation assertion as a new Pages gate. Full spec in
-BACKLOG "T52".
-
-**Then `T53` — procedural region scenery in the Arena (owner-reported).** "Scenery image
-gen for each location." Each of the 10 regions (`BANDS`) gets a deterministic **backdrop**
-behind the tier card — distinct palette/silhouette per region — drawn **behind** the
-sprite/text and dimmed so WCAG-AA text contrast holds (ties to T46). Static, redrawn only
-on region change (no RAF). Build on T52. Full spec in BACKLOG "T53".
-
-**Then `T54` — version check + "Update" button (owner-reported).** Poll the existing
-`build.json` (already deployed with the sha; **don't** add a parallel `version.json`)
-with `cache:"no-store"` on an interval; if the sha differs from the booted one, show an
-unobtrusive **"Update available — Refresh"** control that calls `location.reload()` on
-click. User-initiated only (never auto-reload / no focus theft mid-drill), offline-safe
-(swallow failures), AA-legible. Full spec in BACKLOG "T54".
-
-**Then `T55` — extend the Collector award ladder to 10,000 (owner-reported).** The
-`Collector` category dead-ends at 150 (Curator/Hoarder/Completionist) while the catalogue
-is already 1045 items. Replace it with a full ladder to **10000** (e.g. 25/75/150/300/
-500/750/1000/1500/2500/5000/7500/10000, rarity climbing to legendary), **keeping the
-existing `collector:25/75/150` ids** (migration), renaming the 150 tier, varied British
-names, thousands-formatted descs. `evaluateCollector` is already threshold-based — no
-logic change. Full spec in BACKLOG "T55".
-
-**Then `T56` — pixel-art the app mark + topic glyphs (owner-reported).** The brand mark
-and the 15 topic glyphs (`mode.glyph`: `x/2`, `a×b`, `n%`, `x²`, …) are typographic and
-look "too sleek" beside the pixel-art icons; owner wants them **re-rendered as pixel art
-but keeping the maths operators recognisable**. Build a small procedural **pixel bitmap
-font** (digits, `x a b n`, `× ÷ + − ± / % ½ ¾ ²`, `100`/`1k`) in its own module, driven
-by structured per-mode glyph tokens, and use it for the entry/start marks, the
-guide/practice titles, and toasts — plus a **procedurally-generated favicon /
-apple-touch-icon** (none exists today) via a runtime data-URL. Static (no RAF),
-AA-contrast, 360px-safe, crisp at both big and small sizes. Full spec in BACKLOG "T56".
-
-**Then `T57` — scrub the specific school/town/county references (owner-reported).** The
-only occurrences are the parenthetical at `docs/research-11plus.md` ~lines 4–5 and the
-first "Exam context" bullet ~line 17 (two named grammar schools + a town/county); no
-code/UI references exist. Generalise to "UK 11+ grammar-school prep"; **keep "11+" and
-the exam board ("GL Assessment")**. Doc-only. DoD = a repo-wide grep for the removed
-identifiers returns zero **in every tracked file incl. `docs/agent/*`** (this spec, and
-BACKLOG, deliberately don't spell the names out). Full spec in BACKLOG "T57".
-
-**Then Phase 7 — content extension (owner-requested).** Add more topics over time, but
-with **genuinely new content** (new procedural art + names + guides), not dilution.
-- **`T58`** — write `docs/CONTENT-EXTENSION.md`: the coupling map (topic → collectibles →
-  boosts → hero ratings → the dynamic Arena def calibration), what **auto-scales** (Arena
-  *difficulty* — calibration is dynamic; Collector ladder; lazy inventory), the
-  **anti-dilution rule** (new icon categories + name banks + guide + method-only hints +
-  glyph tokens per wave), the add-a-topic checklist, and the invariants/gates to re-verify.
-  **Decision (owner-confirmed):** the Arena stays **100 tiers** — grows in difficulty
-  (dynamic calibration), not length; variety via new enemy art (T52)/loot themes.
-- **`T59`/`T60`/`T61`** — the Wave-2 topics in 3 thematic batches, each following T58 and
-  bringing new art/names: **A** Rounding + Larger ×/÷; **B** Measures (Money, Time,
-  Metric); **C** Reasoning (Ratio, Mean, Sequences). Specs in `docs/research-11plus.md`.
-  Each batch must re-prove the Arena buff-gating on the grown item pool + pass all gates.
-  Full specs in BACKLOG "Phase 7".
-
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
-gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
+gates), procedural SFX + chiptune, 12 heroes, a 120-tier Arena with battle/loot
 (beatable only at near-full collection), 50 procedural icon categories with
 per-item variation, ~1045 collectibles with unique characterful names, Goblin Gold,
 a forgiving day-counter, a per-question practice/review view, per-topic guides, and
