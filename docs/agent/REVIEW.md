@@ -614,20 +614,29 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T106`** [A] (**`T112` DONE — FX fills the screen + Arena backdrop + win
-  celebrations; `T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**). **`T106` — tech-tree v2:** use the
-  full width (≈3-abreast / filled layout, handling varying 1/2/3-part depth gracefully), a clearer
-  connector visual language (chain vs mastery-gate, lit/dim by state), still **data-driven** (live
-  `unlockedBy`/`requires`/`isUnlocked`, no parallel edge list), focusable nodes, locked-never-start,
-  360px-safe. Full DoD in BACKLOG `T106`.
+- **Builder A — next: `T113`** [A] · **OWNER-PRIORITY (jumps ahead of T106)** (**`T112` DONE — FX fills
+  the screen + Arena backdrop + win celebrations; `T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**).
+  **`T113` — live Volume + Tempo sliders in Settings (a DIFFERENT approach to the audio).** Audio
+  volume + in-level tempo have failed multiple blind passes (T69/T71/T98); stop guessing — **instrument
+  it** so the owner calibrates by ear and reports the values. **Root cause to act on:** the engine runs
+  at ~half scale (per-voice gains ~0.10–0.16, `musicGain` 0.09 → output peaks ≈0.51 at `VOL=0.80`), so
+  the −1.5 dB limiter **never engages** and small `VOL` bumps did ~nothing. Fix = **a much wider gain
+  range** (slider master up to ~2.0–2.5×, limiter as the clip-safe net) + a **global tempo multiplier**
+  (`bpm × tempoMult`, range ~0.4–1.0×). Both sliders **live, persisted, with a visible exact value** +
+  a **Test-sound** button so it's calibratable from Settings. Full DoD in BACKLOG `T113`. Then **`T114`
+  is BLOCKED** on the owner reporting the good values (babysitter fills them in → defaults). **Then →
+  `T106`.**
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
-  submit.** Authoritative order after T106: **`T101`** (Start→fullscreen delay — quick, owner-flagged,
-  leads the perf work) → **`T102`** (Android PWA+TWA — installable parity build, now that the web UI is
+  submit.** Authoritative order: **`T113`** (audio sliders — owner-priority) → **`T106`** (tech-tree
+  v2 — full width, clearer connectors, absorb bottom slack; data-driven, focusable, locked-never-start,
+  360px-safe) → **`T101`** (Start→fullscreen delay — quick, owner-flagged, leads the perf work) →
+  **`T102`** (Android PWA+TWA — installable parity build, now that the web UI is
   stable) → **`T103`** (Android-inclusive perf research — needs T102 to profile) → **`T89`/`T90`**
   (Arena 3v3 team UI + playout) → content **`T58`** blueprint (Babysitter drafts it **in the background
   now** → owner approves → build) → **`T59`/`T60`/`T61`** → **`T72`** (Play-Store submission). The
-  Arena-biome FX (T108) is already wired (T112); celebration/home FX done. Owns ALL existing Halves
+  Arena-biome FX (T108) is already wired (T112); celebration/home FX done. (T114 slots in right after
+  the owner reports T113's calibrated values.) Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
 - **Builder B — next: STAND BY (engine queue exhausted; do NOT invent a new engine capability).**
   T93·T94·T95·T108 are all DONE and headless-perfect but **all unwired** — more engine code would be

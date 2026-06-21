@@ -2087,6 +2087,55 @@ is deferred to a later step.)
   far as headless allows). (Babysitter: confirm it reads "game not web-app", the focus ring +
   contrast + tap targets survive, body text is unaffected, and `data-ui="classic"` restores today.)
 
+### T113 — [A] Audio: live Volume + Tempo sliders in Settings (owner-calibrated) · status: OPEN · OWNER-PRIORITY
+**A different approach — stop tuning blind.** Audio volume + in-level tempo have had multiple passes
+(T69/T71/T98) and STILL don't match what the owner hears on the Poco X3. Instead of guessing constants,
+**instrument the app**: give the owner real-time sliders to find the right values by ear, **display the
+exact value**, and the owner reports them back → a tiny follow-up (T114) bakes them as defaults. The
+sliders also stay as genuine user settings (good UX for kids/parents).
+**ROOT-CAUSE the babysitter found (act on it — this is why past passes failed):** the engine runs at
+**~half scale**. Per-voice SFX gains are ~0.10–0.16 and `musicGain` is 0.09, so at master `VOL=0.80`
+the output **peaks ≈0.51** — the brickwall limiter (−1.5 dB, on `master→limiter→destination`) **never
+engages**. ~6 dB of headroom is unused, so small `VOL` bumps changed almost nothing. The fix is a
+**much wider gain range** with the limiter as the safety net — NOT another tiny constant tweak.
+- **Volume slider (Settings).** A real `<input type="range">` that sets the **master gain live** (you
+  hear it change as you drag). **Range must reach genuinely LOUD** — map it so the top end pushes the
+  output to/above full scale (e.g. master gain up to ~2.0–2.5×; the existing limiter clamps the peaks,
+  so it's loud-but-safe, never clipping). The owner must be able to reach "too loud" and dial back.
+  **Persist** it (localStorage) and apply on load; mute/unmute still works alongside it. **Display a
+  precise, reportable value** next to the slider (show the underlying multiplier, e.g. `1.60×`, AND/OR a
+  0–100 readout — the owner will read this off and tell the babysitter the good level).
+- **Tempo slider (Settings).** A real slider that sets a **global music-tempo multiplier live** (scales
+  every style's BPM: `mNext += (60 / (bpm × tempoMult)) / 4`). The owner says in-level music is "too
+  fast/stressful" — so the range must go **clearly slower** (e.g. **0.4×–1.0×**, default ≤ current).
+  Applies live to whatever music is playing (menu music in Settings, so it's audible there) and
+  persists. **Display the exact multiplier** (e.g. `0.70×`) so the owner can report it. (If slowing the
+  tempo alone doesn't fix "stressful," a later pass can also thin density — but tempo first, owner-led.)
+- **Make it calibratable from Settings.** Both sliders must produce **audible change immediately** while
+  on the Settings screen. Add a small **"Test sound"** button (plays a representative SFX, e.g. a
+  correct-answer chime) so the owner can judge volume without entering a level; menu music covers tempo.
+- **No-build + a11y + safety.** Plain `<input type="range">`; label each ("Volume", "Tempo") with the
+  live value; ≥44px touch target; keyboard-operable; works under `data-ui="pixel"` (style the track/
+  thumb to match, squared); the limiter stays wired so the louder range cannot clip. Reduced-motion
+  irrelevant. Keep the existing Sound on/off toggle.
+- **DoD:** Settings has a **Volume** slider and a **Tempo** slider, each with a **visible exact value**;
+  dragging either changes the audio **in real time** (volume audibly louder/quieter across a wide range
+  that reaches clearly louder than today; tempo audibly slower); both **persist** across reloads and
+  apply on boot; a **Test-sound** button plays a sample; the limiter prevents clipping at max volume;
+  `node -c` clean; the sound test asserts the volume slider maps to master gain over a wide range
+  (reaching > today's 0.80, capped by the limiter) and the tempo multiplier scales the scheduler step;
+  all gates green; 360px-safe; pixel-styled. (Babysitter: confirm the slider range genuinely reaches
+  loud and the tempo genuinely slows; then the **owner reports the two values** → T114 sets them as
+  defaults.)
+
+### T114 — [A] Audio: set the owner-calibrated Volume + Tempo as defaults · status: BLOCKED (needs T113 + owner's reported values)
+Once T113 ships and the owner calibrates and **reports the good Volume + Tempo values**, set those as
+the **defaults** (the initial slider positions / `VOL` + `tempoMult` constants) so a fresh player gets
+the right feel out of the box. Trivial constant change + update the sound test's expected band. Keep
+the sliders (users can still adjust). DoD: defaults match the owner's reported values; `node -c` clean;
+sound test band updated; all gates green. *(Babysitter fills in the exact numbers when the owner gives
+them.)*
+
 ### T106 — [A] Tech-tree v2: use the full width + a clearer relationship visual language · status: OPEN
 Owner: the tree nodes **don't use the full screen width** (only ~2 abreast in a ~360px column) and
 the **relationship between nodes isn't clear** — improve the connector visual language. Make the
