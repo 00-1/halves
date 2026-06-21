@@ -2342,6 +2342,31 @@ it). Mirror the FX-wiring pattern; consume `Synth`'s API only (never edit `synth
   (Babysitter: confirm on the live build there's ONE music engine = Synth, solves are calm, Arena drives,
   a win wubs, ducking works, and the sliders/mute still rule it — then it's owner ear-check time.)
 
+### T125 — [A] VFX pass 3: make the FX actually LAND (Arena + celebrations + presence) · status: OPEN
+Owner: "is there still a VFX pass queued? I never saw anything beyond the main screen." Diagnosis: the
+FX is wired but **under-tuned / over-gated**, so it reads as invisible. NOT a new engine — consume the
+existing `FXGL` API; this is [A] tuning/wiring. **Depends on T123** (the contrast floor) — strengthening
+backdrops adds grey-text-on-purple risk, so do T123 first, and keep AA on every screen FX touches.
+- **Arena backdrop — make it clearly present.** It's wired (`#arena`, `deriveArenaScene`) and not bugged,
+  but the early-region palette is dark/subtle vs the home's bright purple, so it's unnoticeable. Lift its
+  presence (a touch more opacity/contrast/scene energy, still behind the DOM, still AA-safe) so entering
+  the Arena visibly *feels* like a place — and confirm it actually shows on the live build.
+- **Celebrations — fire more often + be noticeable.** Today a burst only pops on an Arena win, a **rank
+  ≥6** run (`FX_RANK_MIN=6`), or a **new collectible** — too rare. **Loosen the gate** (e.g. lower the
+  rank floor so a *decent* round pops, scaled so a poor run still doesn't) and **make the burst itself
+  more visible** (more particles / a touch longer / brighter palette) so a win/level-up clearly
+  celebrates. Keep it tasteful + never covering the question/result text (T64) + reduced-motion-safe.
+- **(Owner's call — presence on more screens.)** Optionally extend a *subtle* backdrop to the **results/
+  summary** win screens so finishing a round feels rewarded, and/or a very faint ambience on other menu
+  screens (inventory/heroes). **NOT the solve/#game screen** (keep solving calm/undistracted) unless the
+  owner asks. Default this task to **Arena + celebrations only**; add screens if the owner wants them.
+- **DoD:** entering the **Arena shows a clearly-present backdrop** (verified live); a **celebration burst
+  fires on a decent win/level-up** and is **noticeable** (not a rare faint flicker); nothing covers key
+  text; AA holds on every FX-touched screen (with T123's floor); reduced-motion-safe; perf budget holds
+  (idle off-screen); `node -c` clean; all gates green (extend `fx-wiring.test` for the loosened gate +
+  the Arena presence). (Babysitter: confirm on the live build the Arena has visible atmosphere and a
+  normal good win actually celebrates — the owner's "I never saw anything" is the bar to clear.)
+
 ### T124 — [A] Fraction tree-glyphs still illegible — make them bigger/clearer using the node width · status: OPEN
 Owner (screenshot, tech-tree): the fraction topic glyphs are **still bad at node size** — esp. the
 **second** (the standalone Fractions node), and "there's a lot of horizontal space for it to take up

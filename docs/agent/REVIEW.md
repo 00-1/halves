@@ -819,13 +819,15 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T121`** [A] (**`T122` DONE — synth engine wired & audible; the whole prior queue
-  DONE**). *(Read `NEXT.md` fresh before starting — canonical.)* **Visual-readability batch → `T121`**
-  (scroll-fade reveal +
-  **coin gold + calendar green**) → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
-  contrast floor/scrim + honest `contrast.test`) → **`T124`** (fraction tree-glyphs still illegible —
-  bigger/clearer using the node width; T104 follow-up) → **`T101`** (Start delay) → **`T102`/`T103`**
-  (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
+- **Builder A — next: `T121` (finish part a — scroll-fade)** [A] (**`T122` DONE; T121 part (b)
+  coin-gold/calendar-green DONE `b662840`**). *(Read `NEXT.md` fresh before starting — canonical.)*
+  **`T121(a)`** mask the tree scroll-fade to reveal the backdrop (not a black `--bg` smear) → **`T123`**
+  (a11y: grey text fails AA over the purple FX backdrop — contrast floor/scrim + honest `contrast.test`)
+  → **`T124`** (fraction tree-glyphs still illegible — bigger/clearer using the node width; T104
+  follow-up) → **`T125`** (VFX pass 3: make the FX LAND — Arena backdrop presence + celebrations fire
+  more often/noticeably; **after T123** since more backdrop = more contrast risk) → **`T101`** (Start
+  delay) → **`T102`/`T103`** (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content
+  **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):

@@ -10,16 +10,16 @@
 
 ---
 
-**Builder A → `T121`  · visual-readability batch (scroll-fade + status-icon colours)**
-`T122` DONE (synth engine wired & audible 🎙). Now the readability batch: **T121** —
-the T116 scroll-fade paints `--bg` (near-black) over the purple FX backdrop → black
-smear: **mask the `.tree` content to fade to transparent** (reveal the backdrop),
-tied to `can-scroll`; keep the ▾ cue. AND **status icons take their text colour**:
-`.px-ic.coin` = `var(--amber)` (gold), `.px-ic.calendar` = `var(--mint)` (green); all
-other icons stay muted. Full DoD: `BACKLOG.md` T121. Then → `T123` (a11y: grey
-text fails AA over the purple backdrop — contrast floor + honest gate) → `T124`
-(fraction tree-glyphs still illegible — draw them bigger/clearer using the node
-width) → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
+**Builder A → `T121` (finish part a)  · the SCROLL-FADE (part b coloured-icons DONE)**
+`T122` DONE. T121 **part (b) coin gold + calendar green DONE (`b662840`)**. **Still do
+part (a):** the T116 scroll-fade paints `--bg` (near-black) over the purple FX backdrop
+→ black smear: **mask the `.tree` content to fade to transparent** (reveal the backdrop),
+tied to `can-scroll`; keep the ▾ cue. Full DoD: `BACKLOG.md` T121(a). Then → `T123`
+(a11y: grey text fails AA over the purple backdrop — contrast floor + honest gate) →
+`T124` (fraction tree-glyphs illegible — bigger/clearer using node width) → `T125`
+(VFX pass 3: make the FX LAND — Arena backdrop presence + celebrations fire more/
+noticeable; after T123) → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90`
+→ content → `T72`.
 
 **Builder B → STAND BY  · `T120` synth engine COMPLETE (all 5 phases approved)**
 Engine done + headless-perfect but standalone; the value is the [A] wiring (T122),
