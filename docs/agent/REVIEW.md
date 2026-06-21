@@ -1,19 +1,33 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T139` [B] (the owner-approved 12-style music palette) · live build
-**`efef4b4`**. **CI green; collision-clean** (B-owned: `synth.js`, `test/synth.test.js`,
-`test/golden-synth.test.js`, 12 `test/golden/synth_score_*.json`, distinctness golden, `BUILDER-LOG-FX.md`).
-Builds the T141 palette **exactly as the owner approved**: `CONTEXTS` is now the **12 styles** — `menu` +
-`arena` kept, old `solve`/`event` dropped, and the 10 new: `lofi` (Lo-Fi Study, calm/solve), `ambient`
-(Ambient Drift, calm), `chiptune`, `synthwave`, `dubstep` (Dubstep Victory), `dnb`, `bigroom` (Festival),
-`boss8bit`, `tropical`, `techno`. Verified **independently**: 12 context keys exactly match the palette;
-**distinctness golden = `{styles:12, pairs_compared:66, all_distinct:true}`** (every one of the C(12,2)=66
-pairs is a distinct score — the structural guard against "samey" returning); `node -c` clean; `synth.test`
-144 (calm-vs-energetic invariants hold); `golden-synth` 19 (12 per-style score goldens + distinctness, all
-regenerated intentionally); full suite + CI green. T139 → DONE. **🎵 Built — the owner HEARS them once A's
-`T140` lists all 12 in the picker + routes them per-screen + fires the dubstep victory on a win.** B → `T138`
-(the diagnosed celebration-size/loop fix — its sole remaining task). *(Builder note: B finished T139 before
-picking up the T138-first re-point — staleness race, harmless; T138 is next.)*
+**Current verdict:** `APPROVED — T138` [B] (celebration on-device fix + a REAL visibility gate) · live build
+**`cda6fd6`**. **CI green; collision-clean** (B-owned: `fxgl.js`, `test/golden-fx.test.js`,
+`test/golden/fx_celebrate_visibility.json`, `BUILDER-LOG-FX.md`). Three engine fixes + the structural win:
+**(1) `_ignite()` now `_applyResize()`s before drawing** — a celebration fired before layout settled left the
+buffer at 1×1 (→ invisible); it now re-fits to the live viewport on every burst (the likely **in-game** cause:
+wins/runs fire before a resize). **(2)** particles `Math.max(1, Math.ceil(s))` (no sub-pixel). **(3)
+`canPresent()`** surfaces a **null 2D context** (a canvas already bound to GL → `getContext("2d")` null →
+silent no-op) so the tester can report it (false → an [A] re-mount). **The real win — a visibility GATE:** the
+T133 golden only **counted** `fillRect` calls (a 1×1/off-canvas/transparent draw passed it — that's how this
+stayed green while invisible three times); the new gate **rasterises** each rect with alpha into an in-bounds
+pixel buffer and measures **lit coverage** — the celebrate frame paints **~56.5k lit px (6.1% of 720×1280)**
+and the check **FAILS on a 1×1/zero-coverage frame** (demonstrated ≤1 lit px). Verified independently: `node
+-c` clean; `fxgl.test` 124 + `golden-fx` 19→27; full suite + CI green; the visibility golden is a real
+coverage number. T138 → DONE. **🎆 OWNER RE-TEST NEEDED** — the in-game/1×1 cause is fixed and "invisible" is
+now a CI failure, **but your tester showed a real size (1038×2305) yet was blank, which these fixes don't
+fully explain** — so: re-tap a tester button. **(a) visible** → fixed (in-game wins should show too); **(b)
+still nothing** → it's the loop/`canPresent` (B reopens — the tester now exposes `canPresent`); **(c) visible
+but underwhelming** → B makes them bolder (the size was floored, not enlarged). B → STAND BY pending the
+owner's read.
+
+> **Previously approved (done):** `T139` [B] (the owner-approved 12-style music palette) · live build
+> **`efef4b4`**. **CI green; collision-clean** (B-owned: `synth.js`, `test/synth.test.js`, 12
+> `test/golden/synth_score_*.json`, distinctness golden, `BUILDER-LOG-FX.md`). Builds the T141 palette as the
+> owner approved: `CONTEXTS` = the **12 styles** (`menu`+`arena` kept; `solve`/`event` dropped; 10 new — lofi/
+> ambient/chiptune/synthwave/dubstep/dnb/bigroom/boss8bit/tropical/techno). **Distinctness golden =
+> `{styles:12, pairs_compared:66, all_distinct:true}`** (all 66 pairs distinct). Verified: keys match; `node
+> -c` clean; `synth.test` 144; `golden-synth` 19; full suite + CI green. T139 → DONE. **🎵 owner HEARS them
+> once A's `T140` lists/routes the 12 + fires the dubstep victory.**
 
 > **Previously approved (done):** `T142` [A] (restore the FX backdrop — local backings, not T123's global
 > slab) · live build **`42aac3b`**. **CI green; collision-clean** ([A]-owned: `styles.css`,

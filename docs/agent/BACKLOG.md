@@ -2658,7 +2658,17 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
-### T138 — [B] Celebration invisible: CPU-path particles drawn TOO SMALL for the high-DPR backing buffer · status: OPEN · OWNER-PRIORITY · BUG · DIAGNOSED
+### T138 — [B] Celebration invisible: CPU-path particles drawn TOO SMALL for the high-DPR backing buffer · status: DONE (`cda6fd6`, CI green) — OWNER RE-TEST pending
+**DONE 2026-06-21** — APPROVED (REVIEW.md). Engine fixes: `_ignite()` `_applyResize()`s before drawing (the
+1×1-before-layout cause — fixes in-game fires); particle `Math.max(1,ceil(s))` sub-pixel floor; `canPresent()`
+surfaces a null 2D context. **The structural win:** a REAL visibility gate (`fx_celebrate_visibility`) that
+rasterises each rect+alpha into an in-bounds buffer and measures lit coverage (~56.5k px / 6.1% of 720×1280;
+FAILS on a 1×1/blank frame) — replaces the count-only golden that hid this thrice. Verified: `node -c` clean,
+`fxgl.test` 124, `golden-fx` 19→27, CI green. **⚠ OWNER RE-TEST:** the tester showed a real size (1038×2305)
+yet was blank, which these fixes don't fully explain → if still invisible it's the loop/`canPresent` (reopen);
+if visible-but-weak, enlarge particles (size was floored, not scaled up).
+
+> Original (diagnosed) spec below.
 Owner gave the tester readout (screenshot): **`Test celebration` → `1038×2305`** (no "not ready"). **DIAGNOSED
 — this is NOT resize/occlusion:** the `#fxBurst` 2D canvas is **ready and full-size** (1038×2305 = the Poco
 X3 viewport × dpr≈2.75). The fns fire (the buttons restart the music) and `renderFrame` draws — yet nothing

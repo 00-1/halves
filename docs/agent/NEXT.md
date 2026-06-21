@@ -27,20 +27,14 @@ exempting only `.build` from the contrast gate, keeping `.readouts`/`res-label` 
 menu→menu/event→festive + the dubstep victory fires on a win; depends on T139) → **`T124`** (fraction glyphs)
 → `T101` → `T102`/`T103` (Android) → content → `T72`.
 
-**Builder B → `T138` (celebration invisible — DIAGNOSED: particles too small / verify the loop)**
-*(`T139` 12-style palette DONE `efef4b4` — all 66 pairs distinct.)* **`T138` — now B's sole task.** Owner
-gave the tester readout: **`1038×2305`** (ready,
-full-size — Poco X3 viewport × dpr≈2.75). So NOT resize/occlusion. The fns fire (buttons restart the music)
-and `renderFrame` draws, but **particles are too small for that backing buffer**: `seedCelebrate`
-(`fxgl.js:276`) sizes `lerp(4,szMax)` = 4–8 **device px**, drawn as `fillRect` into the 1038×2305 buffer
-which the browser **downscales ~2.75× → ~1.5–3 screen px** = drawn (count-golden passes) but invisible. **Fix
-(fxgl.js CPU/2D backend):** scale the draw `size` up for the CPU path (× effective DPR, or as a fraction of
-`min(w,h)`) so motes are **boldly visible** (owner wants "loads of particles"); keep cap/seed/reduced-motion/
-`setQuality`; sanity-check bright palette + alpha. **Add a REAL visibility golden** (asserts in-bounds drawn
-particles with on-screen size ≥ a real threshold, e.g. ≥0.4% of canvas height, + alpha>0 — NOT a fillRect
-count, the gap that hid this thrice). **⚠ Don't tunnel on size** — the owner doubts 3px is *fully* invisible;
-also verify the RAF loop actually runs/presents for the full burst (not one frame), alpha/colour, lifetime.
-Full DoD `BACKLOG.md` T138. **B-owned only**; never touch existing Halves files; never push `claude/agent`.
+**Builder B → STAND BY (engine reactive-only) — pending the owner's celebration RE-TEST.**
+`T138` celebration fix DONE `cda6fd6` (1×1-before-layout `_applyResize` on ignite + sub-pixel floor +
+`canPresent()` + a REAL visibility gate that fails on a blank frame); `T139` 12-style palette DONE `efef4b4`
+(all 66 pairs distinct). Nothing queued. **If the owner re-tests the celebration tester and it's STILL blank**
+(despite a real `dimensions()`), reopen T138: chase the **render loop / `canPresent`** (does the RAF pump &
+present for the full burst on-device? is the 2D context null?), and/or **enlarge** the particles (T138 floored
+sub-pixel but didn't scale them up — 6% coverage may be too faint). Otherwise hold. **B-owned only**; never
+touch existing Halves files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
