@@ -164,7 +164,7 @@
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
-        elMark=$("mark"), elTag=$("tag"), elModeTabs=$("modeTabs"), elModeTree=$("modeTree");
+        elModeTree=$("modeTree");
 
   function show(name){
     // stop the game clock RAF whenever we leave the game screen (e.g. browser
@@ -212,8 +212,6 @@
 
   let mode = byId(loadLastMode()) || MODES[0];
   if(!isUnlocked(mode)) mode = MODES.find(isUnlocked) || MODES[0];
-  // Picker view: the grouped list (a11y fallback, default) or the T84 tech tree.
-  let pickerView = (function(){ try{ return localStorage.getItem("halves.pickerView") === "tree" ? "tree" : "list"; }catch(e){ return "list"; } })();
 
   // ---- onboarding gating (T86) -------------------------------------------
   // On a genuinely FRESH profile, the extra features start gated and unlock one
@@ -316,53 +314,6 @@
   // ---- start screen: mode picker + brand ---------------------------------
   // One picker row: name, a subline (best rank / "no best" / unlock hint),
   // collectible progress `have/total`, and a state glyph (▶ play · 🔒 · ✓ 100%).
-  function modeRow(m){
-    const locked = !isUnlocked(m);
-    const { have, total } = modeProgress(m);
-    const done = !locked && total > 0 && have === total;
-    let sub, state;
-    if(locked){
-      sub = unlockReq(m);
-      state = '🔒';
-    }else{
-      const best = loadBoard(m.id).slice().sort(rank)[0];
-      if(best){
-        const rk = C.RANKS[C.rankIndex(best.score, best.total, best.time)];
-        sub = '<span style="color:'+rk.color+'">'+esc(rk.name)+'</span> · '+best.score+'/'+(best.total||"?");
-      }else{
-        sub = 'No best yet';
-      }
-      state = done ? '✓' : '▶';
-    }
-    const cls = "mode-row" + (m.id===mode.id ? " active" : "") +
-                (locked ? " locked" : "") + (done ? " done" : "");
-    // The guide is now a first-class "Guide" action on the selected topic (T83);
-    // the old per-row "?" is removed. Rows (incl. locked) are selectable so any
-    // topic can be previewed and its guide read via the Guide button.
-    return '<div class="'+cls+'" data-mode="'+esc(m.id)+'"'+(locked?' aria-disabled="true"':'')+'>'+
-      '<span class="mr-main"><span class="mr-name">'+esc(m.name)+'</span>'+
-        '<span class="mr-sub">'+sub+'</span></span>'+
-      '<span class="mr-side"><span class="mr-prog">'+have+'/'+total+'</span>'+
-        '<span class="mr-state">'+state+'</span></span></div>';
-  }
-  function renderTabs(){
-    elModeTabs.innerHTML = GROUPS.map(g => {
-      const rows = MODES.filter(m => (m.group || "Core") === g);
-      if(!rows.length) return "";
-      return '<div class="mode-group"><h5>'+esc(g)+'</h5>'+rows.map(modeRow).join("")+'</div>';
-    }).join("");
-    updateScrollCues();
-  }
-
-  // Toggle the picker's scroll-affordance fades by comparing scroll geometry.
-  // Nothing shows when the list fits; recomputed on render/scroll/resize.
-  function updateScrollCues(){
-    const el = elModeTabs, wrap = el && el.parentElement;
-    if(!wrap || !wrap.classList) return;
-    wrap.classList.toggle("can-scroll-up", el.scrollTop > 1);
-    wrap.classList.toggle("can-scroll-down", el.scrollHeight - el.clientHeight - el.scrollTop > 1);
-  }
-
   // ---- tech-tree view (T84): a data-driven visualisation of the SAME unlock
   // chain the list shows — never a hand-maintained parallel edge list. Nodes =
   // modes; edges derive from `unlockedBy` (the importance spine) and
@@ -419,31 +370,31 @@
       const m = byId(btn.dataset.mode), cv = btn.querySelector("canvas");
       if(m && cv) nodeIcon(m, cv);
     });
-    renderTreeDetail();
+    renderTopicInfo();
   }
-  // Selected-node detail panel: name, progress (or the unlock requirement if
-  // locked). The Play/Practice/Guide actions are the shared #start buttons (T83).
-  function renderTreeDetail(){
-    const el = $("treeDetail"); if(!el) return;
-    if(pickerView !== "tree"){ el.classList.add("hidden"); el.innerHTML = ""; return; }
-    el.classList.remove("hidden");
+  // The single compact selected-topic row (T96): glyph · name · have/total · best
+  // (or the unlock requirement if locked). Replaces the old big top mark/tag + the
+  // separate best line + the tree detail panel (one display, no duplication). The
+  // Play/Practice/Guide actions are the shared #start buttons (T83).
+  function renderTopicInfo(){
+    const el = $("topicInfo"); if(!el) return;
     const m = mode, locked = !isUnlocked(m), p = modeProgress(m);
-    el.innerHTML = '<span class="td-name">'+esc(m.name)+'</span>'+
-      '<span class="td-meta">'+(locked ? '🔒 '+unlockReq(m) : p.have+' / '+p.total+' collected')+'</span>';
+    let meta;
+    if(locked){ meta = '🔒 ' + esc(unlockReq(m)); }
+    else {
+      const best = loadBoard(m.id).slice().sort(rank)[0];
+      const bestTxt = best
+        ? '<span style="color:'+C.RANKS[C.rankIndex(best.score, best.total, best.time)].color+'">'+esc(C.RANKS[C.rankIndex(best.score, best.total, best.time)].name)+'</span> · '+fmt(best.time)+'s'
+        : 'No best yet';
+      meta = '<b>'+p.have+'/'+p.total+'</b> · ' + bestTxt;
+    }
+    el.innerHTML = '<span class="ti-glyph"></span>'+
+      '<span class="ti-text"><span class="ti-name">'+esc(m.name)+'</span>'+
+        '<span class="ti-meta">'+meta+'</span></span>';
+    paintGlyph(el.querySelector(".ti-glyph"), m, 5);
   }
-  // Render whichever picker view is active (keeps selectMode view-agnostic).
-  function renderPicker(){ if(pickerView === "tree") renderTree(); else renderTabs(); }
-  function setPickerView(v){
-    pickerView = (v === "tree") ? "tree" : "list";
-    try{ localStorage.setItem("halves.pickerView", pickerView); }catch(e){}
-    const tree = pickerView === "tree";
-    elModeTabs.classList.toggle("hidden", tree);
-    elModeTree.classList.toggle("hidden", !tree);
-    const lb = $("pvList"), tb = $("pvTree");
-    if(lb){ lb.classList.toggle("active", !tree); lb.setAttribute("aria-selected", String(!tree)); }
-    if(tb){ tb.classList.toggle("active", tree); tb.setAttribute("aria-selected", String(tree)); }
-    renderPicker();
-  }
+  // The tree is the only home picker now (T96) — no list/tree toggle.
+  function renderPicker(){ renderTree(); }
   // Paint a topic's glyph with the procedural pixel font (T56) into `el`, sized
   // by an internal cell scale (CSS height upscales it, kept crisp by
   // image-rendering:pixelated). Falls back to the old `glyph` HTML if Glyphs or
@@ -462,7 +413,6 @@
       el.innerHTML = (m && m.glyph) || "";
     }
   }
-  function renderMark(){ paintGlyph(elMark, mode, 10); elTag.textContent = mode.tag; }
 
   // The entry/splash brand mark is the fixed Halves "x/2"; paint it once.
   function renderBrand(){
@@ -498,7 +448,7 @@
     const m = byId(id); if(!m) return;
     mode = m;
     if(isUnlocked(m)) saveLastMode(id);   // don't make a locked topic the default
-    renderPicker(); renderMark(); renderBest(); renderStartState();
+    renderTree(); renderStartState();     // renderTree paints the topic-info row too
   }
 
   // Enable Start/Practice only for an unlocked topic. The Guide button is a peer
@@ -528,21 +478,11 @@
       if(cv) C.drawIcon(cv, "menu:" + m.id, C.paletteFor(m.pal), m.cat);
     });
   }
-  elModeTabs.addEventListener("click", e => {
-    // Any row is selectable, incl. locked (preview): selecting shows the topic's
-    // mark + enables the Guide button, while Start/Practice stay gated by unlock.
-    const t = e.target.closest(".mode-row"); if(!t) return;
-    selectMode(t.dataset.mode);
-  });
-  // Tech-tree (T84): tapping a node SELECTS it (like a list row) — locked nodes
-  // are preview-only (Start stays disabled); they never start a round from here.
+  // Tech-tree (T84/T96): tapping a node SELECTS it — locked nodes are preview-only
+  // (Start stays disabled); they never start a round from here.
   elModeTree.addEventListener("click", e => {
     const t = e.target.closest(".tnode"); if(!t) return;
     selectMode(t.dataset.mode);
-  });
-  // List ⇆ Tree view toggle (persisted).
-  $("pickerViews").addEventListener("click", e => {
-    const b = e.target.closest(".pv-btn"); if(b) setPickerView(b.dataset.view);
   });
 
   // ---- topic guides (T27): a short "how to beat it" panel per topic ----------
@@ -583,20 +523,6 @@
     const q = m.build().find(x => String(x.p) === tile.dataset.prompt);
     if(q) startPractice(m.id, q);
   });
-  elModeTabs.addEventListener("scroll", updateScrollCues, { passive:true });
-
-  function renderBest(){
-    if(!isUnlocked(mode)){
-      $("bestLine").innerHTML = '🔒 '+unlockHint(mode);
-      return;
-    }
-    const b = loadBoard(mode.id).slice().sort(rank);
-    if(b.length === 0){ $("bestLine").innerHTML = "No best time yet"; return; }
-    const t = b[0];
-    $("bestLine").innerHTML = 'Top <b>'+t.score+'/'+(t.total||"?")+'</b> · <b>'+fmt(t.time)+'s</b>'+
-      (t.name ? ' · '+esc(t.name) : '');
-  }
-
   // ---- summary: best time per topic, colour-coded by rank; tap to play -----
   function renderSummary(){
     $("sumList").innerHTML = MODES.map(m => {
@@ -1341,7 +1267,7 @@
 
     sfx(all.length ? "topicUnlock" : "roundComplete");
     show("results");
-    renderBest();
+    renderTopicInfo();
     $("resGold").innerHTML = "";   // events pay no Gold — the reward is the buff
     if(all.length) setTimeout(() => showUnlocks(all), 650);
   }
@@ -1576,7 +1502,7 @@
     saveQbest(recordQbest(loadQbest(), mode.id, times));
 
     show("results");
-    renderBest();
+    renderTopicInfo();
     showGold($("resGold"), goldBefore, loadGold(), earn);
     if(mo.wentUp) momentumToast(mo.state);
     if(unlocked.length) setTimeout(() => showUnlocks(unlocked), 650);
@@ -1620,7 +1546,7 @@
         '<span class="eb-name">'+esc(ev.name)+'</span>'+
         '<span class="eb-count" id="ebCount"></span>'+
       '</div>'+
-      '<button class="btn eb-play" data-event="'+esc(ev.id)+'">'+(owned ? 'Again' : 'Play')+'</button>';
+      '<button class="eb-play" data-event="'+esc(ev.id)+'">'+(owned ? 'Again' : '▶ Play')+'</button>';
     const cv = el.querySelector(".eb-art");
     if(cv && window.EventArt) window.EventArt.draw(cv, ev.artSeed);
     updateEventCountdown();
@@ -1695,7 +1621,6 @@
   // Keep a wide prompt fitted if the viewport changes mid-round.
   window.addEventListener("resize", () => {
     if(screens.game.classList.contains("active")){ fitText(elPrompt); fitText(elGhost); }
-    updateScrollCues();
   });
 
   // ---- hash routing for the static screens --------------------------------
@@ -1715,7 +1640,7 @@
     }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
     else if(h === "settings"){ renderSettings(); show("settings"); }
-    else { checkGates(); renderPicker(); renderBest(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); applyGates(); show("start"); firePendingHighlight(); }
+    else { checkGates(); renderTree(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); applyGates(); show("start"); firePendingHighlight(); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
@@ -1826,8 +1751,9 @@
   const SOUND_BTNS = ["soundBtn", "soundBtnMenu"];
   function syncSoundButtons(){
     const on = soundOn();
-    SOUND_BTNS.forEach(id => { const b = $(id); if(b) b.innerHTML = on ? '🔊 Sound on' : '🔇 Sound off'; });
-    const sv = $("setSoundVal"); if(sv) sv.textContent = on ? "On" : "Off";   // T85 Settings row
+    const sb = $("soundBtn"); if(sb) sb.innerHTML = on ? '🔊 Sound on' : '🔇 Sound off';   // entry screen
+    const sm = $("soundBtnMenu"); if(sm) sm.innerHTML = on ? '🔊' : '🔇';                   // T96 nav icon button
+    const sv = $("setSoundVal"); if(sv) sv.textContent = on ? "On" : "Off";                 // T85 Settings row
   }
   function toggleSound(){ saveSound(!soundOn()); syncSoundButtons(); applySoundPref(); }
   SOUND_BTNS.forEach(id => { const b = $(id); if(b) b.addEventListener("click", toggleSound); });
@@ -1965,11 +1891,9 @@
 
   // ---- init ---------------------------------------------------------------
   if(window.FX && window.FX.init) window.FX.init($("fxCanvas"));
-  setPickerView(pickerView);   // render the saved view (list default) + toggle state
-  renderMark();
+  renderTree();        // the tree is the home picker; it paints the topic-info row
   renderBrand();
   installFavicon();
-  renderBest();
   renderStartState();
   drawMenuIcons();    // static procedural icons on the menu buttons (T50)
   renderBuild();
@@ -1992,7 +1916,7 @@
   // Toast queue API (T64) — cap/queue exposed for the Node tests.
   window.Toasts = { CAP: TOAST_CAP, enqueue: enqueueToast, shown: () => toastShown, queued: () => toastQ.length };
   // Tech-tree API (T84) — the data-derived graph + node state, for the Node tests.
-  window.TechTree = { graph: techGraph, state: nodeState, view: () => pickerView };
+  window.TechTree = { graph: techGraph, state: nodeState, view: () => "tree" };
   // Onboarding API (T86) — gating state + the first-run hook, for the Node tests.
   window.Onboard = { isFeatureUnlocked: isFeatureUnlocked, needsIntro: needsIntro,
     startIntro: startIntro, state: () => unlocked };

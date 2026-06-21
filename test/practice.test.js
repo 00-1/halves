@@ -34,8 +34,8 @@ global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); },
 const M = global.window.MODES;
 const fire = (el, ev, arg) => (el._h[ev]||[]).forEach(f=>f(arg||{}));
 
-// helper: select a topic by clicking its mode-row (drives elModeTabs handler)
-function selectMode(id){ fire(els.modeTabs, "click", { target:{ closest:s => (s===".mode-row" ? { dataset:{ mode:id }, classList:{ contains:()=>false } } : (s===".mr-guide"?null:null)) } }); }
+// helper: select a topic by clicking its tree node (T96 — tree-only home picker)
+function selectMode(id){ fire(els.modeTree, "click", { target:{ closest:s => (s===".tnode" ? { dataset:{ mode:id } } : null) } }); }
 
 // ---- (1) Practice button gated like Start ----------------------------------
 selectMode("halves");

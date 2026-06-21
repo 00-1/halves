@@ -67,28 +67,25 @@ ok(g.spine.length === MODES.filter(m=>!m.requires).length && branchCount === MOD
 ok(TT.state(byId("halves")) === "unlocked", "fresh profile: halves is unlocked (▶)");
 ok(TT.state(byId("times")) === "locked" && TT.state(byId("addsub2")) === "locked", "fresh profile: gated topics are locked");
 
-// (b) toggle to Tree renders the tree and hides the list
-const clickPv = view => (els.pickerViews._h.click||[]).forEach(f => f({ target:{ closest:s => (s===".pv-btn" ? { dataset:{ view } } : null) } }));
-clickPv("tree");
-ok(els.modeTabs.classList.contains("hidden") && !els.modeTree.classList.contains("hidden"), "(b) Tree view shows the tree, hides the list");
+// (b) T96 — the tree is the ONLY home picker (no toggle), rendered at init
+ok(!/id="pickerViews"/.test(read("index.html")) && !/setPickerView/.test(read("main.js")), "(b) the List/Tree toggle is removed (tree-only home)");
 const nodeCount = (els.modeTree._html.match(/class="tnode/g) || []).length;
 ok(nodeCount === MODES.length, "(b) a node is rendered for every mode (" + nodeCount + "/" + MODES.length + ")");
 ok(/role="tab"/.test(els.modeTree._html) && /<button class="tnode/.test(els.modeTree._html), "(b) nodes are focusable <button> elements (a11y, not a canvas blob)");
-ok(store["halves.pickerView"] === "tree", "the chosen view persists");
 
-// (e) locked node is preview-only — never starts a round, Start stays disabled
+// (e) locked node is preview-only — never starts a round; the compact info row updates
 const clickNode = id => (els.modeTree._h.click||[]).forEach(f => f({ target:{ closest:s => (s===".tnode" ? { dataset:{ mode:id } } : null) } }));
 els.game.classList.remove("active");
 clickNode("squares");   // locked on a fresh profile
 ok(!els.game.classList.contains("active"), "(e) tapping a locked node never starts a round");
 ok(els.startBtn.disabled === true, "(e) Start stays disabled for the previewed locked node");
-ok(/td-name/.test(els.treeDetail._html) && /Squares/.test(els.treeDetail._html), "(e) the selected-node detail panel shows the locked topic + its requirement");
-ok(/🔒/.test(els.treeDetail._html), "(e) the locked node's panel shows the unlock requirement");
+ok(/ti-name/.test(els.topicInfo._html) && /Squares/.test(els.topicInfo._html), "(e) the selected-topic info row shows the locked topic");
+ok(/🔒/.test(els.topicInfo._html), "(e) the info row shows the unlock requirement for a locked topic");
 
-// (c) the List fallback survives the toggle
-clickPv("list");
-ok(!els.modeTabs.classList.contains("hidden") && els.modeTree.classList.contains("hidden"), "(c) toggling back restores the accessible list");
-ok(/mode-row/.test(els.modeTabs._html), "(c) the list still renders its rows (fallback intact)");
+// (c) the accessible LIST fallback now lives on Best Times (#sumList), tap-to-play
+global.window.location.hash = "#/best-times"; (winH.hashchange||[]).forEach(f=>f());
+ok(/sum-row/.test(els.sumList._html), "(c) the Best Times list fallback still renders its rows (accessible alternative)");
+ok(/data-mode=/.test(els.sumList._html), "(c) the Best Times list is tap-to-play (the a11y fallback to the tree)");
 
 // (f) the swappable nodeIcon() hook is the single icon indirection
 const main = read("main.js");

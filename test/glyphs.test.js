@@ -67,7 +67,7 @@ ok(/<script src="glyphs\.js">/.test(html), "index.html loads glyphs.js");
 const main = read("main.js");
 ok(/function paintGlyph/.test(main), "main.js defines the paintGlyph helper");
 // used in all four surfaces: mark, guide title, practice title, toast
-ok(/paintGlyph\(elMark/.test(main), "the start mark uses the pixel glyph");
+ok(/paintGlyph\(el\.querySelector\("\.ti-glyph"\)/.test(main), "the selected-topic mark (info row) uses the pixel glyph");
 ok(/g-glyph/.test(main) && (main.match(/paintGlyph\(/g) || []).length >= 5, "guide/practice/toast/brand all paint pixel glyphs");
 // favicon minted from the same renderer
 ok(/installFavicon/.test(main) && /rel="icon"/.test(main) && /apple-touch-icon/.test(main) && /theme-color/.test(main),

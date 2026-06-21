@@ -40,7 +40,7 @@ global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); },
 ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","monsters.js","scenery.js","eventart.js","fx.js","sound.js","main.js"].forEach(f => new Function(read(f))());
 
 const MODES = global.window.MODES, G = global.window.Guides;
-const clickRow = id => (els.modeTabs._h.click||[]).forEach(f => f({ target:{ closest:s => (s===".mode-row" ? { dataset:{ mode:id }, classList:{ contains:()=>false } } : null) } }));
+const clickRow = id => (els.modeTree._h.click||[]).forEach(f => f({ target:{ closest:s => (s===".tnode" ? { dataset:{ mode:id } } : null) } }));
 
 // (a) #guideBtn is a peer of Start/Practice in .start-actions
 const html = read("index.html");

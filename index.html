@@ -24,38 +24,32 @@
     <button class="linkbtn" id="soundBtn">🔊 Sound on</button>
   </section>
 
-  <!-- START -->
+  <!-- START (T96: top-aligned, tree-only picker, compact info row, one-line nav) -->
   <section id="start" class="screen">
-    <!-- T81/T91: compact today's-event banner, front-and-centre at the very top -->
+    <!-- compact today's-event banner, front-and-centre at the very top (T91) -->
     <div class="event-banner hidden" id="eventBanner"></div>
-    <div class="mark" id="mark">x<span class="slash">/</span>2</div>
-    <div class="tag" id="tag">Halve it. Fast.</div>
-    <div class="picker-views" id="pickerViews" role="tablist" aria-label="Topic view">
-      <button class="pv-btn" id="pvList" data-view="list" role="tab">☰ List</button>
-      <button class="pv-btn" id="pvTree" data-view="tree" role="tab">⤳ Tree</button>
+    <!-- the tech tree is the only home picker now; it takes the reclaimed space -->
+    <div class="tree" id="modeTree" aria-label="Topic tech tree"></div>
+    <!-- one compact selected-topic row: glyph · name · have/total · best (T96) -->
+    <div class="topic-info" id="topicInfo"></div>
+    <div class="readouts">
+      <span class="goldbar" id="goldBar"></span>
+      <span class="momentumbar" id="momentumBar"></span>
     </div>
-    <div class="picker-wrap">
-      <div class="picker" id="modeTabs"></div>
-      <div class="tree hidden" id="modeTree" aria-label="Topic tech tree"></div>
-      <span class="scroll-cue" aria-hidden="true">▾</span>
-    </div>
-    <div class="tree-detail hidden" id="treeDetail"></div>
-    <div class="best" id="bestLine">No best time yet</div>
-    <div class="goldbar" id="goldBar"></div>
-    <div class="momentumbar" id="momentumBar"></div>
     <div class="start-actions">
       <button class="btn" id="startBtn">Start</button>
       <button class="btn alt" id="practiceBtn">Practice</button>
       <button class="btn alt" id="guideBtn">Guide</button>
     </div>
-    <div class="linkrow">
-      <button class="linkbtn" id="statsBtn"><canvas class="pix mr-ico" width="16" height="16"></canvas>Best times</button>
-      <button class="linkbtn" id="invBtn"><canvas class="pix mr-ico" width="16" height="16"></canvas>Inventory</button>
-      <button class="linkbtn" id="heroesBtn"><canvas class="pix mr-ico" width="16" height="16"></canvas>Heroes</button>
-      <button class="linkbtn" id="arenaBtn"><canvas class="pix mr-ico" width="16" height="16"></canvas>Arena</button>
-      <button class="linkbtn" id="soundBtnMenu">🔊 Sound on</button>
-      <button class="linkbtn" id="fsBtn" aria-label="Toggle fullscreen">⛶ Fullscreen</button>
-      <button class="linkbtn" id="settingsBtn">⚙ Settings</button>
+    <!-- one row of bigger icon buttons; degrades as gating hides items (T86/T87) -->
+    <div class="navrow" id="navRow">
+      <button class="navbtn" id="statsBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Best</span></button>
+      <button class="navbtn" id="invBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Items</span></button>
+      <button class="navbtn" id="heroesBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Heroes</span></button>
+      <button class="navbtn" id="arenaBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Arena</span></button>
+      <button class="navbtn util" id="soundBtnMenu" aria-label="Toggle sound">🔊</button>
+      <button class="navbtn util" id="settingsBtn" aria-label="Settings">⚙</button>
+      <button class="navbtn util" id="fsBtn" aria-label="Toggle fullscreen">⛶</button>
     </div>
     <div class="build" id="buildInfo"></div>
   </section>

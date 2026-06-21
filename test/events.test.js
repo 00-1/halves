@@ -393,8 +393,8 @@ ok(/EVENT_STYLE/.test(sound) && /"event"/.test(sound), "sound.js defines a dedic
 // (m) the prominent home banner is a TOP-LEVEL #start element (not inside a tab/menu),
 //     carries art + copy + a Play CTA that routes into the live event + a UTC countdown.
 const html2 = read("index.html");
-ok(/<section id="start"[\s\S]*?id="eventBanner"[\s\S]*?class="picker-wrap"/.test(html2),
-   "the event banner is on the home (#start) screen, above the picker — not in a tab/menu");
+ok(/<section id="start"[\s\S]*?id="eventBanner"[\s\S]*?id="modeTree"/.test(html2),
+   "the event banner is on the home (#start) screen, above the topic tree — not in a tab/menu");
 ok(/<script src="eventart\.js">/.test(html2), "index.html loads eventart.js");
 ok(/function renderEventBanner/.test(main2) && /eb-play/.test(main2) && /data-event="/.test(main2),
    "renderEventBanner builds the banner with a Play CTA carrying the live event id");
@@ -408,10 +408,10 @@ ok(!/next event in|needs? an event|event-gate/i.test(main2), "no Arena event-gat
 // (T91) the home banner is a COMPACT strip that can't dominate the one-screen #start:
 ok(/\.event-banner\{[^}]*max-height\s*:\s*\d/.test(css), "(T91) the event banner has a bounded max-height (compact strip)");
 ok(!/eb-blurb/.test(main2) && !/eb-blurb/.test(css), "(T91) the home banner drops the multi-line blurb (no eb-blurb)");
-ok(/\.picker-wrap\{[^}]*min-height\s*:\s*(?!0)\d/.test(css), "(T91) the picker keeps a non-zero min-height (≥ a few rows; can't be starved to nothing)");
-// the banner is reordered ABOVE the topic mark (so the mark isn't stranded)
-ok(/<section id="start"[\s\S]*?id="eventBanner"[\s\S]*?id="mark"[\s\S]*?id="pickerViews"/.test(html2),
-   "(T91) the banner sits at the very top of #start, above the topic mark");
+ok(/\.tree\{[^}]*min-height\s*:\s*(?!0)\d/.test(css), "(T91/T96) the home tree keeps a non-zero min-height (≥ a few rows; can't be starved to nothing)");
+// the banner sits at the very top of #start, above the tree (T96)
+ok(/<section id="start"[\s\S]*?id="eventBanner"[\s\S]*?id="modeTree"/.test(html2),
+   "(T91/T96) the banner sits at the very top of #start, above the topic tree");
 // the compact banner still carries the Play CTA + the inline countdown span
 ok(/eb-play[\s\S]{0,80}data-event=/.test(main2) && /id="ebCount"/.test(main2),
    "(T91) the compact banner keeps the Play CTA + the UTC countdown");

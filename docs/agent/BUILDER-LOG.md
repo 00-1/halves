@@ -3156,3 +3156,42 @@ notes / questions: thresholds **well ≥ 0.7**, **ace = flawless** (the spec's s
   tunable). Sequenced **before** the Arena 3v3 (T88) so its re-calibration sees the full
   42-item event-reward set. Next per REVIEW order: the **Arena 3v3 block (Phase 6.10) —
   T88**, then content extension.
+
+## T96 — Rework the home (#start) layout: top-align, tree-only, info row, one-line nav  [HANDOFF]
+commit: (this commit, on main)
+> Process note: apologies — another race; I pulled T92 before the T96 insert was visible.
+> Doing T96 now as the priority. It accounts for the T86/T87 gating (the nav degrades as
+> gating hides Inventory/Heroes/Arena) and keeps the T91 compact banner guarantees.
+Owner-reported (screenshot): empty top band, oversized banner Play button, cramped tree
+(~4 nodes), two-row nav. Rebalanced so the tree breathes and it still fits one screen.
+changed:
+  - **index.html `#start`** — removed the big top **`#mark`/`#tag`**, the **List/Tree toggle
+    (`#pickerViews`)** and the home **list (`#modeTabs`)**. New order: **banner → tree
+    (`#modeTree`, the only picker, takes the freed space) → compact `#topicInfo` row →
+    `#goldBar`/`#momentumBar` readouts → Start/Practice/Guide → `#navRow` (one row of icon
+    buttons) → build**.
+  - **main.js** — deleted `pickerView`/`setPickerView`/`renderPicker(list)`/`renderTabs`/
+    `modeRow`/`updateScrollCues`/`renderMark`/`renderBest` and the `#modeTabs`/`#pickerViews`
+    listeners. New **`renderTopicInfo()`** paints **one compact row**: glyph (via `paintGlyph`)
+    · name · `have/total` · best (or the unlock requirement if locked) — **no more duplicate
+    top-mark + detail-panel**. `renderTree()` calls it; `selectMode`/`applyRoute`/init use the
+    tree directly. The **banner Play CTA** is a tidy proportionate pill ("▶ Play" / "Again").
+    The **nav sound button** is icon-only ("🔊/🔇"); `syncSoundButtons` updated.
+  - **styles.css** — `.tree` is the flex home picker (`max-width:360`, `min-height:150`);
+    new `.topic-info`/`.ti-*`, `.readouts`, `.navrow`/`.navbtn` (icon buttons, `.hidden`
+    degrades with gating); `.eb-play` rebuilt as a small amber pill; removed the dead toggle CSS.
+how I verified:
+  - **Updated the affected gates**: `tech-tree.test.js` (toggle removed → tree-only;
+    **list fallback now asserted on Best Times** `#sumList`; info row replaces the detail
+    panel), `events.test.js` (banner-above-**tree**; `.tree` min-height), `glyphs.test.js`
+    (start mark → `.ti-glyph`), `practice.test.js` + `guide-action.test.js` (select via a
+    **tree node**, not a list row). **Full 24-gate suite green**; `node -c` clean.
+  - Booted both profiles: **legacy** shows **15 tree nodes** + the info row + all nav
+    (fsBtn only hidden in headless = no fullscreen); **fresh** correctly **hides
+    Inventory/Heroes nav** (gating) while the nav row stays centred. Arena untouched.
+notes / questions: I can't measure pixel viewport fit headlessly — the one-screen fit at
+  360×640 / 390×844 is structural (compact banner + the reclaimed top going to a flex tree
+  with min-height 150 + one-row nav); **please eyeball the live build**. Some now-unused CSS
+  (`.picker`/`.mode-row*`/`.scroll-cue`/`.best`/`.tree-detail`) remains and can be swept later.
+  The list-style selector lives on **Best Times** (the a11y alternative). Next per REVIEW
+  order: **T97** (UI-direction research, doc only), then the Arena 3v3 block / content wave.
