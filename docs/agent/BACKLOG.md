@@ -625,29 +625,30 @@ rarer-with-depth rarity logic.
   (base + ~250); no regression; deploy green. **Run before T24** so Arena grants the
   final set. (Babysitter re-runs the full battle-invariant harness.)
 
-### T44 — Rename enemy tiers (regions + rank-titles) · status: BLOCKED (await research + owner sign-off)
-Owner: refine the tier naming (10 themed regions + 10 reused rank-titles + the
-tier-100 boss). Display-only — tier numbers/`def`/loot ids (`loot:<n>:<k>`) and all
-battle logic are **unchanged**; only the name strings in `enemies.js` change. The
-Babysitter will paste the **owner-approved** region list + rank-title ladder +
-tier-100 name here once the naming research returns and the owner signs off.
-- **PROPOSED v2 (construction-varied per owner — AWAITING SIGN-OFF; do not apply yet):**
-  - **Regions (1→10):** Goblin Warren · Gallowmarch · Gloamwood · Haunted Marsh ·
-    Frostpeak Caverns · Drownholm · Cinderwaste · Stormspire · Dragon's Roost · The
-    Void Throne. *(Several converted to single fused words for construction variety;
-    only one pure adjective-noun left. All prefix the rank-titles cleanly.)*
-  - **Rank-titles (1→10, reused per region):** Runt · Sentry · Brute · Raider ·
-    Warden · Champion · Reaver · Dread · Warlord · Overlord. *(non-boss tiers =
-    "<Region> <Rank>", e.g. "Gloamwood Reaver".)*
-  - **Named region bosses (tiers 10/20/…/90 — owner likes these; varied forms):**
-    10 Snaggletooth, the Goblin King · 20 The Highwayman · 30 Old Mother Bramble ·
-    40 Gurgle, King of the Bog · 50 The Frost Jarl · 60 Bonecaller · 70 Cindermaw ·
-    80 Voltan, Lord of Storms · 90 the Elder Wyrm.
-  - **Tier 100:** The Void Sovereign *(kept)*.
-- **DoD:** the 10 region names + 10 rank-title ladder + tier-100 name match the
-  approved set; tier numbering/def/loot/battle logic untouched; the Arena/tier UI
-  shows the new names; Node: every tier still has a non-empty name and the loot/def
-  invariants are unaffected; no regression; deploy green.
+### T44 — Rename enemy tiers (regions + rank-titles + named bosses) · status: OPEN (owner-approved)
+Display-only — tier numbers / `def` / loot ids (`loot:<n>:<k>`) and all battle logic
+are **unchanged**; only the name strings in `enemies.js` change.
+- **FINAL — Regions (index 0→9, weakest→strongest):** Goblin Warren · Gallowmarch ·
+  Gloamwood · Haunted Marsh · Frostpeak Caverns · Drownholm · Cinderwaste ·
+  Stormspire · Dragon's Roost · The Void Throne.
+- **FINAL — Rank-titles (position 0→9 within a region):** Runt · Sentry · Brute ·
+  Raider · Warden · Champion · Reaver · Dread · Warlord · Overlord.
+- **FINAL — Named bosses** (override each region's 10th tier — i.e. tiers
+  10/20/…/100 — instead of "<Region> Overlord"):
+  10 **Goblin King** · 20 **The Highwayman** · 30 **Old Mother Bramble** ·
+  40 **Gurgle, King of the Bog** · 50 **The Frost Jarl** · 60 **Bonecaller** ·
+  70 **Cindermaw** · 80 **Voltan, Lord of Storms** · 90 **the Elder Wyrm** ·
+  100 **The Void Sovereign**.
+- **Naming rule:** for tier `n` (1-indexed): `region = floor((n-1)/10)`,
+  `pos = (n-1)%10`. If `pos === 9` (a region boss, every 10th tier) → the named
+  boss for that region; else → `"<Region[region]> <RankTitle[pos]>"` (e.g.
+  "Gloamwood Reaver"). So "Overlord" is superseded by the named bosses but stays in
+  the ladder as the conceptual boss rank.
+- **DoD:** the 10 regions + 10 rank-titles + 10 named bosses match the FINAL set
+  exactly; tier numbering / `def` / loot / battle logic untouched; the Arena/tier UI
+  shows the new names; Node: every tier 1–100 has a non-empty name, tiers ≡0 mod 10
+  use the named boss, others use "<Region> <Rank>", and the T23 loot/def invariants
+  are unaffected; no regression; deploy green.
 
 ---
 
