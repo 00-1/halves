@@ -1917,6 +1917,74 @@ is deferred to a later step.)
 
 ---
 
+## Phase 6.16 — Shipping & perf: Android parity + perf pass + the start delay (owner, 2026-06-21)
+
+> Owner intent: **launch ASAP** (after working through the queue), get an **installable Android
+> build soon to confirm web↔Android parity**, a **deep perf pass now including Android**, and the
+> **start→fullscreen delay** removed-or-masked. All **[A]**. Prioritised **ahead of the Arena
+> 3v3** (these are shipping/quality; the Arena is a feature). Order: `T101` (delay) → `T102`
+> (Android build) → `T103` (perf research).
+
+### T101 — [A] Remove (or mask with a loader) the delay after Start + fullscreen · status: OPEN
+Owner: "a bit of a delay after hitting Start with fullscreen — nice to not have that, or at least
+show loading." Diagnose the `Start → fsEnter() → round` path and either **eliminate the blocking
+work** or **show a brief loading state** so it never feels janky.
+- **Diagnose** what blocks between the tap and the first question: the **fullscreen request +
+  reflow**, the **AudioContext resume/unlock**, `mode.build()` + first render, font/canvas layout,
+  etc. (the entry flow runs `audioUnlock()`/`applySoundPref()`/`fsEnter()` then `start()`).
+- **Fix:** make the transition feel instant — e.g. **enter the round first, do fullscreen/audio
+  async** so they don't block first paint; pre-warm `mode.build()` / the first question; defer
+  non-critical work to after first paint. **If a delay is unavoidable, show a brief loading
+  indicator** (a calm "Loading…" / spinner overlay) so it reads intentional, never frozen.
+- **DoD:** tapping Start no longer feels janky — either no perceptible delay before the first
+  question, **or** a clear loading state covers it; fullscreen + audio still work (gesture
+  requirements respected — fullscreen/audio must still be triggered by the user tap, not lost);
+  no regression to the round/clock; `node -c` clean; all gates green; a Node/DOM check that the
+  start path doesn't block on fullscreen/audio (or shows the loader). (Babysitter: confirm the
+  user-gesture requirements still hold, the round starts correctly, and the delay is gone/masked.)
+
+### T102 — [A] Installable Android build: PWA + TWA foundation (parity) · status: OPEN
+Pulled forward from `T72` so we get a **real installable Android app soon** to confirm web↔Android
+**parity** on the Poco-X3 floor. (T72's *Play-Store-submission* research/prep stays later.)
+- **PWA core:** a `manifest.webmanifest` (name, **maskable icons** from our procedural mark,
+  `display:standalone`, theme/background colour — `installFavicon()` + `theme-color` already seed
+  this), a **service worker** (offline cache of the static assets — must coexist with the T54
+  version-check/`build.json` poll without breaking updates), and the `<link rel=manifest>`/SW
+  registration.
+- **TWA scaffold:** a **Trusted Web Activity** wrapper (Bubblewrap-generated Android project →
+  signed AAB) + **`/.well-known/assetlinks.json`** for the site↔app association. Keep it **no-build
+  for the web** (the TWA just wraps the static site). Document the build/run steps so the owner can
+  produce an APK/AAB and side-load onto the Poco X3.
+- **Parity:** the goal is to **confirm the same build runs identically** in the browser and the
+  Android TWA — note any divergence (fullscreen, audio-unlock, safe-area, WebGL/WebGPU availability)
+  for follow-up.
+- **DoD:** a valid `manifest.webmanifest` + maskable icons + a working **service worker** (offline
+  load; doesn't break the T54 update flow); the site is installable as a PWA; a **TWA project +
+  assetlinks** with documented steps to produce a side-loadable AAB/APK; the web stays **no-build**;
+  `node -c` clean; all gates green (+ a check that the manifest/SW/registration are present + valid).
+  (Babysitter: verify the manifest is valid, the SW caches + still honours the version check, the
+  TWA/assetlinks steps are real, and nothing about the web build regressed. **Owner** confirms it
+  installs + runs at parity on the Poco X3.)
+
+### T103 — [A] Deep perf research, now including Android (doc only) · status: OPEN
+A second perf deep-dive (after the early `perf.test.js` work) **including the Poco-X3 Android
+target** and the incoming FX layer. **Doc only** (read code; produce `docs/PERF-RESEARCH-2.md`);
+zero behaviour change.
+- **Cover:** cold-load + first-paint cost; the **Start→fullscreen delay** root cause (cross-ref
+  T101); the **FX-layer frame budget** on Adreno-618 (WebGPU vs WebGL2 vs CPU-still paths,
+  particle caps, the degrade ladder); RAF/listener/leak audit across screens; canvas/redraw cost
+  (the procedural generators, the tree, toasts); memory; the TWA/WebView differences vs Chrome;
+  what `perf.test.js` can and can't catch and how to extend it.
+- **Deliver:** concrete findings + a prioritised fix list + an **on-device measurement plan** the
+  owner runs on the Poco X3 (since the Builder can't measure real hardware) + targets (stable 60fps;
+  acceptable cold start).
+- **DoD:** the doc substantively covers the above with **concrete** findings/targets/measurement
+  steps (not a listicle), names the real hot paths from the live code, and ties to T101 (delay) +
+  the FX budget; **doc only**, all gates green. (Babysitter: verify it's concrete, Android-aware,
+  and gives an actionable on-device plan + prioritised fixes.)
+
+---
+
 ## Phase 6.10 — Arena 3v3: party battles (promoted from IDEAS I5, 2026-06-21)
 
 > Owner: deepen the Arena — pick **1–3 heroes** vs a **3-foe team** (the tier foe + 2 weaker

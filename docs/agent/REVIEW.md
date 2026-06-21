@@ -330,9 +330,14 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   the wasted top band on ALL screens (`.app max-height:780px` cap) + pin the event banner to the
   top + tidy the nav (label Sound/Settings, fullscreen inline) so the tree expands → **`T100`**
   gamey UI restyle, buttons-first (pixel-bevel + squared panels, clean text, reversible `data-ui`
-  tokens — owner approved my T97 leans). **Then** `T88`–`T90` (Arena 3v3) → content `T58`–`T61` →
-  `T72`, **+ FX wiring tasks** (mount `FXGL`) once B's engine + surfaces exist. Owns ALL existing
-  Halves files; log = `BUILDER-LOG.md`. *(If A is already mid-`T88`, finish it, then take `T98`.)*
+  tokens — owner approved my T97 leans). **Then the shipping/perf block (Phase 6.16, owner: launch
+  ASAP + parity):** **`T101`** (remove/mask the Start→fullscreen delay) → **`T102`** (installable
+  Android **PWA+TWA** build for web↔Android parity — pulled forward from `T72`) → **`T103`**
+  (deep **Android-inclusive perf research**, doc). **Then** `T88`–`T90` (Arena 3v3) → content
+  `T58`–`T61` → **`T72`** (now just the Play-Store-*submission* prep doc; its PWA foundation moved
+  to `T102`), **+ FX wiring tasks** (mount `FXGL`) — home backdrop after `T100`, Arena biome after
+  `T88`–`T90`. Owns ALL existing Halves files; log = `BUILDER-LOG.md`. *(If A is mid-task, finish it
+  first.)*
 - **Builder B — next: `T94` [B]** (add a **celebration-burst capability** to `fxgl.js` — brief,
   capped, seeded particle burst; new API on the B-owned engine, headless-tested). Then the engine
   side of `T95`. Creates/edits **only B-owned files** (`fxgl.js`, its tests) + brickmap; **never
