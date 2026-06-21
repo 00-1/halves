@@ -307,7 +307,7 @@ overflow-y:auto`, but mobile scrollbars are hidden). Add a clear affordance.
 
 ## Phase 2.6 — Content quality
 
-### T13 — Question-set audit pass · status: OPEN
+### T13 — Question-set audit pass · status: DONE
 > Babysitter will open this once a few topics exist (and may run a frequency/
 > curation research pass first to inform it). Goal: make every topic's set as
 > well-considered as Halves.
@@ -319,7 +319,7 @@ modes too (Halves is the benchmark; sanity-check Times/Doubles/Squares/Fractions
   values; sets meet the checklist; answers still exact/numpad-safe; per-question
   Beat/Spark counts updated accordingly; no regressions; deploy green.
 
-### T30 — Deep content review (do AFTER the educational core is built) · status: BLOCKED
+### T30 — Deep content review (do AFTER the educational core is built) · status: OPEN
 > Open only once the planned topics are all built (the educational core). The
 > Babysitter will run a research-backed 11+ difficulty pass first to inform the
 > concrete changes, then the Builder applies them.

@@ -1,15 +1,15 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T32` (practice/review view — awards only Beat/Spark,
-qbest correct, explain() correct for all 317 Qs). **🏁 Phase 4 complete.** **Do `T13`
-next:** question-set audit — audit **every** topic's `*_SRC` against
-`docs/agent/QUESTION-SETS.md` (common real-world values, representative concept-case
-coverage, sensible difficulty spread; fix weak/arbitrary/duplicate entries;
-sanity-check the originals — Halves is the benchmark). Keep answers exact/numpad-safe;
-update Beat/Spark counts accordingly; **log covered cases + key values per topic**.
-Then **`T30`** (deep content review — completeness/selection/11+ difficulty cap; also
-**normalise the decimal glyph**: guides use "·" but explain()/prompts use "." — pick
-one for the whole app) → **`T45`** (final perf/CPU/memory audit, LAST).
+**Current verdict:** `APPROVED — T13` (question-set audit — no dup prompts, all
+answers numpad-safe, 3 conservative well-judged improvements). **Do `T30` next:**
+deep content review per BACKLOG — **completeness** (are we missing any high-value
+11+ topic? note candidates but don't build speculatively), **selection** (each set
+representative), **11+ difficulty cap** (nothing meaningfully beyond what the GL 11+
+expects — flag/trim outliers). **Also normalise the decimal glyph app-wide** —
+guides use "·" but explain()/prompts/answers use "." — pick ONE (recommend "."
+since that's what the numpad types) and make guides match. Output is a written
+review + any small fixes it justifies. Then **`T45`** (final perf/CPU/memory audit,
+LAST). This is the penultimate task.
 **Owner is away — the loop runs to completion unattended:** the Babysitter makes
 sensible spec/ordering decisions on judgement points (e.g. this T27-before-T32
 reorder) rather than blocking; the Builder escalates only genuine blockers in
@@ -29,6 +29,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T13 — Question-set audit pass → APPROVED
+Conservative, well-judged content pass. Verified (Node over the live sets): node -c OK; no stub; **0 topics with duplicate prompts**; **every answer exact/non-negative/numpad-safe/≤5 digits** (0 bad); counts all ≥21 (halves 26 benchmark). The 3 targeted changes confirmed: fractions +9/20/11/20/17/20 (0.45/0.55/0.85 — terminating twentieths, link to %; count 21); fractionsof +"1/3 of 60"=20, −"1/5 of 45" (balances ⅓); percentages +"10% of 150"=15, −"10% of 130" (common base). Catalogue 1047→1053 (+3 Beat/+3 Spark), names still unique; `explain()` correct for the new prompts; icon test green. Builder correctly left the already-strong sets unchanged. No regressions.
 
 ### T32 — Per-question Practice / Review view → APPROVED — Phase 4 complete
 New `#practice` screen + `explain()` + `halves.qbest` store. Verified (Node + DOM shim): node -c OK; no stub. **`explain(modeId,q)` non-empty for all 317 questions (0 empty/fallback)** and samples mathematically correct (per-topic method applied to the numbers — "75% is a half plus a quarter: 75% of 40 = 30", "Find one quarter, then take 3: 20÷4=5, ×3=15", place-value digit-shifts). **`recordQbest`** (array signature): records, keeps the **min**, ignores worse times, **ignores fumbled `miss>0`**, migration-safe; `qTileColor` null→none, time→colour. **Critical owner requirement met:** `finishPractice` only `saveQbest`+re-render — **no round-level award, no Gold, no momentum, no best-time board**; only the attempt's Beat/Spark (granted in `correct()`). Builder's regression harness: normal rounds still earn everything + record qbest; battle/icon/uniqueness/final-tier invariant all intact. **Non-blocking nit (→T30):** guides use "·" decimals, explain()/prompts use "." — normalise. No regressions.
