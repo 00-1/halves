@@ -229,3 +229,74 @@ direction so it's built once, in the chosen style.
 *(Status: captured, NOT queued. When promoted: likely **(a)** a tiny standalone "guide becomes a
 Play/Practice-peer button" change, and **(b)** the data-driven, 360px-safe, icon-node tree view
 with a selected-node detail panel — coordinated with the T82 visual direction for node art + feel.)*
+
+---
+
+## I4 — Progressive feature gating / staged onboarding (owner idea, 2026-06-21)
+
+**The idea (owner).** **Everything starts gated**; features unlock **one by one as you
+progress**, so the staged reveal doubles as a **tutorial** (progressive disclosure — teach one
+concept at a time). Inventory, Heroes, the current Event (banner), Arena, etc. are all **gated by
+current progress**. **When a feature ungates, the game highlights where it's accessed.**
+
+**The owner's opening flow.**
+- **First play ever → drop straight into ONE easy maths problem** (a single question, *not* a
+  whole topic round). Solving it **grants access to the Inventory**, which becomes the **first
+  ungated + highlighted** screen — teaching the core loop "solve maths → earn things → here's
+  where they live."
+- Then unlock the rest at **good progress points**. Owner example: **don't ungate the Event
+  banner until a few topic runs in** (a brand-new player shouldn't be met with the daily event
+  before they understand the basics or have any buffs to care about).
+
+**Why this fits us (machinery already exists).** We already gate *topics* by progress — the
+unlock chain (`unlockedBy` · `isUnlocked` · `init:<id>` collectibles, T1) and the
+genuine-engagement gate (T74, answered ≥ ceil(total/2)). I4 extends that idea from *topics* to
+**app features/surfaces** (nav destinations + home-screen elements). Progress signals we already
+track and can key feature-unlocks off: owned **collectibles** (`halves.collected`), **runs
+completed**, first **mastery**/**loot**, **rank**, **momentum/localDay**, **Gold**.
+
+**Draft unlock ladder (to refine when promoted — NOT final).**
+| Gate point (progress signal) | Ungates | Highlight |
+|---|---|---|
+| First-run single easy question solved | **Inventory** (first reward lands here) | spotlight Inventory nav + coachmark |
+| First full topic round finished (first `init:`) | **Practice** (per-question drill) | pulse Practice on the start screen |
+| First **loot**/**mastery** earned, or ~2–3 runs | **Heroes** (you now have a hero/collection to care about) | spotlight Heroes nav |
+| Enough collection that tier 1 is winnable (already true at 0 items) + a hero owned | **Arena** | spotlight Arena nav |
+| **A few topic runs** in (owner's call) | **Event banner** (today's event) | reveal + highlight the banner |
+| First Gold / first momentum earned | the **Gold / Momentum** readouts | brief toast |
+
+**Highlight-on-ungate.** Reuse the **toast** system + add a one-time **pulse ring / spotlight** on
+the newly-available nav button or surface, plus a short coachmark ("Inventory unlocked — your
+rewards live here"). Keep it **calm** (consistent with the no-streak-anxiety momentum design); a
+highlight fires **once**, never nags.
+
+**Critical constraints / watch-outs.**
+- **Migration safety (most important).** **Existing players must NOT be re-gated** — hiding a
+  current player's inventory/heroes would be a serious regression. Treat any pre-existing profile
+  (has collected items / completed runs) as **already past the gates it has earned** (ideally
+  fully unlocked). Gate-state persists in localStorage like `collected`; first-run = no
+  collected/no runs.
+- **Never trap the user.** Every gate must be reachable through a **short** stretch of normal
+  play; no dead-ends. Consider whether locked features are **fully hidden** until unlocked
+  (cleaner first-run) vs **shown teased/disabled** (builds anticipation) — owner's call; default
+  lean = hidden, then reveal+highlight.
+- **Don't touch the underlying earn/collection/Arena logic.** This is an **access/presentation
+  layer** on top — it hides/reveals surfaces; it must not change what's earned or the Arena
+  buff-gating invariants (tiers 1–5 winnable at 0 items, def monotonic, no tier behind own loot).
+- **The first-run intro question** is a *single* trivially easy problem (e.g. a small halve or a
+  one-digit add), not a topic round; solving grants the first reward + the Inventory unlock.
+- **Determinism/offline** — all gate state is local; no backend (consistent with the whole app).
+
+**Synergy.** The "highlight where accessed" could later use the **T82** FX layer (a spotlight/
+glow). The **tech-tree** (T84) is itself a candidate gated/revealed surface. The **Events** block
+(T78–T81) already centralises the banner in `renderEventBanner()` — gating it is one added
+condition there.
+
+**Scope.** Cross-cutting (first-run flow + nav + home screen + each gated surface). When queued,
+likely **a few tasks**: (1) the unlock-state model + first-run single-question intro + Inventory
+unlock + the highlight/coachmark system (infra); (2) wire each feature gate (Practice/Heroes/
+Arena/Events/Gold/Momentum) to its milestone; (3) polish the reveals. Behind a short ladder-design
+decision (the table above, finalised with the owner).
+
+*(Status: captured, NOT queued. Promote to BACKLOG when the owner says go — starting with the
+agreed unlock ladder + migration policy.)*
