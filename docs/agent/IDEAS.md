@@ -151,7 +151,16 @@ hybrid canvas FX layer — a small, reversible Halves task — NOT an engine por
 
 ---
 
-## I3 — Tech-tree view for the topic selector (owner idea, 2026-06-21)
+## I3 — Tech-tree view — ✅ PROMOTED to BACKLOG (T83 + T84) on 2026-06-21
+
+> Owner said "promote tech tree". Now BACKLOG **Phase 6.8**: **T83** (promote the guide to a
+> first-class Play/Practice-peer button) → **T84** (the data-driven, icon-node, 360px-safe
+> tech-tree view with a selected-node detail panel; renders from the live `unlockedBy`/`requires`/
+> `isUnlocked`/`have-total` data, never a parallel edge list; a swappable `nodeIcon()` hook so
+> richer node art from T82 drops in later). Sequenced after T82. **BACKLOG is authoritative**;
+> notes below retained for provenance.
+
+## I3 (original) — Tech-tree view for the topic selector (owner idea, 2026-06-21)
 
 **The idea (owner).** Give the topic selector a **tech-tree / skill-tree visual**, reminiscent of
 game unlock paths. We **already have a tech-tree-shaped unlock structure** — it's just not

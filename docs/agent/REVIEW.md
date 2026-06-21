@@ -158,10 +158,12 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
 **Events block (T78→T81) COMPLETE.** **Do `T82` next** — visual-direction **deep research**
 (Phase 6.7, **doc only**): learn FROM brickmap's performant visual character (no voxels),
 Android-primary; weigh rendering-stack options against our 3 crown jewels (a11y / no-build /
-Node-verification); **build ON our existing generative art** (icons/heroes/monsters/scenery/
-glyphs — owner guardrail); end with a ranked recommendation + a reversible first-spike. After it,
-content extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store). Specs in BACKLOG; this
-line is authoritative.
+Node-verification); **build ON our existing generative art**; end with a ranked recommendation +
+a reversible first-spike. Then the **tech-tree** block (Phase 6.8): **`T83`** (promote the guide
+to a Play/Practice-peer button) → **`T84`** (data-driven, icon-node, 360px-safe tech-tree view +
+selected-node panel; renders from live `unlockedBy`/`requires`/`isUnlocked`/`have-total`, never a
+parallel edge list; swappable `nodeIcon()` for later T82 art). Then content extension
+`T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store). Specs in BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

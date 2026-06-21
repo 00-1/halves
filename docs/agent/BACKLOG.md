@@ -1489,6 +1489,80 @@ APIs, perf targets, delivery mechanisms) — a hand-wavy survey is a DoD failure
 
 ---
 
+## Phase 6.8 — Topic selector: tech-tree view (promoted from IDEAS I3, 2026-06-21)
+
+> Owner: expose our **existing unlock chain as a tech/skill tree** (reminiscent of game unlock
+> paths). Key insight — **the graph already exists in data**, so the tree *visualises existing
+> truth*, never new mechanics: edges are `unlockedBy` (the importance chain) + `requires:
+> "mastery:<id>"` (the Part-1 → Part-2 gate); `isUnlocked()` + per-topic `have/total` + states
+> (▶/🔒/✓) are already computed. Owner refinements (with a Mindustry screenshot as inspo):
+> **icon-forward nodes** (minimal text on the tree; details in a **selected-node panel**), and
+> **promote the guide out of the per-row `?` into a first-class button** alongside Play +
+> Practice. Aesthetic is open (not tied to Mindustry); node art coordinates with **T82**.
+>
+> **Two tasks: T83 (the small guide-button change) → T84 (the tree).** T83 is self-contained and
+> ships value immediately; T84 builds the tree in our **current proven idiom** (DOM + our
+> procedural canvas icons + the T56 pixel glyphs), **data-driven** and **360px-safe**, with a
+> **swappable `nodeIcon()` hook** so richer node art from the T82 direction can drop in later
+> without a rewrite. (Sequenced after T82 so the node-art question is informed; reorderable on
+> owner's word.)
+
+### T83 — Promote the topic guide to a first-class action (Play · Practice · Guide) · status: OPEN
+Small, self-contained UX change. Today the "how to approach this" guide is reached via a tiny
+**`?`** on each picker row (`.mr-guide` → `openGuide` modal); Start ("Play") and Practice are the
+two first-class buttons (`startBtn` + `practiceBtn`, `index.html` ~39–40).
+- **Add a third peer button — "Guide"** — next to Start/Practice for the **currently selected
+  topic**, opening that topic's guide (`openGuide(mode)`); disabled/hidden when the topic has no
+  guide (`window.Guides.has(id)` is false) or is locked, mirroring how `renderStartState()`
+  gates Start/Practice.
+- **Remove the per-row `?`** (`.mr-guide`) from the picker rows now that the guide is a
+  first-class action — OR keep it only if there's a clear reason (Babysitter's call in review);
+  default is **remove** for a cleaner row (the selected-topic Guide button replaces it). Don't
+  break locked-topic guide previews if the `?` is removed — the Guide button must still open a
+  guide for a selected (incl. locked-preview) topic per current behaviour.
+- **DoD:** a "Guide" button sits at the **same level as Play/Practice**, opens the selected
+  topic's guide, and is gated (no guide / locked → unavailable, consistent with Start/Practice);
+  the modal still works (`guideClose`); no orphaned handlers if `.mr-guide` is removed (grep
+  clean); 360px-safe; every `$("id")`/listener resolves; `node -c` clean; no console errors; all
+  gates green. A Node/DOM check covers the gating (selected topic with/without a guide, locked).
+  (Babysitter: confirm the guide is now a peer action, the `?`-removal left no dangling refs, and
+  locked-preview guides still open.)
+
+### T84 — Tech-tree view for the topic selector (data-driven, icon-node, 360px-safe) · status: OPEN
+Render the existing unlock chain as a **visual tech tree** — a new view of data we already
+compute, **never a hand-maintained parallel edge list** (it must not drift as Phase-7 topics are
+added). Built in the current idiom (DOM + our canvas icons); coordinated with T82 for feel.
+- **Graph from data.** Nodes = the modes; edges from each mode's **`unlockedBy`** (chain) and
+  **`requires:"mastery:<id>"`** (Part-1 → Part-2 gate). Read unlock state from **`isUnlocked()`**
+  and progress from the existing per-topic **`have/total`**; node state ∈ {locked · unlocked/▶ ·
+  mastered · 100%/✓}. If a mode field is missing an edge, degrade gracefully (no crash).
+- **Icon-forward nodes (minimal text).** Each node is primarily the topic's **icon** via a single
+  **`nodeIcon(mode)` indirection** (today: the T56 pixel glyph / our procedural canvas icon — so
+  a richer per-topic emblem from T82 can replace it later without touching layout). Node shows
+  state (lock/▶/✓) + a compact progress hint; **no long labels on the node**.
+- **Selected-node detail panel.** Tapping a node selects it and shows a panel with the **name,
+  `have/total` progress, unlock requirement (if locked), and the Play/Practice/Guide actions**
+  (reuse T83's actions). Tapping an **unlocked** node's Play starts it; **locked** nodes show the
+  requirement, never start (mirror the current picker's locked behaviour).
+- **360px phone-first + a11y.** The main design risk: a desktop-sprawl tree won't fit a phone —
+  choose a layout that reads narrow (e.g. a vertical trunk with short branches, or zoom/pan).
+  **Keep the existing scrollable grouped list as an accessible fallback** — ship the tree as a
+  **toggle/alternate view on the picker**, not a hard replacement, so the focusable-list a11y
+  path survives. Build tree nodes from **focusable DOM elements** (not an opaque canvas blob).
+- **Scales with Wave-2.** After T59–T61 the tree grows to ~23 nodes; because it renders from data
+  it must just work — verify it lays out with the current 15 AND tolerates more.
+- **DoD:** the tree renders all node states correctly for the current 15 modes from
+  `unlockedBy`/`requires`/`isUnlocked`/`have-total` (**no parallel edge list** — grep/inspect
+  confirms it reads the live data); icon-forward nodes via a single `nodeIcon()` hook; a
+  selected-node detail panel with working Play/Practice/Guide; **locked nodes never start**;
+  toggle preserves the **accessible list fallback**; **no layout overflow at 360px**; routing/back
+  intact; `node -c` clean; no console errors; all gates green; a Node/DOM test asserts the graph
+  is built from the data (edges match `unlockedBy`/`requires`) and that locked nodes aren't
+  startable. (Babysitter: verify edges are derived from live data not hardcoded, locked-start is
+  impossible, the list fallback remains, and it holds at 360px + with an enlarged topic set.)
+
+---
+
 ### T57 — Scrub the specific school/town/county references from the docs · status: DONE
 Owner: remove the named-school and place references from the codebase, keeping only the
 generic "11+" and the exam board. Babysitter sweep: the only occurrences are in
