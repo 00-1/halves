@@ -2166,3 +2166,34 @@ how I verified:
 notes / questions: kept toasts full-size/legible (no shrinking); added the
   optional "+N more" backlog chip. Next per REVIEW order: **T65** (scroll the Arena
   back to top after a fight resolves).
+
+## T70 — Hint clarity pass: make every explanation genuinely helpful  [HANDOFF]
+commit: (this commit, on main)
+Raised the bar from *correct* (T62) to *clear & useful to a 10-year-old*. Re-read
+every hint; fixes (all in `guides.js`, method-only + leak-free preserved):
+  - **twentieths (the flagged case) → scale-to-hundredths.** Was "find 11/10, then
+    halve" (awkward improper fraction for `11/20`/`17/20`). Now **"Scale 11/20 up to
+    hundredths (×5 top and bottom), then read off two decimal places."** — concrete,
+    general for all n/20, no improper fractions.
+  - **fifths → scale-to-tenths** for consistency: "Scale 3/5 up to tenths (×2 top
+    and bottom), then read off the decimal." (was "a pair of tenths — convert…").
+  - **quarters/eighths/sixteenths → explicit halving chain** (no longer assume you
+    know the unit's value): "Halve a whole twice/three times/four times to reach a
+    quarter/eighth/sixteenth, then add up N …".
+  - **times tables fallback** "build it from a fact next door" (vague) → **"…or add
+    one more lot to a nearby fact you know."** (concrete action).
+  - **percentages 75%** "take both of N" (terse) → **"add half of N and a quarter of
+    N."** (names the two concrete steps).
+  - Re-read all other topics (halves/doubles place-aware, add/sub, bonds, bonds2,
+    place value, fractions-of/-2, percentages 50/25/10/20/5/1, squares) — each
+    already names a concrete action; no change.
+how I verified:
+  - Dumped + read the **full** fractions set: every n/20 and n/5 uses the clean
+    scaling method; quarters/eighths/sixteenths use the halving chain; no improper
+    fractions anywhere. Re-read the full set for all 15 topics for clarity.
+  - `node test/hints.test.js` → **ALL 13 PASS** (no new token/word answer-leak, no
+    phantom place, no plural slip — the new "×5 top and bottom"/"×2…" and
+    "add up N …" phrasings are all leak-free). All ten gates green. `node -c` clean.
+notes / questions: scope was guides.js only (fractions branch + two one-line
+  tweaks). Concise (one sentence each), British, 10-yo-appropriate. Next per REVIEW
+  order: **T65** (scroll the Arena back to top after a fight resolves).
