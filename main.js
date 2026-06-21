@@ -576,11 +576,13 @@
   // Loot tab — bars-at-top per themed tier-region, then the tiles below.
   function invLootHtml(col){
     const E = window.Enemies, loot = C.CATALOG.filter(it => it.cat === "Loot");
+    const rg = t => (E && E.tierRegion) ? E.tierRegion(t) : Math.floor((t - 1) / 12);
     const byRegion = {};
-    loot.forEach(it => { const r = Math.floor(((it.tier || 1) - 1) / 10); (byRegion[r] = byRegion[r] || []).push(it); });
+    loot.forEach(it => { const r = rg(it.tier || 1); (byRegion[r] = byRegion[r] || []).push(it); });
     const sections = Object.keys(byRegion).map(Number).sort((a, b) => a - b).map(r => {
       const label = (E && E.regionLabel) ? E.regionLabel(r) : ("Region " + (r + 1));
-      return { label: label + " · tiers " + (r*10+1) + "–" + (r*10+10), items: byRegion[r] };
+      const tiers = byRegion[r].map(it => it.tier), lo = Math.min.apply(null, tiers), hi = Math.max.apply(null, tiers);
+      return { label: label + " · tiers " + lo + "–" + hi, items: byRegion[r] };
     });
     const got = sections.reduce((a, s) => a + s.items.filter(it => col[it.id]).length, 0);
     return invTabHtml("Loot", got + "/" + loot.length, sections, col);

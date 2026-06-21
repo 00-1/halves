@@ -2312,3 +2312,34 @@ how I verified:
 notes / questions: left the optional collapsible "still to find" out (the spec's
   default surface is owned-in-full + the count). Next per REVIEW order: **T66**
   (set the Arena to 120 tiers — 10 regions × 12).
+
+## T66 — Set the Arena to 120 tiers (10 regions × 12)  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - enemies.js — **`TIER_COUNT 100 → 120`**; added `REGION_SIZE = 12`. `tierName`
+    now uses 12-tier regions (`region = floor((n-1)/12)`, `pos = (n-1)%12`, **boss
+    at `pos === 11`**); `tierRegion` uses `REGION_SIZE` too (exported). **`RANK_TITLES`
+    extended to 11 entries** (positions 0–10; added **"Tyrant"** as the apex rank
+    below the boss) — the 10 `BANDS` + 10 `BOSSES` are unchanged. **`DEF_GROWTH`
+    1.062 → 1.051** so the geometric ramp spreads smoothly across 120 (dynamic cap +
+    final-boss recalibration unchanged). `lootCount` rule kept → loot now **350**
+    over 120 tiers (was 250 over 100), registered procedurally (no hand-naming).
+  - main.js — inventory Loot grouping now uses **`E.tierRegion`** + the real per-
+    region tier span (was a hard-coded `/10`/`×10`), so the 10 loot regions and
+    their "tiers a–b" labels track the 12-tier structure automatically.
+how I verified:
+  - `node test/arena.test.js` (updated to 120) → **ALL 29 PASS**: `TIER_COUNT===120`;
+    **def monotonic across all 120** (11 → 491); tier 1 small/winnable by the starter
+    at 0 items; tiers 1–5 winnable at 0 items; **no tier gated behind its own loot**
+    (all 120); the **final tier 120 unbeatable at 0 items / beatable at near-full
+    (roon 491 ≥ 491) / one champion boost flips it**; `canAttempt` still needs
+    `tier:n-1`; **all 120 names non-blank**; a **named boss at every 12th tier**
+    (12/24/…/120 = the 10 BOSSES, 10/10). Dumped the def array + names: smooth ramp,
+    bosses correct, "Tyrant" fills rank pos 10, regions correct.
+  - `node -c` (enemies/main) OK; **all twelve gates green** (catalogue grew
+    1045→**1145** with the extra loot; the hero-icons drill-only baseline of 795 is
+    unaffected; inventory loot regions render at /12). No regressions.
+notes / questions: loot total rose to 350 by the existing per-depth rule (spec:
+  "keep the rule; confirm totals make sense") — sane, procedurally registered.
+  Next per REVIEW order: **T68** (Arena wayfinding — regions, boss anticipation, a
+  journey map — built on this 12-per-region structure).

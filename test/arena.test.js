@@ -74,21 +74,21 @@ function bestPower(tier, owned){   // strongest stat-only power any hero can fie
 
 // ---- (d) final tier ⇔ near-complete collection ------------------------------
 (function(){
-  const t100 = E.byTier(E.TIER_COUNT);
+  const tF = E.byTier(E.TIER_COUNT);   // the final tier (120)
   // unbeatable with nothing
   let anyWinEmpty = false;
-  H.HEROES.forEach(h => { if(E.statBattle(h, t100, {}).win) anyWinEmpty = true; });
-  ok(!anyWinEmpty, "tier 100 unbeatable with 0 items (any hero)");
+  H.HEROES.forEach(h => { if(E.statBattle(h, tF, {}).win) anyWinEmpty = true; });
+  ok(!anyWinEmpty, "final tier unbeatable with 0 items (any hero)");
   // beatable at full-minus-its-own-loot (near-full)
   const finalLoot = new Set(E.tierLoot(E.TIER_COUNT));
   const nearFull = ALL.filter(id => !finalLoot.has(id));
-  const champ = bestPower(t100, setOf(nearFull));
-  ok(champ.power >= t100.def, "tier 100 beatable at full-minus-final-loot (" + champ.hero.id + " " + champ.power + " ≥ " + t100.def + ")");
+  const champ = bestPower(tF, setOf(nearFull));
+  ok(champ.power >= tF.def, "final tier beatable at full-minus-final-loot (" + champ.hero.id + " " + champ.power + " ≥ " + tF.def + ")");
   // one missing champion boost flips the win to a loss
   const boost = nearFull.find(id => { const it = C.byId(id); return it && it.boost && it.boost.hero === champ.hero.id; });
   ok(!!boost, "champion has a boost item to remove");
   const minusOne = setOf(nearFull.filter(id => id !== boost));
-  ok(E.statBattle(champ.hero, t100, minusOne).win === false, "removing ONE champion boost flips tier 100 to a loss");
+  ok(E.statBattle(champ.hero, tF, minusOne).win === false, "removing ONE champion boost flips the final tier to a loss");
 })();
 
 // ---- (e) canAttempt still gates on the previous tier ------------------------
@@ -96,12 +96,20 @@ ok(E.canAttempt(1, {}) === true, "tier 1 always attemptable");
 ok(E.canAttempt(2, {}) === false, "tier 2 locked until tier 1 cleared");
 ok(E.canAttempt(2, { "tier:1": 1 }) === true, "tier 2 attemptable once tier 1 cleared");
 
-// ---- (f cont.) def values unchanged (T43 calibration untouched) -------------
+// ---- (f cont.) 120-tier structure + monotonic, calibrated def ---------------
 (function(){
+  ok(E.TIER_COUNT === 120, "TIER_COUNT is 120 (10 regions × 12)");
   let mono = true, max = 0; for(let n = 1; n <= E.TIER_COUNT; n++){ const d = E.byTier(n).def; if(n > 1 && d < E.byTier(n-1).def) mono = false; if(d > max) max = d; }
-  ok(mono, "def monotonic non-decreasing across all 100 tiers");
-  ok(E.byTier(1).def <= 15 && E.byTier(100).def === max && E.byTier(100).def > E.byTier(99).def,
-     "calibration intact: tier 1 small (" + E.byTier(1).def + "), final boss hardest (" + E.byTier(100).def + ", > t99 " + E.byTier(99).def + ")");
+  ok(mono, "def monotonic non-decreasing across all " + E.TIER_COUNT + " tiers");
+  const N = E.TIER_COUNT;
+  ok(E.byTier(1).def <= 15 && E.byTier(N).def === max && E.byTier(N).def > E.byTier(N-1).def,
+     "calibration intact: tier 1 small (" + E.byTier(1).def + "), final boss hardest (" + E.byTier(N).def + ", > t" + (N-1) + " " + E.byTier(N-1).def + ")");
+  // every tier name is non-blank; the 12th of each region is the named boss
+  const BOSSES = ["Goblin King","The Highwayman","Old Mother Bramble","Gurgle, King of the Bog","The Frost Jarl","Bonecaller","Cindermaw","Voltan, Lord of Storms","the Elder Wyrm","The Void Sovereign"];
+  let blank = 0, bossOk = 0; for(let n = 1; n <= N; n++){ const nm = E.byTier(n).name; if(!nm || /undefined|^\s*$/.test(nm)) blank++; }
+  for(let r = 0; r < 10; r++){ if(E.byTier(r*12 + 12).name === BOSSES[r]) bossOk++; }
+  ok(blank === 0, "all 120 tier names are non-blank (no undefined/empty)");
+  ok(bossOk === 10, "a named boss sits at every 12th tier (12/24/…/120) — " + bossOk + "/10");
 })();
 
 // ---- (f cont.) live DOM drive: Fight resolves instantly, never opens a round -

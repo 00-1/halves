@@ -1,7 +1,7 @@
 /*
  * Halves — enemy tiers, battle resolution, and tier loot (Phase 3, T23).
  *
- * A 100-tier ladder (extendable: bump TIER_COUNT) the player climbs in the Arena
+ * A 120-tier ladder (extendable: bump TIER_COUNT) the player climbs in the Arena
  * (T24). Each tier has a rock-paper-scissors `type` and a defence `def`; beating
  * it grants `tier:n` plus a batch of brand-new catalogue items (`loot:<n>:<k>`),
  * each carrying the usual style / flavour / hero-boost — so winning makes your
@@ -23,7 +23,8 @@
   const H = window.Heroes;
   if(!C || !H){ return; }   // dependencies must load first (collectibles.js, heroes.js)
 
-  const TIER_COUNT = 100;
+  const TIER_COUNT = 120;                          // 10 regions × 12 tiers (T66)
+  const REGION_SIZE = 12;                          // tiers per region; boss at the 12th
   const TYPES = ["Brawn", "Arcane", "Cunning"];   // cycle order
   const ADV_MULT = 1.5;                            // advantage matchup multiplier
 
@@ -32,26 +33,27 @@
   // tied to the strongest hero you could field with pre-tier items — takes over so
   // the climb genuinely tracks your collection. (Balance pass lives in T25.)
   const DEF_BASE = 11;       // tier-1 ramp value
-  const DEF_GROWTH = 1.062;  // per-tier geometric growth of the ramp
+  const DEF_GROWTH = 1.051;  // per-tier geometric growth (retuned to spread over 120 tiers)
   const CAP_FRAC = 0.92;     // headroom under the theoretical max so wins don't need literal perfection
 
   // ---- themed names (T44) -------------------------------------------------
   // Regions (weakest→strongest), the rank-title ladder within a region, and a
-  // named boss overriding each region's 10th tier (tiers 10/20/…/100).
+  // named boss overriding each region's 12th tier (tiers 12/24/…/120).
   const BANDS = [
     "Goblin Warren", "Gallowmarch", "Gloamwood", "Haunted Marsh", "Frostpeak Caverns",
     "Drownholm", "Cinderwaste", "Stormspire", "Dragon's Roost", "The Void Throne"
   ];
-  const RANK_TITLES = ["Runt", "Sentry", "Brute", "Raider", "Warden",
-                       "Champion", "Reaver", "Dread", "Warlord", "Overlord"];
+  // 11 rank-titles (positions 0–10 within a region); position 11 is the named boss.
+  const RANK_TITLES = ["Runt", "Sentry", "Brute", "Raider", "Warden", "Champion",
+                       "Reaver", "Dread", "Warlord", "Overlord", "Tyrant"];
   const BOSSES = [
     "Goblin King", "The Highwayman", "Old Mother Bramble", "Gurgle, King of the Bog",
     "The Frost Jarl", "Bonecaller", "Cindermaw", "Voltan, Lord of Storms",
     "the Elder Wyrm", "The Void Sovereign"
   ];
   function tierName(n){
-    const region = Math.floor((n - 1) / 10), pos = (n - 1) % 10;
-    return pos === 9 ? BOSSES[region] : (BANDS[region] + " " + RANK_TITLES[pos]);
+    const region = Math.floor((n - 1) / REGION_SIZE), pos = (n - 1) % REGION_SIZE;
+    return pos === REGION_SIZE - 1 ? BOSSES[region] : (BANDS[region] + " " + RANK_TITLES[pos]);
   }
 
   // ---- loot generation ----------------------------------------------------
@@ -195,8 +197,8 @@
   // ---- public api ---------------------------------------------------------
   function byTier(n){ return TIERS[n - 1] || null; }
   function tierLoot(n){ return (lootByTier[n] || []).slice(); }
-  // The 10 themed tier-regions (10 tiers each); label = the enemy band name.
-  function tierRegion(n){ return Math.floor((n - 1) / 10); }
+  // The 10 themed tier-regions (12 tiers each); label = the enemy band name.
+  function tierRegion(n){ return Math.floor((n - 1) / REGION_SIZE); }
   function regionLabel(r){ return BANDS[r] || ("Region " + (r + 1)); }
   // Can the player attempt tier n? Only after owning the previous tier marker.
   function canAttempt(n, collected){ return n === 1 || !!(collected && collected["tier:" + (n - 1)]); }
@@ -208,7 +210,7 @@
   }
 
   window.Enemies = {
-    TIERS, TIER_COUNT,
+    TIERS, TIER_COUNT, REGION_SIZE,
     byTier, tierLoot, tierRegion, regionLabel, canAttempt, currentTier,
     statBattle,
     matchup: H.matchup, beats: H.beats
