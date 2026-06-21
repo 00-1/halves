@@ -415,6 +415,44 @@
   function musicPlaying(){ return !!M.timer; }
   function intensity(x){ M.intensity = Math.max(0, Math.min(1, x || 0)); return api; }
 
+  // ---- contexts (T119 §5, increment 5) — the calm/energetic rule, authored ----
+  // Each context bundles the levers (tempo · mode · harmonic rhythm · density ·
+  // patches · kit · reverb) so solve is CALM and Arena DRIVES *by construction*.
+  // The calm-vs-energetic invariants are enforced as tests.
+  function hashStr(s){ let h = 2166136261 >>> 0; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  const CONTEXTS = {
+    // CALM: slow, sparse, consonant, soft, wet — Dorian/pentatonic, soft pad + pluck
+    solve: { tempo: 80,  mode: "dorian",   progression: [0, 5, 3, 4], density: 0.26, reverb: 0.36,
+             kickK: 2, hatK: 4, leadK: 5, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "pluck" } },
+    menu:  { tempo: 88,  mode: "ionian",   progression: [0, 3, 4, 0], density: 0.30, reverb: 0.30,
+             kickK: 3, hatK: 6, leadK: 6, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "bell" } },
+    // BRIGHT: floating Lydian for the event/wonder context
+    event: { tempo: 100, mode: "lydian",   progression: [0, 4, 5, 3], density: 0.42, reverb: 0.30,
+             kickK: 4, hatK: 8, leadK: 7, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "bell" } },
+    // ENERGETIC: fast, dense, dark Aeolian, driving Euclid kit + the WUB bass, dry
+    arena: { tempo: 120, mode: "aeolian",  progression: [0, 5, 6, 4], density: 0.60, reverb: 0.16,
+             kickK: 4, hatK: 12, leadK: 9, leadOct: 1, patches: { pad: "pad", bass: "wub", lead: "lead" } }
+  };
+  function setContext(name){
+    const c = CONTEXTS[name]; if(!c) return api;
+    setReverb(c.reverb);
+    setMusic(Object.assign({ seed: hashStr(name) }, c));
+    return api;
+  }
+  // A brief one-shot STING (not the loop) — the victory wub-sting; ducks the music.
+  function sting(name){
+    if(!E.ready || E.muted || !E.ctx) return api;
+    const t = E.ctx.currentTime;
+    duck(0.6, 0.6);                                   // dip the bed under the cue
+    if(name === "victory"){
+      play("wub", t, { midi: 36, dur: 0.9, bus: "sfx" });                       // a low wub swell
+      [0, 4, 7, 12].forEach(function(iv, i){ play("bell", t + i * 0.08, { midi: 72 + iv, dur: 0.4, bus: "sfx" }); });  // rising bright arp
+    } else {
+      play("bell", t, { midi: 72, dur: 0.3, bus: "sfx" });
+    }
+    return api;
+  }
+
   // ---- space: a Feedback-Delay-Network reverb (T119 §6, increment 2) ---------
   // 4 delay lines, each damped by a lowpass, recombined through a unitary
   // (Hadamard) feedback matrix scaled by `decay<1` so it is dense but stable —
@@ -548,7 +586,7 @@
   const api = {
     // runtime API
     mount: mount, play: play, drum: drum, setReverb: setReverb, duck: duck,
-    setMusic: setMusic, start: start, stop: stop, musicPlaying: musicPlaying, intensity: intensity,
+    setMusic: setMusic, setContext: setContext, sting: sting, start: start, stop: stop, musicPlaying: musicPlaying, intensity: intensity,
     setMuted: setMuted, isMuted: isMuted, capabilities: capabilities, dispose: dispose,
     output: function(){ return E.master; },     // the [A] wire can re-route this into Sound's master
     // budget/data
@@ -563,6 +601,8 @@
     euclid: euclid, rotate: rotate, markovNext: markovNext, phraseSeed: phraseSeed,
     transposeMotif: transposeMotif, invertMotif: invertMotif, retrograde: retrograde,
     densityAt: densityAt, stepEvents: stepEvents, normalizeMusic: normalizeMusic,
+    // contexts (increment 5)
+    CONTEXTS: CONTEXTS, hashStr: hashStr,
     // introspection (tests / the [A] wire)
     buses: function(){ return { master: E.master, limiter: E.limiter, music: E.music, drum: E.drum, sfx: E.sfx, reverb: E.reverb, musicSend: E.musicSend, drumSend: E.drumSend }; },
     noiseBuffer: function(){ return E.noiseBuf; }

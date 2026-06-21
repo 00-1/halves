@@ -301,5 +301,49 @@ let dense = 0, calm = 0; const rg1 = Synth.mulberry32(5), rg2 = Synth.mulberry32
 for(let s = 0; s < 64; s++){ if(Synth.stepEvents(mspec, s, rg1, 0, { deg: 0 }).some(x => x.role === "lead")) calm++; if(Synth.stepEvents(mspec, s, rg2, 1, { deg: 0 }).some(x => x.role === "lead")) dense++; }
 ok(dense >= calm, "intensity() thickens the lead (denser toward the boss: " + dense + " ≥ " + calm + ")");
 
+// =====================================================================
+// 10) CONTEXTS (increment 5) + the CALM-vs-ENERGETIC invariants (the firm rule)
+// =====================================================================
+const CX = Synth.CONTEXTS, solve = CX.solve, arena = CX.arena;
+ok(solve && arena && CX.menu && CX.event, "the calm-solve, menu, event and Arena contexts are authored");
+
+// the firm rule, enforced — Arena DRIVES, solve is CALM, by construction:
+ok(arena.density > solve.density, "Arena is denser than solve (energy)");
+ok(arena.tempo > solve.tempo, "Arena is faster than solve (drive)");
+ok(solve.reverb > arena.reverb, "solve is wetter/spacier; Arena is drier/tighter");
+ok(Synth.MODE_MOOD.dark.includes(arena.mode), "Arena uses a dark mode (" + arena.mode + ")");
+ok(Synth.MODE_MOOD.calm.includes(solve.mode) || Synth.MODE_MOOD.bright.includes(solve.mode), "solve uses a calm/bright mode (" + solve.mode + ")");
+ok(Synth.PATCHES[solve.patches.pad].amp.a > Synth.PATCHES[arena.patches.lead].amp.a, "the calm pad attacks softer than the Arena lead (soft vs sharp)");
+ok(arena.patches.bass === "wub", "Arena rides the wub bass");
+ok(arena.hatK > solve.hatK, "Arena's hats are busier than solve's (Euclid density)");
+
+// setContext drives the scheduler with the context's character (deterministic)
+function ctxSeq(name){
+  const r = freshRecord(); const S = load();
+  const si = global.setInterval, ci = global.clearInterval; let t = null;
+  global.setInterval = (fn) => { t = fn; return 1; }; global.clearInterval = () => {};
+  const ctx = StubCtx(r); ctx.currentTime = 10;
+  S.mount({ ctx: ctx }); S.setContext(name);
+  const playing = S.musicPlaying();
+  for(let k = 0; k < 12; k++){ ctx.currentTime += 0.2; t && t(); }
+  global.setInterval = si; global.clearInterval = ci;
+  return { playing: playing, seq: r.list.filter(n => n._type === "osc").map(n => Math.round(n.frequency.value)) };
+}
+const sv = ctxSeq("solve"), ar = ctxSeq("arena");
+ok(sv.playing && sv.seq.length > 0, "setContext('solve') plays a performance");
+ok(JSON.stringify(sv.seq) !== JSON.stringify(ar.seq), "solve and Arena are audibly different performances");
+ok(JSON.stringify(ctxSeq("solve").seq) === JSON.stringify(sv.seq), "a context is deterministic (seed from its name)");
+
+// the victory sting is a brief one-shot that ducks the bed — NOT the loop
+let rs = freshRecord(); const Ss = load();
+const si3 = global.setInterval; let started = 0; global.setInterval = () => { started++; return 1; };
+const ctxs = StubCtx(rs); Ss.mount({ ctx: ctxs });
+const duckBefore = Ss.buses().music.gain._calls.length;
+Ss.sting("victory");
+global.setInterval = si3;
+ok(started === 0 && !Ss.musicPlaying(), "sting('victory') is a one-shot — it starts no music loop");
+ok(rs.list.filter(n => n._type === "osc").length >= 4, "the victory sting fires a wub + a bright arpeggio");
+ok(Ss.buses().music.gain._calls.length > duckBefore, "the sting ducks the music bed under the cue");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

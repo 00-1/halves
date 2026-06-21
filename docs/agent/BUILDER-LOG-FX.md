@@ -6,12 +6,44 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## T120 — `synth.js` generative-audio engine (phased build per T119)
+## T120 — `synth.js` generative-audio engine (phased build per T119) — ALL 5 DONE
 
 **Owner directive (2026-06-21): run continuously through phases 1→5, one push per
 increment, no per-phase wait.** New files only (`synth.js`, `test/synth.test.js`);
 **zero edits to `sound.js` or any existing Halves file** (the [A] wiring is phase 6).
-No deps/bundler; no sample assets; deploy-safe; all existing gates green.
+No deps/bundler; no sample assets; deploy-safe; **`test/synth.test.js` = 107 checks**;
+all existing gates green. Increments 1–3 already APPROVED; 4–5 below.
+
+### The engine, end to end
+The full `window.Synth` API: `mount · setContext · setMusic · start/stop ·
+musicPlaying · intensity(x) · play · drum · sting · setReverb · duck · setMuted ·
+capabilities · output · dispose`. A context selects the calm/energetic bundle; the
+single lookahead scheduler renders harmony+rhythm through real patches into the
+bus/reverb graph. It delivers all four T119 quality levers — **distinct patches**,
+**reverb/space**, **harmony**, **evolving variation** — so it sounds *good*, not just
+different.
+
+### Increment 5/5 — CONTEXTS + the calm-vs-energetic invariants · DONE
+- **`CONTEXTS`**: `solve` (CALM — 80 BPM, Dorian, sparse, wet, soft pad+pluck),
+  `menu`, `event` (BRIGHT — Lydian), `arena` (ENERGETIC — 120 BPM, dark Aeolian,
+  dense, driving Euclid kit + the **wub** bass, dry). `Synth.setContext(name)` drives
+  the scheduler (seed from the name → deterministic). `Synth.intensity(x)` (shared
+  with the FX layer) thickens it toward the boss.
+- **`Synth.sting("victory")`** — a brief one-shot (a low wub swell + a rising bright
+  arpeggio) that **ducks the bed**, NOT a loop.
+- **The firm rule, enforced as tests**: Arena denser + faster + drier + dark-mode +
+  wub-bass + busier hats than solve; the calm pad attacks softer than the Arena lead;
+  solve wetter. +15 tests (now **107**): contexts authored, every calm/energetic
+  invariant, `setContext` plays + is deterministic + solve≠Arena, sting one-shot+duck.
+
+### Hand-off to Builder A (phase 6 — the [A] audio wiring, Babysitter to spec)
+- Mount once on the first gesture; reconcile output with `Sound`'s master/limiter +
+  the T113/T114 volume/tempo (use `Synth.output()` / `setMuted`). Route contexts like
+  the FX `fxSetScreen`: `setContext("solve"|topic)` in-round, `"menu"` on home,
+  `"arena"` in the Arena (+ `intensity(bossProximity)` — the same signal the T108
+  backdrop uses), `"event"` for events. Fire `Synth.sting("victory")` on an Arena win
+  (pairs with the T94 burst) and `duck()` under SFX. Keep/migrate the `Sound` SFX, then
+  retire the old `sound.js` music scheduler. Honour mute + the sliders + the limiter.
 
 ### Increment 4/5 — RHYTHM/VARIATION + the single lookahead scheduler · DONE
 Structured, evolving variation — no obvious loops (T119 §4):
