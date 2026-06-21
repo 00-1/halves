@@ -1,6 +1,25 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T56` (pixel-art app mark + topic glyphs + favicon) · live
+**Current verdict:** `APPROVED — T78` (Events foundation) · live build **`fe004d7`**. New
+standalone `events.js` (`window.Events`): a **pure, offline, deterministic UTC-daily scheduler**
+— `indexFor(now)=((floor(now/86.4e6) % 14)+14)%14`, `today/isLive/daysUntilLive`, clock
+**injected** (no `Date.now` baked in, no network/storage/timers). A **14-event roster** with
+real, distinct, evocative copy (no answer leaks), each carrying a themed **cross-topic
+`questionMix`** (T79 reads it) + reward + art/music seeds. `collectibles.js` adds an **"Events"
+category** registering one `event:<id>` reward per event as a **real collection member** (guarded
+on `window.Events`); `evaluate()` skips the Events cat (granted by completing the live event in
+T79). `main.js` adds the **"Events" inventory tab** (ordered by the roster); Awards excludes
+Loot + Events. Verified **independently**: all 14 `questionMix` topics are valid mode ids;
+each reward carries a real hero **`boost:{hero,stat,amount}`** (e.g. Solstice Keystone →
+roon/power/8) so they feed Arena power; the **UTC boundary flips exactly at 00:00 UTC**
+(23:59:59Z vs 00:00:01Z), holds across the day, and **recurs every 14 days**; `indexFor` stays
+0..13 incl. negative epochs; **no `=`/answer leaks** in names/blurbs; catalogue 804→818 (+14).
+**Arena re-proved on the grown pool** — `arena.test.js` now loads `events.js`, and still proves
+tiers 1–5 winnable at 0 items, no tier behind its own loot across all 120, and the final-tier
+near-full flip. `node -c` clean; **full 20-gate suite green** (new `events.test.js`, 28 checks).
+Migration-safe (additive, guarded). T78 → DONE.
+
+**Previously approved (done):** `T56` (pixel-art app mark + topic glyphs + favicon) · live
 build **`a700348`**. New standalone `glyphs.js` (`window.Glyphs`) — a pure, deterministic
 5×7 (+3×4) pixel bitmap font covering exactly the symbols the glyphs use (`0-9 x a b n k`,
 `× ÷ + − ± / %`, stacked fractions `½ ¾`, superscript `²`); ink codes 0/1/2 (empty/body/accent),
@@ -84,11 +103,12 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T78` next** (Events foundation) — the UTC-daily scheduler (`events.js`: today's event
-= `roster[floor(epochDaysUTC)%14]`, 14 events, recurs every 14 days), the new **"Events"
-inventory tab**, and 14 real-buff reward items (`event:<id>`, full collection members feeding
-Arena power). Then `T79` (cross-topic gauntlet) → `T80` (best-attempt lockout) → `T81`
-(art/copy/music/banner). Specs in BACKLOG Phase 6.5; this line is authoritative.
+**Do `T79` next** (Event play mode) — the cross-topic gauntlet: a **deterministic** per-event
+question set drawn across topics per each event's `questionMix` (same set every play/recurrence,
+so best-attempt is fair); reuse the round/clock/scoring engine; entry only when **live today**;
+completing the live event **grants its `event:<id>` reward** (idempotent). Then `T80`
+(best-attempt board + live-window lockout) → `T81` (art/copy/music + the prominent home banner).
+Specs in BACKLOG Phase 6.5; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

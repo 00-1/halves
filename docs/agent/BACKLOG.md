@@ -1309,7 +1309,7 @@ keeping each operator clearly recognisable.**
 > raises the high-end ceiling — re-prove these on the grown pool (the `arena.test.js`
 > suite already does). This block is **T78 → T79 → T80 → T81**, in order.
 
-### T78 — Events foundation: UTC-daily scheduler + data model + "Events" tab + reward items · status: OPEN
+### T78 — Events foundation: UTC-daily scheduler + data model + "Events" tab + reward items · status: DONE
 The deterministic backbone everything else builds on. **No backend; pure + offline.**
 - **Scheduler (its own module, e.g. `events.js`, pure/deterministic).** A fixed roster of
   **14 event definitions**. Today's event = `roster[ floor(epochDaysUTC) % 14 ]`, where
