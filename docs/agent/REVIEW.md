@@ -258,9 +258,13 @@ the event-banner gate must not break its live/countdown behaviour. Then **`T92`*
 "did well" + "extremely well" tiers — **sequenced before the Arena** so its re-calibration sees the
 full reward set). Then the **Arena 3v3 block** (Phase 6.10): **`T88`** (deterministic 1–3 vs 3
 battle model + enemy teams + re-calibration + invariant sim-proofs — the crux; design in IDEAS I5)
-→ **`T89`** (team-selection UI, 1–3 heroes) → **`T90`** (watchable turn playout). Then content
-extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store; folds in the T82 TWA/manifest/SW
-plan). Specs in BACKLOG; this line is authoritative.
+→ **`T89`** (team-selection UI, 1–3 heroes) → **`T90`** (watchable turn playout). Then the **FX
+layer** (Phase 6.12 — owner mandate: bold, brickmap-borrowed, **always semantic**): **`T93`**
+(`fxgl.js` WebGL2 foundation + **Arena biome ambience** — sense of place) → **`T94`** (celebration
+FX on wins + collectible/loot/event gains) → **`T95`** (semantic home backdrop). *(Brickmap access:
+`00-1/brickmap` likely needs adding to the Builder's scope so T93 can borrow its shaders — owner
+action; flagged.)* Then content extension `T58`→`T59`/`T60`/`T61`, then **`T72`** (Play Store; folds
+in the T82 TWA/manifest/SW plan). Specs in BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

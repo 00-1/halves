@@ -1837,6 +1837,92 @@ Make the fight *readable* — show the deterministic sim resolving, calmly.
 
 ---
 
+## Phase 6.12 — Visual character: the FX layer (brickmap-borrowed, ALWAYS semantic) — owner mandate 2026-06-21
+
+> Owner: **"don't be too tentative — put it in everywhere we can think of, whatever is actually a
+> good idea. Borrow from brickmap (it's *provably* highly performant on web + Android on midrange
+> devices — 120fps). Where it sits in the queue is your call; you drive it."** So this is the
+> Babysitter-driven rollout of the T82 hybrid FX layer — **bolder than a single menu spike**.
+>
+> **Non-negotiable guardrails (carry into EVERY task's DoD):**
+> - **ALWAYS SEMANTIC — never a passive screensaver.** Every effect must **name the purpose it
+>   serves** (sense of place / status / celebration). "Looks cool" alone is a DoD failure. Stays
+>   true even as we render more (owner: "visuals should remain semantic even as we move away from
+>   markup").
+> - **Keep the DOM UI crisp + readable + the pixel icons.** Text, numpad, menus stay DOM; the FX is
+>   an **additive, `aria-hidden`, `pointer-events:none`** layer behind/around them (a11y untouched).
+> - **Perf floor = a midrange smartphone (Poco X3 NFC · Snapdragon 732G · Adreno 618).** Budget for
+>   **stable 60fps** on that class (brickmap shows 120fps headroom); **WebGL2 baseline**, WebGPU
+>   only as progressive enhancement; resolution + particle **degrade ladder**; honour
+>   `prefers-reduced-motion`.
+> - **Borrow from brickmap (`00-1/brickmap`, our repo).** Port its dithering / palette-ramp /
+>   instanced-particle techniques (and shader code where it transfers). **NOTE — access:** the
+>   Builder's GitHub scope is `halves`-only, so to lift brickmap's code the **repo must be added to
+>   the session scope** (owner action) **or** its public files fetched; T93 must resolve this first.
+> - **Verification stays Node-friendly** (T82 §6): pure-function tests (dither/palette/particle-seed
+>   math), budget invariants (single RAF, capped buffers, idle-when-hidden, reduced-motion), and a
+>   **WebGL stub** (assert one instanced draw, textures uploaded once) — like `sound.test.js` stubs
+>   AudioContext. Keep `perf.test.js` meaningful.
+> - **Reversible.** The layer is additive and deletable; ship behind a capability/feature check so
+>   a device without WebGL2 falls back to today's static look.
+>
+> **Tasks (Babysitter sequencing — after the Arena 3v3 so it dresses a finished Arena): `T93`
+> (foundation + Arena biome ambience) → `T94` (celebration FX) → `T95` (semantic home backdrop).**
+> More surfaces ("everywhere it's a good idea": screen transitions, in-round topic atmosphere,
+> tech-tree path glow) come as follow-ups once the foundation proves out on a real Poco-X3-class
+> device.
+
+### T93 — FX foundation (`fxgl.js`) + Arena biome ambience (the debut) · status: OPEN
+Build the WebGL2 FX layer and debut it where its purpose is clearest — **sense of place in the
+Arena**. **First: resolve brickmap access** (add `00-1/brickmap` to scope or fetch its public
+shader/FX files); record what was borrowed.
+- **`fxgl.js` / `window.FXGL`** — a standalone WebGL2 module (inline GLSL strings; no bundler):
+  **ordered/Bayer dithering**, **palette quantisation to a per-theme ramp**, an **atmospheric
+  gradient/fog**, and **instanced particle splats** — techniques **borrowed from brickmap**. Static
+  uploads (generator grids → texture once); animate cheaply in-shader. One `aria-hidden`,
+  `pointer-events:none` canvas **behind** the Arena DOM.
+- **Purpose = biome sense-of-place.** The Arena backdrop renders the **current region's biome** by
+  feeding **`scenery.js`'s region theme** (its palette + silhouette) as the ramp/scene, with motes
+  matching the biome (snow in Frostpeak, embers in Cinderwaste — accents `scenery.js` already
+  names). Switching region visibly changes the place.
+- **Perf + fallback.** 60fps on Adreno-618-class with the degrade ladder; `prefers-reduced-motion`
+  → a static dithered still; **no WebGL2 → fall back to today's static scenery** (capability check).
+- **DoD:** `fxgl.js` is a pure-ish, standalone WebGL2 layer (no bundler, no new deps); it renders
+  the **current Arena region's biome** (verify it reads the live `scenery.js` theme — the effect
+  **names its purpose: place**); DOM Arena UI stays crisp + `aria-hidden`/`pointer-events:none`;
+  single RAF that **cancels when the Arena isn't shown**, capped particle buffer, reduced-motion +
+  no-WebGL2 fallbacks; brickmap borrowing recorded (+ scope resolved); `node -c` clean; **all gates
+  green** incl. NEW FX Node tests (pure dither/palette/particle-seed math · budget invariants · a
+  WebGL stub asserting one instanced draw + one-time texture upload) and `perf.test.js` still
+  meaningful. (Babysitter: confirm the backdrop is the region's biome — not generic noise — the UI
+  stays legible, the loop idles off-screen, fallbacks work, and a real device hits the budget.)
+
+### T94 — Celebration FX: wins + collectible/loot/event gains · status: OPEN
+**Purpose = amplify reward.** Heightened, *brief* particle/flourish moments so earning *feels* like
+something — on **Arena wins** (the T90 playout's victory) and on **earning a collectible / loot /
+event reward** (inventory gains). Builds on the T93 layer (GPU particles) and/or extends `fx.js`.
+- Fire on the existing win/unlock moments (don't invent new ones); reduced-motion → a calm
+  reduced flourish; never obscures the question/result text; respects the toast system.
+- **DoD:** a distinct celebratory burst on Arena wins AND on collectible/loot/event-reward gains
+  (the effect **names its purpose: celebration**); reduced-motion safe; perf budget holds (capped,
+  single loop, idle when done); doesn't cover key text (T64 spirit); 360px-safe; `node -c` clean;
+  all gates green (+ a Node check that the burst fires on the win/gain hooks and is capped).
+  (Babysitter: confirm it triggers on real win/gain events, stays within budget, and never blocks
+  readability.)
+
+### T95 — Semantic home/menu backdrop · status: OPEN
+**Purpose = ambient status.** A living home backdrop that **reflects real state** — e.g. **today's
+event theme** (palette/emblem seed) and/or **momentum/progress** — rendered through the T93 layer
+(dither + palette + gentle motes). **Not generic noise.** Stays behind the (now compact, T91) home
+UI; never competes with text or the topic picker.
+- **DoD:** the home backdrop is **driven by live state** (today's event / progress — verify it
+  reads the real source; the effect **names its purpose: status**); behind the DOM UI, legible,
+  360px-safe, reduced-motion + no-WebGL2 fallbacks; perf budget holds (idle when off-home); `node
+  -c` clean; all gates green. (Babysitter: confirm it encodes real state, not decoration, and the
+  home screen stays readable + one-screen per T91.)
+
+---
+
 ### T57 — Scrub the specific school/town/county references from the docs · status: DONE
 Owner: remove the named-school and place references from the codebase, keeping only the
 generic "11+" and the exam board. Babysitter sweep: the only occurrences are in

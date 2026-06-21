@@ -102,8 +102,10 @@ difficulty-curve shape and are independent of whether events are required —
 > **grit on the backdrops/atmosphere; crisp + legible on the UI chrome, text and numpad.** This is
 > exactly the T82 §3a **hybrid (DOM + WebGL2 FX layer)** recommendation — implement via the
 > reversible **first spike** (a dithered/particle/palette backdrop behind the menu, reusing our
-> seeded generators). Not yet queued as an implementation task — promote the spike when the owner
-> says go.
+> seeded generators). **✅ Implementation PROMOTED 2026-06-21 → BACKLOG Phase 6.12 (`T93` foundation
+> + Arena biome → `T94` celebration FX → `T95` semantic home backdrop)** after the owner's "don't be
+> tentative, put it everywhere, borrow from brickmap, you drive it" mandate. BACKLOG is
+> authoritative for the build; this note + the principles above stay as the design charter.
 >
 > **Owner: ambience must SERVE A PURPOSE — never a passive screensaver (2026-06-21, LOCKED
 > principle).** The grit/FX is **diegetic/functional**, always communicating state or amplifying
