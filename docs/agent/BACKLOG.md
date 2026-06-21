@@ -1966,6 +1966,10 @@ tokens); coordinate the node/connector style with the `data-ui` look.
   `isUnlocked`/`have-total`) — **never a parallel edge list**; **focusable `<button>` nodes**
   (a11y); **locked nodes preview-only, never start**; the **Best-Times list stays the a11y
   fallback**. Must scale to the Wave-2 topics (~23 nodes) since it renders from data.
+- **Handle VARYING depth gracefully (don't assume uniform 3-wide).** Topics may have 1, 2, or 3
+  parts (a Part 3 only exists where the curriculum has genuine depth — see IDEAS I6; **not** every
+  topic gets one). The layout must read well whether a topic row is 1-, 2-, or 3-wide — render
+  whatever depth the live `requires` chain shows, never force a fixed 3 columns.
 - **DoD:** the tree visibly **uses the full width** (≈3-abreast / filled layout, not a narrow
   column); the connectors **clearly convey unlock direction** and **distinguish chain vs
   mastery-gate** edges (and ideally lit/dim by state); still **data-driven** (grep/inspect confirms

@@ -460,3 +460,51 @@ the calibration approach is authored above. **Ready to promote on the owner's "g
 becomes: design-doc → deterministic battle model + re-calibration + invariant sim-proofs → team
 UI → playout/FX → early-game <3-heroes handling). The crux remains keeping the sim monotone so the
 invariants stay provable.)*
+
+---
+
+## I6 — Part-3 deepenings for some topics (owner idea, 2026-06-21)
+
+**The idea (owner).** Add a **Part 3** to *some* topics so the tech tree can read **3-abreast**
+(P1 · P2 · P3 per topic row). Owner asked which topics "could do with a part 3."
+
+**Babysitter principle (important).** Per the **anti-dilution rule (T58)**, a Part 3 must add
+**genuinely harder, distinct** content — NOT padding to fill a column. So: add P3 only where the
+curriculum has real depth; let the **tree layout (T106) handle VARYING width** (some topics 1-, 2-,
+or 3-wide) rather than forcing uniformity. A tree with uneven branch depth is natural ("some skills
+go deeper") and honest.
+
+**Strong P3 candidates (genuine 11+ depth) — recommend:**
+- **Fractions of** (½n → ¾n → **P3: reverse / find the whole** — "¾ of a number is 18, find it").
+  Distinct, harder, classic 11+.
+- **Percentages of** (10/25/50% → 1/5/20/75% → **P3: % increase / decrease** — "increase 80 by
+  25%"). Reverse-% could even be a P4 someday.
+- **Add & Subtract** (2-digit → 3-digit±2-digit → **P3: decimal ± (2dp)** or **4-digit / multi-step
+  a+b−c**). Decimal alignment is a genuinely new skill. *(Watch overlap with the Money Wave-2
+  topic — pick the framing that doesn't duplicate it.)*
+- **Place Value** (whole ×÷10/100 → decimals ×÷ powers → **P3: ×÷ 1000/10000 + decimals to
+  thousandths / ordering decimals**). *(Differentiate from the "Larger ×/÷" Wave-2 topic: PV stays
+  powers-of-10/place-shift; Larger ×/÷ is general multiplication/division.)*
+
+**Decent depth-extensions for currently P1-only topics (optional):**
+- **Squares** → **P2: Cubes** → **P3: square roots** (of perfect squares). A clean, real
+  progression (squares/cubes/roots are all in 11+).
+- **Fractions (as decimal)** → **P2: fraction ↔ %** → **P3: equivalent / ordering fractions**.
+
+**Avoid forcing a P3 (dilution risk):**
+- **Number Bonds** — bounded (make 100 / to 1000 / to 1); a P3 would be thin/repetitive.
+- **Halves / Doubles** — bounded; maybe a P2 (3-digit/decimals) at most, not a P3.
+
+**Coordination notes (resolve before queuing):**
+- **Overlap with Wave-2 (T59–T61):** Money/Larger-×÷ could collide with the Add&Sub / Place-Value
+  P3s above — decide whether the deeper content lives as a **P3 of the core topic** or as a
+  **separate Wave-2 topic**, not both.
+- **Times** — extending tables to 2-digit × 1-/2-digit could be **Times P2/P3** *or* the **"Larger
+  ×/÷" Wave-2 topic**; pick one path (don't duplicate).
+- Each new P3 = real curated content per `QUESTION-SETS.md` + the per-question collectibles
+  (≈7+2N items) + the unlock chain (`requires:"mastery:<P2>"`), and grows the collection → the
+  **Arena auto-scales** (T88 calibration already auto-derives from the pool — re-prove on the
+  grown set). T106 (tree v2) should render whatever depth exists from the live `requires` data.
+
+*(Status: captured, NOT queued. When the owner picks which P3s to build, promote as curated
+content tasks — likely grouped like the Wave-2 batches.)*
