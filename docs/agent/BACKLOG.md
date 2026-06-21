@@ -625,7 +625,7 @@ rarer-with-depth rarity logic.
   (base + ~250); no regression; deploy green. **Run before T24** so Arena grants the
   final set. (Babysitter re-runs the full battle-invariant harness.)
 
-### T44 — Rename enemy tiers (regions + rank-titles + named bosses) · status: OPEN (owner-approved)
+### T44 — Rename enemy tiers (regions + rank-titles + named bosses) · status: DONE
 Display-only — tier numbers / `def` / loot ids (`loot:<n>:<k>`) and all battle logic
 are **unchanged**; only the name strings in `enemies.js` change.
 - **FINAL — Regions (index 0→9, weakest→strongest):** Goblin Warren · Gallowmarch ·

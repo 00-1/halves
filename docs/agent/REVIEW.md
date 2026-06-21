@@ -1,17 +1,16 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T42` (tabbed inventory — Topics/Awards/Loot,
-lazy-rendered, per-category bars, loot in 10 regions, jump-to-top). **Do `T44`
-next:** apply the owner-approved tier names — in `enemies.js` set the 10 regions
-(Goblin Warren · Gallowmarch · Gloamwood · Haunted Marsh · Frostpeak Caverns ·
-Drownholm · Cinderwaste · Stormspire · Dragon's Roost · The Void Throne), the rank
-ladder (Runt…Overlord), and the 10 named bosses (Goblin King · The Highwayman · Old
-Mother Bramble · Gurgle, King of the Bog · The Frost Jarl · Bonecaller · Cindermaw ·
-Voltan, Lord of Storms · the Elder Wyrm · The Void Sovereign) per the naming rule in
-BACKLOG; **display-only**, tier numbers/def/loot/battle logic unchanged. (The
-inventory Loot-region labels read from `Enemies.regionLabel`, so they update
-automatically.) Then **`T24` (Arena — must stay unbeatable without a near-complete
-collection; see its DoD)** → **`T36`** (icons) → **`T25`/`T26`** → Phase 4
+**Current verdict:** `APPROVED — T44` (tier rename — all 100 names match the FINAL
+set, 10 named bosses, display-only, invariants intact, region labels updated).
+**Do `T24` (Arena `#/arena`) next** — the keystone that makes the whole metagame
+playable. Per BACKLOG: pick an unlocked hero → tier + matchup hint → play a battle
+round over unlocked topics → resolve via `Enemies.resolveBattle(hero, tier, perf,
+collected)` on the **real owned set** → show the maths → on win grant `tier:n` + its
+loot batch (unlock modal) + advance (+ hero unlocks). **Critical owner requirement:**
+the Arena must stay **unbeatable without a near-complete collection** — no perf-only
+shortcut may substitute for missing hero rating; the final tier (The Void Sovereign)
+falls only at ~full collection. Re-prove the battle invariants against the live win
+path. Then **`T36`** (icons) → **`T25`/`T26`** → Phase 4
 (**`T31`** day counter, **`T32`** practice view) → content (**`T27`** guides,
 **`T13`** audit, **`T30`** deep review) → **`T45`** (final perf/CPU/memory audit,
 LAST). **Owner is away — the loop runs to completion unattended:** the Babysitter
@@ -33,6 +32,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T44 — Rename enemy tiers (regions + rank-titles + named bosses) → APPROVED
+Display-only rename in enemies.js (`BANDS`/`RANK_TITLES`/`BOSSES` + `tierName` rule). Verified (Node, real enemies.js): node -c OK; no stub. **All 100 tier names match the FINAL approved set exactly** — non-boss tiers `"<Region> <Rank>"`, every 10th tier the named boss (Goblin King · The Highwayman · Old Mother Bramble · Gurgle, King of the Bog · The Frost Jarl · Bonecaller · Cindermaw · Voltan, Lord of Storms · the Elder Wyrm · The Void Sovereign). `regionLabel` now returns the new regions (Gallowmarch, Gloamwood, Drownholm, Cinderwaste…) → T42 inventory loot-regions update automatically. **Invariants intact:** 100 tiers, loot still 250, `def` monotonic (0 dips), boss hardest, tier 1 still winnable by base bram — battle logic untouched. No regressions.
 
 ### T42 — Inventory tabs + per-category bars + jump-to-top → APPROVED
 `renderInventory` rewritten into a tabbed, lazy-rendered view. Verified: node -c (main/enemies/collectibles) OK; no TODO/stub; new ids `#invTabs`/`#invTop` present, main.js id cross-check clean (52, 0 missing); `.inv-tabs`/`.inv-tab`/`.jump-top` CSS present. enemies.js exports `tierRegion`(1→0,10→0,11→1,100→9 ✓) + `regionLabel`; loot groups into **exactly 10 regions** with correct labels and counts (10+10+15+20+20+30+30+35+40+40 = 250). Loot-region labels read via `Enemies.regionLabel` ⇒ T44-proof. Builder's DOM-shim harness (19 checks): 3 tabs (Topics default), **lazy-render** (Topics/Awards build no loot tiles; Loot tiles only on opening the Loot tab), a progress bar on every Awards category + every Loot region, jump-to-top hidden at top / shows >200px / returns to top, header count over whole catalogue, inv-cell tap-to-inspect intact. Back (T39) + names (T35) untouched; 360px-safe. No regressions.
