@@ -433,10 +433,25 @@
     arena: { tempo: 120, mode: "aeolian",  progression: [0, 5, 6, 4], density: 0.60, reverb: 0.16,
              kickK: 4, hatK: 12, leadK: 9, leadOct: 1, patches: { pad: "pad", bass: "wub", lead: "lead" } }
   };
-  function setContext(name){
+  function setContext(name, opts){
     const c = CONTEXTS[name]; if(!c) return api;
     setReverb(c.reverb);
     setMusic(Object.assign({ seed: hashStr(name) }, c));
+    if(opts && opts.now) swapNow();
+    return api;
+  }
+  // Immediate context swap (T132): adopt the pending spec (`M.want`) RIGHT NOW —
+  // re-aligned to a phrase start (clean downbeat entry) — so the new context's
+  // harmony/patches/reverb take effect on the NEXT scheduled step (≤1 step), not
+  // at the next phrase boundary (≤1 phrase ≈ 8–11 s, which read as "never changes").
+  // No click/dropout: already-scheduled notes in the lookahead finish; only the
+  // *generator* switches now. The default (phrase-boundary) swap is left untouched.
+  function swapNow(){
+    if(!M.want) return api;
+    M.spec = M.want;
+    M.step = 0; M.phrase = 0;        // re-align to a phrase start → enters on a downbeat
+    M.st = { deg: 0 };
+    reseedMusic();
     return api;
   }
   // A brief one-shot STING (not the loop) — the victory wub-sting; ducks the music.
@@ -593,7 +608,8 @@
   const api = {
     // runtime API
     mount: mount, play: play, drum: drum, setReverb: setReverb, duck: duck,
-    setMusic: setMusic, setContext: setContext, sting: sting, start: start, stop: stop, musicPlaying: musicPlaying, intensity: intensity,
+    setMusic: setMusic, setContext: setContext, swapNow: swapNow, sting: sting, start: start, stop: stop, musicPlaying: musicPlaying, intensity: intensity,
+    musicState: function(){ return { spec: M.spec, want: M.want, step: M.step, phrase: M.phrase, playing: !!M.timer }; },   // introspection (tests / the [A] wire)
     setMuted: setMuted, isMuted: isMuted, capabilities: capabilities, dispose: dispose,
     output: function(){ return E.master; },     // the [A] wire can re-route this into Sound's master
     // budget/data

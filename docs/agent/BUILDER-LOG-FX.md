@@ -6,6 +6,41 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T132 — `synth.js` immediate context-swap lever ([B], engine gap from T129)
+
+**Status: DONE — handed off for review.** B-owned files only (`synth.js`,
+`test/synth.test.js`); **zero edits to any existing Halves file.** Off stand-by:
+A's T129 music-switcher surfaced a real engine gap — the scheduler adopted
+`M.spec = M.want` **only at a phrase boundary**, so a deliberate `setContext` lagged
+up to ~one phrase (~8–11 s), which the owner read as "music never changes."
+
+### What shipped
+- **`Synth.setContext(name, { now: true })`** and **`Synth.swapNow()`** — when
+  `now`, **adopt the pending spec immediately**: force `M.spec = M.want`, re-align the
+  phrase counter (`M.step`/`M.phrase` → 0, a clean **downbeat** entry), reset the
+  melodic state, and reseed. So the new context's harmony/patches/reverb take effect
+  on the **next scheduled step (≤1 step)**, not the next phrase.
+- **No click/dropout**: respects the existing lookahead — already-scheduled notes
+  finish; only the *generator* switches now. **Default (no `now`) is unchanged** (the
+  musical phrase-boundary swap).
+- Added a tiny `Synth.musicState()` introspection (spec/want/step/phrase/playing) for
+  tests + the [A] wire.
+- Tests +9 (now **120**): default `setContext` mid-phrase does NOT swap (lag
+  preserved) and adopts at the next phrase boundary (unchanged); `{now:true}` flips
+  the generator **immediately** (new mode/tempo, `step===0`) and the next scheduled
+  step plays from it; `swapNow()` adopts a pending want; `{now}` lands exactly the
+  target context's spec. The assertions **distinguish ≤1-step from ≤1-phrase**.
+
+### Hand-off to Builder A
+- For an instant switch in the T129 Settings music-switcher (and any deliberate
+  context change), call `Synth.setContext(name, { now: true })` instead of the bare
+  `setContext(name)`. Screen-driven music can keep the default (musical) swap.
+
+### Next (Builder B)
+- Back to reactive stand-by unless the owner wants more / another gap surfaces.
+
+---
+
 ## T130 — Golden-snapshot harness (brickmap-style render-regression) ([B])
 
 **Status: DONE — handed off for review.** New B-owned files only

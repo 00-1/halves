@@ -369,5 +369,64 @@ ok(Ss.buses().music.gain._calls.length > duckBefore, "the sting ducks the music 
   global.setInterval = si;
 })();
 
+// =====================================================================
+// 12) Immediate context swap (T132): setContext(name,{now}) / swapNow()
+// =====================================================================
+function schedRun(){
+  const r = freshRecord(); const S = load();
+  const si = global.setInterval, ci = global.clearInterval; let tick = null;
+  global.setInterval = (fn) => { tick = fn; return 1; }; global.clearInterval = () => {};
+  const ctx = StubCtx(r); ctx.currentTime = 10; S.mount({ ctx: ctx });
+  return { S: S, r: r, oscs: () => r.list.filter(n => n._type === "osc").length,
+    run: (n) => { for(let k = 0; k < n; k++){ ctx.currentTime += 0.2; if(tick) tick(); } },
+    restore: () => { global.setInterval = si; global.clearInterval = ci; } };
+}
+// DEFAULT (no `now`): a mid-phrase setContext does NOT swap until the phrase boundary
+(function(){
+  const h = schedRun();
+  h.S.setContext("solve"); h.S.start(); h.run(5);
+  const ms = h.S.musicState();
+  ok(ms.spec.mode === "dorian" && (ms.step % (16 * ms.spec.harmony.length)) !== 0, "solve context playing mid-phrase");
+  h.S.setContext("arena");
+  ok(h.S.musicState().spec.mode === "dorian", "default setContext does NOT swap mid-phrase (≤1-phrase lag preserved)");
+  h.run(100);   // cross the phrase boundary
+  ok(h.S.musicState().spec.mode === "aeolian", "default setContext adopts at the next phrase boundary (unchanged behaviour)");
+  h.restore();
+})();
+// {now:true}: the generator switches IMMEDIATELY (≤1 step), re-aligned to a downbeat
+(function(){
+  const h = schedRun();
+  h.S.setContext("solve"); h.S.start(); h.run(5);
+  ok(h.S.musicState().spec.mode === "dorian", "solve playing mid-phrase (before the instant switch)");
+  h.S.setContext("arena", { now: true });
+  const st = h.S.musicState();
+  ok(st.spec.mode === "aeolian" && st.spec.tempo === 120 && st.step === 0,
+     "setContext(name,{now:true}) swaps the generator IMMEDIATELY — new mode/tempo, re-aligned to step 0 (≤1 step, not ≤1 phrase)");
+  const before = h.oscs(); h.run(1);
+  ok(h.oscs() > before, "the very next scheduled step plays from the new (arena) generator");
+  h.restore();
+})();
+// swapNow() alone adopts a pending want immediately
+(function(){
+  const h = schedRun();
+  h.S.setContext("menu"); h.S.start(); h.run(5);
+  h.S.setContext("event");   // pending (default phrase-boundary)
+  ok(h.S.musicState().spec.mode === "ionian", "menu still active, event pending (default)");
+  h.S.swapNow();
+  ok(h.S.musicState().spec.mode === "lydian" && h.S.musicState().step === 0, "swapNow() adopts the pending context immediately");
+  h.restore();
+})();
+// the {now} swap targets the right context: its next-step generator == that context's score
+(function(){
+  const h = schedRun();
+  h.S.setContext("solve"); h.S.start(); h.run(7);
+  h.S.setContext("arena", { now: true });
+  const got = h.S.musicState();
+  const want = h.S.normalizeMusic(Object.assign({ seed: h.S.hashStr("arena") }, h.S.CONTEXTS.arena));
+  ok(got.spec.mode === want.mode && got.spec.tempo === want.tempo && got.spec.density === want.density,
+     "{now} adopts exactly the target context's spec (mode/tempo/density match arena)");
+  h.restore();
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
