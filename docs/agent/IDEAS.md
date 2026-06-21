@@ -93,6 +93,17 @@ difficulty-curve shape and are independent of whether events are required —
 > exposed-tech mono HUD — at ~95–111 fps. Now a **deep-research doc task: BACKLOG T82** (Phase
 > 6.7). This lands almost exactly on the "hybrid FX layer" kernel below — the recommended first
 > spike. Notes below retained for provenance; **BACKLOG T82 is authoritative.**
+>
+> **Owner art-direction decision (2026-06-21, LOCKED):** a **MIX** — **keep the pixelated icons**
+> (owner: "those are great"), **keep clear, readable text + inputs**, but **bring real brickmap
+> GRIT** in as an **atmospheric layer** (dithering, particle splats, moody palettes, living
+> backdrops) that *frames* our existing pixel art and the DOM UI rather than competing with it.
+> The current UI is "fine but low on character" — the grit is what adds the character. So:
+> **grit on the backdrops/atmosphere; crisp + legible on the UI chrome, text and numpad.** This is
+> exactly the T82 §3a **hybrid (DOM + WebGL2 FX layer)** recommendation — implement via the
+> reversible **first spike** (a dithered/particle/palette backdrop behind the menu, reusing our
+> seeded generators). Not yet queued as an implementation task — promote the spike when the owner
+> says go.
 
 ## I2 (original) — Renderer rethink: move the UI into a graphical engine (e.g. brickmap)? (owner musing, 2026-06-21)
 
