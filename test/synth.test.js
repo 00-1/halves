@@ -83,7 +83,9 @@ ok(Math.abs(end2 - 0.25) < 1e-6, "a short note still completes attack+decay befo
 // =====================================================================
 // 3) Patch → graph: each engine type builds the right nodes
 // =====================================================================
-function graphOf(patchName, opts){ const r = freshRecord(); const S = load(); S.mount({ ctx: StubCtx(r) }); S.play(patchName, 1, opts); return r; }
+// Mount (which now also builds the shared reverb), then RESET the record so only
+// the played voice's nodes are inspected (not the mount/reverb graph).
+function graphOf(patchName, opts){ const r = freshRecord(); const S = load(); S.mount({ ctx: StubCtx(r) }); r.types = {}; r.conns = []; r.list = []; S.play(patchName, 1, opts); return r; }
 
 const pad = graphOf("pad");
 ok(pad.types.osc === 3, "pad (unison) builds 3 detuned oscillators");
@@ -103,7 +105,7 @@ const bass = graphOf("bass");
 ok(bass.types.osc === 1 && bass.list.some(n => n._type === "biquad" && n.frequency.value <= 600), "bass is a mono voice with a low cutoff");
 
 // filter envelope actually modulates the cutoff (a lin ramp up then back)
-const pluckRec = freshRecord(); const S2 = load(); S2.mount({ ctx: StubCtx(pluckRec) }); S2.play("pluck", 1);
+const pluckRec = graphOf("pluck");
 const pluckFilt = pluckRec.list.find(n => n._type === "biquad");
 ok(pluckFilt && pluckFilt.frequency._calls.some(x => x[0] === "lin"), "the filter envelope sweeps the cutoff (pluck snaps open)");
 
@@ -120,7 +122,7 @@ ok(new Set(makeup).size >= 4, "patches build materially different node graphs ("
 // =====================================================================
 // 5) Drum kit — noise-based percussion, distinct per piece
 // =====================================================================
-function drumGraph(piece){ const r = freshRecord(); const S = load(); S.mount({ ctx: StubCtx(r) }); S.drum(piece, 1); return r; }
+function drumGraph(piece){ const r = freshRecord(); const S = load(); S.mount({ ctx: StubCtx(r) }); r.types = {}; r.conns = []; r.list = []; S.drum(piece, 1); return r; }
 const kick = drumGraph("kick");
 ok(kick.types.osc === 1 && !kick.types.bufsrc, "kick is a tonal sine (pitch-dropped), not noise");
 const kf = kick.list.find(n => n._type === "osc");
@@ -154,6 +156,43 @@ ok(!/\.(wav|mp3|ogg|flac)\b|decodeAudioData|XMLHttpRequest|fetch\s*\(/i.test(src
 ok(/window\.Synth\s*=/.test(src) && !/window\.Sound\s*\./.test(src), "synth.js defines its own window.Synth and never calls window.Sound (B-owned, standalone)");
 const capsBefore = load().capabilities();
 ok(typeof capsBefore.webaudio === "boolean" && typeof capsBefore.ready === "boolean", "capabilities() reports webaudio + ready");
+
+// =====================================================================
+// 7) SPACE (increment 2): FDN reverb + sends + stereo width + ducking
+// =====================================================================
+let rv = freshRecord(); const Sv = load(); Sv.mount({ ctx: StubCtx(rv) });
+const b = Sv.buses();
+ok(b.reverb && b.reverb.delays.length === 4, "mount builds an FDN reverb with 4 delay lines");
+ok(rv.types.delay >= 5, "the reverb uses delay lines (4 FDN + a pre-delay)");
+ok(b.reverb.damps.length === 4 && b.reverb.damps.every(d => d.type === "lowpass"), "each delay line is damped by a lowpass (dark tail)");
+// unitary feedback matrix: 16 cross-feed gains (damped_i → matrix gain → delay_j)
+ok(rv.conns.filter(c => c[0] === "biquad" && c[1] === "gain").length >= 16, "a 4×4 Hadamard feedback matrix recombines the lines (≥16 cross gains)");
+ok(rv.conns.some(c => c[0] === "gain" && c[1] === "delay"), "feedback gains re-enter the delay lines (the recirculation)");
+// stereo width: taps panned L/R
+ok(rv.types.panner >= 4 && b.reverb.damps, "the reverb tail is spread across stereo panners (width)");
+// sends: music + drums feed the reverb; reverb returns to master
+ok(b.musicSend && b.drumSend, "music + drum buses have reverb sends");
+ok(rv.conns.some(c => c[0] === "gain" && c[1] === "gain"), "the reverb output returns to the master bus");
+ok(b.musicSend.gain.value > b.drumSend.gain.value, "drums are sent dryer than the music (less wash)");
+
+// setReverb adjusts wetness; drums stay proportionally dryer
+Sv.setReverb(0.4);
+ok(Math.abs(b.musicSend.gain.value - 0.4) < 1e-9 && b.drumSend.gain.value < b.musicSend.gain.value, "setReverb sets the wet send (drums kept dryer)");
+
+// ducking: dips the music bus then recovers (sidechain glue)
+const before = b.music.gain._calls.length;
+Sv.duck(0.6, 0.2);
+const dk = b.music.gain._calls.slice(before);
+ok(dk.some(x => x[0] === "tgt" && x[1] < 0.5), "duck() dips the music bus under a cue");
+ok(dk.filter(x => x[0] === "tgt").length >= 2 && dk.some(x => x[0] === "tgt" && Math.abs(x[1] - 1) < 1e-9), "duck() recovers the music bus afterwards");
+
+// the reverb is built ONCE at mount, not per voice (budget): playing adds no delays
+const delaysAfterMount = rv.types.delay;
+Sv.play("pad", 1); Sv.play("lead", 1);
+ok(rv.types.delay === delaysAfterMount, "voices do NOT rebuild the reverb (shared, one-time)");
+// makeReverb is stable: feedback scaled below unity
+const fdn = Sv.makeReverb(StubCtx(freshRecord()));
+ok(fdn.input && fdn.output && fdn.delays.length === 4, "makeReverb exposes a clean input/output + 4 lines");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

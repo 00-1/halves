@@ -6,12 +6,31 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## T120 — `synth.js` generative-audio engine (phased build per T119) — increment 1/5
+## T120 — `synth.js` generative-audio engine (phased build per T119)
 
-**Status: increment 1 (ENGINE CORE) DONE — handed off for review.** New files only
-(`synth.js`, `test/synth.test.js`); **zero edits to `sound.js` or any existing Halves
-file** (the [A] wiring is phase 6). No deps/bundler; no sample assets; deploy-safe;
-all existing gates green.
+**Owner directive (2026-06-21): run continuously through phases 1→5, one push per
+increment, no per-phase wait.** New files only (`synth.js`, `test/synth.test.js`);
+**zero edits to `sound.js` or any existing Halves file** (the [A] wiring is phase 6).
+No deps/bundler; no sample assets; deploy-safe; all existing gates green.
+
+### Increment 2/5 — SPACE (FDN reverb + sends + stereo width + ducking) · DONE
+The "biggest quality lever vs our dry sound" (T119 §6):
+- **`makeReverb()` — a 4-line Feedback-Delay-Network reverb**: input → pre-delay →
+  4 `DelayNode`s, each damped by a lowpass, recombined through a **unitary 4×4
+  Hadamard feedback matrix scaled by `decay<1`** (dense but stable), with the taps
+  **panned L/R for a wide stereo tail**. Pure WebAudio, **no sample IR**,
+  real-time-tweakable (`setDamp`).
+- **Sends**: one shared reverb built once at mount; **music + drum buses send into
+  it** (drums kept proportionally dryer), reverb returns to master. `Synth.setReverb(wet)`.
+- **Ducking**: `Synth.duck(amount, dur)` dips the music bus then recovers
+  (sidechain glue so a cue/SFX cuts through) — the [A] wire fires it under stings/SFX.
+- Tests +14 (now **55**): FDN 4 lines + pre-delay, per-line damping LP, **≥16
+  Hadamard cross-gains** + feedback recirculation, stereo panners, music/drum sends +
+  return-to-master, drums-dryer, `setReverb`, `duck` dip+recover, and **reverb built
+  once** (voices don't rebuild it).
+
+### Increment 1/5 — ENGINE CORE · DONE
+New files only; zero edits to existing Halves files.
 
 ### What shipped (increment 1 — the voice/patch foundation)
 - **`synth.js` / `window.Synth`** — a self-contained Web Audio engine, the start of

@@ -221,8 +221,45 @@
     return parts.join("|");
   }
 
+  // ---- space: a Feedback-Delay-Network reverb (T119 §6, increment 2) ---------
+  // 4 delay lines, each damped by a lowpass, recombined through a unitary
+  // (Hadamard) feedback matrix scaled by `decay<1` so it is dense but stable —
+  // the algorithmic-reverb recipe (cheap, real-time-tweakable, no sample IR). The
+  // four taps are panned L/R for a wide stereo tail (our dry mono is the biggest
+  // "cheap" tell). Built ONCE at mount; buses send into it.
+  const FDN_TIMES = [0.0297, 0.0371, 0.0411, 0.0437];   // mutually-prime-ish (s)
+  const FDN_HADAMARD = [[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]];
+  function makeReverb(ctx, opts){
+    opts = opts || {};
+    const decay = opts.decay == null ? 0.78 : opts.decay;     // feedback gain (<1 → stable)
+    const damp = opts.damp == null ? 3600 : opts.damp;        // tail darkening (Hz)
+    const input = ctx.createGain(), output = ctx.createGain();
+    const pre = ctx.createDelay(0.2); pre.delayTime.value = opts.preDelay == null ? 0.012 : opts.preDelay;
+    input.connect(pre);
+    const delays = [], damps = [];
+    for(let i = 0; i < 4; i++){
+      const dl = ctx.createDelay(0.5); dl.delayTime.value = FDN_TIMES[i];
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = damp;
+      dl.connect(lp); delays.push(dl); damps.push(lp);
+      pre.connect(dl);                                         // input feeds every line
+    }
+    // unitary feedback matrix: delay_j input += Σ H[j][i]·(0.5·decay)·damped_i
+    for(let j = 0; j < 4; j++) for(let i = 0; i < 4; i++){
+      const g = ctx.createGain(); g.gain.value = FDN_HADAMARD[j][i] * 0.5 * decay;
+      damps[i].connect(g); g.connect(delays[j]);
+    }
+    // wide stereo tail: alternate taps hard-ish L/R into the output
+    for(let i = 0; i < 4; i++){
+      if(ctx.createStereoPanner){ const p = ctx.createStereoPanner(); p.pan.value = (i % 2 === 0) ? -0.6 : 0.6; damps[i].connect(p); p.connect(output); }
+      else damps[i].connect(output);
+    }
+    return { input: input, output: output, delays: delays, damps: damps,
+             setDamp: function(f){ for(const d of damps) try{ d.frequency.value = f; }catch(e){} } };
+  }
+
   // ---- engine state + graph --------------------------------------------------
-  const E = { ctx:null, master:null, limiter:null, music:null, drum:null, sfx:null, noiseBuf:null, muted:false, ready:false };
+  const E = { ctx:null, master:null, limiter:null, music:null, drum:null, sfx:null,
+              reverb:null, musicSend:null, drumSend:null, noiseBuf:null, muted:false, ready:false };
 
   function makeNoiseBuffer(ctx){
     const sr = ctx.sampleRate || 44100, len = Math.max(1, Math.floor(sr));   // 1 s, reused
@@ -245,7 +282,25 @@
     E.music = ctx.createGain(); E.music.gain.value = 1; E.music.connect(E.master);
     E.drum  = ctx.createGain(); E.drum.gain.value = 1;  E.drum.connect(E.master);
     E.sfx   = ctx.createGain(); E.sfx.gain.value = 1;   E.sfx.connect(E.master);
+    // space: one shared reverb; music + drums send into it (dry stays on master)
+    E.reverb = makeReverb(ctx);
+    E.reverb.output.connect(E.master);
+    E.musicSend = ctx.createGain(); E.musicSend.gain.value = 0.22; E.music.connect(E.musicSend); E.musicSend.connect(E.reverb.input);
+    E.drumSend  = ctx.createGain(); E.drumSend.gain.value = 0.10;  E.drum.connect(E.drumSend);   E.drumSend.connect(E.reverb.input);
     E.noiseBuf = makeNoiseBuffer(ctx);
+  }
+  // Set the reverb send (wetness); drums get half the music send.
+  function setReverb(wet){ wet = wet == null ? 0.22 : Math.max(0, wet); if(E.musicSend) E.musicSend.gain.value = wet; if(E.drumSend) E.drumSend.gain.value = wet * 0.45; }
+  // Duck the music under a cue (sidechain glue): dip the music bus, then recover.
+  function duck(amount, dur){
+    if(!E.ready || !E.music || !E.ctx) return;
+    const t = E.ctx.currentTime, a = amount == null ? 0.5 : Math.max(0, Math.min(1, amount)), d = dur == null ? 0.25 : dur, g = E.music.gain;
+    try{
+      g.cancelScheduledValues(t);
+      g.setValueAtTime(g.value == null ? 1 : g.value, t);
+      g.setTargetAtTime(Math.max(1e-4, 1 - a), t, 0.02);     // fast dip
+      g.setTargetAtTime(1, t + d, 0.12);                      // smooth recover
+    }catch(e){}
   }
 
   function busFor(name){ return name === "music" ? E.music : name === "drum" ? E.drum : E.sfx; }
@@ -297,17 +352,17 @@
   }
 
   const api = {
-    // runtime API (this increment)
-    mount: mount, play: play, drum: drum,
+    // runtime API
+    mount: mount, play: play, drum: drum, setReverb: setReverb, duck: duck,
     setMuted: setMuted, isMuted: isMuted, capabilities: capabilities, dispose: dispose,
     output: function(){ return E.master; },     // the [A] wire can re-route this into Sound's master
     // budget/data
     MASTER_VOL: MASTER_VOL, LIMIT_DB: LIMIT_DB, PATCHES: PATCHES, DRUM_PIECES: DRUM_PIECES,
     // pure helpers (headless-tested)
-    hz: hz, adsr: adsr, mulberry32: mulberry32,
+    hz: hz, adsr: adsr, mulberry32: mulberry32, makeReverb: makeReverb,
     renderVoice: renderVoice, renderDrum: renderDrum, patchSignature: patchSignature,
     // introspection (tests / the [A] wire)
-    buses: function(){ return { master: E.master, limiter: E.limiter, music: E.music, drum: E.drum, sfx: E.sfx }; },
+    buses: function(){ return { master: E.master, limiter: E.limiter, music: E.music, drum: E.drum, sfx: E.sfx, reverb: E.reverb, musicSend: E.musicSend, drumSend: E.drumSend }; },
     noiseBuffer: function(){ return E.noiseBuf; }
   };
   window.Synth = api;
