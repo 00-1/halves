@@ -1492,3 +1492,40 @@ how I verified:
 notes / questions: Gold is earn/display/persist only (no sink), per the owner
   decision. Phase 3 is now complete. Next per REVIEW order: Phase 4 — T31 (daily
   momentum counter).
+
+## T31 — Daily-practice momentum counter  [HANDOFF]
+commit: 0aa1900 (on main)
+changed:
+  - main.js — the Momentum system. `MOMENTUM_LABEL="Momentum"`, `MOMENTUM_MAX=75`.
+    **Pure reducer** `reduceMomentum(state, today)`: first ever play → 1; same day
+    (or clock-back) → no change; gap N≥1 → `min(75, max(0, count−(N−1))+1)`;
+    `best = min(75, max(best, count))`; `lastDay = max(lastDay, today)`. Storage
+    `halves.streak {count,lastDay,best}` (`lastDay` = local day index via
+    `localDay`); **migration-safe** (absent → 0, no crash). `bumpMomentum(col)`
+    registers a play (called in **both** `finish()` and `finishBattle()` — same-day
+    idempotent) and grants momentum milestones off `best`. **Display:**
+    `renderMomentum` (calm 🗓 start-screen indicator, "· maxed" at 75) + a
+    non-blocking `momentumToast` when it goes up. Exposes **`window.Momentum`**
+    (reduce/localDay/load/evaluate/MAX/label).
+  - collectibles.js — **6 momentum milestone collectibles** `momentum:<n>` at
+    **3/7/14/30/50/75** (Warming Up → Peak Momentum; rarity climbs, 75 = cap),
+    `evaluateMomentum(best, has)` (exported); `evaluate()` skips `momentum` items.
+  - index.html / styles.css — `#momentumBar` start-screen indicator + calm styling.
+  - **No timers/countdowns/notifications.** The number updates only on play (lazy),
+    so there's no real-time pressure.
+how I verified:
+  - node -c (collectibles/main) OK; CSS balanced; icon test green; no TODO/stub;
+    grep confirms **no momentum timers**; catalogue 1041→**1047**, names still unique.
+  - **T31 reducer Node test (17 checks, ALL PASSED):** first play =1; same-day
+    no-change; gap 1 → +1; gap 3 → 7→6 (−2+1); **long absence** (gap 100) →
+    `max(0,4−99)+1 = 1` with `best` preserved; the `max(0,…)` floor holds for all
+    gaps 2..120 (never <0 or >75); **cap at 75** — 74+1→75, 75+1→75, and **200
+    consecutive play-days stay capped at 75/75**; `best` monotonic ≤75 through a
+    dip; milestones fire off `best` exactly at 3/7/…/75, once each, **survive a
+    count dip**, and owned ones aren't re-awarded; cap=75, label="Momentum".
+  - **Live DOM harness (3 checks, PASSED):** driving a real round **persists**
+    `halves.streak = {count:1,best:1}` on first play; the start-screen indicator
+    renders.
+notes / questions: forgiving by design — the count only recomputes on play (lazy),
+  so missed days are subtracted when you return (no countdown/guilt). Next per
+  REVIEW order: T32 (per-question Practice/Review view).
