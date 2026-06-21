@@ -1,6 +1,27 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T94` [B] (celebration-burst capability for `fxgl.js`) · live build
+**Current verdict:** `APPROVED — T104` [A] (legible fraction glyphs ½/¾) · live build **`c6a96da`**.
+**CI green.** Replaces the T56 **stacked** vulgar-fraction (a 3-wide vertical num·bar·den that turned
+to mud at the ~22px tree-node size) with a **5-wide diagonal slashed** form — numerator top-left
+(cols 0–2, rows 0–3), denominator bottom-right (cols 2–4, rows 5–8), a clean staircase slash from
+bottom-left to top-right. Only `parse()` frac `w:3→5` and the `stamp()` frac branch change; the token
+DSL is **unchanged** (`f12`/`f34`), so `modes.js` `TOPIC_GLYPHS` correctly needs no edit. Verified
+**independently** (rendered the actual grids, not just the test): `f12`→`1/2`, `f34`→`3/4` both
+`missing:[]`, **visibly distinct**, slash legible, numerator/denominator separated (no crammed
+stack); confirmed `f12`/`f34` are the **only** fraction tokens in `modes.js` (no glyph references a
+digit outside `SMALL`). `node -c` clean; **full 27-gate suite green** (the width 3→5 change didn't
+regress the tech-tree node layout); `glyphs.test.js` (32 checks) asserts the new diagonal form
+(5-wide, diagonal corners inked, **no full horizontal mid-bar**, num upper-left / den lower-right,
+½≠¾). T104 → DONE. *(Owner: eyeball the Fractions `¾` + Fractions-of `½n` marks at node size — should
+now read as the fraction, not a blob.)*
+
+> **Sequencing note:** A built **T104** while I'd re-pointed it to **T107** (the cache-busting
+> shipping blocker) — it pulled the queue in the window before the T107 insert was visible. T104 is
+> correct, so approved on merits — **but T107 is still undone and is the priority.** Re-pointed below.
+
+---
+
+**Previously approved (done):** `T94` [B] (celebration-burst capability for `fxgl.js`) · live build
 **`4a58b3f`**. **CI green.** Second Builder-B handoff — **collision rule honoured** (only the 3
 B-owned files: `fxgl.js`, `test/fxgl.test.js`, `BUILDER-LOG-FX.md`; **zero edits to any existing
 Halves file**). Adds a brief, transient **celebration burst** to the engine: new public
@@ -416,7 +437,8 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T107`** [A] (**`T99` DONE — top-band + nav + banner N/3**). **`T107` FIRST —
+- **Builder A — next: `T107`** [A] (**`T104` DONE — legible slashed fraction glyphs; `T99` DONE**).
+  **⚠ A skipped T107 once (built T104 instead) — do `T107` NOW, it's the priority.** **`T107` FIRST —
   asset cache-busting (SHIPPING BLOCKER).** The owner's `a3608c0` screenshot still showed the OLD
   layout + OLD banner tag because the browser served **stale cached `styles.css`/`main.js`** while
   `build.json` (no-store) reported the new SHA — so deploys silently look unchanged and **every owner
@@ -425,8 +447,7 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   `styles.css?v=<sha>`, and every module `<script>`), or an equivalent reliable bust. Keep no-build
   + Node-verify. Cooperate with the T54 version-check (the manual-refresh bar should land users on
   fresh assets). Add a gate asserting the deployed `index.html` asset refs are versioned. **Then**
-  **`T104`** (fix the unreadable stacked fraction glyphs ½/¾ — slashed/clearer, legible at node
-  size) → **`T100`** gamey UI restyle, buttons-first (pixel-bevel + squared panels, clean text,
+  **`T100`** gamey UI restyle, buttons-first (pixel-bevel + squared panels, clean text,
   reversible `data-ui` tokens — owner approved my T97 leans) → **`T106`** (tech-tree v2: use the
   full width ~3-abreast + a clearer node-relationship visual language). **Then the shipping/perf block (Phase 6.16, owner: launch
   ASAP + parity):** **`T101`** (remove/mask the Start→fullscreen delay) → **`T102`** (installable

@@ -1928,7 +1928,7 @@ of `#start`; tidy the nav.
   `events.test.js` banner + `tech-tree` checks). (Babysitter: verify on the live build that the top
   band is gone across screens, the banner is pinned top, the tree breathes, and the nav is tidy.)
 
-### T104 — [A] Fix unreadable fraction glyphs (½, ¾) in the pixel font · status: OPEN
+### T104 — [A] Fix unreadable fraction glyphs (½, ¾) in the pixel font · status: DONE (`c6a96da`)
 Owner (screenshot): the **fraction topic icons are hard to read** — esp. **`¾`** (the Fractions
 node) which reads as a pixel blob, and the **`½`** in **`½n`** (Fractions of). Cause: the T56
 `glyphs.js` **stacked vulgar-fraction** tokens (`f12`/`f34` → 3×4 SMALL numerator · bar ·
@@ -1999,6 +1999,12 @@ tokens); coordinate the node/connector style with the `data-ui` look.
   parts (a Part 3 only exists where the curriculum has genuine depth — see IDEAS I6; **not** every
   topic gets one). The layout must read well whether a topic row is 1-, 2-, or 3-wide — render
   whatever depth the live `requires` chain shows, never force a fixed 3 columns.
+- **Reclaim the bottom slack too (owner, T99 follow-up).** After T99 the home top-aligns, so leftover
+  height now pools at the **bottom** (owner: "a little wasted space at the bottom… live with it for
+  now"). A wider/taller tree is the natural place to absorb it: let the tree (the `flex:1 1 auto`
+  picker) **grow to fill** the reclaimed vertical space (e.g. relax the `.app max-height:780px` cap on
+  tall phones, or let the tree flex to the available height) so the home fills the viewport with no
+  dead band top **or** bottom. Keep it 360px-safe and don't reintroduce a top band.
 - **DoD:** the tree visibly **uses the full width** (≈3-abreast / filled layout, not a narrow
   column); the connectors **clearly convey unlock direction** and **distinguish chain vs
   mastery-gate** edges (and ideally lit/dim by state); still **data-driven** (grep/inspect confirms
