@@ -10,30 +10,17 @@
 
 ---
 
-**Builder A → `T142` (RESTORE the backdrop T123 killed — quick) → `T137` (celebration tester) → `T140` (12-style switcher)**
-**⚠ T142 FIRST — owner (screenshot, build `63876e4`): "this build killed the nice background :-("** T123's
-`.app` scrim `rgba(14,17,22,.88)` is ~full phone width → the full-bleed backdrop is a dark slab. **Remove
-the global `.app` scrim** (backdrop returns) and protect only the genuinely floating-on-backdrop text
-LOCALLY (stat row "Goblin Gold/Momentum", `build` stamp, audit others — almost everything is already
-carded); keep `contrast.test` honest but per-element (must still FAIL if a floating row is unprotected).
-Full DoD `BACKLOG.md` T142. LIVE-verify: backdrop visible again + text readable.
-
-Then **T137 — celebration TESTER in Settings + diagnose the invisibility.** Owner after T136: **"I still
-don't see celebrations. Add a celebration tester to the setup menu to trigger different celebrations."**
-Feature AND diagnostic. Add a tester row in Settings (pixel
-buttons, a11y, like the music switcher) that fires each celebration on demand — **Item unlock**
-(`fxCelebrate`), **Rank up** (`fxCelebrateRank`), **Arena win** (`fxCelebrateWin`), **Big burst**
-(`fxBigBurst`) — ensuring `setupFx()` ran first. **Then DIAGNOSE live** (gates/golden pass yet it's
-invisible — the golden only COUNTS rects). Babysitter already ruled out the easy causes statically: CSS
-layer is correct (`#fxBurst` z-58, in front of `.app`), `ready` is sync-true for `{backend:"2d"}`,
-`renderFrame` draws correctly. Check on-device in order: (1) `fxBurst` non-null + `isReady()` + **`dimensions()`
-non-zero** (else resize timing [A]); (2) **occlusion — there's a 2nd overlay `#fxCanvas` (z-59, `window.FX`)
-ABOVE `#fxBurst` (z-58)**; reconcile/layer them; (3) if ready+sized+unoccluded but still nothing, particles
-may draw transparent/sub-pixel/off-canvas → **[B] engine fix `T138`** (flag with live evidence + a
-visibility golden, not a count). Full DoD: `BACKLOG.md` T137 (LIVE-verified — owner must SEE it). Then →
-**`T140`** (extend the music switcher to ALL 12 styles B builds in T139 + per-screen routing + the dubstep
-victory fires on a win — see BACKLOG; depends on T139) → `T124` (fraction glyphs) → `T101` → `T102`/`T103`
-(Android) → `T89`/`T90` → content → `T72`. *(T123 a11y DONE `63876e4`.)*
+**Builder A → `T142` (RESTORE the backdrop T123 killed — quick) → `T140` (12-style switcher, after B's T139)**
+*(`T137` celebration tester + occlusion fix DONE `41016d4` — owner is live-checking whether celebrations
+now show.)* **⚠ T142 FIRST — owner (screenshot, build `63876e4`): "this build killed the nice background
+:-("** T123's `.app` scrim `rgba(14,17,22,.88)` is ~full phone width → the full-bleed backdrop is a dark
+slab. **Remove the global `.app` scrim** (backdrop returns) and protect only the genuinely
+floating-on-backdrop text LOCALLY (stat row "Goblin Gold/Momentum", `build` stamp, audit others — almost
+everything is already carded); keep `contrast.test` honest but per-element (must still FAIL if a floating
+row is unprotected). Full DoD `BACKLOG.md` T142. LIVE-verify: backdrop visible again + text readable.
+Then → **`T140`** (extend the music switcher to ALL 12 styles B builds in T139 + per-screen routing + the
+dubstep victory fires on a win — depends on T139) → `T124` (fraction glyphs) → `T101` → `T102`/`T103`
+(Android) → `T89`/`T90` → content → `T72`. *(T123 a11y + T137 tester DONE.)*
 
 **Builder B → `T141` (RESEARCH musical styles → a 12-style palette) → then `T139` (build them)**
 *(T134 clean-swap DONE `ea1ed5c` — owner confirms switching works + likes menu/arena.)* Owner: likes

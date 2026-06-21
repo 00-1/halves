@@ -1,22 +1,29 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T123` [A] (a11y contrast floor over the FX backdrop — dark scrim + honest
-gate) · live build **`63876e4`**. **CI green; collision-clean** ([A]-owned: `styles.css`,
-`test/contrast.test.js`, `BUILDER-LOG.md`). The recurring backdrop-a11y theme, fixed honestly: T112's
-full-bleed backdrop can render **bright** (home palette includes white; Arena glows ~240) behind the
-transparent content column, and `--muted` is tuned for the dark `--bg`, so light-grey-on-light failed AA —
-while the old `contrast.test` only checked against `--bg` and passed (a dishonest gate). T123 adds a
-semi-opaque **dark scrim** `background:rgba(14,17,22,.88)` on `.app` so the worst-case backdrop pixel under
-text is dark enough for `--muted` to clear AA (~4.95:1 over white); the backdrop still reads in the side
-gutters, faintly (12%) through the scrim, and vividly in the z-58 celebration. Drops the `.build` stamp's
-`opacity:.7` (sub-AA under the scrim). **Honest gate:** `contrast.test` now derives the scrim, composites it
-over the **brightest** backdrop pixel (white = worst case), and asserts `--muted`/`--text` clear AA against
-**that** — it **fails** on no/weak scrim. This is a **shared-layout-primitive change (`.app`) that ships
-with its invariant assertion** (satisfies the ORCHESTRATION rule). Verified independently: `node -c` clean;
-`contrast.test` 10 (the new checks fail without the scrim); full suite + CI green. T123 → DONE. *(Owner: the
-backdrop is now dimmed ~88% behind the text column for legibility — still visible in the gutters + the
-celebration; tell me if you want it brighter and I'll trade a touch of contrast headroom.)* A → `T137`
-(celebration tester) — see queue.
+**Current verdict:** `APPROVED — T137` [A] (celebration TESTER in Settings + fix the overlay occlusion) ·
+live build **`41016d4`**. **CI green; collision-clean** (all [A]-owned: `index.html`, `main.js`,
+`styles.css`, `test/fx-wiring.test.js`, `test/synth-wiring.test.js`, `BUILDER-LOG.md`). Two things: **(1)
+the diagnostic instrument** — a Settings tester (Item / Rank up / Arena win / Big burst) that fires each
+celebration on demand (`audioUnlock`→`setupFx`→`fxResizeAll` then `fxCelebrate`/`fxCelebrateRank`/
+`fxCelebrateWin`/`fxBigBurst`) **and writes `fxBurst.isReady()` + `dimensions()` into the row** so the owner
+can report the live drawing-buffer size **without DevTools** (`0×0`/`1×1` ⇒ resize-timing; a real size ⇒
+occlusion/engine). **(2) a real occlusion fix** — `#fxBurst` was `z-index:58` but the older per-toast
+confetti `#fxCanvas` was `z-index:59`, **above** it; T137 swaps them (big celebration **z59** above the old
+confetti **z58**, still below toasts z60) — reconciling the two-canvas smell I flagged. This is a **plausible
+root cause** of "I don't see celebrations" (the burst was drawing but covered). Verified independently:
+`node -c` clean; the new ids referenced; `fx-wiring.test` 58→75 + `synth-wiring` 52; full suite + CI green.
+T137 → DONE. **🎆 OWNER: open Settings → tap a celebration tester button. If you now SEE a shower, the
+occlusion was it. If still nothing, tell me the size it shows (e.g. "360×640" or "0×0" or "not ready") —
+that pins it to [B] engine-side particle visibility (`T138`).** A → `T142` (restore the backdrop).
+
+> **Previously approved (done):** `T123` [A] (a11y contrast floor over the FX backdrop — dark scrim + honest
+> gate) · live build **`63876e4`**. **CI green; collision-clean** ([A]-owned: `styles.css`,
+> `test/contrast.test.js`, `BUILDER-LOG.md`). Fixed the backdrop-a11y theme honestly: a `.app` dark scrim
+> `rgba(14,17,22,.88)` so `--muted` clears AA over the worst-case bright backdrop pixel, + an honest
+> `contrast.test` (composites the scrim over white, fails on no/weak scrim). Shared-primitive change with its
+> invariant. Verified: `node -c` clean; `contrast.test` 10; CI green. T123 → DONE. **⚠ But the 88% scrim was
+> TOO heavy — owner: "killed the nice background." Superseded by `T142`** (remove the global scrim; protect
+> only floating text locally; keep the honest gate per-element).
 
 > **Previously approved (done):** `T134` [B] (clean immediate swap — no overlap — + audible distinctness) ·
 > live build **`ea1ed5c`**. **CI green; collision-clean** (B-owned: `synth.js`, `test/synth.test.js`,
@@ -1001,22 +1008,19 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T142` (RESTORE the backdrop T123 killed — quick regression) → `T137` (celebration
-  tester) → `T140` (12-style switcher)** [A] (**`T123`/`T135`/`T136`/`T131`/`T128`(1)+(2)/… DONE**). *(Read
-  `NEXT.md` fresh — canonical.)* **⚠ `T142` FIRST — owner (screenshot, build `63876e4`): "this build killed
-  the nice background."** T123's `.app` `rgba(14,17,22,.88)` scrim is ~full phone width → the full-bleed
-  backdrop is a dark slab. **Remove the global scrim** (backdrop returns) and **protect only the genuinely
-  floating-on-backdrop text locally** (stat row "Goblin Gold/Momentum", `build` stamp, audit others — almost
-  everything is already carded); keep `contrast.test` honest but per-element (fails if a floating row is
-  unprotected). Full DoD `T142`. **Then `T137`** — celebration TESTER in Settings + diagnose the still-live
-  invisibility: gates+golden pass yet nothing shows (golden only **counts** rects); I ruled out the easy
-  causes statically (layer right z-58, `ready` sync-true, `renderFrame` draws) — check on-device: `fxBurst`
-  ready + `dimensions()` non-zero (resize → [A]); **occlusion by the 2nd overlay `#fxCanvas` (z-59,
-  `window.FX`) above `#fxBurst` (z-58)** → reconcile; else particles draw invisibly → **[B] `T138`** + a real
-  visibility golden. **Then `T140`** (extend the music switcher to all 12 styles B builds in T139 +
-  per-screen routing + the dubstep victory fires on a win — depends on T139). Then → **`T124`** (fraction
-  glyphs) → **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content
-  **`T58`–`T61`** → **`T72`**. *(T123 a11y DONE but its scrim is superseded by T142.)*
+- **Builder A — next: `T142` (RESTORE the backdrop T123 killed — quick regression) → `T140` (12-style
+  switcher, after B's T139)** [A] (**`T137`/`T123`/`T135`/`T136`/`T131`/`T128`(1)+(2)/… DONE**). *(Read
+  `NEXT.md` fresh — canonical.)* `T137` (celebration tester + occlusion fix — `#fxBurst` z58→z59 above the
+  old `#fxCanvas` confetti) DONE `41016d4`; owner is live-checking if celebrations show now (else the
+  tester's `dimensions()` readout → [B] `T138`). **⚠ `T142` FIRST — owner (screenshot, build `63876e4`):
+  "this build killed the nice background."** T123's `.app` `rgba(14,17,22,.88)` scrim is ~full phone width →
+  the full-bleed backdrop is a dark slab. **Remove the global scrim** (backdrop returns) and **protect only
+  the genuinely floating-on-backdrop text locally** (stat row "Goblin Gold/Momentum", `build` stamp, audit
+  others — almost everything is already carded); keep `contrast.test` honest but per-element (fails if a
+  floating row is unprotected). Full DoD `T142`. **Then `T140`** (extend the music switcher to all 12 styles
+  B builds in T139 + per-screen routing + the dubstep victory fires on a win — depends on T139). Then →
+  **`T124`** (fraction glyphs) → **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`**
+  (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):

@@ -2732,7 +2732,17 @@ engine-side (`synth.js`):
   clean; all gates green; **B-owned files only** (`synth.js` + tests + `BUILDER-LOG-FX.md`). (Babysitter:
   confirm against the owner's ear — green gates necessary-not-sufficient.)
 
-### T137 — [A] Celebration TESTER in Settings + diagnose why the burst is still invisible · status: OPEN · OWNER-PRIORITY · BUG
+### T137 — [A] Celebration TESTER in Settings + diagnose why the burst is still invisible · status: DONE (`41016d4`, CI green) — tester built + occlusion fixed; owner live-check pending
+**DONE 2026-06-21** — APPROVED (REVIEW.md). (1) Settings tester (Item/Rank up/Arena win/Big burst) fires
+each celebration on demand (audioUnlock→setupFx→fxResizeAll) AND writes `fxBurst.isReady()`+`dimensions()`
+into the row → on-device diagnosis without DevTools. (2) **Occlusion fix:** `#fxBurst` (z58) was UNDER the
+older confetti `#fxCanvas` (z59) → swapped (celebration z59 above confetti z58, below toasts z60) — a
+plausible root cause of the invisibility. Babysitter verified: `node -c` clean, new ids referenced,
+`fx-wiring.test` 58→75, full suite + CI green. **Owner live-check pending:** if the tester now shows a
+shower, occlusion was it; if not, the dimensions() readout pins it to **[B] `T138`** (engine particle
+visibility — a count golden can't catch transparent/sub-pixel/off-canvas draws).
+
+> Original task below.
 Owner (live, after T136): **"I don't see celebrations. Add a celebration tester to the setup menu where I
 can trigger different celebrations."** This is BOTH the requested feature AND the diagnostic instrument for
 the still-live invisibility (T133+T136 passed every gate — incl. the golden — yet nothing shows; the golden
