@@ -2342,7 +2342,13 @@ it). Mirror the FX-wiring pattern; consume `Synth`'s API only (never edit `synth
   (Babysitter: confirm on the live build there's ONE music engine = Synth, solves are calm, Arena drives,
   a win wubs, ducking works, and the sliders/mute still rule it — then it's owner ear-check time.)
 
-### T121 — [A] Tree scroll-fade: reveal the backdrop, don't paint black · status: OPEN
+### T121 — [A] Small visual polish: scroll-fade reveals the backdrop + the coin icon is gold · status: OPEN
+**(b) Coin icon → gold (owner).** The T117 pixel icons all render in the muted/grey inherited colour,
+which the owner is happy with **except the coin** — "keep that gold like the text." The coin appears
+next to the gold amount (home gold bar, results `resGold`, reward toasts). Give **only `.px-ic.coin`**
+the amber/gold colour so the mask fills gold (`color`/`background: var(--amber)` per the mask technique
+icons.js uses — the others stay muted). Coin reads gold everywhere it appears; no other icon changes.
+**(a) Scroll-fade (below) — the original T121.**
 Owner (screenshot): the T116 scroll-fade is back but it's a **black band** over the new purple FX
 backdrop — "should either fade to transparent (if possible) or be light purple matching the bg."
 **Cause:** `.picker-wrap::before/::after` paint `linear-gradient(var(--bg), transparent)` and `--bg` is
@@ -2357,11 +2363,13 @@ backdrop — "should either fade to transparent (if possible) or be light purple
 - **Fallback (if a mask is problematic):** recolour the gradient from `var(--bg)` to a transparent→
   **light-purple** that matches the backdrop, so it blends instead of going black. (The mask is better —
   it tracks the live backdrop colour; a fixed purple only approximates the dithered/animated scene.)
-- **DoD:** when the tree scrolls, the top/bottom edge **fades into the purple backdrop (no black band)**,
-  appears only where there's more to scroll, and tracks scroll state; taps still hit nodes; the cue still
-  shows; reduced-motion safe; 360px-safe; works under `data-ui="pixel"`; `node -c` clean; all gates green
-  (keep `tech-tree.test`'s scroll-toggle check; assert the fade no longer uses the opaque `--bg` overlay
-  / uses a mask). (Babysitter: confirm on the live build the fade blends into the backdrop, not black.)
+- **DoD:** **(a)** when the tree scrolls, the top/bottom edge **fades into the purple backdrop (no black
+  band)**, appears only where there's more to scroll, and tracks scroll state; taps still hit nodes; the
+  cue still shows; reduced-motion safe; 360px-safe; works under `data-ui="pixel"`; assert the fade no
+  longer uses the opaque `--bg` overlay / uses a mask. **(b)** the **coin icon renders gold** (`.px-ic.coin`
+  = `var(--amber)`) everywhere it appears; all other icons unchanged (still muted). `node -c` clean; all
+  gates green (keep `tech-tree.test`'s scroll-toggle; extend `icons.test` to assert the coin gets the
+  amber rule). (Babysitter: confirm the fade blends into the backdrop not black, and the coin reads gold.)
 
 ### T117 — [A] Replace ALL chrome emoji with house generative pixel icons · status: DONE (`3e72581`)
 Owner: "do a pass where we replace all the emojis we're using with our own icons, in the style of our

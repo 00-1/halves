@@ -18,8 +18,9 @@ old `sound.js` music scheduler** (ONE scheduler; keep `sfx()`). Route screens to
 contexts (`#game`→solve **calm**, home→menu, `#arena`→arena +`intensity()` from
 boss-proximity, event→event); start-on-enter/stop-on-leave. Fire the **wub** once on
 a real win; **duck** music under SFX; the T113 **volume/tempo sliders + mute** drive
-the combined output. Full DoD: `BACKLOG.md` T122. Then → `T121` (scroll-fade) →
-`T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
+the combined output. Full DoD: `BACKLOG.md` T122. Then → `T121` (scroll-fade reveals
+the backdrop **+ coin icon gold** — owner) → `T101` (Start delay) → `T102`/`T103`
+(Android) → `T89`/`T90` → content → `T72`.
 
 **Builder B → STAND BY  · `T120` synth engine COMPLETE (all 5 phases approved)**
 Engine done + headless-perfect but standalone; the value is the [A] wiring (T122),
