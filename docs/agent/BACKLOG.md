@@ -837,7 +837,7 @@ sequence it **after T27**.
 
 ## Phase 5 — Final hardening (do LAST, after every other task is DONE)
 
-### T45 — Performance / CPU / memory audit + fixes · status: OPEN
+### T45 — Performance / CPU / memory audit + fixes · status: DONE
 Owner: once everything is built, a final pass to ensure no CPU/memory/performance
 problems. Audit the whole running app and fix anything found.
 - **RAF / timers idle correctly.** The confetti canvas (`fx.js`) must stop its

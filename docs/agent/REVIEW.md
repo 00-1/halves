@@ -1,21 +1,19 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T30` (content review — squares trimmed to the 11+
-band, decimal glyph normalised to ".", completeness gaps flagged not built). **Do
-`T45` next — the FINAL task:** performance / CPU / memory audit + fixes per BACKLOG.
-Profile a full play session; ensure the confetti RAF (fx.js) and the music
-scheduler (sound.js) **idle when nothing is animating/playing**; no listener/node/
-oscillator growth over repeated screen navigation; inventory (~1045 items) + Loot
-tab + Arena render smoothly (lazy-render holds); audio voice budget bounded;
-localStorage bounded. Add Node/headless assertions where a pure check is possible
-(RAF/scheduler idling, listener balance). DoD: documented audit with before/after
-for any fix; provable idling; no growth over navigation; no console errors in a
-full session; no regressions; deploy green. **On approval the BACKLOG is fully
-DONE.**
-**Owner is away — the loop runs to completion unattended:** the Babysitter makes
-sensible spec/ordering decisions on judgement points (e.g. this T27-before-T32
-reorder) rather than blocking; the Builder escalates only genuine blockers in
-BUILDER-LOG. Everything left is specced and decided — no owner input required.
+**Current verdict:** `APPROVED — T45` (perf audit — game-clock RAF leak fixed, all
+other resources proven bounded, perf+icon CI gates wired). **🎉 THE BACKLOG IS
+COMPLETE — 0 OPEN tasks. No further work for the Builder.** All of T1–T45 are DONE
+and deployed. If the owner returns wanting the flagged Wave-2 topics (rounding,
+ratio, mean, money, time, metric, sequences, larger ×/÷), the Babysitter will spec
+and queue them as a new phase; until then the Builder idles.
+
+**Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
+gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
+(beatable only at near-full collection), 50 procedural icon categories with
+per-item variation, ~1045 collectibles with unique characterful names, Goblin Gold,
+a forgiving day-counter, a per-question practice/review view, per-topic guides, and
+two CI gates (icon-variation + perf). Quality bar held throughout: every task
+independently re-verified; the last 16 approved first-pass.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -31,6 +29,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T45 — Performance / CPU / memory audit → APPROVED — 🎉 BACKLOG COMPLETE
+Final task. Honest, thorough audit: 4 long-lived resources proven already bounded, 1 real leak found and fixed. Verified (Node): node -c main.js OK; no stub; **main.js diff is exactly the 3-line `show()` guard** (`if(name !== "game" && raf){ cancelAnimationFrame(raf); raf = 0; }`) — no scope creep. **`node test/perf.test.js` → ALL 8 PASS**: fx RAF idle before/at/after a burst (80 frames → liveCount 0); **0 listeners added** over 4× full nav cycles + 18 tab switches (35→35); Loot lazy-render renders-then-releases; game-clock RAF present in-game then **cancelled on leave (1→0)**. The fix is correct (game loop re-arms via `start()`→`loop()`; only non-game navigation cancels) — normal rounds unaffected. fx + music scheduler idle (scheduler stops on mute/hidden, voices capped at MAX_STEPS_PER_TICK=4, oscillators start/stop paired); localStorage bounded (fixed key set, overwrite not append). **Both Node gates (icon-variation + perf) wired into the Pages workflow.** Catalogue 1045. No regressions.
 
 ### T30 — Deep content review → APPROVED
 Written review + 2 justified fixes. Verified (Node): node -c (modes/guides) OK; no stub. **Squares trimmed to 17** (16²–19² removed — beyond GL recall band; 2²–15² + 20²/25²/30² kept) → within the 11+ difficulty cap. **Decimal glyph normalised to "."**: **0 "·" remain** in any guide text or `explain()` output (all topics scanned). No duplicate prompts; all answers exact/numpad-safe; explain() non-empty + correct for all 316 questions; catalogue 1053→**1045** (−8 = squares Beat/Spark for 16²–19²); names still globally unique; icon test green. **Completeness gaps flagged (not built, per scope):** rounding, ratio/proportion, mean, money/change, time durations, metric conversion, sequences, larger ×/÷ — the natural Wave-2 block for the owner to decide on. Difficulty otherwise within band (upper-but-legit kept: placevalue2 6÷1000, fractions 1/16). No regressions.
