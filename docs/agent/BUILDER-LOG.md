@@ -4237,3 +4237,40 @@ notes / questions: **babysitter eyeball:** home + Arena muted text (gold/momentu
   → lower = more backdrop but less margin; the gate enforces the AA floor either way). Next per `NEXT.md`:
   the reordered **`T137`** (celebration tester in Settings + diagnose why it's still invisible) is now
   FIRST, then `T124` (fraction glyphs) → `T101` (Start delay) → Android.
+
+## T137 — Celebration TESTER in Settings + diagnose the still-invisible burst  [HANDOFF]
+commit: (this commit, on main) — [A] task, OWNER-PRIORITY · BUG. Owner (after T136): "I still don't see
+celebrations. Add a celebration tester to the setup menu to trigger different celebrations." Feature AND
+diagnostic instrument.
+changed (A-owned only):
+  - **index.html** — a `#fxTest` tester group in Settings (same pixel-button a11y as the music switcher):
+    **Item / Rank up / Arena win / Big burst** (`data-fx`), plus a `#setFxVal` readout.
+  - **main.js `fireCelebrationTest(kind)`** — fires each celebration ON DEMAND: ensures `audioUnlock()`/
+    `setupFx()` ran (mounts `fxBurst`), **forces `fxResizeAll()`** (so the buffer matches the live
+    viewport), then calls `fxCelebrate`/`fxCelebrateRank`/`fxCelebrateWin`/`fxBigBurst`. **Diagnostic:** it
+    writes `fxBurst.isReady()` + `fxBurst.dimensions()` into `#setFxVal`, so the owner can report the live
+    drawing-buffer size (a `0×0`/`1×1` ⇒ a resize-timing bug; a real size ⇒ look at occlusion/engine).
+  - **styles.css** — **occlusion fix:** `#fxBurst` z-index **58 → 59** and `#fxCanvas` (the older
+    per-toast `window.FX` confetti) **59 → 58**, so the big celebration overlay is ABOVE the old confetti
+    (the one documented "smell": two parallel celebration canvases, the old one stacked on top), still
+    below toasts (z60). Reuses the T129 `.music-switch`/`.mus-btn` styles.
+DIAGNOSIS (static — I can't run the device; the tester is for the owner's live check):
+  - **[A] occlusion** — FIXED here (the z-order swap above). `#fxCanvas` (z59) sat above `#fxBurst` (z58);
+    even though it's transparent when idle, it's the one parallel-stack smell flagged, now removed.
+  - **resize/dimensions** — the `{backend:"2d"}` path looks SOUND: `_cssSize` falls back to `innerWidth`
+    when `clientWidth` is 0, so the canvas is sized even pre-layout; T125's `fxResizeAll` (construction +
+    rAF + window/fullscreen) and the tester's resize-before-fire keep it matched. The readout will confirm.
+  - **engine particle visibility** — the rest of the path is correct in code: `celebrate()`→`_ignite`→
+    `backend.setBurst(parts)` (CPUBackend stores `this.burst`) → RAF `_frame` → `renderFrame` draws solid
+    `fillRect`s across `W×H` device px. IF the owner still sees nothing via the tester with a real
+    `dimensions()` readout, the cause is engine-side (particles drawing sub-pixel / off-canvas / zero-
+    alpha on the Canvas2D backend) ⇒ **flag [B] `T138`**: add a particle-VISIBILITY golden (on-canvas
+    coords + non-zero alpha + ≥1px DEVICE size), not just the current rect-COUNT golden.
+how I verified: **test/fx-wiring.test.js (58→75)** — asserts the tester group + 4 `data-fx` buttons, the
+  resize-before-fire, all four entry points wired, **#fxBurst z > #fxCanvas z** and **< 60**; live-boot
+  clicks each tester button and confirms it fires a celebration on a correctly-sized (non-1×1) overlay.
+  `node -c` clean; **full 34-gate suite green** (synth-wiring T129 button-count scoped to `data-music`).
+notes / questions: T123 (a11y contrast floor) is ALREADY DONE/pushed (`63876e4`) — NEXT.md's "→ then
+  T123" predates that. **Babysitter / owner:** tap the Settings tester — if a shower appears, the bug was
+  occlusion/triggering (fixed); if not, please report the `#setFxVal` size (e.g. "1080×2400" vs "0×0") so
+  we route [B] T138 precisely. Next per `NEXT.md`: `T124` (fraction glyphs) → `T101` (Start delay) → Android.

@@ -19,6 +19,17 @@ ok(/<script src="fxgl\.js"><\/script>/.test(html), "(1) index.html loads fxgl.js
 // T136: the burst overlay is mounted on the Canvas2D backend; the backdrop is not.
 ok(/\$\("fxBurst"\)[\s\S]{0,80}new FXGL\.Controller\(bu, \{ backend: "2d" \}\)/.test(main), "(1) T136: #fxBurst mounts with {backend:'2d'} (Canvas2D overlay)");
 ok(/\$\("fxBackdrop"\)[\s\S]{0,60}new FXGL\.Controller\(bg, \{\}\)/.test(main), "(1) T136: #fxBackdrop stays on the default WebGL backend");
+// T137 — the big celebration overlay (#fxBurst) sits ABOVE the older toast-confetti
+// (#fxCanvas) so it can't be occluded by it; both stay below the toasts (z60).
+const zBurst = +((css.match(/\.fx-burst\{[^}]*z-index:(\d+)/) || [])[1] || 0);
+const zCanvas = +((css.match(/\.fx-canvas\{[^}]*z-index:(\d+)/) || [])[1] || 0);
+ok(zBurst > zCanvas, "(1) T137: #fxBurst (z" + zBurst + ") is layered ABOVE #fxCanvas (z" + zCanvas + ") — no occlusion");
+ok(zBurst < 60, "(1) T137: #fxBurst (z" + zBurst + ") stays below the toasts (z60) — never covers text");
+// T137 — a celebration TESTER in Settings: pixel buttons firing each celebration type
+ok(/id="fxTest"/.test(html) && /aria-labelledby="fxTestLabel"/.test(html), "(1) T137: Settings has a labelled celebration-tester group");
+["item","rank","win","big"].forEach(k => ok(new RegExp('data-fx="' + k + '"').test(html), "(1) T137: the tester offers the '" + k + "' celebration"));
+ok(/function fireCelebrationTest\([\s\S]{0,400}fxResizeAll\(\)/.test(main), "(1) T137: the tester resizes the overlay before firing (matches the live viewport)");
+ok(/data-fx="item"[\s\S]*?fxCelebrate\(|fireCelebrationTest[\s\S]{0,400}fxCelebrate\(/.test(main) && /fxCelebrateRank\(/.test(main) && /fxCelebrateWin\(/.test(main) && /fxBigBurst\(/.test(main), "(1) T137: the tester fires all four celebration entry points");
 ok(html.indexOf("fxgl.js") < html.indexOf("main.js"), "(1) fxgl.js loads before main.js (the wiring can read window.FXGL)");
 ok(/<canvas id="fxBackdrop"[^>]*class="fx-backdrop[^"]*"[^>]*aria-hidden="true"/.test(html), "(1) a full-bleed BACKDROP canvas exists (aria-hidden)");
 ok(/<canvas id="fxBurst"[^>]*class="fx-burst"[^>]*aria-hidden="true"/.test(html), "(1) a celebration BURST overlay canvas exists (aria-hidden)");
@@ -32,7 +43,7 @@ ok(!/id="fxBurst"/.test(startBlock), "(1) the burst overlay is app-level (not co
 ok(/\.fx-backdrop\{[^}]*position:fixed/.test(css) && /\.fx-backdrop\{[^}]*z-index:-1/.test(css), "(2) the backdrop is a FIXED full-viewport layer behind .app (z-index:-1)");
 ok(/\.fx-backdrop\{[^}]*100vw/.test(css) && /\.fx-backdrop\{[^}]*100dvh/.test(css), "(2) the backdrop fills the whole viewport (100vw × 100dvh — no dead margins)");
 ok(/\.fx-backdrop\{[^}]*pointer-events:none/.test(css) && /\.fx-burst\{[^}]*pointer-events:none/.test(css), "(2) neither FX canvas intercepts taps");
-ok(/\.fx-burst\{[^}]*position:fixed/.test(css) && /\.fx-burst\{[^}]*z-index:58/.test(css), "(2) the burst overlay is fixed, on top of the screens (under toasts/update-bar)");
+ok(/\.fx-burst\{[^}]*position:fixed/.test(css) && /\.fx-burst\{[^}]*z-index:59/.test(css), "(2) the burst overlay is fixed, on top of the screens (under toasts/update-bar at z60)");
 
 // ---- (3) the wiring reads REAL sources (not constants) ----------------------
 ok(/function homeFxState\(/.test(main), "(3) a homeFxState() builds the live backdrop state");
@@ -170,6 +181,17 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   const cr = fx.celebrates[fx.celebrates.length - 1];
   ok(cr && cr.w > 1 && cr.h > 1, "boot: T125 — the RUN celebration fires on a correctly-sized controller (not 1×1) — " + (cr && cr.w) + "×" + (cr && cr.h));
   ok(cr && cr.o.count > 0, "boot: the RUN celebration is a real shower (count " + (cr && cr.o.count) + ")");
+
+  // T137 — the Settings celebration TESTER fires each type on demand, on a sized overlay
+  route("#/settings");
+  const clickFx = kind => (els.fxTest._h.click||[]).forEach(f => f({ target:{ closest:s => (s === ".mus-btn" ? { dataset:{ fx: kind } } : null) } }));
+  ["item","rank","win","big"].forEach(kind => {
+    const before = fx.celebrates.length;
+    clickFx(kind);
+    ok(fx.celebrates.length > before, "boot: T137 — the '" + kind + "' tester button fires a celebration");
+    const c = fx.celebrates[fx.celebrates.length - 1];
+    ok(c && c.w > 1 && c.h > 1, "boot: T137 — the '" + kind + "' test fires on a correctly-sized overlay (not 1×1)");
+  });
 
   // leave to a NON-fx screen → the backdrop idles + hides (no RAF off home/Arena)
   const stopsBefore = fx.stops;

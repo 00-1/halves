@@ -48,7 +48,7 @@ ok(/synthTempoMult\(\)/.test(main) && /loadTempo\(\) \/ 100/.test(main), "(4) th
 // ---- (6) T129 — Settings MUSIC SWITCHER: sample + test-switch each distinct context
 ok(/id="musicSwitch"/.test(html) && /role="group"/.test(html) && /aria-labelledby="musicLabel"/.test(html), "(6) T129: Settings has a labelled music-switcher button group");
 ["menu","solve","arena","event"].forEach(n => ok(new RegExp('data-music="' + n + '"').test(html), "(6) T129: the switcher offers the '" + n + "' style"));
-ok((html.match(/<button type="button" class="mus-btn"/g) || []).length === 4 && /aria-pressed="false"/.test(html), "(6) T129: styles are 4 real, keyboard-operable <button>s with aria-pressed");
+ok((html.match(/<button type="button" class="mus-btn"[^>]*data-music=/g) || []).length === 4 && /aria-pressed="false"/.test(html), "(6) T129: styles are 4 real, keyboard-operable <button>s with aria-pressed");
 ok(/\.music-switch \.mus-btn\{[^}]*min-height:44px/.test(css), "(6) T129: each style button is a ≥44px tap target");
 ok(/\.mus-btn\[aria-pressed="true"\]/.test(css), "(6) T129: the picked style is visibly highlighted (aria-pressed styling)");
 ok(/\[data-ui="pixel"\] \.music-switch \.mus-btn/.test(css), "(6) T129: the switcher is data-ui=\"pixel\" styled (matches the chrome)");

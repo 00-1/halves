@@ -78,7 +78,9 @@ body{
 .fx-backdrop{position:fixed;inset:0;z-index:-1;width:100vw;height:100dvh;display:block;pointer-events:none;opacity:.85}
 /* T110 — celebration-burst overlay (FXGL): app-level, ON TOP of the screens but
    UNDER the toasts/update-bar, taps always pass through. */
-.fx-burst{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:58}
+/* T137 — the big celebration overlay sits ABOVE the older per-toast confetti
+   (#fxCanvas, z58) so it can't be occluded by it; still below toasts (z60). */
+.fx-burst{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:59}
 .mark{font-family:var(--mono);font-weight:800;letter-spacing:-.04em;line-height:.9;
   font-size:clamp(56px,20vw,100px);
   background:linear-gradient(180deg,var(--text),var(--muted));-webkit-background-clip:text;background-clip:text;color:transparent;
@@ -735,7 +737,7 @@ canvas.pix{image-rendering:pixelated}
   100%{opacity:0;transform:translateY(-18px)}
 }
 /* full-screen celebration FX overlay (confetti/sparks drawn by fx.js) */
-.fx-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:59}
+.fx-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:58}
 /* new-version notice (T54) — unobtrusive, dismissible, never modal */
 .update-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 12px);
   z-index:70;display:flex;align-items:center;gap:10px;max-width:340px;width:calc(100% - 24px);

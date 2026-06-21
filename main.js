@@ -2086,7 +2086,32 @@
       synthSwitchContext(name);   // distinct built-in context (Synth.setContext) + the T113 tempo
       syncMusicSwitch();
     });
+    // T137 — celebration tester: fire each celebration ON DEMAND, and surface the
+    // burst overlay's live drawing-buffer size as a diagnostic (0×0/1×1 here ⇒ a
+    // resize-timing bug; a real size ⇒ look at occlusion/engine instead).
+    const fxGrp = $("fxTest");
+    if(fxGrp) fxGrp.addEventListener("click", e => {
+      const btn = e.target.closest && e.target.closest(".mus-btn"); if(!btn) return;
+      const kind = btn.dataset.fx; if(!kind) return;
+      fireCelebrationTest(kind);
+    });
   })();
+  function fireCelebrationTest(kind){
+    audioUnlock();                       // ensure setupFx() ran (mounts fxBurst)
+    if(!fxBurst) setupFx();
+    fxResizeAll();                       // match the live viewport before firing
+    if(kind === "item") fxCelebrate([{ id: "test:legendary", rarity: "legendary" }, { id: "test:epic", rarity: "epic" }]);
+    else if(kind === "rank") fxCelebrateRank((window.Collectibles && window.Collectibles.RANKS ? window.Collectibles.RANKS.length : 8) - 1);
+    else if(kind === "win") fxCelebrateWin(8);
+    else fxBigBurst({ x: 0.5, y: 0.55, count: 800, seed: (Date.now() & 0xffff) + 1, palette: null });
+    // diagnostic readout (the owner can report it without DevTools)
+    const val = $("setFxVal");
+    if(val){
+      if(!fxBurst){ val.textContent = "no overlay"; }
+      else { const d = fxBurst.dimensions ? fxBurst.dimensions() : null;
+        val.textContent = (fxBurst.isReady && fxBurst.isReady() ? "" : "not ready · ") + (d ? d.w + "×" + d.h : "fired"); }
+    }
+  }
 
   // Wipe every halves.* key → a genuine first-run. Prefix-scan (catches every key,
   // incl. per-mode boards and any future key) with an enumerated fallback, then
