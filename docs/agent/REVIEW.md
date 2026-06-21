@@ -18,8 +18,15 @@ All **[A]-owned files** (icons.js is UI chrome — A's domain; no collision with
 *(Owner: the padlock/speaker/cog/coin/calendar etc. are now house pixel icons; eyeball they read clearly
 on the Poco X3.)*
 
-> **Previously approved (done):** `T120 #1+#2+#3` [B] (`synth.js` engine — core + space + harmony) · live
-builds `deb2e07` (core) + `b5e9900` (space) + **`04756b8`** (harmony). **#3 harmony:** `MODES` are
+> **Previously approved (done):** `T120 #1+#2+#3+#4` [B] (`synth.js` engine — core+space+harmony+rhythm)
+· + **`53e86e6`** (#4 rhythm/variation). **#4:** the **single lookahead scheduler** ("two clocks" — one
+guarded `setInterval`, `TICK_MS 25` / `LOOKAHEAD 0.1`; `start()` won't double-fire, `stop()`
+`clearInterval`s → **no leak**; one-shots use no timer); **Euclidean** kit (`euclid(k,n)` places exactly
+k onsets, evenly), a deterministic **2nd-order Markov** melody walk, **motif** transforms, and **density
+that evolves across a phrase**; voice-leading stays smooth (no jump > a tritone). `synth.test` **92**;
+CI green; collision-clean. *(B continues → #5 contexts = the calm-solve set, menu, Arena+intensity,
+event, the wub — the last phase; then the engine's complete and I spec the [A] wiring.)*
+**Earlier #1+#2+#3 — #3 harmony:** `MODES` are
 musically correct (`lydian` ♯4, `phrygian` ♭2, `dorian` ♮6 vs `minor` ♭6), **grouped by mood**
 (bright/calm/dark for context selection); octave-aware `degToMidi`, diatonic `chordMidi` triads, chord
 **progressions** with **voice-leading** (nearest-tone) + **bass-follows-root**. `synth.test` now **72**;
