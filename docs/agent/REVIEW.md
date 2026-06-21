@@ -1,27 +1,24 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T48` (inventory regression fixed — tiles restored +
-bars-at-top on every tab). Babysitter re-verified independently: ran the new
-`test/inventory.test.js` (boots the app under a DOM shim, inspects rendered HTML) on
-`origin/main` — **all 24 checks pass**. Topics tab renders `inv-cell` tiles again
-(regression fixed), each tab has exactly one progress-bar block sitting **above** the
-tiles, **no bar beside any tile group**, owned tiles carry a `<canvas>`, lazy-render
-holds (Loot tiles only when opened), and seeded counts match (Halves bar 3/59). The
-refactor shares one `sections` array between the bar block and the tile groups, so
-ordering can't drift. `node -c main.js` clean; gate wired as the **fourth Pages
-gate**; only main.js / workflow / test / log touched. T48 → DONE.
+**Current verdict:** `APPROVED — T47` (Arena is now a pure stat check, no maths drill).
+Babysitter re-verified independently: `statBattle` = `round(rating×matchup) ≥ def`
+with **no perf** — exactly the old `resolveBattle` at `perf=1` (factor `0.4+0.6·1=1`),
+and I confirmed the **def arrays are byte-identical** across all 100 tiers (t1=11,
+t99=289, t100=410) so the T43 calibration didn't move. `BATTLE_MODE`, `battleCtx`,
+`resolveBattle`, `computePerf`, `clamp` all removed (only explanatory comments mention
+perf). Fight resolves instantly (`startBattle`→`statBattle`→`finishBattle`), never
+calls `beginRound`; `finish()` no longer routes to the Arena. The pick-card uses the
+**identical** `round(rating×mu) ≥ def`, so the predicted ⚔ result can't disagree with
+the fight. Ran the new `test/arena.test.js` on `origin/main` — **all 24 checks pass**:
+tiers 1–5 winnable at 0 items, **no tier gated behind its own loot**, tier 100
+unbeatable at 0 items / beatable at full-minus-final-loot (410≥410) / **removing one
+champion boost flips it to a loss**, `canAttempt` still needs `tier:n-1`, def
+monotonic, Arena never starts a question round. Wired as the **fifth Pages gate**.
+Intentional (non-defect) change: the Arena no longer bumps daily momentum or grants
+per-question gold on a loss — correct now that it isn't a drill. `node -c` clean; no
+regressions. T47 → DONE.
 
-**Do `T47` next — Arena: pure stat check, NOT a maths drill (owner correction).** The
-Arena currently makes you play a maths round to fight; remove that — "Fight"
-resolves instantly from hero stats (win iff `rating×matchup ≥ def`), no questions.
-Drilling stays in the topics (where buffs are earned); the Arena is the payoff.
-Drop `perf`/`computePerf` from the Arena path (mathematically the old `perf=1`
-case, so def calibration + buff-gating invariants are unchanged); rework the Arena
-UI to show effective power / matchup / defence + instant Victory/Defeat. The owner's
-rule holds purely on buffs now: can't beat the final enemy without all/most buffs.
-Babysitter re-runs the full buff-gating suite on the new path. Full spec in BACKLOG.
-
-**Then `T49` — Practice mode: promote the button, fix the hints, surface the guide
+**Do `T49` next — Practice mode: promote the button, fix the hints, surface the guide
 (owner-reported).** Owner hit "half of **5**" in Practice and the hint said *"Halve
 the tens and ones… half of 5 is 2.5"* — it **gave the answer** and **talked about tens
 when 5 has none**. Four parts: (1) make **Practice a primary button beside Start** on

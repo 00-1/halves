@@ -898,7 +898,7 @@ bar, and fails even that on `--line`). `--text`, amber, mint, coral all pass
   regressions; deploy green. **Wire the contrast assertion into the Pages workflow**
   as a third gate so contrast can't regress. (Babysitter re-computes the ratios.)
 
-### T47 — Arena: pure stat check, NOT a maths drill · status: OPEN
+### T47 — Arena: pure stat check, NOT a maths drill · status: DONE
 Owner correction: the Arena currently makes you **play a maths round** to fight a
 tier — but "this is also a maths drill; that wasn't the intention. You should just
 win if your hero stats are good enough." The maths drilling belongs in the
