@@ -1271,6 +1271,133 @@ keeping each operator clearly recognisable.**
   toasts; deploy green. (Babysitter checks each topic's pixel mark encodes the right
   operator, the favicon is set, and the draw is static/contrast-safe.)
 
+---
+
+## Phase 6.5 — Events (owner brought this forward, 2026-06-21 — "I like it a lot")
+
+> **What it is.** Daily, time-limited maths challenges with **today-only rewards**. A
+> roster of **14 events cycles daily at 00:00 UTC** — one event is live each UTC day, so
+> the full set recurs every 14 days. Each event is a distinct, compelling thing (its own
+> art, copy, music, reward) — never a reskin. Rewards are **real buffs** in a **new
+> "Events" inventory tab**; they're full collection members and feed Arena power. Events
+> also appear on the **best-attempt board**, but are only playable during their live
+> window (so beating your score waits for the recurrence, ~14 days).
+>
+> **Hard design constraints (static site, no backend).** Everything is **deterministic
+> from the device's UTC date** — no server. "What's live today" = a baked-in rotating
+> calendar indexed by the UTC day. "Today-only" keys off the device clock at 00:00 UTC.
+>
+> **Owner decisions (final, 2026-06-21):**
+> - **14 events**, **daily rotation at 00:00 UTC** (each recurs every 14 days).
+> - Rewards are **REAL buffs** (carry hero boosts, feed Arena power), in a **new dedicated
+>   "Events" inventory tab / collectible category**.
+> - **Event buffs MAY gate high Arena tiers** — and there is **NO need for any Arena UI
+>   that explains "this foe needs an event buff / next event in N days."** Owner was
+>   explicit: an event is live *every day*, so daily buffs are obviously available — do
+>   **not** add that explanatory UI (earlier Babysitter note to add it is **withdrawn**).
+> - Each event needs **compelling unique graphics + text** and **new event music**.
+> - The game played is a **predetermined mix of questions from across the topics**.
+> - Events appear on the **best-attempt board**; retry only during the live window;
+>   **outside the live window the entry is locked** on the best-of screen (visible, not
+>   playable). Best attempt persists across recurrences so you can beat it next time.
+>
+> **Invariants that still must hold** (difficulty-curve shape, independent of event-gating):
+> tiers **1–5 winnable at 0 items**; **def monotonic non-decreasing**; **no tier gated
+> behind its OWN loot** (T23/T43/T47/T66). Adding event buffs to the collection only
+> raises the high-end ceiling — re-prove these on the grown pool (the `arena.test.js`
+> suite already does). This block is **T78 → T79 → T80 → T81**, in order.
+
+### T78 — Events foundation: UTC-daily scheduler + data model + "Events" tab + reward items · status: OPEN
+The deterministic backbone everything else builds on. **No backend; pure + offline.**
+- **Scheduler (its own module, e.g. `events.js`, pure/deterministic).** A fixed roster of
+  **14 event definitions**. Today's event = `roster[ floor(epochDaysUTC) % 14 ]`, where
+  `epochDaysUTC = floor(Date.now()/86400000)` (UTC day index — **must** use UTC so the
+  rollover is 00:00 UTC, not local). Expose helpers: `Events.today()`, `Events.isLive(id)`
+  (true iff that event is today's), `Events.daysUntilLive(id)` (0..13), and the roster.
+  Pure functions of a passed-in timestamp (inject the clock so it's testable).
+- **Event definition shape** (data, all 14 fully specified — real, distinct, compelling):
+  `{ id, name, theme, blurb, questionMix, rewardId, artSeed, musicSeed }`. `name`+`blurb`
+  are real, evocative copy (each event feels unique). `questionMix` is the spec T79 reads
+  (which topics + how many each — see T79). `rewardId` = `event:<id>`.
+- **New collectible category "Events"** with **14 reward items** (`event:<id>`), as **full
+  collection members**: they carry **hero buffs** like loot/awards and therefore **feed
+  Arena power** (no special-casing — they join the same collection the Arena reads). Stable
+  ids, migration-safe (existing profiles simply don't own them yet).
+- **New "Events" inventory tab** alongside the existing inventory categories
+  (Topics/Awards/Loot/…): lists the 14 event rewards with owned/locked state, consistent
+  with the existing inventory UI and copy. (Showing locked ones is fine — match how the
+  rest of the inventory treats unowned items.)
+- **DoD:** Node test (`events.test.js`, added to the Pages workflow) proves: same UTC date
+  → same event; the index is always `0..13`; the roster **cycles every 14 days** and each
+  event recurs every 14 days; the **00:00 UTC boundary** flips the event (test a timestamp
+  at `23:59:59Z` vs `00:00:01Z`); scheduler is pure/offline (no network, no `Date.now`
+  baked in — clock injected). The 14 rewards are **real collection members** (they appear
+  in the global collected/total counts and carry buffs — verify one feeds a hero boost).
+  New tab renders owned + unowned at **360px** with no overflow; routing/back work.
+  Migration-safe (a pre-existing profile loads unchanged; new category only *adds*). No
+  answer/secret leaks in names/blurbs. `node -c` clean; **all existing gates stay green**.
+
+### T79 — Event play mode: the cross-topic gauntlet + today-only reward grant · status: OPEN
+The actual game. Reuses the existing round/clock/scoring engine; adds the event ruleset.
+- **Question set = a predetermined, deterministic mix drawn from across existing topics**,
+  per each event's `questionMix`. **Deterministic per event** (seeded from `id`/`artSeed`)
+  so the set is the **same every time the event is played or recurs** — this is what makes
+  the best-attempt board fair across plays and across the 14-day recurrence. **Not**
+  fresh-random each entry. Curate the mix to feel themed (the spec may say e.g. "N from
+  each of these topics"); answers are pulled from the existing curated topic sets so they
+  stay calibrated.
+- **Engine reuse:** same numpad, length guard, elapsed-clock (no per-question countdown),
+  and scoring as a normal round. Every question must be **numeric, non-negative, in the
+  calibrated ranges** (`docs/research-11plus.md`) and **numpad-enterable** within the
+  length guard.
+- **Entry + reward:** the event is playable only when **live today**; **completing today's
+  live event grants its `event:<id>` reward** (the buff). Outside the live window it is not
+  playable (ties to T80's lockout). Replaying a live event is allowed (improve your score);
+  the reward grant is idempotent (own-once).
+- **DoD:** Node logic check across **all 14 events**: the gauntlet generator yields valid
+  numeric/non-negative/in-range/numpad-safe questions; the question set is **deterministic
+  per event** (same set on replay — assert byte-stable); the reward is granted **only when
+  that event is live** and is **idempotent**; offline-safe; no leaks. Extend `events.test.js`.
+  `node -c` clean; every `$("id")` used exists in `index.html`; **all gates green**.
+
+### T80 — Best-attempt board: event entries + live-window lockout · status: OPEN
+- Events appear on the **best-attempt board**. An event entry is **playable/retryable only
+  during its live window** (today, recurring every 14 days). **Outside the window it renders
+  locked** on the best-of screen — visible (so the player knows it exists / recurs) but
+  **not routable into play**.
+- **Best attempt persists across recurrences** — playing the event next time it comes
+  around lets you **beat your prior score** (the stored best survives the 14-day gap).
+- **DoD:** Node check — the board lists event entries; `isRetryable(event)` is **true iff
+  the event is live today**, **false otherwise**; a locked entry renders but **does not
+  route** into a round; the stored best attempt **persists and compares correctly across a
+  simulated 14-day recurrence** (set the clock forward 14 days → same event live again →
+  prior best still present and beatable). Migration-safe; `node -c` clean; gates green.
+
+### T81 — Event presentation: compelling art + copy + event music + home banner · status: OPEN
+Make events *feel* special. **New procedural art set** (anti-dilution rule — do not reskin
+existing art).
+- **Per-event procedural graphics:** a new, standalone procedural art generator for events
+  (its own module), producing a **distinct** mark/scene per event across all 14 (variation,
+  like the monster/icon/scenery gates). Static draw (no RAF), deterministic from `artSeed`.
+- **Copy:** surface each event's real `name`/`blurb` (from T78) wherever the event is
+  presented — it should read as a unique, compelling challenge.
+- **New event music:** a dedicated **event music theme** wired into the existing audio
+  engine, honouring the **calm + volume** rules (T69/T71 — ≤95 BPM band, master/music
+  levels, no clipping). Per-event variation is welcome but **at least one distinct event
+  theme** is required.
+- **Home-screen "event live" entry/banner:** surfaces **today's** event with its art +
+  copy and a **countdown to the 00:00 UTC rollover**. **Do NOT** add any Arena
+  event-gate-explanation UI (owner: unnecessary — see phase note).
+- **DoD:** the per-event art is **distinct across all 14** (assert variation, e.g. ≥90%
+  pairwise-distinct grids) and **static/deterministic**; the event music **passes the sound
+  gate** (calm/volume invariants hold; extend `sound.test.js` or the music gate); the home
+  banner renders at **360px** with a working UTC countdown; **no Arena explanatory UI was
+  added**; `node -c` clean; no console errors; contrast AA on the new surfaces; **all gates
+  green**. (Babysitter: confirm 14 distinct event marks, the event theme is calm + in the
+  volume envelope, the countdown targets 00:00 **UTC**, and no event-gate UI crept in.)
+
+---
+
 ### T57 — Scrub the specific school/town/county references from the docs · status: DONE
 Owner: remove the named-school and place references from the codebase, keeping only the
 generic "11+" and the exam board. Babysitter sweep: the only occurrences are in

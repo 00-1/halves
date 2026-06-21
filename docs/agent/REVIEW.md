@@ -55,9 +55,13 @@ to `.85`.)
 - `T57` — scrubbed the school/town/county names (repo-wide grep zero); doc-only.
 - `T50` — procedural icons on the 4 menu buttons + Arena hero portraits; 16 checks.
 
-**Next-task order:** **`T55` → `T56`**, then content extension
-(`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness).
-**Do `T55` next** — extend the Collector award ladder to 10,000 (keep collector:25/75/150 ids; varied British names). Then `T56` (pixel mark/glyphs + favicon). Specs in BACKLOG; this line is authoritative.
+**Next-task order:** **`T55` → `T56` → Events block `T78`→`T79`→`T80`→`T81`**, then content
+extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
+readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
+polish tasks, ahead of the content wave; reorderable on owner's word.)*
+**T55 is IN-REVIEW** (Builder pushed `d35b2aa`); after it, `T56` (pixel mark/glyphs +
+favicon), then the **Events** foundation `T78` (UTC-daily scheduler + "Events" tab + reward
+items). Specs in BACKLOG (Phase 6.5); this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

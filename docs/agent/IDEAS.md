@@ -8,7 +8,16 @@
 
 ---
 
-## I1 — Events: time-limited rotating challenges (owner idea, 2026-06-21)
+## I1 — Events — ✅ PROMOTED to BACKLOG (Phase 6.5, T78–T81) on 2026-06-21
+
+> **No longer a parked idea.** The owner brought Events forward ("I decided I like it a
+> lot") and locked the design. It now lives as real tasks **T78–T81** in `BACKLOG.md`
+> (Phase 6.5). Final owner decisions captured there: **14 events, daily rotation at
+> 00:00 UTC** (each recurs every 14 days), real-buff rewards in a **new "Events" inventory
+> tab**, **new event music**, a **cross-topic predetermined question mix**, best-attempt
+> board entries that are **locked outside the live window**, and **no Arena UI** to explain
+> event-gated foes (owner: unnecessary — an event is live every day). The notes below are
+> the original sketch, retained only for provenance; **the BACKLOG is authoritative.**
 
 **Concept.** Limited-time "challenges with rewards you can only get *today*" — a sense
 of "be here now". They **rotate** (owner suggested roughly a **two-week cycle**) so a
