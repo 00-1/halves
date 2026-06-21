@@ -178,6 +178,14 @@
   add({ id:"meta:allheroes", name:"Legendary Roster", rarity:"legendary", cat:"Milestone", modeId:null, meta:{ allHeroes:true },
     desc:"Unlock all 12 heroes." });
 
+  // wealth milestones (Goblin Gold, T26) — auto-evaluated against the Gold total.
+  [[1e3,"uncommon","Coin Purse"],[1e4,"uncommon","Money Bags"],[1e5,"rare","Nest Egg"],
+   [1e6,"rare","Gold Hoard"],[1e7,"epic","Tycoon"],[1e8,"epic","Magnate"],
+   [1e9,"epic","Croesus"],[1e10,"legendary","Dragon Hoard"],[1e11,"legendary","Goblin Vault"],
+   [1e12,"legendary","Midas Touch"],[1e15,"legendary","Cosmic Fortune"]].forEach(([g,r,nm]) =>
+    add({ id:"gold:"+g, name:nm, rarity:r, cat:"Milestone", modeId:null, gold:g,
+      desc:"Amass "+(g<1e6?(g/1e3)+"K":g<1e9?(g/1e6)+"M":g<1e12?(g/1e9)+"B":g<1e15?(g/1e12)+"T":(g/1e15)+"Qa")+" Goblin Gold." }));
+
   function sortItems(arr){
     return arr.slice().sort((a,b) => (RORDER[a.rarity]-RORDER[b.rarity]) || a.name.localeCompare(b.name));
   }
@@ -189,6 +197,7 @@
       if(it.cat === "Collector") continue;
       if(it.need) continue;                          // topic milestones: see evaluateTopics
       if(it.meta) continue;                          // hero/arena milestones: see evaluateMeta
+      if(it.gold != null) continue;                  // wealth milestones: see evaluateGold
       if(has(it.id)) continue;
       if(it.modeId && it.modeId !== ctx.mode.id) continue;
       let ok = false;
@@ -246,6 +255,13 @@
       if(m.allHeroes && !(heroesTotal > 0 && heroesUnlocked >= heroesTotal)) ok = false;
       if(ok) out.push(it);
     }
+    return sortItems(out);
+  }
+
+  // Wealth milestones, given the current Goblin Gold total (T26).
+  function evaluateGold(total, has){
+    const out = [];
+    for(const it of CATALOG){ if(it.gold == null || has(it.id)) continue; if(total >= it.gold) out.push(it); }
     return sortItems(out);
   }
 
@@ -970,7 +986,7 @@
     RANKS, RARITY, paletteFor, rankIndex,
     CATALOG, byId: id => byIdMap[id], modeItems,
     categories: () => CATS.slice(),
-    evaluate, evaluateCollector, evaluateTopics, evaluateMeta, evaluateQuestion, drawIcon,
+    evaluate, evaluateCollector, evaluateTopics, evaluateMeta, evaluateGold, evaluateQuestion, drawIcon,
     // item layer (T20)
     HERO_IDS, HERO_NAMES, STAT_NAMES, boostLabel,
     // icon system (T36): ~50 categories over 12 archetypes + variation

@@ -87,6 +87,15 @@ body{
 .mode-row.done .mr-state,.mode-row.done .mr-prog{color:var(--mint)}
 .best{margin-top:26px;font-family:var(--mono);color:var(--muted);font-size:13px;min-height:18px;letter-spacing:.04em}
 .best b{color:var(--amber);font-weight:700}
+/* Goblin Gold (T26) */
+.goldbar{margin-top:10px;font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.04em;min-height:18px}
+.goldbar b{color:#f5c542;font-weight:700}
+.res-gold{margin-top:18px;font-family:var(--mono);font-size:14px;color:var(--muted);min-height:20px}
+.res-gold .gold-n{color:#f5c542;font-weight:700}
+.res-gold .gold-plus{color:var(--mint);font-weight:700;animation:gold-pop .5s ease}
+.res-gold .gold-lbl{font-size:11px;letter-spacing:.06em}
+.ar-gold{font-family:var(--mono);font-size:13px;color:#f5c542;font-weight:700;margin-top:8px}
+@keyframes gold-pop{0%{transform:scale(.6);opacity:0}55%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
 .btn{margin-top:28px;font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.02em;
   color:var(--bg);background:var(--amber);border:none;border-radius:14px;padding:18px 56px;cursor:pointer;
   transition:transform .12s ease, filter .12s ease}

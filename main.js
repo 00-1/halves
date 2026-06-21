@@ -56,6 +56,51 @@
   }
   function saveStats(s){ memStats = s; try{ localStorage.setItem("halves.stats", JSON.stringify(s)); }catch(e){} }
 
+  // ---- Goblin Gold (T26) — earn/display/persist; NO spending -------------
+  const GOLD_LABEL = "Goblin Gold";   // the ONE user-facing label
+  let memGold = null;
+  function loadGold(){
+    if(memGold != null) return memGold;
+    let v; try{ v = parseFloat(localStorage.getItem("halves.gold")); }catch(e){ v = 0; }
+    memGold = (isFinite(v) && v > 0) ? v : 0; return memGold;
+  }
+  function saveGold(n){ memGold = n; try{ localStorage.setItem("halves.gold", String(n)); }catch(e){} }
+  // Big-number formatter: grouped digits < 1000, then 3-sig-fig suffix ladder.
+  const GOLD_SUFFIX = ["","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc","Ud","Dd","Td","Qad"];
+  function fmtGold(n){
+    if(!isFinite(n) || isNaN(n) || n < 0) n = 0;
+    n = Math.floor(n);
+    if(n < 1000) return String(n);
+    let tier = Math.floor(Math.log10(n) / 3);
+    if(tier >= GOLD_SUFFIX.length) tier = GOLD_SUFFIX.length - 1;
+    const s = n / Math.pow(1000, tier);
+    const str = s >= 100 ? s.toFixed(0) : s >= 10 ? s.toFixed(1) : s.toFixed(2);
+    return str + GOLD_SUFFIX[tier];
+  }
+  // Pure per-event earn formulas (Node-testable via window.Gold).
+  // A cleanly-solved question: (2 + speed bonus vs target) × combo streak × mult.
+  function questionGold(target, dt, combo, mult){ return (2 + Math.max(0, Math.round(target - dt))) * (1 + combo * 0.1) * mult; }
+  function roundBonusGold(score, rankIdx, mult){ return (score + rankIdx * 2) * mult; }
+  function tierGold(n, mult){ return Math.round(10 * (1 + n / 10)) * mult; }
+  // Escalating global multiplier — grows with everything you've collected.
+  function goldMult(col){
+    const items = C.CATALOG.filter(it => col[it.id]).length;
+    let mastered = 0, tiers = 0;
+    for(const k in col){ if(k.indexOf("mastery:") === 0) mastered++; else if(/^tier:\d+$/.test(k)) tiers++; }
+    const heroes = window.Heroes ? window.Heroes.HEROES.filter(h => window.Heroes.isHeroUnlocked(h, col)).length : 0;
+    return 1 + items * 0.05 + mastered * 0.5 + heroes * 0.5 + tiers * 1;
+  }
+  // Add gold, persist, and grant any newly-crossed wealth milestones (into col).
+  function earnGold(amount, col){
+    amount = Math.max(0, Math.round(amount));
+    if(!amount) return [];
+    const total = loadGold() + amount;
+    saveGold(total);
+    const wealth = C.evaluateGold(total, id => !!col[id]);
+    wealth.forEach(it => col[it.id] = { ts: Date.now() });
+    return wealth;
+  }
+
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
   const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), arena:$("arena") };
@@ -519,8 +564,9 @@
         '<div class="ar-sub">'+esc(r.heroName)+' vs '+esc(r.tierName)+'</div>'+
         '<div class="ar-maths">'+Math.round(r.res.rating)+' ★ × '+r.res.matchup+' × '+f.toFixed(2)+
           ' perf = <b>'+r.res.battlePower+'</b> vs DEF <b>'+r.res.def+'</b></div>'+
+        (r.goldEarn > 0 ? '<div class="ar-gold">🪙 +'+esc(fmtGold(r.goldEarn))+' '+esc(GOLD_LABEL)+'</div>' : '')+
         (r.newHeroes.length ? '<div class="ar-new">★ New hero: '+r.newHeroes.map(esc).join(", ")+'!</div>' : '')+
-        (r.won && !r.loot.length ? '' : '')+'</div>';
+        '</div>';
     }
     if(cleared){
       html += '<div class="arena-tier done"><div class="at-name">⭐ Arena cleared — you defeated The Void Sovereign!</div>'+
@@ -581,6 +627,8 @@
     const col = loadCollected();
     const res = E.resolveBattle(bc.heroId, bc.tier, perf, col);
     const heroName = (C.HERO_NAMES && C.HERO_NAMES[bc.heroId]) || bc.heroId;
+    const goldBefore = loadGold();
+    let earn = roundGold;                              // per-question gold even on a loss
     let loot = [], newHeroes = [];
     if(res.win){
       const before = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col)).map(h => h.id);
@@ -589,28 +637,31 @@
       const more = C.evaluateCollector(Object.keys(col).length, id => !!col[id]);
       more.forEach(it => col[it.id] = { ts: Date.now() });
       const meta = grantMeta(col);   // tier-defeat + unlock-all-heroes milestones
-      saveCollected(col);
+      earn += tierGold(bc.tier.n, goldMult(col));   // deeper = more
       loot = E.tierLoot(bc.tier.n).map(id => C.byId(id)).filter(Boolean).concat(more).concat(meta);
       newHeroes = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col) && before.indexOf(h.id) < 0).map(h => h.name);
       sfx("topic100");
     } else {
       sfx("roundComplete");
     }
-    lastBattle = { won: res.win, res: res, heroName: heroName, tierName: bc.tier.name, loot: loot, newHeroes: newHeroes };
+    const wealth = earnGold(earn, col);               // grants any wealth milestones into col
+    saveCollected(col);
+    loot = loot.concat(wealth);
+    lastBattle = { won: res.win, res: res, heroName: heroName, tierName: bc.tier.name, loot: loot, newHeroes: newHeroes, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
     arenaHero = null;
     mode = (bc.prevMode && bc.prevMode.id !== "battle") ? bc.prevMode : (byId(loadLastMode()) || MODES[0]);
     renderArena();
     show("arena");
-    if(res.win && loot.length) setTimeout(() => showUnlocks(loot), 650);
+    if(loot.length) setTimeout(() => showUnlocks(loot), 650);
   }
 
   // ---- game state ---------------------------------------------------------
   let order=[], idx=0, input="", mistakes=0, qMiss=0, combo=0,
-      startTime=0, qStart=0, times=[], raf=0, locked=false;
+      startTime=0, qStart=0, times=[], raf=0, locked=false, roundGold=0;
 
   function start(){
     if(!isUnlocked(mode)) return;   // locked topics aren't playable
-    order = mode.build(); idx=0; mistakes=0; times=[]; combo=0;
+    order = mode.build(); idx=0; mistakes=0; times=[]; combo=0; roundGold=0;
     elEyebrow.innerHTML = mode.eyebrow;
     startTime = performance.now();
     show("game");
@@ -708,6 +759,11 @@
 
     // live, non-blocking unlocks for nailing this question (first time / fast)
     const col = loadCollected();
+    // Goblin Gold: per clean question = (2 + speed bonus) × combo streak × global
+    // multiplier (a skip earns 0 — handled by not accruing here).
+    const qm = it._mode || mode;
+    const target = (typeof qm.masterSecs === "number") ? qm.masterSecs : 4;
+    roundGold += questionGold(target, dt, combo, goldMult(col));
     const fresh = C.evaluateQuestion(mode.id, it.p, dt, id => !!col[id]);
     if(fresh.length){
       fresh.forEach(c => col[c.id] = { ts: Date.now() });
@@ -785,8 +841,17 @@
     more.forEach(it => collected[it.id] = { ts: Date.now() });
     // hero/arena milestones (e.g. a drill round that unlocks the last hero)
     const meta = grantMeta(collected);
+
+    // ----- Goblin Gold: per-question gold (accrued in correct) + round bonus +
+    // first-time Mastery / topic-100% bonuses, all × the global multiplier -----
+    const mult = goldMult(collected);
+    let earn = roundGold + roundBonusGold(score, rankIdx, mult);
+    if(newly.some(it => it.cat === "Mastery")) earn += 50 * mult;
+    if(topics.some(it => /^topics:(one|all)100$/.test(it.id))) earn += 100 * mult;
+    const goldBefore = loadGold();
+    const wealth = earnGold(earn, collected);
     saveCollected(collected);
-    const unlocked = newly.concat(topics).concat(more).concat(meta);
+    const unlocked = newly.concat(topics).concat(more).concat(meta).concat(wealth);
 
     // round-end stinger — play the most triumphant thing earned this round
     if(unlocked.some(it => /^topics:(one|all)100$/.test(it.id))) sfx("topic100");
@@ -802,7 +867,29 @@
 
     show("results");
     renderBest();
+    showGold($("resGold"), goldBefore, loadGold(), earn);
     if(unlocked.length) setTimeout(() => showUnlocks(unlocked), 650);
+  }
+
+  // ---- Goblin Gold display: a ticking counter + a non-blocking "+N" flourish.
+  function renderGold(){
+    const el = $("goldBar"); if(!el) return;
+    el.innerHTML = '🪙 <b>' + esc(fmtGold(loadGold())) + '</b> ' + esc(GOLD_LABEL);
+  }
+  function showGold(el, before, after, earned){
+    if(!el) return;
+    el.innerHTML = '<span class="gold-n">🪙 ' + esc(fmtGold(before)) + '</span>' +
+      (earned > 0 ? ' <span class="gold-plus">+' + esc(fmtGold(earned)) + '</span>' : '') +
+      ' <span class="gold-lbl">' + esc(GOLD_LABEL) + '</span>';
+    const numEl = el.querySelector(".gold-n");
+    if(after <= before || !numEl){ if(numEl) numEl.innerHTML = '🪙 ' + esc(fmtGold(after)); return; }
+    const t0 = performance.now(), dur = 800;
+    (function tick(now){
+      const k = Math.min(1, (now - t0) / dur);
+      const val = before + (after - before) * (k * (2 - k));   // ease-out
+      numEl.innerHTML = '🪙 ' + esc(fmtGold(val));
+      if(k < 1) requestAnimationFrame(tick); else numEl.innerHTML = '🪙 ' + esc(fmtGold(after));
+    })(t0);
   }
 
   // ---- input wiring -------------------------------------------------------
@@ -840,7 +927,7 @@
     else if(h === "best-times"){ renderSummary(); show("summary"); }
     else if(h === "heroes"){ renderHeroes(); show("heroes"); }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; renderArena(); show("arena"); }
-    else { renderTabs(); renderBest(); renderStartState(); show("start"); }
+    else { renderTabs(); renderBest(); renderStartState(); renderGold(); show("start"); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
@@ -990,6 +1077,11 @@
   renderBest();
   renderStartState();
   renderBuild();
+  renderGold();
   applySoundPref();   // honour the saved mute pref on load (no-op until T16)
+  // Goblin Gold module API (also used by the Node tests).
+  window.Gold = { label: GOLD_LABEL, fmtGold: fmtGold, mult: goldMult,
+    questionGold: questionGold, roundBonus: roundBonusGold, tierGold: tierGold,
+    load: loadGold, evaluate: (total, has) => C.evaluateGold(total, has) };
   show("entry");      // splash first; entry buttons reveal the menu via applyRoute()
 })();
