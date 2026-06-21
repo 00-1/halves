@@ -1,6 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T92` (event reward tiers) · live build **`dff92ea`**. **⚠️ Built
+**Current verdict:** `APPROVED — T96` [A] (home-screen overhaul) · live build **`0d19c72`**.
+Addresses both owner screenshots. `#start` is now **`justify-content:flex-start`** (top-aligned —
+kills the empty top band); the **big top `#mark`/`#tag` are gone**, consolidated into **one compact
+`#topicInfo` row** (glyph · name · have/total · best — no more duplicate top-mark + detail panel);
+the **List/Tree toggle + home list (`#modeTabs`) are removed → tree-only home picker** (`.tree` is
+the `flex:1 1 auto; min-height:150` element, takes the freed space); the banner Play CTA is a small
+**pill**; the nav is **one `#navRow`** of icon buttons (Best/Items/Heroes/Arena + util sound/
+settings/fullscreen) with `.navbtn.hidden` so it **degrades under gating**. A big, clean deletion
+(`-148` main.js: `renderTabs`/`modeRow`/`renderMark`/`renderBest`/`setPickerView`/`updateScrollCues`/
+the toggle). Verified **independently**: `node -c` clean; **ZERO orphan references** to the removed
+ids/functions (grep clean — no dangling `$("mark")`/`renderBest`/etc.); **full 24-gate suite green**
+(tech-tree updated to **tree-only + Best-Times list fallback**, events banner-above-tree, glyphs
+`.ti-glyph`, practice/guide-action select-via-tree). T96 → DONE. *(Headless can't judge the final
+look/one-screen fit — **owner to eyeball** that the tree now breathes and it fits.)*
+
+**Previously approved (done):** `T92` (event reward tiers) · live build **`dff92ea`**. **⚠️ Built
 OUT OF ORDER** — `T96` (home overhaul, owner-active) was queued ahead but the Builder pulled `T92`
 (race: started it before the T96 insert was visible). T92's work is sound, so approving; **`T96`
 is firmly next.** Closes the skip-to-win exploit: each event now has **3 tiers** —
@@ -282,9 +297,11 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T96`** [A] (home overhaul). Then `T97` → `T88`–`T90` → content `T58`–`T61`
-  → `T72`, **+ FX wiring tasks** (mount `FXGL`) once B's engine + the surfaces exist. Owns ALL
-  existing Halves files; log = `BUILDER-LOG.md`.
+- **Builder A — next: `T97`** [A] (UI-direction research, **doc only** — gamey/less-web-2.0; audit
+  + ranked recommendation + **buttons-first** reversible restyle plan, co-designed with the FX
+  layer). Then `T88`–`T90` (Arena 3v3) → content `T58`–`T61` → `T72`, **+ FX wiring tasks** (mount
+  `FXGL`) once B's engine + the surfaces exist. Owns ALL existing Halves files; log =
+  `BUILDER-LOG.md`. *(T96 DONE.)*
 - **Builder B — next: `T93`** [B] (`fxgl.js` FX engine — standalone, brickmap-borrowed,
   headless-tested, `window.FXGL`). Then the engine sides of `T94`/`T95`. Creates NEW files only +
   brickmap; **never edits existing Halves files**; log = `BUILDER-LOG-FX.md`.

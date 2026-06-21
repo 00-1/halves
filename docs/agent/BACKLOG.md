@@ -1710,7 +1710,7 @@ point**. Draft ladder (owner delegated "add good points"; confirm/adjust in revi
 
 ## Phase 6.13 — Home-screen layout overhaul (owner-reported, 2026-06-21)
 
-### T96 — Rework the home (`#start`) layout: top-align, tree-only picker, fix banner button, one-line nav · status: OPEN
+### T96 — Rework the home (`#start`) layout: top-align, tree-only picker, fix banner button, one-line nav · status: DONE
 Owner-reported (screenshot): the home screen wastes a big empty band at the very top, the event
 banner's Play/"Again" button "looks really bad" (an oversized amber block), the tech tree is
 cramped (~4 nodes visible), and the nav links sprawl over two rows. Rebalance `#start` so the
