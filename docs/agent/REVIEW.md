@@ -1,6 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T84` (tech-tree view) · live build **`82cf48a`**. **🎉 Completes
+**Current verdict:** `APPROVED — T85` (Settings + "Clear all data") · live build **`ebc4182`**.
+A new **Settings screen** (reachable via a `⚙ Settings` link on home; mute toggle folded in) with a
+**Danger-zone "Clear all data"** behind real friction: a `#resetModal` needing **BOTH** a 5s
+**countdown** AND re-entering a shown random **4-digit code** on the numpad — `resetCanConfirm()`
+gates the button, with a **double-guard** on the Confirm click; cancel/backdrop safe.
+`clearAllData()` wipes via a **`halves.` prefix scan** (catches every key) + enumerated + per-mode
+`halves.hof:*` board fallbacks, drops in-memory caches, and **reloads to first-run**. Verified
+**independently**: **every** localStorage key the app writes is `halves.*` (incl. `LAST_KEY=
+"halves.mode"`, `boardKey="halves.hof:"+id`) so the scan is total; `node -c` clean; all new ids
+resolve; **full 23-gate suite green** incl. new `settings-reset.test.js` (16 checks: wrong-code →
+no wipe, early-press → no wipe, **both-conditions enable**, confirming clears **every** key incl.
+an **unknown future key + per-mode board** → first-run + reload). T85 → DONE. *(Note: the Settings
+screen's own access will be folded into the T86/T87 onboarding gating; not a T85 issue.)*
+
+**Previously approved (done):** `T84` (tech-tree view) · live build **`82cf48a`**. **🎉 Completes
 the Phase 6.8 tech-tree block (T83+T84).** A toggleable, **data-driven** tech tree on the picker:
 `techGraph()` derives the spine from `unlockedBy` and Part-2 branches from `requires:"mastery:<id>"`
 (live mode fields, graceful on orphans — **no parallel edge list**); `nodeState()` =
@@ -202,13 +216,12 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Tech-tree block (T83+T84) COMPLETE.** **Do `T85` next** (Settings + gating block, Phase 6.9) —
-a Settings screen + **Clear-all-data** behind a serious **countdown + numpad-code** confirm (wipes
-every `halves.*` key → genuine first-run; also the QA reset for the gating). **Then `T91`
-(PRIORITY BUGFIX)** — the T81 event banner is too tall and breaks the home layout (page scrolls,
-picker starved to nothing, selected-topic mark stranded above it): make the banner a compact strip
-(keep it prominent + art/name/Play-CTA/UTC-countdown), fit `#start` to one screen, keep the picker
-≥3 rows, reorder banner above the mark. Then **`T86`**
+**Do `T91` next (PRIORITY BUGFIX)** — the T81 event banner is too tall and breaks the home layout
+(page scrolls, picker starved to nothing, selected-topic mark stranded above it): make the banner
+a **compact strip** (keep it prominent + art/name/Play-CTA/UTC-countdown; drop/clamp the
+home-banner blurb, inline Play, bounded height), **fit `#start` to one screen** (360×640 & 390×844),
+keep the **picker ≥3 rows** (min-height), and **reorder the banner above the `#mark`**. Then
+resume the gating block: **`T86`**
 (onboarding engine: unlock-state model + first-run single-question intro + Inventory gate +
 one-time highlight; **migration-safe — never re-gate existing players**) → **`T87`** (wire the
 remaining gates: Practice/Heroes/Arena/Event-banner/Gold). Then the **Arena 3v3 block** (Phase

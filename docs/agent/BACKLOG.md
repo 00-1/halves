@@ -1591,7 +1591,7 @@ added). Built in the current idiom (DOM + our canvas icons); coordinated with T8
 > - **Static/offline/local** — all settings + unlock state in `localStorage` (`halves.*`), no
 >   backend.
 
-### T85 — Settings screen + "Clear all data" (serious confirmation) · status: OPEN
+### T85 — Settings screen + "Clear all data" (serious confirmation) · status: DONE
 There is **no settings screen** today (only a sound/mute pref via `applySoundPref`). Add one,
 housing a **destructive "Clear all data"** action — a real reset/privacy feature **and** the way
 to return to a genuine first-run state to test the T86/T87 onboarding gating.
