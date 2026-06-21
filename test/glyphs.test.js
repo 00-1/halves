@@ -45,17 +45,22 @@ ok(missingTotal === 0, "the pixel font supports every symbol in every topic glyp
 ok(Gl.buildGrid(["*f12"]).missing.length === 0 && Gl.buildGrid(["*f34"]).missing.length === 0, "fractions ½ and ¾ encode without missing digits");
 ok(Gl.buildGrid(["*s2"]).missing.length === 0, "superscript ² encodes without a missing digit");
 
-// T104 — ½/¾ are SLASHED diagonals (legible at small node size), not the old
-// crammed 3‑wide numerator/bar/denominator stack that turned to mud.
+// T124 — ½/¾ are now FULL‑SIZE slashed fractions (BIG numerator / diagonal slash /
+// BIG denominator, side‑by‑side), using the wide node's horizontal space — far
+// clearer than T104's cramped SMALL 3×4 diagonal blob.
 (function(){
   const g = Gl.buildGrid(["f12"]);
   const ink = (y,x) => g.cells[y][x] !== 0;
-  ok(g.w === 5, "a fraction glyph is 5 wide now (the diagonal form), not the old 3‑wide stack");
-  ok(ink(0, g.w - 1) && ink(g.h - 1, 0), "the fraction has a diagonal slash (top‑right + bottom‑left corners inked)");
-  ok(!(ink(4,0) && ink(4,1) && ink(4,2)), "no full horizontal mid‑bar — the unreadable stacked fraction is gone");
-  const upperLeft = [0,1,2,3].some(y => [0,1,2].some(x => ink(y,x)));
-  const lowerRight = [5,6,7,8].some(y => [2,3,4].some(x => ink(y,x)));
-  ok(upperLeft && lowerRight, "numerator sits upper‑left, denominator lower‑right (separated by the slash)");
+  ok(g.w === 13, "T124: the fraction is a FULL‑SIZE slashed form (13 wide), using the wide node — not the old cramped 5‑wide blob");
+  // the numerator + denominator are the FULL‑SIZE BIG digits (5×7), not SMALL (3×4)
+  const numBig = Gl.BIG["1"], denBig = Gl.BIG["2"];
+  let numOk = true, denOk = true;
+  for(let r=0;r<7;r++) for(let c=0;c<5;c++){ if((numBig[r].charAt(c) === "#") !== ink(1+r, c)) numOk = false; }
+  for(let r=0;r<7;r++) for(let c=0;c<5;c++){ if((denBig[r].charAt(c) === "#") !== ink(1+r, 8+c)) denOk = false; }
+  ok(numOk, "T124: the numerator is the FULL‑SIZE BIG '1' bitmap (5×7), left side");
+  ok(denOk, "T124: the denominator is the FULL‑SIZE BIG '2' bitmap (5×7), right side");
+  ok(ink(g.h - 1, 5) && ink(0, 7), "T124: a diagonal slash spans between the numerator and denominator");
+  ok(!([0,1,2,3,4,5,6,7,8,9,10,11,12].every(x => ink(4, x))), "no full horizontal mid‑bar — the unreadable stacked fraction stays gone");
   ok(ser(Gl.buildGrid(["f12"])) !== ser(Gl.buildGrid(["f34"])), "½ and ¾ remain distinct bitmaps in the new form");
 })();
 

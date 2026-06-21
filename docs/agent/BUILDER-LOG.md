@@ -4301,3 +4301,27 @@ notes / questions: **babysitter / owner eyeball:** the full-bleed backdrop shoul
   readable. Tunable per element (the .88 alpha → lower = more backdrop through the pill, but the gate holds
   the AA floor). T123's global scrim is fully superseded. Next per `NEXT.md`: `T140` (12-style music
   switcher, after B's T139) → `T124` (fraction glyphs) → `T101` → Android.
+
+## T124 — Fraction tree-glyphs: full-size slashed form (legible at node size)  [HANDOFF]
+commit: (this commit, on main) — [A] task. Owner (screenshot, tech-tree): the fraction glyphs are still
+illegible at node size — esp. the standalone **Fractions** (`¾`) node — "there's a lot of horizontal
+space for it to take up that could make it more clear." T104's diagonal SMALL (3×4) fraction is a tiny
+cramped blob, and the node glyph canvas is **36×22 (WIDE)** — the old narrow 5×9 fraction wasted the
+horizontal room (height-limited → ~7px-tall SMALL digits).
+changed (A-owned only):
+  - **glyphs.js** — redefined the `frac` token: was a 5-wide diagonal of **SMALL 3×4** digits; now a
+    **13-wide FULL-SIZE slashed fraction** — `BIG` numerator (5×7) · a 3-wide diagonal slash · `BIG`
+    denominator (5×7), side-by-side on the big rows (the same legible structure as the `a/b` Fractions-II
+    glyph the owner said reads fine). Uses the wide node's horizontal space; height-limited cells now draw
+    the BIG digit SHAPES (≈12×17px at node size) instead of the ambiguous SMALL blob. `*f12`/`*f34` keep
+    the amber accent. Works for any `fXY` (BIG has all digits; SMALL only had 1–4). SMALL stays for
+    superscripts; other glyphs untouched.
+how I verified: ASCII render confirms `f12`→"1 / 2", `f34`→"3 / 4", `*f12 n`→amber "½" + body "n", all
+  full-size + clearly the right fraction. **test/glyphs.test.js** updated: asserts the numerator/denominator
+  are the FULL-SIZE BIG bitmaps (5×7), the 13-wide form, a diagonal slash between them, no horizontal
+  mid-bar, ½≠¾. `node -c glyphs.js` clean; **full 34-gate suite green** (glyphs 33 checks). Favicon /
+  non-fraction marks unaffected; 360-safe (the glyph scales to fit its canvas).
+notes / questions: **babysitter compare at the live node size:** the Fractions (`¾`) and Fractions-of
+  (`½n`) marks should now read unambiguously AS the fraction (the owner can tell which at a glance), using
+  the node width; `a/b` (Fractions II) still fine. Next per `NEXT.md`: **`T140`** (12-style switcher) once
+  B's T139 hands over the style list → `T101` (Start delay) → Android.

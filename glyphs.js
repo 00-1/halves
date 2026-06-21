@@ -66,7 +66,7 @@
   function parse(s){
     let ink = 1;
     if(s.charAt(0) === "*"){ ink = 2; s = s.slice(1); }
-    if(s.charAt(0) === "f") return { type:"frac", num:s.charAt(1), den:s.charAt(2), ink:ink, w:5 };
+    if(s.charAt(0) === "f") return { type:"frac", num:s.charAt(1), den:s.charAt(2), ink:ink, w:13 };
     if(s.charAt(0) === "s") return { type:"sup",  ch:s.charAt(1), ink:ink, w:3 };
     return { type:"char", ch:s, ink:ink, w:5 };
   }
@@ -97,15 +97,16 @@
       const g = SMALL[t.ch];
       if(!g){ missing.push(t.ch); return; }
       for(let r=0;r<4;r++) for(let c=0;c<3;c++) if(g[r].charAt(c) === "#") cells[r][x0+c] = t.ink;
-    } else { // frac (T104): DIAGONAL slashed fraction — far clearer at small node
-      // size than the old crammed 3‑wide stack. Numerator sits top‑LEFT, the
-      // denominator bottom‑RIGHT, separated by a "/" anti‑diagonal across the 5×9 box.
-      const gn = SMALL[t.num], gd = SMALL[t.den];
-      if(!gn) missing.push(t.num); else for(let r=0;r<4;r++) for(let c=0;c<3;c++) if(gn[r].charAt(c) === "#") cells[r][x0+c] = t.ink;         // top‑left, cols 0‑2 rows 0‑3
-      if(!gd) missing.push(t.den); else for(let r=0;r<4;r++) for(let c=0;c<3;c++) if(gd[r].charAt(c) === "#") cells[5+r][x0+2+c] = t.ink;     // bottom‑right, cols 2‑4 rows 5‑8
-      // the slash: a clean two‑step staircase from bottom‑left to top‑right
-      const slash = [[8,0],[7,1],[6,1],[5,2],[4,2],[3,2],[2,3],[1,3],[0,4]];
-      slash.forEach(p => { cells[p[0]][x0+p[1]] = t.ink; });
+    } else { // frac (T124): a FULL‑SIZE slashed fraction — BIG numerator / diagonal
+      // slash / BIG denominator, side‑by‑side on the big rows (like the legible
+      // "a/b"). Far clearer at node size than T104's cramped SMALL 3×4 blob, and it
+      // uses the WIDE node's horizontal space (13×9 vs the old narrow 5×9).
+      const gn = BIG[t.num], gd = BIG[t.den];
+      if(!gn) missing.push(t.num); else for(let r=0;r<7;r++) for(let c=0;c<5;c++) if(gn[r].charAt(c) === "#") cells[1+r][x0+c] = t.ink;       // numerator (big), cols 0‑4 rows 1‑7
+      // a 3‑wide diagonal slash spanning the full height, between num and den
+      const slash = [[8,0],[7,0],[6,1],[5,1],[4,1],[3,1],[2,1],[1,2],[0,2]];
+      slash.forEach(p => { cells[p[0]][x0+5+p[1]] = t.ink; });                                                                               // slash, cols 5‑7 rows 0‑8
+      if(!gd) missing.push(t.den); else for(let r=0;r<7;r++) for(let c=0;c<5;c++) if(gd[r].charAt(c) === "#") cells[1+r][x0+8+c] = t.ink;     // denominator (big), cols 8‑12 rows 1‑7
     }
   }
 
