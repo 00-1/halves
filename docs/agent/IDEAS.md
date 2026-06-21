@@ -79,3 +79,60 @@ difficulty-curve shape and are independent of whether events are required —
   → art/copy → optional event-Arena), behind a short design doc.
 
 *(Status: captured, NOT queued. Promote to BACKLOG when the owner says go.)*
+
+---
+
+## I2 — Renderer rethink: move the UI into a graphical engine (e.g. brickmap)? (owner musing, 2026-06-21)
+
+**The idea (owner).** Move Halves out of HTML/DOM and into a graphical renderer for a more
+unique aesthetic + more graphical options — possibly **brickmap** (`00-1/brickmap`, our own
+public Rust/wgpu voxel engine). Brickmap also *needs* a menu system; Halves is menu-driven, so
+one could build a reusable engine menu system that serves both. Possibly a **third agent** with
+access to both repos, babysat alongside the Builder. Owner explicitly invited a "shoot it down".
+
+**Babysitter assessment — recommend AGAINST a wholesale UI pivot (esp. into a voxel engine).**
+Reasoning, weighted against *our* constraints (kids' 11+ app, weak/school devices, no-build
+Pages deploy, the independent-verification model):
+- **Tool mismatch.** Brickmap renders vast 3D voxel worlds; Halves is a 2D, near-static
+  text-and-grid app (numpad, question, topic lists, inventory grid, pixel sprites). Importing a
+  camera/meshing/WGSL/chunk-streaming engine to draw flat sprites + text is the dog being wagged.
+- **Regressions land on our core constraints:**
+  - *Text/input/accessibility* — DOM gives crisp scalable text, the numpad, scrolling, focus,
+    screen-reader, IME, responsive layout **for free**; a wgpu canvas reimplements all of it.
+    For a kids' maths app, legible text + a11y **are** the product.
+  - *Weak/school devices* — DOM/PWA degrades gracefully; WASM+WebGPU risks **failing to start**
+    (WebGPU not universal; heavy first-load blobs) on exactly the cheap tablets this audience
+    uses. Also complicates the Play Store "Designed for Families" path (T72).
+  - *No-build deploy* — today a Builder pushes one `.js` and it's live; Rust→WASM means a
+    toolchain, big artifacts, a real pipeline — trading away our biggest velocity edge.
+  - *Verification model* — the two-agent system works because logic is plain JS runnable in Node
+    with stubs (20 gates, Arena invariants, contrast). Logic in Rust dissolves that leverage.
+  - *Solves a non-problem* — no perf issue exists; canvas draws are cheap + static.
+- **"Don't throw away work."** Content/logic (modes/guides/collectibles/enemies + question sets +
+  calibration) is portable in principle, but the **UI/UX layer** — much of this session's work
+  (glyphs, hero detail, wayfinding, toasts, inventory tabs, Events tab/banner) — would be largely
+  rewritten. So a pivot *does* discard a lot of recent effort.
+
+**The kernel worth keeping (the right-sized version of the instinct).** A **hybrid presentation
+layer**, not an engine swap: keep DOM for everything interactive (text, numpad, menus, lists),
+and add a **full-screen 2D canvas / WebGL layer** behind/around it for atmosphere — animated
+backdrops, battle FX, transitions, particles, shader-style dithering. We already render
+procedural pixel art to canvas (icons/monsters/scenery/glyphs), so this extends our own grain.
+≈80% of the "bespoke rendered feel" at ≈5% of the cost, zero a11y/deploy regression. **This is
+the version that could become a real BACKLOG task** if the owner wants more graphical juice.
+
+**Brickmap menu-system synergy — honest take.** Real *for brickmap* (a 3D game that needs
+menus), but it only pays off if the Halves pivot is justified, and it isn't: building a menu
+system *inside a voxel engine* to host a 2D maths app helps brickmap more than Halves. If we want
+to help brickmap, do it on brickmap's own merits, as separate work.
+
+**The only framing where an engine makes sense** = a *different, much bigger product*: Halves
+becomes an explorable **3D voxel RPG world** (the Arena as a realm you traverse). Years-out,
+different scope; even then the maths core still wants DOM-grade text/input. Dream, don't refactor.
+
+**Third agent.** Mechanically fine to babysit a third agent across both repos — but only for a
+**concrete, bounded task** (e.g. "prototype the hybrid canvas FX layer in Halves" or "build
+brickmap's menu system *for brickmap*"), never an open-ended "port Halves into the engine".
+
+*(Status: captured, NOT queued. If the owner wants to proceed, the recommended first step is the
+hybrid canvas FX layer — a small, reversible Halves task — NOT an engine port.)*
