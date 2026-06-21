@@ -10,13 +10,10 @@
 
 ---
 
-**Builder A → `T136` (wire the celebration overlay — owner's most-wanted, engine ready) → `T135` (volume, HOLD for max) → `T123`**
-`T131` DONE. **T136 FIRST — the celebration the owner keeps asking for is one wiring change away.** B's
-T133 shipped the engine fix; mount `#fxBurst` with **`{backend:"2d"}`** (Canvas2D — no 2nd-GL-context,
-always presents) instead of the default WebGL path that fails silently on-device. Change ONLY the
-burst-overlay mount (leave the backdrop `#fxBg` on WebGL); keep the T125 resize-before-fire;
-**live-verify a visible shower on a real win / topic-run / new item**. Then **T135 — UNBLOCKED (owner confirmed MAX
-= 0.10×): the new (louder) synth engine makes the 3.0× volume default too hot.** Set `#volRange` →
+**Builder A → `T135` (volume recalibration — UNBLOCKED, owner confirmed max 0.10×) → `T123`**
+`T136` DONE (`f4040e6`, CI green) — `#fxBurst` now mounts `{backend:"2d"}`, so the celebration overlay
+renders on-device (owner to confirm live). **T135 — owner: the new (louder) synth engine makes the 3.0×
+volume default too hot.** Set `#volRange` →
 `min=0 max=10 step=1 value=5` (range 0.00×–0.10×, default 0.05× mid-slider); `loadVol()` default → 5.
 **⚠ Migrate:** existing users have `halves.vol=300` (old 3.0×) stored — on load clamp any `vol>10` down to
 the new default 5 so a returning user isn't deafened / the slider isn't fed out-of-range. Live-verify the

@@ -2652,10 +2652,15 @@ engine-side (`synth.js`):
   clean; all gates green; **B-owned files only** (`synth.js` + tests + `BUILDER-LOG-FX.md`). (Babysitter:
   confirm against the owner's ear — green gates necessary-not-sufficient.)
 
-### T136 — [A] Wire the celebration overlay: mount `#fxBurst` with `{backend:"2d"}` · status: OPEN · OWNER-PRIORITY
-Activation of T133. B shipped the engine fix (`FXGL.mount(canvas, {backend:"2d"})` → Canvas2D overlay,
-no 2nd-GL-context, always presents). The celebration still won't render live until A re-points the burst
-overlay to it.
+### T136 — [A] Wire the celebration overlay: mount `#fxBurst` with `{backend:"2d"}` · status: DONE (`f4040e6`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). `setupFx` now mounts `#fxBurst` with `{backend:"2d"}` (backdrop
+`#fxBackdrop` stays WebGL); T125 resize-before-fire kept. Babysitter verified: `node -c` clean, both canvas
+ids present, `fx-wiring.test` 54→58 (burst mounts 2d, backdrop does not), full suite + CI green. **Owner
+live-confirmation pending** — finishing a run / Arena win / new item should now show a particle shower.
+
+> Activation of T133. B shipped the engine fix (`FXGL.mount(canvas, {backend:"2d"})` → Canvas2D overlay,
+> no 2nd-GL-context, always presents). The celebration still won't render live until A re-points the burst
+> overlay to it.
 - **Change only the `#fxBurst` mount** (in `setupFx`) to pass **`{backend:"2d"}`** so the overlay uses the
   Canvas2D backend. **Leave the backdrop `#fxBg` on its WebGL path** (the first/working context). Keep the
   T125 resize-before-fire + `fxResizeAll` behaviour.

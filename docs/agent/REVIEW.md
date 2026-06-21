@@ -1,23 +1,28 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T133` [B] (Canvas2D overlay so the celebration renders on-device) · live
-build **`3e7da28`**. **CI green; collision-clean** (B-owned only: `fxgl.js`, `test/fxgl.test.js`,
-`test/golden-fx.test.js`, `test/golden/fx_celebrate_2d_frame.json`, `BUILDER-LOG-FX.md`). Picks the robust
-**route (b)**: `FXGL.mount(canvas, {backend:"2d"})` selects the Canvas2D backend up front — a 2D context
-has **no per-document GL-context-count limit**, so it always inits + presents, sidestepping the 2nd-WebGL-
-context that mobile GPUs refuse (the reason the z-58 `#fxBurst` overlay rendered nothing). The CPUBackend's
-`renderFrame` now animates `burst()`/`celebrate()` via `fillRect` (same closed-form trajectory, auto-stop,
-buffer-free, reduced-motion/`setQuality` honoured); `_init` short-circuits to `_initCanvas2D()` on
-`{backend:"2d"}`, and the no-GL fallback shares it. Added `controller.dimensions()`/`isReady()` for the
-**ready+sized assertion** that breaks the "green-but-invisible" trap. Verified **independently**: `node -c`
-clean; `fxgl.test` 124 + `golden-fx` 19 pass; the new **`fx_celebrate_2d_frame` golden is a real drawn
-frame** (`drawn:600` fillRects spread across an 8×6 grid — a genuine shower, not an empty frame); and a
-**mutation test** — I tampered the 2D golden → the harness **CAUGHT it (non-zero exit)**, so a regression to
-"renders nothing" now fails CI (already enforced — the golden lives inside the CI-registered
-`golden-fx.test.js`, so no new `pages.yml` change is needed; B's handoff note predates T131 landing).
-T133 → DONE. **→ filed [A] `T136`: mount `#fxBurst` with `{backend:"2d"}`** — the engine is ready but the
-celebration only renders live once A re-points the overlay; that's the activation step the owner will see.
-**🎆 OWNER will see celebrations once T136 lands.** B → `T134` (clean swap + distinctness — current).
+**Current verdict:** `APPROVED — T136` [A] (wire the celebration overlay — mount `#fxBurst` with
+`{backend:"2d"}`) · live build **`f4040e6`**. **CI green; collision-clean** (all [A]-owned: `main.js`,
+`test/fx-wiring.test.js`, `BUILDER-LOG.md`). The one-line activation of B's T133: `setupFx` now mounts the
+burst overlay with **`{ backend: "2d" }`** (Canvas2D — always presents, no 2nd-GL-context for mobile GPUs
+to refuse) while the **backdrop `#fxBackdrop` stays on its WebGL path**; the T125 resize-before-fire is
+kept. Verified **independently**: `node -c` clean; both `#fxBurst`+`#fxBackdrop` canvas ids present in
+`index.html`; `fx-wiring.test` 54→58 (asserts the burst mounts `2d` and the backdrop does **not**); **full
+suite green locally + CI green** (`f4040e6`). T136 → DONE. **🎆 OWNER: finishing a topic run / winning an
+Arena fight / gaining a new inventory item should now throw a VISIBLE particle shower — please confirm
+(this closes the long-standing "no celebration visuals").** A → `T135` (volume recalibration, fully specced
+below).
+
+> **Previously approved (done):** `T133` [B] (Canvas2D overlay so the celebration renders on-device) · live
+> build **`3e7da28`**. **CI green; collision-clean** (B-owned only: `fxgl.js`, `test/fxgl.test.js`,
+> `test/golden-fx.test.js`, `test/golden/fx_celebrate_2d_frame.json`, `BUILDER-LOG-FX.md`). Robust **route
+> (b)**: `FXGL.mount(canvas, {backend:"2d"})` selects the Canvas2D backend up front — no per-document
+> GL-context-count limit, so it always inits + presents, sidestepping the 2nd-WebGL-context mobile GPUs
+> refuse (why the z-58 `#fxBurst` overlay rendered nothing). CPUBackend's `renderFrame` animates
+> `burst()`/`celebrate()` via `fillRect`; added `dimensions()`/`isReady()` for the ready+sized assertion.
+> Verified independently: `node -c` clean; `fxgl.test` 124 + `golden-fx` 19 pass; the new
+> **`fx_celebrate_2d_frame` golden is a real drawn frame** (`drawn:600` spread across an 8×6 grid); a
+> **mutation test** caught a tampered golden → "renders nothing" now fails CI. T133 → DONE. **→ activated by
+> [A] `T136`** (now done). B → `T134` (clean swap + distinctness — current).
 
 > **Previously approved (done):** `T131` [A] (register the golden gates in CI) · live build **`406acfe`**.
 > **CI green; collision-clean** (only `.github/workflows/pages.yml`). Adds two gate steps — `node
@@ -959,14 +964,10 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T136` (wire the celebration overlay — owner's most-wanted, engine ready) → then
-  `T135` (volume, pending max) → `T123`** [A] (**`T131`/`T128`(1)+(2)/`T129`/… DONE**). *(Read `NEXT.md`
-  fresh — canonical.)* **`T136` FIRST — the celebration the owner keeps asking for is one wiring change
-  away.** B's `T133` shipped the fix: mount `#fxBurst` with **`{backend:"2d"}`** (Canvas2D — no 2nd-GL-
-  context, always presents) instead of the default WebGL path that silently fails on-device. Change ONLY
-  the burst-overlay mount (leave the backdrop `#fxBg` on its WebGL path); keep the T125 resize-before-fire;
-  **live-verify a visible particle shower on a real win / topic-run / new item** (the bar is on-device
-  visibility — the long-standing "nothing renders" bug). Then **`T135`** — UNBLOCKED (owner confirmed
+- **Builder A — next: `T135` (volume recalibration — UNBLOCKED) → `T123`** [A]
+  (**`T136`/`T133`(activated)/`T131`/`T128`(1)+(2)/`T129`/… DONE**). *(Read `NEXT.md` fresh — canonical.)*
+  `T136` DONE (`f4040e6`, CI green) — `#fxBurst` now mounts `{backend:"2d"}`, so the celebration overlay
+  renders on-device (owner to confirm). **`T135`** — UNBLOCKED (owner confirmed
   **MAX = 0.10×**): the new (louder) synth engine makes the 3.0× volume default too hot → `#volRange`
   `min=0 max=10 step=1 value=5` (0.00×–0.10×, default 0.05× mid-slider); `loadVol()` default → 5; **migrate
   stored old-scale values** (`halves.vol=300` = old 3.0×) by clamping any `vol>10` down to 5 so returning
