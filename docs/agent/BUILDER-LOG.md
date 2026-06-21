@@ -4462,3 +4462,21 @@ appears BEFORE any `.modal` block (never a display:none modal child) — the reg
 notes / questions: this is the crux the headless gates couldn't catch (they can't see `display:none`/0×0) —
 B's **T150** Playwright harness will close that gap. **Owner:** a win / topic-run / new item / the Settings
 tester should now throw a bold visible shower. Next per `NEXT.md`: `T147` (FX tester → a Graphics section).
+
+## T147 — Move the celebration tester out of Audio into a GRAPHICS section  [HANDOFF]
+commit: (this commit) — [A], OWNER-PRIORITY. Owner: "the fx test is now in the sound menu which seems
+wrong. should be in a graphics section." Correct — the celebration tester is a VISUAL test, not audio.
+changed (A-owned): **index.html** — moved the celebration tester (Item / Rank up / Arena win / Big burst
++ the `dimensions()`/`isReady()` readout `#setFxVal`) OUT of `#audio` into a new **`#graphics` Setup
+sub-menu** (mirrors the Audio menu: `res-label` + `scroll-body` so Back is always reachable; room for
+future FX toggles — reduced-motion, quality). Added a **"Graphics" row** in Settings (`#openGraphics` →
+`#/graphics`) beside Audio/Fullscreen. **main.js** — registered the `graphics` screen + `#/graphics` route
++ `renderGraphics()` (resets the readout) + the Setup→Graphics / Back wiring. The existing `#fxTest`
+delegated handler is unchanged (still fires each celebration via `fireCelebrationTest`, which uses
+`ensureAudioReady` so a test never disturbs the music).
+verified: **fx-wiring.test (77→80)** — the tester is NO LONGER in `#audio` and now lives in the `#graphics`
+block; Setup links to `#/graphics`; the live boot still fires each celebration on a correctly-sized overlay.
+`node -c` clean; **full 34-gate suite green**. [A]-owned.
+notes: **owner** — Setup now has Audio · Graphics · Fullscreen sub-rows; the celebration tester is under
+Graphics, and (with T149) it throws a real visible shower. This clears the [A] queue through T147; next per
+`NEXT.md`: `T124` (fractions, already shipped `583130c`) — awaiting the babysitter's reconciliation.

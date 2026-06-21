@@ -204,6 +204,7 @@
     <div class="res-label">Settings</div>
     <div class="settings-body scroll-body">
       <button class="set-row" id="openAudio"><span>Audio</span><span class="set-val"><span class="px-ic soundOn"></span> Open</span></button>
+      <button class="set-row" id="openGraphics"><span>Graphics</span><span class="set-val"><span class="px-ic sparkles"></span> Open</span></button>
       <button class="set-row" id="fsToggle"><span>Fullscreen</span><span class="set-val"><span class="px-ic fullscreen"></span> <span id="fsToggleVal">Enter</span></span></button>
       <div class="set-danger">
         <h4>Danger zone</h4>
@@ -255,6 +256,17 @@
         </div>
       </div>
       <button class="set-row" id="setTest"><span>Test sound</span><span class="set-val"><span class="px-ic play"></span> Play</span></button>
+    </div>
+    <div class="res-actions">
+      <button class="btn ghost" id="audioBack">Back</button>
+    </div>
+  </section>
+
+  <!-- GRAPHICS — visual tests (T147): the celebration tester is a VISUAL test, not
+       audio, so it lives in its own Setup sub-menu (room for future FX toggles). -->
+  <section id="graphics" class="screen">
+    <div class="res-label">Graphics</div>
+    <div class="settings-body scroll-body">
       <div class="set-row set-music">
         <label id="fxTestLabel"><span>Test celebration</span><span class="set-val" id="setFxVal">Tap to fire</span></label>
         <div class="music-switch" id="fxTest" role="group" aria-labelledby="fxTestLabel">
@@ -266,7 +278,7 @@
       </div>
     </div>
     <div class="res-actions">
-      <button class="btn ghost" id="audioBack">Back</button>
+      <button class="btn ghost" id="graphicsBack">Back</button>
     </div>
   </section>
 

@@ -160,7 +160,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), heroDetail:$("heroDetail"), arena:$("arena"), practice:$("practice"), settings:$("settings"), audio:$("audio") };
+  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), heroDetail:$("heroDetail"), arena:$("arena"), practice:$("practice"), settings:$("settings"), audio:$("audio"), graphics:$("graphics") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -1907,6 +1907,7 @@
     else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
     else if(h === "settings"){ renderSettings(); show("settings"); }
     else if(h === "audio"){ renderAudio(); show("audio"); }
+    else if(h === "graphics"){ renderGraphics(); show("graphics"); }
     else { checkGates(); renderTree(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); applyGates(); show("start"); firePendingHighlight(); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
@@ -2098,6 +2099,10 @@
   $("settingsBack").addEventListener("click", navStart);
   { const oa = $("openAudio"); if(oa) oa.addEventListener("click", () => { location.hash = "#/audio"; }); }
   { const ab = $("audioBack"); if(ab) ab.addEventListener("click", () => { location.hash = "#/settings"; }); }
+  // T147 — the celebration tester is a VISUAL test, so it lives in its own Graphics menu.
+  function renderGraphics(){ const v = $("setFxVal"); if(v) v.textContent = "Tap to fire"; }
+  { const og = $("openGraphics"); if(og) og.addEventListener("click", () => { location.hash = "#/graphics"; }); }
+  { const gb = $("graphicsBack"); if(gb) gb.addEventListener("click", () => { location.hash = "#/settings"; }); }
   { const ss = $("setSound"); if(ss) ss.addEventListener("click", toggleSound); }
   // T143 — live audio controls: separate Music + SFX volume sliders (drag → hear it),
   // tempo, the style picker, and the celebration tester. None RESTART the music (they

@@ -26,7 +26,16 @@ const zCanvas = +((css.match(/\.fx-canvas\{[^}]*z-index:(\d+)/) || [])[1] || 0);
 ok(zBurst > zCanvas, "(1) T137: #fxBurst (z" + zBurst + ") is layered ABOVE #fxCanvas (z" + zCanvas + ") — no occlusion");
 ok(zBurst < 60, "(1) T137: #fxBurst (z" + zBurst + ") stays below the toasts (z60) — never covers text");
 // T137 — a celebration TESTER in Settings: pixel buttons firing each celebration type
-ok(/id="fxTest"/.test(html) && /aria-labelledby="fxTestLabel"/.test(html), "(1) T137: Settings has a labelled celebration-tester group");
+ok(/id="fxTest"/.test(html) && /aria-labelledby="fxTestLabel"/.test(html), "(1) T137: a labelled celebration-tester group exists");
+// T147 — the celebration tester is a VISUAL test → it lives in the #graphics menu
+// (a Setup sub-menu), NOT in #audio. Setup links to it.
+(function(){
+  const ai = html.indexOf('id="audio"'), gi = html.indexOf('id="graphics"');
+  const audioBlock = html.slice(ai, gi), graphicsBlock = html.slice(gi);
+  ok(ai >= 0 && gi > ai && !/id="fxTest"/.test(audioBlock), "(1) T147: the celebration tester is NO LONGER in the #audio menu");
+  ok(/id="fxTest"/.test(graphicsBlock), "(1) T147: the celebration tester lives in the #graphics section (a Setup sub-menu)");
+})();
+ok(/id="openGraphics"/.test(html) && /og\.addEventListener\("click", \(\) => \{ location\.hash = "#\/graphics"; \}\)/.test(main), "(1) T147: Setup links to the Graphics menu (#/graphics)");
 ["item","rank","win","big"].forEach(k => ok(new RegExp('data-fx="' + k + '"').test(html), "(1) T137: the tester offers the '" + k + "' celebration"));
 ok(/function fireCelebrationTest\([\s\S]{0,400}fxResizeAll\(\)/.test(main), "(1) T137: the tester resizes the overlay before firing (matches the live viewport)");
 ok(/data-fx="item"[\s\S]*?fxCelebrate\(|fireCelebrationTest[\s\S]{0,400}fxCelebrate\(/.test(main) && /fxCelebrateRank\(/.test(main) && /fxCelebrateWin\(/.test(main) && /fxBigBurst\(/.test(main), "(1) T137: the tester fires all four celebration entry points");
