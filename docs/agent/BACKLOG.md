@@ -2175,6 +2175,29 @@ stress-sensitive moment; the in-game music must never add pressure. Different co
   distinctness, and the win-sting wiring). (Babysitter: confirm solves are calm, the contexts sound
   different, and completing a topic/battle gives the fun wub — then owner ear-checks on the Poco X3.)
 
+### T116 — [A] Restore the tree's scroll-affordance (the "more below" fade + cue) · status: OPEN
+Owner: "one thing we've lost is the scrollable indicators — i.e. the gradient that shows the topic
+tree can be scrolled." **Regression:** the scroll-fade affordance (`.picker-wrap.can-scroll-up/down`
+edge gradients + the bobbing `.scroll-cue`) was wired to the **old list `.picker-wrap`**; when **T96**
+made the home **tree-only**, the toggling JS was dropped and `#modeTree` (which scrolls via
+`overflow-y:auto`) never got its own affordance. The CSS for the fades still exists — it just isn't
+applied to the tree. It's now obvious because T112/T106 make the tree taller/more scrollable.
+- **Re-wire the affordance to the tree.** Give `#modeTree` (or a thin wrapper around it) the top/bottom
+  **edge-fade gradients** + the **bobbing down-cue**, shown **only when there's more to scroll** — reuse
+  the existing `can-scroll-up`/`can-scroll-down`/`.scroll-cue` CSS pattern (don't invent a new one).
+- **Toggle from real scroll state.** Add `updateTreeScroll()` that sets `can-scroll-up` when
+  `scrollTop > 0` and `can-scroll-down` when `scrollTop + clientHeight < scrollHeight - 1`; call it on
+  the tree's `scroll` (passive), **after `renderTree()`** (content changes height), and on
+  `resize`/`orientationchange`/fullscreen-change (the T112 fill-height changes the clientHeight).
+- **Keep it clean.** Fades are `pointer-events:none` (never block taps on nodes); honour reduced-motion
+  (the cue animation already `@media`-guards); style under `data-ui="pixel"` consistently; 360px-safe;
+  must not reintroduce a layout shift or cover the top/bottom nodes' tap targets.
+- **DoD:** when the tree overflows, a **bottom fade + cue** shows "there's more below" and a **top fade**
+  appears once scrolled down; both **disappear** when there's nothing more that way; works after the
+  tree re-renders and on resize/fullscreen toggle; taps still hit nodes; reduced-motion safe; 360px-safe;
+  `node -c` clean; all gates green (a small check that `updateTreeScroll` toggles the classes from
+  scroll metrics). (Babysitter: confirm the fade/cue appears only when scrollable and tracks scroll.)
+
 ### T106 — [A] Tech-tree v2: use the full width + a clearer relationship visual language · status: DONE (`10e3000`)
 Owner: the tree nodes **don't use the full screen width** (only ~2 abreast in a ~360px column) and
 the **relationship between nodes isn't clear** — improve the connector visual language. Make the

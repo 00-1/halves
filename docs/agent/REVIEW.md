@@ -653,6 +653,7 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   submit.** Authoritative order — **AUDIO BLOCK FIRST** (owner is focused on it): **`T113`** (volume +
   tempo sliders — instrument it) → **`T115`** (music with CHARACTER: **calm solves [firm rule]**, real
   per-context variety, a synth **"wub" win-sting** on topic-complete/battle-win, distinct Arena theme)
+  → **`T116`** (restore the tree's scroll-affordance fade/cue — a small T96 regression the owner spotted)
   → **`T101`** (Start→fullscreen delay — quick, owner-flagged, leads the perf work) →
   **`T102`** (Android PWA+TWA — installable parity build, now that the web UI is
   stable) → **`T103`** (Android-inclusive perf research — needs T102 to profile) → **`T89`/`T90`**
