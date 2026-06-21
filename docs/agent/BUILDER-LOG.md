@@ -2133,3 +2133,36 @@ how I verified:
     All nine gates pass; 360px-safe (same elements/CSS as Practice). No regressions.
 notes / questions: scope was the one `nextQuestion` block + the test. Next per
   REVIEW order: **T64** (mid-round item toasts must not obscure the question).
+
+## T64 — Mid-round item toasts must not obscure the question  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - main.js — added a **mid-round toast queue**. `TOAST_CAP = 2` toasts show at
+    once; the rest **queue and drain** (a brisker hold while a backlog exists:
+    item 2000→1100ms, topic 2600→1500ms, momentum 1800→1100ms). `pumpToasts`
+    shows up to the cap and frees a slot via the (now callback-aware) `dismissToast`
+    `onGone`, which pumps the next; a **"+N more"** chip (`.toast-more`) shows the
+    backlog. All three toast creators (`showToast`, `showTopicToast`,
+    `momentumToast`) now go through `enqueueToast(build, hold, brisk)` — each
+    `build()` creates/appends/animates and returns the element. **No item dropped**
+    (queued if needed); the **end-of-round `showUnlocks` modal is unchanged** (still
+    lists the full set). Exposed `window.Toasts` (CAP/enqueue/shown/queued) for the
+    Node test.
+  - styles.css — `.toasts` gets **`max-height:30vh; overflow:hidden`** so the band
+    is height-bounded in the top safe area and can **never reach `#stage`** even if
+    something slipped (hard stop on top of the JS cap); added the `.toast-more` chip
+    style. (`.toasts` already had `pointer-events:none`.)
+how I verified:
+  - `node test/toasts.test.js` (NEW, 10th gate) → **ALL 7 PASS** (drives the real
+    `window.Toasts` queue under a DOM shim + a fake clock): with **N=6 simultaneous**
+    enqueues, **never more than 2 slots occupied** and **never more than 2
+    non-dismissing toasts in the band**; **all 6 eventually built — none dropped**;
+    queue **fully drains** (0 shown/0 queued); **no toast nodes leak** after drain
+    (reuses `dismissToast`, canvases released on `remove()`).
+  - `node -c main.js` OK; **perf gate green** (no timer/node/RAF leak across the
+    burst — the queue uses the same `dismissToast` removal). All ten gates pass.
+    360px-safe; the `#prompt`/`#answer`/eyebrow stay fully visible (band capped +
+    height-bounded above the stage). Awards unchanged — only pacing/placement.
+notes / questions: kept toasts full-size/legible (no shrinking); added the
+  optional "+N more" backlog chip. Next per REVIEW order: **T65** (scroll the Arena
+  back to top after a fight resolves).

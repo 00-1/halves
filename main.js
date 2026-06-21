@@ -427,13 +427,39 @@
   }
 
   // Slide a toast out and remove it after `hold` ms on screen (non-blocking).
-  function dismissToast(t, hold){
+  // `onGone` fires once it's fully removed (the queue uses it to free a slot).
+  function dismissToast(t, hold, onGone){
     setTimeout(() => {
       t.classList.remove("show");
       t.classList.add("hide");
-      setTimeout(() => t.remove(), 300);
+      setTimeout(() => { t.remove(); if(onGone) onGone(); }, 300);
     }, hold);
   }
+
+  // ---- mid-round toast queue (T64) ----------------------------------------
+  // Cap how many toasts show at once so the stack can never grow down over the
+  // question; the rest queue and drain (briskly while a backlog exists). The
+  // band is also height-bounded in CSS, and a "+N more" chip shows the backlog.
+  const TOAST_CAP = 2;
+  let toastQ = [], toastShown = 0, toastMoreEl = null;
+  function updateToastMore(){
+    const box = $("toasts"); if(!box) return;
+    if(!toastMoreEl){ toastMoreEl = document.createElement("div"); toastMoreEl.className = "toast-more"; }
+    if(toastQ.length > 0){ toastMoreEl.textContent = "+" + toastQ.length + " more"; box.appendChild(toastMoreEl); }
+    else if(toastMoreEl.parentNode){ toastMoreEl.remove(); }
+  }
+  function pumpToasts(){
+    while(toastShown < TOAST_CAP && toastQ.length){
+      const job = toastQ.shift();
+      toastShown++;
+      const el = job.build();
+      const hold = toastQ.length > 0 ? job.brisk : job.hold;   // backlog → drain faster
+      dismissToast(el, hold, () => { toastShown--; pumpToasts(); });
+    }
+    updateToastMore();
+  }
+  // Queue a toast: `build()` creates/appends/animates the element and returns it.
+  function enqueueToast(build, hold, brisk){ toastQ.push({ build: build, hold: hold, brisk: brisk || hold }); pumpToasts(); }
   // Fire the canvas confetti/spark celebration from a toast's centre, scaled by
   // rarity. Pure celebration: the overlay never intercepts taps and the engine
   // never touches the game clock/input.
@@ -445,34 +471,38 @@
 
   // Lightweight, non-blocking toast shown mid-round when an item is unlocked.
   function showToast(it){
-    const pal = C.paletteFor(it.rarity);
-    const t = document.createElement("div");
-    t.className = "toast r-" + it.rarity;
-    t.innerHTML = '<canvas class="pix" width="36" height="36"></canvas>'+
-      '<div class="t-txt"><span class="t-tag">Unlocked</span>'+
-      '<span class="t-name">'+esc(it.flavour || it.name)+'</span></div>'+
-      '<span class="t-plus" style="color:'+pal.accent+'">+1</span>';
-    $("toasts").appendChild(t);
-    C.drawIcon(t.querySelector("canvas"), it.id, pal);
-    sfx("item", it.rarity);   // sparkle arpeggio, scaled by rarity
-    requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, it.rarity, [pal.accent, pal.body]); });
-    dismissToast(t, 2000);
+    enqueueToast(() => {
+      const pal = C.paletteFor(it.rarity);
+      const t = document.createElement("div");
+      t.className = "toast r-" + it.rarity;
+      t.innerHTML = '<canvas class="pix" width="36" height="36"></canvas>'+
+        '<div class="t-txt"><span class="t-tag">Unlocked</span>'+
+        '<span class="t-name">'+esc(it.flavour || it.name)+'</span></div>'+
+        '<span class="t-plus" style="color:'+pal.accent+'">+1</span>';
+      $("toasts").appendChild(t);
+      C.drawIcon(t.querySelector("canvas"), it.id, pal);
+      sfx("item", it.rarity);   // sparkle arpeggio, scaled by rarity
+      requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, it.rarity, [pal.accent, pal.body]); });
+      return t;
+    }, 2000, 1100);
   }
 
   // Celebratory toast when a whole topic becomes newly playable — fired both for
   // chain unlocks (finishing the previous topic) and Part-2 mastery unlocks.
   function showTopicToast(m){
-    const part2 = !!m.requires;
-    const pal = C.paletteFor("epic");   // topic toasts are epic-tinted
-    const t = document.createElement("div");
-    t.className = "toast r-epic topic";
-    t.innerHTML = '<span class="t-glyph">'+m.glyph+'</span>'+
-      '<div class="t-txt"><span class="t-tag">'+(part2 ? "Part 2 unlocked" : "Topic unlocked")+'</span>'+
-      '<span class="t-name">'+esc(m.name)+'</span></div>';
-    $("toasts").appendChild(t);
-    sfx("topicUnlock");   // short fanfare
-    requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, "epic", [pal.accent, pal.body]); });
-    dismissToast(t, 2600);
+    enqueueToast(() => {
+      const part2 = !!m.requires;
+      const pal = C.paletteFor("epic");   // topic toasts are epic-tinted
+      const t = document.createElement("div");
+      t.className = "toast r-epic topic";
+      t.innerHTML = '<span class="t-glyph">'+m.glyph+'</span>'+
+        '<div class="t-txt"><span class="t-tag">'+(part2 ? "Part 2 unlocked" : "Topic unlocked")+'</span>'+
+        '<span class="t-name">'+esc(m.name)+'</span></div>';
+      $("toasts").appendChild(t);
+      sfx("topicUnlock");   // short fanfare
+      requestAnimationFrame(() => { t.classList.add("show"); toastBurst(t, "epic", [pal.accent, pal.body]); });
+      return t;
+    }, 2600, 1500);
   }
 
   // Topic progress-bar colour, graded by completeness: cool blue (low) → green →
@@ -1089,14 +1119,16 @@
       : '';
   }
   function momentumToast(state){
-    const t = document.createElement("div");
-    t.className = "toast momentum";
-    t.innerHTML = '<span class="t-glyph">🗓</span><div class="t-txt">' +
-      '<span class="t-tag">' + esc(MOMENTUM_LABEL) + (state.count >= MOMENTUM_MAX ? " · maxed" : "") + '</span>' +
-      '<span class="t-name">' + state.count + ' day' + (state.count === 1 ? '' : 's') + '</span></div>';
-    $("toasts").appendChild(t);
-    requestAnimationFrame(() => t.classList.add("show"));
-    dismissToast(t, 1800);
+    enqueueToast(() => {
+      const t = document.createElement("div");
+      t.className = "toast momentum";
+      t.innerHTML = '<span class="t-glyph">🗓</span><div class="t-txt">' +
+        '<span class="t-tag">' + esc(MOMENTUM_LABEL) + (state.count >= MOMENTUM_MAX ? " · maxed" : "") + '</span>' +
+        '<span class="t-name">' + state.count + ' day' + (state.count === 1 ? '' : 's') + '</span></div>';
+      $("toasts").appendChild(t);
+      requestAnimationFrame(() => t.classList.add("show"));
+      return t;
+    }, 1800, 1100);
   }
   function showGold(el, before, after, earned){
     if(!el) return;
@@ -1312,5 +1344,7 @@
     localDay: localDay, load: loadMomentum, evaluate: (best, has) => C.evaluateMomentum(best, has) };
   // Practice module API (pure qbest reducer, used by the Node tests).
   window.Practice = { recordQbest: recordQbest, qTileColor: qTileColor };
+  // Toast queue API (T64) — cap/queue exposed for the Node tests.
+  window.Toasts = { CAP: TOAST_CAP, enqueue: enqueueToast, shown: () => toastShown, queued: () => toastQ.length };
   show("entry");      // splash first; entry buttons reveal the menu via applyRoute()
 })();
