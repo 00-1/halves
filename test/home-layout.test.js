@@ -90,5 +90,57 @@ ok(/querySelector\("\.nav-lbl"\)[\s\S]{0,200}'Exit'[\s\S]{0,20}'Screen'/.test(ma
   ok(!(".nav-lbl" in sm._kids) || sm._kids[".nav-lbl"]._t === "", "boot: the sound button's text label is never overwritten by the toggle");
 })();
 
+// ---- (4) the event banner shows N/3 reward PROGRESS, not a premature binary ---
+// (T99 DoD: after T92 every event has 3 tiers — participation · well · ace — so the
+// banner must read progress and only say "done" at 3/3, never "earned" on show-up.)
+(function bannerProgress(){
+  const FIXED = Date.UTC(2026, 5, 21, 12, 0, 0);
+  // today's live event id on that frozen UTC day
+  global.window = {}; new Function(read("modes.js"))(); new Function(read("events.js"))();
+  const EID = global.window.Events.today(FIXED).id;
+
+  function tagFor(seedCollected){
+    let els = {}, store = {}, winH = {};
+    function mkEl(id){ return { id, _html:"", _text:"", _h:{}, dataset:{}, style:{}, disabled:false,
+      parentElement:{ clientWidth:300, dataset:{} }, width:48, height:48, scrollWidth:120, clientWidth:300, scrollHeight:400, scrollTop:0,
+      classList:{ _s:new Set(), add(c){this._s.add(c);}, remove(c){this._s.delete(c);},
+        toggle(c,f){ if(f===undefined){ this._s.has(c)?this._s.delete(c):this._s.add(c); return this._s.has(c);} else { f?this._s.add(c):this._s.delete(c); return !!f; } }, contains(c){return this._s.has(c);} },
+      addEventListener(e,fn){ (this._h[e]=this._h[e]||[]).push(fn); }, removeEventListener(){},
+      appendChild(c){return c;}, insertBefore(c){return c;}, setAttribute(){}, getAttribute(){return null;}, removeAttribute(){}, remove(){}, focus(){}, blur(){},
+      querySelector(s){ return /canvas/.test(s||"") ? mkEl("_c") : null; }, querySelectorAll(){ return []; }, closest(){ return null; },
+      getContext(){ return { clearRect(){}, fillRect(){}, save(){}, restore(){}, beginPath(){}, fill(){}, set fillStyle(v){}, get fillStyle(){return"";}, set imageSmoothingEnabled(v){}, get imageSmoothingEnabled(){return false;} }; },
+      get innerHTML(){return this._html;}, set innerHTML(v){this._html=String(v);}, get textContent(){return this._text;}, set textContent(v){this._text=String(v);} }; }
+    global.window = {}; global.window.addEventListener = (e,f) => { (winH[e]=winH[e]||[]).push(f); }; global.window.removeEventListener = () => {};
+    global.window.matchMedia = () => ({ matches:false, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} });
+    global.window.location = { hash:"" }; global.location = global.window.location; global.window.innerWidth = 390;
+    global.requestAnimationFrame = () => 1; global.window.requestAnimationFrame = global.requestAnimationFrame;
+    global.cancelAnimationFrame = () => {}; global.window.cancelAnimationFrame = global.cancelAnimationFrame;
+    global.performance = { now: () => 1000 };
+    global.CSS = { escape:s=>s }; global.fetch = () => Promise.reject(new Error("no")); global.setInterval = () => 0; global.clearInterval = () => {};
+    global.setTimeout = (fn) => { if(typeof fn === "function") fn(); return 0; }; global.clearTimeout = () => {};
+    store["halves.collected"] = JSON.stringify(seedCollected);
+    global.localStorage = { getItem:k => k in store ? store[k] : null, setItem:(k,v)=>{ store[k]=String(v); }, removeItem:k=>{ delete store[k]; } };
+    global.window.localStorage = global.localStorage;
+    global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
+      addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
+      documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
+    const realNow = Date.now; Date.now = () => FIXED;
+    try{ ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","monsters.js","scenery.js","eventart.js","fx.js","sound.js","main.js"].forEach(f => new Function(read(f))()); }
+    finally{ Date.now = realNow; }
+    const m = (els.eventBanner._html.match(/class="eb-tag">([^<]*)</) || [])[1] || "";
+    return m;
+  }
+
+  // a dummy non-event marker makes the profile "legacy" (banner unlocked) without owning any tier
+  const t0 = tagFor({ "tier:1": { ts:1 } });
+  ok(/Today.s event/.test(t0) && !/earned/.test(t0), "(4) 0 tiers owned → \"Today's event\" (no premature 'earned'): " + t0);
+  const t1 = tagFor({ ["event:" + EID]: { ts:1 } });
+  ok(t1 === "1/3 rewards earned", "(4) 1 of 3 tiers owned → \"1/3 rewards earned\" (progress, not binary): " + t1);
+  const t3 = tagFor({ ["event:" + EID]: { ts:1 }, ["event:" + EID + ":well"]: { ts:1 }, ["event:" + EID + ":ace"]: { ts:1 } });
+  ok(/All rewards earned/.test(t3), "(4) all 3 tiers owned → done wording (only at 3/3): " + t3);
+  // the old premature binary tag is gone from the source
+  ok(!/'Reward earned'/.test(main) && !/owned \? 'Reward earned'/.test(main), "(4) the premature binary 'Reward earned' tag is removed from renderEventBanner");
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " HOME-LAYOUT CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

@@ -1524,8 +1524,8 @@
   // ---- T81: prominent home-screen event banner -----------------------------
   // Front-and-centre on the start screen: today's live event with its procedural
   // emblem art, name/blurb, a Play CTA that routes straight into the gauntlet, and
-  // a live countdown to the 00:00 UTC rollover. Stays visible once the reward is
-  // earned (reads "reward earned · play again"), never nagging.
+  // a live countdown to the 00:00 UTC rollover. Stays visible as rewards accrue
+  // (reads "N/3 rewards earned · play again"), never nagging.
   let bannerDay = null;
   function renderEventBanner(){
     const el = $("eventBanner"); if(!el) return;
@@ -1534,7 +1534,12 @@
     if(!ev){ el.classList.add("hidden"); el.innerHTML = ""; return; }
     // T87: withhold the daily event from brand-new players until a few runs in.
     if(!isFeatureUnlocked("eventbanner")){ el.classList.add("hidden"); el.innerHTML = ""; return; }
-    const owned = !!loadCollected()["event:" + ev.id];
+    // T99 fix: show PROGRESS across the three T92 reward tiers (participation ·
+    // "well" · "ace"), not a binary "earned" the moment the player merely shows up.
+    // Count the exact keys award() writes: "event:<id>" + ":well" + ":ace".
+    const col = loadCollected();
+    const got = ["", ":well", ":ace"].filter(s => col["event:" + ev.id + s]).length;
+    const tag = got >= 3 ? 'All rewards earned' : got > 0 ? got + '/3 rewards earned' : 'Today’s event';
     el.classList.remove("hidden");
     // Compact strip (T91): small emblem · tag+name+countdown · an inline Play CTA.
     // The full blurb lives on the Events tab / play screen, not here — keeps the home
@@ -1542,11 +1547,11 @@
     el.innerHTML =
       '<canvas class="pix eb-art" width="84" height="54"></canvas>'+
       '<div class="eb-body">'+
-        '<span class="eb-tag">'+(owned ? 'Reward earned' : 'Today’s event')+'</span>'+
+        '<span class="eb-tag">'+tag+'</span>'+
         '<span class="eb-name">'+esc(ev.name)+'</span>'+
         '<span class="eb-count" id="ebCount"></span>'+
       '</div>'+
-      '<button class="eb-play" data-event="'+esc(ev.id)+'">'+(owned ? 'Again' : '▶ Play')+'</button>';
+      '<button class="eb-play" data-event="'+esc(ev.id)+'">'+(got > 0 ? 'Again' : '▶ Play')+'</button>';
     const cv = el.querySelector(".eb-art");
     if(cv && window.EventArt) window.EventArt.draw(cv, ev.artSeed);
     updateEventCountdown();

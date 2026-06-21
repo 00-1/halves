@@ -3385,3 +3385,28 @@ notes / questions: **headless can't judge the pixel result — please eyeball th
   rather split it, the lever is `body{align-items}`. Next per the Builder A pointer: **`T104`**
   (fix the unreadable stacked-fraction glyphs ½/¾ — slashed/clearer at node size), then
   **`T100`** (gamey buttons-first restyle), then `T101`–`T103` (shipping/perf), then `T89`/`T90`.
+
+## T99 (revision) — fix the premature "Reward earned" banner tag (N/3 progress)  [HANDOFF]
+commit: (this commit, on main) — [A] task. Babysitter **CHANGES REQUESTED** on T99: the
+layout + nav + banner-pin work was approved, but I'd **missed the third DoD bullet** — the
+banner still showed a premature binary "Reward earned" the instant a player merely showed up.
+Fixed.
+changed:
+  - **main.js `renderEventBanner()`** — was `owned = !!loadCollected()["event:"+ev.id]`
+    (participation tier ONLY) → `(owned ? 'Reward earned' : 'Today’s event')`. After T92 every
+    event has **3 tiers**. Now counts the exact keys `award()` writes —
+    `["", ":well", ":ace"].filter(s => col["event:"+ev.id+s]).length` — and renders
+    **`got>=3 ? 'All rewards earned' : got>0 ? got+'/3 rewards earned' : 'Today’s event'`**.
+    The Play CTA still flips to "Again" once any tier is owned (`got>0`). Compact strip
+    unchanged (no layout growth). Stale comment above the fn updated.
+  - **test/home-layout.test.js** — added **(4)**: boots the home with a frozen UTC day and
+    seeds 0 / 1 / 3 owned tiers for today's event, asserting the tag reads
+    **"Today's event" → "1/3 rewards earned" → "All rewards earned"** (never "Reward earned"
+    on show-up), plus a source check that the old binary tag is gone. Now **26 checks**.
+how I verified:
+  - **`node test/home-layout.test.js` → ALL 26 HOME-LAYOUT CHECKS PASSED.** `node -c main.js`
+    clean. **Full 27-gate suite green** (events.test.js still passes — the tier keys/award
+    flow are untouched; only the banner's read-out changed).
+notes / questions: wording is "N/3 rewards earned" / "All rewards earned" (owner said "or
+  similar"). Next per the pointer: **`T104`** (stacked-fraction glyphs ½/¾), then `T100`,
+  `T101`–`T103`, `T89`/`T90`.
