@@ -2178,7 +2178,37 @@ bites (worse with an Android gesture-nav inset). The `flex:1` stage absorbing th
   can't silently regress again). (Babysitter: confirm Skip is reachable on the live build + the home
   still fills top-to-bottom.)
 
-### T119 — [B] DEEP generative-audio research → principles + recommended engine architecture · status: OPEN · OWNER-PRIORITY
+### T120 — [B] BUILD the `synth.js` generative-audio engine (phased, per T119) · status: OPEN · OWNER-PRIORITY
+Build the engine T119 recommends: a **new standalone B-owned `synth.js` → `window.Synth`** (no-build,
+headless-testable, mirroring `fxgl.js`; feeds the **existing limiter** → destination). Work the §8
+phased path, **one reviewable [B] increment per push** (Babysitter reviews each on a "does it sound
+*good*, not just different" bar):
+1. **Engine core** — `AudioContext`/bus setup, the `adsr` + filter/LFO **voice renderer**, the **patch
+   table** (pad/pluck/bass/bell/lead/kit + the wub), Node test (patch→graph, ADSR shape). *(Biggest
+   quality jump #1: real patches.)*
+2. **Space** — **FDN reverb** (4–8 delay lines + damping LP) + sends + stereo width + **ducking**.
+   *(Biggest quality jump #2: our sound is bone-dry today.)*
+3. **Harmony** — key/mode, chord **progressions**, **voice-leading**, bass-follows-root.
+4. **Rhythm/variation** — **Euclidean** kit, **Markov**/2nd-order melody, **motif development**,
+   evolving + phrase-seeded density (no obvious loops).
+5. **Contexts** — author the per-context specs: the **calm solve** set, menu, **Arena + `intensity()`**
+   (intensifies toward the boss, shared signal with the FX layer), event, **victory wub-sting** — with
+   the **calm-vs-energetic invariants as tests** (the firm rule, enforced).
+- **Scope/ownership:** B-owned files ONLY — `synth.js`, `test/synth.test.js` (+ the research doc).
+  **NEVER touch `sound.js`/any existing Halves file.** No sample assets; no-build; single lookahead
+  scheduler (no timer/RAF leak); honour the existing master/limiter + the T113 volume/tempo (the [A]
+  wire connects these). Log = `BUILDER-LOG-FX.md`/`BUILDER-LOG-AUDIO.md`.
+- **Phase 6 = [A] wiring (separate task, Babysitter specs after the engine lands):** mount `Synth`,
+  route screens/contexts (mirror `fxSetScreen`), fire the win-sting + duck music under SFX, keep/migrate
+  the `Sound` SFX, retire the old music scheduler — all honouring mute + the T113 sliders + limiter.
+- **DoD (per increment + overall):** `synth.js` is standalone (`window.Synth`, no existing-file edits),
+  `node -c` clean, headless-tested (graph structure, one scheduler/no leak, deterministic from seed,
+  patch distinctness, the calm-solve budget invariants); the engine demonstrably delivers **distinct
+  patches + reverb/space + harmony + evolving variation** (the T119 quality levers), so it sounds
+  **good**, not just different; all gates green. (Babysitter: review each phase; gate the whole on real
+  audible-quality design, then spec the [A] wire.)
+
+### T119 — [B] DEEP generative-audio research → principles + recommended engine architecture · status: DONE (`2e0a708`)
 Owner: "can we do a task of deep research into generative audio and apply some principles here? what we
 have so far is too simple and doesn't seem to be progressing." Routed to **Builder B** (idle; built the
 `fxgl.js` engine — deep engine/research is its strength). Deliverable: **`docs/research-generative-
@@ -2252,7 +2282,7 @@ stress-sensitive moment; the in-game music must never add pressure. Different co
   distinctness, and the win-sting wiring). (Babysitter: confirm solves are calm, the contexts sound
   different, and completing a topic/battle gives the fun wub — then owner ear-checks on the Poco X3.)
 
-### T116 — [A] Restore the tree's scroll-affordance (the "more below" fade + cue) · status: OPEN
+### T116 — [A] Restore the tree's scroll-affordance (the "more below" fade + cue) · status: DONE (`b184896`)
 Owner: "one thing we've lost is the scrollable indicators — i.e. the gradient that shows the topic
 tree can be scrolled." **Regression:** the scroll-fade affordance (`.picker-wrap.can-scroll-up/down`
 edge gradients + the bobbing `.scroll-cue`) was wired to the **old list `.picker-wrap`**; when **T96**

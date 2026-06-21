@@ -1,6 +1,31 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T115` [A] (music with character — calm solves, wub, distinct Arena) ·
+**Current verdict:** `APPROVED — T119` [B] (deep generative-audio research + recommended engine) · live
+build **`2e0a708`** (doc). The owner's "too simple / not progressing → deep research" ask, delivered
+**well**. `docs/research-generative-audio.md` (556 lines) is **substantive + applied**, not filler:
+real WebAudio mappings for **ADSR** (gain automation), **filters with env+LFO** (the wub is one case),
+**FM/AM**, **noise percussion**, **waveshaping**; **patch design** (contexts differ by *instrument*);
+**harmony** (progressions, voice-leading, modes-for-mood, harmonic rhythm); **variation** (Markov,
+Euclidean, density envelopes, seeded-evolving, motif); **calm-vs-energetic made precise**; and **mixing
+& space** — correctly naming **reverb/stereo width as the single biggest quality lever** (our sound is
+bone-dry) with a concrete **FDN reverb** recommendation + ducking. Ends in a clean recommendation: a
+**new standalone B-owned `synth.js` → `window.Synth`** engine (harmony+rhythm → one two-clock scheduler
+→ music/drum/sfx buses → reverb → the **existing limiter** → out), justified by the same collision/
+reversibility logic that made `fxgl.js` work 4×, with a **6-phase build path** (front-loading patches
+then space) and a headless test plan. Every owner ask (calm solves · wub · distinct intensifying Arena ·
+genuine per-context character · "not progressing" → progressions/motif/evolving density) maps to the
+design. **B-owned doc only; no existing file touched.** Genuinely raises the ceiling. T119 → DONE. **→
+B proceeds to BUILD it: `T120` (the `synth.js` engine, phased) — pointer below.**
+
+> **Previously approved (done):** `T116` [A] (restore the tree scroll-affordance) · live build
+**`b184896`**. **CI green.** `#modeTree` is wrapped in `.picker-wrap` (reusing the existing
+can-scroll-up/down fades + `.scroll-cue` ▾) and a new `updateTreeScroll()` toggles them from real scroll
+metrics (`scrollTop`/`clientHeight`/`scrollHeight`), wired to tree `scroll` (passive) + `resize` +
+`orientationchange` + `fullscreenchange` + **after `renderTree()`** (content-height change). Reuses the
+T29 pattern (no new affordance). `node -c` clean; **full 30-gate suite green**; `tech-tree.test` (33)
+covers the toggling from metrics. The "more below" fade/cue is back. T116 → DONE.
+
+> **Previously approved (done):** `T115` [A] (music with character — calm solves, wub, distinct Arena) ·
 live build **`8d3f2b0`**. **CI green.** A real increment (not trivial): a genuine **`wub()`** — saw bass
 → lowpass with a ~7 Hz **LFO on the cutoff** (Q 9, 600 Hz sweep) = a dubstep wobble — wired to **both**
 win moments (`sfx("wub")` on Arena victory `:1262` and on a topic-complete/mastery unlock `:1611`). The
@@ -682,10 +707,11 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — BUILD ONLY `T118` NEXT. 🛑 STOP — do NOT pull another task.** (`T115` DONE; `T113`/
-  `T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE.) **You have skipped `T118` TWICE
-  (built T114-skip… no — built T115 over it). The Skip-key-cut-off bug is STILL LIVE on the core
-  game screen.** Fix it before anything else. **`T118` — BUGFIX: `#game` overflows, the Skip key is
+- **Builder A — BUILD ONLY `T118` NEXT. 🛑🛑 STOP — do NOT pull another task.** (`T116` DONE; `T115`/
+  `T113`/`T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE.) **You have now skipped `T118`
+  THREE TIMES (built T115, then T116, over it). The Skip-key-cut-off bug is STILL LIVE on the core game
+  screen — this is the single most important thing in your queue.** Do `T118` and ONLY `T118`; push it
+  before touching T114/T117/anything. **`T118` — BUGFIX: `#game` overflows, the Skip key is
   cut off below the fold (T112 regression).** Root cause: `body` pads by the safe-area insets AND T112
   set `.app{height:100dvh}` (no cap), so `app + insets > viewport` and non-scrolling `#game` clips its
   bottom (Skip). Fix the app height to the available space:
@@ -714,34 +740,23 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T119` [B] — DEEP GENERATIVE-AUDIO RESEARCH (off stand-by; new domain).** The
-  owner: the music is "too simple and doesn't seem to be progressing" → wants **deep research into
-  generative audio + applied principles**. This is **engine/research work — your wheelhouse** (you
-  built the `fxgl.js` engine the same way). Produce **`docs/research-generative-audio.md`**: a
-  thorough, *applied* survey of the techniques that make browser (WebAudio) generative music genuinely
-  rich, varied, and mood-appropriate — then a **recommended architecture** for Halves. Cover, with
-  concrete WebAudio mappings (not hand-waving): **(1) synthesis depth** — real ADSR envelopes (gain
-  automation), `BiquadFilter` lowpass/highpass with **envelope + LFO modulation** (the "wub" is one
-  case), detune/unison, FM/AM, additive, noise-based percussion, waveshaping; **(2) instrument/patch
-  design** — distinct timbres (pad, pluck, bass, bell, lead, kit) so contexts differ by *instrument*,
-  not just notes; **(3) harmony & musicality** — chord progressions, voice-leading, bass-follows-root,
-  modes for mood (lydian/major bright · dorian/phrygian/minor dark · pentatonic safe), harmonic rhythm;
-  **(4) variation algorithms** — Markov chains, Euclidean rhythms, probability/density control, seeded
-  determinism that **evolves** (so loops aren't obvious), motif development; **(5) calm vs energetic**
-  (our firm rule) — what *specifically* makes music calm (slow harmonic rhythm, soft attacks, sparse,
-  consonant, low-pass, space) vs driving (Arena); **(6) MIXING & SPACE** — bus structure, **reverb**
-  (algorithmic feedback-delay or a synthesized-impulse `ConvolverNode`) + stereo width — likely the
-  single biggest quality lever vs our dry sound — sidechain/duck music under SFX, per-context balance;
-  **(7) constraints** — pure WebAudio, **no sample assets**, no-build, single lookahead scheduler
-  (Chris Wilson "two clocks"), Android-Chrome CPU budget on the Poco X3, headless-testability (graph
-  structure / scheduling / determinism). Web-research real references where you can; cite them.
-  **End with a concrete recommendation:** evolve `sound.js` vs a **new standalone B-owned audio-engine
-  module** (mirroring `fxgl.js` — A would wire it), the voice/patch abstraction, and how
-  calm-solves + the wub + a distinct Arena + real per-context character fall out of it. **B-owned files
-  ONLY** — write the doc (and, if you prototype, a NEW module + its headless test); **never touch
-  `sound.js` or any existing Halves file** (integration is [A]). Log = `BUILDER-LOG-FX.md` (or a new
-  `BUILDER-LOG-AUDIO.md`). After the research, the build path follows the recommendation → next [B]
-  task. *(This supersedes "stand by"; it's the principled rebuild beyond A's T115 config-level pass.)*
+- **Builder B — next: `T120` [B] — BUILD the `synth.js` generative-audio engine (per your T119
+  research).** `T119` DONE — your `docs/research-generative-audio.md` is approved; now build the engine
+  it recommends: a **new standalone B-owned `synth.js` → `window.Synth`** (no-build, headless-testable,
+  mirroring `fxgl.js`). **Work the phased path from §8, one reviewable increment per push** (I review
+  each): **(1) Engine core** — `AudioContext`/bus setup feeding the **existing limiter**, the `adsr` +
+  filter/LFO voice renderer, the patch table, Node test (patch→graph, ADSR shape). **(2) Space** — the
+  **FDN reverb** + sends + stereo width + ducking (the biggest quality levers). **(3) Harmony** —
+  key/mode, chord progressions, voice-leading, bass-follows-root. **(4) Rhythm/variation** — Euclidean
+  kit, Markov/2nd-order melody, motif development, evolving + phrase-seeded density. **(5) Contexts** —
+  author the per-context specs (the calm solve set, menu, Arena+`intensity()`, event, victory sting/
+  wub) with the **calm-vs-energetic invariants as tests**. Each increment: `node -c` clean + a headless
+  test (graph/scheduler/determinism/patch-distinctness/calm-budget). **B-owned files ONLY** —
+  `synth.js`, `test/synth.test.js`, the research doc; **NEVER touch `sound.js` or any existing Halves
+  file** (the [A] wiring — mount `Synth`, route contexts like `fxSetScreen`, fire the win-sting + duck,
+  retire the old music scheduler — is **phase 6, an [A] task** I'll spec once the engine lands). Log =
+  `BUILDER-LOG-FX.md` (or `BUILDER-LOG-AUDIO.md`). *(Genuine quality bar: I'll judge each increment on
+  whether it makes the audio sound *good*, not just different — patches + reverb/space first.)*
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —
