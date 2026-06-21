@@ -4544,3 +4544,30 @@ music-start FIX `9d6175b`).
   manifest icons need real no-build assets created from the procedural mark; plus a Bubblewrap TWA project +
   `/.well-known/assetlinks.json` + documented AAB side-load steps). Starting it half-way risks a stale-cache
   live-site regression, so it's handed off intact rather than rushed.
+
+## T102 — Android PWA core: installable manifest + offline service worker (TWA deferred)  [HANDOFF]
+commit: (this commit) — [A]. Babysitter scoped T102 to the **PWA/installability part** (the no-owner-needed
+half); the TWA/Play-Store wrapper needs signing credentials → owner away → flagged + deferred to T103/T72.
+changed (A-owned, new no-build files + small wiring):
+  - **manifest.webmanifest** — installable manifest: name/short_name/description, `start_url`+`scope` `./`,
+    `display:standalone`, portrait, `theme_color`/`background_color` `#0E1116`, and a **maskable** icon.
+  - **icon.svg** — a maskable brand icon (full-bleed `#0E1116` + the `x/2` mark with the amber slash inside
+    the central safe zone, so Android adaptive-icon circle/squircle crops don't clip it). SVG = crisp at any
+    size, no-build (we can't generate PNGs without a browser; SVG manifest icons are accepted for install).
+  - **sw.js** — the **update-safe** service worker: **NETWORK-FIRST for `build.json` + navigations** (so a
+    new deploy + the T54 version check always reach the user; `build.json` is NEVER cached), **CACHE-FIRST
+    for the immutable `?v=<sha>` assets + fonts** (fast + offline); `install` skipWaiting, `activate` cleans
+    superseded caches + claims clients.
+  - **index.html `<head>`** — `<link rel="manifest">` + `theme-color` meta + `apple-touch-icon`.
+  - **main.js** — guarded, lazy (on `load`) `navigator.serviceWorker.register("sw.js")` (http(s) only).
+how I verified: **test/pwa.test.js (21 checks, registered in pages.yml)** — the manifest is valid JSON +
+  installable (standalone, maskable icon that exists); the head links manifest/theme/icon; the SW registers
+  guarded + lazily and is **update-safe** (navigations + `build.json` network-first, build.json never cached,
+  caches cleaned); and cache-bust leaves the manifest/sw/icon BARE (the browser manages those). `node -c`
+  clean (`main.js`, `sw.js`); **full 35-gate suite green**. [A]-owned only.
+notes / questions — **⚠ STOP/FLAG (owner away):** the **TWA wrapper** (Bubblewrap Android project → signed
+  AAB) + `/.well-known/assetlinks.json` need a signing keystore / Play credentials, so per your instruction
+  I did NOT do them — they belong with `T103`/`T72` when the owner is back. The PWA core is enough to install
+  the site as a home-screen app + run offline; on-device install/parity is the babysitter/owner check (the
+  service worker only activates over https — GH Pages, not file://). **Next: pivoting to `T152[A]`** (now
+  unblocked by B's T152[B]) — the celebration point-emission the owner's keen on.

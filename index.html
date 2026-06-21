@@ -11,6 +11,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<!-- T102 — PWA: installable + offline. theme-color/apple-touch are also minted at
+     runtime by installFavicon(); the service worker is registered by the app script. -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0E1116">
+<link rel="apple-touch-icon" href="icon.svg">
 </head>
 <body>
 <!-- T112: FULL-BLEED semantic backdrop (FXGL) — a fixed full-viewport layer behind

@@ -2277,6 +2277,14 @@
     const ago = relAgo(Date.parse(buildInfo.time));
     el.innerHTML = 'build <b>'+esc(sha)+'</b>' + (ago ? ' · '+ago : '');
   }
+  // T102 — register the PWA service worker (offline + installable). Guarded + lazy
+  // (after load, never blocking boot); the SW is network-first for build.json/nav so
+  // it never breaks the T54 update flow below. No-op where unsupported / on file://.
+  if(typeof navigator !== "undefined" && navigator.serviceWorker && location && /^https?:$/.test(location.protocol)){
+    const reg = () => { try{ navigator.serviceWorker.register("sw.js"); }catch(e){} };
+    if(typeof window !== "undefined" && window.addEventListener) window.addEventListener("load", reg); else reg();
+  }
+
   // Version check (T54): remember the sha booted with; poll build.json for a newer
   // deploy and offer a manual refresh. No-op on a local build / offline; never
   // auto-reloads, never steals focus, polls on an interval (not a tight loop).

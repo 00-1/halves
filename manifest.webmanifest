@@ -1,0 +1,14 @@
+{
+  "name": "Halves — mental math drills",
+  "short_name": "Halves",
+  "description": "Fast mental-math drills: halves, doubles, times tables, squares and fraction-to-decimal conversions.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E1116",
+  "theme_color": "#0E1116",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

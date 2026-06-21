@@ -90,6 +90,8 @@ jobs:
         run: node test/fxgl.test.js
       - name: FX wiring test (gate)
         run: node test/fx-wiring.test.js
+      - name: PWA (manifest + service worker) test (gate)
+        run: node test/pwa.test.js
       - name: FXGL golden-render test (gate)
         run: node test/golden-fx.test.js
       - name: Synth golden-score test (gate)
