@@ -25,9 +25,11 @@ call as the Heroes screen** (so they're the T51 restored faces); `lastBattle` no
 name ellipsis). Ran `test/nav-icons.test.js` — **all 16 checks pass**; wired as the 9th
 Pages gate; `node -c` clean; no regressions. T50 → DONE.
 
-**Next-task order:** **`T57` → `T62` → `T63` → `T64` → `T65` → `T52` → `T53` → `T54` →
-`T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches `T59`/`T60`/
-`T61`). **Do `T57` next** (tiny doc scrub).
+**Next-task order:** **`T57` → `T62` → `T63` → `T64` → `T65` → `T67` → `T66` → `T52` →
+`T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
+`T59`/`T60`/`T61`). **Do `T57` next** (tiny doc scrub). (`T66` 120-tier change sits before
+the arena art so T52/T53 build on the final structure; `T67` hero detail rides with the
+UX cluster.)
 - **`T62` — methodical, question-by-question hint audit across ALL topics.** Owner: "not
   only halves — fix every bit of advice across all topics… an agent needs to go through
   them one by one. I don't mind burning time." A deliberate per-question pass on **every**
@@ -49,6 +51,14 @@ Pages gate; `node -c` clean; no regressions. T50 → DONE.
   left looking at your heroes, missing the result/tier info at the top). Reset
   `#arenaBody.scrollTop = 0` in `finishBattle` (win or loss); do **not** reset on
   hero-selection re-renders. Tiny fix.
+- **`T66` — set the Arena to 120 tiers** (owner reconsidered ~1000; chose 120, close to 100,
+  all names hand-crafted). 10 regions × 12, boss at each region's 12th tier (keep the 10
+  named regions/bosses, add ~2 rank titles), retune `DEF_GROWTH` for the new length, update
+  `arena.test.js` to 120 + final tier 120 ⇔ near-full collection. No procedural naming.
+- **`T67` — hero detail view** (owner: hero boost-item list is long & partially hidden via
+  "+N more"). Give heroes a detail screen with the full **owned** boost list untruncated +
+  portrait + stats; for unowned, Babysitter recommends a "X/Y collected" summary (not a
+  giant locked list) — owner to confirm.
 - Sequenced early because T62 sets the hint standard that T58's playbook and the new-topic
   batches (T59–T61) must follow. Then T52–T56. Detailed blocks below are in spec order;
   follow this line for sequence.

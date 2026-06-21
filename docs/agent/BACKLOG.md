@@ -1320,10 +1320,12 @@ only (plus reading the code to be accurate); no behaviour change.
   calibration is dynamic, adding drill items with boosts raises the ceiling and the
   boss def automatically, so "tier 100 ⇔ near-full collection" keeps holding; the
   **Collector ladder** (to 10k, T55); lazy inventory; per-topic completion milestones.
-  **Decision (owner-confirmed):** the Arena stays **100 tiers** — it grows in
-  *difficulty*, not *length* (the dynamic calibration handles this automatically);
-  variety comes from new enemy art (T52) / loot themes, not more tiers. Document this as
-  the **settled policy** for adding content.
+  **Decision (owner-confirmed):** the Arena stays **near 100 tiers** — owner reconsidered
+  the ~1000 idea and chose to keep tiers meaningful/earned. **Target 120 tiers (10 regions
+  × 12)** — keeps all 10 hand-named regions + 10 bosses, just adds ~2 rank titles; 120 is a
+  nicely composite number, +20% over 100. Difficulty auto-scales via the dynamic
+  calibration; **naming stays hand-crafted at this scale — procedural generation is shelved**
+  (only needed if we ever go to many hundreds). The re-tiering itself is **T66**.
 - **What needs intentional NEW content per wave (the anti-dilution rule):** new
   **procedural icon categories/archetypes** (so new items don't recycle the existing
   ~50); new **name templates / word banks** (so names stay diverse — no new repeated
@@ -1513,3 +1515,64 @@ tier sit above the fold.
   + current tier; **selecting a hero does not jump-scroll**; entering the Arena starts at the
   top; `node -c` clean; no console errors; no regressions; deploy green. (Babysitter
   confirms the reset is in `finishBattle` only and hero-pick re-renders preserve scroll.)
+
+---
+
+## Phase 10 — Arena length + hero detail
+
+### T66 — Set the Arena to 120 tiers (10 regions × 12) · status: OPEN
+Owner reconsidered the ~1000 idea and chose **120 tiers** — close to the current 100,
+keeps every tier earned, and keeps **all hand-crafted names** (no procedural generation).
+Structure: **10 regions × 12 tiers**, a named boss at each region's **12th** tier.
+- **`enemies.js`:** `TIER_COUNT` 100 → **120**; `tierName` uses 12-tier regions
+  (`region = floor((n-1)/12)`, `pos = (n-1)%12`, **boss at `pos === 11`**). Extend
+  `RANK_TITLES` from the current set to **11 entries** (positions 0–10 are rank-titled,
+  pos 11 = boss) — add ~2 new titles that fit the power ladder (Babysitter reviews the
+  names). Keep the 10 `BANDS` + 10 `BOSSES` exactly as-is.
+- **Recalibrate the ramp** so difficulty spreads smoothly over 120 (not 100): adjust
+  `DEF_GROWTH` so the geometric ramp still rises into the cap envelope across all 120 tiers
+  (def monotonic non-decreasing, tier 1 winnable by the starter at 0 items, the final tier
+  **120** pinned to full collection). The dynamic calibration + final-boss recalibration
+  already do the heavy lifting — just retune the growth constant for the new length.
+- **Loot:** 250 loot now spreads over 120 tiers (was 100) — keep the existing
+  per-depth `lootCount` rule; confirm the totals/regions still make sense (loot regions in
+  the inventory follow `tierRegion`, which auto-updates). No procedural naming needed.
+- **Tests:** update `arena.test.js` to the new count — assert 120 tiers, def monotonic
+  across all 120, tiers 1–5 winnable at 0 items, **no tier gated behind its own loot**,
+  the **final tier 120** unbeatable at 0 items / beatable at near-full collection / **one
+  champion boost flips it**, `canAttempt` still needs `tier:n-1`, boss every 12th tier
+  named from `BOSSES`. Update any other test/constant that hard-codes 100.
+- **DoD:** `TIER_COUNT === 120`; 10 regions × 12 with bosses at 12/24/…/120 (the 10 named
+  bosses); rank ladder has enough titles (no undefined/blank names — Babysitter dumps all
+  120 tier names); def monotonic; tier-1 winnable at 0 items; tier-120 ⇔ near-full
+  collection (one boost flips); no tier behind own loot; loot distribution sane; perf fine
+  (arena renders only the current tier — 120 is trivial); all gates green; no regressions;
+  deploy green. (Babysitter dumps all 120 tier names + the full def array, and re-runs the
+  buff-gating suite at the new length.)
+
+### T67 — Hero detail view (full boost list; decide unowned display) · status: OPEN
+Owner: "heroes in the hero list need to be **expandable or have their own separate page** —
+the list of [boost] items is very long and partially hidden. Also I'm not sure if we should
+show items there that they **don't have yet**?" Today `heroCard` (`main.js` ~578) crams the
+hero's owned boost items into `.hero-items` as chips capped at 12 with a **"+N more"** that
+**hides the rest**.
+- **Give heroes a detail view.** Tapping an unlocked hero card opens a **hero detail**
+  (recommended: a dedicated screen/route like the others, e.g. `#/hero/<id>`; an expanding
+  card is acceptable if cleaner) showing the **big portrait** (the T51 creature-blob via
+  `C.drawIcon(cv,"hero:"+id,HERO_PAL[type],"familiar")`), full stats (PWR/GRD/SPD/FOC), and
+  the **complete owned boost list scrollable, untruncated** (no "+N more" cut-off).
+- **Unowned boosts (owner unsure — Babysitter recommendation, adjustable):** show the
+  **owned** boosts in full, plus a **progress summary** of how many boost-items exist for
+  this hero and how many are collected (e.g. "44 / 87 boosts collected") and/or a
+  **collapsible "still to find"** — rather than a long list of locked tiles (each hero is
+  boosted by ~80+ items, so a full locked list would overwhelm). Goal: show what you have
+  prominently, hint at what's left, without clutter. (Flagged for owner confirm.)
+- **Keep the list view tidy:** the hero *list* card can show a compact summary (portrait,
+  name, rating, stats, "Boosted by N — tap for details") instead of the long chip overflow.
+- **DoD:** an unlocked hero opens a detail view with its portrait + full stats + the
+  **complete owned boost list, untruncated and scrollable**; the unowned-display follows the
+  decided approach; the list card no longer hides items behind a cramped "+N more"; portrait
+  draws via the T51 path; every `$("id")` exists; 360px-safe; lazy (detail built on open);
+  no regressions to the Heroes screen or routing; `node -c` clean; deploy green. (Babysitter
+  checks the full owned list shows, the detail opens/closes cleanly, and the unowned summary
+  matches the real counts.)
