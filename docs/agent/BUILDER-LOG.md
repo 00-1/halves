@@ -1006,3 +1006,41 @@ notes / questions: T23 is pure logic per its DoD — Arena UI, loot granting on 
   and any inventory polish are **T24**. Champion at full collection is **Roon the
   Sly** (Cunning, rating 367.5) → boss type **Arcane**, def **551**. The suffix-min
   smoothing is a light touch; the full balance pass is **T25** as planned.
+
+## T37 — Best-Times rank dot + Inventory topic progress bars  [HANDOFF]
+commit: 6fd2ae3 (on main)
+changed:
+  - styles.css / main.js — **(1) Best Times `.sum-row`:** removed the rounded
+    coloured `border-left:4px` strip (the "AI CSS" look the owner flagged). Rank
+    colour is now a **crisp pixel-square accent dot** (`<i class="rankdot">`, 9px,
+    no border-radius — on-brand with the app's pixel aesthetic) before the rank
+    label; the rank name keeps its colour and the row keeps the subtle
+    rank-tinted background (`#RRGGBB1f`) the owner likes. Not-played rows: a
+    **hollow** muted square (`.rankdot.empty`, inset box-shadow) replacing the old
+    dashed left-border. Locked rows: **no dot** (🔒 already conveys it). Kept the
+    rank/heatmap colour map exactly — only the *form* changed.
+  - main.js — **(2) Inventory topic rows:** each row restructured into a `.tp-head`
+    (name + fraction + ✓) plus a **colour-graded progress bar** `.tp-bar/.tp-fill`
+    = owned/total fill. Grading via `topicBarColor(pct,done)`: cool blue
+    `hsl(210…)` (low) → green → warm amber `hsl(45…)` (high), with a **distinct
+    `var(--mint)` at a full 100%**. Fraction text retained.
+how I verified:
+  - node -c main.js OK; no TODO/stub; no new `$("id")` refs (only classes added —
+    DOM-id cross-check unaffected); `grep` confirms **no `border-left` on
+    `.sum-row`** and **no inline `border-left-color`** left anywhere.
+  - **DOM-shim render harness (12 checks, ALL PASSED):** booted the real
+    main.js over a fake DOM with a seeded profile (Halves 100%-collected + a
+    board entry; Times ~half; Doubles locked), then drove `#/inventory` and
+    `#/best-times` via the captured hashchange route. Asserts: inventory rows
+    render `.tp-bar/.tp-fill`, the 100% topic gets `width:100.0%;background:
+    var(--mint)`, a partial topic gets a graded `hsl(n,65%,55%)` fill, `.tp-head`
+    present, fraction text kept, and the new **Loot** category renders its locked
+    tiles (0/668); best-times has **no `border-left-color`**, the played row shows
+    a coloured `<i class="rankdot">` square, the not-played row a `rankdot empty`,
+    the locked row **no** rankdot, and the played row keeps its `…1f` tint.
+  - 360px-safe: bar is full-width inside the card (`height:6px`), dot is a 9px
+    square; `.tp-head` is flex with `min-width:0` name — no overflow. No
+    regressions to routing/back, the picker, or other screens (`.hero-card`
+    type border-left untouched — out of T37 scope).
+notes / questions: visual-only; kept the colour map, changed the form per the
+  spec. Next per REVIEW order: T38 (start screen fits viewport).
