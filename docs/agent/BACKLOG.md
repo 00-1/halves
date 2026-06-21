@@ -1865,7 +1865,36 @@ per SFX voice). **Raise it to clearly audible.**
   (Babysitter: recompute the worst-case voice sum × VOL ≤ 1.0 and confirm the new VOL is much
   higher than 0.30.)
 
-### T99 — [A] Reclaim the wasted top space on ALL screens + tidy the home nav · status: OPEN
+### T107 — [A] Asset cache-busting so deploys actually ship fresh CSS/JS · status: OPEN · SHIPPING BLOCKER
+Owner (`a3608c0` screenshot): a freshly-deployed build still rendered the **pre-T99 centered layout**
+AND the **old "Reward earned" banner tag** — both behaviours the deployed code can no longer produce.
+Diagnosis: the browser/CDN serves **stale cached `styles.css` + `main.js`** (bare `href="styles.css"`
+/ `src="main.js"` with GH-Pages default `max-age`), while `build.json` is fetched `cache:"no-store"`
+so the **build stamp reads fresh** — the deploy *looks* live but the assets are old. The T54
+version-check only **offers a manual refresh**; it does not bust the asset cache. Consequence: deploys
+silently appear unchanged for ~the cache window, and **every owner/babysitter review of the live site
+is untrustworthy** until this is fixed. This blocks shipping and blocks trustworthy review — do it
+FIRST.
+- **Ship fresh assets deterministically on every deploy.** Make the asset URLs carry the build
+  identity so a new deploy is a new URL the cache can't shadow. Preferred (no-build-friendly): the CI
+  `pages.yml` step rewrites `index.html` to append `?v=<shortSha>` to **the stylesheet link and every
+  module `<script>`** (`glyphs/modes/events/guides/collectibles/heroes/enemies/monsters/scenery/
+  eventart/fx/sound/main` — and `fxgl.js` once it's wired). `index.html` itself is the entry doc;
+  ensure it isn't long-cached (it's the one file that must revalidate — confirm GH-Pages serves it
+  with a short/again-revalidate policy, else rely on the version-check + `?v` on assets).
+- **Cooperate with T54.** When `checkForUpdate` detects a new `build.json` sha and the user taps the
+  refresh bar, the reload must land on the **new** asset URLs (the `?v=<sha>` rewrite handles this
+  because the new `index.html` references the new query). No silent stale reload.
+- **DoD:** after a deploy, a normal (non-hard) browser load fetches the **new** `styles.css`/`main.js`
+  (verify the live `index.html` asset refs all carry the current `?v=<sha>`); the owner's home-screen
+  band/banner reflect the deployed code without a hard-refresh; no-build preserved (CI does the
+  rewrite, source stays clean — `node -c`/Node-verify unaffected); a **CI gate** asserts the built
+  `index.html` has versioned refs for the stylesheet + every module script (no bare asset ref ships);
+  all existing gates green; 360px-safe (no visual change). (Babysitter: after this lands, re-confirm
+  on the live site that a fresh deploy changes the page without a hard-refresh — this is the gate that
+  makes all later visual reviews trustworthy.)
+
+### T99 — [A] Reclaim the wasted top space on ALL screens + tidy the home nav · status: DONE (`a3608c0`)
 Owner (screenshot): **every screen wastes a band at the top.** Cause: `.app{height:100dvh;
 max-height:780px}` — on a tall phone (Poco-X3 floor) the app is **capped at 780px** and the
 leftover (+ `env(safe-area-inset-top)`) becomes a dead band at the top of every `position:absolute;

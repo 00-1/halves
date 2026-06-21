@@ -1,40 +1,39 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `CHANGES REQUESTED — T99` [A] (home top-band + nav + banner) · build
-**`d1ac5e0`**. Two of T99's **three** deliverables landed cleanly — but the third (an explicit DoD
-bullet + an owner request) is **missing entirely**, and the new test doesn't cover it. Reject.
+**Current verdict:** `APPROVED — T99` [A] (home top-band + nav + banner N/3) · live build
+**`a3608c0`**. Landed in two passes: the layout/nav came in `d1ac5e0` (good), I changes-requested the
+missing third deliverable (premature "Reward earned" tag), and the fix landed in `a3608c0`. **CI
+green on `a3608c0`.** All three deliverables now correct:
+- **Top-band reclaim** — `body` flips `align-items:center → flex-start` while `.app` keeps its
+  `max-height:780px` cap, so on a tall (fullscreen) viewport the leftover falls to the **bottom** and
+  every `inset:0` screen starts flush at the top (correct read of the owner's fullscreen-correlation
+  note). **Banner pinned** (`#start` pad `20→12`, `.event-banner` margin-top `14→0`, `.tree` `14→12`).
+- **Tidy nav** — icon-only `.navbtn.util` dropped; Sound/Settings/Screen become labelled
+  `.nav-emoji`+`.nav-lbl` buttons matching the four primary ones (gap `8→6`, one uniform row);
+  `syncSoundButtons` flips only the `.nav-emoji` span, fullscreen sync only the `.nav-lbl` span (both
+  keep the text label, `innerHTML` fallback).
+- **Banner N/3 (the fix)** — `renderEventBanner()` now counts owned tiers across the **exact** keys
+  `award()` writes (`["", ":well", ":ace"]` → `got`) and renders
+  `got>=3 ? 'All rewards earned' : got>0 ? got+'/3 rewards earned' : 'Today’s event'`; Play CTA flips
+  to "Again" only once `got>0`. **No more "Reward earned" on mere show-up** (grep confirms the binary
+  string is gone). Verified **independently**: `node -c` clean; **full 27-gate suite green**; the new
+  `home-layout.test.js` (now 26 checks) boots the home with a frozen UTC day and seeds **0 / 1 / 3**
+  owned tiers, asserting the tag reads `Today’s event → 1/3 rewards earned → All rewards earned`
+  (never "Reward earned" at 0), plus a source check the old binary tag is removed. All **[A]-owned
+  files only** (no collision). T99 → DONE.
 
-**What's right (keep it):** the **top-band reclaim** — `body` flips `align-items:center →
-flex-start` while `.app` keeps its `max-height:780px` cap, so on a tall (fullscreen) viewport the
-leftover falls to the **bottom** and every `inset:0` screen starts flush at the top (correct read of
-the owner's fullscreen-correlation note). The **banner is pinned** (`#start` pad `20→12`,
-`.event-banner` margin-top `14→0`, `.tree` `14→12`). The **nav is tidy**: the icon-only
-`.navbtn.util` style is dropped; Sound/Settings/Screen become labelled `.nav-emoji`+`.nav-lbl`
-buttons matching the four primary ones (gap `8→6`, one uniform row); `syncSoundButtons` flips only
-the `.nav-emoji` span and the fullscreen sync only the `.nav-lbl` span (both keep the text label, with
-an `innerHTML` fallback). All **[A]-owned files only** (no collision). `node -c` clean; **full
-27-gate suite green** incl. the new `home-layout.test.js` (22 checks: cap+top-align, banner-first,
-labelled nav, no surviving icon-only util, sound-toggle flips emoji-only).
-
-**BLOCKER — the missing third deliverable (DoD bullet "Fix the premature 'Reward earned' tag"):**
-`renderEventBanner()` (`main.js:1537,1545`) is **unchanged** — it still computes
-`owned = !!loadCollected()["event:"+ev.id]` (the **participation tier only**) and renders the tag as
-`owned ? 'Reward earned' : 'Today’s event'`. After T92 every event has **3 tiers**; the owner
-explicitly asked for **progress** ("'1/3 event rewards earned', or similar"). So today the banner
-still says "Reward earned" the instant the player merely *shows up* — the exact bug the owner flagged.
-
-  1. **Show N/3 progress, not a binary.** Count owned tiers across the three suffixes
-     **`""`, `":well"`, `":ace"`** (the exact keys `award()` writes — see `main.js:1222–1223` and the
-     roster sweep at `:803`): e.g. `const col = loadCollected(); const got = ["",":well",":ace"]
-     .filter(s => col["event:"+ev.id+s]).length;`. Render the tag as **`got>=3 ? 'All rewards earned'
-     : got>0 ? got+'/3 rewards earned' : 'Today’s event'`** (wording your call; must read as progress
-     and only say done at 3/3). Keep the strip compact (T91) — it's a short tag, no layout growth.
-  2. **Cover it in a test.** `home-layout.test.js` asserts the banner is pinned but **not** its tag
-     text. Add a check: with 0 tiers → "Today's event"; with 1 of 3 owned → "1/3 …" (not "Reward
-     earned"); with all 3 → the done wording. (This is the regression the owner will eyeball first.)
-
-Nothing else is required — the layout/nav work is approved as-is; just add the banner fix + its test,
-rebase on `origin/main`, push. T99 stays **OPEN**; pointer unchanged.
+> **⚠ Owner screenshot at `a3608c0` showed the band STILL present + the OLD "Reward earned" tag —
+> diagnosed as a STALE-ASSET CACHE artifact, not a T99 regression.** Tell-tale: the content is
+> *centered* (≈equal dead bands top AND bottom) = the pre-T99 `align-items:center`; the new
+> `flex-start` would push all slack to the **bottom only**. And the banner shows the **old** binary
+> tag — which `a3608c0`'s code can no longer produce. Both old behaviours appearing **together** at a
+> fresh build stamp ⇒ the browser is serving cached `styles.css` + `main.js`, while `build.json`
+> (`cache:"no-store"`) reports the new SHA. Root cause: **assets have NO cache-busting** (bare
+> `href="styles.css"` / `src="main.js"`; GH-Pages default `max-age`), and the T54 version-check only
+> *offers a manual refresh* — it does not bust the asset cache. **A hard-refresh (or private tab)
+> will show the real T99 result.** Filed **`T107` (asset cache-busting)** at the FRONT of Builder A's
+> queue: every future owner review is untrustworthy until a deploy reliably ships fresh assets. T99
+> itself stands approved.
 
 ---
 
@@ -393,10 +392,15 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T99`** [A] (front-end polish; **`T98` DONE — audio raised to 0.80 + limiter**):
-  **`T99`** reclaim
-  the wasted top band on ALL screens (`.app max-height:780px` cap) + pin the event banner to the
-  top + tidy the nav (label Sound/Settings, fullscreen inline) so the tree expands → **`T100`**
+- **Builder A — next: `T107`** [A] (**`T99` DONE — top-band + nav + banner N/3**). **`T107` FIRST —
+  asset cache-busting (SHIPPING BLOCKER).** The owner's `a3608c0` screenshot still showed the OLD
+  layout + OLD banner tag because the browser served **stale cached `styles.css`/`main.js`** while
+  `build.json` (no-store) reported the new SHA — so deploys silently look unchanged and **every owner
+  review is untrustworthy** until fixed. Make a deploy ship fresh assets deterministically: e.g.
+  CI rewrites the asset refs in `index.html` to carry the build SHA (`main.js?v=<sha>`,
+  `styles.css?v=<sha>`, and every module `<script>`), or an equivalent reliable bust. Keep no-build
+  + Node-verify. Cooperate with the T54 version-check (the manual-refresh bar should land users on
+  fresh assets). Add a gate asserting the deployed `index.html` asset refs are versioned. **Then**
   **`T104`** (fix the unreadable stacked fraction glyphs ½/¾ — slashed/clearer, legible at node
   size) → **`T100`** gamey UI restyle, buttons-first (pixel-bevel + squared panels, clean text,
   reversible `data-ui` tokens — owner approved my T97 leans) → **`T106`** (tech-tree v2: use the
