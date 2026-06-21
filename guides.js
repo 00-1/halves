@@ -13,7 +13,7 @@
       intro: "Halving means splitting a number into two equal parts.",
       tips: [
         "Split into tens and ones, halve each, then add. Half of 48 = 20 + 4 = 24.",
-        "Odd numbers end in ·5. Half of 7 is 3·5.",
+        "Odd numbers end in .5. Half of 7 is 3.5.",
         "Halving twice is the same as finding a quarter.",
         "Learn the everyday ones: half of 100 is 50, half of 60 is 30."
       ],
@@ -69,7 +69,7 @@
       intro: "Bonds to 1000, and decimal bonds to 1.",
       tips: [
         "To 1000, count up to the next hundred, then on to 1000. 650 → 350.",
-        "Decimal bonds to 1 are just bonds to 10 in disguise: 0·4 → 0·6.",
+        "Decimal bonds to 1 are just bonds to 10 in disguise: 0.4 → 0.6.",
         "Whole hundreds are easy: 800 → 200."
       ],
       example: "650 + ? = 1000 → 650 to 700 is 50, 700 to 1000 is 300 → 350."
@@ -78,19 +78,19 @@
       intro: "Multiplying and dividing by 10 and 100 — the digits shift, the dot stays put.",
       tips: [
         "×10 moves every digit one place bigger; ×100 moves two. 24 × 100 = 2400.",
-        "÷10 moves digits one place smaller; ÷100 two. 60 ÷ 100 = 0·6.",
-        "It is never just 'add a zero' — that breaks with decimals. 3·5 × 10 = 35."
+        "÷10 moves digits one place smaller; ÷100 two. 60 ÷ 100 = 0.6.",
+        "It is never just 'add a zero' — that breaks with decimals. 3.5 × 10 = 35."
       ],
-      example: "0·4 × 100 → digits move two places bigger → 40."
+      example: "0.4 × 100 → digits move two places bigger → 40."
     },
     placevalue2: {
       intro: "The same shifting, now with 1000 and trickier decimals.",
       tips: [
-        "÷1000 moves digits three places smaller. 120 ÷ 1000 = 0·12.",
-        "×100 moves two places bigger. 0·04 × 100 = 4.",
-        "Fill empty places with zeros: 25 ÷ 100 = 0·25."
+        "÷1000 moves digits three places smaller. 120 ÷ 1000 = 0.12.",
+        "×100 moves two places bigger. 0.04 × 100 = 4.",
+        "Fill empty places with zeros: 25 ÷ 100 = 0.25."
       ],
-      example: "450 ÷ 1000 → three places smaller → 0·45."
+      example: "450 ÷ 1000 → three places smaller → 0.45."
     },
     fractionsof: {
       intro: "Finding a unit fraction of an amount — share it into equal groups.",
@@ -133,11 +133,11 @@
     fractions: {
       intro: "Turning a fraction into its decimal — learn the common ones by heart.",
       tips: [
-        "The key ones: ½ = 0·5, ¼ = 0·25, ¾ = 0·75, ⅕ = 0·2, 1/10 = 0·1.",
-        "Tenths are easy: 7/10 = 0·7.",
-        "1/20 = 0·05 — half of a tenth."
+        "The key ones: ½ = 0.5, ¼ = 0.25, ¾ = 0.75, ⅕ = 0.2, 1/10 = 0.1.",
+        "Tenths are easy: 7/10 = 0.7.",
+        "1/20 = 0.05 — half of a tenth."
       ],
-      example: "2/5 → each fifth is 0·2, so two of them → 0·4."
+      example: "2/5 → each fifth is 0.2, so two of them → 0.4."
     },
     squares: {
       intro: "A square is a number times itself.",
@@ -160,7 +160,7 @@
     const p = String(q.p), a = q.a, fb = "Work it through step by step — the answer is " + a + ".";
     switch(modeId){
       case "halves": { const n = parseFloat(p); if(isNaN(n)) break;
-        return "Halve the tens and ones separately, then add — half of " + n + " is " + a + (n % 2 ? " (odd, so it ends ·5)" : "") + "."; }
+        return "Halve the tens and ones separately, then add — half of " + n + " is " + a + (n % 2 ? " (odd, so it ends in a half)" : "") + "."; }
       case "doubles": { const n = parseFloat(p); if(isNaN(n)) break;
         return "Double the tens and ones, then add them — double " + n + " is " + a + "."; }
       case "times": { const m = p.match(/(\d+)\s*[×x]\s*(\d+)/); if(!m) break; const x = +m[1], y = +m[2];

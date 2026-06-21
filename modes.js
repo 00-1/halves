@@ -60,7 +60,9 @@
     [7,12],[8,12],[11,12],[12,12]
   ];
   // Squares worth memorising.
-  const SQUARES_SRC  = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30];
+  // 11+ band: recall to 12², common extension to 15², plus the pattern-based
+  // "handy" ones (20²/25²/30²). 16²–19² trimmed as beyond GL 11+ recall (T30).
+  const SQUARES_SRC  = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,25,30];
   // Common fractions and their (terminating) decimal forms.
   const FRACTIONS_SRC = [
     ["1/2",0.5],  ["1/4",0.25], ["3/4",0.75],
