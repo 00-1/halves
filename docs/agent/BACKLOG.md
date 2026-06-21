@@ -1756,3 +1756,31 @@ Console account, a signing keystore, the actual upload).
   green; the SW must not serve stale assets); deploy green. (Babysitter checks the manifest
   validates, the SW is update-safe/non-breaking, the doc covers the kids/Families + data-safety
   requirements, and clearly separates owner-gated steps.)
+
+---
+
+## Phase 13 — Visual polish
+
+### T73 — Replace the coloured left-border accents with a coloured square · status: OPEN
+Owner (screenshot, hero detail): "we've got **AI-smell left borders** again. I prefer a
+**coloured square or something else — not a curved border**." (Recurring — the owner
+flagged the same pattern earlier for the topic picker, which was fixed by dropping the
+left stripe.) Two places reintroduced the rarity/status-coloured `border-left-width:3px`
+on a rounded row:
+- **`.hd-boost`** (T67 hero-detail boost rows, `styles.css` ~354–358) — rarity colour on
+  `border-left-color` (uncommon/rare/epic/legendary).
+- **`.map-row`** (T68 journey-map rows, ~388–390) — status colour on `border-left-color`
+  (done = mint, cur = amber).
+- **Fix:** remove the coloured `border-left` accent from both; show the rarity/status with a
+  small **solid coloured square** swatch (sharp corners — *not* a curved/rounded stripe) at
+  the start of each row, in the same colour. Keep the row's uniform thin `--line` border.
+  Apply the **same square pattern to both** lists for consistency. The square must stay
+  legible/AA on its background and not break the 360px layout.
+- **Anti-recurrence:** this colour-coded **left-border-on-a-rounded-row** pattern is a
+  known owner-rejected "AI smell" — avoid it in future styling (note for the T58 playbook).
+- **DoD:** no `border-left`-colour accent remains on `.hd-boost` / `.map-row` (grep clean);
+  each row shows its rarity/status via a small solid coloured **square** (sharp corners),
+  consistent across both lists; legible, 360px-safe; no other restyle/regression; `node -c`
+  clean (CSS-only, no JS change expected — or trivial markup if a swatch element is needed);
+  deploy green. (Babysitter greps for residual `border-left` colour accents and checks both
+  lists use the square.)
