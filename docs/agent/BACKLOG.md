@@ -1577,3 +1577,46 @@ hero's owned boost items into `.hero-items` as chips capped at 12 with a **"+N m
   no regressions to the Heroes screen or routing; `node -c` clean; deploy green. (Babysitter
   checks the full owned list shows, the detail opens/closes cleanly, and the unowned summary
   matches the real counts.)
+
+---
+
+## Phase 11 — Arena wayfinding (sense of journey)
+
+### T68 — Arena wayfinding: regions, boss anticipation, a simple journey map · status: OPEN
+Owner (screenshot, "ARENA TIER 29 / 100"): "give more sense of **where we are** in the
+Arena. I guess I'm on the penultimate enemy in this region, but nothing tells me. Maybe a
+simple **map**. I need to feel **compelled to keep going to the next stage**, not just
+ticking up to 100." The data is all there but invisible: tier 29 = *Gloamwood Warlord*
+(9th of 10 in **Gloamwood**, region 3 of 10), and tier 30 is the region **boss** *Old
+Mother Bramble*. The **regions + named bosses are the real milestones** — surface them.
+- **(1) Region wayfinding on the tier card.** Replace/augment the bare "TIER 29/100" with
+  the **region (name + "N of 10")** and the **position within the region** — e.g.
+  "Gloamwood · region 3/10 · tier 9/12" plus a **row of per-region pips** (cleared /
+  current / boss marked distinctly). Use the real region size (don't hard-code; post-T66
+  it's 12/region).
+- **(2) Boss anticipation.** When the next tier is the region's **final/boss** tier, flag
+  it prominently as a mini-goal/climax — e.g. "⚔ Region boss next: **Old Mother Bramble**"
+  — and mark boss tiers distinctly in the pips/map. The boss is the payoff for the region.
+- **(3) A simple journey map/overview.** A lightweight view (inline panel or a toggle on
+  the Arena) of the **10 regions as a path/list**: **conquered** (✓), **current** ("you are
+  here"), and **locked-ahead** regions teased by **name + boss landmark** (so the player
+  sees the destinations to come — "Dragon's Roost", "The Void Throne"). Keep it simple
+  (a vertical list/path, not a heavy graphic); each region shows its boss as the landmark.
+- **(4) Region-clear moment.** Beating a region's boss surfaces a short **"Region conquered
+  — next: <Region>"** celebration (reuse the result/toast/modal style + sfx), revealing the
+  next region — a deliberate hook to the next stage.
+- **Mechanics:** drive everything from the existing `Enemies` helpers (`tierRegion`,
+  `regionLabel`, `BANDS`, `BOSSES`, the per-region tier count) — **structure-agnostic** so
+  it works at the post-T66 120-tier (10×12) layout (compute region size from the data, not
+  a literal 10). No change to battle logic, def, or loot.
+- **Quality:** legible WCAG-AA (T46 palette), 360px-safe, **static** (no RAF), don't bloat
+  the arena render or break the post-T65 scroll-to-top.
+- **DoD:** the Arena shows the current region (name + N/10) and in-region position with
+  boss-marked pips; **boss-next is clearly flagged** when applicable; a **journey overview**
+  of all regions (conquered / current / locked-ahead with boss landmarks) is accessible;
+  **clearing a region's boss shows a region-clear moment** naming the next region; all of it
+  computed from the region helpers so it's correct at 120 tiers (12/region) and at 100;
+  contrast AA; 360px-safe; `node -c` clean; no console errors; no regressions; deploy green.
+  (Babysitter checks the region/position maths against `tierRegion`/`regionLabel` at several
+  tiers incl. a boss-next case and a region boundary, and that the map lists all regions with
+  correct status.)

@@ -27,12 +27,14 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T62` → `T63` → `T64` → `T65` → `T67` → `T66` → `T52` → `T53` →
-`T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
+**Next-task order:** **`T62` → `T63` → `T64` → `T65` → `T67` → `T66` → `T68` → `T52` →
+`T53` → `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
 `T59`/`T60`/`T61`). **Do `T62` next** — the methodical, question-by-question hint audit
 across ALL topics (the big one; sets the hint standard for T58/T59–T61). (`T66` 120-tier
-change sits before the arena art so T52/T53 build on the final structure; `T67` hero
-detail rides with the UX cluster.)
+change before the arena work; **`T68` Arena wayfinding** — region progress, boss
+anticipation, a simple journey map — sits right after T66 so it's built on the final
+12-per-region structure; then the arena art T52/T53; `T67` hero detail rides with the UX
+cluster.)
 - **`T62` — methodical, question-by-question hint audit across ALL topics.** Owner: "not
   only halves — fix every bit of advice across all topics… an agent needs to go through
   them one by one. I don't mind burning time." A deliberate per-question pass on **every**
