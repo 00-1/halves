@@ -1065,8 +1065,8 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T146` (declutter home: drop Sound icon + Exit→Setup) → `T147` (FX tester → a Graphics
-  section) → `T140` (12-style picker — UNBLOCKED) → `T124` (fractions)** [A]
+- **Builder A — next: `T146` (declutter home: drop Sound icon + Exit→Setup) → `T148` (SFX volume range fix) →
+  `T147` (FX tester → a Graphics section) → `T140` (12-style picker — UNBLOCKED) → `T124` (fractions)** [A]
   (**`T143`/`T144`/`T145`/`T142`/`T137`/… DONE**). *(Read `NEXT.md` fresh — canonical.)* Owner after using the
   new Audio menu: **`T146`** — "sound is now a sub-menu → drop the Sound icon from the main screen; also drop
   the Exit button and add it to Setup" (remove home `#soundBtnMenu` + home Exit; make Audio reachable FROM

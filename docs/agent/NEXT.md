@@ -10,7 +10,12 @@
 
 ---
 
-**Builder A → `T146` (declutter home: drop Sound icon + move Exit into Setup) → `T147` (FX tester → a Graphics section) → `T140` (12-style picker — UNBLOCKED) → `T124` (fractions)**
+**Builder A → `T146` (declutter home: drop Sound icon + move Exit into Setup) → `T148` (SFX volume range — quick, high-value) → `T147` (FX tester → a Graphics section) → `T140` (12-style picker — UNBLOCKED) → `T124` (fractions)**
+**`T148` — owner: "sound fx volume doesn't go high enough."** Diagnosed: NOT the SFX engine — the slider
+maps `slider/100` → max **0.10 gain**, but `sound.js`'s `sfxBus` accepts up to **`SFX_MAX=1.0`** (10× more
+headroom; current peak ≈ −36 dB). **Fix:** map the SFX slider to 0→1.0× (not /100), louder default
+(~0.5–0.8×), migrate stored `halves.sfxVol`, update the readout; music vol + mute unaffected; limiter keeps
+it clip-safe. Full DoD `BACKLOG.md` T148. *(No need to move SFX into the synth engine — just open the range.)*
 *(`T143` scrollable Audio menu + separate Music/SFX vols DONE `59e2c28`; `T144` gold pill to top + `T145`
 drop build pill DONE `daa64f5`.)* Owner (live, after using the new Audio menu): **(T146)** "sound is now a
 sub-menu — get rid of the Sound icon from the main screen; also get rid of the Exit button and add it to

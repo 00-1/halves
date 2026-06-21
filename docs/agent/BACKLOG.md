@@ -2745,6 +2745,29 @@ cut 10 NEW music styles (keep them distinct) including the dubstep victory. Put 
   the log) so T140 can list + route them. (Babysitter + owner audition each in the switcher — output
   feature, gates necessary-not-sufficient.)
 
+### T148 — [A] SFX volume can't go loud enough: the slider uses the music's 0–0.10× scale, but the SFX bus goes to 1.0 · status: OPEN · OWNER-PRIORITY
+Owner: **"sound fx volume doesn't go high enough. probably cos it's using the old sound system which was
+always super quiet. probably sound effects should move to the new system that music moved to."** **Diagnosed
+— NO re-engineering needed:** the root cause is the **slider mapping**, not the SFX engine. `sound.js`'s
+`sfxBus` accepts up to **`SFX_MAX = 1.0`** (0 dBFS, limiter-protected), but T143's `sfxVolRange` is `0–10`
+and `main.js` calls `setSfxVolume(slider / 100)` → SFX gain tops out at **0.10** (−20 dB). With per-note gains
+~0.10–0.16, max SFX peak ≈ 0.10×0.16 ≈ **0.016 (−36 dB)** — i.e. ~**10× of headroom is left unused**. (So
+moving SFX into the synth engine is unnecessary; just open up the range.)
+- **Map the SFX slider to the real SFX range (0 → `SFX_MAX` = 1.0×)**, not `/100`. Keep it a clearly-labelled
+  "×" control, but with a max of **1.0×** (vs music's 0.10×) — the asymmetry reflects that SFX are
+  intrinsically quieter. E.g. `sfxVolRange` `min=0 max=100 step=5` → `/100` = 0–1.0× (or `0–10 step` → `/10`);
+  pick a **louder sensible default** (e.g. ~0.5–0.8×, clearly audible over the music) and **migrate** the
+  stored `halves.sfxVol` (old 0–10 value → the new scale so returning users get the louder mapping, not 8/100
+  = 0.08×). Update `fmtVol`/the readout so it shows the new value.
+- **Sanity:** the brickwall limiter still governs the SFX+music SUM, so a higher SFX gain stays clip-safe;
+  confirm mute still zeroes both and the music volume is unaffected.
+- **If 1.0× still isn't loud enough by ear** (unlikely — it's a +20 dB jump), the follow-up is to lift the
+  per-note `g` values in `sound.js` (still [A], still clip-safe via the limiter) — note it, don't pre-do it.
+- **DoD (LIVE-verified):** the SFX slider reaches a genuinely loud level (SFX clearly cut over the music at
+  the top of the range); sensible louder default; old stored value migrates; music volume + mute unchanged;
+  `node -c` clean; all gates green (assert the SFX slider maps to ~`SFX_MAX`, not 0.10); [A]-owned files.
+  (Babysitter + owner confirm by ear.)
+
 ### T146 — [A] Declutter the home nav: drop the Sound icon + move Exit INTO Setup · status: OPEN · OWNER-PRIORITY
 Owner (live, after T143): **"if sound is now a sub menu of setup, we can get rid of the sound icon from the
 main screen. let's also get rid of the exit button and add that to setup too."** Now that audio has its own
