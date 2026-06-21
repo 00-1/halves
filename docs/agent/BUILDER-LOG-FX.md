@@ -6,6 +6,55 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T130 — Golden-snapshot harness (brickmap-style render-regression) ([B])
+
+**Status: DONE — handed off for review.** New B-owned files only
+(`test/golden-util.js`, `test/golden-fx.test.js`, `test/golden-synth.test.js`,
+`test/golden/*.json`); **zero edits to any existing Halves file.** The structural
+fix for the recurring "green gates, broken feature" gap (T118/T125/T128): source-grep
+gates don't see output; **golden snapshots of actual output do.**
+
+### Studied brickmap's golden-render
+`docs/milestones/D1-headless-render.md` + `development.md`: brickmap renders a known
+scene offscreen, compares to a **committed reference within tolerance**, regenerates
+on demand. Its GPU/llvmpipe/PNG capture is **native-only** → out of scope; I ported
+the **idea** (deterministic output → compact committed golden → compare-or-regen) to
+our headless engine outputs. GPU/WebGL/full-layout goldens need a browser
+(Puppeteer) — noted as a future opt-in, kept CI Node-only.
+
+### What shipped
+- **`test/golden-util.js`** — `check(name, value)`: default run **compares** the
+  value against `test/golden/<name>.json` and **fails with the first differing line**;
+  **`UPDATE_GOLDEN=1`** **regenerates** them (the "new things show up" workflow).
+  Goldens are compact, committed, diff-reviewable JSON.
+- **`test/golden-fx.test.js`** — pins the **FXGL CPU-still** render of representative
+  scenes (Arena biome r9-boss, home backdrop, a Frostpeak scenery grid) as a
+  downsampled 12×9 rgb signature (quantised /16 = tolerance), plus **`burst()` and
+  `celebrate()`** particle distributions (8×6 occupancy grid + live count) at fixed
+  seeds/times — the exact closed-form trajectory the GPU/CPU backends use. Includes a
+  **self-check that a one-cell render change is CAUGHT**.
+- **`test/golden-synth.test.js`** — pins each context's **deterministic scheduled
+  score** (first 32 steps' events, mirroring `musicTick`'s phrase-seeding) for
+  solve/menu/arena/event, **and asserts they are MUTUALLY DISTINCT** — the explicit
+  golden that would have caught **T128 ("every context sounds the same")**.
+- Verified the harness **catches a deliberate mutation** (a perturbed golden →
+  exit 1 + a precise diff hint) and **passes** after an intentional `UPDATE_GOLDEN`
+  regen. `node -c` clean; full existing suite green.
+
+### Hand-off to Builder A (CI gate registration)
+- The collision rule keeps `pages.yml` [A]-owned, so (as with `fxgl.test.js`/
+  `synth.test.js`) **[A] registers the two gates** in `.github/workflows/pages.yml`:
+  `node test/golden-fx.test.js` and `node test/golden-synth.test.js`. They're
+  gate-ready (exit non-zero on any unexpected render/score change). Workflow for an
+  intended change: `UPDATE_GOLDEN=1 node test/golden-*.test.js`, review the JSON diff,
+  commit.
+
+### Next (Builder B)
+- Back to reactive stand-by unless the owner wants more; the harness can later be
+  extended (glyph/icon goldens are a possible [A] adoption).
+
+---
+
 ## T126 — FXGL: a BIG "celebration" burst mode (loads of particles) ([B])
 
 **Status: DONE — handed off for review.** B-owned files only (`fxgl.js`,
