@@ -28,12 +28,11 @@ menu→menu/event→festive + the dubstep victory fires on a win; depends on T13
 → `T101` → `T102`/`T103` (Android) → content → `T72`.
 
 **Builder B → STAND BY (engine reactive-only) — pending the owner's celebration RE-TEST.**
-`T138` celebration fix DONE `cda6fd6` (1×1-before-layout `_applyResize` on ignite + sub-pixel floor +
-`canPresent()` + a REAL visibility gate that fails on a blank frame); `T139` 12-style palette DONE `efef4b4`
-(all 66 pairs distinct). Nothing queued. **If the owner re-tests the celebration tester and it's STILL blank**
-(despite a real `dimensions()`), reopen T138: chase the **render loop / `canPresent`** (does the RAF pump &
-present for the full burst on-device? is the 2D context null?), and/or **enlarge** the particles (T138 floored
-sub-pixel but didn't scale them up — 6% coverage may be too faint). Otherwise hold. **B-owned only**; never
+`T138` celebration fix DONE `8145505` (the **real cause = DPR downscale**: CPU 2D path now scales draw size by
+`dpr×res` → constant ~6–18 SCREEN px; sizes bumped to 6–18; visibility gate guards on-screen size — ~24%
+coverage, ~18px); `T139` 12-style palette DONE `efef4b4` (all 66 pairs distinct). Nothing queued. **If the
+owner re-tests and it's STILL blank** (would be surprising now — 24% coverage), chase the render loop /
+`canPresent` (RAF pump+present for the full burst? null 2D context?). Otherwise hold. **B-owned only**; never
 touch existing Halves files; never push `claude/agent`.
 
 ---

@@ -1,24 +1,23 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T138` [B] (celebration on-device fix + a REAL visibility gate) · live build
-**`cda6fd6`**. **CI green; collision-clean** (B-owned: `fxgl.js`, `test/golden-fx.test.js`,
-`test/golden/fx_celebrate_visibility.json`, `BUILDER-LOG-FX.md`). Three engine fixes + the structural win:
-**(1) `_ignite()` now `_applyResize()`s before drawing** — a celebration fired before layout settled left the
-buffer at 1×1 (→ invisible); it now re-fits to the live viewport on every burst (the likely **in-game** cause:
-wins/runs fire before a resize). **(2)** particles `Math.max(1, Math.ceil(s))` (no sub-pixel). **(3)
-`canPresent()`** surfaces a **null 2D context** (a canvas already bound to GL → `getContext("2d")` null →
-silent no-op) so the tester can report it (false → an [A] re-mount). **The real win — a visibility GATE:** the
-T133 golden only **counted** `fillRect` calls (a 1×1/off-canvas/transparent draw passed it — that's how this
-stayed green while invisible three times); the new gate **rasterises** each rect with alpha into an in-bounds
-pixel buffer and measures **lit coverage** — the celebrate frame paints **~56.5k lit px (6.1% of 720×1280)**
-and the check **FAILS on a 1×1/zero-coverage frame** (demonstrated ≤1 lit px). Verified independently: `node
--c` clean; `fxgl.test` 124 + `golden-fx` 19→27; full suite + CI green; the visibility golden is a real
-coverage number. T138 → DONE. **🎆 OWNER RE-TEST NEEDED** — the in-game/1×1 cause is fixed and "invisible" is
-now a CI failure, **but your tester showed a real size (1038×2305) yet was blank, which these fixes don't
-fully explain** — so: re-tap a tester button. **(a) visible** → fixed (in-game wins should show too); **(b)
-still nothing** → it's the loop/`canPresent` (B reopens — the tester now exposes `canPresent`); **(c) visible
-but underwhelming** → B makes them bolder (the size was floored, not enlarged). B → STAND BY pending the
-owner's read.
+**Current verdict:** `APPROVED — T138` [B] (celebration visible on-device — the real cause was DPR downscale)
+· live build **`8145505`** (refines `cda6fd6`). **CI green; collision-clean** (B-owned: `fxgl.js`,
+`test/golden-fx.test.js`, `fx_celebrate_visibility.json`, `fx_celebrate_2d_frame.json`, `BUILDER-LOG-FX.md`).
+**B found THE real cause (matching the original theory + resolving the tester's sized-but-blank case):** the
+2D buffer is `dpr×res × CSS` (~2.75× on the Poco X3) and the browser **downscales it back**, so particles
+drawn at 6–18 **buffer** px showed at only ~2–6 **screen** px and faded out — drawn (count-golden passed) but
+invisible. **Primary fix:** the CPU 2D path now **scales the draw size by the buffer/CSS factor**
+(`pxScale = dpr×res`, set on resize) so a particle renders at a **constant ~6–18 SCREEN px regardless of DPR**
+(floor 2), and celebration sizes were bumped to 6–18 for boldness. The earlier `_ignite` re-fit + `canPresent`
+are kept as defence for the other candidates. **The visibility GATE is now even stronger:** it rasterises each
+rect+alpha into an in-bounds buffer and measures **BOTH lit coverage AND on-screen particle size** — at
+1038×2305 the celebrate frame paints **~572k lit px (24%) at ~17.8 screen-px particles**; it **fails on a
+1×1/zero-coverage frame AND if particles shrink below ~8 screen px** (so a DPR-downscale regression can't come
+back). Verified independently: `node -c` clean; `fxgl.test` 124 + `golden-fx` 28; full suite + CI green;
+golden = `{litPx:572000, screenPx:18}`. T138 → DONE. **🎆 OWNER: re-tap a celebration tester button — you
+should now see a BOLD shower (~24% coverage, ~18px motes); in-game wins/runs/items too.** B → STAND BY.
+*(Good engine work: B self-continued off the cautious first pass, found the true DPR cause, and made the gate
+guard particle SIZE — exactly the structural fix.)*
 
 > **Previously approved (done):** `T139` [B] (the owner-approved 12-style music palette) · live build
 > **`efef4b4`**. **CI green; collision-clean** (B-owned: `synth.js`, `test/synth.test.js`, 12

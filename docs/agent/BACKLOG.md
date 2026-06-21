@@ -2658,15 +2658,16 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
-### T138 — [B] Celebration invisible: CPU-path particles drawn TOO SMALL for the high-DPR backing buffer · status: DONE (`cda6fd6`, CI green) — OWNER RE-TEST pending
-**DONE 2026-06-21** — APPROVED (REVIEW.md). Engine fixes: `_ignite()` `_applyResize()`s before drawing (the
-1×1-before-layout cause — fixes in-game fires); particle `Math.max(1,ceil(s))` sub-pixel floor; `canPresent()`
-surfaces a null 2D context. **The structural win:** a REAL visibility gate (`fx_celebrate_visibility`) that
-rasterises each rect+alpha into an in-bounds buffer and measures lit coverage (~56.5k px / 6.1% of 720×1280;
-FAILS on a 1×1/blank frame) — replaces the count-only golden that hid this thrice. Verified: `node -c` clean,
-`fxgl.test` 124, `golden-fx` 19→27, CI green. **⚠ OWNER RE-TEST:** the tester showed a real size (1038×2305)
-yet was blank, which these fixes don't fully explain → if still invisible it's the loop/`canPresent` (reopen);
-if visible-but-weak, enlarge particles (size was floored, not scaled up).
+### T138 — [B] Celebration invisible: CPU-path particles shrank under the DPR downscale · status: DONE (`8145505`, CI green) — OWNER RE-TEST
+**DONE 2026-06-21** — APPROVED (REVIEW.md). **Real cause (DPR downscale):** the 2D buffer is `dpr×res×CSS`
+(~2.75× on the Poco X3) and the browser downscales it, so 6–18 buffer-px particles showed at ~2–6 screen px =
+invisible. **Fix:** CPU 2D path scales draw size by `pxScale = dpr×res` (set on resize) → constant ~6–18
+SCREEN px (floor 2); celebration sizes bumped to 6–18. `_ignite` re-fit + `canPresent()` kept as defence.
+**Stronger visibility gate** now measures lit coverage AND on-screen particle size (`{litPx:572000 ≈24%,
+screenPx:18}` at 1038×2305; fails on 1×1/blank AND if particles drop below ~8 screen px). Verified: `node -c`
+clean, `fxgl.test` 124, `golden-fx` 28, CI green. **🎆 OWNER RE-TEST:** the tester / in-game wins should now
+show a bold shower. *(First pass `cda6fd6` was the cautious 1×1+floor fix; this refines to the true DPR cause
++ bold sizes.)*
 
 > Original (diagnosed) spec below.
 Owner gave the tester readout (screenshot): **`Test celebration` → `1038×2305`** (no "not ready"). **DIAGNOSED
