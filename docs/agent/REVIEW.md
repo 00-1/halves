@@ -1,17 +1,28 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T142` [A] (restore the FX backdrop — local backings, not T123's global
-slab) · live build **`42aac3b`**. **CI green; collision-clean** ([A]-owned: `styles.css`,
+**Current verdict:** `APPROVED — T139` [B] (the owner-approved 12-style music palette) · live build
+**`efef4b4`**. **CI green; collision-clean** (B-owned: `synth.js`, `test/synth.test.js`,
+`test/golden-synth.test.js`, 12 `test/golden/synth_score_*.json`, distinctness golden, `BUILDER-LOG-FX.md`).
+Builds the T141 palette **exactly as the owner approved**: `CONTEXTS` is now the **12 styles** — `menu` +
+`arena` kept, old `solve`/`event` dropped, and the 10 new: `lofi` (Lo-Fi Study, calm/solve), `ambient`
+(Ambient Drift, calm), `chiptune`, `synthwave`, `dubstep` (Dubstep Victory), `dnb`, `bigroom` (Festival),
+`boss8bit`, `tropical`, `techno`. Verified **independently**: 12 context keys exactly match the palette;
+**distinctness golden = `{styles:12, pairs_compared:66, all_distinct:true}`** (every one of the C(12,2)=66
+pairs is a distinct score — the structural guard against "samey" returning); `node -c` clean; `synth.test`
+144 (calm-vs-energetic invariants hold); `golden-synth` 19 (12 per-style score goldens + distinctness, all
+regenerated intentionally); full suite + CI green. T139 → DONE. **🎵 Built — the owner HEARS them once A's
+`T140` lists all 12 in the picker + routes them per-screen + fires the dubstep victory on a win.** B → `T138`
+(the diagnosed celebration-size/loop fix — its sole remaining task). *(Builder note: B finished T139 before
+picking up the T138-first re-point — staleness race, harmless; T138 is next.)*
+
+> **Previously approved (done):** `T142` [A] (restore the FX backdrop — local backings, not T123's global
+> slab) · live build **`42aac3b`**. **CI green; collision-clean** ([A]-owned: `styles.css`,
 `test/contrast.test.js`, `BUILDER-LOG.md`). Fixes the owner's "killed the nice background" regression
-exactly as scoped: **removes the global `.app` `rgba(14,17,22,.88)` scrim** (the full-bleed backdrop reads
-again) and adds **local translucent-dark pills** only on the few rows that float directly on the backdrop —
-`.readouts` (the Goblin-Gold/Momentum stat row), `.build` (the build stamp), `#arena .res-label` — each
-keeping the same AA backing (~4.93:1 over white) while the backdrop shows **around** them; the rest of the
-UI was already carded. `contrast.test` reworked to assert the backing **per element** (fails if a floating
-row is unprotected) — still honest. Verified independently: `.readouts` is wired in `index.html`; the `.app`
-slab is gone; `contrast.test` 14 pass; full suite + CI green. T142 → DONE. **🖼 OWNER: your purple backdrop
-is back (visible around the stat row + build stamp, which now sit on small dark pills) with text still
-readable.** A → `T140` (12-style switcher, after B's T139).
+> exactly as scoped: **removes the global `.app` scrim** (the backdrop reads again) and adds **local
+> translucent-dark pills** only on the rows that float on the backdrop (`.readouts`, `.build`, `#arena
+> .res-label`), backdrop visible around them; `contrast.test` reworked per-element (still honest). Verified:
+> `.readouts` wired; `.app` slab gone; `contrast.test` 14; full suite + CI green. T142 → DONE. *(Owner: purple
+> backdrop restored. The `.build` pill is being removed next — T145, owner opted it out.)*
 
 > **Previously approved (done):** `T141` [B] (RESEARCH: musical styles → a concrete 12-style palette) ·
 > live build **`02d2d6f`** (doc-only; its own CI run was auto-cancelled by T142's push seconds later — the
@@ -1058,19 +1069,17 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T138` (celebration invisible — DIAGNOSED: particles too small) → `T139` (FINISH the 12
-  styles — PALETTE APPROVED).** *(`T141` research DONE; owner OK'd the palette; `T139 pt1` engine additions
-  DONE `051b25d`; `T134` DONE.)* **`T138` FIRST — now precise:** owner's tester readout = **`1038×2305`**
-  (ready, full-size) → NOT resize/occlusion. Fns fire (buttons restart music) + `renderFrame` draws, but
-  particles are **4–8 device px** (`seedCelebrate fxgl.js:276`) drawn into a 1038×2305 buffer the browser
-  **downscales ~2.75× → ~1.5–3 screen px** = drawn (count-golden passes) but invisible. **Fix:** scale the
-  CPU-path draw `size` up (× effective DPR / fraction of `min(w,h)`) so motes are boldly visible; add a **real
-  visibility golden** (in-bounds, on-screen size ≥ a real threshold, alpha>0 — not a fillRect count). **Then
-  `T139`:** finish the 12 from `research-music-styles.md` §2 (keep `menu`/`arena`, drop old `solve`/`event`;
-  10 new incl. **Dubstep Victory** = the win-sting DROP on the un-ducked SFX bus); extend `golden-synth`
-  distinctness to all 12; **hand A the names/labels** for T140. Full DoD: `BACKLOG.md` T138/T139. **B-owned
-  only** (`fxgl.js`/`synth.js` + tests/goldens + `BUILDER-LOG-FX.md`); never touch existing Halves files;
-  never push `claude/agent`.
+- **Builder B — next: `T138` (celebration invisible — DIAGNOSED) — B's sole remaining task.** *(`T139`
+  12-style palette DONE `efef4b4`; `T141`/`T134` DONE.)* Owner's tester readout = **`1038×2305`** (ready,
+  full-size) → NOT resize/occlusion. Fns fire (buttons restart music) + `renderFrame` draws, but particles are
+  **4–8 device px** (`seedCelebrate fxgl.js:276`) drawn into a 1038×2305 buffer the browser **downscales
+  ~2.75× → ~1.5–3 screen px** = drawn (count-golden passes) but invisible. **Fix:** scale the CPU-path draw
+  `size` up (× effective DPR / fraction of `min(w,h)`); add a **real visibility golden** (in-bounds, on-screen
+  size ≥ a real threshold, alpha>0 — not a fillRect count). **⚠ Don't tunnel on size** — owner doubts 3px is
+  *fully* invisible; also verify the RAF loop runs/presents for the full burst (not one frame), alpha/colour,
+  lifetime; if bolder particles still show nothing, fix the loop. Full DoD: `BACKLOG.md` T138. **B-owned only**
+  (`fxgl.js` + tests/goldens + `BUILDER-LOG-FX.md`); never touch existing Halves files; never push
+  `claude/agent`.
   - *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless browser to CI —
     kept out of scope to keep CI Node-only.)*
 

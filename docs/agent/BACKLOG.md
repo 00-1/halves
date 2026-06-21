@@ -2693,7 +2693,15 @@ is visible because **the particles are far too small for that backing buffer**:
   + `BUILDER-LOG-FX.md`). (Babysitter: bar = the owner SEEING it — this has hidden behind green gates three
   times.) *(The tester's music-restart side-effect is a separate [A] fix in T143.)*
 
-### T139 — [B] Music styles: keep menu+arena, replace solve/event, cut to 12 DISTINCT styles incl. a dubstep VICTORY (implements T141) · status: OPEN · OWNER-PRIORITY · PALETTE APPROVED (build the 12 from T141's table)
+### T139 — [B] Music styles: keep menu+arena, replace solve/event, cut to 12 DISTINCT styles incl. a dubstep VICTORY (implements T141) · status: DONE (`efef4b4`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). `CONTEXTS` = the 12 approved styles: `menu`, `arena`, `lofi`,
+`ambient`, `chiptune`, `synthwave`, `dubstep`, `dnb`, `bigroom`, `boss8bit`, `tropical`, `techno` (solve/event
+dropped). Distinctness golden = `{styles:12, pairs_compared:66, all_distinct:true}`. T139 pt1's engine
+additions (wobble-sync, chip patch, victory drop) underpin them. Babysitter verified: 12 keys match the
+palette; `node -c` clean; `synth.test` 144; `golden-synth` 19 (12 per-style + distinctness); CI green. **A's
+T140 lists/routes them (names+labels in B's log).** *(Original spec below.)*
+
+> Original spec:
 **Owner approved the T141 palette (2026-06-21): "move ahead with those music styles, and add them to the
 song picker."** Build the 12 exactly as proposed in `docs/research-music-styles.md` §2 (menu+arena kept; the
 10 new: Lo-Fi Study, Ambient Drift, Chiptune Rush, Synthwave Cruise, Liquid DnB, Festival, 8-Bit Boss March,
