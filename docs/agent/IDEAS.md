@@ -104,6 +104,24 @@ difficulty-curve shape and are independent of whether events are required —
 > reversible **first spike** (a dithered/particle/palette backdrop behind the menu, reusing our
 > seeded generators). Not yet queued as an implementation task — promote the spike when the owner
 > says go.
+>
+> **Owner: ambience must SERVE A PURPOSE — never a passive screensaver (2026-06-21, LOCKED
+> principle).** The grit/FX is **diegetic/functional**, always communicating state or amplifying
+> feedback — not decoration. Concrete mandates:
+> - **Sense of place in the Arena** — the backdrop conveys the current **region/biome** (reuse the
+>   `scenery.js` 10 region themes as the palette/scene) so each region *feels* like a place.
+> - **Amplify celebration** — wins and **inventory/collectible gains** get a heightened
+>   particle/flourish moment (extend `fx.js`), so earning something *feels* rewarding.
+> - **Menu/home backdrop should mean something too** (e.g. reflect today's event theme / progress),
+>   not generic noise. *(This is also the T82 spike success-criterion #5: render OUR seeds, not a
+>   generic field.)*
+> Every FX-layer task DoD must name the purpose the effect serves; "looks cool" alone is a fail.
+>
+> **Owner: performance floor = a MIDRANGE SMARTPHONE — e.g. the Poco X3 NFC (2026-06-21).** That's
+> **Snapdragon 732G / Adreno 618 / 1080×2400 120Hz** (a 2020 midrange, more capable than a budget
+> tablet). Set the FX frame budget against this class: **stable 60fps on an Adreno-618-class GPU**,
+> WebGL2 baseline (WebGPU only as progressive enhancement), with the resolution/particle degrade
+> ladder. This is the device the spike's on-device sign-off should target.
 
 ## I2 (original) — Renderer rethink: move the UI into a graphical engine (e.g. brickmap)? (owner musing, 2026-06-21)
 
