@@ -319,7 +319,7 @@ modes too (Halves is the benchmark; sanity-check Times/Doubles/Squares/Fractions
   values; sets meet the checklist; answers still exact/numpad-safe; per-question
   Beat/Spark counts updated accordingly; no regressions; deploy green.
 
-### T30 — Deep content review (do AFTER the educational core is built) · status: OPEN
+### T30 — Deep content review (do AFTER the educational core is built) · status: DONE
 > Open only once the planned topics are all built (the educational core). The
 > Babysitter will run a research-backed 11+ difficulty pass first to inform the
 > concrete changes, then the Builder applies them.
@@ -837,7 +837,7 @@ sequence it **after T27**.
 
 ## Phase 5 — Final hardening (do LAST, after every other task is DONE)
 
-### T45 — Performance / CPU / memory audit + fixes · status: BLOCKED (after ALL other tasks)
+### T45 — Performance / CPU / memory audit + fixes · status: OPEN
 Owner: once everything is built, a final pass to ensure no CPU/memory/performance
 problems. Audit the whole running app and fix anything found.
 - **RAF / timers idle correctly.** The confetti canvas (`fx.js`) must stop its

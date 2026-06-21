@@ -1,15 +1,17 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T13` (question-set audit — no dup prompts, all
-answers numpad-safe, 3 conservative well-judged improvements). **Do `T30` next:**
-deep content review per BACKLOG — **completeness** (are we missing any high-value
-11+ topic? note candidates but don't build speculatively), **selection** (each set
-representative), **11+ difficulty cap** (nothing meaningfully beyond what the GL 11+
-expects — flag/trim outliers). **Also normalise the decimal glyph app-wide** —
-guides use "·" but explain()/prompts/answers use "." — pick ONE (recommend "."
-since that's what the numpad types) and make guides match. Output is a written
-review + any small fixes it justifies. Then **`T45`** (final perf/CPU/memory audit,
-LAST). This is the penultimate task.
+**Current verdict:** `APPROVED — T30` (content review — squares trimmed to the 11+
+band, decimal glyph normalised to ".", completeness gaps flagged not built). **Do
+`T45` next — the FINAL task:** performance / CPU / memory audit + fixes per BACKLOG.
+Profile a full play session; ensure the confetti RAF (fx.js) and the music
+scheduler (sound.js) **idle when nothing is animating/playing**; no listener/node/
+oscillator growth over repeated screen navigation; inventory (~1045 items) + Loot
+tab + Arena render smoothly (lazy-render holds); audio voice budget bounded;
+localStorage bounded. Add Node/headless assertions where a pure check is possible
+(RAF/scheduler idling, listener balance). DoD: documented audit with before/after
+for any fix; provable idling; no growth over navigation; no console errors in a
+full session; no regressions; deploy green. **On approval the BACKLOG is fully
+DONE.**
 **Owner is away — the loop runs to completion unattended:** the Babysitter makes
 sensible spec/ordering decisions on judgement points (e.g. this T27-before-T32
 reorder) rather than blocking; the Builder escalates only genuine blockers in
@@ -29,6 +31,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T30 — Deep content review → APPROVED
+Written review + 2 justified fixes. Verified (Node): node -c (modes/guides) OK; no stub. **Squares trimmed to 17** (16²–19² removed — beyond GL recall band; 2²–15² + 20²/25²/30² kept) → within the 11+ difficulty cap. **Decimal glyph normalised to "."**: **0 "·" remain** in any guide text or `explain()` output (all topics scanned). No duplicate prompts; all answers exact/numpad-safe; explain() non-empty + correct for all 316 questions; catalogue 1053→**1045** (−8 = squares Beat/Spark for 16²–19²); names still globally unique; icon test green. **Completeness gaps flagged (not built, per scope):** rounding, ratio/proportion, mean, money/change, time durations, metric conversion, sequences, larger ×/÷ — the natural Wave-2 block for the owner to decide on. Difficulty otherwise within band (upper-but-legit kept: placevalue2 6÷1000, fractions 1/16). No regressions.
 
 ### T13 — Question-set audit pass → APPROVED
 Conservative, well-judged content pass. Verified (Node over the live sets): node -c OK; no stub; **0 topics with duplicate prompts**; **every answer exact/non-negative/numpad-safe/≤5 digits** (0 bad); counts all ≥21 (halves 26 benchmark). The 3 targeted changes confirmed: fractions +9/20/11/20/17/20 (0.45/0.55/0.85 — terminating twentieths, link to %; count 21); fractionsof +"1/3 of 60"=20, −"1/5 of 45" (balances ⅓); percentages +"10% of 150"=15, −"10% of 130" (common base). Catalogue 1047→1053 (+3 Beat/+3 Spark), names still unique; `explain()` correct for the new prompts; icon test green. Builder correctly left the already-strong sets unchanged. No regressions.
