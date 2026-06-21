@@ -1695,3 +1695,64 @@ The **Arena plays the *menu* style** (main.js routes all non-`game` screens to "
   clean; no console errors; no regressions; deploy green. (Babysitter verifies the bpm cap,
   the distinct per-topic mapping, and the arena-music routing; "calmer" itself is the owner's
   ear.)
+
+---
+
+## Phase 12 — Distribution (Google Play readiness)
+
+### T72 — Play Store readiness: research doc + PWA foundation for an Android package · status: OPEN
+Owner: "generate an Android APK + the required package of files for Play Store submission;
+in general research and get ready for Play Store; create a doc explaining how we can get
+there." The game is a **static PWA-able site on GitHub Pages** with **no manifest, no
+service worker, no icons, no privacy page** today — so this is (a) a thorough **research/
+readiness doc** and (b) the concrete **PWA foundation** that makes the app packageable. Be
+honest about which steps the Builder can do in-repo vs which are **owner-gated** (a Play
+Console account, a signing keystore, the actual upload).
+- **(1) The doc — `docs/PLAY-STORE.md` (the primary deliverable).** A complete, accurate
+  path to the Play Store for this static web app:
+  - **Recommended path: a Trusted Web Activity (TWA)** wrapping the deployed PWA — lightest
+    for a static site. Two ways to build the Android **App Bundle (AAB)**: **PWABuilder.com**
+    (point it at the Pages URL → download a signed AAB + `assetlinks.json`; no local Android
+    SDK) — recommended; or **Bubblewrap** CLI (`@bubblewrap/cli`, needs JDK + Android SDK) —
+    give the exact commands. Note **Capacitor** as the heavier alternative (bundles assets,
+    true offline) and when it'd be worth it.
+  - **Clarify APK vs AAB:** new Play apps require an **AAB**; an APK is fine for
+    sideload/testing. Cover **Play App Signing** (Google holds the upload key).
+  - **Play Console setup:** the one-time $25 account; store listing assets (**512×512 icon**,
+    **1024×500 feature graphic**, ≥2 phone **screenshots**, short + full description);
+    **content rating** (IARC questionnaire); **Data safety** form; **target audience &
+    content**.
+  - **KIDS app — call this out prominently:** the app targets ~10–11-year-olds, so Google
+    Play's **Designed for Families** / families policy applies (COPPA / GDPR-K). Our data
+    story is simple (only `localStorage`, **no collection/transmission, no ads, no
+    third-party SDKs**) — document exactly how to declare that (Data safety: "no data
+    collected/shared"), and that a **privacy policy URL is mandatory**.
+  - A **step-by-step checklist** from "PWA ready" → "live on Play", marking each step
+    **[in-repo]** vs **[owner-action]**.
+- **(2) PWA foundation (the concrete code so the app is actually packageable).**
+  - **`manifest.json`** — `name`/`short_name`, `start_url`, `display:standalone`,
+    `theme_color`/`background_color`, `orientation`, and **icons** (incl. 192 & 512,
+    `purpose:"any maskable"`); link it from `index.html`. Pull the look from the T56 pixel
+    mark.
+  - **A service worker** (`sw.js`) for installability + offline of the static assets —
+    **must coexist with the T54 update-check**: use a **versioned cache + network-first (or
+    stale-while-revalidate)** so it never serves stale builds or fights `build.json`; register
+    it defensively (no-op if unsupported). **Do not break the live game** (carefully scope
+    what's cached; the app must still load + update normally).
+  - **Icons**: provide the required PNG icon(s) (≥192 & 512, maskable-safe) — generate from
+    the T56 mark (a small committed generator/script or committed PNGs); document how they're
+    produced.
+  - **`/.well-known/assetlinks.json`** — a placeholder + clear instructions to drop in the
+    app's signing-cert SHA-256 (TWA domain verification).
+  - **A privacy policy page** (e.g. `privacy.html` on the Pages site) — "no data collected,
+    stored only on your device," kid-appropriate; linked from the doc as the policy URL.
+- **DoD:** `docs/PLAY-STORE.md` exists and is **complete + accurate** (TWA/PWABuilder/
+  Bubblewrap, AAB-vs-APK, Play Console listing, content rating, **Data safety = no data**,
+  **Designed for Families / COPPA**, privacy-policy requirement, a [in-repo]/[owner-action]
+  checklist); the site is a **valid installable PWA** (manifest linked + parseable with 192
+  & 512 icons; a registered service worker that **doesn't break load or the T54 update flow**
+  — verify the app still boots and updates); `assetlinks.json` placeholder + a privacy page
+  exist; `node -c` clean on any JS; **no regression to the running game** (all existing gates
+  green; the SW must not serve stale assets); deploy green. (Babysitter checks the manifest
+  validates, the SW is update-safe/non-breaking, the doc covers the kids/Families + data-safety
+  requirements, and clearly separates owner-gated steps.)

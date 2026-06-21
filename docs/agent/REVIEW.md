@@ -77,8 +77,8 @@ cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.tes
 
 **Next-task order:** **`T67` → `T66` → `T68` → `T52` → `T53` →
 `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
-`T59`/`T60`/`T61`). **Do `T67` next** — hero detail view (full owned boost list + "X/Y
-collected"). Then:
+`T59`/`T60`/`T61`), then **`T72`** (Play Store readiness: research doc + PWA foundation).
+**Do `T67` next** — hero detail view (full owned boost list + "X/Y collected"). Then:
 - **`T66`** (120 tiers) sits before the arena work; **`T68`** (Arena wayfinding — region
   progress, boss anticipation, a simple journey map) right after T66 so it's built on the
   final 12-per-region structure; then the arena art `T52`/`T53`. **`T67`** (hero detail)
