@@ -1277,6 +1277,8 @@
   $("heroesBtn").addEventListener("click", () => { location.hash = "#/heroes"; });
   $("heroesBack").addEventListener("click", navStart);
   $("hdBack").addEventListener("click", () => { location.hash = "#/heroes"; });
+  $("updateRefresh").addEventListener("click", () => location.reload());
+  $("updateDismiss").addEventListener("click", () => { updateDismissed = true; $("updateBar").classList.add("hidden"); });
   $("heroList").addEventListener("click", e => {
     const card = e.target.closest(".hero-card.unlocked"); if(!card) return;
     location.hash = "#/hero/" + card.dataset.hero;
@@ -1395,11 +1397,30 @@
     const ago = relAgo(Date.parse(buildInfo.time));
     el.innerHTML = 'build <b>'+esc(sha)+'</b>' + (ago ? ' · '+ago : '');
   }
+  // Version check (T54): remember the sha booted with; poll build.json for a newer
+  // deploy and offer a manual refresh. No-op on a local build / offline; never
+  // auto-reloads, never steals focus, polls on an interval (not a tight loop).
+  let bootSha = null, updateShown = false, updateDismissed = false;
+  function showUpdate(){
+    if(updateShown || updateDismissed) return;
+    updateShown = true;
+    const bar = $("updateBar"); if(bar) bar.classList.remove("hidden");
+  }
+  function checkForUpdate(){
+    if(!bootSha) return;                          // local build / not booted → no-op
+    fetch("build.json", { cache:"no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if(j && j.sha && j.sha !== bootSha) showUpdate(); })
+      .catch(() => {});                           // offline/404 → silently ignore
+  }
   fetch("build.json", { cache:"no-store" })
     .then(r => r.ok ? r.json() : null)
-    .then(j => { buildInfo = j; renderBuild(); })
+    .then(j => { buildInfo = j; if(j && j.sha) bootSha = j.sha; renderBuild(); })
     .catch(() => renderBuild());
-  setInterval(renderBuild, 30000);   // keep the "ago" fresh
+  setInterval(renderBuild, 30000);      // keep the "ago" fresh
+  setInterval(checkForUpdate, 180000);  // poll for a newer deploy (every 3 min)
+  // expose the version-check internals for the Node test
+  window.Updater = { check: checkForUpdate, bootSha: () => bootSha, shown: () => updateShown, setBoot: s => { bootSha = s; } };
 
   // ---- init ---------------------------------------------------------------
   if(window.FX && window.FX.init) window.FX.init($("fxCanvas"));

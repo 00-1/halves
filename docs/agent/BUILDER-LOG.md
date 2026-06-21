@@ -2451,3 +2451,32 @@ how I verified:
 notes / questions: scenes are intentionally dim so AA holds over them; regions
   still read distinct by hue + silhouette. Next per REVIEW order: **T54** (version
   check + "Update" button polling build.json).
+
+## T54 — Version check + "Update" button (poll build.json)  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - main.js — **records the booted sha** from the existing `build.json` fetch
+    (`bootSha`), then **polls** `build.json` (`cache:"no-store"`) on a **3-minute
+    interval** (a second `setInterval`, not a tight loop). If the fetched `sha`
+    differs from `bootSha`, `showUpdate()` reveals the notice. **No-op** on a local
+    build (no `sha` → `checkForUpdate` returns before fetching) and on offline/404
+    (`.catch(()=>{})` — never throws/spams). Never auto-reloads. Exposed
+    `window.Updater` (check/bootSha/shown/setBoot) for the Node test.
+  - index.html — a dismissible **`#updateBar`** notice ("A new version is available"
+    + **Refresh** + ✕), hidden by default.
+  - main.js wiring — **Refresh → `location.reload()`** (user-initiated only);
+    **Dismiss** hides it + sets `updateDismissed` so it won't nag again this session.
+  - styles.css — `.update-bar` (fixed bottom-centre, amber-bordered, `z-index:70`),
+    AA-legible (12–13px text, `--text`/`--bg`-on-amber/`--muted`), 360px-safe.
+how I verified:
+  - `node test/version.test.js` (NEW, 16th gate; DOM shim + controllable `fetch`) →
+    **ALL 9 PASS**: booted sha recorded from build.json; **identical sha shows
+    nothing**; a **newer sha surfaces the Update bar**; **no auto-reload**; **clicking
+    Refresh calls `location.reload()`**; Dismiss hides it; a **failed/offline poll is
+    swallowed** (no throw); **no `bootSha` (local build) → no fetch / no-op**.
+  - `node -c main.js` OK; **85 `$("id")` refs present**; **contrast gate green** (all
+    new text ≥12px, AA colours); all sixteen gates pass. Build-info line unchanged;
+    poll is interval-only (no tight loop); no focus theft (non-modal bottom banner).
+    No regressions.
+notes / questions: reused `build.json` (no parallel version file), as specced.
+  Next per REVIEW order: **T55** (extend the Collector award ladder to 10,000 items).

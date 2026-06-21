@@ -54,6 +54,8 @@ jobs:
         run: node test/monster-variation.test.js
       - name: Region scenery test (gate)
         run: node test/scenery.test.js
+      - name: Version check test (gate)
+        run: node test/version.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info
