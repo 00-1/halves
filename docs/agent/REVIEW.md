@@ -1,6 +1,35 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T111` [A] (complete the pixel restyle on EVERY screen + nav tidy) ·
+**Current verdict:** `APPROVED — T112` [A] (FX pass 2 — fills the screen · Arena backdrop · celebrate
+wins) · live build **`54820bd`**. **CI green.** Addresses all of the owner's live-T110 feedback,
+consuming B's API only. (1) **Full-bleed backdrop:** `#fxBackdrop` moved to a body-level
+`position:fixed; inset:0; 100vw×100dvh; z-index:-1` layer behind the (transparent) `.app`/screens, so
+the atmosphere reaches **every edge** (no dead FX margins); toggled `.hidden` per screen. (2) **Fill
+the screen:** the `.app max-height:780px` phone cap is **dropped** (only a `960px` cap at
+`min-height:1000px` desktop) so the column fills `100dvh` and the flex tree absorbs the slack — **no
+dead band top OR bottom**; `home-layout.test` updated to assert fill-100dvh **with the top still
+pinned** (`body align-items:flex-start`, not `center` — no T99 regression). (3) **Arena backdrop now**
+(no wait for the 3v3 UI): `arenaFxState()` reads the **live** Enemies position
+(`currentTier`/`tierRegion`/`REGION_SIZE` → region, `tierFrac`, `facingBoss` at the 12th tier) and
+feeds T108 `deriveArenaScene`; `fxSetScreen(name)` paints the **home** scene on `#start`, the **Arena**
+scene on `#arena`, and **stops + hides** (no RAF, no stale bleed) on every other screen. (4)
+**Celebrate WINS:** `fxCelebrateWin(tier.n)` on an Arena victory (`res.win`) and
+`fxCelebrateRank(rankIdx)` on a round finish, **rank-scaled with a floor (`FX_RANK_MIN=6`)** so a poor
+run doesn't pop — the reward-gain burst (`showUnlocks`) stays. Verified **independently** (API names
+checked against the codebase — `Enemies.currentTier/REGION_SIZE/tierRegion`, `res.win`, `tier.n`,
+`rankIdx` all real + in scope): `node -c` clean; **full 30-gate suite green** incl. **`fx-wiring.test`
+now 39 checks** (full-bleed layer, Arena-backdrop start, win bursts, off-screen stop+hide),
+**`home-layout` 26** (fills 100dvh, top pinned), **`contrast` AA** still green. All **[A]-owned files**.
+T112 → DONE. *(Owner: the FX should now fill the screen on home AND Arena, and winning a round / Arena
+fight should pop a burst. Tune `.fx-backdrop opacity:.85` if it's too strong.)*
+
+> **Builder B stays on STAND BY** — T112 wired the Arena backdrop via the existing `setArenaState`/
+> `deriveArenaScene`, so it surfaced **no** new engine need. (If the owner later wants scene
+> *transitions/crossfades* or a tuning hook, that'd be the next [B] task.)
+
+---
+
+**Previously approved (done):** `T111` [A] (complete the pixel restyle on EVERY screen + nav tidy) ·
 live build **`4843824`**. **CI green.** Finishes the T100 restyle properly — a **full sweep**, not just
 the 3 flagged screens: the `[data-ui="pixel"]` block now also covers hero-detail (`.hd-head`/`.hd-port`/
 `.hero-stat`/`.hd-boost`/`.hero-chip`), results (`.slow-item` + `.rankline canvas`), and a wide swath
@@ -585,19 +614,12 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T112`** [A] (**`T111` DONE — pixel restyle swept every screen + nav tidied;
-  `T110`/`T107`/`T100`/`T104`/`T99` DONE**). **`T112` — FX pass 2 (owner's live-T110 feedback): "fx
-  look good, but I only see them on this page. nothing on arena, no celebrations. and the fx don't
-  expand the full height and width — shows where we're wasting space."** Four parts: (a) **full-bleed
-  the home backdrop** so the FX fills the whole viewport (a `position:fixed; inset:0` layer behind
-  `.app`, shown on home, stopped off-home) — kills the dead FX margins; (b) **reduce wasted space** —
-  let the home fill the screen (relax the `.app max-height:780px` cap on phones, trim the side dead
-  band; coordinate with T106's bottom-slack); (c) **Arena backdrop now** — wire T108
-  `deriveArenaScene` from the **current live region/tier/boss** onto `#arena` (full-bleed, start on
-  Arena, stop off it) — no need to wait for the 3v3 UI; (d) **celebrate WINS** — broaden the burst to
-  a **rank-scaled results-screen burst** + an **Arena-victory** burst, in addition to the reward-gain
-  bursts (tasteful, gated on a decent rank/win, never over text). Full DoD in BACKLOG `T112`. **Then →
-  `T106`** (tech-tree v2 — full width + clearer connectors + absorb the bottom slack) → shipping/perf
+- **Builder A — next: `T106`** [A] (**`T112` DONE — FX fills the screen + Arena backdrop + win
+  celebrations; `T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**). **`T106` — tech-tree v2:** use the
+  full width (≈3-abreast / filled layout, handling varying 1/2/3-part depth gracefully), a clearer
+  connector visual language (chain vs mastery-gate, lit/dim by state), still **data-driven** (live
+  `unlockedBy`/`requires`/`isUnlocked`, no parallel edge list), focusable nodes, locked-never-start,
+  360px-safe. Full DoD in BACKLOG `T106`. **Then → shipping/perf**
   block `T101` (Start→fullscreen delay) → `T102` (Android PWA+TWA parity) → `T103` (Android-inclusive
   perf research) → `T89`/`T90` (rest of Arena 3v3) → **Arena-biome FX wiring** (`setArenaState`/
   `deriveArenaScene`, after the Arena UI exists) → content `T58`–`T61` → `T72` (Play-Store submission).

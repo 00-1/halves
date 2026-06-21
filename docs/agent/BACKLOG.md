@@ -1865,7 +1865,7 @@ per SFX voice). **Raise it to clearly audible.**
   (Babysitter: recompute the worst-case voice sum × VOL ≤ 1.0 and confirm the new VOL is much
   higher than 0.30.)
 
-### T112 — [A] FX pass 2: full-bleed backdrop + Arena backdrop + celebrate wins + fill the screen · status: OPEN
+### T112 — [A] FX pass 2: full-bleed backdrop + Arena backdrop + celebrate wins + fill the screen · status: DONE (`54820bd`)
 Owner (screenshot of the live T110 home): "fx look good, but I only see them on this page. nothing on
 arena, no celebrations. and the fx don't expand the full height and width of this page — shows where
 we're wasting space." Three follow-ups to T110, all in the spirit of "put it everywhere."
