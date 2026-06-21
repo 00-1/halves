@@ -11,12 +11,16 @@
 (function(){
   "use strict";
 
-  // Master volume (T69 — raised from 0.16 so it's clearly audible). Worst-case
-  // headroom check: SFX voices peak at g 0.16 and route straight to master (a few
-  // staggered notes overlap → ≲0.5 summed); music sums one step (~1.5) through
-  // musicGain 0.09 (≈0.14 at master) — together ≲0.7 at the master input × VOL 0.30
-  // ≈ 0.2 at the output, far under 1.0, so no clipping (no limiter needed).
-  const VOL = 0.30;                 // master volume
+  // Master volume (T98 — raised from 0.30 to 0.80; the old level was too quiet on
+  // phones/laptops). At 0.80 the worst-case master INPUT (SFX voices ≲0.5 summed +
+  // one music step ~1.5 through musicGain 0.09 ≈0.14, together ≲0.64) maps to ≈0.51
+  // at the output — already under 1.0. But "louder" narrows the headroom, so we no
+  // longer rely on the argument: a brickwall LIMITER (DynamicsCompressor, threshold
+  // LIMIT_DB, ratio 20) sits on master→destination, transparent at normal levels
+  // and clamping any pathological peak below 0 dBFS — so clipping is impossible by
+  // construction, not just by estimate.
+  const VOL = 0.80;                 // master volume
+  const LIMIT_DB = -1.5;            // brickwall ceiling (≈0.84 linear, safely < 1.0)
 
   // MIDI note number → frequency (A4=69=440Hz, equal temperament).
   function hz(midi){ return 440 * Math.pow(2, (midi - 69) / 12); }
@@ -63,7 +67,7 @@
   }
 
   // ---- engine (impure) ----------------------------------------------------
-  let ctx = null, master = null, muted = false, ready = false;
+  let ctx = null, master = null, limiter = null, muted = false, ready = false;
 
   function unlock(){
     if(!ready){
@@ -73,9 +77,24 @@
         ctx = new AC();
         master = ctx.createGain();
         master.gain.value = muted ? 0 : VOL;
-        master.connect(ctx.destination);
+        // Brickwall safety limiter: master → limiter → destination. Threshold near
+        // 0 dBFS with a high ratio + fast attack so it's inaudible until a peak
+        // would clip, then hard-clamps it. Guards the louder VOL against clipping.
+        if(ctx.createDynamicsCompressor){
+          limiter = ctx.createDynamicsCompressor();
+          try{
+            limiter.threshold.value = LIMIT_DB;   // start clamping just under 0 dBFS
+            limiter.knee.value = 0;                // hard knee → brickwall, not soft
+            limiter.ratio.value = 20;              // ≥20:1 == a limiter
+            limiter.attack.value = 0.003;          // catch transients fast
+            limiter.release.value = 0.25;          // smooth recovery, no pumping
+          }catch(e){}
+          master.connect(limiter); limiter.connect(ctx.destination);
+        }else{
+          master.connect(ctx.destination);         // no compressor support — direct (headroom still safe)
+        }
         ready = true;
-      }catch(e){ ctx = null; master = null; return; }
+      }catch(e){ ctx = null; master = null; limiter = null; return; }
     }
     if(ctx && ctx.state === "suspended"){ try{ ctx.resume(); }catch(e){} }
     if(mWant >= 0 && !muted) startScheduler();   // resume requested music once a context exists

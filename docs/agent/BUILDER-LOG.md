@@ -3305,3 +3305,39 @@ notes / questions:
     front-end polish wave — **next: `T98`** (raise the too-quiet audio `VOL 0.30`→~0.8 with
     no clip), then `T99`/`T100` (top-band reclaim, gamey restyle), then `T101`–`T103`
     (shipping/perf), then `T89`–`T90` to finish the Arena.
+
+## T98 — Raise the too-quiet audio (VOL 0.30 → 0.80) with a brickwall limiter  [HANDOFF]
+commit: (this commit, on main) — [A] task (front-end polish wave, Phase 6.16). First of the
+owner-flagged polish block (T98–T103) prioritised ahead of the rest of the Arena.
+Goal: the master volume was too quiet on phones/laptops. Raise it to a clearly-audible level
+WITHOUT introducing clipping.
+changed:
+  - **sound.js** — `VOL` `0.30` → **`0.80`** (master gain; mute/unmute still toggle 0↔VOL).
+    Added a **brickwall safety limiter**: `unlock()` now builds `master → limiter →
+    destination`, where `limiter` is a `DynamicsCompressorNode` (threshold `LIMIT_DB = −1.5`
+    dB ≈ 0.84 linear, **hard knee 0**, **ratio 20:1**, attack 3 ms, release 250 ms). It is
+    inaudible at normal levels (worst-case master output ≈ 0.51, well below the threshold)
+    and hard-clamps any pathological peak below 0 dBFS — so the louder volume **cannot clip
+    by construction**, not just by a headroom estimate. Degrades gracefully: if
+    `createDynamicsCompressor` is absent (very old browsers) it wires `master → destination`
+    directly (the headroom math is still safe). `limiter` is reset with ctx/master on
+    teardown.
+  - **test/sound.test.js** — `VOL` → 0.80; the band check is now **0.70–0.85**; stubbed
+    `createDynamicsCompressor` on the fake context and added **7 limiter assertions**: exactly
+    one compressor, `master → limiter → destination` wiring (and master no longer wired
+    straight to the destination), brickwall config (ratio ≥ 20, hard knee), threshold just
+    under 0 dBFS, fast attack; the worst-case check is reframed as a **pre-limiter** peak
+    (< 1.0 — the limiter is a backstop, not a crutch). Mute/visibility/music-balance checks
+    unchanged.
+how I verified:
+  - **`node test/sound.test.js` → ALL 31 SOUND CHECKS PASSED** (was 24). `node -c sound.js`
+    clean. **Full 26-gate suite green.** Pure-logic where it counts; the limiter wiring is
+    proven against the stub context.
+notes / questions: the new level is **0.80** (≈ +8.5 dB over the old 0.30) — a big, clearly
+  audible jump that the limiter keeps clean. If on the live build it's still not loud enough
+  (or now too loud), the single lever is `VOL` in `sound.js`; the limiter ceiling
+  (`LIMIT_DB`) is independent and can stay. **Please eyeball/ear the live build** — headless
+  can't judge perceived loudness. Next per the Builder A pointer: **`T99`** (reclaim the
+  wasted top band on all screens — `.app max-height:780px` cap + pin the event banner + tidy
+  the nav), then **`T100`** (gamey buttons-first restyle), then `T101`–`T103` (shipping/perf),
+  then `T89`–`T90` to finish the Arena.

@@ -1,5 +1,6 @@
-/* T69 — audio volume: master raised, music a balanced background, mute +
- * visibility behaviour intact. Drives window.Sound under a stub AudioContext.
+/* T69/T98 — audio volume: master raised to a clearly-audible 0.80 with a brickwall
+ * LIMITER guaranteeing no clipping, music a balanced background, mute + visibility
+ * behaviour intact. Drives window.Sound under a stub AudioContext.
  * Run: node test/sound.test.js
  */
 const fs = require("fs"), path = require("path");
@@ -7,13 +8,14 @@ function read(f){ return fs.readFileSync(path.join(__dirname, "..", f), "utf8");
 let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
-const gains = []; let oscCount = 0;
+const gains = []; let oscCount = 0; const comps = [];
 function gnode(){ const g = { value: 0, setValueAtTime(v){ this.value = v; }, exponentialRampToValueAtTime(){}, cancelScheduledValues(){}, linearRampToValueAtTime(){} };
-  const node = { gain: g, connect(){} }; return node; }
+  const node = { gain: g, _to: [], connect(t){ this._to.push(t); } }; return node; }
 class StubCtx {
-  constructor(){ this.currentTime = 0; this.state = "running"; this.destination = {}; }
+  constructor(){ this.currentTime = 0; this.state = "running"; this.destination = { _isDest: true }; }
   createGain(){ const n = gnode(); gains.push(n); return n; }
   createOscillator(){ oscCount++; return { connect(){}, start(){}, stop(){}, type:"", frequency:{ value:0, setValueAtTime(){} } }; }
+  createDynamicsCompressor(){ const c = { threshold:{value:0}, knee:{value:0}, ratio:{value:0}, attack:{value:0}, release:{value:0}, _to:[], connect(t){ this._to.push(t); } }; comps.push(c); return c; }
   resume(){ this.state = "running"; } suspend(){ this.state = "suspended"; }
 }
 let visHandler = null, hidden = false;
@@ -26,21 +28,32 @@ global.setInterval = () => (++timers, timers); global.clearInterval = () => { ti
 new Function(read("sound.js"))();
 new Function(read("modes.js"))();
 const S = global.window.Sound, MODES = global.window.MODES;
-const VOL = 0.30;
+const VOL = 0.80;
 
 S.unlock();
 const master = gains[0];
 ok(master && Math.abs(master.gain.value - VOL) < 1e-9, "master gain = VOL (" + (master && master.gain.value) + " = " + VOL + ")");
-ok(VOL >= 0.28 && VOL <= 0.32, "VOL is in the clearly-louder band 0.28–0.32");
+ok(VOL >= 0.7 && VOL <= 0.85, "VOL raised into the clearly-louder band 0.70–0.85 (" + VOL + ")");
+
+// T98 — a brickwall limiter on master → limiter → destination guarantees no clip
+ok(comps.length === 1, "exactly one DynamicsCompressor (the safety limiter) is created");
+const lim = comps[0];
+ok(master._to.includes(lim), "master routes into the limiter (not straight to destination)");
+ok(lim._to.some(t => t && t._isDest), "the limiter routes to the destination (master → limiter → out)");
+ok(!master._to.some(t => t && t._isDest), "master no longer connects directly to the destination (limiter is in-path)");
+ok(lim.ratio.value >= 20 && lim.knee.value === 0, "the compressor is a brickwall LIMITER (ratio ≥ 20:1, hard knee)");
+ok(lim.threshold.value < 0 && lim.threshold.value >= -3, "limiter threshold clamps just under 0 dBFS (" + lim.threshold.value + " dB)");
+ok(lim.attack.value <= 0.005, "limiter attack is fast enough to catch transients (" + lim.attack.value + "s)");
 
 // music: a balanced background gain, well under a single SFX voice but audible
 S.setMusic(0);
 ok(S.musicPlaying(), "music scheduler runs after setMusic");
 const musicGain = gains.find((g, i) => i > 0 && g.gain.value > 0 && g.gain.value < 1);
 ok(musicGain && Math.abs(musicGain.gain.value - 0.09) < 1e-9, "musicGain = 0.09 (balanced background)");
-// worst-case headroom: master input (SFX ≲0.5 + music step ~1.5×0.09) × VOL is well under 1
+// worst-case master OUTPUT before the limiter: SFX ≲0.5 + music step ~1.5×0.09, × VOL.
+// Even pre-limiter this stays < 1.0; the limiter then guarantees the final ceiling.
 const worst = (0.5 + 1.5 * musicGain.gain.value) * VOL;
-ok(worst <= 0.9, "worst-case output peak ≈ " + worst.toFixed(3) + " ≤ 0.9 (no clipping)");
+ok(worst < 1.0, "worst-case pre-limiter peak ≈ " + worst.toFixed(3) + " < 1.0 (the limiter is a backstop, not a crutch)");
 
 // mute zeroes the master and stops music; unmute restores + resumes
 S.setMuted(true);
