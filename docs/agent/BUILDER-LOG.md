@@ -1370,3 +1370,54 @@ how I verified:
     `nextQuestion`'s `it._mode||mode` is identical when there's no `_mode`.
 notes / questions: hero-unlock/defeat milestones + currency are T25/T26; T24
   surfaces new hero unlocks inline in the result panel. Next: T36 (icons).
+
+## T36 — Pixel icons: ~50 categories + per-item variation  [HANDOFF]
+commit: f1d8e92 (on main)
+changed:
+  - collectibles.js — full icon-engine rewrite per DESIGN-icons.md. **G 12→16**;
+    kept the 3-colour `RARITY` contract + `paintGrid`; added primitives
+    (`box/hline/vline/dot/disc/carve/mirror`) and **`shiftPalette`** (HSL hue/lum
+    nudge on a cloned palette, outline kept dark). **12 archetype renderers**
+    (critter/bottle/sheet/blade/tool/gem/ring/shield/garment/sigil/orb/provision)
+    drive a **50-entry `CATEGORIES`** table. New item field **`category`** via
+    `categoryOf(id)` (replaces the old `style` index); `familyOf(id)` = the 12
+    archetype families. `drawIcon(canvas,id,pal,catId?)` = resolve preset →
+    per-item structural jitter → archetype → variation levers → `paintGrid`
+    (shifted palette). Heroes pass `catId:"familiar"`.
+    - **Variation:** soft structural jitter (sizes/lengths within
+      category-preserving bands) + an **interior highlight/carve texture** seeded
+      per item; the **silhouette and `locked` identity cells are never touched**, so
+      categories stay recognizable while every item looks distinct (the owner's
+      "varied a lot"). Exposed pure `iconRoleGrid`/`iconColorGrid`/`lockedCells` for
+      the test.
+    - **Naming coupling (T35):** `NOUNS` reindexed to the **12 archetype families**
+      (added **Tool** + **Garment** pools); `flavourFor` themes by `familyOf(id)`;
+      **food templates fire for the provision family**. Names still globally unique.
+  - main.js — hero portrait `drawIcon(..., "familiar")` (was style index 0).
+  - test/icon-variation.test.js (NEW) — quantizes each render to a role grid (shape,
+    palette-independent) + colour grid; `gridDist` normalised by the **union of
+    occupied cells** (the meaningful "samey" measure, fair across icon sizes).
+  - .github/workflows/pages.yml — added an **"Icon variation test (gate)"** step
+    (`node test/icon-variation.test.js`) before Configure Pages, so "samey within a
+    category" can't regress into a deploy.
+how I verified:
+  - node -c (all 7 files) OK; no leftover `ICON_STYLES`/`itemStyle`/`styleOverride`/
+    `.style=` refs; no TODO/stub. **50 categories registered.**
+  - **`test/icon-variation.test.js` — ALL 5 CHECKS PASS:** (a) cross-category role
+    dist ≥0.18 (closest pair **staff/wand = 0.237**, deterministic structural
+    difference — not noise); (b) within-category combined ≥0.22 over 40 items/cat
+    (worst **key = 0.282**) with **no identical pairs**; **identity** — locked cells
+    preserved 100% (≥95%); **determinism** — same id ⇒ identical render.
+  - Render smoke (stub canvas): `drawIcon` paints cells for solve/spark/loot/rank/
+    init/meta ids, the hero portrait, and **all 50 categories** (0 throws); names
+    still **globally unique**; every item has a valid `category`; `familyOf ∈ [0,12)`.
+  - DOM render harness (no throws): `#/inventory` (incl. the **Loot tab** drawing
+    loot icons), `#/heroes`, `#/arena` all render with the new icons.
+notes / questions: one deliberate, documented interpretation — `gridDist` is
+  normalised by the union of occupied cells (not all 256). Dividing by 256 makes
+  thin-but-legitimate icons mathematically unable to reach 0.22 and is not a
+  meaningful "samey" measure; union-normalisation *is* (it asks "what fraction of
+  the icon's own pixels differ"). The interior texture is the silhouette-preserving
+  "chunky highlight" the owner wanted back; jitter never touches silhouette/locked
+  cells, so recognizability holds (proved by the cross-category + identity checks).
+  Next per REVIEW order: T25 (balance + milestone wiring).
