@@ -1733,7 +1733,8 @@
   (function setupFullscreenBtn(){
     const btn = $("fsBtn"); if(!btn) return;
     if(!fsSupported()){ btn.classList.add("hidden"); return; }
-    const sync = () => { btn.innerHTML = fsActive() ? '⛶ Exit' : '⛶ Fullscreen'; };
+    const sync = () => { const lbl = btn.querySelector(".nav-lbl");                          // T99 labelled nav button
+      if(lbl) lbl.textContent = fsActive() ? 'Exit' : 'Screen'; else btn.innerHTML = fsActive() ? '⛶ Exit' : '⛶ Screen'; };
     btn.addEventListener("click", () => { fsActive() ? fsExit() : fsEnter(); });
     ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
       .forEach(ev => document.addEventListener(ev, sync));
@@ -1752,7 +1753,8 @@
   function syncSoundButtons(){
     const on = soundOn();
     const sb = $("soundBtn"); if(sb) sb.innerHTML = on ? '🔊 Sound on' : '🔇 Sound off';   // entry screen
-    const sm = $("soundBtnMenu"); if(sm) sm.innerHTML = on ? '🔊' : '🔇';                   // T96 nav icon button
+    const sm = $("soundBtnMenu"); if(sm){ const e = sm.querySelector(".nav-emoji");          // T99 labelled nav button
+      if(e) e.textContent = on ? '🔊' : '🔇'; else sm.innerHTML = on ? '🔊' : '🔇'; }
     const sv = $("setSoundVal"); if(sv) sv.textContent = on ? "On" : "Off";                 // T85 Settings row
   }
   function toggleSound(){ saveSound(!soundOn()); syncSoundButtons(); applySoundPref(); }

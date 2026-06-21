@@ -19,7 +19,7 @@ body{
   background:var(--bg);
   color:var(--text);
   font-family:var(--display);
-  display:flex;align-items:center;justify-content:center;
+  display:flex;align-items:flex-start;justify-content:center;
   padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
   overflow:hidden;
   user-select:none;-webkit-user-select:none;
@@ -40,7 +40,7 @@ body{
    picker (below) is the flexible region that shrinks + scrolls. justify-content is
    flex-start (not center) so any residual overflow falls to the bottom — never
    clipping the header — with overflow-y:auto only as a last-resort safety net. */
-#start{justify-content:flex-start;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:20px 8px}
+#start{justify-content:flex-start;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:12px 8px 18px}
 .mark{font-family:var(--mono);font-weight:800;letter-spacing:-.04em;line-height:.9;
   font-size:clamp(56px,20vw,100px);
   background:linear-gradient(180deg,var(--text),var(--muted));-webkit-background-clip:text;background-clip:text;color:transparent;
@@ -54,7 +54,7 @@ body{
 /* T81/T91 — COMPACT home-screen event banner: a short, bounded strip so it stays
    prominent but never dominates the one-screen #start layout. Small emblem ·
    tag+name+countdown · an inline Play CTA. The full blurb lives on the play screen. */
-.event-banner{display:flex;align-items:center;gap:11px;width:100%;max-width:360px;margin-top:14px;
+.event-banner{display:flex;align-items:center;gap:11px;width:100%;max-width:360px;margin-top:0;
   max-height:84px;padding:9px 11px;text-align:left;background:var(--surface-2);border:1px solid var(--amber);
   border-radius:13px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .event-banner.hidden{display:none}
@@ -76,7 +76,7 @@ body{
   display:flex;flex-direction:column;gap:14px;text-align:left;padding:2px}
 /* T84 — List ⇆ Tree view toggle + the data-driven tech tree (360px-safe). */
 /* T96 — the tree is the home picker; it takes the reclaimed vertical space. */
-.tree{width:100%;max-width:360px;margin-top:14px;flex:1 1 auto;min-height:150px;overflow-y:auto;display:flex;
+.tree{width:100%;max-width:360px;margin-top:12px;flex:1 1 auto;min-height:150px;overflow-y:auto;display:flex;
   flex-direction:column;align-items:center;gap:0;padding:4px 2px}
 .tree-row{display:flex;align-items:center;justify-content:center;gap:0;position:relative}
 /* vertical spine connector between consecutive rows */
@@ -118,13 +118,17 @@ body{
 .readouts{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%;max-width:360px;margin-top:8px}
 .readouts .goldbar,.readouts .momentumbar{margin-top:0;min-height:0}
 /* T96 — one row of bigger icon nav buttons; degrades as gating hides items. */
-.navrow{display:flex;align-items:flex-start;justify-content:center;gap:8px;flex-wrap:wrap;width:100%;max-width:360px;margin-top:16px}
-.navbtn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:44px;
-  background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:8px 6px;cursor:pointer;
+.navrow{display:flex;align-items:flex-start;justify-content:center;gap:6px;flex-wrap:wrap;width:100%;max-width:360px;margin-top:14px}
+.navbtn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:44px;
+  background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:7px 5px;cursor:pointer;
   font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--muted);
   transition:color .15s,border-color .15s}
 .navbtn:hover,.navbtn:active{color:var(--amber);border-color:var(--amber)}
-.navbtn.util{font-size:18px;justify-content:center;min-height:42px}
+/* T99 — Sound/Settings/Fullscreen are now labelled like the four primary buttons:
+   an emoji "icon" line (sized to match the 18px pixel-icon canvas) + a text label,
+   so the whole nav reads as one tidy uniform row. */
+.navbtn .nav-emoji{height:18px;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1}
+.navbtn .nav-lbl{white-space:nowrap}
 .navbtn .nav-ico{width:18px;height:18px;image-rendering:pixelated}
 .navbtn.hidden{display:none}
 /* edge fades + a bobbing cue, shown only when there is more to scroll to */

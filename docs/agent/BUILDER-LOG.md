@@ -3341,3 +3341,47 @@ notes / questions: the new level is **0.80** (≈ +8.5 dB over the old 0.30) —
   wasted top band on all screens — `.app max-height:780px` cap + pin the event banner + tidy
   the nav), then **`T100`** (gamey buttons-first restyle), then `T101`–`T103` (shipping/perf),
   then `T89`–`T90` to finish the Arena.
+
+## T99 — Reclaim the wasted top band + pin the event banner + tidy the nav  [HANDOFF]
+commit: (this commit, on main) — [A] task (front-end polish wave, Phase 6.16). Owner-flagged
+(screenshot): a wasted top band on his tall phone (Poco X3) + an untidy nav.
+Goal: reclaim the wasted top band on ALL screens, pin the event banner to the top, and tidy
+the nav so the home tree gets the freed space.
+changed:
+  - **styles.css** — **top-band reclaim:** `body` now **top-aligns** the app
+    (`align-items:center` → **`flex-start`**) while the existing `.app{max-height:780px}` cap
+    stays. So on a viewport taller than 780 the leftover band falls to the **bottom** (where
+    the build line sits) instead of padding the top — the content (banner/tree) starts flush
+    at the top on every screen. **Banner pin:** `#start` top padding `20px` → **`12px`** and
+    `.event-banner` `margin-top:14px` → **`0`** (+ `.tree` margin-top `14`→`12`) so the
+    today's-event strip sits pinned high. **Tidy nav:** removed the icon-only
+    `.navbtn.util{font-size:18px…}` rule; added **`.nav-emoji`** (18px-tall emoji "icon" line
+    matching the pixel-icon canvas) + **`.nav-lbl`** so Sound/Settings/Fullscreen render as
+    full **labelled** buttons identical in shape to Best/Items/Heroes/Arena; tightened the
+    row (`gap 8→6`, `margin-top 16→14`, padding `8px 6px`→`7px 5px`) so all seven fit one
+    uniform row.
+  - **index.html** — the three util buttons are now labelled:
+    `#soundBtnMenu`→**🔊 Sound**, `#settingsBtn`→**⚙ Settings**, `#fsBtn`→**⛶ Screen** (each
+    an `<span class="nav-emoji">` + `<span class="nav-lbl">`), dropping the bare-emoji
+    `navbtn util` markup. The four primary buttons (pixel-icon canvas + label) are untouched.
+  - **main.js** — `syncSoundButtons` now flips the **`.nav-emoji`** span (🔊/🔇) instead of
+    rewriting the whole button (so the "Sound" label survives the toggle; falls back to
+    `innerHTML` if the span is absent). The fullscreen `sync` updates the **`.nav-lbl`** span
+    (`Screen`/`Exit`) and keeps the ⛶ icon (same fallback).
+  - **test/home-layout.test.js (NEW, 22 checks)** + **pages.yml** — wired as the **27th CI
+    gate**. Asserts: the cap + top-align reclaim; the banner is the flush first element of
+    `#start`; the three nav buttons are labelled (Sound/Settings/Screen) with no surviving
+    icon-only `.util`; the primary four still lead with their canvas; and a **live boot**
+    proving a sound toggle flips only the emoji span while the text label is never
+    overwritten.
+how I verified:
+  - **`node test/home-layout.test.js` → ALL 22 HOME-LAYOUT CHECKS PASSED.** `node -c main.js`
+    clean. **Full 27-gate suite green** (nav-icons/onboarding/tech-tree/contrast all still
+    pass — the primary buttons and nav gating are unchanged).
+notes / questions: **headless can't judge the pixel result — please eyeball the live build on
+  the Poco X3.** The seven nav buttons should fit one row at 360px (gap 6, min-width 44 →
+  ~350px); if "Settings" wraps on a very narrow device the row degrades gracefully (still
+  uniform, just two lines). The bottom band is the deliberate trade for a flush top — if you'd
+  rather split it, the lever is `body{align-items}`. Next per the Builder A pointer: **`T104`**
+  (fix the unreadable stacked-fraction glyphs ½/¾ — slashed/clearer at node size), then
+  **`T100`** (gamey buttons-first restyle), then `T101`–`T103` (shipping/perf), then `T89`/`T90`.
