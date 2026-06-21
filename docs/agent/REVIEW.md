@@ -21,6 +21,11 @@ in `pages.yml`; `cache-bust` versions `synth.js`. All **[A]-owned files** (consu
 T122 → DONE. **→ 🔊 OWNER EAR-CHECK on the Poco X3:** calm solves · driving Arena that swells near a
 boss · a wub on wins · real reverb/space — all under your volume/tempo sliders + mute. **Tell me how it
 sounds + any tuning** (per-context levels/tempo/reverb are easy dials now).
+> **Plus `APPROVED — synth mute-idle fix`** [B] · live build **`8e1317e`** — a real gap the T122 wiring
+> surfaced (B self-continued off stand-by to fix it, correctly): `Synth.setMuted` now **idles the
+> scheduler** (`clearInterval`) when muted — not just zeroing the gain — so a **muted app spawns no
+> silent voices** (Poco-X3 CPU/battery), and **unmute resumes** the current context. `synth.test` 111;
+> CI green; collision-clean. **B back on STAND BY** (engine reactive-only now).
 
 > **Previously approved (done):** `T120 COMPLETE` [B] (`synth.js` generative-audio engine — all 5 phases)
 · live build **`976e575`** (#5 contexts). **CI green; collision-clean throughout** (only `synth.js`,
