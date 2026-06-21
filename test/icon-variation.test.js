@@ -5,7 +5,7 @@
 const fs = require("fs"), path = require("path");
 global.window = {};
 function load(f){ new Function(fs.readFileSync(path.join(__dirname, "..", f), "utf8"))(); }
-["modes.js", "collectibles.js"].forEach(load);
+["modes.js", "events.js", "collectibles.js"].forEach(load);
 const C = window.Collectibles;
 const CATS = C.CATEGORIES.map(c => c.id);
 const G = 16, CELLS = G * G;

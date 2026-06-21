@@ -91,7 +91,7 @@
     { name:"Blazing",   avg:1.4, rarity:"rare" },
     { name:"Lightning", avg:1.1, rarity:"epic" }
   ];
-  const CATS = ["Rank","Initiation","Flawless","Speed","Mastery","Solved","Spark","Milestone","Collector","Loot"];
+  const CATS = ["Rank","Initiation","Flawless","Speed","Mastery","Solved","Spark","Milestone","Collector","Events","Loot"];
 
   const CATALOG = [];
   const byIdMap = {};
@@ -219,6 +219,21 @@
     add({ id:"momentum:"+n, name:nm, rarity:r, cat:"Milestone", modeId:null, momentum:n,
       desc:"Reach a momentum of "+n+(n===75?" — the ceiling.":"."), }));
 
+  // Daily Events (T78) — one reward collectible per event in the 14-event roster
+  // (events.js / window.Events, loaded before this module). Real collection
+  // members: they carry hero buffs (auto-stamped with every other item below) and
+  // therefore feed Arena power with no special-casing. Granted by completing the
+  // live event (T79), never by drills — so evaluate() skips the "Events" cat.
+  // Stable ids (`event:<id>`), migration-safe: a pre-existing profile simply does
+  // not own them yet. Guarded so test harnesses that don't load events.js are
+  // unaffected (no event items, no "Events" tab content).
+  if(window.Events && window.Events.ROSTER){
+    window.Events.ROSTER.forEach(e => add({
+      id:"event:"+e.id, name:e.reward, rarity:e.rarity, cat:"Events", modeId:null,
+      eventId:e.id, desc:"Reward for completing "+e.name+"."
+    }));
+  }
+
   function sortItems(arr){
     return arr.slice().sort((a,b) => (RORDER[a.rarity]-RORDER[b.rarity]) || a.name.localeCompare(b.name));
   }
@@ -228,6 +243,7 @@
     const out = [];
     for(const it of CATALOG){
       if(it.cat === "Collector") continue;
+      if(it.cat === "Events") continue;              // event rewards: granted on completing the live event (T79)
       if(it.need) continue;                          // topic milestones: see evaluateTopics
       if(it.meta) continue;                          // hero/arena milestones: see evaluateMeta
       if(it.gold != null) continue;                  // wealth milestones: see evaluateGold

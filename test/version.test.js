@@ -33,7 +33,7 @@ global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); },
   documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
 
 (async function(){
-  ["modes.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
+  ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
   const U = global.window.Updater;
   const bar = global.document.getElementById("updateBar");
   bar.classList.add("hidden");   // mirror the initial HTML state

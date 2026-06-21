@@ -32,7 +32,7 @@ function boot(seed){
   global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
     addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
     documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
-  ["modes.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
+  ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
   global.window.location.hash = "#/arena"; (winH.hashchange||[]).forEach(f=>f());
   return global.window;
 }

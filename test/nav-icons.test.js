@@ -41,7 +41,7 @@ global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); },
   documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
 
 // load engine, then PATCH drawIcon to record calls BEFORE main.js captures it
-["modes.js","guides.js","collectibles.js","heroes.js","enemies.js"].forEach(f => new Function(read(f))());
+["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js"].forEach(f => new Function(read(f))());
 const C = global.window.Collectibles;
 const realDraw = C.drawIcon.bind(C);
 C.drawIcon = (cv, id, pal, cat) => { draws.push({ id, cat, pal }); /* skip real paint (shim canvas) */ };

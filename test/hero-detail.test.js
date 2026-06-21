@@ -29,7 +29,7 @@ global.window.localStorage = global.localStorage;
 global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
   addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
   documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
-["modes.js","guides.js","collectibles.js","heroes.js","enemies.js"].forEach(f => new Function(read(f))());
+["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js"].forEach(f => new Function(read(f))());
 const C = global.window.Collectibles, H = global.window.Heroes;
 // pick a hero with many boosts; own a known subset so X/Y is checkable
 const hero = H.HEROES[0];

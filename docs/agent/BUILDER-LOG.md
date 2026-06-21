@@ -2666,3 +2666,52 @@ notes / questions: kept the typographic `glyph` strings as a graceful fallback
   rather than deleting them. Next per REVIEW order: content extension — **T58**
   (content-extension playbook) → Wave-2 topic batches, with **Phase 6.5 Events**
   brought forward by the owner.
+
+## T78 — Events foundation: UTC-daily scheduler + data model + "Events" tab + reward items  [HANDOFF]
+commit: (this commit, on main)
+Goal: the deterministic, offline backbone for Phase 6.5 Events — a 14-event roster
+that cycles once per UTC day (recurs every 14 days), a new "Events" collectible
+category with 14 real reward items that feed Arena power, and a new "Events"
+inventory tab. (Play mode = T79, board lockout = T80, bespoke art/music/banner = T81.)
+changed:
+  - **events.js (NEW, loaded before collectibles.js) / window.Events** — pure +
+    deterministic. `epochDaysUTC(now)=floor(now/86_400_000)` (UTC day, 00:00 UTC
+    rollover); `indexFor=((day%14)+14)%14`; `today/isLive/daysUntilLive/byId/
+    rewardId/roster`. **Clock injected** (every helper takes an optional `now`) — no
+    `Date.now` baked in, no network/storage/timers. A fixed **14-event ROSTER**,
+    each `{ id, name, theme, blurb, reward, rarity, artSeed, musicSeed, questionMix }`
+    — distinct, evocative, leak-free copy (no digits) and a themed cross-topic
+    `questionMix` (T79's spec) drawn from real modes.
+  - **collectibles.js** — `CATS` gains **"Events"**; reads `window.Events.ROSTER`
+    and registers one `event:<id>` reward per event (name=`e.reward`, its rarity,
+    `cat:"Events"`, `eventId`). They're **real collection members**: the existing
+    item-stamp gives each a hero **boost** (so they feed Arena power with no
+    special-casing) + icon + flavour. `evaluate()` **skips the Events cat** (granted
+    by completing the live event in T79, never by drills). Guarded by
+    `if(window.Events)` so harnesses that don't load events.js are unaffected.
+  - **main.js** — new **"Events" inventory tab** (`invEventsHtml`) listing the 14
+    rewards ordered by the roster cycle, owned/locked like every category; `AWARD_CATS`
+    now excludes both Loot and Events (each has its own tab).
+  - **index.html** — loads `events.js` after modes.js, before collectibles.js.
+how I verified:
+  - `node test/events.test.js` (NEW, **20th gate**) → **ALL 28 PASS**: same UTC date
+    → same event; index always 0..13 (incl. negative days); **cycle of 14** (index
+    +1/day, wraps) and **each event recurs every 14 days** (live on its day, not on
+    the 13 between); **00:00 UTC boundary flips** the event (23:59:59Z vs 00:00:01Z);
+    pure/offline (no fetch/storage/RAF; `today(ts)` never calls `Date.now`); all 14
+    events fully specified, **distinct, digit-free copy**, valid questionMix; the 14
+    rewards are real `event:<id>` members carrying a **real hero buff**; migration-safe
+    ids; **evaluate() never returns an Events reward**.
+  - **All existing harnesses now load events.js** (mirroring index.html) so every gate
+    re-proves on the **grown pool**. `arena.test.js` invariant (d) still holds — the
+    enemies `def` derives from the live collection, so it self-scales: tier-120 def
+    **523**, champion at full-minus-final-loot = **523** (exactly), removing one
+    champion boost → **518 = loss**; tiers 1–5 still winnable at 0 items; def
+    monotonic. `hero-icons` catalogue pin **804 → 818**.
+  - Booted the app under a DOM shim: the **Events tab renders 14 locked tiles** at
+    360px, "Daily Events" section, 0/14 bar, 4 tabs; global total **1154 → 1168**.
+  - `node -c` clean (events/collectibles/main); **full 20-gate suite green**; no regressions.
+notes / questions: event reward tiles show the procedural flavour name + icon like
+  every other collectible (consistent with the existing inventory UI); the bespoke
+  per-event art/copy/music + home banner are **T81** as specced. Next per REVIEW
+  order: **T79** (event play mode: cross-topic gauntlet + today-only reward grant).

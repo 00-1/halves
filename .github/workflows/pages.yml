@@ -62,6 +62,8 @@ jobs:
         run: node test/collector.test.js
       - name: Pixel glyph font test (gate)
         run: node test/glyphs.test.js
+      - name: Events scheduler test (gate)
+        run: node test/events.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

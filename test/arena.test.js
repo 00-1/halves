@@ -17,7 +17,7 @@ function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } els
 
 global.window = {};
 global.document = { createElement(){ return { getContext(){ return {}; } }; } };
-["modes.js","collectibles.js","heroes.js","enemies.js"].forEach(f => new Function(read(f))());
+["modes.js","events.js","collectibles.js","heroes.js","enemies.js"].forEach(f => new Function(read(f))());
 const C = global.window.Collectibles, H = global.window.Heroes, E = global.window.Enemies;
 
 // ---- (f) API shape: stat-only, perf machinery gone -------------------------
@@ -139,7 +139,7 @@ ok(E.canAttempt(2, { "tier:1": 1 }) === true, "tier 2 attemptable once tier 1 cl
   global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
     addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
     documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
-  ["modes.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
+  ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
   const route = h => { global.window.location.hash = h; (winH.hashchange||[]).forEach(f=>f()); };
   route("#/arena");
   ok(els.arena.classList.contains("active"), "Arena screen active");

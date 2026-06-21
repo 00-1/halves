@@ -8,7 +8,7 @@ let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
 global.window = {};
-["modes.js","collectibles.js","heroes.js","enemies.js","monsters.js"].forEach(f => new Function(read(f))());
+["modes.js","events.js","collectibles.js","heroes.js","enemies.js","monsters.js"].forEach(f => new Function(read(f))());
 const E = global.window.Enemies, M = global.window.Monsters, G = M.G;
 const grid = n => M.buildGrid(E.byTier(n)).role;
 const ser = r => r.map(row => row.join("")).join("");

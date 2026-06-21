@@ -8,7 +8,7 @@ let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
 global.window = {};
-["modes.js","collectibles.js"].forEach(f => new Function(read(f))());
+["modes.js","events.js","collectibles.js"].forEach(f => new Function(read(f))());
 const C = global.window.Collectibles, MODES = global.window.MODES;
 
 const TOTAL = 21;

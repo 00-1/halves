@@ -568,10 +568,12 @@
   const INV_TABS = [
     { id:"topics", label:"Topics" },
     { id:"awards", label:"Awards" },
+    { id:"events", label:"Events" },
     { id:"loot",   label:"Loot" }
   ];
   let invTab = "topics";
-  const AWARD_CATS = C.categories().filter(n => n !== "Loot");   // drill-earned cats
+  // drill-earned cats — Events (daily-event rewards) + Loot (Arena) have their own tabs
+  const AWARD_CATS = C.categories().filter(n => n !== "Loot" && n !== "Events");
 
   // One collectible tile: owned shows its icon + flavour name; locked a "?".
   function invCell(it, col){
@@ -638,6 +640,15 @@
     return invTabHtml("Loot", got + "/" + loot.length, sections, col);
   }
 
+  // Events tab — the 14 daily-event rewards, ordered by the roster cycle so the
+  // tab reads as the calendar; owned/locked just like every other category.
+  function invEventsHtml(col){
+    const Ev = window.Events, evItems = C.CATALOG.filter(it => it.cat === "Events");
+    const ordered = (Ev && Ev.roster) ? Ev.roster().map(e => C.byId("event:" + e.id)).filter(Boolean) : evItems;
+    const got = ordered.filter(it => col[it.id]).length;
+    return invTabHtml("Events", got + "/" + ordered.length, [{ label:"Daily Events", items:ordered }], col);
+  }
+
   function drawInvCanvases(){
     $("invList").querySelectorAll(".inv-cell.owned canvas").forEach(cv => {
       const it = C.byId(cv.parentElement.dataset.id);
@@ -654,6 +665,7 @@
     const col = loadCollected();
     $("invList").innerHTML = invTab === "loot"   ? invLootHtml(col)
                            : invTab === "awards" ? invAwardsHtml(col)
+                           : invTab === "events" ? invEventsHtml(col)
                            :                       invTopicsHtml(col);
     drawInvCanvases();
     $("invList").scrollTop = 0;

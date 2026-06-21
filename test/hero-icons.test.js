@@ -14,6 +14,7 @@ function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } els
 
 global.window = {};
 new Function(read("modes.js"))();
+new Function(read("events.js"))();
 new Function(read("collectibles.js"))();
 const G = 16;
 const HERO_IDS = ["bram","greta","tovar","mo","wisp","mira","nim","zeph","pip","vex","sela","roon"];
@@ -55,7 +56,7 @@ const BASELINE = {
 let snapFail = 0;
 Object.keys(BASELINE).forEach(id => { if(ser(C.iconRoleGrid(id, null)) !== BASELINE[id]) snapFail++; });
 ok(snapFail === 0, "item icon role grids match the embedded baseline (" + snapFail + " changed)");
-ok(C.CATALOG.length === 804, "catalogue size as expected (" + C.CATALOG.length + ")");
+ok(C.CATALOG.length === 818, "catalogue size as expected (" + C.CATALOG.length + ")");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " HERO-ICON CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
