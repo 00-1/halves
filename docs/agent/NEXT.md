@@ -10,17 +10,13 @@
 
 ---
 
-**Builder A → `T125`  · FIX celebrations (they don't render) + fire BIG on EVERY win/run/item**
-`T121` fully DONE (scroll-fade `0972c77` + coloured icons `b662840`). **T125 — owner: "nothing at all"
-on an Arena win.** FIRST fix the rendering bug: `fxBurst` is built once on the entry screen (pre-
-fullscreen) and **never `resize()`d** → it draws into a stale/0-sized buffer → invisible. Resize it on
-construction + `window` resize + `fullscreenchange` + **before each burst**; verify it's `ready`. THEN
-make it BIG + constant: **delete the `FX_RANK_MIN` rank gate** so EVERY topic-run completion + EVERY
-Arena victory + EVERY new inventory item fires **`FXGL.celebrate()`** (T126's 800-particle shower),
-never covering key text. Full DoD: `BACKLOG.md` T125. Then → `T127` (quick BUG: "&amp;" shows literally
-in locked-topic text — double-escape at `main.js:572`, drop the redundant `esc()`) → `T123` (a11y
-contrast floor) → `T124` (fraction glyphs) → `T101` (Start delay) → `T102`/`T103` (Android) →
-`T89`/`T90` → content → `T72`.
+**Builder A → `T127`  · quick BUG: literal "&amp;" in locked-topic text (double-escape)**
+`T125` DONE (celebrations render + big on every event 🎆). **T127:** the topic-info subline shows
+"Master Add &amp; Subtract first" — `renderTopicInfo` (`main.js:572`) does `esc(unlockReq(m))` but
+`unlockReq` **already** escapes → double-escape. **Fix:** drop the redundant `esc()` at :572 (match
+:727's un-escaped use). Quick audit for the same pattern; add a test that a `&`-name renders one `&`.
+Full DoD: `BACKLOG.md` T127. Then → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101`
+(Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
 **Builder B → STAND BY  · `T126` celebration burst DONE; both engines complete**
 `FXGL.celebrate()` (800-cap firework/shower) shipped & approved; synth engine done.

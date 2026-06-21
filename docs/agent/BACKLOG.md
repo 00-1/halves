@@ -2358,7 +2358,7 @@ topic name "Add & Subtract" renders as the literal entity. **Cause = double-esca
   regression); `node -c` clean; all gates green (add a small check that a name with `&` renders a single
   `&` in the topic-info HTML, not `&amp;amp;`). (Babysitter: confirm the subline reads "Add & Subtract".)
 
-### T125 — [A] FIX the celebration burst (it doesn't render) + fire BIG on EVERY win/run/item · status: OPEN · OWNER-PRIORITY · BUG
+### T125 — [A] FIX the celebration burst (it didn't render) + fire BIG on EVERY win/run/item · status: DONE (`c2296cf`)
 **FIRST — the burst likely doesn't render at all (owner: "nothing at all, not even a small one" on an
 Arena win).** Babysitter diagnosis: the burst controller `fxBurst` is built once in `setupFx()` (on the
 ENTRY screen, **pre-fullscreen**) and is **never `resize()`d** — unlike the backdrop `fxBg`, which gets

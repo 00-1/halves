@@ -1,6 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T126` [B] (FXGL big "celebration" burst — loads of particles) · live
+**Current verdict:** `APPROVED — T125` [A] (celebrations FIXED — they render now + fire BIG on every
+win/run/item) · live build **`c2296cf`**. **CI green.** Fixes the bug I diagnosed **and** delivers the
+owner's "loads of particles, constant." **Render fix (the crux of "nothing at all"):** all three
+celebration fns route through a new `fxBigBurst(opts)` that **`.resize()`s the controller THEN fires**,
+plus `fxResizeAll()` (resizes `fxBg`+`fxBurst`) on **construction**, a post-layout **RAF**, **window
+resize/orientation**, and **all `fullscreenchange` variants** — so the burst canvas is never left at the
+stale/1×1 buffer that made it invisible after the Start→fullscreen transition. **Big + constant:** the
+**`FX_RANK_MIN` gate is DELETED** (test asserts it's gone) → **EVERY completed topic run** (rank-scaled
+but always), **EVERY Arena victory**, and **EVERY new inventory item** fire **`FXGL.celebrate()`**
+(T126's 800-particle shower; `burst()` fallback). Verified **independently**: `node -c` clean; **full
+33-gate suite green**; **`fx-wiring.test` (54)** pins the resize-before-fire, sized-after-construction
+(not 1×1), fullscreen-resize, the gate removal, and each fn routing through `fxBigBurst`. All
+**[A]-owned files**. T125 → DONE. **→ 🎆 OWNER: finishing ANY run + winning ANY Arena fight should now
+throw a big visible particle shower — confirm it actually shows (the bug was invisibility).**
+
+> **Previously approved (done):** `T126` [B] (FXGL big "celebration" burst — loads of particles) · live
 build **`2815188`**. **CI green; collision-clean** (only `fxgl.js`, `test/fxgl.test.js`, log). Adds
 `Controller.celebrate(opts)` + `CELEBRATE_CAP = 800` (>3× the brief `BURST_CAP` 256): a real firework/
 shower — strong **upward launch + gravity fall**, **bigger/longer-lived** particles (life ~2.4s vs the
@@ -839,13 +854,11 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T125`** [A] · **OWNER-PRIORITY · BUG** (**`T121` FULLY DONE — scroll-fade
-  `0972c77` + coloured icons `b662840`; `T122`/`T120`-wiring all DONE**). *(Read `NEXT.md` fresh —
-  canonical.)* **`T125` — FIX the celebration burst (it doesn't render: `fxBurst` never resized →
-  stale/0 buffer → "nothing at all" on a win) THEN fire `FXGL.celebrate()` BIG on EVERY topic-run/Arena-
-  win/new-item** (delete `FX_RANK_MIN`). Bursts are the overlay → **no contrast dep**, doesn't wait on
-  T123. Full DoD `T125`. → **`T127`** (quick BUG: literal "&amp;" in locked-topic text — double-escape
-  at `main.js:572`) → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
+- **Builder A — next: `T127`** [A] · **quick BUG** (**`T125` DONE — celebrations fixed + big; `T121`/
+  `T122`/`T120`-wiring all DONE**). *(Read `NEXT.md` fresh — canonical.)* **`T127`** — literal "&amp;"
+  in locked-topic subline: **double-escape** at `main.js:572` (`esc(unlockReq(m))`; `unlockReq` already
+  escapes) — drop the redundant `esc()`; quick audit for siblings; test a `&`-name renders one `&`.
+  → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
   contrast floor/scrim + honest `contrast.test`) → **`T124`** (fraction tree-glyphs still illegible —
   bigger/clearer using the node width) → **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA +
   perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
