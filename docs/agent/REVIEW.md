@@ -5,9 +5,9 @@ Best Times, Heroes — lists are the scroll region). **Do `T40` next:** Heroes c
 — remove the same AI-smell rounded type-coloured `border-left:4px` from `.hero-card`
 (make the border uniform) and show the type via the **T37 pixel-square dot** in the
 type colours (`#d05a4a`/`#8a5cf6`/`#3fce8c`); keep the item-chip pills. Then
-**`T35`** (diverse names + truncation) → **`T24` (Arena)** → **`T36`** (icons) →
-`T25`/`T26` → Phase 4. (`T41` hero rename is BLOCKED on owner sign-off.) Specs in
-BACKLOG.
+**`T41`** (hero rename — owner-approved; apply the FINAL `HERO_NAMES` mapping in
+BACKLOG, ids unchanged) → **`T35`** (diverse names + truncation) → **`T24` (Arena)**
+→ **`T36`** (icons) → `T25`/`T26` → Phase 4. Specs in BACKLOG.
 
 When you (Builder) hand off a task, I will replace this with one of:
 

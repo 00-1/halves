@@ -506,26 +506,21 @@ the card's curved left border.)
   type shown via a non-card-border square dot in the type colours; 360px-safe; no
   regressions to the heroes layout; deploy green.
 
-### T41 — Rename heroes to more authentic names (display-only) · status: BLOCKED (await research + owner sign-off)
-Owner: hero names feel "a bit parody" (Mauler Mo, Pip Quickfingers, Greta
-Stonefist…) — want more authentic high-fantasy names. **Display-only:** the hero
-`id`s (`bram,greta,tovar,mo,wisp,mira,nim,zeph,pip,vex,sela,roon`) MUST NOT change —
-they key item boosts, `HERO_NAMES`, and `heroes.js`. Update only **`HERO_NAMES`** in
-`collectibles.js` (the single source `heroes.js` reads) + the name column in
-`DESIGN-heroes.md`. The Babysitter will paste the **owner-approved** mapping here
-(id → new name) once the naming research returns and the owner signs off. Preserve
-each hero's type + stat-archetype.
-- **PROPOSED (research output — AWAITING OWNER SIGN-OFF; do not apply yet):**
-  `bram→Brannon, greta→Hilde, tovar→Ser Aldric, mo→Magnar, wisp→Wisp (kept),
-  mira→Maerwen, nim→Emrys, zeph→Aerith, pip→Fenn, vex→Vesh, sela→Selwen,
-  roon→Rendel`. Aesthetic: Brawn = Old Norse/Germanic (hard consonants), Arcane &
-  Cunning = Welsh/Celtic (softer vowels); each keeps a sound-thread to its original
-  (Br-, M-r, Sel-, R-…); only one title (Ser Aldric). (Note: "Aerith" echoes FF7 —
-  owner may want an alternative for `zeph`.)
-- **DoD:** every one of the 12 ids has its new display name in `HERO_NAMES`; ids
-  unchanged everywhere; item boosts still resolve (Node: each boost's `HERO_NAMES`
-  lookup non-empty); heroes screen + inventory boost labels show the new names;
-  DESIGN-heroes table updated; no logic/regression; deploy green.
+### T41 — Rename heroes to more authentic names (display-only) · status: OPEN
+Owner-approved rename — **display names only**. The hero `id`s
+(`bram,greta,tovar,mo,wisp,mira,nim,zeph,pip,vex,sela,roon`) **MUST NOT change** —
+they key item boosts, `HERO_NAMES`, and `heroes.js`. Change **only the display names
+in `HERO_NAMES`** in `collectibles.js` (the single source `heroes.js` reads). **Do
+NOT touch `DESIGN-heroes.md`** (babysitter-owned; already updated).
+- **FINAL MAPPING (apply exactly):**
+  `bram→Brannon · greta→Valeska · tovar→Ser Aldric · mo→Magnar · wisp→Wisp ·
+  mira→Maerwen · nim→Emrys · zeph→Aerin · pip→Fenn · vex→Vesh · sela→Selwen ·
+  roon→Rendel`.
+- **DoD:** `HERO_NAMES` has exactly these 12 names against the **unchanged** ids;
+  ids untouched everywhere (boosts / heroes.js / unlock predicates); Node check:
+  every catalogue boost's `HERO_NAMES[boost.hero]` is non-empty and matches the
+  mapping; heroes screen + inventory boost labels show the new names; no logic
+  change/regression; deploy green.
 
 ### T35 — Diverse item names + fix inventory truncation · status: BLOCKED (spec ready: DESIGN-names.md; after T23 + CSS polish)
 Owner: item names are too samey (today: **14 adjectives, ~36 nouns → only 167

@@ -35,18 +35,23 @@ of effective stats.
 
 | id | name | type | power | guard | speed | focus | unlock when you own… |
 |----|------|------|-------|-------|-------|-------|----------------------|
-| bram  | Bram the Bold     | Brawn   | 14 | 12 | 6  | 6  | `init:<first topic>` (your first round) |
-| greta | Greta Stonefist   | Brawn   | 16 | 10 | 5  | 7  | finished ≥3 topics (≥3 `init:*`) |
-| tovar | Ser Tovar         | Brawn   | 12 | 16 | 5  | 5  | any `mastery:*` |
-| mo    | Mauler Mo         | Brawn   | 18 | 8  | 7  | 5  | `rank:darkwizard` |
+| bram  | Brannon           | Brawn   | 14 | 12 | 6  | 6  | `init:<first topic>` (your first round) |
+| greta | Valeska           | Brawn   | 16 | 10 | 5  | 7  | finished ≥3 topics (≥3 `init:*`) |
+| tovar | Ser Aldric        | Brawn   | 12 | 16 | 5  | 5  | any `mastery:*` |
+| mo    | Magnar            | Brawn   | 18 | 8  | 7  | 5  | `rank:darkwizard` |
 | wisp  | Wisp              | Arcane  | 7  | 6  | 10 | 15 | `collector:25` |
-| mira  | Mirabel the Mage  | Arcane  | 6  | 8  | 9  | 17 | flawless in ≥3 modes (≥3 `flawless:*`) |
-| nim   | Old Nim           | Arcane  | 8  | 10 | 7  | 14 | `topics:one100` (100% a topic) |
-| zeph  | Zephyrine         | Arcane  | 9  | 6  | 13 | 13 | `rank:archmage` |
-| pip   | Pip Quickfingers  | Cunning | 8  | 6  | 16 | 9  | any Lightning bracket (`speed:*:3`) |
-| vex   | Vex               | Cunning | 10 | 7  | 15 | 8  | `meta:allmodes` |
-| sela  | Shadow Sela       | Cunning | 9  | 9  | 14 | 9  | `collector:75` |
-| roon  | Roon the Sly      | Cunning | 11 | 8  | 17 | 7  | defeat enemy tier 10 (`tier:10`) |
+| mira  | Maerwen           | Arcane  | 6  | 8  | 9  | 17 | flawless in ≥3 modes (≥3 `flawless:*`) |
+| nim   | Emrys             | Arcane  | 8  | 10 | 7  | 14 | `topics:one100` (100% a topic) |
+| zeph  | Aerin             | Arcane  | 9  | 6  | 13 | 13 | `rank:archmage` |
+| pip   | Fenn              | Cunning | 8  | 6  | 16 | 9  | any Lightning bracket (`speed:*:3`) |
+| vex   | Vesh              | Cunning | 10 | 7  | 15 | 8  | `meta:allmodes` |
+| sela  | Selwen            | Cunning | 9  | 9  | 14 | 9  | `collector:75` |
+| roon  | Rendel            | Cunning | 11 | 8  | 17 | 7  | defeat enemy tier 10 (`tier:10`) |
+
+> Hero **display names** (T41, owner-approved). `id`s are unchanged and remain the
+> keys for item boosts / `HERO_NAMES` / `heroes.js`. Roots vary: Celtic (Brannon),
+> Slavic (Valeska), Germanic (Ser Aldric), Norse (Magnar), Welsh (Maerwen, Emrys,
+> Selwen), English (Fenn, Rendel), invented (Vesh).
 
 Unlock = own the listed collectible id, or meet the count/▒computed condition.
 Implement `isHeroUnlocked(hero, collected, stats)` analogous to `isUnlocked`.
