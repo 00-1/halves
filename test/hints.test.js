@@ -23,6 +23,7 @@ const WORDNUM = { one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8
 const DENOM = { half:2, halves:2, third:3, thirds:3, quarter:4, quarters:4, fifth:5, fifths:5, sixth:6, sixths:6,
   seventh:7, sevenths:7, eighth:8, eighths:8, tenth:10, tenths:10, hundredth:100, hundredths:100 };
 const PLURAL_UNITS = ["tenths","hundredths","quarters","eighths","fifths","thirds","sixths","sevenths","halves","twentieths","sixteenths"];
+const PLACE = { ones:1, tens:10, hundreds:100, thousands:1000 };   // place words → value
 // any "<word-number> <denominator-word>" phrase in the hint, as numeric values
 function wordPhraseValues(s){
   const out = [], words = s.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/);
@@ -45,10 +46,15 @@ M.forEach(m => {
     if(tokens(hint).some(t => t === a)){ leaks++; if(!sampleLeak) sampleLeak = m.id + " «" + q.p + "»→ " + hint; }
     // (b2) no answer leaked in WORDS (e.g. "five tenths" == 0.5)
     if(wordPhraseValues(hint).some(v => approx(v, a))){ wordLeaks++; if(!sampleWord) sampleWord = m.id + " «" + q.p + "»→ " + hint; }
-    // (c) phantom structure: single-operand halves/doubles with operand < 10 must not say "ten"
+    // (c) place-value honesty: a halves/doubles hint may name a plural place word
+    // (ones/tens/hundreds/thousands) ONLY if the number has a nonzero digit there.
     if(m.id === "halves" || m.id === "doubles"){
       const n = parseFloat(String(q.p));
-      if(!isNaN(n) && n < 10 && /\bten/i.test(hint)){ phantom++; if(!samplePhantom) samplePhantom = m.id + " «" + q.p + "»→ " + hint; }
+      if(!isNaN(n)) for(const word in PLACE){
+        if(new RegExp("\\b" + word + "\\b").test(hint) && Math.floor(n / PLACE[word]) % 10 === 0){
+          phantom++; if(!samplePhantom) samplePhantom = m.id + " «" + q.p + "»→ " + hint; break;
+        }
+      }
     }
     // (e) singular/plural: never "1 <plural-unit>" (e.g. "1 tenths")
     if(PLURAL_UNITS.some(u => new RegExp("\\b1 " + u + "\\b").test(hint))){ plural++; if(!samplePlural) samplePlural = m.id + " «" + q.p + "»→ " + hint; }
@@ -57,8 +63,17 @@ M.forEach(m => {
 ok(empties === 0, "every question yields a non-empty hint (" + empties + " empty)");
 ok(leaks === 0, "no hint contains its answer as a number token" + (sampleLeak ? " — e.g. " + sampleLeak : ""));
 ok(wordLeaks === 0, "no hint reveals its answer in WORDS (e.g. 'five tenths')" + (sampleWord ? " — e.g. " + sampleWord : ""));
-ok(phantom === 0, "no 'ten' in any single-digit (<10) halves/doubles hint" + (samplePhantom ? " — e.g. " + samplePhantom : ""));
+ok(phantom === 0, "no halves/doubles hint names a place the number lacks (any magnitude)" + (samplePhantom ? " — e.g. " + samplePhantom : ""));
 ok(plural === 0, "no '1 <plural>' singular/plural slip (e.g. '1 tenths')" + (samplePlural ? " — e.g. " + samplePlural : ""));
+
+// explicit place-value must-pass cases for halves at the hundreds/thousands magnitude
+function halvesHint(p){ return G.explain("halves", M.find(m=>m.id==="halves").build().find(q=>String(q.p)===p)); }
+const h500 = halvesHint("500");
+ok(/hundred/.test(h500) && !/\btens\b/.test(h500) && !/\bones\b/.test(h500) && h500.indexOf("250") < 0,
+   "'half of 500' reads in hundreds, odd-count, no tens/ones, no 250 (" + JSON.stringify(h500) + ")");
+const h1000 = halvesHint("1000");
+ok(/thousand/.test(h1000) && !/\bhundreds\b/.test(h1000) && !/\btens\b/.test(h1000) && h1000.indexOf("500") < 0,
+   "'half of 1000' reads in thousands, no finer place, no 500 (" + JSON.stringify(h1000) + ")");
 
 // (d) the owner's exact regression: "half of 5"
 const halves = M.find(m => m.id === "halves");
@@ -70,9 +85,10 @@ ok(h5.indexOf("2.5") < 0 && tokens(h5).every(t => t !== 2.5), "'half of 5' hint 
 // fallback itself must be answer-free / non-empty
 ok(!!G.explain("nope", { p:"x", a:3 }), "unknown topic still returns a non-empty hint");
 
-// a couple of phantom-structure spot checks beyond the asserted minimum
-ok(!/tens and ones/i.test(G.explain("halves", { p:"5", a:2.5 })), "halves of 5 doesn't mention 'tens and ones'");
-ok(/tens and ones/i.test(G.explain("halves", { p:"90", a:45 })), "halves of 90 DOES use tens-and-ones (multi-digit)");
+// place-value spot checks
+ok(!/tens|ones/i.test(G.explain("halves", { p:"5", a:2.5 })), "halves of 5 names no tens/ones (single digit)");
+ok(/\btens\b/.test(halvesHint("90")) && !/\bones\b/.test(halvesHint("90")), "halves of 90 reads in tens, not 'tens and ones' (no ones)");
+ok(/\b(tens|ones)\b/.test(halvesHint("45")), "halves of 45 splits into tens and ones (both present)");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " HINT CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

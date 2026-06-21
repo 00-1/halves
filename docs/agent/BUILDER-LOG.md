@@ -2058,3 +2058,52 @@ notes / questions: kept the names out of this log / the commit message per the
   separate decision noted in REVIEW, out of scope here — this only cleans the
   working tree). Next per REVIEW order: **T62** (methodical question-by-question
   hint audit across all topics).
+
+## T62 — Methodical, question-by-question hint audit across ALL topics  [HANDOFF]
+commit: (this commit, on main)
+I dumped **every** topic's **full** `mode.build()` set and read each question's
+`explain()` output against the real operation. Per-topic record (issues → fixes):
+  - **halves — REBUILT place-value-aware (the worst exemplar).** Before, every
+    n≥10 said "Split N into tens and ones" — wrong for round hundreds/thousands
+    (`100/200/500/1000`: no tens/ones) and round tens (`90`: no ones). Now: single
+    digit (even→halve / odd→ends-in-a-half); **round numbers** work in their one
+    real unit ("500 is five hundreds — halve the five… an odd count, so a
+    half-hundred"; "90 is nine tens…"); **mixed numbers** split into the **actual
+    nonzero place parts** ("360 → 300 and 60"; "45 → 40 and 5"; "144 → 100, 40 and
+    4"), halve each, add, flagging the ·5 ending only when the **ones digit is
+    odd**. Never names a place the number lacks.
+  - **doubles — same place-value rebuild.** Round numbers → "five tens — double the
+    five, keep the place value"; mixed → split into real place parts and double
+    each. (Was a generic "by place value"; now specific and place-honest.)
+  - **add/subtract — magnitude-aware.** `addsub2` (3-digit) no longer says "the
+    tens then the ones" (ignored the hundreds); addition now "bridge through the
+    next ten **and hundred**", subtraction "subtract column by column (ones, tens,
+    hundreds)". `addsub` (2-digit) unchanged (apt).
+  - **times — added the ×12 trick** ("multiply the other by ten, then add two more
+    lots") so `7×12`/`8×12` get the right method instead of a bare tables cue;
+    square/×1/×10/×11/×9/×5/×4/×2 each fire on the correct factor (verified each).
+  - **bonds2 — decimal branch refined.** One-dp decimals → "the tenths pair up to
+    make ten"; two-dp (`0.05/0.25/0.75/0.95`) → "pair the digits after the point
+    like a bond to 100" (the old single "add up to ten" was wrong for two places).
+  - **bonds, place value (×/÷ 10/100/1000), fractions-of, fractions-of-2,
+    percentages, percentages2, fractions, squares — read every question; each
+    hint already fits its specific operands** (whole-ten vs with-ones; real
+    direction + #places; unit vs non-unit with the real numerator/denominator; the
+    %-specific method; the audited fractions branch). No changes needed.
+Gate strengthened (`hints.test.js`):
+  - Replaced the `<10`-only "ten" check with a **general place-value-honesty check
+    for ALL magnitudes**: a halves/doubles hint may use a plural place word
+    (ones/tens/hundreds/thousands) **only if the number has a nonzero digit there**
+    (`floor(n/place)%10 !== 0`). Added explicit must-pass cases for **`half of
+    500`** (reads in hundreds, odd-count, no tens/ones, no `250`) and **`half of
+    1000`**. Kept no-answer-leak (token + words) and singular/plural checks.
+how I verified:
+  - Dumped + read the **full** hint set for **all 15 topics** (every question);
+    halves place cases 500/1000/100/90/180/360 all correct; no phantom places.
+  - `node test/hints.test.js` → **ALL 13 PASS**; **negative-tested** the new gate:
+    it flags `tens`/`ones` on a hypothetical "Split 500 into tens and ones" and
+    passes the new hundreds/tens hints. All nine gates green. `node -c` clean. No
+    regressions (method-only, British, concise, no answer leaks).
+notes / questions: scope was guides.js (halves/doubles/addsub2/times/bonds2
+  branches) + the gate. Next per REVIEW order: **T63** (surface the hint in normal
+  rounds too).

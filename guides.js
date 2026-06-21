@@ -157,47 +157,78 @@
   // computing the result. Number-specific (single vs multi-digit, odd/even, the
   // right trick), never naming structure the number doesn't have. Returns a
   // non-empty, answer-free line for every question.
-  const WORD = { 2:"two", 3:"three", 4:"four", 5:"five", 6:"six", 7:"seven", 8:"eight", 9:"nine", 10:"ten", 11:"eleven", 12:"twelve" };
+  const WORD = { 1:"one", 2:"two", 3:"three", 4:"four", 5:"five", 6:"six", 7:"seven", 8:"eight", 9:"nine", 10:"ten", 11:"eleven", 12:"twelve" };
   const ORD  = { 2:"half", 3:"third", 4:"quarter", 5:"fifth", 6:"sixth", 7:"seventh", 8:"eighth", 10:"tenth" };
   const FALLBACK = "Picture the method and work it through one step at a time.";
+  // ---- place-value helpers for the halves/doubles hints (T62) ----------------
+  const UNIT = { 1:"ten", 2:"hundred", 3:"thousand" };   // by number of trailing places
+  // The nonzero place parts of n, biggest first: 360 → [300,60]; 144 → [100,40,4].
+  function placeChunks(n){
+    const s = String(n), L = s.length, out = [];
+    for(let i=0;i<L;i++){ const d = +s[i]; if(d) out.push(d * Math.pow(10, L-1-i)); }
+    return out;
+  }
+  // Natural-language list: [300,60] → "300 and 60"; [100,40,4] → "100, 40 and 4".
+  function listNums(a){ return a.length === 1 ? String(a[0]) : a.slice(0,-1).join(", ") + " and " + a[a.length-1]; }
   function explain(modeId, q){
     if(!q) return "";
     const p = String(q.p);
     switch(modeId){
-      case "halves": { const n = parseFloat(p); if(isNaN(n)) break;
+      case "halves": { const n = parseFloat(p); if(isNaN(n) || n < 0) break;
         const odd = (n % 2 !== 0);
         if(n < 10) return odd
           ? n + " is an odd single digit, so halving it lands on a half."
           : "Halve the single digit " + n + " straight off.";
-        return "Split " + n + " into tens and ones, halve each part, then add them" + (odd ? " (odd, so it ends in a half)." : "."); }
-      case "doubles": { const n = parseFloat(p); if(isNaN(n)) break;
+        const chunks = placeChunks(n);
+        if(chunks.length === 1){            // a round number — work in its one unit
+          const L = String(n).length, d = +String(n)[0], unit = UNIT[L-1] || "unit";
+          return "Think of " + n + " as " + WORD[d] + " " + unit + (d === 1 ? "" : "s") +
+            " — halve the " + WORD[d] + ", keeping the place value" +
+            (d % 2 ? " (an odd count, so you land on a half-" + unit + ")." : ".");
+        }
+        return "Split " + n + " into " + listNums(chunks) + ", halve each part, then add them" +
+          (odd ? " (the ones are odd, so it ends in a half)." : "."); }
+      case "doubles": { const n = parseFloat(p); if(isNaN(n) || n < 0) break;
         if(n < 10) return "Double the single digit " + n + " — add it to itself.";
-        return "Split " + n + " by place value, double each part, then add them up."; }
+        const chunks = placeChunks(n);
+        if(chunks.length === 1){            // a round number — double its one unit
+          const L = String(n).length, d = +String(n)[0], unit = UNIT[L-1] || "unit";
+          return "Think of " + n + " as " + WORD[d] + " " + unit + (d === 1 ? "" : "s") +
+            " — double the " + WORD[d] + ", keeping the place value.";
+        }
+        return "Split " + n + " into " + listNums(chunks) + ", double each part, then add them up."; }
       case "times": { const m = p.match(/(\d+)\s*[×x]\s*(\d+)/); if(!m) break; const x = +m[1], y = +m[2];
         const other = k => (x === k ? y : x);   // the partner of the trick-factor k
         if(x === y) return "It's a square — multiply " + x + " by itself.";
         if(x === 1 || y === 1) return "Times one leaves the number unchanged.";
         if(x === 10 || y === 10) return "Times ten shifts " + other(10) + " one place bigger.";
         if(x === 11 || y === 11) return "For ×11, multiply " + other(11) + " by ten, then add one more " + other(11) + ".";
+        if(x === 12 || y === 12) return "For ×12, multiply " + other(12) + " by ten, then add two more lots of " + other(12) + ".";
         if(x === 9 || y === 9) return "For ×9, multiply " + other(9) + " by ten, then take one " + other(9) + " away.";
         if(x === 5 || y === 5) return "For ×5, multiply " + other(5) + " by ten, then halve.";
         if(x === 4 || y === 4) return "For ×4, double " + other(4) + ", then double again.";
         if(x === 2 || y === 2) return "Just double " + other(2) + ".";
         return "Recall " + x + " × " + y + " from your times tables (or build it from a fact next door)."; }
       case "addsub": case "addsub2": {
+        const big = modeId === "addsub2";   // 3-digit work also crosses the hundred
         const mp = p.match(/(\d+)\s*\+\s*(\d+)/);
-        if(mp) return "Bridge through the next ten: from " + (+mp[1]) + ", add " + (+mp[2]) + " in easy jumps.";
+        if(mp) return "Bridge through the next ten" + (big ? " and hundred" : "") + ": from " + (+mp[1]) + ", add " + (+mp[2]) + " in easy jumps.";
         const ms = p.match(/(\d+)\s*[−-]\s*(\d+)/);
-        if(ms) return "Count up from the smaller number to " + (+ms[1]) + ", or take away the tens then the ones.";
+        if(ms) return "Count up from the smaller number to " + (+ms[1]) +
+          (big ? ", or subtract column by column (ones, tens, hundreds)." : ", or take away the tens then the ones.");
         break; }
       case "bonds": { const m = p.match(/(\d+)\s*\+/); if(!m) break; const x = +m[1];
         return x % 10 === 0
           ? "A whole ten — count up in tens to make 100."
           : "Make the ones reach the next ten, then count the tens up to 100."; }
-      case "bonds2": { const m = p.match(/([\d.]+)\s*\+.*?=\s*([\d.]+)/); if(!m) break; const whole = +m[2];
-        return whole === 1
-          ? "A decimal bond to 1 — the digits after the point must add up to ten."
-          : "Count up to the next hundred, then on to 1000."; }
+      case "bonds2": { const m = p.match(/([\d.]+)\s*\+.*?=\s*([\d.]+)/); if(!m) break; const x = m[1], whole = +m[2];
+        if(whole === 1){
+          const dp = (x.split(".")[1] || "").length;
+          return dp >= 2
+            ? "A decimal bond to 1 — pair the digits after the point like a bond to 100."
+            : "A decimal bond to 1 — the tenths pair up to make ten.";
+        }
+        return "Count up to the next hundred, then on to 1000."; }
       case "placevalue": case "placevalue2": {
         const m = p.match(/([\d.]+)\s*([×x÷\/])\s*(\d+)/); if(!m) break;
         const v = m[1], op = m[2], t = +m[3];
