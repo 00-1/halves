@@ -1,13 +1,33 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T127` [A] (BUG: literal "&amp;" in locked-topic text — double-escape) ·
-live build **`ed16b68`**. **CI green.** The one-line fix exactly as diagnosed: `renderTopicInfo`
-(`main.js:572`) was `esc(unlockReq(m))` but `unlockReq()` **already** returns escaped HTML → `&amp;amp;`
-→ rendered "&amp;"; now `unlockReq(m)` un-escaped (matching the correct `:727` caller). Verified: `node
--c` clean; **full 33-gate suite green**; `tech-tree.test` (36) adds a check that a gating name with `&`
-("Add & Subtract") renders a **single** entity (not `&amp;amp;`) **and** a source guard that no
-`esc(unlockReq(` remains. No XSS regression (dynamic parts still escaped inside `unlockReq`). All
-**[A]-owned files**. T127 → DONE. *(Owner: the locked-topic subline now reads "Add & Subtract".)*
+**Current verdict:** `APPROVED — T130` [B] (golden-snapshot render-regression harness — brickmap-style) ·
+live build **`ba919db`**. **CI green; collision-clean** (only B-owned NEW files: `test/golden-util.js`,
+`test/golden-fx.test.js`, `test/golden-synth.test.js`, `test/golden/*.json`, `BUILDER-LOG-FX.md` — and
+correctly **did NOT touch `pages.yml`**, leaving CI-gate registration to [A] per the collision rule).
+Delivers what the owner asked ("brickmap's golden render could be learned from"): a no-build **Node**
+harness — `golden-util.js` `check(name,value)` serialises a value, `UPDATE_GOLDEN=1` regenerates,
+default **compares + fails with a "first change at line N" hint**. Two deterministic, headless output
+families are pinned: **(a) FXGL CPU-still** — `deriveHomeScene`/`deriveArenaScene` + `burst()` +
+`celebrate()` at **fixed seeds** → compact pixel signatures (home/frost/arena-boss/burst/celebrate); and
+**(b) synth context scores** — per-context scheduled-event scores (`solve`/`menu`/`arena`/`event`) **plus
+a distinctness golden** `{"distinct":4,"pairs_compared":6,"all_distinct":true}`. Verified
+**independently**: gates run **"ALL 16 FX-GOLDEN CHECKS PASSED"** + **"ALL 10 SYNTH-GOLDEN CHECKS
+PASSED"**; **mutation test** — I tampered a synth golden and the harness **CAUGHT it (non-zero exit)**, so
+it is a real regression net, not a rubber stamp. Crucially the **synth-distinctness golden directly
+guards the T128 "all contexts sound the same" failure mode** — it would have failed had the four contexts
+collapsed to one score. GPU/browser/full-layout golden correctly **out of scope** (CI stays Node-only).
+T130 → DONE. **→ filed [A] `T131`: register `golden-fx.test.js` + `golden-synth.test.js` as CI gates in
+`pages.yml` (B couldn't — collision rule; same pattern as the fxgl/synth gate registration).** B → STAND
+BY (engine reactive-only).
+
+> **Previously approved (done):** `T127` [A] (BUG: literal "&amp;" in locked-topic text — double-escape) ·
+> live build **`ed16b68`**. **CI green.** The one-line fix exactly as diagnosed: `renderTopicInfo`
+> (`main.js:572`) was `esc(unlockReq(m))` but `unlockReq()` **already** returns escaped HTML → `&amp;amp;`
+> → rendered "&amp;"; now `unlockReq(m)` un-escaped (matching the correct `:727` caller). Verified: `node
+> -c` clean; **full 33-gate suite green**; `tech-tree.test` (36) adds a check that a gating name with `&`
+> ("Add & Subtract") renders a **single** entity (not `&amp;amp;`) **and** a source guard that no
+> `esc(unlockReq(` remains. No XSS regression (dynamic parts still escaped inside `unlockReq`). All
+> **[A]-owned files**. T127 → DONE. *(Owner: the locked-topic subline now reads "Add & Subtract".)*
 
 > **Previously approved (done):** `T125` [A] (celebrations FIXED — they render now + fire BIG on every
 win/run/item) · live build **`c2296cf`**. **CI green.** Fixes the bug I diagnosed **and** delivers the
@@ -895,17 +915,17 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T130` [B] — GOLDEN-SNAPSHOT harness (brickmap-style render-regression)** (off
-  stand-by; owner: "brickmap's golden render could be learned from"). The structural fix for our
-  recurring **"green gates, broken feature"** gap. **Study brickmap's golden-render** (you have access),
-  then build a **no-build Node golden harness** (B-owned new files; `UPDATE_GOLDEN=1` regenerates,
-  default compares + fails) applied to the **deterministic, headless** outputs: **FXGL CPU-still** renders
-  (scene + `burst()` + `celebrate()` at fixed seeds → compact pixel signature) and **synth context
-  scores** (the scheduled-event score per context → **stable AND mutually distinct**; this class would
-  have caught T128's "every context sounds the same"). GPU/browser/full-layout golden = **out of scope**
-  (keep CI Node-only) — note as future opt-in. Full DoD `T130`. **B-owned files ONLY**; never touch
-  existing Halves files; never push `claude/agent`. *(Runs in parallel with A's T129/T128 audio-bug
-  fixes; if those surface a real engine gap, that preempts.)*
+- **Builder B — next: STAND BY (engine reactive-only).** `T130` **DONE** (golden harness — `ba919db`,
+  CI green, mutation-test confirmed). Nothing queued. Stay reactive: if A's T128/T129 surface a real
+  **engine** gap (e.g. the wub LFO can't wobble in a one-shot `play()`, or the FXGL 2nd-context issue
+  needs an engine-side single-canvas composite), that becomes B's next task — I'll file it and point
+  `NEXT.md` at it. Otherwise hold. **B-owned files ONLY**; never touch existing Halves files; never push
+  `claude/agent`. *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless
+  browser to CI — kept out of scope to keep CI Node-only.)*
+  - **NOTE — the golden gates need [A] registration:** `T130` added `test/golden-fx.test.js` +
+    `test/golden-synth.test.js` but B couldn't wire them into `pages.yml` (collision rule). Filed
+    **[A] `T131`** to register them as CI gates (same pattern as the fxgl/synth gate registration). Until
+    T131 lands they run only locally — they're correct and green, just not yet enforced on every push.
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —

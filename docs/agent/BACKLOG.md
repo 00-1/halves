@@ -2451,7 +2451,16 @@ cramped blob, and the **wider tree-v2 nodes (96px)** leave the fraction under-us
   live node size — must read as the fraction, not a blob — this is the 2nd attempt after T104, get it
   clearly right.)
 
-### T130 — [B] Golden-snapshot harness for deterministic engine output (brickmap-style render regression) · status: OPEN
+### T130 — [B] Golden-snapshot harness for deterministic engine output (brickmap-style render regression) · status: DONE (`ba919db`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). Harness landed: `test/golden-util.js` (`check()` +
+`UPDATE_GOLDEN=1` regen + "first change at line N" hint), `test/golden-fx.test.js` (FXGL CPU-still: home/
+frost/arena-boss/burst/celebrate signatures — 16 checks), `test/golden-synth.test.js` (per-context scores
++ distinctness `{distinct:4, all_distinct:true}` — 10 checks), `test/golden/*.json`. Babysitter verified
+**independently**: both gates green AND a **mutation test** (tampered a synth golden) → harness CAUGHT it
+(non-zero exit). The distinctness golden directly guards T128's "all contexts sound the same."
+**Caveat — DoD's "gates wired into `pages.yml`" is split out:** B can't touch `pages.yml` (A-owned,
+collision rule), so registration is **[A] `T131`** below. Until T131 the gates run locally only (correct
++ green, not yet enforced per-push).
 Owner: "brickmap uses a golden render — checks the render of various things stays consistent and new
 things show up. Could be learned from." This is the structural fix for our recurring **"green gates,
 broken feature"** gap (T118/T125/T128 — see ORCHESTRATION's output-feature rule): source-grep gates
@@ -2481,6 +2490,19 @@ and owns the engines — study brickmap's golden-render, then build the Halves-a
   compact + diff-reviewable; `node -c` clean; all gates green; B-owned files only. (Babysitter: confirm
   the harness actually catches a deliberately-mutated render/score, and that the distinctness golden is
   real — this is the gate that starts closing the output-verification gap.)
+
+### T131 — [A] Register the golden gates (`golden-fx` + `golden-synth`) in `pages.yml` · status: OPEN
+Follow-on from T130 (B built the harness but can't touch `pages.yml` — collision rule keeps it [A]-owned).
+The two golden gates currently run only locally; enforce them on every push.
+- **Add to the CI gate list in `.github/workflows/pages.yml`** the two new tests **`node test/golden-fx.test.js`**
+  and **`node test/golden-synth.test.js`** (same pattern as the existing `fxgl.test`/`synth.test` gate
+  lines — run them with the other `node test/*.js` gates, fail the deploy on non-zero exit).
+- **Do NOT set `UPDATE_GOLDEN`** in CI — CI must run in **compare-and-fail** mode (regen is a local,
+  intentional, diff-reviewed action only).
+- **DoD:** `pages.yml` runs both golden gates on every push (compare mode); a green CI run shows both
+  executing + passing; no other gate dropped; `.github/workflows/pages.yml` is the only file touched
+  ([A]-owned). (Babysitter: confirm in the CI logs that both golden gates actually ran, not just that the
+  file was edited.)
 
 ### T129 — [A] Settings: a MUSIC SWITCHER to sample every style + test switching · status: OPEN · OWNER-PRIORITY
 Owner: "add a music switcher to Settings next to the other audio settings, so I can sample all our
