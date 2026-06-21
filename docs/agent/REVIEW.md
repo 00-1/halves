@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T51` (varied hero portraits restored; follow-up made the
+**Previously approved (done):** `T51` (varied hero portraits restored; follow-up made the
 item-invariance gate permanent). The feature was verified last round — `heroSprite`
 restores the mirrored creature-blob (`G=16`), `buildIcon` routes only `"hero:"`-prefixed
 ids to it; pre-T51-vs-T51 over all 795 items showed **66/66 hero portraits pairwise
