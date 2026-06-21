@@ -1,6 +1,24 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T78` (Events foundation) · live build **`fe004d7`**. New
+**Current verdict:** `APPROVED — T79` (Event play mode — cross-topic gauntlet) · live build
+**`67f9fe2`**. `events.js` gains a pure, dependency-injected **`buildGauntlet(eventId, modes)`** —
+a **deterministic** per-event set (seed = `hashStr(id) ^ artSeed`): each topic's fixed pool is
+**canonicalised to a TOTAL order** (numeric collator + raw-string tie-break) so `build()`'s
+per-round shuffle can't leak, then a seeded pick takes `n`, then a seeded interleave. `main.js`
+adds `startEvent()` (live-only, tags each question with its source `_mode`, reuses the round
+engine) and `finishEvent()` (branched in `finish()`): grants `event:<id>` **only while still
+live at finish** and **once** (idempotent), pays **no Gold**, and `correct()` **suppresses Gold +
+topic Beat/Spark** during events (no item leakage). A "Live today" play strip on the Events tab
+is the entry; `window.EventPlay` exposed for T80/T81. Verified **independently** across all 14:
+**byte-stable** across calls *and* a fresh module boot; set length = Σ min(n,pool); **14/14
+distinct**; **zero** NaN/negative/non-number answers — the 29 non-integers are legit decimals
+(bonds-to-1, decimal place value, fractions-as-decimal, odd halving), each **native to its
+topic's `build()`** so numpad-safe by construction. The hint/eyebrow use the per-question
+`_mode` (`qm = it._mode || mode`), so cross-topic events show the **right** method. `node -c`
+clean; **full 20-gate suite green** (`events.test.js` now 45 checks, incl. a DOM end-to-end:
+reward-on-complete, idempotent replay, off-day cannot start). T79 → DONE.
+
+**Previously approved (done):** `T78` (Events foundation) · live build **`fe004d7`**. New
 standalone `events.js` (`window.Events`): a **pure, offline, deterministic UTC-daily scheduler**
 — `indexFor(now)=((floor(now/86.4e6) % 14)+14)%14`, `today/isLive/daysUntilLive`, clock
 **injected** (no `Date.now` baked in, no network/storage/timers). A **14-event roster** with
@@ -103,12 +121,12 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T79` next** (Event play mode) — the cross-topic gauntlet: a **deterministic** per-event
-question set drawn across topics per each event's `questionMix` (same set every play/recurrence,
-so best-attempt is fair); reuse the round/clock/scoring engine; entry only when **live today**;
-completing the live event **grants its `event:<id>` reward** (idempotent). Then `T80`
-(best-attempt board + live-window lockout) → `T81` (art/copy/music + the prominent home banner).
-Specs in BACKLOG Phase 6.5; this line is authoritative.
+**Do `T80` next** (best-attempt board + live-window lockout) — events appear on the
+best-attempt board; `isRetryable` true **iff live today**, else the entry renders **locked**
+(visible, not routable into play); best attempt **persists across the 14-day recurrence** so you
+can beat it next time. Then `T81` (art/copy/music + the **prominent home banner** — owner: a
+front-and-centre home-screen CTA, not hidden in menus). Specs in BACKLOG Phase 6.5; this line is
+authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**

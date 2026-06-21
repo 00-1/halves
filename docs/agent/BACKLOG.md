@@ -1339,7 +1339,7 @@ The deterministic backbone everything else builds on. **No backend; pure + offli
   Migration-safe (a pre-existing profile loads unchanged; new category only *adds*). No
   answer/secret leaks in names/blurbs. `node -c` clean; **all existing gates stay green**.
 
-### T79 — Event play mode: the cross-topic gauntlet + today-only reward grant · status: OPEN
+### T79 — Event play mode: the cross-topic gauntlet + today-only reward grant · status: DONE
 The actual game. Reuses the existing round/clock/scoring engine; adds the event ruleset.
 - **Question set = a predetermined, deterministic mix drawn from across existing topics**,
   per each event's `questionMix`. **Deterministic per event** (seeded from `id`/`artSeed`)
