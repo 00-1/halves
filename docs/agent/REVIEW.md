@@ -1,15 +1,14 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T41` (hero rename complete; pip→Pocket applied —
-all 12 `HERO_NAMES` match the final mapping, ids unchanged, every boost resolves,
-heroes.js in sync). **Do `T35` next:** diverse item names + fix inventory name
-truncation, per `docs/agent/DESIGN-names.md` (drop-in templates + 612 adjectives +
-124 fixed funny names incl. "Cooked Goblin Leg"; replace the `ADJ`/`NOUNS`/
-`itemFlavour` block; keep `hashStr`/`itemStyle`; names deterministic & unique; fix
-the inventory caption so names aren't clipped). Then **`T43`** (trim tier loot to
-~250 + recalibrate, re-verify all T23 invariants) → **`T42`** (inventory tabs — Loot
-its own tab, sub-grouped by region — + per-category bars + jump-to-top) → **`T44`**
-(tier rename, once owner-approved) → **`T24` (Arena)** → **`T36`** (icons) →
+**Current verdict:** `APPROVED — T35` (diverse item names — 1443 globally-unique,
+varied, deterministic; truncation fixed). **Do `T43` next:** trim tier loot to ~250
+— change the batch formula in `enemies.js` (suggested `1 + floor((n-1)/25)` = 250),
+keep rarer-with-depth, then **re-run the full T23 battle-invariant suite on the new
+loot** (early tiers winnable by starter; no tier gated behind own loot; tier 100
+needs near-full collection; def monotonic; loot drill-unearnable + stamped +
+covers 12 heroes). Confirm total ≈250 via Node. Then **`T42`** (inventory tabs —
+Loot its own tab, sub-grouped by region — + per-category bars + jump-to-top) →
+**`T44`** (tier rename, once owner-approved) → **`T24` (Arena)** → **`T36`** (icons) →
 `T25`/`T26` → Phase 4. Specs in BACKLOG.
 
 When you (Builder) hand off a task, I will replace this with one of:
@@ -26,6 +25,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T35 — Diverse item names + inventory truncation fix → APPROVED
+Applied the DESIGN-names.md system (612 ADJ, 13+8 templates, 124 FIXED, epithets/creatures/places/cook-words) replacing the old 14-ADJ single-template generator; kept `hashStr`/`itemStyle`/the stamp. Independently verified (Node, full 1443-item catalogue incl. T23 loot): node -c OK; old ADJ constant gone; no TODO/stub. **All 1443 names non-empty, globally UNIQUE (0 dups), no unfilled `{placeholders}`, deterministic across reloads (0 drift).** Structure spread across 6 buckets (adjNoun 460, of-the 321, of 186, possessive 168, The 141, other 167) — varied, not one mould. Food + FIXED reachable ("Roasted Glow-worm Roll of Twilight"; a FIXED one-off present). **Truncation fixed:** `.inv-name` now `white-space:normal; overflow-wrap:anywhere; word-break; hyphens` (ellipsis/nowrap removed) → full names wrap. **Accepted deviation:** a deterministic `uniqueFlavour()` re-roll layer was added because the raw generator collides 26× over 1443 items (124-FIXED pigeonhole) and the DoD mandates global uniqueness — transparently flagged, theme-preserving, order-deterministic, and names are cosmetic (saves keyed by id) so it can't break progress. No regressions.
 
 ### T41 — Rename heroes (display-only) → APPROVED
 Owner-approved cast applied. Verified (Node, real modes/collectibles/heroes): node -c OK; `HERO_IDS` unchanged (`bram…roon`); all 12 `HERO_NAMES` exactly match the final mapping incl. the follow-up `pip→Pocket`; **0** catalogue boosts with a missing hero name; **0** heroes.js↔HERO_NAMES mismatches. Display-only — no logic touched. Final cast: Brannon, Valeska, Ser Aldric, Magnar, Wisp, Maerwen, Emrys, Aerin, Pocket, Vesh, Selwen, Rendel.

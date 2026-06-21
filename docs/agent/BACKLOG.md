@@ -522,7 +522,7 @@ NOT touch `DESIGN-heroes.md`** (babysitter-owned; already updated).
   mapping; heroes screen + inventory boost labels show the new names; no logic
   change/regression; deploy green.
 
-### T35 — Diverse item names + fix inventory truncation · status: BLOCKED (spec ready: DESIGN-names.md; after T23 + CSS polish)
+### T35 — Diverse item names + fix inventory truncation · status: DONE
 Owner: item names are too samey (today: **14 adjectives, ~36 nouns → only 167
 unique names for 775 items**; "Whispering" used 68×) and **get cut off on the
 inventory screen**; they should NOT all follow the rigid `<Adj> <Noun>` mould (cf.
