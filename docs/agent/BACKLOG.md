@@ -1639,3 +1639,28 @@ attenuated via `musicGain.gain.value = 0.07` (effective ≈ 0.011 — very quiet
   limiter added); mute + visibility behaviour intact; `node -c` clean; no regressions;
   deploy green. (Babysitter checks the new `VOL`/`musicGain` values, the worst-case
   headroom, and that the mute/visibility + balance logic is unchanged.)
+
+### T70 — Hint clarity pass: make every explanation actually helpful · status: OPEN
+Owner: "tidy [the twentieths] if it's not useful or clear. **Try to explain everything in
+a way that's actually helpful.**" T62 made every hint correct + method-only; this pass
+raises the bar from *correct* to *genuinely clear & useful to a 10-year-old*.
+- **Fix the twentieths (the flagged case).** `fractions` `n/20` currently says "A
+  twentieth is half a tenth — find 11/10, then halve" — an awkward improper fraction for
+  `11/20`,`17/20`. Replace with the **scale-to-hundredths** method that works cleanly for
+  **all** n/20: e.g. *"Scale 11/20 up to hundredths (×5 top and bottom), then read off two
+  decimal places."* (verified leak-free: 55/100 etc., never states the answer). Concrete,
+  general, no improper fractions.
+- **Re-read EVERY hint for clarity/helpfulness**, not just correctness. Replace anything
+  vague, cute, or assuming hidden knowledge with a concrete instruction the student can
+  follow. Known suspects to judge: times' fallback *"build it from a fact next door"*
+  (vague — say what, e.g. "use the fact one row up/down"); the eighths *"count 7 eighths"*
+  (assumes you know 1/8 = an eighth's value — make the step explicit); any terse phrasing
+  like percentages' *"take both of 80"*. Each hint should name the concrete action.
+- **Keep all T62 properties:** correct, **method-only** (no token or word answer-leak),
+  place-honest, concise (one short sentence), British, 10-yo-appropriate. The
+  `hints.test.js` gate must stay green.
+- **DoD:** the twentieths use the clean hundredths method (no improper fractions; helpful
+  for all n/20); a full clarity re-read fixed any unclear/vague/knowledge-assuming hints
+  (Babysitter dumps the full hint set again and reads for **clarity**, not just
+  correctness); all gates green (no new leaks/phantom/plural); concise; no regressions;
+  deploy green. (Babysitter re-reads every topic's full hint set for genuine helpfulness.)
