@@ -1,14 +1,13 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T24` (Arena live — the metagame is now playable;
-buff-gating proven on the live win path: tier 100 unbeatable with 0 items at max
-perf, champion wins only at ~full collection, removing one boost flips it to a loss;
-tier 1 still winnable by the starter). **Do `T36` next:** the ~50-category pixel-icon
-overhaul + per-item variation, per `docs/agent/DESIGN-icons.md` (12 archetype
-renderers; grid G 12→16; the 6 variation levers capped by `locked` identity cells;
-the Node `icon-variation` test — cross-category ≥0.18, within-category ≥0.22, no
-dups, identity ≥95%, determinism — wired into CI; remap name nouns to archetype
-family + add Tool/Garment pools). Then **`T25`/`T26`** → Phase 4
+**Current verdict:** `APPROVED — T36` (icon overhaul — 50 categories, strong
+per-item variation, CI-gated variation test, names still unique). **Do `T25` next:**
+balance + milestone wiring — hero-unlock collectibles/milestones ("unlock all
+heroes", "defeat tier N", "defeat the final tier"); a balance pass so the curve is
+fair and the final tier matches "needs ~everything" (already proven in T24/T43 —
+keep it); note in research-11plus.md that Phase 3 is the engagement layer. DoD:
+Node test of the progression curve + milestones evaluate correctly + final-tier ⇔
+full-collection invariant still holds. Then **`T26`** (Goblin Gold) → Phase 4
 (**`T31`** day counter, **`T32`** practice view) → content (**`T27`** guides,
 **`T13`** audit, **`T30`** deep review) → **`T45`** (final perf/CPU/memory audit,
 LAST). **Owner is away — the loop runs to completion unattended:** the Babysitter
@@ -30,6 +29,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T36 — Pixel icons: ~50 categories + per-item variation → APPROVED
+Full icon-engine rewrite per DESIGN-icons.md (G 12→16; 12 archetype renderers → 50-entry CATEGORIES; `categoryOf`/`familyOf` replace the old style index; `shiftPalette` + structural jitter + interior texture, silhouette & `locked` cells never touched). Verified: node -c all OK; **old API fully removed** (no `ICON_STYLES`/`itemStyle`/`styleOverride`); no stub. **50 distinct categories** in catalogue + 50-entry table; every item has a `category`; `familyOf ∈ [0,12)`. **`test/icon-variation.test.js` PASSES all 5** (ran it: cross-category role ≥0.18 [closest staff/wand 0.237]; within-category combined ≥0.22 [worst key 0.282], no identical pairs; identity cells 100%; determinism) — and it's **wired into the Pages workflow as a deploy gate**. `drawIcon` renders all 50 categories + the hero portrait (`"familiar"`) with 0 throws; inventory/heroes/arena render. **Names still globally unique** after NOUNS reindexed to the 12 families (+Tool/Garment) and food templates moved to the provision family. Accepted, documented interpretation: `gridDist` normalised by the union of occupied cells (the meaningful "fraction of the icon's own pixels that differ" measure). No regressions.
 
 ### T24 — Arena mode (`#/arena`) → APPROVED — KEYSTONE (metagame now playable)
 The Arena: `BATTLE_MODE` (mixed questions from unlocked topics), `renderArena`/`startBattle`/`finishBattle`, `finish()` battle-branch (guarded by `battleCtx` — normal drills unaffected). Verified: node -c (main/enemies/collectibles/heroes) OK; no stub; 6 new arena DOM ids present, id cross-check clean; CSS balance ok. **Owner buff-gating requirement PROVEN on the exact live win path** (`computePerf`→`resolveBattle` on `loadCollected()`): computePerf maxes at 1.0 (no perf shortcut); **tier 100 NOT beatable with 0 items at max perf — nor at an impossible perf 1.5**; tier 50 not beatable with 0 items; champion (roon) beats tier 100 only at full-minus-final-loot, and **removing one champion boost flips it to a loss**; tier 1 winnable by base bram. Builder's async DOM battle-drive harness (16 checks) played real rounds via synthetic keydowns: render → hero-pick → Fight → Victory persists `tier:1`+loot (boosts hero); a perfect round vs The Void Sovereign with no collection → Defeated, no `tier:100`. Loss → no progress. No regressions to normal drills.

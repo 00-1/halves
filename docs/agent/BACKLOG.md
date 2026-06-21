@@ -554,7 +554,7 @@ the lost "Cooked Goblin Leg"). Replace the naming system and fix the layout.
   DOM/CSS check: inventory captions render the full name without ellipsis clipping
   at 360px; no regressions; deploy green.
 
-### T36 — Pixel icons: ~50 categories + per-item variation · status: BLOCKED (spec ready: DESIGN-icons.md; after T23)
+### T36 — Pixel icons: ~50 categories + per-item variation · status: DONE
 Owner: more icon categories (~50, same chunky 16-bit look) AND **stronger variation
 within a category** (the old mirrored-sprite generator varied a lot; T20 made items
 look templated). Full spec: **`docs/agent/DESIGN-icons.md`** — 12 parameterized
