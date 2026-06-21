@@ -3227,3 +3227,81 @@ notes / questions: open questions for the owner are in §6 (retro pixel-bevel vs
   confirm the clean-text rule). Next per the **Builder A pointer**: **T88–T90 (Arena 3v3)**,
   then content **T58–T61**, then **T72**, plus FX **wiring** tasks once B's `FXGL` engine +
   the surfaces exist.
+
+## T88 — Arena 3v3: a deterministic 1–3 vs 3 auto-resolve sim (re-derive + re-prove)  [HANDOFF]
+commit: (this commit, on main) — [A] task (Phase 6.10). Mid-task on T88 when the Builder A
+pointer reprioritised T98–T103 ahead of the Arena; finished per the pointer's "if A is
+mid-task, finish it first" clause. Picking up **T98** (audio volume) next.
+Goal (IDEAS I5): generalise the single-hero `statBattle` to a deterministic, RNG-free 1–3
+vs 3 team auto-resolve; re-derive the difficulty curve for the team model; re-PROVE every
+Arena invariant by simulation (not by a closed-form def formula).
+changed:
+  - **enemies.js** — added a 3v3 team-battle layer **additively** (the 1v1 `statBattle`,
+    its `def` curve, and `calibrateFinal` are KEPT UNCHANGED — migration-safe; the live
+    Arena keeps using `statBattle` until the team UI lands in T89). New pieces:
+    • **combatant model** `{atk,hp,spd,type}` — `heroCombatant(hero,collected)` (hp = HB +
+      guard·HG + power·HPP; atk = power + 0.8·focus) and `enemyCombatant(budget,type)`
+      (atk = √(budget/HPR), hp = √(budget·HPR), fixed spd = ESPD).
+    • **`simulateTeams(heroes,foes)`** — the pure sim: turn order by spd (fixed index
+      tie-break), each actor targets by a FIXED rule (best type-matchup → lowest hp →
+      index), deals `max(1, round(atk × matchup))`, removed at hp ≤ 0, loops to a wipe
+      (4000-round guard). **Zero RNG / DOM / clock** (asserted by the gate). Win = ≥1 hero
+      alive.
+    • **`bestTeamVs(collected,n,foeType)`** — the n heroes maximising rating × matchup (the
+      team analog of the 1v1 `bestAdvRating`); `teamProduct` = Σ atk·Σ hp.
+    • **`FOE_BUDGET` calibration IIFE** (runs at load, so it AUTO-SCALES as content grows —
+      T58 playbook): per-tier foe budget = `min(geometric ramp, suffix-min envelope of the
+      best advantage-team product × CAPF)` so **no tier is gated behind its own loot**; the
+      ramp scale `lb0` is pinned by binary search to the **max scale at which one starter
+      hero still clears tiers 1–5**; the **final tier** is pinned (binary-searched edges)
+      **between the near-full and the 85%-loadout win edges**, so the top falls ONLY to a
+      near-full collection.
+    • **`enemyTeamFromBudget`/`enemyTeam(n)`** — a tier fields the lead foe at the tier
+      budget + 2 weaker adds at level `max(1, tier−K)`; **`teamBattle(heroes,tier,collected)`**
+      is the public 1–3-hero entry (accepts ids or hero objs, caps the party at 3).
+    • Exported `teamBattle, enemyTeam, simulateTeams, heroCombatant`.
+    • **BUGFIX during build:** the team layer now reads the foe type from the LIVE tier
+      (`TIERS[n-1].type` / `byTier(n).type`), NOT the pre-override `types[]` cycle — the
+      legacy `calibrateFinal` overrides the tier-120 boss type, so using the cycle made the
+      foe type (and thus the calibration edge + the best-team pick) inconsistent with what
+      the player sees, which wrongly LOST tier 120 at near-full. Foe type is now consistent
+      end-to-end (display ⇔ sim, asserted by the gate).
+  - **test/arena3.test.js (NEW)** — the lattice gate (24 checks). Sweeps **every tier ×
+    team size {1,2,3} × loadout {0, 25%, 50%, 75%, 85%, near-full, full}** and proves, by
+    SIMULATION: (a) the sim is pure + deterministic + win == "≥1 hero alive" (and genuinely
+    resolves losses); (b) tiers 1–5 winnable by ONE starter hero at 0 items; (c) the
+    foe-team budget curve is strictly monotonic (peak at tier 120); (d) no tier gated behind
+    its own loot (best 3-party on pre-tier items wins every tier); (e) the top is
+    near-max-only — tier 120 LOST at ≤85% / 0 items, WON at near-full, with the win boundary
+    in the **top ~14%** of the loadout; (f) outcome **monotone in loadout AND team size**
+    across all 120 tiers (568/720 lattice cells won — spans real wins and losses); (g)
+    `statBattle` preserved.
+  - **.github/workflows/pages.yml** — wired `node test/arena3.test.js` as the **25th CI
+    gate** (after the onboarding gate).
+how I verified:
+  - **`node test/arena3.test.js` → ALL 24 ARENA-3V3 CHECKS PASSED.** Full **25-gate suite
+    green** (arena/tech-tree/collector/inventory/onboarding/events spot-checked + the whole
+    `test/*.test.js` sweep: 25 passed / 0 failed). `node -c enemies.js` clean. The 1v1 Arena
+    gate (`arena.test.js`, 29 checks) still passes — `statBattle`/def curve untouched.
+  - Team-curve calibration load cost ≈ 0.2 s (binary searches over the sim); acceptable and
+    auto-scaling per T58 — no hard-coded numbers, re-derives as content grows.
+notes / questions:
+  - **One-boost-flip reinterpretation (flag for the babysitter):** the original spec asked
+    that "removing ANY ONE champion boost flips tier 120 to a loss." That is **literally
+    unachievable for a 3-hero team** — one boost moves the team atk·hp product by < 0.1%, so
+    it never flips a 3v3 outcome (verified across HPR ratios in calibration scratch). The
+    sim instead proves the **achievable analog, the CHUNK-FLIP**: the tier-120 win boundary
+    sits in the **top ~14%** of the collection (LOST at ≤85%, WON at near-full), so dropping
+    a chunk of your loadout flips the top tier. The literal one-boost-flip remains proven for
+    the **1-hero** special case by the existing `arena.test.js` (d). If the owner wants a
+    literal single-item flip for the team too, the lever is a **much higher per-item boost
+    weight** (or a tiny team) — say the word.
+  - **T88 is the sim + calibration only.** The team-SELECTION UI (pick 1–3 heroes) is **T89**
+    and the watchable turn-by-turn playout is **T90** — the live Arena still runs the 1v1
+    `statBattle` until then (no UI regression). The two FX **wiring** tasks (mount `FXGL`
+    Arena biome) are gated on T88–T90 per the pointer; B's engine shipped (T93) so they can
+    be specced.
+  - Per the **updated Builder A pointer**, the Arena block was reprioritised behind the
+    front-end polish wave — **next: `T98`** (raise the too-quiet audio `VOL 0.30`→~0.8 with
+    no clip), then `T99`/`T100` (top-band reclaim, gamey restyle), then `T101`–`T103`
+    (shipping/perf), then `T89`–`T90` to finish the Arena.

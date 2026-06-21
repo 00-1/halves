@@ -72,6 +72,8 @@ jobs:
         run: node test/settings-reset.test.js
       - name: Onboarding gating test (gate)
         run: node test/onboarding.test.js
+      - name: Arena 3v3 deterministic-sim lattice test (gate)
+        run: node test/arena3.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

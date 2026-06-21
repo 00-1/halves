@@ -194,6 +194,120 @@
     };
   }
 
+  // ---- 3v3 team battle: deterministic auto-resolve sim (T88) ---------------
+  // Generalises the single-hero stat check to a turn-based 1–3 vs 3 attrition
+  // fight with ZERO RNG (same inputs → same result), so the difficulty curve is
+  // re-derived and every invariant is re-proven by simulation (arena3.test.js).
+  // statBattle (above) is preserved as the 1v1 stat check (migration-safe; the
+  // live Arena still uses it until the team UI lands in T89).
+  //
+  // Combatant {atk, hp, spd, type}. Turn order by spd (fixed index tie-break). On
+  // a turn the actor targets by a FIXED rule (best type-matchup; tie → lowest hp;
+  // tie → index) and deals max(1, round(atk × matchup)); removed at hp ≤ 0; loop
+  // until one side is wiped. Win = ≥1 hero alive. Monotone in atk/hp/team-size.
+  const HB = 22, HG = 1.4, HPP = 0.5;   // hero combatant: hp = HB + guard·HG + power·HPP; atk = power + 0.8·focus
+  const HPR = 2.2, K = 10, ESPD = 4;    // enemy hp/atk ratio · add level offset (tier−K) · enemy fixed speed
+  const LG = 1.065, CAPF = 0.07;        // foe-budget ramp growth · cap fraction (enemy team ≪ beatable team product)
+
+  function heroCombatant(hero, collected){
+    const s = H.effectiveStats(hero, collected || {});
+    return { atk: s.power + 0.8 * s.focus, hp: HB + s.guard * HG + s.power * HPP, spd: s.speed, type: hero.type };
+  }
+  function enemyCombatant(budget, type){
+    return { atk: Math.sqrt(budget / HPR), hp: Math.sqrt(budget * HPR), spd: ESPD, type: type };
+  }
+  // Best N-hero team vs a foe type: the N heroes maximising rating × matchup (so
+  // the team can field the type counter — the team analog of bestAdvRating).
+  function bestTeamVs(collected, n, foeType){
+    return H.HEROES
+      .map(h => ({ h: h, s: H.rating(h, collected) * H.matchup(h.type, foeType) }))
+      .sort((a, b) => b.s - a.s).slice(0, n)
+      .map(x => heroCombatant(x.h, collected));
+  }
+  function teamProduct(team){ let a = 0, h = 0; for(const c of team){ a += c.atk; h += c.hp; } return a * h; }
+
+  // Pure deterministic sim. heroes/foes = combatant arrays. Returns the outcome.
+  function simulateTeams(heroes, foes){
+    const all = heroes.map((c, i) => ({ atk:c.atk, hp:c.hp, spd:c.spd, type:c.type, side:0, ord:i }))
+      .concat(foes.map((c, i) => ({ atk:c.atk, hp:c.hp, spd:c.spd, type:c.type, side:1, ord:100 + i })));
+    const order = all.slice().sort((a, b) => b.spd - a.spd || a.ord - b.ord);
+    let guard = 0;
+    const aliveOn = side => all.some(c => c.side === side && c.hp > 0);
+    while(aliveOn(0) && aliveOn(1) && guard < 4000){
+      guard++;
+      for(const actor of order){
+        if(actor.hp <= 0) continue;
+        const foesAlive = all.filter(c => c.side !== actor.side && c.hp > 0);
+        if(!foesAlive.length) break;
+        const tgt = foesAlive.sort((x, y) =>
+          H.matchup(actor.type, y.type) - H.matchup(actor.type, x.type) || x.hp - y.hp || x.ord - y.ord)[0];
+        tgt.hp -= Math.max(1, Math.round(actor.atk * H.matchup(actor.type, tgt.type)));
+      }
+    }
+    return {
+      win: all.some(c => c.side === 0 && c.hp > 0),
+      heroesAlive: all.filter(c => c.side === 0 && c.hp > 0).length,
+      foesAlive: all.filter(c => c.side === 1 && c.hp > 0).length,
+      rounds: guard
+    };
+  }
+
+  // ---- re-calibrated enemy-team curve (computed at load, so it auto-scales as
+  // content grows — T58 playbook). Per-tier FOE budget = min(geometric ramp,
+  // suffix-min envelope of the best advantage-team product × CAPF) so no tier is
+  // gated behind its own loot; the ramp scale is pinned so a SINGLE starter hero
+  // clears tiers 1–5; the final tier is pinned between the near-full and the
+  // 85%-loadout edges so the top falls ONLY to a near-full collection.
+  const FOE_BUDGET = (function calibrateTeamCurve(){
+    const advProd = [];
+    {
+      const owned = {}; DRILL_IDS.forEach(id => owned[id] = true);
+      for(let n = 1; n <= TIER_COUNT; n++){
+        advProd.push(teamProduct(bestTeamVs(owned, 3, TIERS[n - 1].type)));
+        lootByTier[n].forEach(id => owned[id] = true);
+      }
+    }
+    const capEnv = advProd.slice();
+    for(let i = capEnv.length - 2; i >= 0; i--) capEnv[i] = Math.min(capEnv[i], capEnv[i + 1]);
+    const build = lb0 => { const fb = []; for(let n = 1; n <= TIER_COUNT; n++) fb.push(Math.min(lb0 * Math.pow(LG, n - 1), capEnv[n - 1] * CAPF)); return fb; };
+    // owned-sets used for the early floor + final-tier calibration
+    const bram = [heroCombatant(H.HEROES[0], {})];
+    const nearFull = {}; DRILL_IDS.forEach(id => nearFull[id] = true);
+    for(let k = 1; k < TIER_COUNT; k++) lootByTier[k].forEach(id => nearFull[id] = true);  // drill + loot 1..119
+    const tEarly = (fb, n) => simulateTeams(bram, enemyTeamFromBudget(fb, n)).win;
+    // pin lb0: max ramp scale at which one starter hero still clears tiers 1..5
+    let lo = 1, hi = 400;
+    for(let it = 0; it < 46; it++){ const mid = (lo + hi) / 2, fb = build(mid); let ok = true; for(let n = 1; n <= 5; n++) if(!tEarly(fb, n)) ok = false; if(ok) lo = mid; else hi = mid; }
+    const fb = build(lo * 0.9);
+    // final tier 120: place between the near-full edge and the 85%-loadout edge
+    const fType = TIERS[TIER_COUNT - 1].type;
+    const subset = frac => { const ids = Object.keys(nearFull); const o = {}; ids.slice(0, Math.floor(ids.length * frac)).forEach(id => o[id] = true); return o; };
+    const edge = team => { let elo = fb[TIER_COUNT - 1] * 0.05, ehi = fb[TIER_COUNT - 1] * 30;
+      for(let it = 0; it < 60; it++){ const m = (elo + ehi) / 2, t = fb.slice(); t[TIER_COUNT - 1] = m;
+        if(simulateTeams(bestTeamVs(team, 3, fType), enemyTeamFromBudget(t, TIER_COUNT)).win) elo = m; else ehi = m; } return elo; };
+    const eFull = edge(nearFull), e85 = edge(subset(0.85));
+    fb[TIER_COUNT - 1] = (eFull + Math.min(e85, eFull)) / 2;   // near-full wins, ≤85% loses
+    return fb;
+  })();
+  // The enemy team for a tier from a foe-budget array: the tier foe + 2 weaker
+  // adds at level max(1, tier−K) (near-trivial at low tiers; scale with the tier).
+  function enemyTeamFromBudget(fb, n){
+    const aL = Math.max(1, n - K);
+    return [ enemyCombatant(fb[n - 1], TIERS[n - 1].type),
+             enemyCombatant(fb[aL - 1], TYPES[n % 3]),
+             enemyCombatant(fb[aL - 1], TYPES[(n + 1) % 3]) ];
+  }
+  // Public: the enemy team a tier fields (for display in T89).
+  function enemyTeam(n){ return enemyTeamFromBudget(FOE_BUDGET, n); }
+  // Public: resolve a 1–3 hero party vs a tier's enemy team (deterministic).
+  function teamBattle(heroes, tier, collected){
+    const list = (Array.isArray(heroes) ? heroes : [heroes]).slice(0, 3)
+      .map(h => heroCombatant((typeof h === "string") ? H.byId(h) : h, collected || {}));
+    const tierObj = (typeof tier === "number") ? byTier(tier) : tier;
+    const res = simulateTeams(list, enemyTeamFromBudget(FOE_BUDGET, tierObj.n));
+    return { win: res.win, heroesAlive: res.heroesAlive, foesAlive: res.foesAlive, rounds: res.rounds, tier: tierObj.n };
+  }
+
   // ---- public api ---------------------------------------------------------
   function byTier(n){ return TIERS[n - 1] || null; }
   function tierLoot(n){ return (lootByTier[n] || []).slice(); }
@@ -213,6 +327,7 @@
     TIERS, TIER_COUNT, REGION_SIZE,
     byTier, tierLoot, tierRegion, regionLabel, canAttempt, currentTier,
     statBattle,
+    teamBattle, enemyTeam, simulateTeams, heroCombatant,   // T88 — 3v3 deterministic sim
     matchup: H.matchup, beats: H.beats
   };
 })();
