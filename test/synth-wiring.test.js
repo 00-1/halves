@@ -25,16 +25,22 @@ ok(/out\.connect\(sMaster\)/.test(main) && /S\.master\(\)/.test(main), "(1) Synt
 ok(!/setMusic|startScheduler|setInterval|STYLES/.test(ssrc), "(2) sound.js's music scheduler is removed (no second scheduler)");
 ok(/musicForScreen\(name\)/.test(main) && !/Sound\.setMusic/.test(main), "(2) show() drives music via Synth (musicForScreen), not the old Sound.setMusic");
 
-// ---- (3) per-screen contexts; SOLVE is calm by construction ----------------
+// ---- (3) per-screen contexts via the DISTINCT engine contexts (T128) --------
 ok(/name === "game" \? \(eventCtx \? "event" : "solve"\) : name === "arena" \? "arena" : "menu"/.test(main), "(3) screens route to contexts: game→solve/event, arena→arena, else→menu");
-const solve = (main.match(/context === "solve"\)\{([\s\S]*?)\}\n/) || [])[1] || (main.match(/if\(context === "solve"\)\{([\s\S]*?)return/) || [])[1] || "";
-ok(/kickK: 0/.test(solve) && /snare: new Array\(16\)\.fill\(0\)/.test(solve), "(3) the SOLVE spec is CALM by construction — no driving kick/snare (firm rule)");
-ok(/SYNTH_BPM = \{ solve: 60/.test(main) && /menu: 80/.test(main), "(3) the solve tempo (60) is slower than the menu (80) — calm");
+// T128(1): musicForScreen drives the engine's distinct context (setContext via
+// synthSwitchContext) — NOT the old flat musicSpec() that shared one default chord set
+ok(/function musicForScreen\([\s\S]{0,760}synthSwitchContext\(context/.test(main), "(3) T128: per-screen music drives the DISTINCT context (synthSwitchContext), not a flat spec");
+ok(!/function musicSpec\(/.test(main) && !/SYNTH_BPM/.test(main), "(3) T128: the old musicSpec()/SYNTH_BPM partial specs (no progression → same chords) are GONE");
+ok(/context === "solve"[\s\S]{0,140}mode\.music/.test(main), "(3) SOLVE still varies per topic (its seed mixes in mode.music) — topics stay distinct");
+ok(/function synthSwitchContext\([\s\S]{0,900}Sy\.swapNow\(\)/.test(main), "(3) T132: a switch swaps the generator NOW (Synth.swapNow) — instant, not a far phrase boundary");
 ok(/Sy\.intensity\(arenaBossProx\(\)\)/.test(main) && /facingBoss \? 1/.test(main), "(3) the Arena context drives Synth.intensity() from live boss-proximity");
 
 // ---- (4) wins + ducking + tempo/mute ---------------------------------------
-ok(/function wubSting\(\)[\s\S]{0,160}Sy\.play\("wub"/.test(main), "(4) the win-sting fires Synth's wub patch (Sy.play('wub'))");
-ok(/if\(res\.win\)\{ fxCelebrateWin\(tier\.n\); wubSting\(\);/.test(main) && /cat === "Mastery"[\s\S]{0,80}wubSting\(\)/.test(main), "(4) the wub fires on a real win (Arena victory + topic-complete/mastery)");
+// T128(2): the win cue uses the engine's purpose-built victory STING (wub + bells on
+// the SFX bus) — the old hand-rolled play("wub",{bus:"music"})+duck ducked its OWN wub.
+ok(/function wubSting\(\)[\s\S]{0,200}Sy\.sting\("victory"\)/.test(main), "(4) T128: the win-sting uses Synth.sting('victory') (wub on the un-ducked SFX bus)");
+ok(!/Sy\.play\("wub"[^)]*bus: "music"/.test(main), "(4) T128: the wub is no longer played on the (ducked) MUSIC bus → it isn't self-suppressed");
+ok(/if\(res\.win\)\{ fxCelebrateWin\(tier\.n\); wubSting\(\);/.test(main) && /cat === "Mastery"[\s\S]{0,80}wubSting\(\)/.test(main), "(4) the win-sting fires on a real win (Arena victory + topic-complete/mastery)");
 ok(/DUCK_SFX/.test(main) && /window\.Synth\.duck\(\)/.test(main), "(4) the louder SFX stings DUCK the music (Synth.duck)");
 ok(/window\.Synth\.setMuted\(!on\)/.test(main), "(4) mute silences Synth too (applySoundPref)");
 ok(/synthTempoMult\(\)/.test(main) && /loadTempo\(\) \/ 100/.test(main), "(4) the T113 tempo slider drives the Synth context tempo");
@@ -47,9 +53,9 @@ ok(/\.music-switch \.mus-btn\{[^}]*min-height:44px/.test(css), "(6) T129: each s
 ok(/\.mus-btn\[aria-pressed="true"\]/.test(css), "(6) T129: the picked style is visibly highlighted (aria-pressed styling)");
 ok(/\[data-ui="pixel"\] \.music-switch \.mus-btn/.test(css), "(6) T129: the switcher is data-ui=\"pixel\" styled (matches the chrome)");
 // the wiring drives the engine's DISTINCT contexts via setContext (NOT musicSpec)
-ok(/function synthSwitchContext\(name\)\{[\s\S]{0,160}!Sy \|\| !Sy\.setContext \|\| !synthWired\) return false/.test(main), "(6) T129: synthSwitchContext is a guarded no-op when Synth is absent/unwired");
-ok(/function synthSwitchContext\([\s\S]{0,260}Sy\.setContext\(name\)/.test(main), "(6) T129: it drives the engine's distinct context via Synth.setContext(name) (not musicSpec)");
-ok(/function synthSwitchContext\([\s\S]{0,320}synthTempoMult\(\)[\s\S]{0,200}c\.tempo \*/.test(main), "(6) T129: the T113 tempo multiplier is applied on top of the context tempo");
+ok(/function synthSwitchContext\(name[\s\S]{0,180}!Sy \|\| !Sy\.setContext \|\| !synthWired\) return false/.test(main), "(6) T129: synthSwitchContext is a guarded no-op when Synth is absent/unwired");
+ok(/function synthSwitchContext\([\s\S]{0,300}Sy\.setContext\(name\)/.test(main), "(6) T129: it drives the engine's distinct context via Synth.setContext(name) (not musicSpec)");
+ok(/function synthSwitchContext\([\s\S]{0,520}synthTempoMult\(\)[\s\S]{0,260}c\.tempo \*/.test(main), "(6) T129: the T113 tempo multiplier is applied on top of the context tempo");
 
 // ---- (5) the gates are registered in CI ------------------------------------
 ok(/test\/synth\.test\.js/.test(wf), "(5) Builder-B's engine gate test/synth.test.js is registered in CI");
@@ -57,7 +63,7 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
 
 // ============ live boot: drive the wiring with stub Sound + Synth ============
 (function boot(){
-  const sy = { mounts: [], musics: [], starts: 0, stops: 0, intensities: [], plays: [], ducks: 0, muted: null, routedTo: null, contexts: [], reverbs: [] };
+  const sy = { mounts: [], musics: [], starts: 0, stops: 0, intensities: [], plays: [], ducks: 0, muted: null, routedTo: null, contexts: [], reverbs: [], stings: [], swaps: 0 };
   global.window = {};
   const masterNode = { _isMaster: true };
   const stubCtx = { _isCtx: true, currentTime: 0, state: "running", resume(){}, suspend(){} };
@@ -75,6 +81,7 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
     setMusic(s){ sy.musics.push(s); return this; }, start(){ sy.starts++; return this; }, stop(){ sy.stops++; return this; },
     intensity(x){ sy.intensities.push(x); return this; }, play(p, w, o){ sy.plays.push({ p: p, o: o }); return this; },
     duck(){ sy.ducks++; return this; }, setMuted(m){ sy.muted = m; return this; },
+    sting(name){ sy.stings.push(name); return this; }, swapNow(){ sy.swaps++; return this; },
     setContext(name){ sy.contexts.push(name); const c = CTX[name]; if(c) sy.reverbs.push(c.reverb); return this; },   // real setContext applies the context's reverb
     setReverb(w){ sy.reverbs.push(w); return this; },
     CONTEXTS: CTX, hashStr(s){ let h = 2166136261 >>> 0; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -121,25 +128,30 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   ok(sy.routedTo === masterNode, "boot: Synth's output is routed into sound.js's master (one chain)");
   ok(sy.musics.length >= 1 && sy.starts >= 1, "boot: music starts on entering the app");
 
-  // Arena → an arena context + a boss-proximity intensity
+  // Arena → the DISTINCT arena context (setContext) + a boss-proximity intensity
   const beforeI = sy.intensities.length;
   route("#/arena");
+  ok(sy.contexts[sy.contexts.length - 1] === "arena", "boot: T128 — the Arena drives Synth.setContext('arena') (its own distinct context)");
   const am = sy.musics[sy.musics.length - 1];
-  ok(am && am.tempo >= 80 && am.mode === "phrygian", "boot: the Arena plays a driving context (phrygian, faster) — " + (am && am.tempo));
+  ok(am && am.mode === "aeolian" && am.progression && am.progression.join() === "0,5,6,4", "boot: T128 — the Arena context carries its OWN dark harmony (aeolian) — not a flat default");
+  ok(am && am.patches && am.patches.bass === "wub", "boot: T128 — the Arena context uses the WUB bass (energetic), proving contexts differ");
   ok(sy.intensities.length > beforeI && typeof sy.intensities[sy.intensities.length-1] === "number", "boot: the Arena sets Synth.intensity() from live boss-proximity");
 
-  // home → the menu context
+  // home → the menu context (audibly DIFFERENT harmony from the Arena)
   route("#/");
+  ok(sy.contexts[sy.contexts.length - 1] === "menu", "boot: T128 — home drives Synth.setContext('menu')");
   const mm = sy.musics[sy.musics.length - 1];
-  ok(mm && mm.mode === "ionian" && mm.tempo === 80, "boot: home plays the menu context (ionian, 80)");
+  ok(mm && mm.mode === "ionian" && mm.progression.join() !== am.progression.join(), "boot: T128 — menu harmony (ionian) is DISTINCT from the Arena's (the owner's 'music never changes' is fixed)");
+  ok(sy.swaps >= 2, "boot: T132 — each screen change swaps the generator NOW (swapNow), so the music changes instantly — " + sy.swaps);
 
-  // a real Arena WIN fires the wub (and ducks)
+  // a real Arena WIN fires the victory STING (wub on the un-ducked sfx bus)
   route("#/arena");
   const heroId = (els.arenaBody._html.match(/data-hero="([^"]+)"/) || [])[1];
   ok(!!heroId, "boot: the Arena offers a hero");
   (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
+  const stingsBefore = sy.stings.length;
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
-  ok(sy.plays.some(p => p.p === "wub"), "boot: a real Arena win fires the Synth wub win-sting");
+  ok(sy.stings.indexOf("victory") >= 0 && sy.stings.length > stingsBefore, "boot: T128 — a real Arena win fires Synth.sting('victory') (the wub + bell cue, not a self-ducked wub)");
 
   // T129 — the Settings music switcher samples + switches each DISTINCT context live
   route("#/settings");

@@ -309,58 +309,56 @@
       synthWired = true;
     }catch(e){ synthWired = false; }
   }
-  const SYNTH_BPM = { solve: 60, menu: 80, arena: 98, event: 88 };   // base tempo per context (× the T113 tempo slider)
   function synthTempoMult(){ const v = loadTempo() / 100; return isFinite(v) ? v : 1; }
-  // A music spec per context. SOLVE is CALM BY CONSTRUCTION (slow, sparse, no
-  // driving kick/snare) — the firm rule; its seed varies per topic so topics still
-  // differ. Arena drives (dark mode, full kit). Menu/event are distinct + brighter.
-  function musicSpec(context){
-    const t = synthTempoMult();
-    if(context === "solve"){
-      const seed = ((typeof mode !== "undefined" && mode && typeof mode.music === "number" ? mode.music : 0) + 1) * 2654435761 >>> 0;
-      return { root: 50, mode: "dorian", tempo: Math.round(SYNTH_BPM.solve * t), density: 0.26, seed: seed,
-        kickK: 0, hatK: 2, snare: new Array(16).fill(0), leadK: 5, leadOct: 1 };   // no driving drums → calm
-    }
-    if(context === "arena") return { root: 45, mode: "phrygian", tempo: Math.round(SYNTH_BPM.arena * t), density: 0.5, seed: 7, kickK: 6, hatK: 8, leadK: 9 };
-    if(context === "event") return { root: 62, mode: "lydian", tempo: Math.round(SYNTH_BPM.event * t), density: 0.42, seed: 11, kickK: 4, hatK: 8 };
-    return { root: 57, mode: "ionian", tempo: Math.round(SYNTH_BPM.menu * t), density: 0.36, seed: 3, kickK: 4, hatK: 8 };   // menu
-  }
-  function arenaBossProx(){ const st = arenaFxState(); return st && st.facingBoss ? 1 : ((st && st.tierFrac) || 0); }
-  // Drive the music per screen (mirrors fxSetScreen): solve in-game, arena on the
-  // Arena (intensifying near a boss), menu everywhere else. One scheduler; swapping
-  // the spec is the only "stop/start" needed (no leak).
-  function musicForScreen(name){
-    curScreen = name;
-    const Sy = window.Synth; if(!Sy || !Sy.setMusic || !synthWired) return;
-    try{
-      const context = name === "game" ? (eventCtx ? "event" : "solve") : name === "arena" ? "arena" : "menu";
-      Sy.setMusic(musicSpec(context));
-      if(context === "arena" && Sy.intensity) Sy.intensity(arenaBossProx());
-      Sy.start();
-    }catch(e){}
-  }
-  // T129 — drive the engine's DISTINCT built-in context (its own progression /
-  // patches / reverb — incl. the Arena's wub bass) via Synth.setContext, with the
-  // T113 tempo multiplier applied on top. This is what the Settings music switcher
-  // uses to SAMPLE + test-switch styles (and what T128 will route per-screen to);
-  // unlike musicSpec() it carries a per-context progression, so styles differ.
-  function synthSwitchContext(name){
+  // T128(1) — drive the engine's DISTINCT built-in context (its own progression /
+  // patches / reverb — incl. the Arena's wub bass + dark Aeolian) via
+  // Synth.setContext, with the T113 tempo multiplier on top. This REPLACES the old
+  // musicSpec() partial specs that passed NO progression → the engine defaulted the
+  // SAME chords for every context, so solve/menu/arena only differed by tempo (the
+  // owner's "music never changes"). setContext carries a real per-context harmony,
+  // so the styles are genuinely distinct. (Also the path the T129 switcher uses.)
+  function synthSwitchContext(name, seed){
     const Sy = window.Synth; if(!Sy || !Sy.setContext || !synthWired) return false;
     const c = Sy.CONTEXTS && Sy.CONTEXTS[name]; if(!c) return false;
     try{
       Sy.setContext(name);                                         // the distinct context (sets its progression/patches/reverb)
       const t = synthTempoMult();
-      if(Sy.setMusic) Sy.setMusic(Object.assign({ seed: Sy.hashStr ? Sy.hashStr(name) : 1 }, c,
+      const s = (seed != null) ? (seed >>> 0) : (Sy.hashStr ? Sy.hashStr(name) : 1);   // per-context seed (solve varies per topic)
+      if(Sy.setMusic) Sy.setMusic(Object.assign({ seed: s }, c,
         { tempo: Math.max(20, Math.round(c.tempo * (isFinite(t) && t > 0 ? t : 1))) }));   // T113 tempo on top
+      if(Sy.swapNow) Sy.swapNow();   // T132: swap the generator NOW (≤1 step) — a screen change / style pick is instant, not at a far phrase boundary
       if(Sy.start) Sy.start();
       return true;
     }catch(e){ return false; }
   }
-  // The win-sting: Synth's wub on a real win (Arena victory / topic-complete),
-  // ducking the music so it lands. (Replaces sound.js's removed wub.)
+  function arenaBossProx(){ const st = arenaFxState(); return st && st.facingBoss ? 1 : ((st && st.tierFrac) || 0); }
+  // Drive the music per screen (mirrors fxSetScreen): solve in-game, arena on the
+  // Arena (intensifying near a boss), menu everywhere else — each its OWN distinct
+  // engine context (T128). One scheduler; setContext swaps the spec (no leak).
+  function musicForScreen(name){
+    curScreen = name;
+    const Sy = window.Synth; if(!Sy || !synthWired) return;
+    try{
+      if(musicPreview){ synthSwitchContext(musicPreview); return; }   // the Settings switcher is driving — don't fight it
+      const context = name === "game" ? (eventCtx ? "event" : "solve") : name === "arena" ? "arena" : "menu";
+      // SOLVE varies per topic (the seed keeps topics musically distinct); others use the context seed.
+      const seed = (context === "solve" && typeof mode !== "undefined" && mode && typeof mode.music === "number")
+        ? ((mode.music + 1) * 2654435761 >>> 0) : undefined;
+      synthSwitchContext(context, seed);
+      if(context === "arena" && Sy.intensity) Sy.intensity(arenaBossProx());
+    }catch(e){}
+  }
+  // The win-sting on a real win (Arena victory / topic-complete). Uses the engine's
+  // purpose-built victory STING — a wub swell + rising bell arp on the SFX bus,
+  // ducking only the music bed so the cue lands. (The old hand-rolled version played
+  // the wub on the MUSIC bus and then ducked that same bus → it suppressed its own
+  // wub: the owner's "no wub on victory". The sting plays on the un-ducked sfx bus.)
   function wubSting(){
     const Sy = window.Synth; if(!Sy || !synthWired) return;
-    try{ if(Sy.play) Sy.play("wub", null, { midi: 36, dur: 0.6, bus: "music" }); if(Sy.duck) Sy.duck(); }catch(e){}
+    try{
+      if(Sy.sting) Sy.sting("victory");
+      else if(Sy.play){ Sy.play("wub", null, { midi: 36, dur: 0.6, bus: "sfx" }); if(Sy.duck) Sy.duck(); }   // fallback: still on the sfx bus
+    }catch(e){}
   }
   // Idle the single music scheduler when the tab is hidden; resume the current
   // context when visible (sound.js already suspends/resumes the shared ctx).

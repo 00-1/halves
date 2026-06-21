@@ -386,9 +386,10 @@ const css = read("styles.css"), main2 = read("main.js");
 ok(!/var\(--amber\)1f/.test(main2) && !/var\(--amber\)1f/.test(css), "the invalid 'var(--amber)1f' tint is gone (T80 fixup)");
 ok(/--amber-weak\s*:\s*rgba\(/.test(css) && /var\(--amber-weak\)/.test(main2), "the live row uses a valid low-alpha --amber-weak");
 
-// (l) event music — T122: the event gauntlet routes to its own Synth context.
+// (l) event music — T122/T128: the event gauntlet routes to its own DISTINCT Synth
+// context (eventCtx → "event" → synthSwitchContext drives Synth.setContext("event")).
 const mainSrc2 = read("main.js");
-ok(/eventCtx \? "event"/.test(mainSrc2) && /context === "event"/.test(mainSrc2), "the event gauntlet routes to a dedicated 'event' Synth music context");
+ok(/eventCtx \? "event" : "solve"/.test(mainSrc2) && /synthSwitchContext\(context/.test(mainSrc2), "the event gauntlet routes to a dedicated 'event' Synth music context");
 
 // (m) the prominent home banner is a TOP-LEVEL #start element (not inside a tab/menu),
 //     carries art + copy + a Play CTA that routes into the live event + a UTC countdown.

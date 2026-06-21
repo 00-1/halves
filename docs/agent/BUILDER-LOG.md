@@ -4122,3 +4122,43 @@ notes / questions — **⚠ FLAG FOR [B] (engine gap this surfaced, exactly as T
   A will wire `{ now:true }` from the switcher the moment it lands. (This is the T128(1) "prompt swap"
   the switcher was built to expose.) Next per `NEXT.md`: **`T128`** (per-screen routing → distinct
   contexts via setContext + verify wub wobble + celebration) → `T123` (a11y) → `T124` → `T101`.
+
+## T128 — LIVE BUGS: music swap (per-screen) · no wub · no celebration  [HANDOFF]
+commit: (this commit, on main) — [A] task, OWNER-PRIORITY · BUG. Owner on the live build: "music never
+changes — same as menu in topics/arena; no dubstep wub on victory; no celebration visuals." All three
+passed the headless gates yet failed live (gates checked the calls exist, not the audible/visible
+result). Fixed (1) + (2) at the root; (3) is an engine/device issue I've flagged for [B].
+**(1) Music never swapped per screen — FIXED.** Root cause: `musicForScreen` drove
+`Sy.setMusic(musicSpec(context))`, and `musicSpec()` passed **no `progression`** → the engine defaulted
+the SAME `[0,5,3,4]` chords for every context, so solve/menu/arena differed only by tempo (≈inaudible /
+"never changes"). Fix: route every screen through **`synthSwitchContext` → `Synth.setContext(name)`**
+(the engine's DISTINCT built-in contexts — own progression/reverb/patches, incl. the Arena's **wub bass**
++ dark Aeolian), with the T113 tempo on top; **solve still varies per topic** (its seed mixes in
+`mode.music`). Removed the dead `musicSpec()`/`SYNTH_BPM`. **Instant swap:** wired **[B] T132's
+`Synth.swapNow()`** after the spec set, so a screen change / style pick swaps in ≤1 step (no phrase-
+boundary lag) — this also upgrades the T129 switcher to instant.
+**(2) No wub on victory — FIXED.** Root cause: `wubSting()` played the wub on **`bus:"music"`** and then
+called **`duck()`**, which dips that SAME music bus → the wub ducked **itself** (flat/inaudible). Fix:
+use the engine's purpose-built **`Synth.sting("victory")`** — a wub swell + rising bell arp on the
+**un-ducked SFX bus**, ducking only the music bed so the cue lands (the engine already had this; the
+hand-rolled version fought the duck). Fires on every Arena victory + topic-complete/mastery.
+**(3) No celebration visuals — ⚠ FLAGGED FOR [B] (engine/device).** After T125's resize the burst still
+renders nothing live. I could not repro/fix it headlessly, and the robust fix needs `fxgl.js` (B-owned)
+or live-device WebGL debugging: the leading cause is the **second WebGL/WebGPU context** for `#fxBurst`
+(separate from the working `#fxBackdrop`) failing or falling back to a non-animating still on-device.
+**The babysitter's "composite over the backdrop" isn't an A-only fix:** the backdrop canvas is
+**`z-index:-1` (behind `.app`)**, so a celebration drawn there renders *behind* the UI panels (wrong
+layer) — the celebration must be the z-58 overlay. **Suggested [B]:** either an FXGL diagnostic/fix so a
+2nd overlay context initialises+presents on-device, OR an FXGL mode to mount the burst as a layer over
+the backdrop scene on the ONE working context at overlay z (A then points `fxBurst` at it). The A wiring
+(`fxBigBurst` → resize + `celebrate()` on every win/run/item) is correct + tested (T125) and will work
+the moment the overlay context renders.
+how I verified (1)+(2): **test/synth-wiring.test.js (45→52)** — per-screen routing now asserts
+`setContext` per screen with each context's OWN harmony (Arena aeolian + wub bass ≠ menu ionian),
+`musicSpec`/`SYNTH_BPM` gone, `swapNow` called for an instant swap, and a real Arena win fires
+`sting("victory")` (not a self-ducked wub); **events.test** updated for the event-context routing.
+`node -c` clean; **full 34-gate suite green** (rebased onto T132 `995cd28`). No B-owned files touched.
+notes / questions: gates are necessary-not-sufficient here — **babysitter live-check:** topic vs Arena
+vs menu music should now be audibly different + swap instantly on screen change, and a wub+bells should
+land on a win. (3) awaits the [B] overlay-context fix. Next per `NEXT.md`: **`T123`** (a11y contrast
+floor over the backdrop) → `T124` (fraction glyphs) → `T101` (Start delay) → Android.
