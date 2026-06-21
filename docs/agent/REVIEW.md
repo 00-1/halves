@@ -1,24 +1,48 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T130` [B] (golden-snapshot render-regression harness — brickmap-style) ·
-live build **`ba919db`**. **CI green; collision-clean** (only B-owned NEW files: `test/golden-util.js`,
-`test/golden-fx.test.js`, `test/golden-synth.test.js`, `test/golden/*.json`, `BUILDER-LOG-FX.md` — and
-correctly **did NOT touch `pages.yml`**, leaving CI-gate registration to [A] per the collision rule).
-Delivers what the owner asked ("brickmap's golden render could be learned from"): a no-build **Node**
-harness — `golden-util.js` `check(name,value)` serialises a value, `UPDATE_GOLDEN=1` regenerates,
-default **compares + fails with a "first change at line N" hint**. Two deterministic, headless output
-families are pinned: **(a) FXGL CPU-still** — `deriveHomeScene`/`deriveArenaScene` + `burst()` +
-`celebrate()` at **fixed seeds** → compact pixel signatures (home/frost/arena-boss/burst/celebrate); and
-**(b) synth context scores** — per-context scheduled-event scores (`solve`/`menu`/`arena`/`event`) **plus
-a distinctness golden** `{"distinct":4,"pairs_compared":6,"all_distinct":true}`. Verified
-**independently**: gates run **"ALL 16 FX-GOLDEN CHECKS PASSED"** + **"ALL 10 SYNTH-GOLDEN CHECKS
-PASSED"**; **mutation test** — I tampered a synth golden and the harness **CAUGHT it (non-zero exit)**, so
-it is a real regression net, not a rubber stamp. Crucially the **synth-distinctness golden directly
-guards the T128 "all contexts sound the same" failure mode** — it would have failed had the four contexts
-collapsed to one score. GPU/browser/full-layout golden correctly **out of scope** (CI stays Node-only).
-T130 → DONE. **→ filed [A] `T131`: register `golden-fx.test.js` + `golden-synth.test.js` as CI gates in
-`pages.yml` (B couldn't — collision rule; same pattern as the fxgl/synth gate registration).** B → STAND
-BY (engine reactive-only).
+**Current verdict:** `APPROVED — T129` [A] (Settings MUSIC SWITCHER — sample + test-switch each distinct
+context) · live build **`8cfa11d`**. **CI green; collision-clean** (all [A]-owned: `index.html`,
+`styles.css`, `main.js`, `test/synth-wiring.test.js`, `BUILDER-LOG.md`). The owner's requested sampler IS
+built — a labelled a11y button group (Menu·Solve·Arena·Event, `role="group"`/`aria-labelledby`/
+`aria-pressed`, **≥44px** `min-height:44px` grid, focus-visible, pixel-squared) beside Volume/Tempo. The
+crux: `synthSwitchContext(name)` drives the engine's **distinct built-in context** via
+**`Synth.setContext(name)`** (its own progression/patches/reverb incl. Arena's **wub** bass — NOT the flat
+`musicSpec()` default), with the **T113 tempo** applied on top; a transient `musicPreview` holds the pick
+in Settings and `show()` clears it on leave → **per-screen music resumes**; the tempo slider re-applies
+the active preview. Guarded no-op without Synth; honours mute. Verified **independently**: `node -c`
+clean; the 3 new ids present; **`synth-wiring.test` 25→45** proves each pick calls `setContext` for its
+context **live**, the **Event** pick drives the event harmony (**lydian**, its own progression — not a
+default), each applies its **own reverb**, and leaving Settings reverts to menu; **full 36-gate suite
+green**. T129 → DONE.
+**⚠ The switcher did its diagnostic job — it exposed the T128(1) engine gap exactly as designed:** styles
+ARE distinct, but the **swap is not immediate** — `synth.js` adopts `M.spec = M.want` only at a **phrase
+boundary** (`synth.js:395`; the immediate path only fires on first-ever music, and `M` is private), so a
+deliberate switch lags **up to ~one phrase (~8–11s)** — which reads to the owner as "music never
+changes." A **cannot** fix this (synth.js is [B]-owned) and **correctly escalated**. **→ filed [B] `T132`:
+an immediate-swap lever `Synth.setContext(name,{now:true})` / `swapNow()` (reset `M.step`/adopt `M.want`
+now); A will wire `{now:true}` from the switcher + per-screen routing the moment it lands.** This is the
+real root of "music never changes," so **B comes OFF stand-by for `T132` now** (it preempts — the engine
+gap A's parallel work surfaced). *(Owner: the switcher works + each style is genuinely different; it'll
+feel instant once T132's lever lands — right now a pick takes effect at the next phrase.)*
+
+> **Previously approved (done):** `T130` [B] (golden-snapshot render-regression harness — brickmap-style) ·
+> live build **`ba919db`**. **CI green; collision-clean** (only B-owned NEW files: `test/golden-util.js`,
+> `test/golden-fx.test.js`, `test/golden-synth.test.js`, `test/golden/*.json`, `BUILDER-LOG-FX.md` — and
+> correctly **did NOT touch `pages.yml`**, leaving CI-gate registration to [A] per the collision rule).
+> Delivers what the owner asked ("brickmap's golden render could be learned from"): a no-build **Node**
+> harness — `golden-util.js` `check(name,value)` serialises a value, `UPDATE_GOLDEN=1` regenerates,
+> default **compares + fails with a "first change at line N" hint**. Two deterministic, headless output
+> families are pinned: **(a) FXGL CPU-still** — `deriveHomeScene`/`deriveArenaScene` + `burst()` +
+> `celebrate()` at **fixed seeds** → compact pixel signatures (home/frost/arena-boss/burst/celebrate); and
+> **(b) synth context scores** — per-context scheduled-event scores (`solve`/`menu`/`arena`/`event`) **plus
+> a distinctness golden** `{"distinct":4,"pairs_compared":6,"all_distinct":true}`. Verified
+> **independently**: gates run **"ALL 16 FX-GOLDEN CHECKS PASSED"** + **"ALL 10 SYNTH-GOLDEN CHECKS
+> PASSED"**; **mutation test** — I tampered a synth golden and the harness **CAUGHT it (non-zero exit)**, so
+> it is a real regression net, not a rubber stamp. Crucially the **synth-distinctness golden directly
+> guards the T128 "all contexts sound the same" failure mode** — it would have failed had the four contexts
+> collapsed to one score. GPU/browser/full-layout golden correctly **out of scope** (CI stays Node-only).
+> T130 → DONE. **→ filed [A] `T131`: register `golden-fx.test.js` + `golden-synth.test.js` as CI gates in
+> `pages.yml` (B couldn't — collision rule; same pattern as the fxgl/synth gate registration).**
 
 > **Previously approved (done):** `T127` [A] (BUG: literal "&amp;" in locked-topic text — double-escape) ·
 > live build **`ed16b68`**. **CI green.** The one-line fix exactly as diagnosed: `renderTopicInfo`
@@ -883,19 +907,21 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T129`** [A] · **OWNER-PRIORITY** (**`T127`/`T125`/`T121`/`T122` DONE**). *(Read
-  `NEXT.md` fresh — canonical.)* **`T129` FIRST — Settings MUSIC SWITCHER** (Menu/Solve/Arena/Event via
-  the engine's distinct `Synth.setContext`, audibly swaps live) — the owner's requested sampler AND the
-  **diagnostic instrument for T128(1)**: if it switches, the engine's fine & T128 is just per-screen
-  routing; if not, the swap bug is deeper. LIVE-verify. **Then → `T128`** — the live bugs the green gates miss
-  (MUST verify in a real browser):** (1) **music never swaps** per screen — `musicSpec()` passes no
-  `progression` so every context shares the engine's default chords → use `Synth.setContext(name)`'s
-  distinct contexts + apply the T113 tempo; (2) **no wub on win** — verify `play("wub")` fires AND
-  wobbles (LFO may only run in the scheduler → flag [B] if a one-shot can't wobble); (3) **no
-  celebration visuals** (still, post-T125) — repro live; likely the 2nd WebGL context (`#fxBurst`)
-  failing vs the working backdrop → consider sharing one canvas/context (flag [B] if engine-level).
-  Full DoD `T128` (live-verified — gates are necessary-not-sufficient here). → **`T123`** (a11y contrast
-  floor + honest `contrast.test`) → **`T124`** (fraction tree-glyphs bigger/clearer using node width) →
+- **Builder A — next: `T128`** [A] · **OWNER-PRIORITY** (**`T129`/`T127`/`T125`/`T121`/`T122` DONE**).
+  *(Read `NEXT.md` fresh — canonical.)* `T129` (music switcher) DONE — it did its diagnostic job and
+  proved the engine swap is **distinct but lags to a phrase boundary** → **[B] `T132`** now builds the
+  immediate-swap lever (`setContext(name,{now:true})`); **you'll wire `{now:true}` from the switcher AND
+  per-screen routing the moment T132 lands** (don't block on it — do T128's other parts now). **`T128` —
+  the live bugs the green gates miss (MUST verify in a real browser):** (1) **music never swaps** per
+  screen — `musicSpec()` passes no `progression` so every context shares the engine's default chords →
+  route each screen through `Synth.setContext(name)`'s distinct contexts + apply the T113 tempo (this is
+  the same `synthSwitchContext` path T129 added; +`{now:true}` once T132 lands for an instant screen-change
+  swap); (2) **no wub on win** — verify `play("wub")` fires AND wobbles (LFO may only run in the scheduler
+  → flag [B] if a one-shot can't wobble); (3) **no celebration visuals** (still, post-T125) — repro live;
+  likely the 2nd WebGL context (`#fxBurst`) failing vs the working backdrop → consider sharing one canvas/
+  context (flag [B] if engine-level). Full DoD `T128` (live-verified — gates are necessary-not-sufficient
+  here). → **`T131`** (quick: register the golden-fx/golden-synth gates in `pages.yml`) → **`T123`** (a11y
+  contrast floor + honest `contrast.test`) → **`T124`** (fraction tree-glyphs bigger/clearer using node width) →
   **`T101`** (Start delay) → **`T102`/`T103`** (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) →
   content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
@@ -915,17 +941,28 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: STAND BY (engine reactive-only).** `T130` **DONE** (golden harness — `ba919db`,
-  CI green, mutation-test confirmed). Nothing queued. Stay reactive: if A's T128/T129 surface a real
-  **engine** gap (e.g. the wub LFO can't wobble in a one-shot `play()`, or the FXGL 2nd-context issue
-  needs an engine-side single-canvas composite), that becomes B's next task — I'll file it and point
-  `NEXT.md` at it. Otherwise hold. **B-owned files ONLY**; never touch existing Halves files; never push
-  `claude/agent`. *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless
-  browser to CI — kept out of scope to keep CI Node-only.)*
-  - **NOTE — the golden gates need [A] registration:** `T130` added `test/golden-fx.test.js` +
+- **Builder B — next: `T132` [B] — OFF STAND-BY (engine gap A's T129 surfaced; it preempts).** `T130`
+  golden harness DONE (`ba919db`). **`T132` — an immediate-context-swap lever in `synth.js`.** Today the
+  scheduler adopts `M.spec = M.want` **only at a phrase boundary** (`synth.js:395`; the immediate path
+  only fires on first-ever music, `!M.spec`), so a deliberate `setContext` lags up to ~one phrase
+  (~8–11s) — which the owner reads as "music never changes." Add **`Synth.setContext(name, { now: true })`**
+  (and/or a `Synth.swapNow()`): when `now`, **adopt the new spec immediately** — set `M.want` then force
+  `M.spec = M.want` and re-align the phrase counter (reset `M.step` to a bar/phrase start) so the new
+  context's harmony/patches/reverb take effect on the **next scheduled step**, not the next phrase, with
+  **no click/dropout** (respect the existing lookahead; don't tear down live voices mid-note — let
+  scheduled notes finish, switch the *generator* now). Keep the default (no `now`) behaviour unchanged
+  (musical phrase-boundary swap). **Add a golden/unit assertion** (extend `test/golden-synth.test.js` or
+  `synth.test.js`): with `{now:true}` the very next scheduled step already reflects the new context's
+  score (distinct from the old), i.e. the swap is ≤1 step not ≤1 phrase. **B-owned files ONLY** (`synth.js`
+  + its tests + `BUILDER-LOG-FX.md`); never touch existing Halves files; never push `claude/agent`. A wires
+  `{now:true}` from the T129 switcher + T128 per-screen routing once this lands. *(This is the true root
+  of the owner's "music never changes" — highest-value engine work right now.)*
+  - **NOTE — the golden gates still need [A] registration:** `T130` added `test/golden-fx.test.js` +
     `test/golden-synth.test.js` but B couldn't wire them into `pages.yml` (collision rule). Filed
     **[A] `T131`** to register them as CI gates (same pattern as the fxgl/synth gate registration). Until
     T131 lands they run only locally — they're correct and green, just not yet enforced on every push.
+  - *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless browser to CI —
+    kept out of scope to keep CI Node-only.)*
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —

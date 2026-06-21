@@ -2504,7 +2504,41 @@ The two golden gates currently run only locally; enforce them on every push.
   ([A]-owned). (Babysitter: confirm in the CI logs that both golden gates actually ran, not just that the
   file was edited.)
 
-### T129 — [A] Settings: a MUSIC SWITCHER to sample every style + test switching · status: OPEN · OWNER-PRIORITY
+### T129 — [A] Settings: a MUSIC SWITCHER to sample every style + test switching · status: DONE (`8cfa11d`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). Settings now has a labelled a11y button group (Menu·Solve·
+Arena·Event, `aria-pressed`, ≥44px grid) beside Volume/Tempo; `synthSwitchContext(name)` drives the
+engine's **distinct** built-in context via `Synth.setContext(name)` (own progression/patches/reverb incl.
+Arena wub — not the flat `musicSpec()`) + T113 tempo; a transient `musicPreview` previews in Settings and
+reverts to per-screen music on exit. Babysitter verified independently: `node -c` clean, 3 new ids
+present, `synth-wiring.test` 25→45 (each pick calls setContext live; Event=lydian/own-progression; own
+reverb; reverts on exit), full 36-gate suite green. **The switcher did its diagnostic job — it surfaced
+T128(1): the swap is distinct but lags to a phrase boundary (synth.js adopts `M.spec=M.want` only at
+`synth.js:395`; A can't fix synth.js — [B]-owned). Filed [B] `T132` for the immediate-swap lever
+(`setContext(name,{now:true})`); A wires `{now:true}` from the switcher + per-screen routing once it
+lands.** *(Owner: each style is genuinely different now; it'll feel instant once T132 lands.)*
+
+### T132 — [B] `synth.js` immediate-context-swap lever (`setContext(name,{now:true})` / `swapNow()`) · status: OPEN · OWNER-IMPORTANT
+Surfaced by T129's switcher: styles ARE distinct but the scheduler adopts `M.spec = M.want` **only at a
+phrase boundary** (`synth.js:395`; the immediate path fires only on first-ever music, `!M.spec`), so a
+deliberate `setContext` lags up to ~one phrase (~8–11s) — which the owner reads as **"music never
+changes."** This is the true root of that complaint; A wired T129 correctly but cannot touch synth.js
+(B-owned), so the fix is here.
+- **Add an immediate-adopt path:** `Synth.setContext(name, { now: true })` (and/or a `Synth.swapNow()`):
+  when `now`, set `M.want` then **force `M.spec = M.want` immediately** and re-align the phrase counter
+  (reset `M.step` to a bar/phrase start) so the new context's harmony/patches/reverb take effect on the
+  **next scheduled step**, not the next phrase.
+- **No click/dropout:** respect the existing lookahead window; don't tear down voices mid-note — let
+  already-scheduled notes finish, switch the *generator* now. The default (no `now`) must keep the
+  current musical phrase-boundary swap unchanged.
+- **DoD:** `setContext(name,{now:true})` makes the next scheduled step already reflect the new context's
+  score (≤1 step, not ≤1 phrase); default behaviour unchanged; a golden/unit assertion proves the
+  immediate swap (extend `test/golden-synth.test.js` or `synth.test.js` — e.g. next-step events after a
+  `{now:true}` switch match the target context and differ from the prior); `node -c` clean; all gates
+  green; B-owned files only (`synth.js` + tests + `BUILDER-LOG-FX.md`). (Babysitter: confirm the test
+  actually distinguishes ≤1-step from ≤1-phrase, and that A can then wire `{now:true}` for an instant
+  switch.)
+
+### T129-superseded-marker — (kept for history; original DoD below)
 Owner: "add a music switcher to Settings next to the other audio settings, so I can sample all our
 audio styles and test the switching works." Both a real feature AND the **diagnostic instrument for the
 T128 music-swap bug** — if this switcher audibly changes the music, the engine swap works and T128(1) is
