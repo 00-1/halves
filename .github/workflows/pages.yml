@@ -44,6 +44,8 @@ jobs:
         run: node test/nav-icons.test.js
       - name: Toast queue test (gate)
         run: node test/toasts.test.js
+      - name: Audio levels test (gate)
+        run: node test/sound.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

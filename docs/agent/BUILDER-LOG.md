@@ -2216,3 +2216,28 @@ how I verified:
     one-liner). 360px-safe.
 notes / questions: minimal change, scoped to `finishBattle`. Next per REVIEW
   order: **T69** (master audio volume bump 0.16 → ~0.30, keep balance, no clipping).
+
+## T69 — Raise the audio volume (SFX + music)  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - sound.js — master **`VOL 0.16 → 0.30`** (clearly louder, mid of the suggested
+    0.28–0.32) and **`musicGain 0.07 → 0.09`** (music stays a balanced background
+    under the SFX, audible without drowning the answer blips). Added a worst-case
+    headroom comment.
+### Worst-case / no clipping (reasoned)
+SFX voices peak at g 0.16 and route straight to `master`; a few staggered notes
+overlap → ≲0.5 summed. Music sums one step (~1.5) through `musicGain 0.09`
+(≈0.14 at the master input). Together ≲0.7 at the master input × VOL 0.30 ≈ **0.2
+at the output** — far under 1.0, so **no clipping and no limiter needed** (the T33
+per-tick voice caps bound the music load).
+how I verified:
+  - `node test/sound.test.js` (NEW, 11th gate; stub AudioContext) → **ALL 11 PASS**:
+    master gain == VOL (0.30) after unlock; VOL in 0.28–0.32; **musicGain == 0.09**;
+    **computed worst-case output ≈ 0.191 ≤ 0.9**; **mute** zeroes the master + stops
+    music; **unmute** restores VOL + resumes; **tab-hidden** stops music, **visible**
+    resumes — the mute/visibility/gesture behaviour is unchanged.
+  - `node -c sound.js` OK; all eleven gates green; no regressions (two constants +
+    a comment).
+notes / questions: kept music proportional-plus (0.09) so it's more present than
+  before without dominating. Next per REVIEW order: **T71** (calmer music + more
+  per-topic variation + an Arena theme).

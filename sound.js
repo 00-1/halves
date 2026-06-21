@@ -11,7 +11,12 @@
 (function(){
   "use strict";
 
-  const VOL = 0.16;                 // master volume (gentle)
+  // Master volume (T69 — raised from 0.16 so it's clearly audible). Worst-case
+  // headroom check: SFX voices peak at g 0.16 and route straight to master (a few
+  // staggered notes overlap → ≲0.5 summed); music sums one step (~1.5) through
+  // musicGain 0.09 (≈0.14 at master) — together ≲0.7 at the master input × VOL 0.30
+  // ≈ 0.2 at the output, far under 1.0, so no clipping (no limiter needed).
+  const VOL = 0.30;                 // master volume
 
   // MIDI note number → frequency (A4=69=440Hz, equal temperament).
   function hz(midi){ return 440 * Math.pow(2, (midi - 69) / 12); }
@@ -191,7 +196,7 @@
   }
   function startScheduler(){
     if(mTimer || !ctx || muted || mWant < 0) return;
-    if(!musicGain){ musicGain = ctx.createGain(); musicGain.gain.value = 0.07; musicGain.connect(master); }
+    if(!musicGain){ musicGain = ctx.createGain(); musicGain.gain.value = 0.09; musicGain.connect(master); }   // T69: balanced background under SFX
     if(mCur < 0){ mCur = mWant; mStep = 0; reseed(); }
     mNext = ctx.currentTime + 0.06;
     mTimer = setInterval(musicTick, TICK_MS);
