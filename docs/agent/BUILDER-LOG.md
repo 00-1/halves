@@ -3438,3 +3438,44 @@ notes / questions: **headless can't judge the final node-size legibility — ple
   set (now spatially separated by the slash, which is the readability win); if you want them
   bolder I can thicken the slash or widen the digits. Next per the pointer: **`T100`** (gamey
   buttons-first restyle), then `T101`–`T103` (shipping/perf), then `T89`/`T90` (finish Arena).
+
+## T100 — "Gamey" pixel-bevel restyle (buttons-first + squared panels), reversible  [HANDOFF]
+commit: (this commit, on main) — [A] task (front-end polish). Implements the T97-researched
++ owner-approved direction: the soft rounded "web 2.0" chrome fought the pixel/RPG content.
+Goal: make the chrome read as a GAME — squared low radius, pixel-bevel buttons, hard-framed
+panels — while body text/numerals stay CLEAN (kid legibility), and make it **fully
+reversible** so it can be tuned or pulled with one attribute flip.
+changed:
+  - **index.html** — `<html lang="en" data-ui="pixel">` ships the gamey look on. Flip to
+    `data-ui="classic"` (or remove) to revert to the original soft web look.
+  - **styles.css** — appended a **self-contained, fully-gated** T100 block (all rules under
+    `[data-ui="pixel"]`, so the classic CSS above is the **untouched fallback**):
+    • a **token block** `:root[data-ui="pixel"]{ --ui-radius:2px; --ui-bevel-hi/-lo; --focus }`;
+    • **buttons** (`.btn`/`.eb-play`/`.el-play`/`.key`/`.reset-pad .key`/`.navbtn`/`.ub-refresh`/
+      `.set-row`) → squared `--ui-radius` + a **pixel-bevel** (`inset 2px 2px hi, inset -2px
+      -2px lo`), an **invert-on-`:active`** push-in, and a **`:focus-visible` amber ring** (a11y);
+    • **panels/cards** (`.event-banner`/`.topic-info`/`.tnode`/`.sum-row`/`.inv-cat`/`.hero-card`/
+      `.arena-tier`/`.arena-hero`/`.arena-result`/`.modal-card`/`.u-cell`) → squared radius +
+      **`box-shadow:none`** (drop the soft blur → hard-framed, machined look). The existing 1px
+      borders stay as the frame.
+    • **No `font-family` anywhere** in the block — the bitmap glyph font stays decorative-only;
+      labels/numerals keep `--display`/`--mono`.
+  - **test/ui-restyle.test.js (NEW, 18 checks)** + **pages.yml** — wired as the **28th CI
+    gate**. Asserts: ships on (`data-ui="pixel"`); the token block + squared radius + bevel +
+    focus tokens; **reversibility** — every restyle selector is gated on `[data-ui="pixel"]`
+    (0 leaks) and the classic `.btn`(r14)/soft banner shadow are intact; buttons squared +
+    beveled + invert-on-press + focus ring; panels squared + `box-shadow:none`; and the
+    **clean-text rule** (no `font-family` in the block).
+how I verified:
+  - **`node test/ui-restyle.test.js` → ALL 18 UI-RESTYLE CHECKS PASSED.** **Contrast gate
+    still green** (6 checks — bevels are inset shadows, they don't touch text/bg contrast).
+    **Full 28-gate suite green.**
+notes / questions: **headless can't judge the look — please eyeball the live build.** This is
+  the T97 **blend (c)+(a)** spike (pixel-bevel buttons + squared panels). **Kill criterion**
+  from the doc: if pixel-bevel reads too retro/illegible, the same token system flips to the
+  **modern-angular** fallback (different `--ui-*` values, no code change). Scope kept to
+  buttons + panels per "buttons-first"; modals' corner-ticks, full numpad press-depth, and
+  bracketed toasts (doc Steps 3–5) are easy follow-ups. A **Settings UI-style toggle**
+  (pixel/classic, persisted) is a natural next step if you want it user-switchable rather than
+  build-time. Next per the pointer: **`T106`** (tech-tree v2 — full-width ~3-abreast + clearer
+  node relationships), then `T101`–`T103` (shipping/perf), then `T89`/`T90`.

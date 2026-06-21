@@ -662,3 +662,64 @@ canvas.pix{image-rendering:pixelated}
 .toast.r-rare{border-color:#5bb4e8}
 .toast.r-epic{border-color:#9a5cf6}
 .toast.r-legendary{border-color:#f0ad3c}
+
+/* ====================================================================
+   T100 — "gamey" pixel-bevel restyle (buttons-first + squared panels).
+   The owner's gripe: the soft rounded chrome reads "web 2.0" and fights
+   the pixel/RPG content. This is the T97-recommended blend: squared low
+   radius, pixel-bevel buttons, hard-framed panels — body text/numerals
+   stay CLEAN (no pixel font) for kid legibility.
+   FULLY REVERSIBLE: every rule below is gated on <html data-ui="pixel">,
+   so the classic CSS above is the untouched fallback. Flip the attribute
+   to "classic" (or remove it) and the original soft look returns.
+   ==================================================================== */
+:root[data-ui="pixel"]{
+  --ui-radius:2px;                          /* squared corners */
+  --ui-bevel-hi:rgba(255,255,255,.20);      /* top-left highlight */
+  --ui-bevel-lo:rgba(0,0,0,.50);            /* bottom-right shade  */
+  --focus:2px solid var(--amber);           /* visible focus ring (a11y) */
+}
+/* --- buttons: squared + pixel-bevel + invert-on-press + focus ring --- */
+[data-ui="pixel"] .btn,
+[data-ui="pixel"] .eb-play,
+[data-ui="pixel"] .el-play,
+[data-ui="pixel"] .key,
+[data-ui="pixel"] .reset-pad .key,
+[data-ui="pixel"] .navbtn,
+[data-ui="pixel"] .ub-refresh,
+[data-ui="pixel"] .set-row{
+  border-radius:var(--ui-radius);
+  box-shadow:inset 2px 2px 0 var(--ui-bevel-hi), inset -2px -2px 0 var(--ui-bevel-lo);
+}
+[data-ui="pixel"] .btn:active,
+[data-ui="pixel"] .eb-play:active,
+[data-ui="pixel"] .el-play:active,
+[data-ui="pixel"] .key:active,
+[data-ui="pixel"] .reset-pad .key:active,
+[data-ui="pixel"] .navbtn:active,
+[data-ui="pixel"] .ub-refresh:active{
+  box-shadow:inset -2px -2px 0 var(--ui-bevel-hi), inset 2px 2px 0 var(--ui-bevel-lo);
+}
+[data-ui="pixel"] .btn:focus-visible,
+[data-ui="pixel"] .eb-play:focus-visible,
+[data-ui="pixel"] .el-play:focus-visible,
+[data-ui="pixel"] .key:focus-visible,
+[data-ui="pixel"] .navbtn:focus-visible,
+[data-ui="pixel"] .ub-refresh:focus-visible{
+  outline:var(--focus);outline-offset:2px;
+}
+/* --- panels/cards: squared, hard-framed, no soft blur shadow --- */
+[data-ui="pixel"] .event-banner,
+[data-ui="pixel"] .topic-info,
+[data-ui="pixel"] .tnode,
+[data-ui="pixel"] .sum-row,
+[data-ui="pixel"] .inv-cat,
+[data-ui="pixel"] .hero-card,
+[data-ui="pixel"] .arena-tier,
+[data-ui="pixel"] .arena-hero,
+[data-ui="pixel"] .arena-result,
+[data-ui="pixel"] .modal-card,
+[data-ui="pixel"] .u-cell{
+  border-radius:var(--ui-radius);
+  box-shadow:none;
+}
