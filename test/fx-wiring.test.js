@@ -17,16 +17,17 @@ const html = read("index.html"), css = read("styles.css"), main = read("main.js"
 // ---- (1) the engine is mounted: script + two canvases -----------------------
 ok(/<script src="fxgl\.js"><\/script>/.test(html), "(1) index.html loads fxgl.js");
 ok(html.indexOf("fxgl.js") < html.indexOf("main.js"), "(1) fxgl.js loads before main.js (the wiring can read window.FXGL)");
-ok(/<canvas id="fxBackdrop"[^>]*class="fx-backdrop"[^>]*aria-hidden="true"/.test(html), "(1) a home BACKDROP canvas exists (aria-hidden)");
+ok(/<canvas id="fxBackdrop"[^>]*class="fx-backdrop[^"]*"[^>]*aria-hidden="true"/.test(html), "(1) a full-bleed BACKDROP canvas exists (aria-hidden)");
 ok(/<canvas id="fxBurst"[^>]*class="fx-burst"[^>]*aria-hidden="true"/.test(html), "(1) a celebration BURST overlay canvas exists (aria-hidden)");
-// backdrop is inside #start (home-scoped); burst is app-level (any screen)
+// T112: the backdrop is now a full-bleed layer OUTSIDE #start (not clipped to the app box)
 const startBlock = html.slice(html.indexOf('id="start"'), html.indexOf('id="summary"'));
-ok(/id="fxBackdrop"/.test(startBlock), "(1) the backdrop canvas sits inside #start (home-scoped)");
+ok(!/id="fxBackdrop"/.test(startBlock), "(1) the backdrop is full-bleed — NOT confined to #start (no dead FX margins)");
+ok(html.indexOf('id="fxBackdrop"') < html.indexOf('class="app"'), "(1) the backdrop sits behind .app (a body-level full-viewport layer)");
 ok(!/id="fxBurst"/.test(startBlock), "(1) the burst overlay is app-level (not confined to #start)");
 
-// ---- (2) CSS: backdrop BEHIND content, burst overlay on top, taps pass through
-ok(/\.fx-backdrop\{[^}]*z-index:-1/.test(css), "(2) the backdrop sits behind the home DOM (z-index:-1)");
-ok(/#start\{[^}]*isolation:isolate/.test(css), "(2) #start isolates a stacking context (so z-index:-1 stays behind its content, above the page)");
+// ---- (2) CSS: full-viewport backdrop behind .app, burst overlay on top -------
+ok(/\.fx-backdrop\{[^}]*position:fixed/.test(css) && /\.fx-backdrop\{[^}]*z-index:-1/.test(css), "(2) the backdrop is a FIXED full-viewport layer behind .app (z-index:-1)");
+ok(/\.fx-backdrop\{[^}]*100vw/.test(css) && /\.fx-backdrop\{[^}]*100dvh/.test(css), "(2) the backdrop fills the whole viewport (100vw × 100dvh — no dead margins)");
 ok(/\.fx-backdrop\{[^}]*pointer-events:none/.test(css) && /\.fx-burst\{[^}]*pointer-events:none/.test(css), "(2) neither FX canvas intercepts taps");
 ok(/\.fx-burst\{[^}]*position:fixed/.test(css) && /\.fx-burst\{[^}]*z-index:58/.test(css), "(2) the burst overlay is fixed, on top of the screens (under toasts/update-bar)");
 
@@ -35,8 +36,14 @@ ok(/function homeFxState\(/.test(main), "(3) a homeFxState() builds the live bac
 ok(/loadCollected\(\)/.test(main.slice(main.indexOf("function homeFxState"))) , "(3) homeFxState reads the real collection (progress)");
 ok(/loadMomentum\(\)\.count/.test(main), "(3) homeFxState reads the real Momentum streak");
 ok(/Ev\.today\(\)/.test(main.slice(main.indexOf("function homeFxState"))), "(3) homeFxState reads today's real event");
-ok(/fxSetHome\(name === "start"\)/.test(main), "(3) show() animates the backdrop ONLY on the home screen");
-ok(/fxCelebrate\(items\)/.test(main.slice(main.indexOf("function showUnlocks"), main.indexOf("function showUnlocks") + 260)), "(3) the burst fires from showUnlocks (every reward-gain path routes here)");
+// T112: a live ARENA state from the real region/tier position
+ok(/function arenaFxState\(/.test(main) && /currentTier\(loadCollected\(\)\)/.test(main) && /tierRegion\(/.test(main), "(3) arenaFxState() reads the live Arena region/tier (T108)");
+ok(/setArenaState\(arenaFxState\(\)\)/.test(main), "(3) the Arena screen drives the backdrop with the live Arena scene");
+ok(/fxSetScreen\(name\)/.test(main), "(3) show() drives the backdrop per screen (home / Arena / idle)");
+ok(/fxCelebrate\(items\)/.test(main.slice(main.indexOf("function showUnlocks"), main.indexOf("function showUnlocks") + 260)), "(3) the reward burst fires from showUnlocks (every reward-gain path routes here)");
+// T112: celebrate real WINS too (Arena victory + a rank-scaled round finish)
+ok(/if\(res\.win\) fxCelebrateWin\(tier\.n\)/.test(main), "(3) an Arena VICTORY fires a celebration burst");
+ok(/fxCelebrateRank\(rankIdx\)/.test(main), "(3) a good round finish fires a rank-scaled burst (none for a poor run)");
 
 // ---- (4) the gates are registered in CI -------------------------------------
 ok(/test\/fxgl\.test\.js/.test(wf), "(4) Builder-B's engine gate test/fxgl.test.js is registered in CI");
@@ -44,10 +51,10 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
 
 // ============ live boot: drive the wiring with a stub FXGL ===================
 (function boot(){
-  const fx = { homeStates: [], bursts: [], starts: 0, stops: 0, mounts: 0 };
+  const fx = { homeStates: [], arenaStates: [], bursts: [], starts: 0, stops: 0, mounts: 0 };
   function Ctl(){ const c = {
-    setHomeState(s){ fx.homeStates.push(s); return c; }, setScene(){ return c; },
-    start(){ fx.starts++; return c; }, stop(){ fx.stops++; return c; },
+    setHomeState(s){ fx.homeStates.push(s); return c; }, setArenaState(s){ fx.arenaStates.push(s); return c; }, setScene(){ return c; },
+    start(){ fx.starts++; return c; }, stop(){ fx.stops++; return c; }, resize(){ return c; },
     burst(o){ fx.bursts.push(o); return c; },
     isAnimating(){ return false; }, isBursting(){ return false; }, dispose(){ return c; } };
     return c; }
@@ -97,20 +104,29 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   ok(st && st.event && typeof st.event.seed === "number" && st.event.name, "boot: the state carries today's real event {seed,name}");
   ok(st.progress > 0, "boot: progress reflects the seeded full collection (not a constant 0)");
 
-  // leave home → the backdrop idles (stop called, no ambient RAF off-home)
-  const stopsBefore = fx.stops;
+  // Arena → the backdrop switches to the live ARENA scene (T108), still running
   route("#/arena");
-  ok(fx.stops > stopsBefore, "boot: leaving home STOPS the backdrop (idle off-home, no RAF)");
+  ok(fx.arenaStates.length >= 1, "boot: entering the Arena derives the backdrop from the live Arena scene");
+  const as = fx.arenaStates[fx.arenaStates.length - 1];
+  ok(as && typeof as.region === "number" && typeof as.tier === "number", "boot: the Arena state carries a real region + tier (" + (as && as.region) + "/" + (as && as.tier) + ")");
+  ok(as && "tierFrac" in as && "facingBoss" in as, "boot: the Arena state carries boss-proximity (tierFrac/facingBoss) for intensity");
+  ok(!els.fxBackdrop.classList.contains("hidden"), "boot: the backdrop is VISIBLE on the Arena (full-bleed, not hidden)");
 
-  // win an Arena fight → showUnlocks → a celebration burst fires with real opts
+  // win an Arena fight → an Arena-victory burst AND the reward-gain burst
   const heroId = (els.arenaBody._html.match(/data-hero="([^"]+)"/) || [])[1];
   ok(!!heroId, "boot: the Arena offers an unlocked hero");
   (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
   const burstsBefore = fx.bursts.length;
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
-  ok(fx.bursts.length > burstsBefore, "boot: a real reward gain (Arena win loot) fires a celebration burst");
+  ok(fx.bursts.length > burstsBefore, "boot: a real Arena WIN fires a celebration burst (victory + loot)");
   const b = fx.bursts[fx.bursts.length - 1];
   ok(b && typeof b.x === "number" && typeof b.y === "number" && b.count > 0 && b.seed, "boot: the burst carries {x,y,count,seed} (deterministic, positioned)");
+
+  // leave to a NON-fx screen → the backdrop idles + hides (no RAF off home/Arena)
+  const stopsBefore = fx.stops;
+  route("#/best-times");
+  ok(fx.stops > stopsBefore, "boot: leaving home/Arena STOPS the backdrop (idle, no RAF)");
+  ok(els.fxBackdrop.classList.contains("hidden"), "boot: the backdrop is HIDDEN off home/Arena (no stale scene bleeding behind other screens)");
   ok(b && (b.palette == null || Array.isArray(b.palette)), "boot: the burst palette is seeded from the gained items (array or default)");
 })();
 

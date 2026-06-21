@@ -166,13 +166,14 @@
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
         elModeTree=$("modeTree");
 
-  // ---- FXGL wiring (T110) — make B's engine visible -----------------------
-  // Two controllers on two canvases: a semantic HOME BACKDROP (T95) behind the
-  // #start DOM (ambient, home-only, derived from LIVE state) and a CELEBRATION
-  // BURST overlay (T94) on top (transient, fired on real reward moments). The
-  // engine owns reduced-motion + the no-WebGL2 still fallback; everything here is
-  // a guarded no-op if FXGL failed to load. Bursts render standalone (the burst
-  // controller is never given a scene, so it never animates ambiently / leaks RAF).
+  // ---- FXGL wiring (T110/T112) — make B's engine visible ------------------
+  // A FULL-BLEED backdrop controller (one fixed full-viewport canvas behind the
+  // app) carrying a semantic scene per screen — the HOME state (T95) on #start and
+  // the live Arena region/tier (T108) on #arena — animated only on those screens
+  // and idle+hidden everywhere else. Plus a CELEBRATION BURST overlay (T94) on top,
+  // fired on real reward gains AND real wins. The engine owns reduced-motion + the
+  // no-WebGL2 still fallback; everything here is a guarded no-op if FXGL is absent.
+  // The burst controller is never given a scene, so it never loops / leaks RAF.
   const FX_MOODS = ["motes", "embers", "snow", "stars"];   // engine particle kinds
   let fxBg = null, fxBurst = null;
   function setupFx(){
@@ -200,11 +201,27 @@
     }
     return { event: event, progress: progress, streak: streak };
   }
-  // Drive the backdrop: animate on the home screen (re-derived from live state on
-  // each entry), idle (no RAF) everywhere else.
-  function fxSetHome(onHome){
+  // LIVE Arena state for the backdrop (T108) — the region/tier the player is ON
+  // (sense of place), intensifying toward the region boss. All from the real
+  // Enemies position, not constants.
+  function arenaFxState(){
+    const E = window.Enemies; if(!E || !E.currentTier) return { region: 0, tier: 1 };
+    const tier = E.currentTier(loadCollected()), RS = E.REGION_SIZE || 12;
+    const posInReg = ((tier.n - 1) % RS) + 1;                 // 1..RS (depth toward the boss)
+    return { region: E.tierRegion(tier.n), tier: tier.n,
+      facingBoss: (tier.n % RS) === 0,                        // the region boss tier is the peak
+      tierFrac: posInReg / RS, mood: "neutral" };
+  }
+  function fxShowBackdrop(on){ const cv = $("fxBackdrop"); if(cv) cv.classList.toggle("hidden", !on); }
+  // Drive the backdrop per screen: HOME scene on #start, ARENA scene on #arena
+  // (both re-derived from live state on entry), idle (no RAF) + hidden elsewhere.
+  function fxSetScreen(name){
     if(!fxBg) return;
-    try{ if(onHome){ fxBg.setHomeState(homeFxState()); fxBg.start(); } else { fxBg.stop(); } }catch(e){}
+    try{
+      if(name === "start"){ fxShowBackdrop(true); fxBg.setHomeState(homeFxState()); fxBg.start(); if(fxBg.resize) fxBg.resize(); }
+      else if(name === "arena"){ fxShowBackdrop(true); fxBg.setArenaState(arenaFxState()); fxBg.start(); if(fxBg.resize) fxBg.resize(); }
+      else { fxBg.stop(); fxShowBackdrop(false); }
+    }catch(e){}
   }
   // Celebration burst on a real reward moment — seeded + palette-coloured from the
   // gained items (deterministic), capped, never covers key text (it's a sparse,
@@ -223,6 +240,24 @@
     const count = Math.min(150, 50 + items.length * 12 + best * 14);
     try{ fxBurst.burst({ x: 0.5, y: 0.4, count: count, seed: seed || 1, palette: palette }); }catch(e){}
   }
+  // Celebrate a WIN (T112) — beyond reward gains. A rank-scaled results burst (only
+  // a decent run pops; bigger/warmer the higher the rank) and an Arena-victory
+  // burst. Both capped + reduced-motion-safe; fired behind/around the result, never
+  // over the text.
+  const FX_RANK_MIN = 6;   // below this (a poor run) there's no celebration
+  function fxCelebrateRank(rankIdx){
+    if(!fxBurst) return;
+    const ranks = C.RANKS || [];
+    if(!ranks.length || rankIdx < FX_RANK_MIN) return;
+    const rk = ranks[Math.min(rankIdx, ranks.length - 1)];
+    const t = Math.min(1, (rankIdx - FX_RANK_MIN) / Math.max(1, ranks.length - 1 - FX_RANK_MIN));
+    const count = Math.round(45 + t * 105);
+    try{ fxBurst.burst({ x: 0.5, y: 0.34, count: count, seed: (rankIdx + 1) * 0x9e3779b1 >>> 0, palette: [rk.color, "#ffffff"] }); }catch(e){}
+  }
+  function fxCelebrateWin(tierN){
+    if(!fxBurst) return;
+    try{ fxBurst.burst({ x: 0.5, y: 0.32, count: 120, seed: ((tierN | 0) + 1) * 0x85ebca6b >>> 0, palette: ["#f5b544", "#ffd98a", "#ffffff"] }); }catch(e){}
+  }
 
   function show(name){
     // stop the game clock RAF whenever we leave the game screen (e.g. browser
@@ -230,7 +265,7 @@
     if(name !== "game" && raf){ cancelAnimationFrame(raf); raf = 0; }
     Object.values(screens).forEach(s => s.classList.remove("active"));
     screens[name].classList.add("active");
-    fxSetHome(name === "start");   // T110: home backdrop animates only on the home screen
+    fxSetScreen(name);   // T110/T112: full-bleed backdrop — home scene on #start, Arena scene on #arena, idle elsewhere
     // music follows the screen: the topic's style in-game, the menu style elsewhere
     if(window.Sound && window.Sound.setMusic){
       if(name === "game") window.Sound.setMusic(eventCtx ? "event" : (typeof mode.music === "number" ? mode.music : mode.id));
@@ -1203,6 +1238,7 @@
     renderArena();
     const ab = $("arenaBody"); if(ab) ab.scrollTop = 0;   // T65: show the result + tier, not the hero list
     show("arena");
+    if(res.win) fxCelebrateWin(tier.n);   // T112: an Arena-victory burst (reward-gain bursts still fire via showUnlocks)
     if(loot.length) setTimeout(() => showUnlocks(loot), 650);
   }
 
@@ -1564,6 +1600,7 @@
     show("results");
     renderTopicInfo();
     showGold($("resGold"), goldBefore, loadGold(), earn);
+    fxCelebrateRank(rankIdx);   // T112: a rank-scaled celebration burst on a good round (none for a poor run)
     if(mo.wentUp) momentumToast(mo.state);
     if(unlocked.length) setTimeout(() => showUnlocks(unlocked), 650);
   }

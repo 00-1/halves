@@ -24,7 +24,11 @@ body{
   overflow:hidden;
   user-select:none;-webkit-user-select:none;
 }
-.app{width:100%;max-width:420px;height:100dvh;max-height:780px;display:flex;flex-direction:column;position:relative}
+/* T112 — fill the viewport height on phones (no max-height cap → no dead band at
+   the bottom; the flex tree absorbs the slack). A generous cap only kicks in on
+   very tall/desktop viewports so the column doesn't stretch absurdly. */
+.app{width:100%;max-width:420px;height:100dvh;display:flex;flex-direction:column;position:relative}
+@media (min-height:1000px){ .app{max-height:960px} }
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .screen.active{opacity:1;pointer-events:auto}
 
@@ -40,11 +44,12 @@ body{
    picker (below) is the flexible region that shrinks + scrolls. justify-content is
    flex-start (not center) so any residual overflow falls to the bottom — never
    clipping the header — with overflow-y:auto only as a last-resort safety net. */
-#start{justify-content:flex-start;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:12px 8px 18px;isolation:isolate}
-/* T110 — semantic home backdrop (FXGL): sits BEHIND the home DOM (z-index:-1 within
-   #start's isolated stacking context), decorative + tap-transparent, kept subtle so
-   it never competes with the text or the tree. */
-.fx-backdrop{position:absolute;inset:0;z-index:-1;width:100%;height:100%;display:block;pointer-events:none;opacity:.85}
+#start{justify-content:flex-start;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:12px 8px 18px}
+/* T112 — FULL-BLEED semantic backdrop (FXGL): a fixed full-viewport layer BEHIND
+   .app (z-index:-1, above the page background, below the app content), so the
+   atmosphere reaches every edge — no dead FX margins. Decorative, tap-transparent,
+   kept subtle so it never competes with the text/tree; hidden off home/Arena. */
+.fx-backdrop{position:fixed;inset:0;z-index:-1;width:100vw;height:100dvh;display:block;pointer-events:none;opacity:.85}
 /* T110 — celebration-burst overlay (FXGL): app-level, ON TOP of the screens but
    UNDER the toasts/update-bar, taps always pass through. */
 .fx-burst{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:58}

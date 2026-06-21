@@ -3623,3 +3623,47 @@ notes / questions: **headless can't judge pixels — please eyeball:** hero-deta
   The 4+3/5+2 wrap is structural (360 cap + centre + min-width 60); if you'd prefer a forced single
   row, the lever is the button width. Next per the pointer: **`T106`** (tech-tree v2), then
   `T101`–`T103` (shipping/perf), then `T89`/`T90`.
+
+## T112 — FX pass 2: full-bleed backdrop + Arena backdrop + celebrate wins + fill screen  [HANDOFF]
+commit: (this commit, on main) — [A] task. Owner on the live T110 home: "fx look good but I only
+see them on this page. nothing on arena, no celebrations. and the fx don't expand the full
+height/width — shows where we're wasting space." Four follow-ups, still consuming B's API only.
+changed:
+  - **index.html** — moved `#fxBackdrop` OUT of `#start` to a **body-level full-viewport** canvas
+    (before `.app`), `class="fx-backdrop hidden"` (shown only on home/Arena).
+  - **styles.css** — (a) **full-bleed:** `.fx-backdrop` is now `position:fixed; inset:0; 100vw ×
+    100dvh; z-index:-1` behind `.app` — the atmosphere reaches every edge (no dead FX margins);
+    dropped `#start{isolation:isolate}` (no longer needed). (b) **fill the screen:** removed the
+    `.app{max-height:780px}` phone cap so the column fills `100dvh` (the flex tree absorbs the
+    slack → no dead band top **or** bottom); a generous `max-height:960px` only applies at
+    `min-height:1000px` (desktop) so it doesn't stretch absurdly. The full-bleed backdrop covers
+    the side band while content keeps its readable max-width.
+  - **main.js** — the wiring now drives ONE full-bleed backdrop **per screen**:
+    • **`arenaFxState()`** (NEW) reads the **live Arena position** — `Enemies.currentTier(collected)`,
+      `tierRegion`, depth-in-region `tierFrac`, and `facingBoss` (the region-boss tier) — for T108
+      `deriveArenaScene` (region = place; nearer the boss = hotter/denser).
+    • **`fxSetScreen(name)`** (replaces `fxSetHome`): `#start` → `setHomeState` + show + start;
+      `#arena` → `setArenaState` + show + start; **every other screen** → `stop()` + hide (no RAF,
+      no stale scene bleeding behind other screens). `show()` calls it.
+    • **Celebrate WINS** (beyond reward gains): **`fxCelebrateWin(tier.n)`** on an Arena victory
+      (`finishBattle` win) and **`fxCelebrateRank(rankIdx)`** on a round finish — **rank-scaled**
+      (bigger/warmer the higher the rank; **nothing below rank `FX_RANK_MIN=6`** so a poor run
+      doesn't pop), palette from the earned rank colour. Both on the top burst overlay, capped,
+      reduced-motion-safe (engine), never over the text. The `showUnlocks` reward-gain burst stays.
+  - **test/fx-wiring.test.js** (now **39 checks**) — updated for the full-bleed layer (fixed,
+    100vw×100dvh, outside `#start`, behind `.app`), the **Arena backdrop** (boot routes `#/arena`
+    → `setArenaState` from a real region/tier; backdrop visible), the **win bursts** (Arena victory
+    + rank-scaled), and the **off-home/Arena stop+hide** (boot routes `#/best-times` → `stop()` +
+    `.hidden`). **test/home-layout.test.js** — the cap assertion now checks the home **fills**
+    `100dvh` with the 780 cap relaxed (top still pinned — no T99 regression).
+how I verified:
+  - **`node test/fx-wiring.test.js` → ALL 39 PASSED**; **home-layout → 26**; **contrast AA green**;
+    `node -c main.js` clean; **full 30-gate suite green**. The boot proves: 2 controllers; home
+    derives + starts the full-bleed backdrop; **Arena derives the live region/tier scene + stays
+    visible**; a real **Arena win bursts**; leaving to a non-FX screen **stops + hides** it.
+notes / questions: **eyeball on the Poco X3:** the FX should now fill the whole viewport (no dead
+  top/side/bottom band); the **Arena has its own region/tier backdrop** (changes by region,
+  intensifies near a boss); **winning a round pops a celebration** (rank-scaled) and an **Arena
+  victory pops gold confetti**; nothing animates off home/Arena. The home now fills `100dvh` — the
+  bottom slack is mostly gone already; **T106** (next) further packs the tree (3-abreast) into the
+  reclaimed height. Next per the pointer: **`T106`**, then `T101`–`T103`, then `T89`/`T90`.

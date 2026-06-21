@@ -15,8 +15,8 @@ const css = read("styles.css"), html = read("index.html"), main = read("main.js"
 // ---- (1) reclaim the wasted top band on ALL screens -------------------------
 // the app is capped (so it never stretches to fill a huge viewport) AND the body
 // pins it to the TOP — so on a tall phone the leftover band falls to the bottom.
-ok(/\.app\{[^}]*max-height:780px/.test(css), "(1) .app is capped at max-height:780px (no over-stretch)");
-ok(/body\{[^}]*align-items:flex-start/.test(css), "(1) body top-aligns the app (align-items:flex-start) — the top band is reclaimed");
+ok(/\.app\{[^}]*height:100dvh/.test(css) && !/\.app\{[^}]*max-height:780px/.test(css), "(1) .app fills the viewport height on phones (T112: the 780px cap is relaxed → no dead band top OR bottom)");
+ok(/body\{[^}]*align-items:flex-start/.test(css), "(1) body top-aligns the app (align-items:flex-start) — the top stays pinned (no T99 regression)");
 ok(!/body\{[^}]*align-items:center/.test(css), "(1) body no longer vertically centres the app (which created the top band)");
 
 // ---- (2) the event banner is pinned to the top of #start --------------------
