@@ -264,7 +264,7 @@
     const up = reduced ? 0.3 : 0.9;         // tall fountain launch
     const lMax = reduced ? 1.0 : 2.4;       // longer-lived (a real shower)
     const spin = reduced ? 2 : 11;
-    const szMax = reduced ? 6 : 14;         // bigger flakes
+    const szMax = reduced ? 8 : 18;         // bold flakes (screen px after pxScale)
     const out = new Array(n);
     for(let i = 0; i < n; i++){
       const ang = rng() * TAU, spd = lerp(0.2, sMax, rng());
@@ -273,7 +273,7 @@
         x0: x0, y0: y0,
         vx: Math.cos(ang) * spd,
         vy: Math.sin(ang) * spd - lerp(up * 0.5, up, rng()),  // strong upward launch → arc + fall
-        size: lerp(4, szMax, rng()),
+        size: lerp(6, szMax, rng()),
         r: col[0], g: col[1], b: col[2],
         life: lerp(1.0, lMax, rng()),
         vrot: lerp(-spin, spin, rng()),
@@ -990,7 +990,7 @@
   // =========================================================================
   // CPU still backend — the no-GPU / reduced-motion fallback (a static still)
   // =========================================================================
-  function CPUBackend(ctx2d){ this.name = "cpu-still"; this.ctx = ctx2d; this.w = 1; this.h = 1; this.burst = null; }
+  function CPUBackend(ctx2d){ this.name = "cpu-still"; this.ctx = ctx2d; this.w = 1; this.h = 1; this.burst = null; this.pxScale = 1; }
   CPUBackend.prototype.setData = function(derived){ this.derived = derived; };
   CPUBackend.prototype.setBurst = function(parts){ this.burst = parts; this.burstCount = parts.length; };
   CPUBackend.prototype.resize = function(w, h){ this.w = Math.max(1, w | 0); this.h = Math.max(1, h | 0); };
@@ -1010,8 +1010,10 @@
         const s = this.burst[i].size;
         if(ctx.globalAlpha != null) ctx.globalAlpha = bp.alpha;
         ctx.fillStyle = toHex([this.burst[i].r, this.burst[i].g, this.burst[i].b]);
-        const px = Math.max(1, Math.ceil(s));   // never sub-pixel (always ≥1 device px → visible)
-        ctx.fillRect((bp.x * W - s / 2) | 0, (bp.y * H - s / 2) | 0, px, px);
+        // size up by the buffer/CSS factor so it shows at `s` SCREEN px (visible) after
+        // the browser's downscale — not s/dpr (≈1–3px = invisible). Floor at 2 screen px.
+        const px = Math.max(2, Math.round(s * (this.pxScale || 1)));
+        ctx.fillRect((bp.x * W - px / 2) | 0, (bp.y * H - px / 2) | 0, px, px);
       }
       if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
     }
@@ -1118,6 +1120,11 @@
     const h = Math.max(1, Math.round(css.h * dpr * q.res));
     if(this.canvas){ this.canvas.width = w; this.canvas.height = h; }
     this.backend.resize(w, h);
+    // T138: the buffer is `dpr·res`× the CSS size and the browser downscales it back,
+    // so a particle drawn at N buffer-px shows at only N/(dpr·res) SCREEN px (≈1.5–3px
+    // on a Poco-X3 → drawn but invisible). Hand the CPU 2D path this factor so it draws
+    // particles at a constant, visible *screen* size regardless of device DPR.
+    this.backend.pxScale = Math.max(1, dpr * q.res);
   };
   Controller.prototype._init = function(){
     const o = this.opts;

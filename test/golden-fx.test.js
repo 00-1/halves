@@ -120,17 +120,17 @@ gold("fx_celebrate_2d_frame", c2d);
 // device. This actually PAINTS each rect (with its alpha) into an in-bounds pixel
 // buffer and measures lit coverage, so a zero-coverage frame fails.
 function rasterCtx(W, H){
-  const cov = new Float32Array(W * H); let alpha = 1;
+  const cov = new Float32Array(W * H); let alpha = 1, maxRect = 0;
   const ctx = {
-    clearRect(){ cov.fill(0); },                         // the overlay clears each frame
-    fillRect(x, y, w, h){ x |= 0; y |= 0; w = Math.max(0, w | 0); h = Math.max(0, h | 0);
+    clearRect(){ cov.fill(0); maxRect = 0; },            // the overlay clears each frame
+    fillRect(x, y, w, h){ x |= 0; y |= 0; w = Math.max(0, w | 0); h = Math.max(0, h | 0); if(w > maxRect) maxRect = w;
       for(let yy = y; yy < y + h; yy++){ if(yy < 0 || yy >= H) continue;
         for(let xx = x; xx < x + w; xx++){ if(xx < 0 || xx >= W) continue; cov[yy * W + xx] = Math.min(1, cov[yy * W + xx] + alpha); } } },
     createImageData: (w, h) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }), putImageData(){}
   };
   Object.defineProperty(ctx, "fillStyle", { get(){ return "#fff"; }, set(){} });
   Object.defineProperty(ctx, "globalAlpha", { get(){ return alpha; }, set(v){ alpha = v; } });
-  return { ctx: ctx, cov: cov, coverage(){ let lit = 0; for(let i = 0; i < cov.length; i++) if(cov[i] > 0.02) lit++; return { litPx: lit, frac: lit / cov.length }; } };
+  return { ctx: ctx, cov: cov, maxRect(){ return maxRect; }, coverage(){ let lit = 0; for(let i = 0; i < cov.length; i++) if(cov[i] > 0.02) lit++; return { litPx: lit, frac: lit / cov.length }; } };
 }
 function visibleCelebrate(w, h, dpr){
   const W = Math.round(w * dpr), H = Math.round(h * dpr);
@@ -138,12 +138,14 @@ function visibleCelebrate(w, h, dpr){
   const ov = new FXGL.Controller(stubCanvas(w, h), { backend: "2d", ctx2d: r.ctx, raf: cb => { q.push(cb); return q.length; }, caf: () => {}, width: w, height: h, dpr: dpr, quality: 2, reducedMotion: false });
   ov.celebrate({ x: 0.5, y: 0.55, count: 600, seed: 7 });
   q.shift()(1000); q.shift()(1500);     // drive to a representative frame (the last clear+draw wins)
-  return { ov: ov, cov: r.coverage() };
+  // SCREEN size = buffer px ÷ (dpr·res); quality 2 → res 1, so ÷ dpr.
+  return { ov: ov, cov: r.coverage(), maxScreenPx: r.maxRect() / dpr };
 }
-const vis = visibleCelebrate(360, 640, 2);
+const vis = visibleCelebrate(377, 838, 2.75);   // ≈ the owner's 1038×2305 device
 ok(vis.cov.litPx > 400, "T138: the 2D celebrate frame paints REAL visible pixels in-bounds (" + vis.cov.litPx + " lit px — fails if invisible)");
-ok(vis.cov.frac > 0.001, "T138: visible coverage is a non-trivial fraction of the canvas (" + (vis.cov.frac * 100).toFixed(2) + "%)");
-gold("fx_celebrate_visibility", { litPx_bucket: Math.round(vis.cov.litPx / 250) * 250 });
+ok(vis.cov.frac > 0.002, "T138: visible coverage is a non-trivial fraction of the canvas (" + (vis.cov.frac * 100).toFixed(2) + "%)");
+ok(vis.maxScreenPx >= 8, "T138: particles render at a real SCREEN size after the DPR downscale (" + vis.maxScreenPx.toFixed(1) + "px ≥ 8 — the actual invisibility cause; unscaled it'd be ~6.5px and fade out)");
+gold("fx_celebrate_visibility", { litPx_bucket: Math.round(vis.cov.litPx / 500) * 500, screenPx_bucket: Math.round(vis.maxScreenPx) });
 
 // the visibility check FAILS on the device bug it's guarding (a 1×1 / unsized canvas):
 // the same celebration on a stale 1×1 buffer paints ~nothing.

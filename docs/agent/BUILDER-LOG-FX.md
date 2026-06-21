@@ -6,12 +6,37 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## T138 — celebration STILL invisible: engine fix + a REAL visibility gate ([B])
+## T138 — celebration STILL invisible: the REAL cause (DPR downscale) + a visibility gate ([B])
 
 **Status: DONE — handed off for review.** B-owned files only (`fxgl.js`,
-`test/golden-fx.test.js` + a new golden); **zero edits to any existing Halves file.**
-Owner (after T137): the celebration tester buttons fire (they restart the music) but
-**nothing renders** → it's the `{backend:"2d"}` render path, not just T137's occlusion.
+`test/golden-fx.test.js` + goldens); **zero edits to any existing Halves file.**
+
+### ⟵ CORRECTED diagnosis (owner's tester readout = `1038×2305`, ready)
+The canvas is **full-size**, so it was **NOT** the resize/occlusion cause my first pass
+guessed. The real bug: the buffer is `dpr·res`× the CSS size (≈**2.75×** on the Poco
+X3) and the browser **downscales it back** — so particles drawn at **6–18 buffer px
+showed at only ~2–6 SCREEN px**, fading out = *drawn (the count-golden passed) but
+invisible*. **Primary fix:** the CPU 2D path now **scales the draw size by the
+buffer/CSS factor** (`pxScale = dpr·res`, set on resize) so a particle shows at a
+**constant ~6–18 SCREEN px** regardless of DPR (floor 2). Celebration sizes bumped to
+**6–18** for boldness. (The re-fit + `canPresent()` from the first pass are kept as
+defensive — harmless, and cover the other candidates if they ever bite.)
+
+### Engine changes
+- **`pxScale` size-up** (the real fix) — particles draw at a visible *screen* size after
+  the DPR downscale, not `size/dpr` (≈1.5–3px = the invisibility).
+- `_ignite()` **re-fits the canvas** before drawing (fire-before-layout 1×1 defence).
+- **`controller.canPresent()`** surfaces a null 2D context (canvas bound to a stale GL
+  context → an [A] re-mount), and particles **floor to ≥2 px**.
+
+### The REAL visibility gate (rasterised — the structural guard)
+The T133 golden only **counted `fillRect` calls** (a transparent/off-canvas/tiny draw
+passes it — how this hid). Added a **rasteriser** that paints each rect (with alpha)
+into an in-bounds pixel buffer and measures **(a) lit coverage** AND **(b) on-screen
+particle size**. At the owner's `1038×2305` device the celebrate frame now paints
+**~572k lit px (24% coverage)** at **~17.8 SCREEN px** particles; the gate **fails** on
+a zero-coverage / 1×1 frame (demonstrated) *and* would fail if particles shrank back
+below ~8 screen px (the actual bug). `fx_celebrate_visibility` golden committed.
 
 ### Root-causes addressed (engine side)
 1. **Fire-before-layout 1×1 buffer** (the likeliest): a celebration is often fired
