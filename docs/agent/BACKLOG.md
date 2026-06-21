@@ -1901,10 +1901,17 @@ Make the fight *readable* — show the deterministic sim resolving, calmly.
 >   **stable 60fps** on that class (brickmap shows 120fps headroom); **WebGL2 baseline**, WebGPU
 >   only as progressive enhancement; resolution + particle **degrade ladder**; honour
 >   `prefers-reduced-motion`.
-> - **Borrow from brickmap (`00-1/brickmap`, our repo).** Port its dithering / palette-ramp /
->   instanced-particle techniques (and shader code where it transfers). **NOTE — access:** the
->   Builder's GitHub scope is `halves`-only, so to lift brickmap's code the **repo must be added to
->   the session scope** (owner action) **or** its public files fetched; T93 must resolve this first.
+> - **Borrow from brickmap (`00-1/brickmap`) — RECIPES, not the engine (Babysitter decision,
+>   2026-06-21).** Recon confirms brickmap is **Rust + wgpu / WGSL → WASM** (FX in its `bm-render`
+>   crate). **PORT its techniques** (Bayer dither, palette-ramp LUT, instanced particles) into our
+>   **own no-build JS WebGL2/WebGPU layer** — do **NOT** bolt brickmap's Rust/WASM renderer into
+>   Halves (that reintroduces a build step + breaks Node-verification + risks a11y — the wins we
+>   chose to keep). **Access:** the Builder needs **read** scope on `00-1/brickmap` to read its WGSL
+>   (owner adding it); T93 resolves this first. Because brickmap is *provably* 120fps on a midrange
+>   Poco-X3-class device via **WebGPU**, WebGPU is viable on our floor → **WebGPU-first with a
+>   WebGL2 fallback** is acceptable (not WebGL2-only). *(Reserve option, NOT now: a third agent /
+>   direct brickmap-engine work — only if we later decide deeper reuse beats porting, accepting a
+>   build step; decide on evidence after reading brickmap.)*
 > - **Verification stays Node-friendly** (T82 §6): pure-function tests (dither/palette/particle-seed
 >   math), budget invariants (single RAF, capped buffers, idle-when-hidden, reduced-motion), and a
 >   **WebGL stub** (assert one instanced draw, textures uploaded once) — like `sound.test.js` stubs
