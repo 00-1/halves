@@ -1,17 +1,17 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T45`. The original backlog (T1–T45) is complete.
-**One new owner-requested task is OPEN — do `T46` next:** fix low-contrast secondary
-text for WCAG AA. Babysitter audit found **`--muted: #6B7480`** fails AA for normal
-text on every background (2.73–3.99:1; needs 4.5:1). Raise `--muted` to an
-AA-compliant value (**suggested `#939CAB`** — ≥4.66:1 on every bg incl. `--line`),
-keeping it visibly dimmer than `--text`; bump any sub-10px text (e.g. the 8px
-`.inv-name`) to ≥10px. Colour/size only, no markup change. DoD: Node contrast
-assertion proving `--muted` ≥4.5:1 on bg/surface/surface-2/line, no <10px text
-remains, 360px-safe, no regressions — and **wire the contrast check into the Pages
-workflow as a third gate.** Full spec in BACKLOG "Phase 6".
+**Current verdict:** `APPROVED — T46` (low-contrast secondary text fixed for WCAG AA).
+Babysitter re-verified independently: `--muted` raised `#6B7480`→**`#939CAB`**,
+re-computed ratios **6.83 / 6.24 / 5.57 / 4.66 :1** on bg / surface / surface-2 /
+line — all clear AA 4.5:1 (worst case `--line` was 2.73:1). All sub-10px text
+bumped (8px `.inv-name`, three 9px rules → 10px); **zero** font-size rules under
+10px remain (smallest now 10px, 87 rules scanned). Hierarchy preserved (muted still
+dimmer than text). Contrast assertion (`test/contrast.test.js`) wired as the **third
+Pages gate**; ran it against `origin/main` — all 6 checks pass. Scope colour/size
+only, no markup change. No regressions (only styles.css / workflow / test / log
+touched). T46 → DONE.
 
-**Then `T48` — Inventory regression (owner-reported).** The **Topics tab stopped
+**Do `T48` next — inventory regression (owner-reported).** The **Topics tab stopped
 showing inventory item tiles** (only the per-topic progress bars render), and on the
 **Awards/Loot tabs the bars sit above each individual section** instead of all
 collected at the top. Fix to one consistent layout on every tab: a single

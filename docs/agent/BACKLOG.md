@@ -870,7 +870,7 @@ problems. Audit the whole running app and fix anything found.
 
 ## Phase 6 — Accessibility (owner-requested, post-completion)
 
-### T46 — Fix low-contrast secondary text (WCAG AA) · status: OPEN
+### T46 — Fix low-contrast secondary text (WCAG AA) · status: DONE
 Owner: "a lot of small dark grey text on a grey background." **Babysitter audit
 (WCAG, computed):** the culprit is **`--muted: #6B7480`** — used for nearly all
 secondary/label text (tags, sub-labels, `.build`, inventory captions, holders,
