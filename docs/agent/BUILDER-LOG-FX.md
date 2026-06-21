@@ -6,6 +6,44 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T141 — research: musical styles → a concrete 12-style palette ([B], doc; precedes T139)
+
+**Status: DONE — handed off for review.** New B-owned file only
+(`docs/research-music-styles.md`); **zero edits to any existing Halves file.** Owner:
+keep **menu**+**arena**, the others feel samey, bring back the **dubstep victory** —
+*"a research pass to really get those 10 new styles unique/interesting,"* then a
+12-style launcher palette. Same T119→T120 pattern (research → engine).
+
+### What shipped
+- **`docs/research-music-styles.md`** — the genre DNA (tempo · mode/progression ·
+  rhythmic feel · instrumentation/register · the production trick that makes it
+  recognisable) of a spread of styles, each **mapped to this engine's levers**
+  (modes, Euclid kit, patches pad/pluck/bass/bell/lead/wub, ADSR, FDN reverb,
+  density, root, leadOct), ending in a **concrete 12-row `CONTEXTS` table** T139 can
+  implement directly.
+- **The 12** (menu+arena kept; 10 new): Lo-Fi Study *(calm/solve)*, Ambient Drift
+  *(calm)*, Chiptune Rush *(festive)*, Synthwave Cruise, **Dubstep Victory** *(the
+  drop / win sting)*, Liquid DnB, Festival *(festive)*, 8-Bit Boss March, Tropical
+  Pluck, Hypno Techno. Spread: tempo **60→174**, 8 modes, feels span
+  drone/swung/half-time/backbeat/four-floor/breakbeat/march, reverb 0.04→0.55.
+- **Flagged the small engine additions** T139 needs (all tiny, no-build): a
+  **tempo-synced wub wobble** (dubstep/dnb), a `chip` square-pluck patch (chiptune/
+  8-bit), an optional scheduler **swing** (lofi/tropical), an optional per-context
+  reverb decay (ambient), and the **dubstep victory drop** (a `sting()` build→drop on
+  the **un-ducked SFX bus** — the T128 lesson). Every style renders on *today's*
+  patches; the adds just sharpen 3–4.
+- 4 cited references (dubstep/chiptune/synthwave DNA, web-researched) + the prior
+  `research-generative-audio.md`.
+
+### Next
+- **Babysitter surfaces the 12-row palette to the owner for a thumbs-up** (owner may
+  swap a style). Then **T139** [B]: implement the 12 in `CONTEXTS` (replace solve/
+  event), build the dubstep victory drop + the flagged patch adds, extend the
+  `golden-synth` distinctness gate to all 12, and hand A the final names/labels for
+  the T140 launcher/wiring.
+
+---
+
 ## T134 — clean immediate context-swap (no overlap) + audible distinctness ([B])
 
 **Status: DONE — handed off for review.** B-owned files only (`synth.js`,
