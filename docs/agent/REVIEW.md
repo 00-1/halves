@@ -11,6 +11,16 @@ assertion proving `--muted` ≥4.5:1 on bg/surface/surface-2/line, no <10px text
 remains, 360px-safe, no regressions — and **wire the contrast check into the Pages
 workflow as a third gate.** Full spec in BACKLOG "Phase 6".
 
+**Then `T48` — Inventory regression (owner-reported).** The **Topics tab stopped
+showing inventory item tiles** (only the per-topic progress bars render), and on the
+**Awards/Loot tabs the bars sit above each individual section** instead of all
+collected at the top. Fix to one consistent layout on every tab: a single
+progress-bar block at the top (reusing the `tp-row`/`topic-prog` styles), then the
+`invCell` item tiles grouped by section below — **no per-section bar beside its
+tiles**. Topics tab must show its tiles again (`C.modeItems(m.id)`). Preserve
+lazy-render, canvas drawing, jump-to-top, rarity styling and `invMeta`. Full spec in
+BACKLOG "T48".
+
 **Then `T47` — Arena: pure stat check, NOT a maths drill (owner correction).** The
 Arena currently makes you play a maths round to fight; remove that — "Fight"
 resolves instantly from hero stats (win iff `rating×matchup ≥ def`), no questions.

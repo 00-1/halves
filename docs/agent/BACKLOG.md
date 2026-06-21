@@ -936,3 +936,44 @@ rewards how much you've collected + climbed — a stat check, not extra drilling
   drill started from `#/arena`); **normal topic drills unaffected**; def values
   unchanged from T43; no regressions; deploy green. (Babysitter re-runs the full
   buff-gating suite against the new path.)
+
+### T48 — Inventory regression: show item tiles + bars-at-top on every tab · status: OPEN
+Owner: "inventory regressed. The **Topics tab no longer shows any inventory items,
+only the progress bars**. On the **other pages the progress bars should be all
+brought to the top, the same as the Topics tab, not above each individual section.**"
+Babysitter diagnosis (`main.js` ~466–555): (a) `invTopicsHtml` renders only the
+per-topic `tp-row` bars and **no `invCell` tiles** — that's the missing-items
+regression. (b) `invAwardsHtml`/`invLootHtml` call `invSection`, which emits each
+section's bar **interspersed above its own tiles**, instead of collecting all bars
+into one block at the top of the tab.
+- **One consistent layout for all three tabs** — match the Topics-tab pattern:
+  1. a **progress block at the very top** of the tab: one labelled bar-row per
+     section (reuse the existing `tp-row`/`tp-head`/`tp-bar`/`topic-prog` styles —
+     section name + `got/total` + the graded `tp-fill` bar via `topicBarColor`);
+  2. **below it, the item tiles** (`invCell`) grouped by the same sections, each
+     under a plain `<h4>` header **with no second bar** (bars live only in the top
+     block now — no per-section bar duplicated beside the tiles).
+- **Topics tab** — fix the regression: keep the per-topic progress block at top,
+  then render each topic's tiles below it, grouped per topic with a header
+  (`C.modeItems(m.id)` for the items, in the same `MODES` order as the bars).
+- **Awards tab** — move all `AWARD_CATS` bars into the top block; render each
+  category's tiles below under a header, no per-category bar beside the tiles.
+- **Loot tab** — move all 10 region bars into the top block; render each region's
+  tiles below under a header, no per-region bar beside the tiles. Keep the region
+  grouping/labels and the lazy-render (Loot tiles still only built when the Loot
+  tab is opened).
+- **Preserve everything else:** the `invCell` owned/locked markup + rarity classes,
+  `drawInvCanvases` over `.inv-cell.owned canvas`, jump-to-top (`updateInvTop`),
+  `invList.scrollTop = 0` on tab switch, the `invMeta` total, `r-<rarity>` styling,
+  and the bar grading (`topicBarColor`). Section ordering identical between the top
+  bar-block and the tiles block. No change to collectibles data or earning logic.
+- **DoD:** all three tabs show (i) a single progress-bar block at the top and
+  (ii) the item tiles below — **Topics included** (regression fixed: real
+  `invCell` tiles appear, owned ones drawing their icon, locked ones a `?`); **no
+  section renders a bar beside its tiles** (bars only in the top block); section
+  order matches between the two blocks; bar counts equal the owned/total per
+  section; canvases draw for owned tiles on every tab; lazy-render preserved (Loot
+  not built until opened); jump-to-top + scroll-reset still work; renders at 360px
+  without overflow; no console errors; no regressions; deploy green. (Babysitter
+  verifies every `$("id")` still exists, tiles render on all three tabs, the bar
+  block sits above the tiles, and no per-section bar remains beside tiles.)
