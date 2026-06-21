@@ -1,15 +1,14 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T35` (diverse item names — 1443 globally-unique,
-varied, deterministic; truncation fixed). **Do `T43` next:** trim tier loot to ~250
-— change the batch formula in `enemies.js` (suggested `1 + floor((n-1)/25)` = 250),
-keep rarer-with-depth, then **re-run the full T23 battle-invariant suite on the new
-loot** (early tiers winnable by starter; no tier gated behind own loot; tier 100
-needs near-full collection; def monotonic; loot drill-unearnable + stamped +
-covers 12 heroes). Confirm total ≈250 via Node. Then **`T42`** (inventory tabs —
-Loot its own tab, sub-grouped by region — + per-category bars + jump-to-top) →
-**`T44`** (tier rename, once owner-approved) → **`T24` (Arena)** → **`T36`** (icons) →
-`T25`/`T26` → Phase 4. Specs in BACKLOG.
+**Current verdict:** `APPROVED — T43` (loot trimmed to 250; all battle invariants
+re-verified; catalogue 1025). **Do `T42` next:** tabbed inventory per BACKLOG —
+tab bar under the count; **Loot its own tab, sub-grouped by the 10 tier-regions**
+(`region = floor((n-1)/10)`); **lazy-render** (only the active tab's tiles in the
+DOM); a colour-graded owned/total **progress bar on every category incl. Loot**;
+**jump-to-top** button when scrolled. Keep Back (T39) always-visible; names/icons
+render inside tabs; 360px-safe. Then **`T44`** (tier rename — owner-approved, FINAL
+mapping in BACKLOG) → **`T24` (Arena)** → **`T36`** (icons) → `T25`/`T26` → Phase 4.
+Specs in BACKLOG.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
@@ -25,6 +24,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T43 — Trim tier loot to 250 → APPROVED
+Batch formula `3+floor((n-1)/12)` (668) → `1+floor((n-1)/25)` (**250**); rarer-with-depth unchanged; defs recompute from the smaller set. Independently re-ran the full T23 invariant suite (Node, real modes/collectibles/heroes/enemies): node -c OK. **loot=250**, catalogue 775→**1025**, all 1025 item names **still globally unique**. Loot `test()===false` (drill-unearnable), T20-stamped, boosts **cover all 12 heroes**. **(a)** tiers 1–5 winnable by bram/0 items/perf .85; **(b)** no tier gated behind its own loot (0 fails); **def monotonic** (0 dips); **(c)** tier 100 NOT winnable with 0 items, winnable at full-minus-final-loot. Defs 11→392 (t99 291 < t100 392). main.js inventory totals adapt from `CATALOG.length`. No regressions.
 
 ### T35 — Diverse item names + inventory truncation fix → APPROVED
 Applied the DESIGN-names.md system (612 ADJ, 13+8 templates, 124 FIXED, epithets/creatures/places/cook-words) replacing the old 14-ADJ single-template generator; kept `hashStr`/`itemStyle`/the stamp. Independently verified (Node, full 1443-item catalogue incl. T23 loot): node -c OK; old ADJ constant gone; no TODO/stub. **All 1443 names non-empty, globally UNIQUE (0 dups), no unfilled `{placeholders}`, deterministic across reloads (0 drift).** Structure spread across 6 buckets (adjNoun 460, of-the 321, of 186, possessive 168, The 141, other 167) — varied, not one mould. Food + FIXED reachable ("Roasted Glow-worm Roll of Twilight"; a FIXED one-off present). **Truncation fixed:** `.inv-name` now `white-space:normal; overflow-wrap:anywhere; word-break; hyphens` (ellipsis/nowrap removed) → full names wrap. **Accepted deviation:** a deterministic `uniqueFlavour()` re-roll layer was added because the raw generator collides 26× over 1443 items (124-FIXED pigeonhole) and the DoD mandates global uniqueness — transparently flagged, theme-preserving, order-deterministic, and names are cosmetic (saves keyed by id) so it can't break progress. No regressions.

@@ -606,7 +606,7 @@ Owner: the inventory is unwieldy (1443 items, 668 of them loot). Restructure it.
   green. (Babysitter checks tab switching + lazy-render + the Loot bar in a DOM
   harness.)
 
-### T43 — Trim tier loot to ~250 (recalibrate; keep all battle invariants) · status: BLOCKED (after T35; before T24)
+### T43 — Trim tier loot to ~250 (recalibrate; keep all battle invariants) · status: DONE
 Owner: 668 loot is too many — trim to **~250**, keeping the "deeper tiers drop more
 & rarer" feel. Change the loot **batch formula** in `enemies.js` (currently `3 +
 floor((n-1)/12)` = 668). Suggested: **`1 + floor((n-1)/25)`** → batch grows 1
