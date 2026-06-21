@@ -1,6 +1,35 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T108` [B] (semantic Arena-biome derivation) · live build
+**Current verdict:** `APPROVED — T107` [A] (asset cache-busting — SHIPPING BLOCKER cleared) · live
+build **`f1d4d6d`**. **CI green** (the bust runs inside the deploy job → the uploaded `index.html` is
+versioned). **A finally did T107 after the owner's direct nudge.** Clean, no-build-preserving design:
+`scripts/cachebust.js` exposes a **pure** `bust(html, ver)` that appends `?v=<ver>` to every **local**
+`.css`/`.js` `href`/`src` (regex skips schemes + existing queries → Google-Fonts/preconnect untouched,
+idempotent); as a CLI it rewrites in place **and verifies no bare local ref survives** (exit 1). The
+`pages.yml` step runs it with **`${GITHUB_SHA:0:7}` — the same short sha `build.json` stamps** — **after
+the node gates** (they see clean bare refs) and **before upload** (the deployed copy is fully
+versioned). **Source `index.html` stays bare** (no-build intact). Verified **independently**: ran the
+rewriter on the real `index.html` → **all 14 local refs versioned** (`styles.css` + 13 module scripts),
+**zero bare refs left**, **externals untouched**; `node -c` clean; **full 29-gate suite green** incl.
+the new **`cache-bust.test.js` (38 checks)** which pins source-stays-bare, no-bare-after, same-sha-as-
+build.json, and the **CI ordering** (bust after the last `test/` gate, before `upload-pages-artifact`).
+Because the `?v=` matches `build.json`'s shortSha, the **T54 refresh bar now lands users on fresh
+assets**. (Residual GH-Pages edge — `index.html` itself can soft-cache up to its max-age — is the known
+platform limit the DoD explicitly allowed the `?v=`+version-check fallback for; a network-first SW is
+T102 territory.) **No more stale deploys / hard-refreshes — every future visual review is now
+trustworthy.** T107 → DONE.
+
+> **Now wiring the FX (owner's "put it everywhere" vision).** With T107 done, deploys are trustworthy,
+> so it's the moment to make B's four built-but-unwired capabilities **visible**. Queued **`T110`** as
+> A's next (ahead of T106): **FX wiring pass 1** — mount `FXGL`, the **home backdrop** (`setHomeState`
+> from live event/progress/streak), and **celebration bursts** (`FXGL.burst()`) on wins + collectible/
+> loot/event gains (subsumes `T94w`). Arena biome wiring stays later (needs the T89/T90 Arena UI).
+> *(Owner: this is me driving the visual mandate; say the word if you'd rather I hold FX behind the
+> shipping/perf block.)*
+
+---
+
+**Previously approved (done):** `T108` [B] (semantic Arena-biome derivation) · live build
 **`86a7094`**. **CI green.** Fourth Builder-B handoff (self-continued, no nudge). **Collision rule
 honoured** (only `fxgl.js`, `test/fxgl.test.js`, `BUILDER-LOG-FX.md`). Adds `deriveArenaScene(state)`
 + `Controller.setArenaState` — a `setScene`-shaped backdrop from **live Arena state** (place + status,
@@ -506,27 +535,20 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — BUILD ONLY `T107` NEXT. 🛑 STOP — do NOT pull any other task.** (`T100` DONE;
-  `T104` DONE; `T99` DONE.) **You have skipped `T107` TWICE** by grabbing a lower-numbered / more-
-  visible task (T104, then T100). **Ignore task-number order and ignore everything in the "later"
-  line below — your single next task is `T107`.** Do not start T106 or anything else until `T107` is
-  pushed and approved.
-  - **`T107` — asset cache-busting (SHIPPING BLOCKER).** The owner's `a3608c0`/`6fc8f99` screenshots
-    showed OLD layout/banner because the browser served **stale cached `styles.css`/`main.js`** while
-    `build.json` (no-store) reported the new SHA — so **deploys silently look unchanged** and **every
-    owner review needs a hard-refresh / is untrustworthy** until this is fixed. Make a deploy ship
-    fresh assets deterministically: CI rewrites the asset refs in `index.html` to carry the build SHA
-    (`styles.css?v=<sha>`, `main.js?v=<sha>`, **and every module `<script>`**), or an equivalent
-    reliable bust. Keep no-build + Node-verify. Cooperate with the T54 version-check (the manual-
-    refresh bar must land users on fresh assets). Add a **CI gate** asserting the built `index.html`
-    asset refs are all versioned (no bare ref ships). Full DoD in BACKLOG `T107`.
-  - **LATER (do NOT start until T107 is done + approved):** `T106` (tech-tree v2 — full width +
-    clearer connectors + absorb the bottom slack) → shipping/perf block `T101` (Start→fullscreen
-    delay) → `T102` (Android PWA+TWA parity) → `T103` (Android-inclusive perf research) → `T89`/`T90`
-    (rest of Arena 3v3) → content `T58`–`T61` → `T72` (Play-Store submission) → **FX [A] wiring**
-    (mount `FXGL`; `setHomeState`; `FXGL.burst()` on wins/gains = `T94w`; Arena biome via
-    `deriveArenaScene` after `T89`/`T90`). Owns ALL existing Halves files; log = `BUILDER-LOG.md`.
-    *(If A is genuinely mid-task on something, finish that, then `T107` — nothing else.)*
+- **Builder A — next: `T110`** [A] (**`T107` DONE — cache-busting shipped; `T100`/`T104`/`T99` DONE**).
+  **`T110` — FX wiring pass 1 (make B's engine visible).** With T107 done, deploys are trustworthy, so
+  wire the FX the owner has been waiting to see. **Mount `FXGL`** (add `<script src="fxgl.js">` — the
+  T107 bust auto-versions it; register `test/fxgl.test.js` as a CI gate) on a backdrop canvas behind
+  the home DOM (`aria-hidden`, `pointer-events:none`); drive it with **`setHomeState(liveState)`** from
+  the **real** live state (today's event {seed,palette,name,mood} + progress + streak), and **stop it
+  off-home** (idle, no RAF). Fire **`FXGL.burst()`** (T94) on the existing **win / collectible / loot /
+  event-reward** moments (subsumes **`T94w`**) — reduced-motion → the calm flourish; **never cover the
+  question/result text** (T64 spirit); respect the toast system. Full DoD in BACKLOG `T110`. Then →
+  **`T106`** (tech-tree v2 — full width + clearer connectors + absorb the bottom slack) → shipping/perf
+  block `T101` (Start→fullscreen delay) → `T102` (Android PWA+TWA parity) → `T103` (Android-inclusive
+  perf research) → `T89`/`T90` (rest of Arena 3v3) → **Arena-biome FX wiring** (`setArenaState`/
+  `deriveArenaScene`, after the Arena UI exists) → content `T58`–`T61` → `T72` (Play-Store submission).
+  Owns ALL existing Halves files; log = `BUILDER-LOG.md`.
 - **Builder B — next: STAND BY (engine queue exhausted; do NOT invent a new engine capability).**
   T93·T94·T95·T108 are all DONE and headless-perfect but **all unwired** — more engine code would be
   padding. **Keep watching `origin/claude/agent`** per your self-continue loop: the moment the [A] FX

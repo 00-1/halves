@@ -1865,7 +1865,39 @@ per SFX voice). **Raise it to clearly audible.**
   (Babysitter: recompute the worst-case voice sum × VOL ≤ 1.0 and confirm the new VOL is much
   higher than 0.30.)
 
-### T107 — [A] Asset cache-busting so deploys actually ship fresh CSS/JS · status: OPEN · SHIPPING BLOCKER
+### T110 — [A] FX wiring pass 1: mount FXGL + home backdrop + celebration bursts · status: OPEN
+**Make B's built-but-unwired FX engine VISIBLE** (owner's "bring the grit / put it everywhere"
+vision). The engine (`fxgl.js`) ships four capabilities — ambient scene (T93), celebration burst
+(T94), semantic home backdrop (T95), Arena biome (T108) — **none wired**. This task wires the **home
+backdrop + celebration bursts**; the Arena biome wiring waits for the T89/T90 Arena UI.
+- **Mount the engine.** Add `<script src="fxgl.js">` to `index.html` (the T107 cache-bust auto-versions
+  it). **Register `test/fxgl.test.js` as a CI gate** in `pages.yml`. Add a backdrop `<canvas>` behind
+  the home/`#start` DOM: `aria-hidden="true"`, `pointer-events:none`, sits under the UI (z-order), never
+  intercepts taps.
+- **Home backdrop (T95).** `FXGL.mount(canvas, …)` then `Controller.setHomeState(state)` where `state`
+  is the **real** live home state: today's event `{seed,palette,name,mood}` (from `Ev`/events.js) +
+  `progress` (a real 0–1 momentum/mastery measure) + `streak`. Re-derive when the day/event rolls or
+  progress/streak change. **Start on the home screen; `stop()` when off-home** (idle, no RAF) — hook the
+  existing screen-show/hide path. Respect reduced-motion + no-WebGL2 (the engine already falls back to a
+  static still). **Must stay behind the compact one-screen home (T91/T99); never competes with text or
+  the tree** (keep it dim/low-contrast under the DOM).
+- **Celebration bursts (T94 — subsumes T94w).** Fire `FXGL.burst({x,y,count,seed,palette})` on the
+  **existing** reward moments — Arena win, and **collectible / loot / event-reward** gains (inventory
+  gains). Don't invent new moments. Seed from the event/item so it's deterministic; **reduced-motion →
+  the calm flourish**; **never obscure the question/result text** (T64 spirit); respect the toast queue.
+  A burst can fire as a standalone overlay (no ambient scene needed) or over the home backdrop.
+- **No-build + a11y + perf.** Plain `<script>` + canvas; **idle when not visible** (the single-RAF
+  budget must hold — verify no leak when navigating away); 360px-safe; keep `contrast.test.js` AA (the
+  backdrop must not drag text contrast under AA — test the worst case).
+- **DoD:** the home shows the **live-state** backdrop (changes with event/progress/streak — verify it
+  reads the real sources, not constants); a celebratory **burst** fires on real Arena wins AND
+  collectible/loot/event gains, reduced-motion-safe, never covering key text; `FXGL` **idles off-home**
+  (no RAF when not shown — Node-checkable via the controller); `fxgl.test.js` registered as a gate;
+  `node -c` clean; **all gates green incl. contrast AA**; no console errors; 360px-safe. (Babysitter:
+  confirm on the live build that the backdrop encodes real state + stays readable, bursts fire on real
+  gains without covering text, and nothing animates when the home/Arena is off-screen.)
+
+### T107 — [A] Asset cache-busting so deploys actually ship fresh CSS/JS · status: DONE (`f1d4d6d`)
 Owner (`a3608c0` screenshot): a freshly-deployed build still rendered the **pre-T99 centered layout**
 AND the **old "Reward earned" banner tag** — both behaviours the deployed code can no longer produce.
 Diagnosis: the browser/CDN serves **stale cached `styles.css` + `main.js`** (bare `href="styles.css"`
