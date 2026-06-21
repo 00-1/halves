@@ -1,21 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T54` (version check + Update button) + **two off-script
-owner-prompted changes retroactively reviewed & approved** · live build **`8af41a5`**.
-- **`T54`** (`fba084a`) — reuses `build.json`, records the booted sha, polls every 3 min
-  (`cache:"no-store"`); on a differing sha reveals a dismissible "A new version is available
-  — Refresh" bar; Refresh = `location.reload()` (user-initiated only — never auto-reloads /
-  steals focus); local-build & offline are silent no-ops. `version.test.js` (9 checks) green.
-- **OFF-SCRIPT (owner prompted the Builder directly — not in my queue, but reviewed):**
-  `6c84af8` renamed the results "Modes" button → "Back" (text-only, handler unchanged — safe).
-  `8af41a5` changed each Rank collectible's test `rankIndex === i` → `>= i` so reaching a rank
-  also grants every lower rank — a genuine **fix** (ranks are a ladder; the old exact-match
-  would've needed playing *worse* to backfill, and could skip the `rank:darkwizard`/`archmage`
-  hero unlocks). Independently verified: rankIndex 10 → 11 ranks, rankIndex 2 → 3; additive,
-  migration-safe (owned not re-granted); no Arena-calibration impact (computed over the full
-  drill set regardless of order).
-- **Full regression sweep:** `node -c` clean on every JS; **all 16 gates pass** (arena 29,
-  version 9, contrast 6, + the rest). No harm from the off-script work. T54 → DONE.
+**Current verdict:** `APPROVED — T74` (topic unlock now requires genuine engagement) · live
+build **`e7905c0`**. Skipping every question no longer grants `init:<mode>` / unlocks the next
+topic. Gate: `INIT_ANSWER_FRAC = 0.5` (single tunable constant) — `init` requires
+`answered >= ceil(total/2)`, measuring **answered** (`times.length`, since skips never push to
+`times`), not clean-first-try score. Independently verified: all-skipped → no init / topic
+stays LOCKED; 10/21 not granted, 11/21 granted; already-owned `init` kept (migration-safe,
+not revocable); Practice grants no init. `init-gate.test.js` (11 checks) green **and the full
+17-gate suite passes** (no unlock-chain regression). `node -c` clean. Default bar = "answer at
+least half" (owner may tune the one constant). T74 → DONE.
+
+**Previously approved (done):** `T54` (version check + Update button) · build `8af41a5` —
+`build.json` poll + dismissible Update bar, user-tap reload only, offline/local no-op; 9 checks.
+Plus two **off-script** owner-prompted changes reviewed & blessed: `6c84af8` results "Modes"→
+"Back" (text-only); `8af41a5` rank rewards `rankIndex===i`→`>=i` (genuine fix — backfills lower
+ranks, un-skips darkwizard/archmage hero unlocks; verified additive + migration-safe + no
+Arena-calib impact); and `74ac75e` dropped results "Play again" (clean, no dangling refs).
 
 **Previously approved (done):** `T53` (procedural region scenery) · build `a6e6583` —
 standalone `scenery.js`, 10 themed backdrops behind the tier card; the `rgba(8,10,14,0.64)`
@@ -56,9 +56,9 @@ to `.85`.)
 - `T57` — scrubbed the school/town/county names (repo-wide grep zero); doc-only.
 - `T50` — procedural icons on the 4 menu buttons + Arena hero portraits; 16 checks.
 
-**Next-task order:** **`T74` → `T73` → `T55` → `T56`**, then content extension
+**Next-task order:** **`T73` → `T55` → `T56`**, then content extension
 (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness).
-**Do `T74` next** — gate the topic unlock on genuine engagement (not 100% skips). Then
+**Do `T73` next** — replace the coloured left-border accents (.hd-boost, .map-row) with a coloured square. Then `T55` (Collector->10k), `T56` (pixel mark/glyphs + favicon).  Specs in BACKLOG; this line is authoritative.
 **`T73`** (replace the coloured left-border accents with a square), `T55` (Collector→10k),
 `T56` (pixel mark/glyphs + favicon). Specs in BACKLOG; this line is authoritative.
 

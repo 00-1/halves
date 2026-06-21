@@ -1789,7 +1789,7 @@ on a rounded row:
 
 ## Phase 14 — Progression integrity
 
-### T74 — Topic unlock must require genuine engagement (not all-skipped) · status: OPEN
+### T74 — Topic unlock must require genuine engagement (not all-skipped) · status: DONE
 Owner: "if you **skip all** the questions on a topic you still **unlock the next topic** —
 that doesn't seem right. Maybe some skips are OK, but not 100%." Cause: the `init:<mode>`
 collectible (whose ownership unlocks the next topic via `isUnlocked`) has **`test: () =>
