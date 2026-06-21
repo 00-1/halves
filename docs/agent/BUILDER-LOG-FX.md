@@ -13,6 +13,25 @@ increment, no per-phase wait.** New files only (`synth.js`, `test/synth.test.js`
 **zero edits to `sound.js` or any existing Halves file** (the [A] wiring is phase 6).
 No deps/bundler; no sample assets; deploy-safe; all existing gates green.
 
+### Increment 3/5 — HARMONY (modes · progressions · voice-leading · bass-root) · DONE
+Gives the music somewhere to go (T119 §3) — pure music theory, no audio nodes:
+- **Modes** (`MODES`): ionian/major, dorian, phrygian, lydian, mixolydian,
+  aeolian/minor, pentatonic(+minor), each carrying its mood colour (lydian ♯4,
+  phrygian ♭2, dorian ♮6); grouped by mood in `MODE_MOOD` (bright/calm/dark) for
+  context selection.
+- `degToMidi` (octave-aware, wraps), `chordMidi` (diatonic stacked-third triads),
+  `bassMidi` (**bass-follows-root**, low).
+- **`voiceLead(prev, chord)`** — moves each voice to the nearest chord tone (≤ a
+  tritone), minimising motion (flowing, not blocky).
+- **`harmonyFor(spec)`** — realises a progression (`{root, mode, progression,
+  padOct, bassOct}`) into per-chord `{degree, chord, voiced(pad), bass}`,
+  voice-led across the progression, **deterministic** (the scheduler in increment
+  4 consumes it).
+- Tests +17 (now **72**): mode intervals (♯4/♭2/♮6), degree→MIDI wrap, triads
+  (I=C-E-G, vi=A-C-E), voice-leading (less motion than root-position + all chord
+  tones + ≤ tritone), bass-below-pad + follows-root, progression determinism +
+  smoother-than-naive motion.
+
 ### Increment 2/5 — SPACE (FDN reverb + sends + stereo width + ducking) · DONE
 The "biggest quality lever vs our dry sound" (T119 §6):
 - **`makeReverb()` — a 4-line Feedback-Delay-Network reverb**: input → pre-delay →

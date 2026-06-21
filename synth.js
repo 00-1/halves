@@ -221,6 +221,68 @@
     return parts.join("|");
   }
 
+  // ---- harmony (T119 §3, increment 3) — give the music somewhere to go -------
+  // Modes share notes but recolour the mood (lydian bright … phrygian dark). A
+  // context picks a key + mode + a chord PROGRESSION; the bass follows the chord
+  // root, the pad voices the triad with VOICE-LEADING (nearest-tone motion), so
+  // consonance + motion are automatic instead of random notes over a drone.
+  const MODES = {
+    ionian:     [0,2,4,5,7,9,11], major: [0,2,4,5,7,9,11],
+    dorian:     [0,2,3,5,7,9,10],
+    phrygian:   [0,1,3,5,7,8,10],
+    lydian:     [0,2,4,6,7,9,11],
+    mixolydian: [0,2,4,5,7,9,10],
+    aeolian:    [0,2,3,5,7,8,10], minor: [0,2,3,5,7,8,10],
+    pentatonic: [0,2,4,7,9], pentminor: [0,3,5,7,10]
+  };
+  // modes grouped by mood, for context selection (calm solve vs dark Arena).
+  const MODE_MOOD = { bright: ["lydian","ionian","mixolydian"], calm: ["dorian","pentatonic","ionian"], dark: ["aeolian","phrygian"] };
+  const TRIAD = [0, 2, 4];   // diatonic thirds, in scale steps
+
+  // Scale degree → MIDI (octave-aware; degrees beyond the scale wrap up octaves).
+  function degToMidi(root, modeName, degree, oct){
+    const sc = MODES[modeName] || MODES.major, len = sc.length;
+    const o = Math.floor(degree / len), idx = ((degree % len) + len) % len;
+    return (root | 0) + ((oct || 0) + o) * 12 + sc[idx];
+  }
+  // The diatonic triad rooted on scale-degree `deg` (3 MIDI notes).
+  function chordMidi(root, modeName, deg, oct){ return TRIAD.map(t => degToMidi(root, modeName, deg + t, oct)); }
+  // bass-follows-root: the chord's root, low.
+  function bassMidi(root, modeName, deg, oct){ return degToMidi(root, modeName, deg, oct == null ? -2 : oct); }
+
+  // Voice-leading: move each previous voice to the NEAREST tone of the new chord
+  // (≤6 semitones), minimising motion — the difference between flowing and blocky.
+  function voiceLead(prev, chord){
+    const pcs = chord.map(m => ((m % 12) + 12) % 12);
+    return prev.map(function(m){
+      let best = m, bestD = 99;
+      for(const pc of pcs){
+        let cand = m + ((((pc - (m % 12)) % 12) + 12) % 12);   // nearest pc at/above m
+        if(cand - m > 6) cand -= 12;                            // …or just below, if nearer
+        const d = Math.abs(cand - m);
+        if(d < bestD){ bestD = d; best = cand; }
+      }
+      return best;
+    });
+  }
+
+  // Realise a progression into per-chord { degree, chord, voiced (pad), bass }.
+  // Deterministic (no RNG): same spec → same harmony. The scheduler (increment 4)
+  // consumes this; harmonic rhythm (chords per bar) is the caller's tempo concern.
+  function harmonyFor(spec){
+    spec = spec || {};
+    const root = spec.root == null ? 60 : spec.root, mode = spec.mode || "ionian";
+    const prog = (spec.progression && spec.progression.length) ? spec.progression : [0, 5, 3, 4];   // I–vi–IV–V
+    const padOct = spec.padOct == null ? 0 : spec.padOct, bassOct = spec.bassOct == null ? -2 : spec.bassOct;
+    let voiced = null; const out = [];
+    for(const deg of prog){
+      const chord = chordMidi(root, mode, deg, padOct);
+      voiced = voiced ? voiceLead(voiced, chord) : chord.slice();
+      out.push({ degree: deg, chord: chord, voiced: voiced.slice(), bass: bassMidi(root, mode, deg, bassOct) });
+    }
+    return out;
+  }
+
   // ---- space: a Feedback-Delay-Network reverb (T119 §6, increment 2) ---------
   // 4 delay lines, each damped by a lowpass, recombined through a unitary
   // (Hadamard) feedback matrix scaled by `decay<1` so it is dense but stable —
@@ -361,6 +423,9 @@
     // pure helpers (headless-tested)
     hz: hz, adsr: adsr, mulberry32: mulberry32, makeReverb: makeReverb,
     renderVoice: renderVoice, renderDrum: renderDrum, patchSignature: patchSignature,
+    // harmony (increment 3)
+    MODES: MODES, MODE_MOOD: MODE_MOOD, degToMidi: degToMidi, chordMidi: chordMidi,
+    bassMidi: bassMidi, voiceLead: voiceLead, harmonyFor: harmonyFor,
     // introspection (tests / the [A] wire)
     buses: function(){ return { master: E.master, limiter: E.limiter, music: E.music, drum: E.drum, sfx: E.sfx, reverb: E.reverb, musicSend: E.musicSend, drumSend: E.drumSend }; },
     noiseBuffer: function(){ return E.noiseBuf; }

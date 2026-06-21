@@ -194,5 +194,46 @@ ok(rv.types.delay === delaysAfterMount, "voices do NOT rebuild the reverb (share
 const fdn = Sv.makeReverb(StubCtx(freshRecord()));
 ok(fdn.input && fdn.output && fdn.delays.length === 4, "makeReverb exposes a clean input/output + 4 lines");
 
+// =====================================================================
+// 8) HARMONY (increment 3): modes, progressions, voice-leading, bass-root
+// =====================================================================
+// modes carry their defining colour (lydian ♯4, phrygian ♭2, dorian ♮6)
+ok(Synth.MODES.lydian[3] === 6, "lydian raises the 4th (♯4 — bright)");
+ok(Synth.MODES.phrygian[1] === 1, "phrygian flattens the 2nd (♭2 — dark)");
+ok(Synth.MODES.dorian[5] === 9 && Synth.MODES.minor[5] === 8, "dorian has a ♮6 vs natural minor's ♭6");
+ok(Synth.MODE_MOOD.bright.includes("lydian") && Synth.MODE_MOOD.dark.includes("phrygian"), "modes are grouped by mood (bright/calm/dark)");
+
+// degree → MIDI is octave-aware and wraps
+ok(Synth.degToMidi(60, "major", 0, 0) === 60, "degree 0 = the root");
+ok(Synth.degToMidi(60, "major", 7, 0) === 72, "degree 7 wraps to the octave (+12)");
+ok(Synth.degToMidi(60, "major", 4, 0) === 67, "degree 4 = a perfect 5th (G over C)");
+
+// diatonic triads = stacked scale-thirds; chord tones are in key
+const Cmaj = Synth.chordMidi(60, "major", 0, 0);
+ok(JSON.stringify(Cmaj) === JSON.stringify([60, 64, 67]), "I in C major = C-E-G (stacked thirds)");
+const vi = Synth.chordMidi(60, "major", 5, 0);
+ok(JSON.stringify(vi) === JSON.stringify([69, 72, 76]), "vi in C major = A-C-E");
+
+// voice-leading minimises motion AND lands on chord tones
+const prev = Synth.chordMidi(60, "major", 0, 0);                // C-E-G
+const led = Synth.voiceLead(prev, Synth.chordMidi(60, "major", 4, 0));  // → G chord, voice-led
+const naive = Synth.chordMidi(60, "major", 4, 0);              // root-position G-B-D
+const motion = (a, b) => a.reduce((s, m, i) => s + Math.abs(m - b[i]), 0);
+ok(motion(prev, led) <= motion(prev, naive), "voice-leading moves voices less than root-position (" + motion(prev, led) + " ≤ " + motion(prev, naive) + ")");
+const ledPCs = led.map(m => ((m % 12) + 12) % 12), gPCs = naive.map(m => m % 12);
+ok(led.every(m => gPCs.includes(((m % 12) + 12) % 12)), "every voice-led note is a chord tone");
+ok(led.every((m, i) => Math.abs(m - prev[i]) <= 6), "no voice jumps more than a tritone (smooth)");
+
+// a realised progression: bass follows the root (low + below the pad), deterministic
+const H = Synth.harmonyFor({ root: 60, mode: "ionian", progression: [0, 5, 3, 4] });
+ok(H.length === 4, "harmonyFor realises every chord in the progression");
+ok(H.every(c => c.bass === Synth.degToMidi(60, "ionian", c.degree, -2)), "bass follows the chord root (an octave-2 low)");
+ok(H.every(c => c.bass < Math.min.apply(null, c.voiced)), "the bass sits below the voiced pad");
+ok(JSON.stringify(H) === JSON.stringify(Synth.harmonyFor({ root: 60, mode: "ionian", progression: [0, 5, 3, 4] })), "harmonyFor is deterministic for a spec");
+// across the progression the pad stays smooth (small total motion vs always root-position)
+let ledTotal = 0, rootTotal = 0; let pv = null, rv2 = null;
+for(const c of H){ if(pv){ ledTotal += motion(pv, c.voiced); rv2 && (rootTotal += motion(rv2, c.chord)); } pv = c.voiced; rv2 = c.chord; }
+ok(ledTotal <= rootTotal, "the voice-led pad moves less across the progression than naive root-position");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
