@@ -398,7 +398,7 @@
     if(!Hs.isHeroUnlocked(h, col)){
       return '<div class="hero-card locked t-'+h.type.toLowerCase()+'">'+
         '<div class="hero-port"><span class="q">?</span></div>'+
-        '<div class="hero-info"><div class="hero-name">'+esc(h.name)+'</div>'+
+        '<div class="hero-info"><div class="hero-name"><span class="hn"><i class="typedot"></i>'+esc(h.name)+'</span></div>'+
         '<div class="hero-hint">🔒 '+esc(h.unlockHint)+'</div></div></div>';
     }
     const st = Hs.effectiveStats(h, col), rating = Math.round(Hs.rating(h, col));
@@ -409,7 +409,7 @@
     return '<div class="hero-card unlocked t-'+h.type.toLowerCase()+'" data-hero="'+esc(h.id)+'">'+
       '<div class="hero-port"><canvas class="pix" width="48" height="48"></canvas></div>'+
       '<div class="hero-info">'+
-        '<div class="hero-name">'+esc(h.name)+'<span class="hero-rating">★ '+rating+'</span></div>'+
+        '<div class="hero-name"><span class="hn"><i class="typedot"></i>'+esc(h.name)+'</span><span class="hero-rating">★ '+rating+'</span></div>'+
         '<div class="hero-stats">'+statChip("PWR",st.power)+statChip("GRD",st.guard)+statChip("SPD",st.speed)+statChip("FOC",st.focus)+'</div>'+
         '<div class="hero-items">'+(items.length ? '<span class="hero-il">Boosted by '+items.length+':</span> '+chips
                                                   : '<span class="hero-none">No items yet — collect to boost.</span>')+'</div>'+
