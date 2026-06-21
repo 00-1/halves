@@ -1,16 +1,18 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T31` (momentum counter — reducer correct across all
-branches, cap 75, 6 milestones, no timers). **Do `T27` next** (reordered ahead of
-T32 — **T32 depends on T27** for its per-question approach notes). T27 = per-topic
-"how to beat it" guides per `docs/agent/DESIGN-guides.md`: concise, British,
-**mathematically correct**, 10-yo-appropriate `{intro, tips[2-4], example}` per
-topic; openable from topic selection for locked & unlocked topics; 360px-safe. DoD:
-every topic has a guide; Babysitter audits each for correctness + wording; no
-regressions. Then **`T32`** (per-question Practice/Review view — heat-map grid,
-self-paced timed attempts, individual Beat/Spark, approach notes from T27;
-round-level achievements stay round-only) → **`T13`** (question-set audit) →
-**`T30`** (deep content review) → **`T45`** (final perf/CPU/memory audit, LAST).
+**Current verdict:** `APPROVED — T27` (per-topic guides — all 15, Babysitter-audited
+maths all correct, British, well-pitched). **Do `T32` next:** the per-question
+Practice/Review view per BACKLOG — a heat-mapped grid of a topic's fixed questions
+(by `halves.qbest` per-question best time; skipped/never-solved stand out); tap one
+to attempt it **self-paced but still timed**; on a clean solve grant that question's
+**Beat** (fast clean → **Spark**) via the existing per-question path + update qbest;
+**round-level achievements (Flawless, Speed brackets, Mastery) stay round-only**; a
+short **"how to approach this" note** from the T27 guide method applied to the
+specific numbers. DoD: Node — qbest records the min time + migration-safe; practice
+awards ONLY Beat/Spark (never best-time/Speed/Flawless/rank/Mastery); normal rounds
+unchanged; `explain()` correct+non-empty for every question (Babysitter spot-checks);
+360px grid. Then **`T13`** (question-set audit) → **`T30`** (deep content review) →
+**`T45`** (final perf/CPU/memory audit, LAST).
 **Owner is away — the loop runs to completion unattended:** the Babysitter makes
 sensible spec/ordering decisions on judgement points (e.g. this T27-before-T32
 reorder) rather than blocking; the Builder escalates only genuine blockers in
@@ -30,6 +32,9 @@ starting new work.
 ---
 
 ## Log of verdicts
+
+### T27 — Per-topic "how to beat it" guides → APPROVED
+New `guides.js` (`window.Guides`), guideModal added, "?" control on every picker row (incl. locked = preview). Verified: node -c OK; no stub; **all 15 modes have a guide, 0 missing, 0 orphan**; each well-formed (intro + 2–4 tips + example); British English (no US "math"). **Babysitter maths audit (every guide, line-by-line): ALL correct** — e.g. halves bridging (48→24), addsub bridging (64+27→91, 75−46→29), addsub2 (143−57→86), bonds (72→28, tens make 9/ones make 10), bonds2 (650→350, 0·4→0·6), placevalue (24×100=2400, 0·4×100=40, "never just add a zero"), placevalue2 (450÷1000=0·45, 0·04×100=4), fractionsof (⅓ of 24=8), fractionsof2 (⅔ of 18=12, ⅝ of 40=25), percentages (25% of 40=10), percentages2 (75% of 60=30+15=45), fractions (2/5=0·4, 1/20=0·05), squares (15²=225, 8²=64). Pedagogy well-pitched for Year 5/6. DOM harness: "?" opens the modal for unlocked + locked topics, all 15 render. No regressions. Unblocks T32.
 
 ### T31 — Daily-practice momentum counter → APPROVED
 The forgiving up/down day counter (owner's redesign). Verified via `window.Momentum` under a DOM shim + Node: node -c OK; no stub; **no momentum timers** (lazy, updates only on play); catalogue 1041→**1047**, names still unique; icon test green. **Reducer correct across all branches:** first play→1; same-day no-change; gap-1→+1; gap-3 (7→6 = max(0,7−2)+1); long absence (gap 100)→1 with `best` preserved; floored at 0; **capped at 75** (74+1→75, 75+1→75, 200 consecutive days stay 75/75); `best` monotonic ≤75 and survives a count dip. 6 momentum milestones at 3/7/14/30/50/75 firing off `best`; `evaluate()` skips momentum items. Label "Momentum", MAX 75. No regressions.

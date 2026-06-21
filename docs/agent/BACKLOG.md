@@ -374,7 +374,7 @@ screen/topic change. Honour mute; stop when hidden.
 
 ## Phase 2.8 — Topic guides
 
-### T27 — Per-topic "how to beat it" guides · status: OPEN
+### T27 — Per-topic "how to beat it" guides · status: DONE
 Add a short, friendly guide for **every** topic (incl. Part-2 variants), reachable
 from the **topic-selection screen**, aimed at a British 10-year-old — concise, not
 verbose. Full content standard + tone + seed examples + per-topic strategy hints:
