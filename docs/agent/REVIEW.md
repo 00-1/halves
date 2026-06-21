@@ -655,15 +655,21 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T115`** [A] · **OWNER-PRIORITY** (**`T113` DONE — audio sliders shipped; the
-  owner is now calibrating; `T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**).
-  **`T115` — music with CHARACTER:** **calm solves [FIRM RULE]**, real per-context variety (stop the
-  "all sounds the same"), a synth **"wub" win-sting** on topic-complete/battle-win, distinct Arena
-  theme. Full DoD in BACKLOG `T115`. **`T114`** (set the owner-calibrated volume/tempo as defaults) is
-  BLOCKED on the owner reporting T113's values — slot it once they do (ideally after T115).
+- **Builder A — next: `T118`** [A] · **BUG — DO FIRST** (**`T113` DONE — audio sliders shipped; owner
+  calibrating; `T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**).
+  **`T118` — BUGFIX: `#game` overflows, the Skip key is cut off below the fold (T112 regression).**
+  Root cause: `body` pads by the safe-area insets AND T112 set `.app{height:100dvh}` (no cap), so
+  `app + insets > viewport` and non-scrolling `#game` clips its bottom (Skip). Fix the app height to
+  the available space: `height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))`;
+  keep T99's top-pin + T112's fill-screen; Skip fully visible/tappable. Full DoD in BACKLOG `T118`.
+  **Then → `T115`** — music with CHARACTER: **calm solves [FIRM RULE]**, real per-context variety (stop
+  the "all sounds the same"), a synth **"wub" win-sting** on topic-complete/battle-win, distinct Arena
+  theme. **`T114`** (set the owner-calibrated volume/tempo as defaults) is BLOCKED on the owner
+  reporting T113's values — slot it once they do (ideally after T115).
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
-  submit.** Authoritative order — **AUDIO/POLISH BLOCK FIRST** (owner is focused on it): **`T115`**
+  submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
+  **`T118`** (BUG: Skip cut off on `#game` — T112 safe-area regression) → **`T115`**
   (music with CHARACTER) → **`T116`** (restore the tree's scroll-affordance fade/cue — a small T96
   regression the owner spotted) → **`T117`** (replace ALL chrome emoji with house generative pixel
   icons — owner pass; padlock/speaker/cog/coin/calendar + the full swept set) → **`T101`**

@@ -2136,6 +2136,33 @@ the sliders (users can still adjust). DoD: defaults match the owner's reported v
 sound test band updated; all gates green. *(Babysitter fills in the exact numbers when the owner gives
 them.)*
 
+### T118 — [A] BUGFIX: #game overflows (Skip key cut off below the fold) — T112 regression · status: OPEN · BUG · DO FIRST
+Owner (screenshot, timed level): the Skip key is **cut off at the bottom** of the game/solve screen,
+with a large empty gap above the keypad. **Root cause (T112 regression):** `body` pads by the
+safe-area insets (`padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom)`) AND T112 set
+`.app{height:100dvh}` (dropping the old `max-height:780px` cap). So the app box is a full `100dvh`
+**inside** an inset-padded body → `app + insets > 100dvh viewport`; the app's bottom is pushed below the
+fold by ≈`top-inset + bottom-inset`. Non-scrolling screens (`#game` has no `overflow-y:auto`) clip their
+last element — the **Skip** key. The old 780px cap accidentally masked this on tall phones; uncapped, it
+bites (worse with an Android gesture-nav inset). The `flex:1` stage absorbing the slack is the empty gap.
+- **Fix the app height to the *available* space.** Size `.app` so `app + body padding == viewport`,
+  e.g. `.app{ height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) }` (keep
+  the desktop `@media(min-height:1000px)` cap). The whole app — esp. `#game` — must fit with the
+  **Skip key fully visible** and tappable. Keep T99's top-pin (no wasted top band) and T112's
+  fill-the-screen win (no dead bottom band) intact — this is purely accounting for the insets.
+- **Belt-and-braces for #game.** Ensure `#game` can never clip its bottom: the keypad+skip block is
+  `flex:0 0 auto` and fully on-screen; if space is ever tight, the **stage** (the question area with the
+  big gap) gives first (it already `flex:1`) — never the pad/skip. (Optional: cap the stage's grown
+  height so the gap isn't cavernous, but the must-fix is Skip visible.)
+- **Verify across the screens that don't scroll** (`#game`, `#arena` result, modals) — none should clip
+  a bottom control; the scrolling ones (`#start`, `#results`, `#inventory`) stay fine.
+- **DoD:** on the game screen the **Skip key is fully visible + tappable** at the Poco-X3 viewport
+  (and with a bottom safe-area inset present); no screen clips its bottom control; no wasted top band
+  (T99) and the home still fills the screen (T112); 360px-safe; `node -c` clean; all gates green
+  (extend `home-layout`/a layout test to assert `.app` height subtracts the safe-area insets, so this
+  can't silently regress again). (Babysitter: confirm Skip is reachable on the live build + the home
+  still fills top-to-bottom.)
+
 ### T115 — [A] Music with CHARACTER: calm solves · real variety · a "wub" win-sting · distinct Arena · status: OPEN · OWNER-PRIORITY
 Owner: the generative music "all sounds the same," there are no interesting variations, and **during
 solves it's too fast/stressful**. Make the music **context-appropriate and distinctive** — not one
