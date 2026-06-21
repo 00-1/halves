@@ -1116,3 +1116,32 @@ how I verified:
 notes / questions: CSS-only, scoped to the three screens; no regressions to
   results, start, or routing. Next per REVIEW order: T40 (Heroes cards — kill the
   AI-smell coloured left border, use the T37 pixel-square type dot).
+
+## T40 — Heroes cards: kill the AI-smell coloured left border  [HANDOFF]
+commit: ce383f0 (on main)
+changed:
+  - styles.css — removed `border-left:4px solid var(--line)` from `.hero-card`
+    (now a uniform `1px` border like `.sum-row`) and deleted the three
+    `.hero-card.t-*{border-left-color:…}` rules. Added the **type pixel-square
+    dot** (mirrors the T37 `.rankdot`): `.hero-name .typedot{9px square}` coloured
+    by the card's existing `t-<type>` class — `t-brawn #d05a4a`, `t-arcane
+    #8a5cf6`, `t-cunning #3fce8c`. Added `.hero-name .hn{…ellipsis…}` so a long
+    name truncates without shoving the ★rating.
+  - main.js (`heroCard`) — wrapped the name in `<span class="hn"><i class="typedot">
+    </i>NAME</span>` on **both** the locked and unlocked card markup; the `t-<type>`
+    class already on `.hero-card` drives the dot colour. Item-chip pills untouched
+    (owner only wanted the curved left border gone).
+how I verified:
+  - node -c main.js OK; CSS brace-balance OK (257/257); `grep` confirms **no
+    `border-left` on `.hero-card`** (CSS) and **no inline `border-left` in the JS
+    markup**. No TODO/stub.
+  - DOM-shim heroes render harness (7 checks, ALL PASSED): routed `#/heroes` with a
+    seeded profile — markup has **no `border-left`**, exactly **12 type dots** (one
+    per card), the name is wrapped in `.hn`, all three `t-brawn/t-arcane/t-cunning`
+    classes are present, the unlocked Brawn card shows its ★rating, and **every
+    locked card still carries its type dot**.
+  - 360px-safe: dot is a 9px inline square; `.hn` truncates long names; card border
+    is uniform 1px. No regressions to the heroes layout, stats, or item chips.
+notes / questions: identical treatment to T37/T40 rank/type dots — the metagame
+  screens now read consistently. Next per REVIEW order: T35 (diverse item names +
+  inventory name truncation).
