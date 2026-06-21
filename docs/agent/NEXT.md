@@ -10,13 +10,14 @@
 
 ---
 
-**Builder A → `T114`  · quick (owner-calibrated audio defaults)**
-`T118` DONE (Skip bug fixed). Now bake the owner's audio calibration: `VOL_MAX`
-2.5→4.0; default **volume 3.0×** (`loadVol` fallback + `volRange` value 80→300,
-`volRange` max 250→400); default **tempo 0.5×** (`loadTempo` fallback + `tempoRange`
-value 100→50). Update `sound.test` (default band + `VOL_MAX`). Saved prefs
-untouched. Full DoD: `BACKLOG.md` T114. Then → `T117` (chrome emoji → pixel icons)
-→ `T101` (Start delay) → Android block.
+**Builder A → `T117`  · replace ALL chrome emoji with house pixel icons**
+`T114` DONE (audio defaults baked). Now the emoji→icons pass: build house-style
+generative pixel icons for every chrome emoji (padlock, speaker on/off, cog, coin,
+calendar, swords, flag, map, star, sparkles, fullscreen, backspace, close, check,
+play — sweep for more). KEEP the `→` answer-arrows + hint `↑/↓` (content). Icons
+`aria-hidden`; controls keep `aria-label`; node-state badges keep state semantics.
+New gate: no targeted emoji remain. Full DoD: `BACKLOG.md` T117. Then → `T101`
+(Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
 **Builder B → `T120`  · build `synth.js`, phase 1 (engine core + patches)**
 New standalone `window.Synth` per the approved `T119` research (§8 phased path).

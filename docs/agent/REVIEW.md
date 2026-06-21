@@ -1,6 +1,16 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T118` [A] (BUGFIX: Skip key no longer cut off on `#game`) · live build
+**Current verdict:** `APPROVED — T114` [A] (audio defaults baked: loud + calm out of the box) · live
+build **`fdaeb25`**. **CI green.** The owner's calibration is now the default for fresh installs:
+**`VOL_MAX` 2.5→4.0** (owner maxed 2.5 and wanted more → range now reaches 4×, limiter-safe); default
+**volume 3.0×** (`loadVol` fallback 80→**300**, `volRange` `value` 80→300, `max` 250→**400**); default
+**tempo 0.5×** (`loadTempo` fallback 100→**50**, `tempoRange` `value`→50). Saved `halves.vol`/
+`halves.tempo` prefs are **untouched** (only the fresh-install fallback changed). Verified: `node -c`
+clean; **full suite green**; `sound.test` (66) updated for the new default band + `VOL_MAX=4.0`. All
+**[A]-owned files**. T114 → DONE. *(Owner: a cleared profile now boots ~3× loud + 0.5× tempo; nudge the
+Volume slider toward 4× if 3× still isn't enough and tell me.)*
+
+> **Previously approved (done):** `T118` [A] (BUGFIX: Skip key no longer cut off on `#game`) · live build
 **`7a271a8`**. **CI green.** The core-loop bug is fixed exactly as diagnosed: `.app` height is now
 `calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))`, so **app + body safe-area
 padding == the viewport** and the non-scrolling `#game` can no longer push the Skip key below the fold;
@@ -718,13 +728,14 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T114`** [A] (**`T118` DONE — Skip bug fixed; `T116`/`T115`/`T113`/`T106`/`T112`/
-  `T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**). *(Read `NEXT.md` fresh before starting — canonical.)*
-  **`T114`** (quick — bake the owner's calibrated audio defaults: **`VOL_MAX` 2.5→4.0**, default
-  **volume 3.0×** [slider 300, max 400], default **tempo 0.5×** [slider 50]; update `sound.test`). Owner
-  hit the 2.5× max and wanted more, so the range is raised too. **Then → `T116`** (tree scroll-cue) →
-  **`T117`** (chrome emoji → house pixel icons) → **`T101`** (Start delay) → Android block. *(`T115`
-  music-character DONE; the deeper principled audio rebuild is the **B** track below — `T119`.)*
+- **Builder A — next: `T117`** [A] (**`T114` DONE — audio defaults baked; `T118`/`T116`/`T115`/`T113`/
+  `T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**). *(Read `NEXT.md` fresh before starting
+  — canonical.)* **`T117`** — replace ALL chrome emoji with **house generative pixel icons** (padlock/
+  speaker/cog/coin/calendar + the full swept set per the audit; KEEP the `→` answer-arrows + hint
+  `↑/↓`; icons `aria-hidden`, controls keep `aria-label`, node-state badges keep state; new gate: no
+  targeted emoji remain). Full DoD `T117`. **Then → `T101`** (Start delay) → **`T102`/`T103`** (Android
+  PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**. *(The deeper
+  principled audio rebuild is the **B** track — `T120` synth engine — below.)*
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):

@@ -2128,7 +2128,7 @@ engages**. ~6 dB of headroom is unused, so small `VOL` bumps changed almost noth
   loud and the tempo genuinely slows; then the **owner reports the two values** → T114 sets them as
   defaults.)
 
-### T114 — [A] Audio: set the owner-calibrated Volume + Tempo defaults + extend the volume range · status: OPEN (owner reported values)
+### T114 — [A] Audio: set the owner-calibrated Volume + Tempo defaults + extend the volume range · status: DONE (`fdaeb25`)
 **Owner's calibrated values (2026-06-21):** "volume definitely 2.5× **or more** as default; tempo 0.4
 to 0.6." The owner **hit the slider max (2.5×) and still wanted more**, so the *range* is too low, not
 just the default. Act on both:
