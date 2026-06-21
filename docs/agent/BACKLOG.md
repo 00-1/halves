@@ -2658,29 +2658,30 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
-### T138 — [B] Celebration STILL invisible — engine-side fix (the tester confirms the fns fire but nothing renders) · status: OPEN · OWNER-PRIORITY · BUG
-Owner (live, after T137's tester + occlusion fix): **"the celebration picker is now in the menu. none of
-them work. they do restart the current music though, for whatever reason."** The "restart the music" proves
-the button handlers **fire** (`fireCelebrationTest`→`audioUnlock`→`musicForScreen` re-routes music) and the
-celebration fns are called — yet **nothing renders**. So T137's z-order/occlusion fix was **not** the (whole)
-cause: it's engine-side, in the `{backend:"2d"}` render path. *(The music-restart side-effect is a separate
-[A] fix — see T143.)*
-- **Deep-investigate `fxgl.js`'s forced-Canvas2D path on a real device/headless DOM.** Candidates: the 2D
-  canvas ends up **0/1-sized** (so `dimensions()` would read `0×0`/`1×1` — if so it's a resize-timing bug, may
-  bounce to [A]); the **RAF loop never pumps** for a `{backend:"2d"}` controller (e.g. `_needsFrame`/`_pump`
-  gating); particles draw **invisibly** (transparent globalAlpha, sub-pixel `size` at this DPR, or off-canvas
-  coords); or the 2D context isn't actually the one being presented.
-- **Add a REAL visibility check (not a draw count).** Extend the golden/fx test so it asserts the celebrate
-  frame has **actual visible coverage** — e.g. a non-trivial count of pixels whose alpha>0 land **inside** the
-  canvas bounds with size ≥1 device px (the T133 golden only counted `fillRect` calls, which a transparent/
-  off-canvas/zero-size draw still passes — that's why it stayed green while invisible).
-- **Coordinate the readout:** once T143 makes Settings scrollable, the owner can read the tester's
-  `dimensions()`/`isReady()` value — if it shows `0×0`, the fix is resize ([A]); a real size + invisible ⇒
-  the particle-visibility fix here. Build the most likely fix now; confirm against the owner's readout.
-- **DoD (LIVE-verified):** tapping a celebration tester button shows a **visible** particle shower on a real
-  device; the new visibility check fails on a zero-coverage frame; `node -c` clean; all gates green; **B-owned
-  only** (`fxgl.js` + tests/goldens + `BUILDER-LOG-FX.md`). (Babysitter: the bar is the owner SEEING it; green
-  gates necessary-not-sufficient — this has hidden behind them three times.)
+### T138 — [B] Celebration invisible: CPU-path particles drawn TOO SMALL for the high-DPR backing buffer · status: OPEN · OWNER-PRIORITY · BUG · DIAGNOSED
+Owner gave the tester readout (screenshot): **`Test celebration` → `1038×2305`** (no "not ready"). **DIAGNOSED
+— this is NOT resize/occlusion:** the `#fxBurst` 2D canvas is **ready and full-size** (1038×2305 = the Poco
+X3 viewport × dpr≈2.75). The fns fire (the buttons restart the music) and `renderFrame` draws — yet nothing
+is visible because **the particles are far too small for that backing buffer**:
+- `seedCelebrate` (`fxgl.js:276`) sizes particles `lerp(4, szMax, …)` and `seedBurst` (`:236`) `lerp(2, …)`
+  — i.e. **4–8 device px**. The CPU backend draws them as literal `fillRect(…, ceil(s), ceil(s))` in the
+  **1038×2305** buffer, which the browser then **downscales ~2.75× to the ~378×838 CSS canvas** → each
+  particle becomes **~1.5–3 screen px**: technically drawn (so the T133 fillRect-**count** golden passes) but
+  too small/faint to see. That's the whole "I see nothing."
+- **Fix (engine, `fxgl.js` CPU/2D backend):** make the particles **boldly visible** at the real backing
+  scale — scale the draw `size` up for the CPU path (e.g. proportional to the canvas / multiply by the
+  effective DPR, or size as a fraction of `min(w,h)`), targeting a clearly-visible mote (the owner wants
+  "loads of particles" — they must read on a phone). Keep the cap/seed/determinism/reduced-motion/`setQuality`
+  invariants. Sanity-check brightness/alpha too (bright palette, alpha not ~0).
+- **Add a REAL visibility golden (not a count).** The T133 golden only counts `fillRect` calls — that's why
+  it stayed green while invisible. Add a check that asserts **actual visible coverage**: a non-trivial number
+  of drawn particles are **in-bounds** with an on-screen size **≥ a real threshold** (e.g. ≥ ~0.4% of canvas
+  height, so it can't regress to sub-pixel) and alpha>0. This is the structural guard.
+- **DoD (LIVE-verified):** tapping a celebration tester button shows a **clearly visible** particle shower on
+  the owner's phone; the new visibility golden fails on too-small/zero-coverage frames; `node -c` clean; all
+  gates green; **B-owned only** (`fxgl.js` + tests/goldens + `BUILDER-LOG-FX.md`). (Babysitter: bar = the owner
+  SEEING it — this has hidden behind green gates three times.) *(The tester's music-restart side-effect is a
+  separate [A] fix in T143.)*
 
 ### T139 — [B] Music styles: keep menu+arena, replace solve/event, cut to 12 DISTINCT styles incl. a dubstep VICTORY (implements T141) · status: OPEN · OWNER-PRIORITY · PALETTE APPROVED (build the 12 from T141's table)
 **Owner approved the T141 palette (2026-06-21): "move ahead with those music styles, and add them to the

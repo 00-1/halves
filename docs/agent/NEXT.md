@@ -27,20 +27,21 @@ exempting only `.build` from the contrast gate, keeping `.readouts`/`res-label` 
 menu→menu/event→festive + the dubstep victory fires on a win; depends on T139) → **`T124`** (fraction glyphs)
 → `T101` → `T102`/`T103` (Android) → content → `T72`.
 
-**Builder B → `T139` (FINISH the 12 styles — PALETTE APPROVED) → `T138` (celebration STILL invisible — engine fix)**
-*(`T139 pt1` engine additions DONE `051b25d`.)* **`T139` — PALETTE APPROVED** (owner: "move ahead with those
-music styles, add them to the song picker"): finish building the 12 from `docs/research-music-styles.md` §2
-(keep `menu`/`arena`, DROP old `solve`/`event`; the 10 new incl. **Dubstep Victory** — its real audible DROP
-on the un-ducked SFX bus is the win sting); extend `golden-synth` distinctness to all 12 (regen intentional);
-**hand A the final names/labels** in the log for T140. **Then `T138` — celebration STILL invisible.** Owner
-live: "the celebration picker… none of them work. they do restart the music though" — the restart proves the
-handlers FIRE yet nothing renders → T137's occlusion fix wasn't the (whole) cause; it's the `{backend:"2d"}`
-engine render path. Investigate: 2D canvas **0/1-sized** (→ `dimensions()` `0×0`, may bounce to [A] resize);
-**RAF never pumps** for a 2D controller; particles draw **invisibly** (transparent alpha / sub-pixel `size` at
-this DPR / off-canvas); or wrong context presented. **Add a REAL visibility check** (golden asserting in-bounds
-alpha>0 ≥1px coverage — NOT a fillRect count). **Wait for the owner's `dimensions()` readout** (visible once
-A's T143 makes Settings scrollable) before assuming engine-side. Full DoD `BACKLOG.md` T139/T138. **B-owned
-only**; never touch existing Halves files; never push `claude/agent`.
+**Builder B → `T138` (celebration invisible — DIAGNOSED: particles too small) → `T139` (FINISH the 12 styles — PALETTE APPROVED)**
+**⚠ `T138` FIRST — now a precise, quick fix.** Owner gave the tester readout: **`1038×2305`** (ready,
+full-size — Poco X3 viewport × dpr≈2.75). So NOT resize/occlusion. The fns fire (buttons restart the music)
+and `renderFrame` draws, but **particles are too small for that backing buffer**: `seedCelebrate`
+(`fxgl.js:276`) sizes `lerp(4,szMax)` = 4–8 **device px**, drawn as `fillRect` into the 1038×2305 buffer
+which the browser **downscales ~2.75× → ~1.5–3 screen px** = drawn (count-golden passes) but invisible. **Fix
+(fxgl.js CPU/2D backend):** scale the draw `size` up for the CPU path (× effective DPR, or as a fraction of
+`min(w,h)`) so motes are **boldly visible** (owner wants "loads of particles"); keep cap/seed/reduced-motion/
+`setQuality`; sanity-check bright palette + alpha. **Add a REAL visibility golden** (asserts in-bounds drawn
+particles with on-screen size ≥ a real threshold, e.g. ≥0.4% of canvas height, + alpha>0 — NOT a fillRect
+count, the gap that hid this thrice). **Then `T139` — PALETTE APPROVED** (`T139 pt1` engine additions DONE
+`051b25d`): finish the 12 from `research-music-styles.md` §2 (keep `menu`/`arena`, DROP old `solve`/`event`;
+10 new incl. **Dubstep Victory** — its real DROP on the un-ducked SFX bus is the win sting); extend
+`golden-synth` distinctness to all 12; **hand A the names/labels** in the log for T140. Full DoD `BACKLOG.md`
+T138/T139. **B-owned only**; never touch existing Halves files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

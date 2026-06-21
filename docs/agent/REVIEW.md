@@ -1058,19 +1058,19 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T139` (FINISH the 12 styles — PALETTE APPROVED) → `T138` (celebration STILL invisible
-  — engine fix).** *(`T141` research DONE; **owner OK'd the palette** "move ahead… add them to the song
-  picker"; `T139 pt1` engine additions DONE `051b25d`; `T134` clean-swap DONE.)* **`T139`:** finish building
-  the 12 from `research-music-styles.md` §2 (keep `menu`/`arena`, drop old `solve`/`event`; 10 new incl. the
-  **Dubstep Victory** whose real DROP on the un-ducked SFX bus is the win sting); extend `golden-synth`
-  distinctness to all 12; **hand A the names/labels** for T140. **Then `T138`:** the owner confirms the
-  celebration tester "none work" but the buttons "restart the music" → the fns FIRE yet nothing renders → it's
-  the `{backend:"2d"}` render path, not (just) the T137 occlusion. Investigate (0/1-sized canvas → may bounce
-  [A]; RAF not pumping; particles invisible — transparent/sub-pixel/off-canvas) and add a **real visibility
-  golden** (in-bounds, alpha>0, ≥1px — not a fillRect count). **T138 benefits from the owner's tester
-  `dimensions()` readout**, which is visible once A's `T143` makes Settings scrollable — so it naturally lands
-  after T139/T143. Full DoD: `BACKLOG.md` T139/T138. **B-owned only** (`synth.js`/`fxgl.js` + tests/goldens +
-  `BUILDER-LOG-FX.md`); never touch existing Halves files; never push `claude/agent`.
+- **Builder B — next: `T138` (celebration invisible — DIAGNOSED: particles too small) → `T139` (FINISH the 12
+  styles — PALETTE APPROVED).** *(`T141` research DONE; owner OK'd the palette; `T139 pt1` engine additions
+  DONE `051b25d`; `T134` DONE.)* **`T138` FIRST — now precise:** owner's tester readout = **`1038×2305`**
+  (ready, full-size) → NOT resize/occlusion. Fns fire (buttons restart music) + `renderFrame` draws, but
+  particles are **4–8 device px** (`seedCelebrate fxgl.js:276`) drawn into a 1038×2305 buffer the browser
+  **downscales ~2.75× → ~1.5–3 screen px** = drawn (count-golden passes) but invisible. **Fix:** scale the
+  CPU-path draw `size` up (× effective DPR / fraction of `min(w,h)`) so motes are boldly visible; add a **real
+  visibility golden** (in-bounds, on-screen size ≥ a real threshold, alpha>0 — not a fillRect count). **Then
+  `T139`:** finish the 12 from `research-music-styles.md` §2 (keep `menu`/`arena`, drop old `solve`/`event`;
+  10 new incl. **Dubstep Victory** = the win-sting DROP on the un-ducked SFX bus); extend `golden-synth`
+  distinctness to all 12; **hand A the names/labels** for T140. Full DoD: `BACKLOG.md` T138/T139. **B-owned
+  only** (`fxgl.js`/`synth.js` + tests/goldens + `BUILDER-LOG-FX.md`); never touch existing Halves files;
+  never push `claude/agent`.
   - *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless browser to CI —
     kept out of scope to keep CI Node-only.)*
 
