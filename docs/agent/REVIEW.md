@@ -281,9 +281,17 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Do `T96` next (was skipped once — do
-it NOW; owner is actively iterating the home screen).** Home-screen overhaul — owner-reported via
-screenshot: top-align `#start` (kill the empty top band + consolidate the selected-topic mark into
+### Two-Builder queue (see `ORCHESTRATION.md`)
+- **Builder A — next: `T96`** [A] (home overhaul). Then `T97` → `T88`–`T90` → content `T58`–`T61`
+  → `T72`, **+ FX wiring tasks** (mount `FXGL`) once B's engine + the surfaces exist. Owns ALL
+  existing Halves files; log = `BUILDER-LOG.md`.
+- **Builder B — next: `T93`** [B] (`fxgl.js` FX engine — standalone, brickmap-borrowed,
+  headless-tested, `window.FXGL`). Then the engine sides of `T94`/`T95`. Creates NEW files only +
+  brickmap; **never edits existing Halves files**; log = `BUILDER-LOG-FX.md`.
+
+**Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
+skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —
+owner-reported via screenshot: top-align `#start` (kill the empty top band + consolidate the selected-topic mark into
 the info row), **remove the List/Tree toggle → tree-only home picker** (list stays on Best Times)
 so the tree gets real space, **fix the oversized banner Play/"Again" button**, and collapse the nav
 into **one row of bigger icon-buttons** (degrading as gating hides items); still fits one screen

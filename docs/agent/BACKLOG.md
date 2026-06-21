@@ -1972,30 +1972,40 @@ Make the fight *readable* — show the deterministic sim resolving, calmly.
 > tech-tree path glow) come as follow-ups once the foundation proves out on a real Poco-X3-class
 > device.
 
-### T93 — FX foundation (`fxgl.js`) + Arena biome ambience (the debut) · status: OPEN
-Build the WebGL2 FX layer and debut it where its purpose is clearest — **sense of place in the
-Arena**. **First: resolve brickmap access** (add `00-1/brickmap` to scope or fetch its public
-shader/FX files); record what was borrowed.
-- **`fxgl.js` / `window.FXGL`** — a standalone WebGL2 module (inline GLSL strings; no bundler):
-  **ordered/Bayer dithering**, **palette quantisation to a per-theme ramp**, an **atmospheric
-  gradient/fog**, and **instanced particle splats** — techniques **borrowed from brickmap**. Static
-  uploads (generator grids → texture once); animate cheaply in-shader. One `aria-hidden`,
-  `pointer-events:none` canvas **behind** the Arena DOM.
-- **Purpose = biome sense-of-place.** The Arena backdrop renders the **current region's biome** by
-  feeding **`scenery.js`'s region theme** (its palette + silhouette) as the ramp/scene, with motes
-  matching the biome (snow in Frostpeak, embers in Cinderwaste — accents `scenery.js` already
-  names). Switching region visibly changes the place.
-- **Perf + fallback.** 60fps on Adreno-618-class with the degrade ladder; `prefers-reduced-motion`
-  → a static dithered still; **no WebGL2 → fall back to today's static scenery** (capability check).
-- **DoD:** `fxgl.js` is a pure-ish, standalone WebGL2 layer (no bundler, no new deps); it renders
-  the **current Arena region's biome** (verify it reads the live `scenery.js` theme — the effect
-  **names its purpose: place**); DOM Arena UI stays crisp + `aria-hidden`/`pointer-events:none`;
-  single RAF that **cancels when the Arena isn't shown**, capped particle buffer, reduced-motion +
-  no-WebGL2 fallbacks; brickmap borrowing recorded (+ scope resolved); `node -c` clean; **all gates
-  green** incl. NEW FX Node tests (pure dither/palette/particle-seed math · budget invariants · a
-  WebGL stub asserting one instanced draw + one-time texture upload) and `perf.test.js` still
-  meaningful. (Babysitter: confirm the backdrop is the region's biome — not generic noise — the UI
-  stays legible, the loop idles off-screen, fallbacks work, and a real device hits the budget.)
+### T93 — [B] FX engine `fxgl.js` (standalone, brickmap-borrowed, headless-tested) · status: OPEN
+**Builder B; NEW files only — does NOT edit any existing Halves file** (wiring it into the Arena is
+a later **[A]** task). **First: resolve brickmap access** (read `00-1/brickmap`'s `bm-render` WGSL)
+and record what was borrowed in `docs/agent/BUILDER-LOG-FX.md`.
+- **`fxgl.js` / `window.FXGL`** — a **self-contained** WebGL2/WebGPU module (inline GLSL/WGSL
+  strings; **no bundler, no new deps**) exposing a clean API the game can later mount on a canvas:
+  e.g. `FXGL.mount(canvas, opts)`, `FXGL.setScene({ palette, grid, particles, seed })`,
+  `FXGL.start()/stop()`. Techniques **borrowed/ported from brickmap**: **ordered/Bayer dithering**,
+  **palette quantisation to a per-theme ramp**, **atmospheric gradient/fog**, **instanced particle
+  splats**. Static texture uploads; animate in-shader. **WebGPU-first with a WebGL2 fallback**
+  (brickmap proves WebGPU on the Poco-X3 floor); **no-GPU → a static dithered still**.
+- **Purpose hook (proven standalone).** The engine must accept a **scenery-style theme**
+  (palette + silhouette grid + accent particles, the shape `scenery.js` emits) and render it as a
+  biome scene — so the [A] wiring task can later feed it the live Arena region. Ship a **headless
+  proof** (the FX math + a stub-GL render) — NOT a live Arena mount (that's [A]).
+- **Perf + budget.** Target **60fps on Adreno-618-class** with a resolution/particle **degrade
+  ladder**; single RAF (caller controls start/stop); capped particle buffer; honour
+  `prefers-reduced-motion` (static still).
+- **DoD:** `fxgl.js` is standalone (new file; **zero edits to existing Halves files**; no bundler/
+  deps); a clean documented `window.FXGL` API; renders a `scenery.js`-shaped theme as a dithered,
+  palette-quantised, particle scene (purpose: **place** — provable on a stub/offscreen canvas);
+  WebGPU+WebGL2 paths + reduced-motion/no-GPU fallbacks; **NEW `test/fxgl.test.js`** (pure dither/
+  palette/particle-seed math · budget invariants: single loop, capped buffer, idle when stopped · a
+  WebGL/WebGPU **stub** asserting one instanced draw + one-time texture upload) **passes via
+  `node test/fxgl.test.js`**; brickmap borrowing recorded in `BUILDER-LOG-FX.md`; `node -c` clean;
+  **does not touch `pages.yml`** (gate registration is the [A] wiring task). (Babysitter: confirm
+  zero edits to A's files, the API is clean + mountable, the engine renders a real scenery theme
+  not noise, fallbacks exist, and the headless tests are substantive.)
+
+> **Follow-up [A] wiring tasks (Builder A, after T93 + the surface exists):** *T93w* mount `FXGL`
+> on the **Arena** backdrop (feed the live region's `scenery.js` theme → biome sense-of-place; add
+> the `<script src>` + the CI gate; `aria-hidden`/`pointer-events:none`; idle off-screen). The
+> engine sides of **T94** (celebration) / **T95** (home backdrop) are likewise [B] (FX logic) →
+> [A] (mount on the win/gain hooks + home). Babysitter specs each [A] wiring task when ready.
 
 ### T94 — Celebration FX: wins + collectible/loot/event gains · status: OPEN
 **Purpose = amplify reward.** Heightened, *brief* particle/flourish moments so earning *feels* like
