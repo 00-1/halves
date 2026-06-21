@@ -1165,3 +1165,17 @@ how I verified:
     first `init:`, roon on `tier:10`). No logic change/regression; deploy-safe.
 notes / questions: pure display rename. Next per REVIEW order: T35 (diverse item
   names from DESIGN-names.md + inventory name truncation).
+
+## T41 — pip rename Fenn → Pocket (CHANGES REQUESTED follow-up)  [HANDOFF]
+commit: 64d345a (on main)
+changed:
+  - collectibles.js — addressed the single CHANGES point: `HERO_NAMES.pip`
+    "Fenn" → **"Pocket"** (owner's pick). The other 11 names stay as approved; id
+    `pip` unchanged.
+how I verified:
+  - node -c collectibles.js OK. Node re-check (30 assertions, ALL PASSED): ids
+    unchanged (HERO_IDS + heroes.js); full mapping now `…pip→Pocket…`; heroes.js
+    names in sync; **every catalogue boost resolves to its mapped name (0 bad)**; a
+    **pip-boosted item's `boostLabel` shows "Pocket"**; pip unlock predicate still
+    fires on `speed:*:3`. No logic change.
+notes / questions: one-word fix per the verdict; re-handoff. Next: T35.
