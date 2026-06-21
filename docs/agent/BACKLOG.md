@@ -1582,7 +1582,7 @@ hero's owned boost items into `.hero-items` as chips capped at 12 with a **"+N m
 
 ## Phase 11 — Arena wayfinding (sense of journey)
 
-### T68 — Arena wayfinding: regions, boss anticipation, a simple journey map · status: OPEN
+### T68 — Arena wayfinding: regions, boss anticipation, a simple journey map · status: DONE
 Owner (screenshot, "ARENA TIER 29 / 100"): "give more sense of **where we are** in the
 Arena. I guess I'm on the penultimate enemy in this region, but nothing tells me. Maybe a
 simple **map**. I need to feel **compelled to keep going to the next stage**, not just

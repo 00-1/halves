@@ -1,7 +1,19 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T66` (Arena → 120 tiers, 10 regions × 12) · build
-**`2eb669a`**. `TIER_COUNT` 100→120, `REGION_SIZE` 12, boss at each region's 12th tier;
+**Current verdict:** `APPROVED — T68` (Arena wayfinding) · build **`6efff87`**. The tier card
+now shows region name + "region N/10 · tier P/12" + a row of pips (cleared/current/boss
+marked); "⚔ Boss next: <name>" at pos 11 and a "Region boss" banner at the boss tier; a
+toggleable **journey map** of all 10 regions (conquered ✓ / "you are here" / locked, each
+with its boss landmark); and a "🏁 Region conquered! Next: <region>" moment on beating a
+boss (skipped on the final tier). All driven from `E.REGION_SIZE`/`tierRegion`/`TIER_COUNT`
+— verified region/pos/boss/region-clear maths + that it crosses region boundaries.
+`wayfinding.test.js` (13 checks) green; CSS uses the AA palette; map toggle resets on arena
+entry; preserves the T65 scroll; `node -c` clean. **Minor non-blocking note:** locked map
+rows use `opacity:.7`, nudging the dimmed `--muted` boss/tag text slightly under AA (region
+*name* stays `--text`) — acceptable de-emphasis of not-yet-reached content; `.7`→`.85` would
+fix if the owner wants. T68 → DONE.
+
+**Previously approved (done):** `T66` (Arena → 120 tiers, 10 regions × 12) · build `2eb669a`. `TIER_COUNT` 100→120, `REGION_SIZE` 12, boss at each region's 12th tier;
 all 10 hand-named regions/bosses kept, +1 rank title ("Tyrant"); `DEF_GROWTH` retuned
 1.062→1.051; inventory Loot grouping updated to 12-tier regions. **Independently re-proved
 every buff-gating invariant at 120:** no tier gated behind its own loot (all 120); tiers
@@ -93,10 +105,10 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T68` → `T52` → `T53` →
+**Next-task order:** **`T52` → `T53` →
 `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
 `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness: research doc + PWA foundation).
-**Do `T68` next** — Arena wayfinding (region progress, boss anticipation, journey map) on the new 12-per-region structure. Then:
+**Do `T52` next** — procedural enemy sprites in the Arena (new generator, themed per region/type, bosses special). Then T53 scenery, T54-T56, then content (T58, T59-T61), then T72.
 - **`T66`** (120 tiers) sits before the arena work; **`T68`** (Arena wayfinding — region
   progress, boss anticipation, a simple journey map) right after T66 so it's built on the
   final 12-per-region structure; then the arena art `T52`/`T53`. **`T67`** (hero detail)
