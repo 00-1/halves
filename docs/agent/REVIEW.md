@@ -1,20 +1,39 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T137` [A] (celebration TESTER in Settings + fix the overlay occlusion) ·
-live build **`41016d4`**. **CI green; collision-clean** (all [A]-owned: `index.html`, `main.js`,
-`styles.css`, `test/fx-wiring.test.js`, `test/synth-wiring.test.js`, `BUILDER-LOG.md`). Two things: **(1)
-the diagnostic instrument** — a Settings tester (Item / Rank up / Arena win / Big burst) that fires each
-celebration on demand (`audioUnlock`→`setupFx`→`fxResizeAll` then `fxCelebrate`/`fxCelebrateRank`/
-`fxCelebrateWin`/`fxBigBurst`) **and writes `fxBurst.isReady()` + `dimensions()` into the row** so the owner
-can report the live drawing-buffer size **without DevTools** (`0×0`/`1×1` ⇒ resize-timing; a real size ⇒
-occlusion/engine). **(2) a real occlusion fix** — `#fxBurst` was `z-index:58` but the older per-toast
-confetti `#fxCanvas` was `z-index:59`, **above** it; T137 swaps them (big celebration **z59** above the old
-confetti **z58**, still below toasts z60) — reconciling the two-canvas smell I flagged. This is a **plausible
-root cause** of "I don't see celebrations" (the burst was drawing but covered). Verified independently:
-`node -c` clean; the new ids referenced; `fx-wiring.test` 58→75 + `synth-wiring` 52; full suite + CI green.
-T137 → DONE. **🎆 OWNER: open Settings → tap a celebration tester button. If you now SEE a shower, the
-occlusion was it. If still nothing, tell me the size it shows (e.g. "360×640" or "0×0" or "not ready") —
-that pins it to [B] engine-side particle visibility (`T138`).** A → `T142` (restore the backdrop).
+**Current verdict:** `APPROVED — T142` [A] (restore the FX backdrop — local backings, not T123's global
+slab) · live build **`42aac3b`**. **CI green; collision-clean** ([A]-owned: `styles.css`,
+`test/contrast.test.js`, `BUILDER-LOG.md`). Fixes the owner's "killed the nice background" regression
+exactly as scoped: **removes the global `.app` `rgba(14,17,22,.88)` scrim** (the full-bleed backdrop reads
+again) and adds **local translucent-dark pills** only on the few rows that float directly on the backdrop —
+`.readouts` (the Goblin-Gold/Momentum stat row), `.build` (the build stamp), `#arena .res-label` — each
+keeping the same AA backing (~4.93:1 over white) while the backdrop shows **around** them; the rest of the
+UI was already carded. `contrast.test` reworked to assert the backing **per element** (fails if a floating
+row is unprotected) — still honest. Verified independently: `.readouts` is wired in `index.html`; the `.app`
+slab is gone; `contrast.test` 14 pass; full suite + CI green. T142 → DONE. **🖼 OWNER: your purple backdrop
+is back (visible around the stat row + build stamp, which now sit on small dark pills) with text still
+readable.** A → `T140` (12-style switcher, after B's T139).
+
+> **Previously approved (done):** `T141` [B] (RESEARCH: musical styles → a concrete 12-style palette) ·
+> live build **`02d2d6f`** (doc-only; its own CI run was auto-cancelled by T142's push seconds later — the
+> green HEAD `42aac3b` includes it; no gates touched). **Collision-clean** (B-owned: `docs/research-music-
+> styles.md`, `BUILDER-LOG-FX.md`). A genuinely strong research pass (the T119→T120 pattern): genre DNA
+> (tempo · mode/progression · rhythmic feel · instrumentation · the recognisable production trick) for 10
+> new styles, **mapped to this engine's real levers**, with cited references and the small patch additions a
+> few styles need (tempo-synced wub wobble, a `chip` square-pluck, optional swing, a noise-sweep/drop for
+> the victory). Ends in a **concrete 12-style palette table** (`CONTEXTS` recipes): menu+arena kept; 10 new
+> incl. the **dubstep victory**, ≥2 calm (lofi/ambient), ≥2 festive (chiptune/festival); spread-checked
+> (tempo 60→174, 8 modes, drone→breakbeat→four-floor, reverb 0.04→0.55). T141 → DONE. **→ Babysitter is
+> surfacing the palette to the owner for a thumbs-up BEFORE `T139` builds it (as committed).**
+
+> **Previously approved (done):** `T137` [A] (celebration TESTER in Settings + fix the overlay occlusion) ·
+> live build **`41016d4`**. **CI green; collision-clean** (all [A]-owned: `index.html`, `main.js`,
+> `styles.css`, `test/fx-wiring.test.js`, `test/synth-wiring.test.js`, `BUILDER-LOG.md`). **(1) Tester** —
+> Settings buttons (Item/Rank/Win/Big burst) fire each celebration on demand AND write `fxBurst.isReady()`+
+> `dimensions()` into the row (on-device diagnosis, no DevTools). **(2) Occlusion fix** — `#fxBurst` (z58)
+> was UNDER the older confetti `#fxCanvas` (z59) → swapped (celebration z59 over confetti z58, below toasts
+> z60), a plausible root cause of the invisibility. Verified: `node -c` clean; `fx-wiring.test` 58→75; full
+> suite + CI green. T137 → DONE. **🎆 owner to live-check via the tester; if still nothing, the size readout
+> → [B] `T138`.**
 
 > **Previously approved (done):** `T123` [A] (a11y contrast floor over the FX backdrop — dark scrim + honest
 > gate) · live build **`63876e4`**. **CI green; collision-clean** ([A]-owned: `styles.css`,
@@ -1008,19 +1027,15 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T142` (RESTORE the backdrop T123 killed — quick regression) → `T140` (12-style
-  switcher, after B's T139)** [A] (**`T137`/`T123`/`T135`/`T136`/`T131`/`T128`(1)+(2)/… DONE**). *(Read
-  `NEXT.md` fresh — canonical.)* `T137` (celebration tester + occlusion fix — `#fxBurst` z58→z59 above the
-  old `#fxCanvas` confetti) DONE `41016d4`; owner is live-checking if celebrations show now (else the
-  tester's `dimensions()` readout → [B] `T138`). **⚠ `T142` FIRST — owner (screenshot, build `63876e4`):
-  "this build killed the nice background."** T123's `.app` `rgba(14,17,22,.88)` scrim is ~full phone width →
-  the full-bleed backdrop is a dark slab. **Remove the global scrim** (backdrop returns) and **protect only
-  the genuinely floating-on-backdrop text locally** (stat row "Goblin Gold/Momentum", `build` stamp, audit
-  others — almost everything is already carded); keep `contrast.test` honest but per-element (fails if a
-  floating row is unprotected). Full DoD `T142`. **Then `T140`** (extend the music switcher to all 12 styles
-  B builds in T139 + per-screen routing + the dubstep victory fires on a win — depends on T139). Then →
-  **`T124`** (fraction glyphs) → **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`**
-  (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
+- **Builder A — next: `T124` (fraction glyphs — `T140` is blocked on B's T139)** [A]
+  (**`T142`/`T137`/`T123`/`T135`/`T136`/`T131`/`T128`(1)+(2)/… DONE**). *(Read `NEXT.md` fresh — canonical.)*
+  `T142` (restore the backdrop — local pills, not the global slab) DONE `42aac3b`; `T137` celebration tester
+  + occlusion fix DONE `41016d4` (owner live-checking via the tester). **`T140` (12-style switcher) is blocked
+  on B's `T139`**, which is itself gated on the owner's palette thumbs-up — so **do `T124` now** (fraction
+  tree-glyphs bigger/clearer using node width — owner flagged the fraction glyphs illegible), then **`T140`**
+  when B hands over the final style names: switcher lists all 12 + per-screen routing (solve→calm, arena→
+  arena, menu→menu, event→festive) + the **dubstep victory fires on a win**. Then → **`T101`** (Start delay)
+  → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
@@ -1038,22 +1053,20 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T141` (RESEARCH musical styles → a 12-style palette) → then `T139` (build them).**
-  *(`T134` clean-swap DONE `ea1ed5c` — owner confirms switching works + likes menu/arena.)* Owner likes
-  **menu**+**arena**, finds the others samey, the **dubstep victory** is missing — wants the two kept, the
-  others ditched, **10 NEW distinct styles incl. the dubstep victory, all in the launcher**, AND **"a
-  research pass on musical styles to really get those 10 unique/interesting."** **`T141` FIRST — research**
-  (the T119→T120 pattern): a B-owned doc (`docs/research-music-styles.md`) on the genre DNA (tempo/mode/
-  rhythm/instrumentation/production tricks) of a spread of styles, mapped to THIS engine's levers, ending in
-  a **concrete proposed 12-style table** (menu+arena kept; 10 new incl. dubstep victory + ≥1 CALM for solves
-  + ≥1 festive) with each style's engine-param recipe + any small patch additions a style needs (pulse/square
-  for chiptune, half-time wobble for dubstep, …). **The Babysitter surfaces the proposed palette to the
-  owner for a thumbs-up before T139 builds it.** Then **`T139`** — implement the 12 in `CONTEXTS` (replace
-  solve/event), make the **dubstep victory a real audible drop** reusable by the win sting (un-ducked sfx
-  bus — the T128 lesson), extend the `golden-synth` distinctness gate to all 12 (regen intentional), and
-  **hand A the final style names/labels** (in the log) for T140. Full DoD: `BACKLOG.md` T141/T139. **B-owned
-  only** (`synth.js` + new research doc + tests/goldens + `BUILDER-LOG-FX.md`); never touch existing Halves
-  files; never push `claude/agent`.
+- **Builder B — next: `T139` (build the 12 styles) — ⚠ HOLD the CONTEXTS until the owner OKs the palette;
+  build the no-regret ENGINE ADDITIONS meanwhile.** *(`T141` research DONE `02d2d6f` — palette OUT FOR OWNER
+  THUMBS-UP; `T134` clean-swap DONE `ea1ed5c`.)* **Don't finalise the style rows** until the Babysitter posts
+  the owner's OK (a style may be swapped). **Start now on the engine ADDITIONS the palette needs regardless**
+  (research §0/§3): (1) **tempo-synced wub wobble** (LFO rate locked to the beat via an optional
+  `wobbleRate`/`lfoSync` off the patch/context) — dubstep/dnb/techno; (2) a **`chip`** square-pluck patch
+  (fast `{a:.001,d:.06,s:0,r:.02}`, dry) — chiptune/8-bit; *(optional)* a scheduler **swing** field; *(opt)*
+  per-context **reverb decay** for ambient; and the **victory DROP** gesture (noise-sweep build → sub-wub
+  drop + bright stab) for the win sting on the **un-ducked SFX bus**. All tiny/testable, wasted by no palette
+  outcome. **Then on owner OK → `T139`:** replace `CONTEXTS` with the agreed 12 (keep `menu`/`arena`, drop
+  old `solve`/`event`), make the dubstep victory the audible win-sting drop, extend the `golden-synth`
+  distinctness gate to all 12 (regen intentional), and **hand A the final style names/labels** (in the log)
+  for T140. Full DoD: `BACKLOG.md` T139. **B-owned only** (`synth.js` + tests/goldens + `BUILDER-LOG-FX.md`);
+  never touch existing Halves files; never push `claude/agent`.
   - *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless browser to CI —
     kept out of scope to keep CI Node-only.)*
 

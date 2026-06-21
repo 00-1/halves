@@ -2626,7 +2626,15 @@ in a real browser (the owner's symptoms are the bar), not by green gates.** Baby
   `ready` + sized before `celebrate`). (Babysitter: I will treat green gates as necessary-not-sufficient
   here — confirm against the owner's three live symptoms.)
 
-### T141 — [B] RESEARCH pass: musical styles → a concrete, distinct 12-style palette (precedes T139) · status: OPEN · OWNER-PRIORITY
+### T141 — [B] RESEARCH pass: musical styles → a concrete, distinct 12-style palette (precedes T139) · status: DONE (`02d2d6f`) — palette out for OWNER thumbs-up
+**DONE 2026-06-21** — APPROVED (REVIEW.md). `docs/research-music-styles.md`: genre DNA → engine-recipe for
+10 new styles + the 2 kept, cited, with the small patch additions flagged (tempo-synced wub wobble, `chip`
+square-pluck, optional swing, victory drop). Concrete 12-style palette table (menu+arena kept; 10 new incl.
+dubstep victory; ≥2 calm, ≥2 festive; spread tempo 60→174, 8 modes, reverb 0.04→0.55). Doc-only,
+collision-clean; included in green HEAD `42aac3b` (own run auto-cancelled by T142's push). **Babysitter
+surfaced the palette to the owner for approval before T139 builds it.**
+
+> Original task below.
 Owner: **"we should probably do a research pass on musical styles to really get those 10 new styles unique/
 interesting."** Same pattern as T119 (audio research) → T120 (engine): research first so the styles are
 genuinely characterful, not parameter nudges.
@@ -2855,7 +2863,14 @@ device render path, which is B-owned.
   once it lands. (Babysitter: confirm the headless check actually fails on a non-rendering backend, and
   confirm against the owner's live observation — green gates are necessary-not-sufficient here.)
 
-### T142 — [A] Restore the FX backdrop that T123's scrim killed — keep AA via LOCAL protection, not a global slab · status: OPEN · OWNER-PRIORITY · REGRESSION
+### T142 — [A] Restore the FX backdrop that T123's scrim killed — keep AA via LOCAL protection, not a global slab · status: DONE (`42aac3b`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). Removed the global `.app` scrim (backdrop reads again) + added
+local translucent-dark pills only on the floating rows (`.readouts` stat row, `.build` stamp, `#arena
+.res-label`) keeping AA (~4.93:1 over white) with the backdrop visible around them. `contrast.test` reworked
+per-element (still honest, fails on an unprotected floating row). Babysitter verified: `.readouts` wired in
+index.html, `.app` slab gone, `contrast.test` 14 + full suite + CI green. **Owner: backdrop restored.**
+
+> Original task below.
 Owner (screenshot, build `63876e4`): **"this build killed the nice background :-("**. T123's a11y fix put a
 **semi-opaque dark scrim on `.app`** (`background:rgba(14,17,22,.88)`) — but `.app` is ~the full phone width,
 so the full-bleed FX backdrop (which the owner loves) is now a near-solid dark slab with only thin purple

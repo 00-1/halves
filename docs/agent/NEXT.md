@@ -10,30 +10,27 @@
 
 ---
 
-**Builder A → `T142` (RESTORE the backdrop T123 killed — quick) → `T140` (12-style switcher, after B's T139)**
-*(`T137` celebration tester + occlusion fix DONE `41016d4` — owner is live-checking whether celebrations
-now show.)* **⚠ T142 FIRST — owner (screenshot, build `63876e4`): "this build killed the nice background
-:-("** T123's `.app` scrim `rgba(14,17,22,.88)` is ~full phone width → the full-bleed backdrop is a dark
-slab. **Remove the global `.app` scrim** (backdrop returns) and protect only the genuinely
-floating-on-backdrop text LOCALLY (stat row "Goblin Gold/Momentum", `build` stamp, audit others — almost
-everything is already carded); keep `contrast.test` honest but per-element (must still FAIL if a floating
-row is unprotected). Full DoD `BACKLOG.md` T142. LIVE-verify: backdrop visible again + text readable.
-Then → **`T140`** (extend the music switcher to ALL 12 styles B builds in T139 + per-screen routing + the
-dubstep victory fires on a win — depends on T139) → `T124` (fraction glyphs) → `T101` → `T102`/`T103`
-(Android) → `T89`/`T90` → content → `T72`. *(T123 a11y + T137 tester DONE.)*
+**Builder A → `T140` (12-style switcher + routing — WAITS for B's T139) → meanwhile `T124` (fraction glyphs)**
+*(`T142` backdrop restore DONE `42aac3b`; `T137` tester DONE `41016d4`; `T123` a11y DONE.)* **`T140` is
+blocked on B's `T139`** (needs the final 12 style names/labels) — and T139 is itself gated on the owner's
+palette thumbs-up. So **A: do `T124` now** (fraction tree-glyphs bigger/clearer using node width — the owner
+flagged the fraction glyphs as illegible) while T139 is pending; then **`T140`** when B hands over the style
+list: extend the music switcher to ALL 12 styles + per-screen routing (solve→a calm style, arena→arena,
+menu→menu, event→festive) + the **dubstep victory fires on a win**. Then → `T101` (Start delay) →
+`T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → `T141` (RESEARCH musical styles → a 12-style palette) → then `T139` (build them)**
-*(T134 clean-swap DONE `ea1ed5c` — owner confirms switching works + likes menu/arena.)* Owner: likes
-**menu**+**arena**, finds the others samey, the **dubstep victory** is missing — **"keep the two I like,
-ditch the others, cut 10 NEW distinct styles incl. the dubstep victory, put them all in the launcher"**, and
-**"do a research pass on musical styles to really get those 10 unique/interesting."** **T141 FIRST —
-research** (like T119→T120): a B-owned doc (`docs/research-music-styles.md`) on the genre DNA of a spread of
-styles (tempo/mode/rhythm/instrumentation/production tricks) mapped to THIS engine's levers, ending in a
-**concrete proposed 12-style table** (menu+arena kept; 10 new incl. **dubstep victory** + ≥1 CALM for solves
-+ ≥1 festive), each with its engine-param recipe; flag any small patch additions a style needs (e.g. a
-pulse/square for chiptune, a half-time wobble for dubstep). **The Babysitter shows the owner the proposed
-palette for a thumbs-up before T139 builds it.** Then **T139** — implement the 12 in `CONTEXTS` (replace
-solve/event), make the dubstep victory a real audible drop reusable by the win sting (un-ducked sfx bus),
+**Builder B → `T139` (build the 12 styles) — ⚠ HOLD the CONTEXTS until the owner approves the palette; meanwhile build the no-regret ENGINE ADDITIONS**
+*(`T141` research DONE `02d2d6f` — the 12-style palette is OUT FOR OWNER THUMBS-UP; don't finalise the style
+rows until the Babysitter posts the owner's OK, since a style may be swapped.)* **You CAN start now on the
+engine ADDITIONS the palette needs regardless of which exact styles land** (from the research §0/§3): (1) a
+**tempo-synced wub wobble** (`wub` LFO rate locked to the beat — ⅛/¼-note — via an optional
+`wobbleRate`/`lfoSync` off the patch/context) for dubstep/dnb/techno; (2) a **`chip`** square-pluck patch
+(fast `{a:.001,d:.06,s:0,r:.02}`, dry) for chiptune/8-bit; *(optional)* a scheduler **swing** field
+(delay odd 16ths ~12–22%) for lofi/tropical; *(optional)* per-context **reverb decay** for ambient; and the
+**victory DROP** gesture (noise-sweep build → sub-wub drop + bright stab) for the dubstep win sting on the
+**un-ducked SFX bus** (the T128 lesson). These are tiny, testable, and wasted by no palette outcome. **Then,
+once the owner approves the list:** **T139** — replace `CONTEXTS` with the agreed 12 (keep `menu`/`arena`,
+DROP the old `solve`/`event`), make the dubstep victory a real audible drop reusable by the win sting (un-ducked sfx bus),
 and extend the `golden-synth` distinctness gate to all 12. Full DoD: `BACKLOG.md` T141/T139. **B-owned only**
 (`synth.js` + new research doc + tests/goldens + `BUILDER-LOG-FX.md`); never touch existing Halves files;
 never push `claude/agent`.
