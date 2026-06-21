@@ -10,18 +10,20 @@
 
 ---
 
-**Builder A → `T135` (volume recalibration — OWNER; HOLD for the new max) → then `T123`**
-`T131` DONE (golden gates in CI). **T135 — owner: the new synth engine is much louder, so the 3.0× volume
-default is too hot. Set the default to `0.05×` and rescale the slider so its top is the new sensible max.**
-Today: `index.html` `volRange` = `min=0 max=400 step=5 value=300`; `halves.vol` default 300; master gain =
-`vol/100`; `fmtVol` = `(v/100)×`. Update the default + slider `max`/`step`/`value` + the stored default
-together. **⚠ HOLD until the Babysitter posts the owner's chosen MAX** (asked now) — don't guess the range.
-Then live-verify the slider feels right (default ≈0.05× sits usefully on the track, not jammed at the
-edge). Then → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` (Start delay) →
+**Builder A → `T136` (wire the celebration overlay — owner's most-wanted, engine ready) → `T135` (volume, HOLD for max) → `T123`**
+`T131` DONE. **T136 FIRST — the celebration the owner keeps asking for is one wiring change away.** B's
+T133 shipped the engine fix; mount `#fxBurst` with **`{backend:"2d"}`** (Canvas2D — no 2nd-GL-context,
+always presents) instead of the default WebGL path that fails silently on-device. Change ONLY the
+burst-overlay mount (leave the backdrop `#fxBg` on WebGL); keep the T125 resize-before-fire;
+**live-verify a visible shower on a real win / topic-run / new item**. Then **T135 — owner: the new (louder)
+synth engine makes the 3.0× volume default too hot. Set default `0.05×` and rescale the slider to the new
+max** (`volRange` `min=0 max=400 step=5 value=300`; `halves.vol` default 300; master gain `vol/100`;
+`fmtVol` `(v/100)×`). **⚠ HOLD T135 until the Babysitter posts the owner's chosen MAX** (asked) — don't
+guess the range. Then → `T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` (Start delay) →
 `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.
 
-**Builder B → `T134` (clean swap + distinctness — OWNER on it now) · `T133` celebration just landed (in review)**
-`T133` (Canvas2D-overlay celebration) pushed `3e7da28` — under review. **T134 — owner live on the switcher:
+**Builder B → `T134` (clean swap + distinctness — OWNER on it now)** · *(T133 celebration DONE `3e7da28`)*
+**T134 — owner live on the switcher:
 "songs play over each other rather than switching, or they sound really similar."** Both real, both
 engine-side: **(a) overlap** — the T132/T128 immediate `swapNow()` doesn't release the old voices/reverb
 tail, so the previous pad + multi-second FDN tail ring **over** the new context (rapid taps pile up); now

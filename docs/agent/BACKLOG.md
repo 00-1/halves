@@ -2652,9 +2652,31 @@ engine-side (`synth.js`):
   clean; all gates green; **B-owned files only** (`synth.js` + tests + `BUILDER-LOG-FX.md`). (Babysitter:
   confirm against the owner's ear — green gates necessary-not-sufficient.)
 
-### T133 — [B] FXGL: make the overlay CELEBRATION actually render on-device (the z-58 burst) · status: OPEN · OWNER-PRIORITY
-Split from T128(3). The owner badly wants celebration ("a LOT more celebration… loads of particles") but
-sees **nothing** live, even after T125's resize fix. A's app-side wiring (`fxBigBurst` → resize +
+### T136 — [A] Wire the celebration overlay: mount `#fxBurst` with `{backend:"2d"}` · status: OPEN · OWNER-PRIORITY
+Activation of T133. B shipped the engine fix (`FXGL.mount(canvas, {backend:"2d"})` → Canvas2D overlay,
+no 2nd-GL-context, always presents). The celebration still won't render live until A re-points the burst
+overlay to it.
+- **Change only the `#fxBurst` mount** (in `setupFx`) to pass **`{backend:"2d"}`** so the overlay uses the
+  Canvas2D backend. **Leave the backdrop `#fxBg` on its WebGL path** (the first/working context). Keep the
+  T125 resize-before-fire + `fxResizeAll` behaviour.
+- **DoD (LIVE-verified — output feature):** on a real device, finishing a topic run / winning an Arena
+  fight / gaining a new inventory item throws a **visible particle shower** over the UI (z-58); `node -c`
+  clean; all gates green (the T133 `fx_celebrate_2d_frame` golden + `ready`+sized assertions already guard
+  the engine side); only [A]-owned files touched. (Babysitter: confirm against the owner's live "I finally
+  see celebrations.")
+
+### T133 — [B] FXGL: make the overlay CELEBRATION actually render on-device (the z-58 burst) · status: DONE (`3e7da28`, CI green)
+**DONE 2026-06-21** — APPROVED (REVIEW.md). Route (b): `FXGL.mount(canvas, {backend:"2d"})` forces the
+Canvas2D backend (no per-document GL-context-count limit → always inits + presents), sidestepping the 2nd
+WebGL context mobile GPUs refuse. CPUBackend's `renderFrame` animates `burst()`/`celebrate()` via
+`fillRect`; added `dimensions()`/`isReady()` for the ready+sized assertion; new `fx_celebrate_2d_frame`
+golden snapshots a real drawn frame (`drawn:600` spread across an 8×6 grid). Babysitter verified
+independently: `node -c` clean; `fxgl.test` 124 + `golden-fx` 19 pass; **mutation test** — tampered the 2D
+golden → harness CAUGHT it (non-zero exit), so "renders nothing" now fails CI. **Activation = [A] `T136`**
+(mount `#fxBurst` with `{backend:"2d"}`). *(Original spec below.)*
+
+> Split from T128(3). The owner badly wants celebration ("a LOT more celebration… loads of particles") but
+> sees **nothing** live, even after T125's resize fix. A's app-side wiring (`fxBigBurst` → resize +
 `FXGL.celebrate()` on every win / topic-run / new item) is correct + tested — the gap is in the engine/
 device render path, which is B-owned.
 - **The diagnosis (from A's T128 handoff):** `#fxBurst` is a **second WebGL/WebGPU context**, separate

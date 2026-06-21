@@ -1,13 +1,30 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T131` [A] (register the golden gates in CI) · live build **`406acfe`**.
-**CI green; collision-clean** (only `.github/workflows/pages.yml`). Adds two gate steps — `node
-test/golden-fx.test.js` (FXGL golden-render) + `node test/golden-synth.test.js` (synth golden-score) — in
-**compare mode** (no `UPDATE_GOLDEN` in CI, exactly as required), alongside the existing `node test/*.js`
-gates. The golden harness (T130) is now **enforced on every push**: an FXGL CPU-still render or a synth
-context-score (incl. the distinctness golden that guards "all contexts sound the same") that changes
-unexpectedly now **fails the deploy**. Verified: the 4 lines are present at `pages.yml:93–96`; **CI run
-`27916460481` for `406acfe` is green** → both golden steps ran + passed in CI. T131 → DONE.
+**Current verdict:** `APPROVED — T133` [B] (Canvas2D overlay so the celebration renders on-device) · live
+build **`3e7da28`**. **CI green; collision-clean** (B-owned only: `fxgl.js`, `test/fxgl.test.js`,
+`test/golden-fx.test.js`, `test/golden/fx_celebrate_2d_frame.json`, `BUILDER-LOG-FX.md`). Picks the robust
+**route (b)**: `FXGL.mount(canvas, {backend:"2d"})` selects the Canvas2D backend up front — a 2D context
+has **no per-document GL-context-count limit**, so it always inits + presents, sidestepping the 2nd-WebGL-
+context that mobile GPUs refuse (the reason the z-58 `#fxBurst` overlay rendered nothing). The CPUBackend's
+`renderFrame` now animates `burst()`/`celebrate()` via `fillRect` (same closed-form trajectory, auto-stop,
+buffer-free, reduced-motion/`setQuality` honoured); `_init` short-circuits to `_initCanvas2D()` on
+`{backend:"2d"}`, and the no-GL fallback shares it. Added `controller.dimensions()`/`isReady()` for the
+**ready+sized assertion** that breaks the "green-but-invisible" trap. Verified **independently**: `node -c`
+clean; `fxgl.test` 124 + `golden-fx` 19 pass; the new **`fx_celebrate_2d_frame` golden is a real drawn
+frame** (`drawn:600` fillRects spread across an 8×6 grid — a genuine shower, not an empty frame); and a
+**mutation test** — I tampered the 2D golden → the harness **CAUGHT it (non-zero exit)**, so a regression to
+"renders nothing" now fails CI (already enforced — the golden lives inside the CI-registered
+`golden-fx.test.js`, so no new `pages.yml` change is needed; B's handoff note predates T131 landing).
+T133 → DONE. **→ filed [A] `T136`: mount `#fxBurst` with `{backend:"2d"}`** — the engine is ready but the
+celebration only renders live once A re-points the overlay; that's the activation step the owner will see.
+**🎆 OWNER will see celebrations once T136 lands.** B → `T134` (clean swap + distinctness — current).
+
+> **Previously approved (done):** `T131` [A] (register the golden gates in CI) · live build **`406acfe`**.
+> **CI green; collision-clean** (only `.github/workflows/pages.yml`). Adds two gate steps — `node
+> test/golden-fx.test.js` + `node test/golden-synth.test.js` — in **compare mode** (no `UPDATE_GOLDEN`),
+> alongside the existing `node test/*.js` gates. The T130 golden harness is now **enforced on every push**.
+> Verified: the 4 lines at `pages.yml:93–96`; **CI run `27916460481` for `406acfe` green** → both golden
+> steps ran + passed. T131 → DONE.
 
 > **Previously approved (done):** `T128 (1)+(2)` [A] (per-screen music = distinct contexts + instant swap;
 victory wub on the un-ducked SFX bus) · live build **`61654ed`**. **CI green; collision-clean** (all
@@ -942,17 +959,20 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T135` (volume recalibration — OWNER, pending the new max) → then `T123`** [A]
-  (**`T131`/`T128`(1)+(2)/`T129`/`T127`/`T125`/`T121`/`T122` DONE**). *(Read `NEXT.md` fresh — canonical.)*
-  `T131` (golden gates in CI, compare mode) DONE (`406acfe`, CI green). **`T135` — owner: with the new
-  (much louder) synth engine, the volume default of 3.0× is too hot; set the default to `0.05×` and rescale
-  the slider so its top is the new sensible max** (`volRange` is `min=0 max=400 step=5 value=300`,
-  `halves.vol` default 300 → ×`/100` master gain; `fmtVol` shows `(v/100)×`). **Hold `T135` until I post the
-  owner's chosen max** (I asked) — then update the default + slider `max`/`step` + the stored default
-  together, live-verify the slider feels right. Then → **`T123`** (a11y contrast floor over the backdrop +
-  honest `contrast.test`) → **`T124`** (fraction tree-glyphs bigger/clearer using node width) → **`T101`**
-  (Start delay) → **`T102`/`T103`** (Android PWA+TWA + perf) → **`T89`/`T90`** (Arena 3v3) → content
-  **`T58`–`T61`** → **`T72`**.
+- **Builder A — next: `T136` (wire the celebration overlay — owner's most-wanted, engine ready) → then
+  `T135` (volume, pending max) → `T123`** [A] (**`T131`/`T128`(1)+(2)/`T129`/… DONE**). *(Read `NEXT.md`
+  fresh — canonical.)* **`T136` FIRST — the celebration the owner keeps asking for is one wiring change
+  away.** B's `T133` shipped the fix: mount `#fxBurst` with **`{backend:"2d"}`** (Canvas2D — no 2nd-GL-
+  context, always presents) instead of the default WebGL path that silently fails on-device. Change ONLY
+  the burst-overlay mount (leave the backdrop `#fxBg` on its WebGL path); keep the T125 resize-before-fire;
+  **live-verify a visible particle shower on a real win / topic-run / new item** (the bar is on-device
+  visibility — the long-standing "nothing renders" bug). Then **`T135`** — owner: the new (louder) synth
+  engine makes the 3.0× volume default too hot → set default `0.05×` and rescale the slider to the new max
+  (`volRange` `min=0 max=400 step=5 value=300`; `halves.vol` default 300 → `/100` master gain; `fmtVol` =
+  `(v/100)×`). **HOLD T135 until I post the owner's chosen MAX** (asked) — then update default + slider
+  `max`/`step`/`value` + stored default together, live-verify the feel. Then → **`T123`** (a11y contrast
+  floor) → **`T124`** (fraction glyphs) → **`T101`** (Start delay) → **`T102`/`T103`** (Android) →
+  **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
   submit.** Authoritative order — **BUGFIX FIRST, then AUDIO/POLISH BLOCK** (owner is focused on it):
@@ -970,43 +990,22 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   owner-calibrated volume/tempo as defaults) slots in once the owner reports values — ideally **after
   T115** so the music is final when they calibrate. Owns ALL existing Halves
   files; log = `BUILDER-LOG.md`. *(Do them in this order; don't pull a later task forward.)*
-- **Builder B — next: `T134` (clean swap + distinctness — owner is on it) → then `T133` (celebration).**
-  **`T134` — owner live: the music switcher "sounds like the songs play over each other rather than
-  switching, or they sound really similar."** Both are real and BOTH are engine-side: **(a) overlap** — the
-  T132/T128 immediate `swapNow()` resets the generator but does **not** release the currently-sounding
-  voices or the multi-second FDN-reverb tail, so the old pad chord + tail ring **over** the new context for
-  several seconds (and rapid switching piles them up). This is a side-effect of the instant-swap we just
-  shipped and it now affects **every** per-screen transition, not just the switcher. Fix: on the **immediate**
-  swap path, quickly release/fade the active music voices + tame the reverb carryover (e.g. a short 60–120ms
-  music-bus fade-out→in across the swap, and/or release held voices + briefly cut the reverb send) so a
-  switch **cuts in cleanly**; leave the default phrase-boundary swap's natural ring intact. **(b) too
-  similar** — `solve`/`menu`/`event` share instrumentation (pad+bass+pluck/bell), close tempo/density and
-  only differ by mode, so they sound alike (arena is the clear outlier). Strengthen the **audible** contrast
-  (vary register/instrumentation/tempo/density between solve·menu·event), keeping the calm-solve vs
-  energetic-arena rule + the golden-distinctness gate. **Verify on a real browser** (rapidly sample via the
-  Settings switcher → each style cuts in clean + is clearly different); add the strongest headless check
-  feasible (e.g. a swap doesn't leave >1 context's voices active; per-context distinctness stays). Full DoD:
-  `BACKLOG.md` T134. **B-owned only** (`synth.js` + tests + `BUILDER-LOG-FX.md`).
-  **`T133` (next) — make the overlay CELEBRATION actually render on-device.** A's
-  `fxBigBurst` → resize + `celebrate()` wiring (T125) is correct + tested but shows **nothing live**: the
-  `#fxBurst` overlay is a **2nd WebGL/WebGPU context** (separate from the working backdrop) that likely
-  fails to init/present on-device (mobile GPUs commonly refuse a 2nd context). It **cannot** just draw on
-  the backdrop canvas — that's `z-index:-1` (behind the UI); the celebration must present at the **z-58
-  overlay**, in front of the panels. **Your call on the fix** (engine-owner): e.g. (a) diagnose/repair the
-  2nd overlay context so it initialises + presents reliably (with a clean fallback if a 2nd GL context is
-  refused), and/or (b) a **Canvas2D overlay** particle path (no GL-context-count limit — always renders)
-  that FXGL can mount at overlay z, and/or (c) a single-context scheme that still lands the burst in front
-  of the UI. Whatever the route: it must **actually present particles on a real mobile browser** (the
-  recurring "green-but-invisible" trap — verify on-device, and add the strongest headless check feasible,
-  e.g. assert the overlay controller reaches `ready`+sized on the chosen backend, and a CPU-still golden of
-  the celebrate frame). Keep it within the FX engine's quality/reduced-motion/budget rules. **B-owned files
-  ONLY** (`fxgl.js` + `test/fxgl.test.js`/goldens + `BUILDER-LOG-FX.md`); never touch existing Halves files
-  (A re-points `#fxBurst` at the working overlay once it lands); never push `claude/agent`. Full DoD:
-  `BACKLOG.md` T133.
-  - **NOTE — the golden gates still need [A] registration:** `T130` added `test/golden-fx.test.js` +
-    `test/golden-synth.test.js` but B couldn't wire them into `pages.yml` (collision rule). Filed
-    **[A] `T131`** to register them as CI gates (same pattern as the fxgl/synth gate registration). Until
-    T131 lands they run only locally — they're correct and green, just not yet enforced on every push.
+- **Builder B — next: `T134` (clean swap + distinctness — owner is on it).** *(`T133` celebration DONE
+  `3e7da28` — Canvas2D overlay, `golden-fx` 2D-frame golden + mutation-test confirmed; the [A] activation is
+  `T136`.)* **`T134` — owner live on the switcher: "songs play over each other rather than switching, or
+  they sound really similar."** Both real, BOTH engine-side: **(a) overlap** — the T132/T128 immediate
+  `swapNow()` resets the generator but does **not** release the currently-sounding voices or the
+  multi-second FDN-reverb tail, so the old pad chord + tail ring **over** the new context (rapid switching
+  piles them up); now affects **every** per-screen transition. Fix: on the **immediate** swap path, quickly
+  release/fade the active music voices + tame the reverb carryover (~60–120ms music-bus fade across the
+  swap, and/or release held voices + briefly cut the reverb send) → a clean cut-in; leave the default
+  phrase-boundary swap's natural ring. **(b) too similar** — solve/menu/event share instrumentation
+  (pad+bass+pluck/bell), close tempo/density, differ only by mode (arena's the outlier); strengthen the
+  **audible** contrast (register/instrumentation/tempo/density), keeping calm-solve-vs-arena + the
+  golden-distinctness gate. **Verify on a real browser** (rapid switcher sampling → clean cut-in + clearly
+  different); add the strongest headless check feasible (a swap doesn't leave >1 context's voices active;
+  per-context distinctness stays). Full DoD: `BACKLOG.md` T134. **B-owned only** (`synth.js` + tests +
+  `BUILDER-LOG-FX.md`); never touch existing Halves files; never push `claude/agent`.
   - *(Future opt-in, not queued: GPU/browser/full-layout golden if we ever add a headless browser to CI —
     kept out of scope to keep CI Node-only.)*
 
