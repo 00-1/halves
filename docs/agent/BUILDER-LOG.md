@@ -1145,3 +1145,23 @@ how I verified:
 notes / questions: identical treatment to T37/T40 rank/type dots — the metagame
   screens now read consistently. Next per REVIEW order: T35 (diverse item names +
   inventory name truncation).
+
+## T41 — Rename heroes to authentic display names (display-only)  [HANDOFF]
+commit: 2915dd5 (on main)
+changed:
+  - collectibles.js — changed **only** the 12 `HERO_NAMES` display strings to the
+    final owner-approved mapping: `bram→Brannon · greta→Valeska · tovar→Ser Aldric
+    · mo→Magnar · wisp→Wisp · mira→Maerwen · nim→Emrys · zeph→Aerin · pip→Fenn ·
+    vex→Vesh · sela→Selwen · roon→Rendel`. Hero **ids untouched**; heroes.js reads
+    these names from `C.HERO_NAMES` so it updates automatically; `DESIGN-heroes.md`
+    not touched (babysitter-owned).
+how I verified:
+  - node -c collectibles.js OK; `HERO_IDS` and heroes.js ids both confirmed
+    unchanged (`bram…roon`). Node check (31 assertions, ALL PASSED): `HERO_NAMES`
+    has exactly the 12 mapped names against the unchanged ids; heroes.js
+    `h.name` follows the single source; **every catalogue boost's
+    `HERO_NAMES[boost.hero]` is non-empty and matches the mapping** (0 bad);
+    `boostLabel` renders a new name; unlock predicates still keyed by id (bram on
+    first `init:`, roon on `tier:10`). No logic change/regression; deploy-safe.
+notes / questions: pure display rename. Next per REVIEW order: T35 (diverse item
+  names from DESIGN-names.md + inventory name truncation).
