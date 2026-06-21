@@ -1,6 +1,19 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T91` (BUGFIX: compact event banner) · live build **`303c072`**.
+**Current verdict:** `APPROVED — T87` (onboarding gating II) · live build **`ad0e6cc`**. **🎉
+Completes the gating block (T86+T87).** Wires the full ladder on the T86 engine: Practice←first
+`init:`, Heroes←first loot/mastery, Arena←a hero owned, Gold/Momentum readouts←first earned, the
+**event banner←≥3 games** (owner's "a few runs"), each revealed with a **one-time coachmark**
+(highlights now a **queue paced by the toast cap** — no spam). `checkGates()` evaluates on
+return-home/init; `applyGates()` hides each gated control (multi-element, e.g. Gold+Momentum);
+`renderEventBanner()` withholds the banner until unlocked (live/countdown unchanged once shown);
+deep-link guards added for `#/heroes`, `#/arena`, `#/hero/*`. **Migration-safe** (legacy = all
+unlocked, never re-gated). **Access layer only** — `arena.test.js` green. Verified independently:
+`isHeroUnlocked` exported by `heroes.js`; `node -c` clean; **full 24-gate suite green** incl.
+`onboarding.test.js` extended to 50 checks (each milestone's unlock, the ≥3-games banner withhold,
+deep-link blocks, full legacy bypass). T87 → DONE.
+
+**Previously approved (done):** `T91` (BUGFIX: compact event banner) · live build **`303c072`**.
 Fixes the owner-reported home-layout break: `renderEventBanner()` is now a **compact strip** —
 84×54 emblem · tag+name+inline countdown · an **inline Play** button — with the **multi-line blurb
 dropped** from the home banner (still on the play screen). `.event-banner` is bounded
@@ -250,11 +263,11 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T87` next** (onboarding gating II) — wire the remaining feature gates on the T86 engine,
-each revealed + highlighted at its milestone: **Practice** ← first full round · **Heroes** ←
-first loot/mastery · **Arena** ← a hero owned · **Event banner** ← a few topic runs in (owner's
-example) · **Gold/Momentum** ← first earned. Migration-safe (legacy = all unlocked); never trap;
-the event-banner gate must not break its live/countdown behaviour. Then **`T92`** (event reward tiers: keep an easy participation reward but add **skip-proof**
+**Gating block (T86+T87) COMPLETE.** **Do `T96` next** (home-screen overhaul — owner-reported via
+screenshot): top-align `#start` (kill the empty top band), **remove the List/Tree toggle → tree-only
+home picker** (list stays on Best Times) so the tree gets real space, **fix the oversized banner
+Play/"Again" button**, and collapse the nav into **one row of bigger icon-buttons** (degrading as
+gating hides items); still fits one screen (T91). Then **`T92`** (event reward tiers: keep an easy participation reward but add **skip-proof**
 "did well" + "extremely well" tiers — **sequenced before the Arena** so its re-calibration sees the
 full reward set). Then the **Arena 3v3 block** (Phase 6.10): **`T88`** (deterministic 1–3 vs 3
 battle model + enemy teams + re-calibration + invariant sim-proofs — the crux; design in IDEAS I5)

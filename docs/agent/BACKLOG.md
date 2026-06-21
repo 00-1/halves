@@ -1685,7 +1685,7 @@ The onboarding engine + the first gate (promoted from IDEAS I4). Pure, local, mi
   fresh-vs-legacy branch, the single-question intro, the one-time highlight, and zero logic/Arena
   regression.)
 
-### T87 — Onboarding gating II: wire the remaining feature gates + reveals · status: OPEN
+### T87 — Onboarding gating II: wire the remaining feature gates + reveals · status: DONE
 Hang the rest of the features on the T86 engine, each revealed + highlighted at a **good progress
 point**. Draft ladder (owner delegated "add good points"; confirm/adjust in review):
 - **Practice** ← first full topic round finished (first `init:`).
@@ -1705,6 +1705,43 @@ point**. Draft ladder (owner delegated "add good points"; confirm/adjust in revi
   (incl. `arena.test.js` — access layer only); a Node/DOM test covers each gate's unlock condition
   + the legacy bypass. (Babysitter: verify each milestone unlocks its feature, the event banner is
   withheld from brand-new players, legacy profiles bypass all gates, and nothing is trapped.)
+
+---
+
+## Phase 6.13 — Home-screen layout overhaul (owner-reported, 2026-06-21)
+
+### T96 — Rework the home (`#start`) layout: top-align, tree-only picker, fix banner button, one-line nav · status: OPEN
+Owner-reported (screenshot): the home screen wastes a big empty band at the very top, the event
+banner's Play/"Again" button "looks really bad" (an oversized amber block), the tech tree is
+cramped (~4 nodes visible), and the nav links sprawl over two rows. Rebalance `#start` so the
+**tree gets real space** and everything still fits one screen (per T91).
+- **Reclaim the top.** Top-align `#start` content (kill the empty band the owner circled) so the
+  banner sits **near the top** and the reclaimed height goes to the tree.
+- **Banner button.** Redesign the Play/"Again" CTA — it's far too big/clunky. Make it a tidy,
+  proportionate button within the compact strip (keep art + name + countdown + Play→`startEvent`;
+  owned → a small "Again"). Keep the bounded-height strip (T91).
+- **Tree-only home picker — REMOVE the List/Tree toggle.** Go all-in on the **tech tree** as the
+  home selector (owner). Delete `#pickerViews`/`setPickerView` toggling on `#start`; the tree is
+  always shown and **takes the freed vertical space** (show clearly more than ~4 nodes). The
+  **list-style selector remains available on Best Times** (already tap-to-play), which is the
+  accessible alternative — so the a11y path is preserved there; ensure the tree itself stays
+  keyboard/focus navigable (its nodes are `<button role=tab>`). Update `tech-tree.test.js` (the
+  toggle/list-fallback assertions change — the fallback now lives on Best Times, not a home toggle).
+- **One-line nav.** Collapse the two-row link list (Best Times · Inventory · Heroes · Arena · Sound
+  · Exit) into a **single row of bigger icon buttons**, **icon-forward with little/no text** (or
+  text moved/below) — reusing the procedural pixel icons. Must **degrade gracefully when gating
+  hides some** (T86/T87 hide Inventory/Heroes/Arena until unlocked — the row stays balanced/centred
+  with fewer items).
+- **DoD:** `#start` is top-aligned (no big empty top band); the **tree is the only home picker**
+  (toggle removed) and visibly gets more space (more nodes shown); the banner CTA is a tidy
+  proportionate button (still art+name+countdown+Play→event); the nav is **one row of bigger
+  icon-buttons** that stays balanced as gating hides items; **still fits one screen** at 360×640 &
+  390×844 with the picker keeping a usable height; the Best Times list still plays topics (a11y
+  alternative); 360px-safe; `node -c` clean; no console errors; **all gates green** (update
+  `tech-tree.test.js` for the removed toggle / Best-Times fallback; keep `events.test.js` banner
+  guarantees). (Babysitter: verify on the live build that the top band is gone, the tree breathes,
+  the banner button looks right, the nav is one tidy row that survives gating, and it fits one
+  screen.)
 
 ---
 
