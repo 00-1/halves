@@ -44,7 +44,7 @@ global.window.localStorage = global.localStorage;
 global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
   addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
   documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
-["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","monsters.js","scenery.js","eventart.js","fx.js","sound.js","main.js"].forEach(f => new Function(read(f))());
+["icons.js","modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","monsters.js","scenery.js","eventart.js","fx.js","sound.js","main.js"].forEach(f => new Function(read(f))());
 
 const MODES = global.window.MODES, TT = global.window.TechTree, byId = id => MODES.find(m=>m.id===id);
 
@@ -80,7 +80,7 @@ clickNode("squares");   // locked on a fresh profile
 ok(!els.game.classList.contains("active"), "(e) tapping a locked node never starts a round");
 ok(els.startBtn.disabled === true, "(e) Start stays disabled for the previewed locked node");
 ok(/ti-name/.test(els.topicInfo._html) && /Squares/.test(els.topicInfo._html), "(e) the selected-topic info row shows the locked topic");
-ok(/🔒/.test(els.topicInfo._html), "(e) the info row shows the unlock requirement for a locked topic");
+ok(/px-ic lock/.test(els.topicInfo._html), "(e) the info row shows the unlock requirement (a lock pixel icon) for a locked topic");
 
 // (c) the accessible LIST fallback now lives on Best Times (#sumList), tap-to-play
 global.window.location.hash = "#/best-times"; (winH.hashchange||[]).forEach(f=>f());

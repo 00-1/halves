@@ -37,11 +37,11 @@ ok(/#start\{[^}]*padding:12px/.test(css), "(2) #start top padding trimmed (12px)
 // ---- (3) tidy nav: Sound/Settings/Fullscreen are LABELLED, no icon-only util -
 ok(!/navbtn util/.test(html), "(3) the icon-only `.util` nav buttons are gone (no bare-emoji buttons)");
 [["soundBtnMenu","Sound"],["settingsBtn","Setup"],["fsBtn","Screen"]].forEach(([id, lbl]) => {
-  const re = new RegExp('id="' + id + '"[^>]*>\\s*<span class="nav-emoji">[^<]+</span><span class="nav-lbl">' + lbl + '</span>');
-  ok(re.test(html), "(3) #" + id + " is a labelled nav button (emoji + \"" + lbl + "\")");
+  const re = new RegExp('id="' + id + '"[^>]*>\\s*<span class="px-ic [^"]*"></span><span class="nav-lbl">' + lbl + '</span>');
+  ok(re.test(html), "(3) #" + id + " is a labelled nav button (T117 pixel icon + \"" + lbl + "\")");
 });
 ok(!/\.navbtn\.util\{/.test(css), "(3) the .navbtn.util icon-only style is removed");
-ok(/\.navbtn \.nav-emoji\{/.test(css) && /\.navbtn \.nav-lbl\{/.test(css), "(3) the emoji + label spans are styled to match the primary buttons");
+ok(/\.navbtn \.px-ic\{/.test(css) && /\.navbtn \.nav-lbl\{/.test(css), "(3) the pixel-icon + label spans are styled to match the primary buttons");
 // the four primary buttons are untouched (still icon-canvas + label)
 ["statsBtn","invBtn","heroesBtn","arenaBtn"].forEach(id =>
   ok(new RegExp('id="' + id + '"[^>]*>\\s*<canvas').test(html), "(3) primary #" + id + " still leads with its pixel-icon canvas"));
@@ -63,7 +63,7 @@ ok(/querySelector\("\.nav-lbl"\)[\s\S]{0,200}'Exit'[\s\S]{0,20}'Screen'/.test(ma
     addEventListener(e,fn){ (this._h[e]=this._h[e]||[]).push(fn); }, removeEventListener(){},
     appendChild(c){return c;}, insertBefore(c){return c;}, setAttribute(){}, getAttribute(){return null;}, removeAttribute(){}, remove(){}, focus(){}, blur(){},
     querySelector(s){ if(/canvas/.test(s||"")) return mkEl("_c");
-      if(s === ".nav-emoji" || s === ".nav-lbl"){ return kids[s] || (kids[s] = { _t:"", get textContent(){return this._t;}, set textContent(v){this._t=String(v);} }); }
+      if(s === ".nav-emoji" || s === ".nav-lbl" || s === ".px-ic"){ return kids[s] || (kids[s] = { _t:"", _cn:"", get textContent(){return this._t;}, set textContent(v){this._t=String(v);}, get className(){return this._cn;}, set className(v){this._cn=String(v);} }); }
       return null; },
     querySelectorAll(){ return []; }, closest(){ return null; },
     getContext(){ return { clearRect(){}, fillRect(){}, save(){}, restore(){}, beginPath(){}, fill(){}, set fillStyle(v){}, get fillStyle(){return"";}, set imageSmoothingEnabled(v){}, get imageSmoothingEnabled(){return false;} }; },
@@ -87,13 +87,14 @@ ok(/querySelector\("\.nav-lbl"\)[\s\S]{0,200}'Exit'[\s\S]{0,20}'Screen'/.test(ma
 
   const sm = els.soundBtnMenu;
   ok(!!sm, "boot: the labelled sound button mounts");
-  // syncSoundButtons ran during init → the emoji span carries 🔊/🔇 (label untouched)
+  // syncSoundButtons ran during init → the icon span's CLASS carries the sound state
+  // (T117: a px-ic soundOn/soundOff pixel icon), the text label untouched.
   const emoji = sm._kids[".nav-emoji"];
-  ok(emoji && (emoji.textContent === "🔊" || emoji.textContent === "🔇"), "boot: the sound emoji span is set (" + (emoji && emoji.textContent) + "), not the whole button");
-  // flip it via the click handler and confirm the emoji span flipped, label stub never written
-  const before = emoji.textContent;
+  ok(emoji && /sound(On|Off)/.test(emoji.className), "boot: the sound icon span is a px-ic soundOn/soundOff (" + (emoji && emoji.className) + "), not the whole button");
+  // flip it via the click handler and confirm the icon class flipped, label stub never written
+  const before = emoji.className;
   (sm._h.click||[]).forEach(f => f({}));
-  ok(emoji.textContent !== before, "boot: toggling sound flips the emoji span (" + before + " → " + emoji.textContent + ")");
+  ok(emoji.className !== before && /sound(On|Off)/.test(emoji.className), "boot: toggling sound flips the icon span class (" + before + " → " + emoji.className + ")");
   ok(!(".nav-lbl" in sm._kids) || sm._kids[".nav-lbl"]._t === "", "boot: the sound button's text label is never overwritten by the toggle");
 })();
 

@@ -78,6 +78,8 @@ jobs:
         run: node test/home-layout.test.js
       - name: UI pixel-bevel restyle test (gate)
         run: node test/ui-restyle.test.js
+      - name: Chrome pixel-icons test (gate)
+        run: node test/icons.test.js
       - name: Asset cache-busting test (gate)
         run: node test/cache-bust.test.js
       - name: FXGL engine test (gate)

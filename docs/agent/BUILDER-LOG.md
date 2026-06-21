@@ -3882,3 +3882,44 @@ notes / questions: a **fresh** profile now boots **loud (3.0×)** + **calm (0.5�
   (past ~3× it's mostly the limiter compressing harder) — owner to confirm. Saved prefs untouched.
   Re-read `NEXT.md` immediately before pushing — still `T114`. Next per `NEXT.md`: **`T117`** (replace
   chrome emoji with house generative pixel icons).
+
+## T117 — Replace ALL chrome emoji with house generative pixel icons  [HANDOFF]
+commit: (this commit, on main) — [A] task · OWNER-PRIORITY. Owner: "replace all the emojis with our
+own icons, in the style of our existing generative icons … do a pass to pick up everything."
+changed:
+  - **icons.js (NEW, `window.Icons`)** — house pixel-icon library in the same ethos as glyphs.js /
+    the T50 nav icons: tiny hand-pixelled bitmaps (9×9) emitted as **1-bit SVG `<rect>` masks**
+    (`data:` URIs), no image assets. **`installCSS()`** injects one `.px-ic.<name>{mask-image}` rule
+    per icon (once, at boot); **`span(name)`** returns an inline `<span class="px-ic <name>"
+    aria-hidden>` whose **shape is the mask and colour is `currentColor`** — so each icon tints with
+    the surrounding text (gold amber, a locked node's muted, a done node's mint) and aligns inline.
+    16 icons: lock · soundOn/soundOff · cog · coin · calendar · swords · flag · map · star · sparkles
+    · fullscreen · backspace · close · check · play.
+  - **index.html** — loads `icons.js` (before main.js; T107 versions it). Static emoji swapped for
+    `px-ic` spans: entry/nav **sound**, nav **cog/fullscreen**, numpad **⌫**, **Test ▶**, update-bar
+    **✕**.
+  - **styles.css** — `.px-ic` base (1em, `background:currentColor` + SVG mask) + `.navbtn .px-ic`
+    sizing.
+  - **main.js** — a safe **`ic(name)`** inline-icon helper (no-op if icons.js is absent); **every**
+    dynamic chrome emoji swapped to `ic("…")` across the node-state badges, gold bar, momentum,
+    unlock hints, the Arena (swords/flag/map/star/check/play), toasts (sparkles/calendar), and the
+    sound/fullscreen sync. `Icons.installCSS()` runs at boot. **`NODE_BADGE`** now maps each state to
+    a distinct icon (locked→lock · unlocked→play · mastered→star · done→check) — **state semantics +
+    a11y preserved** (buttons keep `aria-label`; the icons are `aria-hidden`).
+  - **test/icons.test.js (NEW, 47 checks)** + **pages.yml** — the gate: every needed icon renders a
+    **non-empty SVG mask**; `span()`/`installCSS()` work; **NO targeted chrome emoji remain in ANY
+    shipped file** (the `→`/`↑`/`↓` content arrows + the `▾` scroll-cue are the only allowed
+    pictographs); the wiring (icons.js loaded, masks installed, safe `ic()`, node-badge icon map, nav
+    `aria-label`s, the numpad backspace icon). Updated `home-layout`/`ui-restyle` nav assertions +
+    `tech-tree` (locked row now shows a lock icon, boots `icons.js`), and `cache-bust` versions
+    `icons.js`.
+how I verified:
+  - **`node test/icons.test.js` → ALL 47 PASSED**; a fresh sweep of `index.html` + all shipped `*.js`
+    for the 17 targeted emoji comes back **clean**; `node -c icons.js`/`main.js` clean; **full 32-gate
+    suite green** (incl. contrast AA — the icons are masks tinted by existing text colours, no new
+    colours). `→`/`↑`/`↓`/`▾` left intact. Re-read `NEXT.md` immediately before pushing — still `T117`.
+notes / questions: **eyeball the icons on the live build** — the 9×9 bitmaps read at ~14–18px and
+  tint with their context; if any reads unclearly (the speaker/map/swords are the busiest at 9px),
+  the bitmap is a one-line edit in `icons.js`. No image assets; no-build; pixel-styled under
+  `data-ui="pixel"` (they're already pixel-art). Next per `NEXT.md`: **`T101`** (Start→fullscreen
+  delay).

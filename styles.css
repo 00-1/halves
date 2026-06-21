@@ -15,6 +15,14 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 .hidden{display:none !important}
 html,body{height:100%}
+/* T117 — house pixel icons (chrome): an inline span masked by a 1-bit SVG and
+   tinted by currentColor, so it inherits the surrounding text's colour + size
+   (gold amber, a locked node's muted, a done node's mint, …). Decorative. */
+.px-ic{display:inline-block;width:1em;height:1em;vertical-align:-0.12em;flex:0 0 auto;
+  background-color:currentColor;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;
+  -webkit-mask-size:contain;mask-size:contain}
+.navbtn .px-ic{width:16px;height:16px}
 body{
   background:var(--bg);
   color:var(--text);

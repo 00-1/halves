@@ -70,7 +70,7 @@ ok(!/font-family/.test(block), "(6) the restyle sets NO font-family — body tex
 ok(!/border-radius:\s*\d/.test(block), "(7) no hard-coded px radius survives in the pixel block — all squared via --ui-radius");
 
 // ---- (8) NAV: shortened label + no orphaned single button -------------------
-ok(/id="settingsBtn"[^>]*>\s*<span class="nav-emoji">[^<]+<\/span><span class="nav-lbl">Setup<\/span>/.test(html),
+ok(/id="settingsBtn"[^>]*>\s*<span class="px-ic [^"]*"><\/span><span class="nav-lbl">Setup<\/span>/.test(html),
    "(8) the Settings label is shortened to \"Setup\" (fits the row)");
 ok(!/nav-lbl">Settings</.test(html), "(8) the long \"Settings\" label is gone");
 // the no-orphan mechanism: 7 uniform wider buttons wrap+centre under the 360 cap

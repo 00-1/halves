@@ -276,6 +276,9 @@
   function fmt(t){ return t.toFixed(1); }
   function numStr(n){ return String(n); }
   function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+  // T117 — inline house pixel icon (decorative span, tinted by the surrounding
+  // text colour). Safe no-op if icons.js failed to load.
+  function ic(name){ return (window.Icons && window.Icons.span) ? window.Icons.span(name) : ""; }
 
   // ---- topic-chain unlock -------------------------------------------------
   // A topic is playable if it is first in the chain (no `unlockedBy`), or the
@@ -373,7 +376,7 @@
       enqueueToast(() => {
         const t = document.createElement("div");
         t.className = "toast coach";
-        t.innerHTML = '<span class="t-glyph">✨</span><div class="t-txt"><span class="t-tag">Unlocked</span>'+
+        t.innerHTML = '<span class="t-glyph">'+ic("sparkles")+'</span><div class="t-txt"><span class="t-tag">Unlocked</span>'+
           '<span class="t-name">'+esc(cfg.msg)+'</span></div>';
         $("toasts").appendChild(t);
         requestAnimationFrame(() => t.classList.add("show"));
@@ -407,7 +410,7 @@
 
   // ---- start screen: mode picker + brand ---------------------------------
   // One picker row: name, a subline (best rank / "no best" / unlock hint),
-  // collectible progress `have/total`, and a state glyph (▶ play · 🔒 · ✓ 100%).
+  // collectible progress `have/total`, and a state glyph (play / locked / done 100%).
   // ---- tech-tree view (T84): a data-driven visualisation of the SAME unlock
   // chain the list shows — never a hand-maintained parallel edge list. Nodes =
   // modes; edges derive from `unlockedBy` (the importance spine) and
@@ -437,7 +440,7 @@
     if(loadCollected()["mastery:" + m.id]) return "mastered";
     return "unlocked";
   }
-  const NODE_BADGE = { locked:"🔒", unlocked:"▶", mastered:"★", done:"✓" };
+  const NODE_BADGE = { locked:"lock", unlocked:"play", mastered:"star", done:"check" };
   // Swappable icon hook — today the topic's T56 pixel glyph; a richer per-topic
   // emblem (T82 direction) can drop in here later without touching the layout.
   function nodeIcon(m, cv){
@@ -448,7 +451,7 @@
     return '<button class="tnode st-'+st+(m.id===mode.id ? " active" : "")+'" data-mode="'+esc(m.id)+'" '+
       'role="tab" aria-label="'+esc(m.name)+' — '+st+'">'+
       '<canvas class="pix tn-ico" width="36" height="22"></canvas>'+
-      '<span class="tn-badge" aria-hidden="true">'+NODE_BADGE[st]+'</span>'+
+      '<span class="tn-badge" aria-hidden="true">'+ic(NODE_BADGE[st])+'</span>'+
       '<span class="tn-prog">'+p.have+'/'+p.total+'</span></button>';
   }
   // T106 — tech-tree v2. Each main-chain topic is a ROW whose 1–3 PARTS (Part 1 →
@@ -506,7 +509,7 @@
     const el = $("topicInfo"); if(!el) return;
     const m = mode, locked = !isUnlocked(m), p = modeProgress(m);
     let meta;
-    if(locked){ meta = '🔒 ' + esc(unlockReq(m)); }
+    if(locked){ meta = ic("lock")+' ' + esc(unlockReq(m)); }
     else {
       const best = loadBoard(m.id).slice().sort(rank)[0];
       const bestTxt = best
@@ -661,8 +664,8 @@
       // Locked: de-emphasised, shows the unlock requirement, not startable.
       if(!isUnlocked(m)){
         return '<div class="sum-row locked"><span class="md">'+esc(m.name)+
-          '<span class="holder">🔒 '+unlockReq(m)+'</span></span>'+
-          '<span class="go">🔒</span></div>';
+          '<span class="holder">'+ic("lock")+' '+unlockReq(m)+'</span></span>'+
+          '<span class="go">'+ic("lock")+'</span></div>';
       }
       const best = loadBoard(m.id).slice().sort(rank)[0];
       // Unlocked but never played: muted, hollow dot, still tappable to play.
@@ -670,7 +673,7 @@
         return '<div class="sum-row notplayed" data-mode="'+esc(m.id)+'">'+
           '<span class="md">'+esc(m.name)+
             '<span class="holder"><i class="rankdot empty"></i>Not played</span></span>'+
-          '<span class="sc">—</span><span class="tm">—</span><span class="go">▶</span></div>';
+          '<span class="sc">—</span><span class="tm">—</span><span class="go">'+ic("play")+'</span></div>';
       }
       // Played: subtle heat-map tint + a crisp square rank dot + rank label in the
       // rank's colour (no rounded coloured card border — see T37).
@@ -681,7 +684,7 @@
           '<span class="holder"><i class="rankdot" style="background:'+rk.color+'"></i>'+
             '<span style="color:'+rk.color+'">'+esc(rk.name)+'</span></span></span>'+
         '<span class="sc">'+best.score+'/'+(best.total||"?")+'</span>'+
-        '<span class="tm">'+fmt(best.time)+'s</span><span class="go">▶</span></div>';
+        '<span class="tm">'+fmt(best.time)+'s</span><span class="go">'+ic("play")+'</span></div>';
     }).join("") + eventSummaryRows();
   }
 
@@ -703,13 +706,13 @@
           '<span class="md">'+esc(e.name)+
             '<span class="holder"><i class="rankdot" style="background:var(--amber)"></i>'+
             '<span style="color:var(--amber)">Live today</span></span></span>'+
-          cells+'<span class="go">▶</span></div>';
+          cells+'<span class="go">'+ic("play")+'</span></div>';
       }
       const days = Ev.daysUntilLive(e.id);
       const when = days === 1 ? "Live tomorrow" : ("Live in " + days + " days");
       return '<div class="sum-row event locked">'+
-        '<span class="md">'+esc(e.name)+'<span class="holder">🔒 '+esc(when)+'</span></span>'+
-        cells+'<span class="go">🔒</span></div>';
+        '<span class="md">'+esc(e.name)+'<span class="holder">'+ic("lock")+' '+esc(when)+'</span></span>'+
+        cells+'<span class="go">'+ic("lock")+'</span></div>';
     }).join("");
     return '<div class="sum-event-head">Daily Events</div>' + rows;
   }
@@ -873,7 +876,7 @@
     return '<div class="tp-row'+(isDone ? " done" : "")+'">'+
       '<div class="tp-head"><span class="tp-name">'+esc(label)+'</span>'+
         '<span class="tp-prog">'+got+'/'+total+'</span>'+
-        '<span class="tp-state">'+(isDone ? "✓" : "")+'</span></div>'+
+        '<span class="tp-state">'+(isDone ? ic("check") : "")+'</span></div>'+
       '<div class="tp-bar"><div class="tp-fill" style="width:'+(pct*100).toFixed(1)+
         '%;background:'+topicBarColor(pct, isDone)+'"></div></div></div>';
   }
@@ -999,7 +1002,7 @@
       return '<div class="hero-card locked t-'+h.type.toLowerCase()+'">'+
         '<div class="hero-port"><span class="q">?</span></div>'+
         '<div class="hero-info"><div class="hero-name"><span class="hn"><i class="typedot"></i>'+esc(h.name)+'</span></div>'+
-        '<div class="hero-hint">🔒 '+esc(h.unlockHint)+'</div></div></div>';
+        '<div class="hero-hint">'+ic("lock")+' '+esc(h.unlockHint)+'</div></div></div>';
     }
     const st = Hs.effectiveStats(h, col), rating = Math.round(Hs.rating(h, col));
     const owned = C.CATALOG.filter(it => col[it.id] && it.boost && it.boost.hero === h.id).length;
@@ -1007,7 +1010,7 @@
     return '<div class="hero-card unlocked t-'+h.type.toLowerCase()+'" data-hero="'+esc(h.id)+'">'+
       '<div class="hero-port"><canvas class="pix" width="48" height="48"></canvas></div>'+
       '<div class="hero-info">'+
-        '<div class="hero-name"><span class="hn"><i class="typedot"></i>'+esc(h.name)+'</span><span class="hero-rating">★ '+rating+'</span></div>'+
+        '<div class="hero-name"><span class="hn"><i class="typedot"></i>'+esc(h.name)+'</span><span class="hero-rating">'+ic("star")+' '+rating+'</span></div>'+
         '<div class="hero-stats">'+statChip("PWR",st.power)+statChip("GRD",st.guard)+statChip("SPD",st.speed)+statChip("FOC",st.focus)+'</div>'+
         '<div class="hero-items">'+(owned ? '<span class="hero-il">Boosted by '+owned+'</span> <span class="hero-tap">tap for details ›</span>'
                                           : '<span class="hero-none">No items yet — collect to boost.</span>')+'</div>'+
@@ -1025,7 +1028,7 @@
     const owned = all.filter(it => col[it.id]);
     $("hdHead").className = "hd-head t-" + h.type.toLowerCase();
     $("hdName").innerHTML = '<span class="hn"><i class="typedot"></i>'+esc(h.name)+'</span>'+
-      '<span class="hd-type">'+esc(h.type)+'</span><span class="hero-rating">★ '+rating+'</span>';
+      '<span class="hd-type">'+esc(h.type)+'</span><span class="hero-rating">'+ic("star")+' '+rating+'</span>';
     $("hdStats").innerHTML = statChip("PWR",st.power)+statChip("GRD",st.guard)+statChip("SPD",st.speed)+statChip("FOC",st.focus);
     $("hdProg").textContent = owned.length + " / " + all.length + " boosts collected";
     $("hdList").innerHTML = owned.length
@@ -1142,12 +1145,12 @@
         '</div>'+
         '<div class="ar-title">'+(r.won ? "Victory!" : "Defeated")+'</div>'+
         '<div class="ar-sub">'+esc(r.heroName)+' vs '+esc(r.tierName)+'</div>'+
-        '<div class="ar-maths">'+Math.round(r.res.rating)+' ★ × '+r.res.matchup+
+        '<div class="ar-maths">'+Math.round(r.res.rating)+' '+ic("star")+' × '+r.res.matchup+
           ' = power <b>'+r.res.power+'</b> vs DEF <b>'+r.res.def+'</b></div>'+
         (r.won ? "" : '<div class="ar-hint">Not strong enough — collect more buffs (drill the topics) or pick the advantage-type hero.</div>')+
-        (r.regionCleared ? '<div class="ar-region-clear">🏁 Region conquered! Next: '+esc(r.regionCleared)+'</div>' : '')+
-        (r.goldEarn > 0 ? '<div class="ar-gold">🪙 +'+esc(fmtGold(r.goldEarn))+' '+esc(GOLD_LABEL)+'</div>' : '')+
-        (r.newHeroes.length ? '<div class="ar-new">★ New hero: '+r.newHeroes.map(esc).join(", ")+'!</div>' : '')+
+        (r.regionCleared ? '<div class="ar-region-clear">'+ic("flag")+' Region conquered! Next: '+esc(r.regionCleared)+'</div>' : '')+
+        (r.goldEarn > 0 ? '<div class="ar-gold">'+ic("coin")+' +'+esc(fmtGold(r.goldEarn))+' '+esc(GOLD_LABEL)+'</div>' : '')+
+        (r.newHeroes.length ? '<div class="ar-new">'+ic("star")+' New hero: '+r.newHeroes.map(esc).join(", ")+'!</div>' : '')+
         '</div>';
     }
     // ---- wayfinding helpers (T68) — all from the Enemies region API ----
@@ -1156,18 +1159,18 @@
     const bossNameOf = r => E.byTier(bossTierOf(r)).name;
     const conquered = r => !!col["tier:" + bossTierOf(r)];
     // a journey-map toggle is available whenever you're still climbing
-    html += '<button class="arena-map-btn" id="arenaMapBtn">'+(arenaMapOpen ? "▾ Hide journey map" : "🗺 Journey map")+'</button>';
+    html += '<button class="arena-map-btn" id="arenaMapBtn">'+(arenaMapOpen ? "▾ Hide journey map" : ic("map")+" Journey map")+'</button>';
     if(arenaMapOpen){
       html += '<div class="arena-map">'+Array.from({length:REGIONS}, (_, r) => {
         const isCur = !cleared && r === E.tierRegion(tier.n), conq = conquered(r);
         const st = conq ? "done" : isCur ? "cur" : "locked";
-        const tag = conq ? "✓ conquered" : isCur ? "you are here" : "locked";
+        const tag = conq ? ic("check")+" conquered" : isCur ? "you are here" : "locked";
         return '<div class="map-row '+st+'"><i class="row-sq"></i><span class="map-name">'+esc(E.regionLabel(r))+'</span>'+
-          '<span class="map-boss">⚔ '+esc(bossNameOf(r))+'</span><span class="map-tag">'+tag+'</span></div>';
+          '<span class="map-boss">'+ic("swords")+' '+esc(bossNameOf(r))+'</span><span class="map-tag">'+tag+'</span></div>';
       }).join("")+'</div>';
     }
     if(cleared){
-      html += '<div class="arena-tier done"><div class="at-name">⭐ Arena cleared — you defeated The Void Sovereign!</div>'+
+      html += '<div class="arena-tier done"><div class="at-name">'+ic("star")+' Arena cleared — you defeated The Void Sovereign!</div>'+
         '<div class="at-region">Every tier has fallen. Champion of the realm.</div></div>';
     } else {
       const reg = E.tierRegion(tier.n), posInReg = ((tier.n - 1) % RS) + 1;
@@ -1182,8 +1185,8 @@
         '<canvas class="pix at-enemy" width="64" height="64" data-tier="'+tier.n+'" data-tname="'+esc(tier.name)+'" data-ttype="'+esc(tier.type)+'"></canvas>'+
         '<div class="at-region">'+esc(E.regionLabel(reg))+' · region '+(reg+1)+'/'+REGIONS+' · tier '+posInReg+'/'+RS+'</div>'+
         '<div class="at-pips">'+pips+'</div>'+
-        (isBossNow ? '<div class="at-boss now">⚔ Region boss — defeat '+esc(tier.name)+' to conquer '+esc(E.regionLabel(reg))+'</div>'
-         : bossNext ? '<div class="at-boss next">⚔ Boss next: '+esc(bossNameOf(reg))+'</div>' : '')+
+        (isBossNow ? '<div class="at-boss now">'+ic("swords")+' Region boss — defeat '+esc(tier.name)+' to conquer '+esc(E.regionLabel(reg))+'</div>'
+         : bossNext ? '<div class="at-boss next">'+ic("swords")+' Boss next: '+esc(bossNameOf(reg))+'</div>' : '')+
         '<div class="at-name"><i class="typedot"></i>'+esc(tier.name)+'</div>'+
         '<div class="at-stats"><span class="at-type">'+esc(tier.type)+'</span><span class="at-def">DEF '+tier.def+'</span></div></div>';
       if(!heroes.length){
@@ -1196,9 +1199,9 @@
           html += '<div class="arena-hero t-'+h.type.toLowerCase()+(arenaHero === h.id ? " sel" : "")+'" data-hero="'+esc(h.id)+'">'+
             '<canvas class="pix ah-port" width="40" height="40"></canvas>'+
             '<div class="ah-body"><div class="ah-top"><span class="ah-name"><i class="typedot"></i>'+esc(h.name)+'</span>'+
-              '<span class="ah-rating">★ '+rating+'</span></div>'+
+              '<span class="ah-rating">'+ic("star")+' '+rating+'</span></div>'+
             '<div class="ah-mu">'+matchupLabel(mu)+
-              '<span class="ah-power '+(wins ? "win" : "loss")+'">⚔ '+power+' vs '+tier.def+'</span></div></div></div>';
+              '<span class="ah-power '+(wins ? "win" : "loss")+'">'+ic("swords")+' '+power+' vs '+tier.def+'</span></div></div></div>';
         });
         html += '</div>';
       }
@@ -1648,14 +1651,14 @@
   // ---- Goblin Gold display: a ticking counter + a non-blocking "+N" flourish.
   function renderGold(){
     const el = $("goldBar"); if(!el) return;
-    el.innerHTML = '🪙 <b>' + esc(fmtGold(loadGold())) + '</b> ' + esc(GOLD_LABEL);
+    el.innerHTML = ic("coin")+' <b>' + esc(fmtGold(loadGold())) + '</b> ' + esc(GOLD_LABEL);
   }
   // ---- Momentum display: a calm start-screen indicator + a gentle ack toast.
   function renderMomentum(){
     const el = $("momentumBar"); if(!el) return;
     const m = loadMomentum();
     el.innerHTML = m.count > 0
-      ? '🗓 <b>' + m.count + '</b> ' + esc(MOMENTUM_LABEL) + (m.count >= MOMENTUM_MAX ? ' · maxed' : '')
+      ? ic("calendar")+' <b>' + m.count + '</b> ' + esc(MOMENTUM_LABEL) + (m.count >= MOMENTUM_MAX ? ' · maxed' : '')
       : '';
   }
   // ---- T81: prominent home-screen event banner -----------------------------
@@ -1688,7 +1691,7 @@
         '<span class="eb-name">'+esc(ev.name)+'</span>'+
         '<span class="eb-count" id="ebCount"></span>'+
       '</div>'+
-      '<button class="eb-play" data-event="'+esc(ev.id)+'">'+(got > 0 ? 'Again' : '▶ Play')+'</button>';
+      '<button class="eb-play" data-event="'+esc(ev.id)+'">'+(got > 0 ? 'Again' : ic("play")+' Play')+'</button>';
     const cv = el.querySelector(".eb-art");
     if(cv && window.EventArt) window.EventArt.draw(cv, ev.artSeed);
     updateEventCountdown();
@@ -1714,7 +1717,7 @@
     enqueueToast(() => {
       const t = document.createElement("div");
       t.className = "toast momentum";
-      t.innerHTML = '<span class="t-glyph">🗓</span><div class="t-txt">' +
+      t.innerHTML = '<span class="t-glyph">'+ic("calendar")+'</span><div class="t-txt">' +
         '<span class="t-tag">' + esc(MOMENTUM_LABEL) + (state.count >= MOMENTUM_MAX ? " · maxed" : "") + '</span>' +
         '<span class="t-name">' + state.count + ' day' + (state.count === 1 ? '' : 's') + '</span></div>';
       $("toasts").appendChild(t);
@@ -1724,17 +1727,17 @@
   }
   function showGold(el, before, after, earned){
     if(!el) return;
-    el.innerHTML = '<span class="gold-n">🪙 ' + esc(fmtGold(before)) + '</span>' +
+    el.innerHTML = '<span class="gold-n">'+ic("coin")+' ' + esc(fmtGold(before)) + '</span>' +
       (earned > 0 ? ' <span class="gold-plus">+' + esc(fmtGold(earned)) + '</span>' : '') +
       ' <span class="gold-lbl">' + esc(GOLD_LABEL) + '</span>';
     const numEl = el.querySelector(".gold-n");
-    if(after <= before || !numEl){ if(numEl) numEl.innerHTML = '🪙 ' + esc(fmtGold(after)); return; }
+    if(after <= before || !numEl){ if(numEl) numEl.innerHTML = ic("coin")+' ' + esc(fmtGold(after)); return; }
     const t0 = performance.now(), dur = 800;
     (function tick(now){
       const k = Math.min(1, (now - t0) / dur);
       const val = before + (after - before) * (k * (2 - k));   // ease-out
-      numEl.innerHTML = '🪙 ' + esc(fmtGold(val));
-      if(k < 1) requestAnimationFrame(tick); else numEl.innerHTML = '🪙 ' + esc(fmtGold(after));
+      numEl.innerHTML = ic("coin")+' ' + esc(fmtGold(val));
+      if(k < 1) requestAnimationFrame(tick); else numEl.innerHTML = ic("coin")+' ' + esc(fmtGold(after));
     })(t0);
   }
 
@@ -1876,7 +1879,7 @@
     const btn = $("fsBtn"); if(!btn) return;
     if(!fsSupported()){ btn.classList.add("hidden"); return; }
     const sync = () => { const lbl = btn.querySelector(".nav-lbl");                          // T99 labelled nav button
-      if(lbl) lbl.textContent = fsActive() ? 'Exit' : 'Screen'; else btn.innerHTML = fsActive() ? '⛶ Exit' : '⛶ Screen'; };
+      if(lbl) lbl.textContent = fsActive() ? 'Exit' : 'Screen'; else btn.innerHTML = ic("fullscreen")+' '+(fsActive() ? 'Exit' : 'Screen'); };
     btn.addEventListener("click", () => { fsActive() ? fsExit() : fsEnter(); });
     ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
       .forEach(ev => document.addEventListener(ev, sync));
@@ -1904,13 +1907,13 @@
   }
   // Guarded SFX trigger — a no-op if the engine is absent or muted.
   function sfx(name, arg){ const S = window.Sound; if(S && S[name]) S[name](arg); }
-  // Keep every 🔊/🔇 button (entry + start menu) in sync, and toggle the pref.
+  // Keep every sound button (entry + start menu) in sync, and toggle the pref.
   const SOUND_BTNS = ["soundBtn", "soundBtnMenu"];
   function syncSoundButtons(){
     const on = soundOn();
-    const sb = $("soundBtn"); if(sb) sb.innerHTML = on ? '🔊 Sound on' : '🔇 Sound off';   // entry screen
+    const sb = $("soundBtn"); if(sb) sb.innerHTML = ic(on ? "soundOn" : "soundOff")+' Sound '+(on ? 'on' : 'off');   // entry screen
     const sm = $("soundBtnMenu"); if(sm){ const e = sm.querySelector(".nav-emoji");          // T99 labelled nav button
-      if(e) e.textContent = on ? '🔊' : '🔇'; else sm.innerHTML = on ? '🔊' : '🔇'; }
+      if(e){ e.className = "px-ic " + (on ? "soundOn" : "soundOff") + " nav-emoji"; } else if(sm) sm.innerHTML = ic(on ? "soundOn" : "soundOff"); }
     const sv = $("setSoundVal"); if(sv) sv.textContent = on ? "On" : "Off";                 // T85 Settings row
   }
   function toggleSound(){ saveSound(!soundOn()); syncSoundButtons(); applySoundPref(); }
@@ -2074,6 +2077,7 @@
   window.Updater = { check: checkForUpdate, bootSha: () => bootSha, shown: () => updateShown, setBoot: s => { bootSha = s; } };
 
   // ---- init ---------------------------------------------------------------
+  if(window.Icons && window.Icons.installCSS) window.Icons.installCSS();   // T117: register the house pixel-icon masks
   if(window.FX && window.FX.init) window.FX.init($("fxCanvas"));
   setupFx();           // T110: mount the FXGL home backdrop + burst overlay (no-op if FXGL absent)
   renderTree();        // the tree is the home picker; it paints the topic-info row
