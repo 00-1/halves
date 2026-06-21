@@ -134,9 +134,10 @@
     St("Lantern Way",   86,50,DORIAN, [0,3,5,3],          [0,null,5,null],            [1,0,2,0],            0.28),
     St("Meadow",        84,57,MAJ,    [0,2,4,5],          [0,null,2,null],            [0,0,2,0],            0.28),
     St("Title Theme",   88,57,MAJ,    [0,2,4,2],          [0,null,4,null],            [0,0,2,0],            0.28),   // menu
-    St("Hero's Arena",  95,48,MIN,    [0,4,7,4],          [0,0,5,5],                  [1,0,2,0,1,0,3,0],    0.34)    // arena
+    St("Hero's Arena",  95,48,MIN,    [0,4,7,4],          [0,0,5,5],                  [1,0,2,0,1,0,3,0],    0.34),   // arena
+    St("Festival Day",  92,62,LYD,    [0,4,7,11,7,4],     [0,null,4,null,5,null,4,null],[1,0,2,0,0,0,2,0],   0.30, TRI) // event
   ];
-  const MENU_STYLE = 15, ARENA_STYLE = 16;
+  const MENU_STYLE = 15, ARENA_STYLE = 16, EVENT_STYLE = 17;
   const LOOP_STEPS = 16;
   // Scale degree → MIDI note (octave-aware; wraps degrees beyond the scale).
   function degMidi(style, degree, octaveShift){
@@ -165,6 +166,7 @@
     if(typeof key === "number") return ((key % STYLES.length) + STYLES.length) % STYLES.length;
     if(key === "menu") return MENU_STYLE;
     if(key === "arena") return ARENA_STYLE;
+    if(key === "event") return EVENT_STYLE;
     return hashStr(String(key)) % 15;     // deterministic fallback into the 15 topic styles
   }
 
@@ -242,6 +244,6 @@
     roundComplete: () => play(sfxSpec("roundComplete")),
     // music (T17)
     setMusic, stopMusic, musicPlaying,
-    STYLES, MENU_STYLE, ARENA_STYLE, styleIndexFor, degMidi, stepVoices
+    STYLES, MENU_STYLE, ARENA_STYLE, EVENT_STYLE, styleIndexFor, degMidi, stepVoices
   };
 })();

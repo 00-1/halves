@@ -73,10 +73,16 @@ ok(S.ARENA_STYLE !== S.MENU_STYLE && S.STYLES[S.ARENA_STYLE] && /arena/i.test(S.
    "a dedicated Arena theme exists (" + (S.STYLES[S.ARENA_STYLE] && S.STYLES[S.ARENA_STYLE].name) + ")");
 ok(S.styleIndexFor("arena") === S.ARENA_STYLE, "styleIndexFor('arena') → the Arena theme");
 ok(S.styleIndexFor("menu") === S.MENU_STYLE, "styleIndexFor('menu') → the menu theme");
+// a dedicated event theme exists (T81), reachable via "event", distinct + calm
+ok(S.EVENT_STYLE !== S.MENU_STYLE && S.EVENT_STYLE !== S.ARENA_STYLE && S.STYLES[S.EVENT_STYLE],
+   "a dedicated event theme exists, distinct from menu/arena (" + (S.STYLES[S.EVENT_STYLE] && S.STYLES[S.EVENT_STYLE].name) + ")");
+ok(S.styleIndexFor("event") === S.EVENT_STYLE, "styleIndexFor('event') → the event theme");
+ok(S.STYLES[S.EVENT_STYLE].bpm <= 95 && S.STYLES[S.EVENT_STYLE].density <= 0.4, "the event theme is calm (bpm ≤ 95, density ≤ 0.4)");
 
 // main.js routes the Arena screen to the arena theme (not menu); voice cap intact
 const mainSrc = read("main.js"), soundSrc = read("sound.js");
 ok(/name === "arena"[\s\S]{0,60}setMusic\("arena"\)/.test(mainSrc), "main.js routes #arena to the Arena theme");
+ok(/eventCtx \? "event"/.test(mainSrc), "main.js routes the event gauntlet to the event theme");
 ok(/MAX_STEPS_PER_TICK\s*=\s*4/.test(soundSrc), "the T33 per-tick voice cap is unchanged");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SOUND CHECKS PASSED" : fails + "/" + checks + " FAILED"));

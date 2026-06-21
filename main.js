@@ -174,7 +174,7 @@
     screens[name].classList.add("active");
     // music follows the screen: the topic's style in-game, the menu style elsewhere
     if(window.Sound && window.Sound.setMusic){
-      if(name === "game") window.Sound.setMusic(typeof mode.music === "number" ? mode.music : mode.id);
+      if(name === "game") window.Sound.setMusic(eventCtx ? "event" : (typeof mode.music === "number" ? mode.music : mode.id));
       else if(name === "arena") window.Sound.setMusic("arena");   // T71: dedicated Arena theme
       else window.Sound.setMusic("menu");
     }
@@ -462,7 +462,7 @@
       const cells = b ? '<span class="sc">'+b.score+'/'+(b.total||"?")+'</span><span class="tm">'+fmt(b.time)+'s</span>'
                       : '<span class="sc">—</span><span class="tm">—</span>';
       if(isRetryable(e.id)){
-        return '<div class="sum-row event played" data-event="'+esc(e.id)+'" style="background:var(--amber)1f">'+
+        return '<div class="sum-row event played" data-event="'+esc(e.id)+'" style="background:var(--amber-weak)">'+
           '<span class="md">'+esc(e.name)+
             '<span class="holder"><i class="rankdot" style="background:var(--amber)"></i>'+
             '<span style="color:var(--amber)">Live today</span></span></span>'+
@@ -1373,6 +1373,49 @@
       ? '🗓 <b>' + m.count + '</b> ' + esc(MOMENTUM_LABEL) + (m.count >= MOMENTUM_MAX ? ' · maxed' : '')
       : '';
   }
+  // ---- T81: prominent home-screen event banner -----------------------------
+  // Front-and-centre on the start screen: today's live event with its procedural
+  // emblem art, name/blurb, a Play CTA that routes straight into the gauntlet, and
+  // a live countdown to the 00:00 UTC rollover. Stays visible once the reward is
+  // earned (reads "reward earned · play again"), never nagging.
+  let bannerDay = null;
+  function renderEventBanner(){
+    const el = $("eventBanner"); if(!el) return;
+    const Ev = window.Events, ev = (Ev && Ev.today) ? Ev.today() : null;
+    bannerDay = (Ev && Ev.epochDaysUTC) ? Ev.epochDaysUTC(Date.now()) : null;
+    if(!ev){ el.classList.add("hidden"); el.innerHTML = ""; return; }
+    const owned = !!loadCollected()["event:" + ev.id];
+    el.classList.remove("hidden");
+    el.innerHTML =
+      '<canvas class="pix eb-art" width="120" height="80"></canvas>'+
+      '<div class="eb-body">'+
+        '<span class="eb-tag">Today’s event'+(owned ? ' · reward earned' : '')+'</span>'+
+        '<span class="eb-name">'+esc(ev.name)+'</span>'+
+        '<span class="eb-blurb">'+esc(ev.blurb)+'</span>'+
+        '<div class="eb-row"><button class="btn eb-play" data-event="'+esc(ev.id)+'">'+(owned ? 'Play again' : 'Play now')+'</button>'+
+          '<span class="eb-count" id="ebCount"></span></div>'+
+      '</div>';
+    const cv = el.querySelector(".eb-art");
+    if(cv && window.EventArt) window.EventArt.draw(cv, ev.artSeed);
+    updateEventCountdown();
+  }
+  function updateEventCountdown(){
+    const el = $("ebCount"), Ev = window.Events; if(!el || !Ev || !Ev.epochDaysUTC) return;
+    const now = Date.now(), next = (Ev.epochDaysUTC(now) + 1) * Ev.DAY_MS;
+    let s = Math.max(0, Math.floor((next - now) / 1000));
+    const hh = Math.floor(s/3600); s %= 3600;
+    const pad = n => String(n).padStart(2, "0");
+    el.textContent = "New event in " + pad(hh) + ":" + pad(Math.floor(s/60)) + ":" + pad(s%60);
+  }
+  // 1s tick — only while the home screen is visible. Refreshes the countdown and,
+  // if the UTC day has rolled over while watching, re-renders for the new event.
+  function tickEventBanner(){
+    if(!screens.start.classList.contains("active")) return;
+    const Ev = window.Events; if(!Ev || !Ev.epochDaysUTC) return;
+    if(Ev.epochDaysUTC(Date.now()) !== bannerDay) renderEventBanner();
+    else updateEventCountdown();
+  }
+
   function momentumToast(state){
     enqueueToast(() => {
       const t = document.createElement("div");
@@ -1440,7 +1483,7 @@
       else { location.hash = "#/heroes"; return; }   // unknown/locked → back to the list
     }
     else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
-    else { renderTabs(); renderBest(); renderStartState(); renderGold(); renderMomentum(); show("start"); }
+    else { renderTabs(); renderBest(); renderStartState(); renderGold(); renderMomentum(); renderEventBanner(); show("start"); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
@@ -1461,6 +1504,11 @@
     const m = byId(row.dataset.mode); if(!m || !isUnlocked(m)) return;
     selectMode(m.id);
     start();
+  });
+
+  // Home-screen event banner: the Play CTA routes straight into today's gauntlet.
+  $("eventBanner").addEventListener("click", e => {
+    const b = e.target.closest(".eb-play"); if(b) startEvent(b.dataset.event);
   });
 
   $("invBtn").addEventListener("click", () => { location.hash = "#/inventory"; });
@@ -1627,6 +1675,8 @@
   renderBuild();
   renderGold();
   renderMomentum();
+  renderEventBanner();                  // T81: today's event front-and-centre
+  setInterval(tickEventBanner, 1000);   // live UTC countdown (only ticks on home)
   applySoundPref();   // honour the saved mute pref on load (no-op until T16)
   // Goblin Gold module API (also used by the Node tests).
   window.Gold = { label: GOLD_LABEL, fmtGold: fmtGold, mult: goldMult,

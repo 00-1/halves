@@ -2798,3 +2798,48 @@ how I verified:
 notes / questions: events still pay no Gold and don't touch the per-topic boards.
   Next per REVIEW order: **T81** (per-event procedural art + copy + event music + the
   prominent front-and-centre home banner with a UTC countdown).
+
+## T81 — Event presentation: art + copy + event music + home banner  [HANDOFF]
+commit: (this commit, on main) — completes the Phase 6.5 Events block (T78–T81)
+Goal: make events FEEL special — bespoke per-event procedural art, real copy, a
+dedicated event music theme, and a prominent front-and-centre home-screen banner;
+plus the required T80 carry-over CSS fixup.
+changed:
+  - **eventart.js (NEW, loaded after scenery.js) / window.EventArt** — a standalone,
+    pure, deterministic emblem generator (its OWN visual language — a seeded heraldic
+    crest on a themed sky, NOT a reskin of glyphs/monsters/scenery). `buildGrid(seed)`
+    (24×16 hex grid) + static `draw(canvas, seed)` (pixelated, no RAF). Palette
+    (HSL→hex), crest size, mirror-symmetric rune and sparks all derive from one
+    seeded RNG → **100% pairwise-distinct** across the 14 `artSeed`s.
+  - **sound.js** — new **"Festival Day"** event theme (style 17, `EVENT_STYLE`),
+    LYD/92 BPM, calm (density 0.30) — within the T69/T71 envelope; `styleIndexFor("event")`
+    + `EVENT_STYLE` exported. **main.js** `show()` plays it during the gauntlet
+    (`eventCtx ? "event" : …`).
+  - **main.js** — **`renderEventBanner()`**: a prominent banner on the **#start home
+    screen** (above the picker, not in a tab/menu) with the event's **emblem art**,
+    **name + blurb**, a **Play CTA** that routes straight into the live gauntlet
+    (`startEvent`), and a **live countdown to 00:00 UTC** (`updateEventCountdown`).
+    Owned-today reads "reward earned · Play again" (visible, not nagging). A 1s
+    `tickEventBanner` updates the countdown **only while home is visible** and
+    re-renders on a UTC-day rollover. Rendered on init + every nav back to home.
+  - **styles.css** — `.event-banner` + `.eb-*` (AA, 360px-safe, line-clamped blurb);
+    **`--amber-weak: rgba(245,181,68,.12)`** added and the **T80 fixup** applied — the
+    live best-attempt row now uses `background:var(--amber-weak)` (the old
+    `var(--amber)1f` was invalid and dropped).
+how I verified:
+  - **Extended `test/events.test.js`** → **ALL 77 PASS** (+15 for T81): emblems
+    **≥90% pairwise-distinct** (100%) + deterministic + static; **no `var(--amber)1f`
+    remains** and a valid `--amber-weak` is used; a dedicated `"event"` sound theme
+    exists; the **banner is a top-level #start element** (regex: `#start … #eventBanner
+    … picker-wrap`) carrying art + copy + a Play CTA with the live `data-event` + the
+    UTC-rollover countdown, and **routes into `startEvent`**; **no Arena event-gate UI**.
+  - **`sound.test.js`** extended: the event theme exists, is **distinct from menu/arena**,
+    is **calm (bpm ≤ 95, density ≤ 0.4)**, and main routes the gauntlet to it.
+  - Booted the app: the **home banner renders** with art/name/blurb/Play/countdown
+    ("New event in HH:MM:SS"); **clicking Play starts the gauntlet**; event theme is
+    "Festival Day" (92 BPM). `node -c` clean (eventart/sound/main); **full 20-gate
+    suite green**; no regressions.
+notes / questions: kept this as the single Events gate (extended events.test.js +
+  sound.test.js) rather than adding a 21st gate file. **Phase 6.5 Events is complete
+  (T78–T81).** Next per REVIEW order: **T82** (visual-direction deep research, Phase
+  6.7 — doc-only), then content extension T58 → Wave-2 batches.

@@ -17,8 +17,8 @@ let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
 global.window = {};
-["modes.js","events.js","collectibles.js"].forEach(f => new Function(read(f))());
-const Ev = global.window.Events, C = global.window.Collectibles, MODES = global.window.MODES;
+["modes.js","events.js","collectibles.js","eventart.js"].forEach(f => new Function(read(f))());
+const Ev = global.window.Events, C = global.window.Collectibles, MODES = global.window.MODES, EA = global.window.EventArt;
 const DAY = 86400000, L = Ev.ROSTER.length;
 
 // roster shape
@@ -310,6 +310,44 @@ ok(Ev.buildGauntlet("not-an-event", MODES).length === 0, "buildGauntlet of an un
      "off its day our event is locked (a different one is the day's live event)");
   Date.now = realDateNow;
 })();
+
+// ============ T81 — presentation: art + copy + music + home banner ==========
+// (j) per-event procedural emblem art — distinct across all 14, deterministic, static.
+function serArt(g){ return g.map(r => r.join("")).join("|"); }
+const artGrids = Ev.ROSTER.map(e => serArt(EA.buildGrid(e.artSeed)));
+let artDistinct = 0, artPairs = 0;
+for(let i=0;i<artGrids.length;i++) for(let j=i+1;j<artGrids.length;j++){ artPairs++; if(artGrids[i] !== artGrids[j]) artDistinct++; }
+ok(artDistinct / artPairs >= 0.9, "event emblems are ≥90% pairwise distinct (" + artDistinct + "/" + artPairs + ")");
+ok(Ev.ROSTER.every(e => serArt(EA.buildGrid(e.artSeed)) === serArt(EA.buildGrid(e.artSeed))), "event emblem art is deterministic per artSeed");
+const dim = EA.buildGrid(1);
+ok(dim.length === EA.ROWS && dim[0].length === EA.COLS, "emblem grid has the declared dimensions");
+ok(/^#[0-9a-f]{6}$/i.test(dim[0][0]), "emblem cells are hex colours");
+const artSrc = read("eventart.js");
+ok(!/requestAnimationFrame|setInterval|setTimeout/.test(artSrc), "eventart.js is static (no RAF/timers)");
+
+// (k) the carry-over T80 fixup — no invalid var(--amber)1f remains; a valid weak amber exists.
+const css = read("styles.css"), main2 = read("main.js");
+ok(!/var\(--amber\)1f/.test(main2) && !/var\(--amber\)1f/.test(css), "the invalid 'var(--amber)1f' tint is gone (T80 fixup)");
+ok(/--amber-weak\s*:\s*rgba\(/.test(css) && /var\(--amber-weak\)/.test(main2), "the live row uses a valid low-alpha --amber-weak");
+
+// (l) event music theme — calm + in the volume envelope, distinct key.
+const sound = read("sound.js");
+ok(/EVENT_STYLE/.test(sound) && /"event"/.test(sound), "sound.js defines a dedicated event theme + 'event' key");
+
+// (m) the prominent home banner is a TOP-LEVEL #start element (not inside a tab/menu),
+//     carries art + copy + a Play CTA that routes into the live event + a UTC countdown.
+const html2 = read("index.html");
+ok(/<section id="start"[\s\S]*?id="eventBanner"[\s\S]*?class="picker-wrap"/.test(html2),
+   "the event banner is on the home (#start) screen, above the picker — not in a tab/menu");
+ok(/<script src="eventart\.js">/.test(html2), "index.html loads eventart.js");
+ok(/function renderEventBanner/.test(main2) && /eb-play/.test(main2) && /data-event="/.test(main2),
+   "renderEventBanner builds the banner with a Play CTA carrying the live event id");
+ok(/EventArt\.draw\(cv/.test(main2), "the banner draws the event's procedural emblem");
+ok(/function updateEventCountdown/.test(main2) && /epochDaysUTC\(now\) \+ 1\) \* Ev\.DAY_MS/.test(main2),
+   "the banner shows a countdown to the 00:00 UTC rollover");
+ok(/\.eb-play/.test(main2) && /startEvent\(b\.dataset\.event\)/.test(main2), "tapping the banner Play CTA routes into startEvent");
+// no Arena event-gate explanatory UI crept in (owner: explicitly unwanted)
+ok(!/next event in|needs? an event|event-gate/i.test(main2), "no Arena event-gate explanation UI was added");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " EVENT CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
