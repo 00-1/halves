@@ -1,6 +1,27 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T110` [A] (FX wiring pass 1 — the engine is now VISIBLE) · live build
+**Current verdict:** `APPROVED — T111` [A] (complete the pixel restyle on EVERY screen + nav tidy) ·
+live build **`4843824`**. **CI green.** Finishes the T100 restyle properly — a **full sweep**, not just
+the 3 flagged screens: the `[data-ui="pixel"]` block now also covers hero-detail (`.hd-head`/`.hd-port`/
+`.hero-stat`/`.hd-boost`/`.hero-chip`), results (`.slow-item` + `.rankline canvas`), and a wide swath
+of the rest (`.inv-tab`/`.inv-cell`/`.mode-row`/`.tp-row`/`.map-row`/`.arena-map-btn`/`.ar-port`/
+`.ar-enemy`/`.ah-port`/`.u-cell canvas`/`.toast`/`.pq-tile`/`.set-danger`/`.practice-hint-toggle`/
+`.jump-top` …) — squared + hard-framed, **all gated on `[data-ui="pixel"]`** (classic byte-for-byte
+unchanged), clean-text kept. **Nav tidy:** label **Settings → `Setup`** (long label gone — asserted),
+and `.navbtn min-width 44→60px` so the 7 buttons wrap **balanced (5+2 / 4+3), never the orphaned
+6+1** (test pins min-width ≥58 → "never 6+1", so the lone Exit is fixed). Verified **independently**:
+**full 30-gate suite green** incl. **`contrast.test.js` AA still green** (the sweep didn't drag any
+text contrast) and **`ui-restyle.test.js` now 40 checks** (the new selectors are gated + the nav
+label/layout). All **[A]-owned files**. T111 → DONE. *(Owner: the hero-detail, results, inventory,
+arena, toasts should all read squared now, and the nav is one tidy block with no lone Exit.)*
+
+> **Next: `T112` — FX pass 2 (owner's live-T110 feedback):** full-bleed the backdrop (fill the
+> screen), wire the **Arena** backdrop (T108, no need to wait for the 3v3 UI), **celebrate WINS** (not
+> just collectible gains), and reduce the wasted margins. Re-pointed below.
+
+---
+
+**Previously approved (done):** `T110` [A] (FX wiring pass 1 — the engine is now VISIBLE) · live build
 **`349fcf7`**. **CI green.** 🎉 **First integration of Builder-B's FX engine into the live app** — and
 it consumes B's API only (`fxgl.js` **not** edited). Mounts two guarded controllers (no-op if FXGL
 absent): a home **backdrop** (`#fxBackdrop`, inside `#start`, `z-index:-1` under an `isolation:isolate`
@@ -564,16 +585,18 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T111`** [A] (**`T110` DONE — FX wiring shipped; `T107`/`T100`/`T104`/`T99`
-  DONE**). **`T111` — owner-flagged UI polish (the owner is looking at it now).**
-  (a) **COMPLETE the T100 pixel restyle across ALL screens** — T100 only covered a subset, so several
-  screens still show rounded boxes: **hero-detail** (`.hd-head`/`.hd-port`/`.hero-stat`/`.hb-row`),
-  **results** (`.slow-item` rows + `.rankline canvas` badge), then **sweep** summary/inventory/arena/
-  practice/settings/modal for any other rounded chrome — do NOT just patch the named screens (3
-  screenshots so far; catch the rest in one pass). All gated on `[data-ui="pixel"]` (classic
-  unchanged), clean-text. (b) **Nav tidy** — rename **Settings → `Setup`** (shorter; owner's pick
-  overrides) and lay the 7 nav buttons so the **Exit/Screen button is no longer orphaned** (one row if
-  they fit at 360px, else a balanced 4+3). Full DoD in BACKLOG `T111`. **Then →
+- **Builder A — next: `T112`** [A] (**`T111` DONE — pixel restyle swept every screen + nav tidied;
+  `T110`/`T107`/`T100`/`T104`/`T99` DONE**). **`T112` — FX pass 2 (owner's live-T110 feedback): "fx
+  look good, but I only see them on this page. nothing on arena, no celebrations. and the fx don't
+  expand the full height and width — shows where we're wasting space."** Four parts: (a) **full-bleed
+  the home backdrop** so the FX fills the whole viewport (a `position:fixed; inset:0` layer behind
+  `.app`, shown on home, stopped off-home) — kills the dead FX margins; (b) **reduce wasted space** —
+  let the home fill the screen (relax the `.app max-height:780px` cap on phones, trim the side dead
+  band; coordinate with T106's bottom-slack); (c) **Arena backdrop now** — wire T108
+  `deriveArenaScene` from the **current live region/tier/boss** onto `#arena` (full-bleed, start on
+  Arena, stop off it) — no need to wait for the 3v3 UI; (d) **celebrate WINS** — broaden the burst to
+  a **rank-scaled results-screen burst** + an **Arena-victory** burst, in addition to the reward-gain
+  bursts (tasteful, gated on a decent rank/win, never over text). Full DoD in BACKLOG `T112`. **Then →
   `T106`** (tech-tree v2 — full width + clearer connectors + absorb the bottom slack) → shipping/perf
   block `T101` (Start→fullscreen delay) → `T102` (Android PWA+TWA parity) → `T103` (Android-inclusive
   perf research) → `T89`/`T90` (rest of Arena 3v3) → **Arena-biome FX wiring** (`setArenaState`/

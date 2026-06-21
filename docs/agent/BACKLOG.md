@@ -1865,7 +1865,47 @@ per SFX voice). **Raise it to clearly audible.**
   (Babysitter: recompute the worst-case voice sum × VOL ≤ 1.0 and confirm the new VOL is much
   higher than 0.30.)
 
-### T111 — [A] UI polish: COMPLETE the T100 pixel restyle (every screen) + tidy the nav · status: OPEN
+### T112 — [A] FX pass 2: full-bleed backdrop + Arena backdrop + celebrate wins + fill the screen · status: OPEN
+Owner (screenshot of the live T110 home): "fx look good, but I only see them on this page. nothing on
+arena, no celebrations. and the fx don't expand the full height and width of this page — shows where
+we're wasting space." Three follow-ups to T110, all in the spirit of "put it everywhere."
+- **Full-bleed the FX backdrop (fill the whole screen).** Today `#fxBackdrop` lives inside `#start`,
+  which is clipped to the **padded, capped `.app` box** (`max-width:420` / `max-height:780` + body
+  `16px` padding), so the backdrop exposes dead margins (top/sides/bottom). Make the home backdrop a
+  **full-viewport** layer — e.g. a `position:fixed; inset:0` canvas behind `.app` (z-index below the
+  app content), shown on the home screen, **stopped/idle off-home** — so the atmosphere reaches every
+  edge. Keep it dim + `pointer-events:none` + `aria-hidden`; keep readability (AA).
+- **Reduce the wasted space (fill height + width).** The owner keeps hitting dead margins (T99 top
+  band, the bottom slack, now sides). On phones, let the home **fill the viewport**: drop/relax the
+  `.app max-height:780px` cap at phone heights so the column fills vertically (coordinate with T106
+  which absorbs the bottom slack into the tree), and trim the side dead-band (e.g. body horizontal
+  padding 16→8, or let the backdrop bleed past it while content keeps a readable width). **Don't** make
+  body text full-bleed/edge-to-edge where it hurts legibility; the goal is "no obvious wasted band,"
+  not stretched text. 360px-safe; keep the top pinned (no T99 regression).
+- **Arena backdrop (wire T108 now — no need to wait for the 3v3 UI).** The existing Arena screen
+  (`#arena`, region/tier via T66/T68) gets a **full-bleed `deriveArenaScene` backdrop**: derive
+  `{region, tier, bossProximity/facingBoss, mood}` from the **current live Arena position** (the region
+  index + tier the player is on; `facingBoss`/proximity from the wayfinding state), mount a backdrop
+  canvas on `#arena` behind its DOM, **start on the Arena screen, stop off it**. Region = sense of
+  place; nearer a boss = hotter/denser (T108 already does this). Reduced-motion → static still.
+- **Celebrate WINS, not just collectible gains.** T110 only bursts via `showUnlocks` (a new
+  collectible/loot/event reward) — so a normal good round, or a win that drops no loot, shows nothing
+  (the owner "no celebrations"). **Broaden the burst to real win moments:** on the **results screen**
+  scale a burst to the **rank earned** (a bigger/warmer burst for a higher rank; little/none for a poor
+  run) and on an **Arena victory** (`finishBattle` win) — in ADDITION to the existing reward-gain
+  bursts. Keep it tasteful (don't fire on every trivial finish — gate on a decent rank / a win), capped,
+  reduced-motion-safe, **never covering the question/result text**, respecting the toast queue.
+- **DoD:** the home backdrop visibly **fills the screen edge-to-edge** (no dead FX margins) and still
+  idles off-home; the home **no longer shows an obvious wasted band** (top/sides/bottom) on the Poco-X3
+  viewport; the **Arena screen shows a region/tier-driven backdrop** (changes by region; intensifies
+  near a boss) that idles off-Arena; a **celebration burst fires on a real win** (good-rank round finish
+  AND Arena victory), reduced-motion-safe, never over key text; reading stays AA (contrast gate green);
+  360px-safe; `node -c` clean; all gates green (extend `fx-wiring.test.js` to cover the Arena-backdrop
+  start/stop, the full-bleed layer, and the win-burst path reading real rank/win state). (Babysitter:
+  on the live build confirm the FX fills the screen, the Arena has its own backdrop, and winning a round
+  pops a celebration — and that nothing animates off-screen.)
+
+### T111 — [A] UI polish: COMPLETE the T100 pixel restyle (every screen) + tidy the nav · status: DONE (`4843824`)
 Owner (3 screenshots, and counting): T100 shipped the `[data-ui="pixel"]` restyle but only covered a
 **subset** of selectors, so several screens still show rounded "web-2.0" boxes. **Do a full sweep — do
 NOT just patch the two/three screens named here.** Grep EVERY screen's render + `styles.css` for any
