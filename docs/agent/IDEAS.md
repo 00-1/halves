@@ -29,13 +29,25 @@ must be **computed deterministically from the date** (a baked-in rotating calend
 the device's local day). We already have a local-day signal (the T31 momentum
 day-counter / `localDay`) to reuse. "Today-only" therefore keys off the device clock.
 
+**Owner decisions (2026-06-21):**
+- **Rewards are REAL buffs** (not cosmetic) — they carry hero boosts and feed Arena
+  power, same as drill/loot collectibles.
+- **A new dedicated tab** for event rewards (alongside Topics / Awards / Loot in the
+  inventory), and they likely form their own **collectible category** ("Events").
+
+**Design implication that MUST be handled (because buffs are time-limited):**
+- Event buffs are **missable** (you might not have played an event yet), so the Arena
+  **def-calibration must NOT gate any tier behind event-only buffs** — otherwise a
+  player who skipped an event is *blocked* from clearing the Arena until it recurs. Keep
+  the **"near-full collection clears tier 120" bar on the non-event drill+loot set**;
+  event buffs are **bonus headroom on top** (they make tiers easier, never required).
+  i.e. exclude the Events category from the `bestRating`/`bestAdvRating` envelope that
+  sets the def cap (or ensure the cap is computed without them). Events recur on the
+  cycle, so they're obtainable over time — but progression must never *require* them.
+- This preserves every existing Arena invariant (T23/T43/T47/T66) while still making
+  event buffs genuinely valuable.
+
 **Open questions to resolve before queuing (don't decide now):**
-- **Reward exclusivity vs. the collection.** Do event rewards count toward the
-  Collector ladder / carry hero **buffs** (and thus feed Arena power)? If yes, missing
-  an event temporarily gates power until it recurs — need to keep the "no tier gated
-  behind unobtainable loot" invariant intact. If no (cosmetic-only event rewards),
-  simpler and safer. → likely **cosmetic / separate "Events" collectible category** so
-  it never breaks Arena buff-gating.
 - **Rotation schedule.** A fixed ordered list of N events cycling every 2 weeks,
   indexed by `floor(daysSinceEpoch / 14) % N`? Deterministic, offline-safe, recurs.
 - **Surfacing.** A home-screen **"Event live!" banner / entry** with a countdown
