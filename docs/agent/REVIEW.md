@@ -1,7 +1,12 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T120 #1+#2` [B] (`synth.js` engine — core + space) · live builds
-**`deb2e07`** (core) + **`b5e9900`** (space). **CI green; collision-clean** (only `synth.js`,
+**Current verdict:** `APPROVED — T120 #1+#2+#3` [B] (`synth.js` engine — core + space + harmony) · live
+builds `deb2e07` (core) + `b5e9900` (space) + **`04756b8`** (harmony). **#3 harmony:** `MODES` are
+musically correct (`lydian` ♯4, `phrygian` ♭2, `dorian` ♮6 vs `minor` ♭6), **grouped by mood**
+(bright/calm/dark for context selection); octave-aware `degToMidi`, diatonic `chordMidi` triads, chord
+**progressions** with **voice-leading** (nearest-tone) + **bass-follows-root**. `synth.test` now **72**;
+CI green; collision-clean. *(B continues → #4 rhythm/variation → #5 contexts.)* **Earlier (#1+#2)** below.
+**CI green; collision-clean** (only `synth.js`,
 `test/synth.test.js`, `BUILDER-LOG-FX.md` — no existing file touched). This is the **real principled
 engine** from the T119 research, running ahead per owner ("keep pushing B"). **#1 core:** a proper
 **`adsr()`** (cancel → ramp → release-end), a data-driven **patch table** (6 patches with
