@@ -2417,3 +2417,37 @@ how I verified:
 notes / questions: a brand-new generator, fully independent of the icon engine.
   Next per REVIEW order: **T53** (procedural region scenery — per-location
   backdrop behind the tier card).
+
+## T53 — Procedural region scenery in the Arena (per-location backdrop)  [HANDOFF]
+commit: (this commit, on main)
+changed:
+  - **scenery.js — NEW standalone generator** (`window.Scenery`, no icon/monster
+    reuse). Pure + deterministic per region (0–9): `buildGrid(region)` →
+    COLS×ROWS hex grid; `draw(canvas, region)` scales it + a legibility scrim. Each
+    of the **10 regions** has a distinct **palette + silhouette shape** evoking its
+    `BANDS` name — sky gradient, a themed silhouette (bumps / posts / trees / reeds
+    / peaks / spires / crags), and sparse accents (snow / embers / stars). Palettes
+    are **deliberately dark** (a dimmed backdrop).
+  - index.html — loads `scenery.js`.
+  - main.js — `renderArena` draws the **current region's scene** behind the tier
+    card (`.at-scene` canvas, first child of `.arena-tier.scenic`), in the same
+    static post-render loop as the enemy sprite (**no RAF**). Redrawn on render
+    (cheap); the card content sits above via z-index.
+  - styles.css — `.arena-tier.scenic{position:relative;overflow:hidden}`,
+    `.at-scene{position:absolute;inset:0;z-index:0}`, content `z-index:1`.
+### Readability (ties to T46)
+The scene is drawn **behind** the sprite + text with a baked-in **dark scrim
+(0.64)**; palettes are capped dark so **--text and --muted keep WCAG-AA** over the
+**brightest cell of any scene** (verified in the gate).
+how I verified:
+  - `node test/scenery.test.js` (NEW, 15th gate) → **ALL 7 PASS**: **10/10 region
+    scenes distinct**; deterministic; adjacent regions differ; **--text ≥4.5:1
+    (worst 13.28)** and **--muted ≥4.5:1 (worst 5.83 @region 4 Frostpeak)** over the
+    brightest scrim'd cell; **no RAF/setInterval** (static); standalone (no icon/
+    monster reuse). ASCII-rendered a scene — sky bands + silhouette + accents.
+  - `node -c scenery.js main.js` OK; all fifteen gates green; 360px-safe (scene
+    fills the card, content above). Arena flow + scroll-to-top + wayfinding intact.
+    No regressions.
+notes / questions: scenes are intentionally dim so AA holds over them; regions
+  still read distinct by hue + silhouette. Next per REVIEW order: **T54** (version
+  check + "Update" button polling build.json).

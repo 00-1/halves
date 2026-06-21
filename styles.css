@@ -361,6 +361,9 @@ canvas.pix{image-rendering:pixelated}
 #arena{align-items:center;padding:28px 10px 32px}
 .arena-body{margin-top:14px;width:100%;max-width:380px;text-align:left;flex:1 1 auto;min-height:0;overflow-y:auto}
 .arena-tier{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.arena-tier.scenic{position:relative;overflow:hidden}
+.at-scene{position:absolute;inset:0;width:100%;height:100%;z-index:0;image-rendering:pixelated;border-radius:13px}
+.arena-tier.scenic > *:not(.at-scene){position:relative;z-index:1}
 .at-enemy{image-rendering:pixelated;width:64px;height:64px;display:block;margin:0 auto 8px}
 .ar-port-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
 .ar-port-row .ar-port,.ar-enemy{image-rendering:pixelated;width:48px;height:48px;border-radius:8px;background:var(--surface-2);margin:0}

@@ -812,7 +812,8 @@
         const cl = col["tier:" + at] ? "done" : (at === tier.n ? "cur" : "");
         return '<span class="at-pip '+(isB ? "boss " : "")+cl+'" title="Tier '+at+'"></span>';
       }).join("");
-      html += '<div class="arena-tier t-'+tier.type.toLowerCase()+'">'+
+      html += '<div class="arena-tier scenic t-'+tier.type.toLowerCase()+'">'+
+        '<canvas class="pix at-scene" width="140" height="56" data-region="'+reg+'"></canvas>'+
         '<canvas class="pix at-enemy" width="64" height="64" data-tier="'+tier.n+'" data-tname="'+esc(tier.name)+'" data-ttype="'+esc(tier.type)+'"></canvas>'+
         '<div class="at-region">'+esc(E.regionLabel(reg))+' · region '+(reg+1)+'/'+REGIONS+' · tier '+posInReg+'/'+RS+'</div>'+
         '<div class="at-pips">'+pips+'</div>'+
@@ -850,6 +851,8 @@
     if(window.Monsters) $("arenaBody").querySelectorAll(".at-enemy, .ar-enemy").forEach(cv => {
       window.Monsters.draw(cv, { n: +cv.dataset.tier, name: cv.dataset.tname, type: cv.dataset.ttype });
     });
+    // region scenery (T53) — drawn once behind the tier card (static, no RAF)
+    if(window.Scenery){ const sc = $("arenaBody").querySelector(".at-scene"); if(sc) window.Scenery.draw(sc, +sc.dataset.region); }
     $("arenaFight").disabled = cleared || !arenaHero || !heroes.length;
     $("arenaFight").textContent = cleared ? "Cleared" : (arenaHero ? "Fight!" : "Pick a hero");
   }

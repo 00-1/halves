@@ -52,6 +52,8 @@ jobs:
         run: node test/wayfinding.test.js
       - name: Enemy sprite variation test (gate)
         run: node test/monster-variation.test.js
+      - name: Region scenery test (gate)
+        run: node test/scenery.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info
