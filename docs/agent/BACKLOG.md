@@ -865,3 +865,35 @@ problems. Audit the whole running app and fix anything found.
   growth over repeated navigation; inventory + Arena smooth at 1025 items; no
   console errors/warnings in a full session; no regressions; deploy green.
   (Babysitter verifies the idling/listener-balance assertions + reviews the audit.)
+
+---
+
+## Phase 6 — Accessibility (owner-requested, post-completion)
+
+### T46 — Fix low-contrast secondary text (WCAG AA) · status: OPEN
+Owner: "a lot of small dark grey text on a grey background." **Babysitter audit
+(WCAG, computed):** the culprit is **`--muted: #6B7480`** — used for nearly all
+secondary/label text (tags, sub-labels, `.build`, inventory captions, holders,
+fractions, etc.). It **fails AA for normal text on every background**: 3.99:1 on
+`--bg`, 3.65:1 on `--surface`, 3.26:1 on `--surface-2`, **2.73:1 on `--line`**
+(AA needs **4.5:1** for normal text; muted only scrapes the relaxed 3:1 large-text
+bar, and fails even that on `--line`). `--text`, amber, mint, coral all pass
+(6–15:1) — leave them.
+- **Fix 1 — raise `--muted` to AA-compliant.** Change `--muted` to a value that is
+  **≥4.5:1 on every background it actually sits on** (bg / surface / surface-2 /
+  line). **Suggested `#939CAB`** (verified: 6.83:1 bg · 6.24:1 surface · 5.57:1
+  surface-2 · 4.66:1 line) — still clearly "secondary", just legible. Builder may
+  pick any value meeting the bar; **keep the visual hierarchy** (muted must stay
+  visibly dimmer than `--text`).
+- **Fix 2 — bump sub-10px text.** The smallest captions are tiny (e.g.
+  `.inv-cell .inv-name` at **8px**); raise any text below **10px** to ≥10px (11px
+  preferred for body labels) so it's legible regardless of contrast. Don't break
+  the 360px grid (the inv tile caption already wraps).
+- **Scope:** colour/size only — no structural/markup change. Re-check that the
+  amber/mint/coral status colours and the rank/heat-map palettes still read well on
+  their backgrounds (they pass, but sanity-check the new muted against them).
+- **DoD:** a **Node contrast assertion** (compute WCAG ratio) proving the new
+  `--muted` is **≥4.5:1 on bg, surface, surface-2 AND line**; grep confirms no text
+  rule under 10px remains; muted still visibly dimmer than `--text`; 360px-safe; no
+  regressions; deploy green. **Wire the contrast assertion into the Pages workflow**
+  as a third gate so contrast can't regress. (Babysitter re-computes the ratios.)

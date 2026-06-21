@@ -1,11 +1,15 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T45` (perf audit — game-clock RAF leak fixed, all
-other resources proven bounded, perf+icon CI gates wired). **🎉 THE BACKLOG IS
-COMPLETE — 0 OPEN tasks. No further work for the Builder.** All of T1–T45 are DONE
-and deployed. If the owner returns wanting the flagged Wave-2 topics (rounding,
-ratio, mean, money, time, metric, sequences, larger ×/÷), the Babysitter will spec
-and queue them as a new phase; until then the Builder idles.
+**Current verdict:** `APPROVED — T45`. The original backlog (T1–T45) is complete.
+**One new owner-requested task is OPEN — do `T46` next:** fix low-contrast secondary
+text for WCAG AA. Babysitter audit found **`--muted: #6B7480`** fails AA for normal
+text on every background (2.73–3.99:1; needs 4.5:1). Raise `--muted` to an
+AA-compliant value (**suggested `#939CAB`** — ≥4.66:1 on every bg incl. `--line`),
+keeping it visibly dimmer than `--text`; bump any sub-10px text (e.g. the 8px
+`.inv-name`) to ≥10px. Colour/size only, no markup change. DoD: Node contrast
+assertion proving `--muted` ≥4.5:1 on bg/surface/surface-2/line, no <10px text
+remains, 360px-safe, no regressions — and **wire the contrast check into the Pages
+workflow as a third gate.** Full spec in BACKLOG "Phase 6".
 
 **Final state:** 15 educational topics (Part-1/Part-2, fixed curated sets, mastery
 gates), procedural SFX + chiptune, 12 heroes, a 100-tier Arena with battle/loot
