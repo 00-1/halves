@@ -492,6 +492,20 @@ the Heroes screen** — so they're consistent.
   Times + Heroes; doesn't overlap their headers/content at 360px; tapping it
   returns to the menu/prev screen as before; no regressions; deploy green.
 
+### T40 — Heroes cards: kill the AI-smell coloured left border · status: OPEN
+Owner: the Heroes cards have the **same rounded type-coloured `border-left:4px`**
+that T37 removed from Best Times (`.hero-card` was explicitly left out of T37).
+Apply the **identical fix**: remove the coloured rounded left strip (make the
+border uniform like `.sum-row` now is) and convey the **type** (Brawn/Arcane/
+Cunning) with the same **crisp pixel-square dot** treatment as the rank dot —
+type-coloured square near the hero name (reuse the `.rankdot` styling / a sibling
+class), keeping the exact type colours (`#d05a4a`/`#8a5cf6`/`#3fce8c`). Keep any
+subtle card tint. (Leave the item-chip pills as they are — the owner's only after
+the card's curved left border.)
+- **DoD:** no `border-left`/inline `border-left-color` remains on `.hero-card`;
+  type shown via a non-card-border square dot in the type colours; 360px-safe; no
+  regressions to the heroes layout; deploy green.
+
 ### T35 — Diverse item names + fix inventory truncation · status: BLOCKED (spec ready: DESIGN-names.md; after T23 + CSS polish)
 Owner: item names are too samey (today: **14 adjectives, ~36 nouns → only 167
 unique names for 775 items**; "Whispering" used 68×) and **get cut off on the

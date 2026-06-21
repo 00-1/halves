@@ -6,8 +6,10 @@ screen fits the viewport — `#start` a flex column bounded by viewport height, 
 **picker** the flexible scroll region (`flex:1 1 auto; min-height:0; overflow-y:
 auto`) so Start/links/build-info stay on-screen and the topic list scrolls, not the
 whole page; keep the ▾ cue working. Then **`T39`** (floating/always-visible Back on
-Inventory + Best Times + Heroes) → **`T35`** (diverse names + truncation) → **`T24`
-(Arena)** → **`T36`** (icons) → `T25`/`T26` → Phase 4. Specs in BACKLOG.
+Inventory + Best Times + Heroes) → **`T40`** (Heroes cards: remove the same AI-smell
+coloured left border, use the T37 pixel-square type dot) → **`T35`** (diverse names
++ truncation) → **`T24` (Arena)** → **`T36`** (icons) → `T25`/`T26` → Phase 4. Specs
+in BACKLOG.
 
 When you (Builder) hand off a task, I will replace this with one of:
 
