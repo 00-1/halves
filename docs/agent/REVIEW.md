@@ -1,6 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T86` (onboarding gating I) · live build **`0fe0608`**. **⚠️
+**Current verdict:** `APPROVED — T91` (BUGFIX: compact event banner) · live build **`303c072`**.
+Fixes the owner-reported home-layout break: `renderEventBanner()` is now a **compact strip** —
+84×54 emblem · tag+name+inline countdown · an **inline Play** button — with the **multi-line blurb
+dropped** from the home banner (still on the play screen). `.event-banner` is bounded
+(**`max-height:84px`**, ~280px→84px), `.picker-wrap` gains **`min-height:148px` (~3 rows)** so the
+banner can't starve it, margins tightened throughout, and `#eventBanner` **moved above `#mark`**
+(order: banner → mark/tag → toggle → picker) so the selected-topic mark isn't stranded. Keeps art
++ name + **Play→`startEvent`** + the **00:00-UTC countdown** (owned → "Reward earned"/"Again"); bumped
+`.eb-tag` to 10px (contrast gate). **T86's `applyGates`/gated `invBtn` still intact.** Verified:
+`node -c` clean; **full 24-gate suite green** incl. `events.test.js` +5 T91 checks (bounded height,
+no home blurb, picker min-height, banner-above-mark, Play+countdown preserved). T91 → DONE.
+*(Headless can't measure true pixel-fit; the CSS budget reclaims ~240px so `#start` should now fit
+one screen — **owner to confirm on-device** it no longer scrolls on their phone.)*
+
+**Previously approved (done):** `T86` (onboarding gating I) · live build **`0fe0608`**. **⚠️
 Built OUT OF ORDER** — `T91` (the priority banner-layout bugfix) was queued ahead of it but the
 Builder pulled `T86` (it pulled the queue before the T91 insert was visible). T86's *work* is
 sound, so approving it; **`T91` is still OPEN and is now firmly the next task.** The onboarding
@@ -236,14 +250,11 @@ to `.85`.)
 extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
-**Do `T91` next (PRIORITY BUGFIX — was skipped once; do it NOW).** The T81 event banner is too
-tall and breaks the home layout (page scrolls, picker starved to nothing, selected-topic mark
-stranded above it): make the banner a **compact strip** (keep it prominent + art/name/Play-CTA/
-UTC-countdown; drop/clamp the home-banner blurb, inline Play, bounded height), **fit `#start` to
-one screen** (360×640 & 390×844), keep the **picker ≥3 rows** (min-height), and **reorder the
-banner above the `#mark`**. **Note:** T86 already added `applyGates()` + a gated `invBtn` to the
-home screen — T91 must keep those working. **`T86` is DONE.** Then **`T87`** (wire the remaining
-gates: Practice/Heroes/Arena/Event-banner/Gold). Then **`T92`** (event reward tiers: keep an easy participation reward but add **skip-proof**
+**Do `T87` next** (onboarding gating II) — wire the remaining feature gates on the T86 engine,
+each revealed + highlighted at its milestone: **Practice** ← first full round · **Heroes** ←
+first loot/mastery · **Arena** ← a hero owned · **Event banner** ← a few topic runs in (owner's
+example) · **Gold/Momentum** ← first earned. Migration-safe (legacy = all unlocked); never trap;
+the event-banner gate must not break its live/countdown behaviour. Then **`T92`** (event reward tiers: keep an easy participation reward but add **skip-proof**
 "did well" + "extremely well" tiers — **sequenced before the Arena** so its re-calibration sees the
 full reward set). Then the **Arena 3v3 block** (Phase 6.10): **`T88`** (deterministic 1–3 vs 3
 battle model + enemy teams + re-calibration + invariant sim-proofs — the crux; design in IDEAS I5)

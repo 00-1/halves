@@ -1620,7 +1620,7 @@ to return to a genuine first-run state to test the T86/T87 onboarding gating.
   (Babysitter: confirm the wipe is total + first-run-true, the confirmation can't be fat-fingered,
   and cancel is safe.)
 
-### T91 — BUGFIX: the event banner breaks the home-screen layout (priority) · status: OPEN
+### T91 — BUGFIX: the event banner breaks the home-screen layout (priority) · status: DONE
 Owner-reported (screenshot): the T81 event banner is **far too tall** and breaks the `#start`
 layout. Three concrete symptoms: **(a)** the home page now **scrolls** (should fit one screen);
 **(b)** the topic **picker is starved to ~nothing** (the `picker-wrap`/`picker` is `flex:1 1
