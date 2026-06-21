@@ -2564,3 +2564,26 @@ notes / questions: bar = answer ≥ half (some skipping is fine, 100%-skip isn't
   Easy to soften ("a third"/"at least one") or tighten — change `INIT_ANSWER_FRAC`.
   Also pushed earlier (post-T54-verdict): `74ac75e` results screen keeps only
   "Back" (dropped "Play again") — direct owner request, awaiting Babysitter notice.
+
+## T73 — Replace the coloured left-border accents with a coloured square  [HANDOFF]
+commit: (this commit, on main)
+Owner: the "AI-smell" coloured **left-border-on-a-rounded-row** pattern crept back
+into two T67/T68 lists. Replaced with a small **sharp coloured square** swatch.
+changed:
+  - styles.css — removed `border-left-width:3px` + the `border-left-color` accents
+    from **`.hd-boost`** (hero-detail boost rows) and **`.map-row`** (journey-map
+    rows); both keep the uniform `1px solid var(--line)` border. Added **`.row-sq`**
+    — a 10×10 **sharp** (no border-radius) solid square — coloured by rarity
+    (`.hd-boost.r-* .row-sq`: uncommon/rare/epic/legendary) and by status
+    (`.map-row.done/.cur/.locked .row-sq`: mint/amber/muted). `.map-row.cur` keeps
+    its `--surface-2` background tint; `.locked` keeps `opacity:.7`.
+  - main.js — prepended `<i class="row-sq"></i>` to each `.hd-boost` and `.map-row`.
+how I verified:
+  - grep: **no `border-left` colour accent remains** on `.hd-boost`/`.map-row`; the
+    `row-sq` swatch is emitted in both lists (2 markup sites). `node -c` OK; **all
+    seventeen gates pass** (hero-detail + wayfinding + contrast green — the swatch is
+    a decorative square, no text-contrast impact; 360px-safe). No other restyle.
+notes / questions: same square pattern applied to both lists for consistency, per
+  spec. (Anti-recurrence noted for the T58 playbook: avoid colour-coded rounded
+  left-borders.) Next per REVIEW order: **T55** (extend the Collector ladder to
+  10,000), then **T56** (pixel mark/glyphs + favicon).

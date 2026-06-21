@@ -665,7 +665,7 @@
     $("hdStats").innerHTML = statChip("PWR",st.power)+statChip("GRD",st.guard)+statChip("SPD",st.speed)+statChip("FOC",st.focus);
     $("hdProg").textContent = owned.length + " / " + all.length + " boosts collected";
     $("hdList").innerHTML = owned.length
-      ? owned.map(it => '<div class="hd-boost r-'+it.rarity+'"><span class="hb-name">'+esc(it.flavour || it.name)+'</span>'+
+      ? owned.map(it => '<div class="hd-boost r-'+it.rarity+'"><i class="row-sq"></i><span class="hb-name">'+esc(it.flavour || it.name)+'</span>'+
           '<span class="hb-amt">+'+it.boost.amount+' '+(STAT_ABBR[it.boost.stat] || it.boost.stat)+'</span></div>').join("")
       : '<div class="hero-none">No boosts yet — collect items that boost '+esc(h.name)+'.</div>';
     $("hdList").scrollTop = 0;
@@ -797,7 +797,7 @@
         const isCur = !cleared && r === E.tierRegion(tier.n), conq = conquered(r);
         const st = conq ? "done" : isCur ? "cur" : "locked";
         const tag = conq ? "✓ conquered" : isCur ? "you are here" : "locked";
-        return '<div class="map-row '+st+'"><span class="map-name">'+esc(E.regionLabel(r))+'</span>'+
+        return '<div class="map-row '+st+'"><i class="row-sq"></i><span class="map-name">'+esc(E.regionLabel(r))+'</span>'+
           '<span class="map-boss">⚔ '+esc(bossNameOf(r))+'</span><span class="map-tag">'+tag+'</span></div>';
       }).join("")+'</div>';
     }

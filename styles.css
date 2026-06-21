@@ -351,11 +351,14 @@ canvas.pix{image-rendering:pixelated}
 .hd-list{margin-top:14px;width:100%;max-width:380px;text-align:left;flex:1 1 auto;min-height:0;overflow-y:auto;
   display:flex;flex-direction:column;gap:6px}
 .hd-boost{display:flex;align-items:center;justify-content:space-between;gap:10px;
-  background:var(--surface);border:1px solid var(--line);border-left-width:3px;border-radius:10px;padding:8px 12px}
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
 .hb-name{font-family:var(--mono);font-size:12px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* rarity/status shown by a small SHARP coloured square, not a curved left stripe (T73) */
+.row-sq{width:10px;height:10px;flex:0 0 auto;background:var(--line)}
+.hd-boost .hb-name{flex:1 1 auto}
 .hb-amt{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--amber);flex:0 0 auto}
-.hd-boost.r-uncommon{border-left-color:#3fce8c}.hd-boost.r-rare{border-left-color:#3f97d8}
-.hd-boost.r-epic{border-left-color:#9a5cf6}.hd-boost.r-legendary{border-left-color:#f0ad3c}
+.hd-boost.r-uncommon .row-sq{background:#3fce8c}.hd-boost.r-rare .row-sq{background:#3f97d8}
+.hd-boost.r-epic .row-sq{background:#9a5cf6}.hd-boost.r-legendary .row-sq{background:#f0ad3c}
 
 /* ---------- ARENA (T24) ---------- */
 #arena{align-items:center;padding:28px 10px 32px}
@@ -388,10 +391,12 @@ canvas.pix{image-rendering:pixelated}
 .arena-map-btn:active{transform:scale(.99)}
 .arena-map{margin-bottom:16px;display:flex;flex-direction:column;gap:6px}
 .map-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);
-  border-left-width:3px;border-radius:10px;padding:8px 12px}
-.map-row.done{border-left-color:var(--mint)}
-.map-row.cur{border-left-color:var(--amber);background:var(--surface-2)}
+  border-radius:10px;padding:8px 12px}
+.map-row.cur{background:var(--surface-2)}
 .map-row.locked{opacity:.7}
+.map-row.done .row-sq{background:var(--mint)}
+.map-row.cur .row-sq{background:var(--amber)}
+.map-row.locked .row-sq{background:var(--muted)}
 .map-name{flex:1 1 auto;min-width:0;font-family:var(--display);font-weight:700;font-size:14px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .map-boss{font-family:var(--mono);font-size:11px;color:var(--muted);flex:0 0 auto}
 .map-tag{font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;flex:0 0 auto}
