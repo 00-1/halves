@@ -2136,7 +2136,7 @@ the sliders (users can still adjust). DoD: defaults match the owner's reported v
 sound test band updated; all gates green. *(Babysitter fills in the exact numbers when the owner gives
 them.)*
 
-### T106 — [A] Tech-tree v2: use the full width + a clearer relationship visual language · status: OPEN
+### T106 — [A] Tech-tree v2: use the full width + a clearer relationship visual language · status: DONE (`10e3000`)
 Owner: the tree nodes **don't use the full screen width** (only ~2 abreast in a ~360px column) and
 the **relationship between nodes isn't clear** — improve the connector visual language. Make the
 home tech tree read like a real game tech tree. Builds on T84 (data-driven graph) + T100 (gamey

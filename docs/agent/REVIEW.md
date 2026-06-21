@@ -1,6 +1,29 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T112` [A] (FX pass 2 — fills the screen · Arena backdrop · celebrate
+**Current verdict:** `APPROVED — T106` [A] (tech-tree v2 — uses the width + clear relationships) · live
+build **`10e3000`**. **CI green.** Each main-chain topic is now a **row** whose 1–3 **parts** run
+left-to-right, derived by following the **live `requires`/`branchOf` chain** (`topicParts()` — no
+parallel edge list; also fixes a latent depth-3 drop), so rows are 1/2/3-wide **as the data dictates**
+(never a forced grid). Two distinct **directional, state-coloured** connectors make relationships read
+at a glance: a **vertical amber CHAIN** arrow between topics (`unlockedBy`, lit when the next is
+unlocked) and a **horizontal purple MASTERY** arrow between parts (`requires:mastery`, lit when the
+later part is unlocked; **stretches** so multi-part rows fill toward the edges). Bigger nodes (84→96),
+old `.tlink/.tcol/spine` removed, and the `flex:1` tree **grows to fill T112's reclaimed height**
+(absorbs the bottom slack). `techGraph()/nodeState()/.tnode/click handler/window.TechTree` **unchanged**
+— T84 invariants intact. Verified **independently**: `node -c` clean; **full 30-gate suite green**; the
+**tech-tree gate (27 checks)** pins **data-driven** (spine = `unlockedBy`, branch = `requires:mastery`,
+**no parallel edge list** — `:95`), **both connectors state-coloured by live unlock**, **varying-width
+rows / no empty rows**, and **locked-never-start** (tap does nothing, Start stays disabled — `:80/81`).
+All **[A]-owned files**. T106 → DONE. *(Owner: the tree should now fill the width with clear amber-down/
+purple-across arrows and breathe into the full height.)*
+
+> **A built T106 while T113 (owner-priority audio) was newly pointer #1 — but A was already mid-T106
+> when the audio task was inserted, so this isn't a skip.** T106 is correct → approved. **`T113` (the
+> live Volume+Tempo sliders) is A's next, unchanged.** Re-pointed below.
+
+---
+
+**Previously approved (done):** `T112` [A] (FX pass 2 — fills the screen · Arena backdrop · celebrate
 wins) · live build **`54820bd`**. **CI green.** Addresses all of the owner's live-T110 feedback,
 consuming B's API only. (1) **Full-bleed backdrop:** `#fxBackdrop` moved to a body-level
 `position:fixed; inset:0; 100vw×100dvh; z-index:-1` layer behind the (transparent) `.app`/screens, so
@@ -614,8 +637,8 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T113`** [A] · **OWNER-PRIORITY (jumps ahead of T106)** (**`T112` DONE — FX fills
-  the screen + Arena backdrop + win celebrations; `T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**).
+- **Builder A — next: `T113`** [A] · **OWNER-PRIORITY** (**`T106` DONE — tech-tree v2; `T112`/`T111`/
+  `T110`/`T107`/`T100`/`T104`/`T99` DONE**).
   **`T113` — live Volume + Tempo sliders in Settings (a DIFFERENT approach to the audio).** Audio
   volume + in-level tempo have failed multiple blind passes (T69/T71/T98); stop guessing — **instrument
   it** so the owner calibrates by ear and reports the values. **Root cause to act on:** the engine runs
@@ -624,13 +647,11 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   range** (slider master up to ~2.0–2.5×, limiter as the clip-safe net) + a **global tempo multiplier**
   (`bpm × tempoMult`, range ~0.4–1.0×). Both sliders **live, persisted, with a visible exact value** +
   a **Test-sound** button so it's calibratable from Settings. Full DoD in BACKLOG `T113`. Then **`T114`
-  is BLOCKED** on the owner reporting the good values (babysitter fills them in → defaults). **Then →
-  `T106`.**
+  is BLOCKED** on the owner reporting the good values (babysitter fills them in → defaults).
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
-  submit.** Authoritative order: **`T113`** (audio sliders — owner-priority) → **`T106`** (tech-tree
-  v2 — full width, clearer connectors, absorb bottom slack; data-driven, focusable, locked-never-start,
-  360px-safe) → **`T101`** (Start→fullscreen delay — quick, owner-flagged, leads the perf work) →
+  submit.** Authoritative order: **`T113`** (audio sliders — owner-priority) →
+  **`T101`** (Start→fullscreen delay — quick, owner-flagged, leads the perf work) →
   **`T102`** (Android PWA+TWA — installable parity build, now that the web UI is
   stable) → **`T103`** (Android-inclusive perf research — needs T102 to profile) → **`T89`/`T90`**
   (Arena 3v3 team UI + playout) → content **`T58`** blueprint (Babysitter drafts it **in the background
