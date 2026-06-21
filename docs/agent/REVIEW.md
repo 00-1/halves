@@ -1,6 +1,16 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T67` (hero detail view) · build **`d7eb533`**. A new
+**Current verdict:** `APPROVED — T66` (Arena → 120 tiers, 10 regions × 12) · build
+**`2eb669a`**. `TIER_COUNT` 100→120, `REGION_SIZE` 12, boss at each region's 12th tier;
+all 10 hand-named regions/bosses kept, +1 rank title ("Tyrant"); `DEF_GROWTH` retuned
+1.062→1.051; inventory Loot grouping updated to 12-tier regions. **Independently re-proved
+every buff-gating invariant at 120:** no tier gated behind its own loot (all 120); tiers
+1–5 winnable at 0 items; tier 120 unbeatable at 0 items; def monotonic (0 dips, 11→491);
+the 10 bosses at 12/24/…/120; all 120 names non-blank. `arena.test.js` updated to 120
+(dynamic `TIER_COUNT`) incl. final-tier full-collection + one-boost-flip — **29 checks
+pass**; `node -c` clean. T66 → DONE.
+
+**Previously approved (done):** `T67` (hero detail view) · build `d7eb533`. A new
 `#/hero/<id>` screen: list card collapsed to "Boosted by N — tap for details ›" (no more
 "+N more" cut-off); the detail shows the T51 portrait, full stats, the **complete owned
 boost list untruncated/scrollable**, and an **"X / Y boosts collected"** summary with the
@@ -83,10 +93,10 @@ uses"); doc-only change (research doc + builder log), no code touched. T57 → D
 cards & result header (same `"hero:"` path as the Heroes screen); `nav-icons.test.js`
 (16 checks) green as the 9th Pages gate; layout-safe; no regressions.
 
-**Next-task order:** **`T66` → `T68` → `T52` → `T53` →
+**Next-task order:** **`T68` → `T52` → `T53` →
 `T54` → `T55` → `T56`**, then content extension (`T58` playbook → Wave-2 batches
 `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness: research doc + PWA foundation).
-**Do `T66` next** — set the Arena to 120 tiers (10 regions x 12). Then:
+**Do `T68` next** — Arena wayfinding (region progress, boss anticipation, journey map) on the new 12-per-region structure. Then:
 - **`T66`** (120 tiers) sits before the arena work; **`T68`** (Arena wayfinding — region
   progress, boss anticipation, a simple journey map) right after T66 so it's built on the
   final 12-per-region structure; then the arena art `T52`/`T53`. **`T67`** (hero detail)

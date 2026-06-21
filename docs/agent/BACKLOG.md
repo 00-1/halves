@@ -1520,7 +1520,7 @@ tier sit above the fold.
 
 ## Phase 10 — Arena length + hero detail
 
-### T66 — Set the Arena to 120 tiers (10 regions × 12) · status: OPEN
+### T66 — Set the Arena to 120 tiers (10 regions × 12) · status: DONE
 Owner reconsidered the ~1000 idea and chose **120 tiers** — close to the current 100,
 keeps every tier earned, and keeps **all hand-crafted names** (no procedural generation).
 Structure: **10 regions × 12 tiers**, a named boss at each region's **12th** tier.
