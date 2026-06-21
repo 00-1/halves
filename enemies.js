@@ -52,9 +52,10 @@
   }
 
   // ---- loot generation ----------------------------------------------------
-  // Batch size grows slowly with depth (3 early → 11 near the end); within a
-  // batch the later items are rarer, and deeper tiers drop epic/legendary loot.
-  function lootCount(n){ return 3 + Math.floor((n - 1) / 12); }
+  // Batch size grows with depth — 1 (tiers 1–25) → 4 (tiers 76–100), total 250 —
+  // so deeper tiers drop more; within a batch the later items are rarer, and deeper
+  // tiers drop epic/legendary loot. (T43 trimmed this from 3+floor((n-1)/12)=668.)
+  function lootCount(n){ return 1 + Math.floor((n - 1) / 25); }
 
   function lootRarity(n, k, count){
     const last = k >= count - 1, lateHalf = k >= Math.floor(count / 2);
