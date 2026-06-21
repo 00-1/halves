@@ -237,10 +237,12 @@
     }
     const cls = "mode-row" + (m.id===mode.id ? " active" : "") +
                 (locked ? " locked" : "") + (done ? " done" : "");
+    const guide = (window.Guides && window.Guides.has(m.id))
+      ? '<button class="mr-guide" data-guide="'+esc(m.id)+'" aria-label="How to beat '+esc(m.name)+'">?</button>' : '';
     return '<div class="'+cls+'" data-mode="'+esc(m.id)+'"'+(locked?' aria-disabled="true"':'')+'>'+
       '<span class="mr-main"><span class="mr-name">'+esc(m.name)+'</span>'+
         '<span class="mr-sub">'+sub+'</span></span>'+
-      '<span class="mr-side"><span class="mr-prog">'+have+'/'+total+'</span>'+
+      '<span class="mr-side">'+guide+'<span class="mr-prog">'+have+'/'+total+'</span>'+
         '<span class="mr-state">'+state+'</span></span></div>';
   }
   function renderTabs(){
@@ -272,10 +274,34 @@
   // Enable Start only for an unlocked topic.
   function renderStartState(){ $("startBtn").disabled = !isUnlocked(mode); }
   elModeTabs.addEventListener("click", e => {
+    // the "?" guide control opens a guide for any topic (incl. locked previews)
+    const gb = e.target.closest(".mr-guide");
+    if(gb){ openGuide(byId(gb.dataset.guide)); return; }
     const t = e.target.closest(".mode-row"); if(!t) return;
     if(t.classList.contains("locked")) return;   // locked rows aren't selectable
     selectMode(t.dataset.mode);
   });
+
+  // ---- topic guides (T27): a short "how to beat it" panel per topic ----------
+  function openGuide(m){
+    const g = m && window.Guides && window.Guides.get(m.id);
+    if(!g){ return; }
+    $("guideTitle").innerHTML = '<span class="g-glyph">'+(m.glyph||"")+'</span> '+esc(m.name);
+    $("guideBody").innerHTML =
+      '<p class="g-intro">'+esc(g.intro)+'</p>'+
+      '<ul class="g-tips">'+g.tips.map(t => '<li>'+esc(t)+'</li>').join("")+'</ul>'+
+      '<div class="g-eg"><span class="g-eg-tag">Try this</span>'+esc(g.example)+'</div>';
+    const md = $("guideModal");
+    md.classList.remove("hidden");
+    requestAnimationFrame(() => md.classList.add("show"));
+  }
+  function closeGuide(){
+    const md = $("guideModal");
+    md.classList.remove("show");
+    setTimeout(() => md.classList.add("hidden"), 220);
+  }
+  $("guideClose").addEventListener("click", closeGuide);
+  $("guideModal").addEventListener("click", e => { if(e.target === $("guideModal")) closeGuide(); });
   elModeTabs.addEventListener("scroll", updateScrollCues, { passive:true });
 
   function renderBest(){
