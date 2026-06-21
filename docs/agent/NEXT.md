@@ -20,7 +20,9 @@ sliders** ("sounds are getting lost" under the music — Music gain on the `Synt
 gain in `sound.js`; replace the single T135 master; SFX default louder relative to music; migrate old
 `halves.vol`; mute silences both). (4) **Fix the celebration tester restarting music** — `fireCelebrationTest`
 must unlock audio WITHOUT `musicForScreen` (which re-routes/restarts it). Full DoD `BACKLOG.md` T143. Then →
-**`T144`** (move the `.readouts` gold/momentum pill to the TOP of `#start`, keep its T142 pill backing) →
+**`T144`+`T145`** (small home-screen pill tweaks: move the `.readouts` gold/momentum pill to the TOP of
+`#start` keeping its backing; AND **drop the `.build` dev-stamp's pill** — owner accepts it low-contrast —
+exempting only `.build` from the contrast gate, keeping `.readouts`/`res-label` protected) →
 **`T140`** (extend the music picker to ALL 12 styles B builds + per-screen routing solve→calm/arena→arena/
 menu→menu/event→festive + the dubstep victory fires on a win; depends on T139) → **`T124`** (fraction glyphs)
 → `T101` → `T102`/`T103` (Android) → content → `T72`.

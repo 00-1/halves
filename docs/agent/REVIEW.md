@@ -1035,9 +1035,10 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   Audio menu** (mute toggle moves inside) holding the music picker, tempo, tester, and (3) **separate Music +
   SFX volume sliders** ("sounds are getting lost" — Music gain on the `Synth.output()` path [A] wires; SFX
   gain in `sound.js`; replace the single T135 master; migrate `halves.vol`); (4) fix the **tester restarting
-  music** (`fireCelebrationTest` must not call `musicForScreen`). Then **`T144`** (move `.readouts` gold/
-  momentum pill to the TOP of `#start`, keep its T142 pill backing). Then **`T140`** (picker lists all 12 + per-
-  screen routing + dubstep victory fires on a win — needs B's T139 names). Then → **`T124`** (fraction glyphs)
+  music** (`fireCelebrationTest` must not call `musicForScreen`). Then **`T144`+`T145`** (small pill tweaks:
+  move `.readouts` gold/momentum pill to TOP of `#start` keeping its backing; **drop the `.build` dev-stamp
+  pill** — owner OK with low contrast — exempt only `.build` from the contrast gate). Then **`T140`** (picker
+  lists all 12 + per-screen routing + dubstep victory fires on a win — needs B's T139 names). Then → **`T124`** (fraction glyphs)
   → **`T101`** (Start delay) → **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content
   **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own

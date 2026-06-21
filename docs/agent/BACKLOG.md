@@ -2773,6 +2773,21 @@ legible over the backdrop) and a11y/layout intact.
   backing); no layout/scroll regression (respects the T112 safe-area height); `node -c` clean; all gates
   green; [A]-owned files. (Babysitter + owner confirm via screenshot.)
 
+### T145 — [A] Drop the build-stamp pill (dev-only — owner accepts low contrast) · status: OPEN · quick
+Owner (live): **"I don't like the build info pill at the bottom. maybe get rid of the black pill and leave
+those hard to read. they're just for me anyway."** The `.build` stamp ("build <sha> · <ago>") is dev-only
+info, so the owner explicitly opts it OUT of the contrast floor.
+- **Remove the `.build` pill backing** that T142 added (`background:rgba(14,17,22,.88)` + radius/padding) so
+  the stamp is plain/unstyled again (low-contrast is fine here).
+- **Exempt `.build` from the honest contrast gate** — `contrast.test` (reworked in T142) asserts the
+  floating-on-backdrop elements have a local AA backing; **drop `.build` from that per-element set** (it's
+  dev-only, intentionally low-contrast) while KEEPING the assertion for the real UI floating text (the
+  `.readouts` gold/momentum row, `#arena .res-label`). The gate must still FAIL if `.readouts`/`res-label`
+  lose their backing.
+- **DoD:** the build stamp has no pill (plain text); `.readouts`/`res-label` keep their backing + the gate;
+  `node -c` clean; all gates green; [A]-owned files. *(Pairs with T144 — both small home-screen pill tweaks;
+  do them together.)*
+
 ### T134 — [B] Clean immediate context-swap (no layered overlap) + audible distinctness · status: DONE (`ea1ed5c`, CI green)
 **DONE 2026-06-21** — APPROVED (REVIEW.md). Clean swap: `renderVoice` hands its amp param back, scheduler
 tracks live voices on `M.active`, `releaseMusic()` on `swapNow()` ~75ms-releases active voices + music-bus
