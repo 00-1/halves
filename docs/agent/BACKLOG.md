@@ -2652,6 +2652,40 @@ engine-side (`synth.js`):
   clean; all gates green; **B-owned files only** (`synth.js` + tests + `BUILDER-LOG-FX.md`). (Babysitter:
   confirm against the owner's ear — green gates necessary-not-sufficient.)
 
+### T137 — [A] Celebration TESTER in Settings + diagnose why the burst is still invisible · status: OPEN · OWNER-PRIORITY · BUG
+Owner (live, after T136): **"I don't see celebrations. Add a celebration tester to the setup menu where I
+can trigger different celebrations."** This is BOTH the requested feature AND the diagnostic instrument for
+the still-live invisibility (T133+T136 passed every gate — incl. the golden — yet nothing shows; the golden
+only **counts** drawn rects, it does not prove they are **visible**). Build the tester, then USE it to find
+the cause.
+- **Tester UI** (Settings, beside Sound/Volume/Tempo/Music-switcher; same pixel-button a11y as the music
+  switcher — labelled group, ≥44px, keyboard, guarded no-op): buttons that **fire each celebration on
+  demand** — at least **Item unlock** (`fxCelebrate([...])`), **Rank up** (`fxCelebrateRank`), **Arena win**
+  (`fxCelebrateWin`), and a **Big burst** (`fxBigBurst`). Ensure `setupFx()`/`audioUnlock()` has run so
+  `fxBurst` is mounted before firing. Each should be visibly distinct (count/palette).
+- **Then DIAGNOSE live (the real point).** The Babysitter already ruled OUT the easy causes statically:
+  the CSS layer is correct (`#fxBurst` is `z-index:58`, in front of `.app`), `Controller` sets `ready=true`
+  synchronously for `{backend:"2d"}`, and `CPUBackend.renderFrame` draws particles correctly in code. So
+  check, on a real device, in this order:
+  1. **Is `fxBurst` live?** `fxBurst` non-null, `fxBurst.isReady() === true`, and **`fxBurst.dimensions()`
+     returns the real viewport size** (not 0×0 / 1×1). If 0/1, the canvas had no size when `_applyResize`
+     ran → fix the resize/`_cssSize` timing ([A]) — note `#fxBurst`'s parent/`_cssSize` source.
+  2. **Is something occluding it?** There is a SECOND overlay canvas **`#fxCanvas` (`z-index:59`, the older
+     `window.FX` system) stacked ABOVE `#fxBurst` (z-58)** — if `#fxCanvas` is present/opaque/covering, it
+     hides the burst. Reconcile the two systems: confirm which one wins, and either layer `#fxBurst` above
+     it or route everything through one canvas. (Two parallel celebration stacks is itself a smell.)
+  3. **Do particles draw but invisibly?** If `fxBurst` is ready+sized and unoccluded yet nothing shows,
+     inspect the live `#fxBurst` canvas in DevTools during a tester fire — particles may render
+     transparent / sub-pixel / off-canvas (which a fillRect-**count** golden can't catch). If so, that's a
+     **[B] engine** fix in `CPUBackend.renderFrame`/seed sizing — flag it precisely (with the observed
+     dimensions/alpha/size) as **T138 [B]**, and have B add a golden that asserts particle **visibility**
+     (on-canvas coords + non-zero alpha + ≥1px device size), not just a draw count.
+- **DoD (LIVE-verified):** Settings has a working celebration tester that fires each type on demand; AND the
+  invisibility is **root-caused** — fixed here if it's [A] (occlusion / resize-timing / wrong-canvas), or
+  precisely handed to **[B] T138** with the live evidence if it's engine-side particle visibility. `node -c`
+  clean; all gates green; [A]-owned files. (Babysitter: the bar is the owner SEEING a celebration via the
+  tester — green gates are necessary-not-sufficient; do not mark DONE on gates alone.)
+
 ### T136 — [A] Wire the celebration overlay: mount `#fxBurst` with `{backend:"2d"}` · status: DONE (`f4040e6`, CI green)
 **DONE 2026-06-21** — APPROVED (REVIEW.md). `setupFx` now mounts `#fxBurst` with `{backend:"2d"}` (backdrop
 `#fxBackdrop` stays WebGL); T125 resize-before-fire kept. Babysitter verified: `node -c` clean, both canvas

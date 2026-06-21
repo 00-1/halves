@@ -10,13 +10,21 @@
 
 ---
 
-**Builder A → `T123` (a11y contrast floor over the FX backdrop)**
-Audio/FX block wrapped (T128/T132 music swap, T128 wub, T133+T136 celebration, T135 volume). **T123 —
-the recurring a11y theme:** T112's full-bleed FX backdrop turned panels light purple, so light-grey text
-now sits on light backgrounds. Restore an **AA contrast floor** for body/label text over the backdrop AND
-make `contrast.test` **honest** (assert real computed ratios against the actual rendered background, not a
-stale constant). Then → `T124` (fraction glyphs) → `T101` (Start delay) → `T102`/`T103` (Android) →
-`T89`/`T90` → content → `T72`.
+**Builder A → `T137` (celebration TESTER in Settings + diagnose the invisibility) → then `T123`**
+Owner live after T136: **"I still don't see celebrations. Add a celebration tester to the setup menu to
+trigger different celebrations."** Feature AND diagnostic. **T137:** add a tester row in Settings (pixel
+buttons, a11y, like the music switcher) that fires each celebration on demand — **Item unlock**
+(`fxCelebrate`), **Rank up** (`fxCelebrateRank`), **Arena win** (`fxCelebrateWin`), **Big burst**
+(`fxBigBurst`) — ensuring `setupFx()` ran first. **Then DIAGNOSE live** (gates/golden pass yet it's
+invisible — the golden only COUNTS rects). Babysitter already ruled out the easy causes statically: CSS
+layer is correct (`#fxBurst` z-58, in front of `.app`), `ready` is sync-true for `{backend:"2d"}`,
+`renderFrame` draws correctly. Check on-device in order: (1) `fxBurst` non-null + `isReady()` + **`dimensions()`
+non-zero** (else resize timing [A]); (2) **occlusion — there's a 2nd overlay `#fxCanvas` (z-59, `window.FX`)
+ABOVE `#fxBurst` (z-58)**; reconcile/layer them; (3) if ready+sized+unoccluded but still nothing, particles
+may draw transparent/sub-pixel/off-canvas → **[B] engine fix `T138`** (flag with live evidence + a
+visibility golden, not a count). Full DoD: `BACKLOG.md` T137 (LIVE-verified — owner must SEE it). Then →
+`T123` (a11y contrast floor) → `T124` (fraction glyphs) → `T101` → `T102`/`T103` (Android) → `T89`/`T90` →
+content → `T72`.
 
 **Builder B → `T134` (clean swap + distinctness — OWNER on it now)** · *(T133 celebration DONE `3e7da28`)*
 **T134 — owner live on the switcher:

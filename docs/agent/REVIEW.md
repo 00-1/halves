@@ -974,14 +974,19 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T123` (a11y contrast floor over the FX backdrop)** [A]
-  (**`T135`/`T136`/`T133`(activated)/`T131`/`T128`(1)+(2)/`T129`/… DONE**). *(Read `NEXT.md` fresh —
-  canonical.)* The audio/FX block is essentially wrapped: music swaps per-screen + instantly (T128/T132),
-  victory wub (T128), celebration renders (T133+T136), volume recalibrated (T135). **`T123` — the recurring
-  a11y theme:** T112's full-bleed FX backdrop replaced the near-black panels with light purple, so light-grey
-  text now sits on light backgrounds → restore an **AA contrast floor** for body/label text over the
-  backdrop **and** make `contrast.test` *honest* (assert real computed ratios against the actual rendered
-  background, not a stale constant). Then → **`T124`** (fraction glyphs) → **`T101`** (Start delay) →
+- **Builder A — next: `T137` (celebration TESTER + diagnose the invisibility) → then `T123`** [A]
+  (**`T135`/`T136`/`T131`/`T128`(1)+(2)/`T129`/… DONE**). *(Read `NEXT.md` fresh — canonical.)*
+  **⚠ T136 did NOT actually make the celebration visible — owner live: "I don't see celebrations."** Despite
+  every gate + the T133 golden passing (which only **counts** drawn rects, never proves visibility). **`T137`
+  — owner-requested celebration TESTER in Settings** (buttons firing `fxCelebrate`/`fxCelebrateRank`/
+  `fxCelebrateWin`/`fxBigBurst` on demand) AND **use it to root-cause the invisibility live.** I ruled out
+  the easy causes statically (CSS layer right — `#fxBurst` z-58 over `.app`; `ready` sync-true for 2D;
+  `renderFrame` draws correctly), so check on-device: (1) `fxBurst` ready + `dimensions()` non-zero (else
+  resize timing — [A]); (2) **occlusion — a 2nd overlay `#fxCanvas` (z-59, `window.FX`) sits ABOVE `#fxBurst`
+  (z-58)** → reconcile; (3) if ready+sized+unoccluded yet invisible, particles draw transparent/sub-pixel/
+  off-canvas → **[B] `T138`** engine fix + a real visibility golden. Full DoD `T137` (LIVE — owner must SEE
+  it; gates necessary-not-sufficient — I will NOT mark DONE on green gates). Then → **`T123`** (a11y contrast
+  floor + honest `contrast.test`) → **`T124`** (fraction glyphs) → **`T101`** (Start delay) →
   **`T102`/`T103`** (Android) → **`T89`/`T90`** (Arena 3v3) → content **`T58`–`T61`** → **`T72`**.
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
