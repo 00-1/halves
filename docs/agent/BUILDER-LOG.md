@@ -3998,3 +3998,27 @@ notes / questions: **OWNER ear-check on the Poco X3 — this is the payoff:** ON
   is the per-context base in `SYNTH_BPM` or re-calibrating the slider. `Synth.setQuality()` is
   available if the FDN reverb is heavy on Android (not wired yet — flag if needed). Next per
   `NEXT.md`: **`T121`** (already shipped, awaiting verdict) → `T101` (Start delay) → Android block.
+
+## T121(b) — Coloured status icons (coin gold, calendar green) — completes the T121 batch  [HANDOFF]
+commit: (this commit, on main) — [A] task. T121 was expanded into a "visual-readability batch":
+**(a)** the scroll-fade mask (already shipped at **`0972c77`** — `.tree` masks to transparent,
+reveals the FX backdrop) + **(b)** this: the two STATUS icons take their accompanying text's colour.
+changed:
+  - **styles.css** — the T117 pixel icons all inherit the muted text colour via `currentColor`,
+    which is right everywhere EXCEPT the two icons beside coloured amounts. Added two global
+    overrides: **`.px-ic.coin{background-color:var(--amber)}`** (gold, beside the gold amount —
+    home gold bar, results `resGold`, reward toasts) and **`.px-ic.calendar{background-color:
+    var(--mint)}`** (green, beside the mint "N Momentum"). The mask technique fills each icon's
+    shape with its status colour. **Every other icon stays muted/inherited** (`.px-ic` keeps
+    `currentColor`).
+  - **test/icons.test.js** (now **51 checks**) — (d): the coin = `--amber`, the calendar = `--mint`,
+    the base `.px-ic` still `currentColor`, and **exactly those two** icons are recoloured (no
+    others).
+how I verified:
+  - **`node test/icons.test.js` → ALL 51 PASSED**; CSS-only (no `.js` changed); **full 33-gate suite
+    green**. Part (a) (scroll-fade) is already on `main` (`0972c77`); the scroll-fade gate in
+    `tech-tree.test` (34) stays green.
+notes / questions: **eyeball:** the coin beside the gold reads **gold**, the calendar beside Momentum
+  reads **green**, all other pixel icons stay the muted house colour; and (from a) the tree scroll
+  edges fade into the purple backdrop, no black band. Next per `NEXT.md`: **`T123`** (a11y) → `T101`
+  (Start delay) → Android block.

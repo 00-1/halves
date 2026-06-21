@@ -59,5 +59,14 @@ ok(/id="soundBtnMenu" aria-label="Toggle sound"/.test(html) && /id="settingsBtn"
 // the numpad backspace still carries its key behaviour (data-k="back") with an icon
 ok(/data-k="back"><span class="px-ic backspace">/.test(html), "(c) the numpad ⌫ key is now a backspace pixel icon (key behaviour intact)");
 
+// ---- (d) T121(b) — the two STATUS icons take their accompanying text's colour --
+const css = read("styles.css");
+ok(/\.px-ic\.coin\{[^}]*background-color:var\(--amber\)/.test(css), "(d) T121: the coin icon reads GOLD (.px-ic.coin = --amber)");
+ok(/\.px-ic\.calendar\{[^}]*background-color:var\(--mint\)/.test(css), "(d) T121: the momentum calendar reads GREEN (.px-ic.calendar = --mint)");
+ok(/\.px-ic\{[^}]*background-color:currentColor/.test(css), "(d) every OTHER icon stays muted/inherited (.px-ic = currentColor)");
+// only those two get a colour override (the rest are not individually recoloured)
+const overrides = (css.match(/\.px-ic\.\w+\{[^}]*background-color/g) || []).map(s => s.match(/\.px-ic\.(\w+)/)[1]).sort();
+ok(overrides.length === 2 && overrides[0] === "calendar" && overrides[1] === "coin", "(d) exactly the coin + calendar icons are recoloured (" + overrides.join(",") + ")");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " ICON CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

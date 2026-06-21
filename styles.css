@@ -23,6 +23,11 @@ html,body{height:100%}
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;
   -webkit-mask-size:contain;mask-size:contain}
 .navbtn .px-ic{width:16px;height:16px}
+/* T121(b) — the two STATUS icons take their accompanying text's colour: the coin
+   reads gold (beside the gold amount), the momentum calendar reads green (beside
+   the mint "N Momentum"). Every other icon stays muted/inherited. */
+.px-ic.coin{background-color:var(--amber)}
+.px-ic.calendar{background-color:var(--mint)}
 body{
   background:var(--bg);
   color:var(--text);
