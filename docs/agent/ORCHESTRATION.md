@@ -51,9 +51,22 @@ derived from it. Each Builder reads **ONLY its own** line. Tasks in `BACKLOG.md`
 by task id.
 
 *Why:* Builder A repeatedly built its previously-queued task instead of a fresh DO-FIRST insert — a
-**staleness race** (A pulled its next task before the insert was visible), not disobedience. Fix =
-the fresh-re-read rule + this unambiguous one-line channel; the owner's direct nudge is the backstop
-for a live bug.
+**staleness race** (A pulled its next task before the insert was visible) **compounded by shallow
+reading** (A read only the approval line + next-task and skimmed past the escalation warnings buried in
+verdict prose — A's own post-mortem). Fix = the fresh-re-read rule + this unambiguous one-line channel;
+the owner's direct nudge is the backstop for a live bug.
+
+**Babysitter rule (codified from the T118 miss):** **all BUG / DO-FIRST / priority escalations go in
+`NEXT.md` as the Builder's current task line — never only inside a verdict paragraph.** If a Builder
+reads fast, the signal must *be* in the pointer it reads. Verdict prose is rationale, not instruction.
+
+**Shared quality rule (codified from the T112→T118 regression):** the T112 safe-area overflow was a
+*rendered-layout* bug invisible to Node gates (it needs a real device with insets) — and BOTH the
+Builder and the Babysitter approved it. Defense: **any change to a shared layout primitive (`.app`,
+`body`, `.screen`, app-wide height/inset/overflow rules) must carry/keep an invariant assertion** (e.g.
+`home-layout.test`'s "`​.app` height subtracts the safe-area insets"), turning that class of invisible
+regression into a gate failure. Builders add the assertion with the change; the Babysitter rejects a
+shared-layout change that ships without one.
 
 ## brickmap
 
