@@ -80,6 +80,10 @@ jobs:
         run: node test/ui-restyle.test.js
       - name: Asset cache-busting test (gate)
         run: node test/cache-bust.test.js
+      - name: FXGL engine test (gate)
+        run: node test/fxgl.test.js
+      - name: FX wiring test (gate)
+        run: node test/fx-wiring.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

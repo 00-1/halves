@@ -3522,3 +3522,58 @@ notes / questions: `index.html` itself is the entry doc and must revalidate — 
   deploys, confirm on the live site that a fresh push changes the page WITHOUT a hard-refresh —
   this is the gate that makes all later visual reviews trustworthy.** Next per the pointer:
   **`T106`** (tech-tree v2), then `T101`–`T103` (shipping/perf), then `T89`/`T90`.
+
+## T110 — FX wiring pass 1: mount FXGL + home backdrop + celebration bursts  [HANDOFF]
+commit: (this commit, on main) — [A] task. Makes Builder-B's built-but-unwired FX engine
+(`fxgl.js`: T93 ambient · T94 burst · T95 home backdrop · T108 Arena biome) VISIBLE. With T107
+done (deploys trustworthy), this wires the **home backdrop + celebration bursts**; the Arena
+biome wiring waits for the T89/T90 Arena UI. **Consumes B's API only — `fxgl.js` not edited.**
+changed:
+  - **index.html** — `<script src="fxgl.js">` (before main.js; the T107 bust auto-versions it).
+    Two `aria-hidden` canvases: **`#fxBackdrop`** inside `#start` (home-scoped) and an app-level
+    **`#fxBurst`** overlay.
+  - **styles.css** — `#start{isolation:isolate}` so **`.fx-backdrop{z-index:-1}`** sits BEHIND
+    the home DOM (above the page, below the text/tree) — `opacity:.85`, `pointer-events:none`,
+    decorative. **`.fx-burst`** is `position:fixed; z-index:58` (on top of the screens, under
+    the toasts/update-bar), `pointer-events:none` — taps always pass through.
+  - **main.js** — a guarded **FXGL wiring block** (no-op if the engine failed to load):
+    • **`setupFx()`** mounts two `FXGL.Controller`s — a backdrop + a burst overlay (the burst
+      controller is never given a scene, so it never animates ambiently / leaks RAF).
+    • **`homeFxState()`** builds the backdrop state from the **REAL** sources — collection
+      **progress** (`have/total` of the catalogue, 0–1), the daily **Momentum streak**
+      (`loadMomentum().count`), and **today's event** (`Ev.today()` → `{seed:artSeed, name,
+      palette: the event-rarity colours, mood}`). Never constants — the home literally reads
+      your state.
+    • **`fxSetHome(onHome)`** (called from `show()`): on `"start"` it re-derives from live state
+      + `start()`s the backdrop; on every other screen it `stop()`s (idle, **no RAF off-home**).
+    • **`fxCelebrate(items)`** (called from **`showUnlocks()`** — the one surface every
+      reward-gain path routes through: Arena-win loot, round unlocks, event rewards) fires
+      **`FXGL.burst({x,y,count,seed,palette})`**, seeded + palette-coloured deterministically
+      from the gained items, capped, **never covering key text** (a sparse transient overlay).
+      Reduced-motion → the engine's calm flourish (auto). `setupFx()` runs at init after the
+      legacy `FX.init`.
+  - **test/fx-wiring.test.js (NEW, 29 checks)** + **pages.yml** — registered **`fxgl.test.js`
+    (B's 102-check engine gate)** AND this wiring gate. The wiring gate proves: both canvases +
+    the script wired (backdrop home-scoped, burst app-level); the CSS layering (backdrop behind /
+    burst on top / taps pass through); the wiring reads the real sources; and a **live boot**
+    (stub `FXGL` recording calls) showing it **mounts 2 controllers**, **derives the backdrop
+    from live state on entering home** (progress 0.71 with a seeded collection, real streak +
+    event) and **`start()`s it**, **`stop()`s it off-home**, and **fires a burst on a real Arena
+    win** with valid `{x,y,count,seed,palette}`.
+  - **test/cache-bust.test.js** — added `fxgl.js` to the expected-ref set (now 40 checks): the
+    T107 bust now versions the newly-wired engine too (proves the auto-versioning claim).
+how I verified:
+  - **`node test/fx-wiring.test.js` → ALL 29 PASSED**; **`fxgl.test.js` → ALL 102 PASSED**;
+    **cache-bust → 40 PASSED**. `node -c main.js`/`fxgl.js` clean. **Full 30-gate suite green
+    incl. contrast AA** (the backdrop is a canvas behind the DOM — it doesn't alter any text/bg
+    CSS colour, so AA is unaffected; kept dim via `opacity:.85`).
+notes / questions: **headless can't judge the look — please eyeball the live build:** (a) the
+  home backdrop should be a calm, dim ambient field that **changes with event/progress/streak**
+  and never fights the text/tree; (b) a celebration **burst** should fire on Arena wins +
+  collectible/loot/event gains, **reduced-motion-safe**, never obscuring text; (c) nothing
+  should animate when the home is off-screen. Two controllers (backdrop + burst) each keep the
+  engine's single-RAF and idle when not needed; at most one ambient + one transient burst run
+  at once (on home). The legacy `window.FX` toast-spark is left intact (a separate tiny
+  per-item effect). **Arena-biome FX** (`setArenaState`/T108) is deliberately deferred to after
+  the T89/T90 Arena UI per the pointer. Next per the pointer: **`T106`** (tech-tree v2), then
+  `T101`–`T103` (shipping/perf), then `T89`/`T90`.

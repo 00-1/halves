@@ -28,6 +28,8 @@
 
   <!-- START (T96: top-aligned, tree-only picker, compact info row, one-line nav) -->
   <section id="start" class="screen">
+    <!-- T110: semantic home backdrop (FXGL/T95) — behind the DOM, decorative only -->
+    <canvas id="fxBackdrop" class="fx-backdrop" aria-hidden="true"></canvas>
     <!-- compact today's-event banner, front-and-centre at the very top (T91) -->
     <div class="event-banner hidden" id="eventBanner"></div>
     <!-- the tech tree is the only home picker now; it takes the reclaimed space -->
@@ -252,6 +254,9 @@
       <button class="btn ghost" id="resetCancel">Cancel</button>
     </div>
   </div>
+
+  <!-- T110: celebration-burst overlay (FXGL/T94) — on top, taps pass through -->
+  <canvas id="fxBurst" class="fx-burst" aria-hidden="true"></canvas>
 </div>
 
 <script src="glyphs.js"></script>
@@ -265,6 +270,7 @@
 <script src="scenery.js"></script>
 <script src="eventart.js"></script>
 <script src="fx.js"></script>
+<script src="fxgl.js"></script>
 <script src="sound.js"></script>
 <script src="main.js"></script>
 </body>

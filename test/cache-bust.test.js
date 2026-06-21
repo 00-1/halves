@@ -18,7 +18,7 @@ const html = read("index.html");
 // ---- the source keeps clean, bare refs (no-build; other gates match exact refs)
 const srcRefs = bareRefs(html);
 const EXPECTED = ["styles.css","glyphs.js","modes.js","events.js","guides.js","collectibles.js",
-  "heroes.js","enemies.js","monsters.js","scenery.js","eventart.js","fx.js","sound.js","main.js"];
+  "heroes.js","enemies.js","monsters.js","scenery.js","eventart.js","fx.js","fxgl.js","sound.js","main.js"];
 EXPECTED.forEach(f => ok(srcRefs.includes(f), "source index.html references " + f + " (bare, in the bust set)"));
 ok(/href="styles\.css"/.test(html) && /src="main\.js"/.test(html), "source refs are still BARE (no-build: source untouched, other gates rely on this)");
 

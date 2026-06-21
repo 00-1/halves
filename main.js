@@ -166,12 +166,71 @@
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
         elModeTree=$("modeTree");
 
+  // ---- FXGL wiring (T110) — make B's engine visible -----------------------
+  // Two controllers on two canvases: a semantic HOME BACKDROP (T95) behind the
+  // #start DOM (ambient, home-only, derived from LIVE state) and a CELEBRATION
+  // BURST overlay (T94) on top (transient, fired on real reward moments). The
+  // engine owns reduced-motion + the no-WebGL2 still fallback; everything here is
+  // a guarded no-op if FXGL failed to load. Bursts render standalone (the burst
+  // controller is never given a scene, so it never animates ambiently / leaks RAF).
+  const FX_MOODS = ["motes", "embers", "snow", "stars"];   // engine particle kinds
+  let fxBg = null, fxBurst = null;
+  function setupFx(){
+    const FXGL = window.FXGL; if(!FXGL || !FXGL.Controller) return;
+    try{
+      const bg = $("fxBackdrop"); if(bg) fxBg = new FXGL.Controller(bg, {});
+      const bu = $("fxBurst");    if(bu) fxBurst = new FXGL.Controller(bu, {});
+    }catch(e){ fxBg = null; fxBurst = null; }
+  }
+  // LIVE home state for the backdrop — read from the real sources, never constants:
+  // collection progress (0–1), the daily Momentum streak, and today's event.
+  function homeFxState(){
+    const col = loadCollected();
+    const total = (C.CATALOG && C.CATALOG.length) || 1;
+    let have = 0; for(const it of C.CATALOG) if(col[it.id]) have++;
+    const progress = Math.max(0, Math.min(1, have / total));
+    const streak = loadMomentum().count | 0;
+    const Ev = window.Events, ev = (Ev && Ev.today) ? Ev.today() : null;
+    let event = null;
+    if(ev){
+      const pal = C.paletteFor ? C.paletteFor(ev.rarity) : null;
+      event = { seed: ev.artSeed | 0, name: ev.name,
+        palette: pal ? ["#0E1116", pal.body, pal.accent] : null,    // wear today's event colours
+        mood: FX_MOODS[((ev.artSeed | 0) % FX_MOODS.length + FX_MOODS.length) % FX_MOODS.length] };
+    }
+    return { event: event, progress: progress, streak: streak };
+  }
+  // Drive the backdrop: animate on the home screen (re-derived from live state on
+  // each entry), idle (no RAF) everywhere else.
+  function fxSetHome(onHome){
+    if(!fxBg) return;
+    try{ if(onHome){ fxBg.setHomeState(homeFxState()); fxBg.start(); } else { fxBg.stop(); } }catch(e){}
+  }
+  // Celebration burst on a real reward moment — seeded + palette-coloured from the
+  // gained items (deterministic), capped, never covers key text (it's a sparse,
+  // transient overlay), reduced-motion handled by the engine.
+  const FX_RANK = { common:0, uncommon:1, rare:2, epic:3, legendary:4 };
+  function fxCelebrate(items){
+    if(!fxBurst || !items || !items.length) return;
+    let seed = items.length >>> 0, pal = null, best = -1;
+    for(const it of items){
+      const s = String(it.id);
+      for(let i = 0; i < s.length; i++) seed = (Math.imul(seed, 31) + s.charCodeAt(i)) >>> 0;
+      const rk = FX_RANK[it.rarity] != null ? FX_RANK[it.rarity] : 0;
+      if(rk > best){ best = rk; pal = C.paletteFor ? C.paletteFor(it.rarity) : null; }
+    }
+    const palette = pal ? [pal.accent, pal.body, "#ffffff"] : null;
+    const count = Math.min(150, 50 + items.length * 12 + best * 14);
+    try{ fxBurst.burst({ x: 0.5, y: 0.4, count: count, seed: seed || 1, palette: palette }); }catch(e){}
+  }
+
   function show(name){
     // stop the game clock RAF whenever we leave the game screen (e.g. browser
     // back mid-round), so it never loops on a hidden screen.
     if(name !== "game" && raf){ cancelAnimationFrame(raf); raf = 0; }
     Object.values(screens).forEach(s => s.classList.remove("active"));
     screens[name].classList.add("active");
+    fxSetHome(name === "start");   // T110: home backdrop animates only on the home screen
     // music follows the screen: the topic's style in-game, the menu style elsewhere
     if(window.Sound && window.Sound.setMusic){
       if(name === "game") window.Sound.setMusic(eventCtx ? "event" : (typeof mode.music === "number" ? mode.music : mode.id));
@@ -625,6 +684,7 @@
   function showUnlocks(items){
     const n = items.length;
     const title = n === 1 ? "New collectible!" : n + " new collectibles!";
+    fxCelebrate(items);   // T110: FXGL celebration burst over the unlock modal (every reward-gain path routes here)
     openModal(title, items, n > 4);
   }
 
@@ -1898,6 +1958,7 @@
 
   // ---- init ---------------------------------------------------------------
   if(window.FX && window.FX.init) window.FX.init($("fxCanvas"));
+  setupFx();           // T110: mount the FXGL home backdrop + burst overlay (no-op if FXGL absent)
   renderTree();        // the tree is the home picker; it paints the topic-info row
   renderBrand();
   installFavicon();

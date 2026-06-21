@@ -40,7 +40,14 @@ body{
    picker (below) is the flexible region that shrinks + scrolls. justify-content is
    flex-start (not center) so any residual overflow falls to the bottom — never
    clipping the header — with overflow-y:auto only as a last-resort safety net. */
-#start{justify-content:flex-start;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:12px 8px 18px}
+#start{justify-content:flex-start;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:12px 8px 18px;isolation:isolate}
+/* T110 — semantic home backdrop (FXGL): sits BEHIND the home DOM (z-index:-1 within
+   #start's isolated stacking context), decorative + tap-transparent, kept subtle so
+   it never competes with the text or the tree. */
+.fx-backdrop{position:absolute;inset:0;z-index:-1;width:100%;height:100%;display:block;pointer-events:none;opacity:.85}
+/* T110 — celebration-burst overlay (FXGL): app-level, ON TOP of the screens but
+   UNDER the toasts/update-bar, taps always pass through. */
+.fx-burst{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:58}
 .mark{font-family:var(--mono);font-weight:800;letter-spacing:-.04em;line-height:.9;
   font-size:clamp(56px,20vw,100px);
   background:linear-gradient(180deg,var(--text),var(--muted));-webkit-background-clip:text;background-clip:text;color:transparent;
