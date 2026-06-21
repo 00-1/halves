@@ -1143,7 +1143,7 @@ system) and draw the current tier's enemy on its card.
   workflow** as another gate. (Babysitter re-runs the variation assertion and eyeballs
   that bosses differ from grunts and regions differ from one another.)
 
-### T53 — Procedural region scenery in the Arena (per-location backdrop) · status: OPEN
+### T53 — Procedural region scenery in the Arena (per-location backdrop) · status: DONE
 Owner: "add some scenery image gen for each location in the Arena." Give each of the
 **10 Arena regions** (`BANDS`) a generated **scenery backdrop** behind the tier card so
 each location feels distinct. Build on T52 (enemy sprites land first).

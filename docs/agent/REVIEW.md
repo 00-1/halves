@@ -1,14 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T52` (procedural enemy sprites in the Arena) · build
-**`f3cc9ae`**. New standalone `monsters.js` (separate from the item-icon system — confirmed
-no `C.drawIcon` reuse): a seeded, vertically-symmetric blob with region-biased horns/eyes/
-feet/spots, RPS-type palette tinting, and **bosses bigger + crowned + never single-eyed**.
-Drawn on the tier card (64px foe) and the battle-result header (hero-vs-enemy); static (no
-RAF), deterministic. `monster-variation.test.js` (9 checks) green: ≥90% pairwise distinct
-(40/40), 779/780 pairs differ substantially, every region boss differs from its grunt
-(10/10) & renders bigger (10/10), 45/45 region pairs distinct, type-tinted palette, no
-collectibles reuse, no RAF. `node -c` clean on `monsters.js` + `main.js`. T52 → DONE.
+**Current verdict:** `APPROVED — T53` (procedural region scenery) · build **`a6e6583`**.
+New standalone `scenery.js`: 10 distinctly-themed backdrops (sky gradient + silhouette
+shape + accents) drawn behind the tier card with z-index layering; static (no RAF),
+deterministic. **Accessibility verified independently:** the `rgba(8,10,14,0.64)` legibility
+scrim keeps text above AA over the *brightest* scene cell — `--text` 13.3:1, `--muted`
+5.83:1 (≥4.5). `scenery.test.js` (7 checks) green: all 10 scenes distinct, deterministic,
+static, standalone, both text colours AA over the scrim. `node -c` clean. T53 → DONE.
+
+**⚠️ `T54` (version-check/Update button) is STILL the next task — owner-elevated ASAP.** The
+Builder had T53 in flight when T54 was bumped, so it finished T53 first; T54 was NOT done.
+**Do `T54` next.**
+
+**Previously approved (done):** `T52` (procedural enemy sprites) · build `f3cc9ae` — standalone
+`monsters.js`, high variation (≥90% distinct), region/type-themed, bosses bigger+crowned;
+9 checks.
 
 **Previously approved (done):** `T68` (Arena wayfinding) · build `6efff87` — region header
 (region N/10 · tier P/12) + pips, "⚔ Boss next" + facing-boss banners, a toggleable journey
@@ -33,7 +39,7 @@ to `.85`.)
 - `T57` — scrubbed the school/town/county names (repo-wide grep zero); doc-only.
 - `T50` — procedural icons on the 4 menu buttons + Arena hero portraits; 16 checks.
 
-**Next-task order:** **`T54` → `T53` → `T73` → `T55` → `T56`**, then content extension
+**Next-task order:** **`T54` → `T73` → `T55` → `T56`**, then content extension
 (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness).
 **Do `T54` next — ELEVATED (owner): land the version-check/Update button ASAP** — it only
 pays off *during* active development, so it must come before the rest. Poll `build.json`
