@@ -2242,7 +2242,13 @@
       // everyone else (incl. legacy) goes to the menu / honours the deep link.
       if(needsIntro()) startIntro();
       else applyRoute();
-      const warmAudio = () => { setupSynth(); applySoundPref(); };     // heavier work, off the first-paint path
+      // Deferred (off first paint): the OLD pre-T101 sequence (audioUnlock → setupSynth
+      // + START the music; applySoundPref) — it ran BEFORE render so `musicForScreen`
+      // saw `synthWired`; here it runs AFTER, so it must START the music itself.
+      // T101-FIX: `audioUnlock()` (not bare setupSynth) re-starts the music post-mount —
+      // the previous defer wired the synth but the screen's `musicForScreen` had already
+      // early-returned on `!synthWired`, so the first round/menu was silent.
+      const warmAudio = () => { audioUnlock(); applySoundPref(); musicForScreen(curScreen); };
       if(typeof requestAnimationFrame === "function") requestAnimationFrame(warmAudio); else setTimeout(warmAudio, 0);
     }
     if(!fsSupported()){           // iOS Safari etc. — single "Play", no fullscreen

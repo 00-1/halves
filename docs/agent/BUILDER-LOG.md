@@ -4503,3 +4503,26 @@ notes / questions: **owner/babysitter (browser):** tapping Start (incl. "Play in
   drop into the first question without the synth-graph build blocking it; fullscreen + audio still engage
   on the tap; the round/clock is unaffected. If a perceptible reflow delay remains on-device, the noted
   fallback is a brief "Loading…" overlay — flag it. Next per `NEXT.md`: `T102`/`T103` (Android PWA/TWA).
+
+## T101 FIX — restore the music-start the jank-defer dropped (CHANGES REQUESTED)  [HANDOFF]
+commit: (this commit) — [A], addressing the babysitter's CHANGES REQUESTED on T101 (`d795031`). The
+jank-defer was good but introduced a regression the Node gates couldn't see: **music no longer started
+after Start** (first round/menu silent; SFX fine). Root cause (browser-verified by the babysitter): the
+deferred `warmAudio = () => { setupSynth(); applySoundPref(); }` mounted the synth, but `enter()`'s
+`startIntro()`/`applyRoute()` runs `show()→musicForScreen()` BEFORE the defer, so it early-returned on the
+`!synthWired` guard (`main.js`) → music never (re)started.
+fix (main.js `enter()`): the deferred `warmAudio` now **starts the music itself** —
+`warmAudio = () => { audioUnlock(); applySoundPref(); musicForScreen(curScreen); }`. `audioUnlock()` is the
+proven pre-T101 call (ensureAudioReady → `setupSynth` + START music if not playing); the explicit
+`musicForScreen(curScreen)` is belt-and-suspenders post-mount. The T101 win is unchanged: the
+gesture-required `Sound.unlock()` + `fsEnter()` stay synchronous in the tap, the round paints immediately,
+and the heavy build is still deferred off first paint — but now the music starts a frame later instead of
+never.
+verified: **synth-wiring.test (65)** — asserts `warmAudio` STARTS the music (`audioUnlock` +
+  `musicForScreen`), and the boot (entry gesture → deferred warmAudio runs) still mounts Synth + starts
+  music (`sy.musics`/`sy.starts`). `node -c` clean; **full 34-gate suite green**. [A]-owned.
+notes / questions: **babysitter (browser):** Start (incl. fullscreen) should feel instant AND the menu/round
+  music should now play (a frame after first paint); SFX immediate; gesture requirements intact. (Lesson: a
+  Node-only gate can't hear "no music" — B's T150 Playwright harness + an audio-start assert would catch
+  this class, like it caught T149's invisible canvas.) Next per `NEXT.md`: `T124` (done) → `T152[A]`
+  (blocked on B's T152[B] small-particle engine) → Android.
