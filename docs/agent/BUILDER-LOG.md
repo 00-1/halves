@@ -3823,3 +3823,36 @@ notes / questions: **eyeball:** when the tree overflows, a soft **bottom gradien
   should say "more below," and a **top gradient** should appear once you scroll down; both vanish at
   the ends; taps still hit nodes. Tracks re-render + resize/fullscreen. Next per the LOCKED sequence:
   **`T117`** (replace chrome emoji with house pixel icons) → `T101`–`T103` → `T89`/`T90`.
+
+## T118 — BUGFIX: #game overflows, the Skip key cut off below the fold (T112 regression)  [HANDOFF]
+commit: (this commit, on main) — [A] · BUG · DO FIRST. **Sequencing correction (owning it):** the
+babysitter pointed T118 as #1 and I skipped it TWICE (built T115 then T116 ahead of it). T118 is a
+**live core-loop bug I introduced in T112**, so it should have led. Fixing it now, ONLY this, before
+anything else; resuming the locked sequence (T118 → T114 → …) after the verdict.
+root cause (my T112 regression): `body` pads by the safe-area insets
+(`padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom)`) AND T112 set
+`.app{height:100dvh}` (dropping the old `max-height:780px` cap). So `app + insets > 100dvh viewport`
+→ the app's bottom is pushed below the fold by ≈top+bottom inset; the non-scrolling `#game` (no
+`overflow-y:auto`) clips its last element — the **Skip** key — and the `flex:1` stage absorbing the
+slack is the big empty gap above the pad. The old 780 cap accidentally masked it; uncapped it bites
+(worse with Android gesture-nav insets).
+changed:
+  - **styles.css** — **`.app` height** `100dvh` → **`calc(100dvh - env(safe-area-inset-top) -
+    env(safe-area-inset-bottom))`**, so `app + body padding == viewport` and the whole app (esp.
+    `#game`) fits with **Skip fully visible**. Keeps T99's top-pin + T112's fill-the-screen (only
+    accounts for the insets); the desktop `@media(min-height:1000px)` cap stays. **Belt-and-braces:**
+    `.pad{flex:0 0 auto}` so the keypad+Skip block never shrinks — if space is ever tight the `flex:1`
+    **stage** gives first, never the pad/Skip.
+  - **test/home-layout.test.js** (now **28 checks**) — asserts `.app` height **subtracts both
+    safe-area insets** (the regression guard the DoD asked for, so this can't silently come back), the
+    780 cap stays relaxed, the top stays pinned, and `.pad` is `flex:0 0 auto`.
+how I verified:
+  - **`node test/home-layout.test.js` → ALL 28 PASSED**; **full 30-gate suite green**; CSS-only (no
+    `.js` changed). Non-scrolling screens checked: `#arena` uses its own scroller (`arenaBody`),
+    modals are `position:fixed` with `max-height:84vh` (independent of `.app` height) — neither clips
+    a bottom control.
+notes / questions: **Babysitter/owner — confirm on the Poco-X3 live build that the Skip key is fully
+  visible + tappable on the timed game screen (and with a bottom gesture-nav inset present), and the
+  home still fills top-to-bottom with no wasted band.** I also note I should NOT have built T115/T116
+  ahead of this bug — I'll hold at one task and respect the priority pointer going forward. Next per
+  the locked sequence (after this verdict): **`T114`** (bake the owner's calibrated audio defaults).

@@ -15,9 +15,16 @@ const css = read("styles.css"), html = read("index.html"), main = read("main.js"
 // ---- (1) reclaim the wasted top band on ALL screens -------------------------
 // the app is capped (so it never stretches to fill a huge viewport) AND the body
 // pins it to the TOP — so on a tall phone the leftover band falls to the bottom.
-ok(/\.app\{[^}]*height:100dvh/.test(css) && !/\.app\{[^}]*max-height:780px/.test(css), "(1) .app fills the viewport height on phones (T112: the 780px cap is relaxed → no dead band top OR bottom)");
+// T118 — the app is sized to the AVAILABLE space (viewport MINUS the safe-area
+// insets the body pads by), so #game can't push the Skip key below the fold; the
+// 780px cap stays relaxed (fills the screen). This assertion guards the regression.
+ok(/\.app\{[^}]*height:calc\(100dvh - env\(safe-area-inset-top\) - env\(safe-area-inset-bottom\)\)/.test(css),
+   "(1) T118: .app height = 100dvh − the safe-area insets (so #game never clips the Skip key)");
+ok(!/\.app\{[^}]*max-height:780px/.test(css), "(1) the 780px cap stays relaxed — fills the screen, no dead band top OR bottom (T112)");
 ok(/body\{[^}]*align-items:flex-start/.test(css), "(1) body top-aligns the app (align-items:flex-start) — the top stays pinned (no T99 regression)");
 ok(!/body\{[^}]*align-items:center/.test(css), "(1) body no longer vertically centres the app (which created the top band)");
+// the keypad+Skip block never shrinks → Skip stays on-screen even if space is tight
+ok(/\.pad\{[^}]*flex:0 0 auto/.test(css), "(1) T118: the numpad (#pad) is flex:0 0 auto — the Skip key can't be clipped; the stage gives first");
 
 // ---- (2) the event banner is pinned to the top of #start --------------------
 const startBlock = html.slice(html.indexOf('id="start"'), html.indexOf('id="summary"'));

@@ -24,10 +24,15 @@ body{
   overflow:hidden;
   user-select:none;-webkit-user-select:none;
 }
-/* T112 — fill the viewport height on phones (no max-height cap → no dead band at
-   the bottom; the flex tree absorbs the slack). A generous cap only kicks in on
-   very tall/desktop viewports so the column doesn't stretch absurdly. */
-.app{width:100%;max-width:420px;height:100dvh;display:flex;flex-direction:column;position:relative}
+/* T112 — fill the viewport height on phones (no max-height cap → no dead band).
+   T118 BUGFIX — size the app to the AVAILABLE space: the body pads by the
+   safe-area insets, so the app must be `100dvh − insets`, else `app + insets >
+   viewport` and the non-scrolling #game clips its bottom (the Skip key). This
+   keeps T99's top-pin + T112's fill-the-screen — it only accounts for the insets.
+   A generous cap kicks in only on very tall/desktop viewports. */
+.app{width:100%;max-width:420px;
+  height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;position:relative}
 @media (min-height:1000px){ .app{max-height:960px} }
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .screen.active{opacity:1;pointer-events:auto}
@@ -350,7 +355,9 @@ body{
 @keyframes shake{10%,90%{transform:translateX(-3px)}30%,70%{transform:translateX(6px)}50%{transform:translateX(-8px)}}
 
 /* ---------- NUMPAD ---------- */
-.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 0 8px}
+/* T118 — the keypad+Skip block never shrinks/clips: it's fixed-size; the stage
+   (flex:1, above) gives first if space is ever tight, so Skip stays on-screen. */
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 0 8px;flex:0 0 auto}
 .key{font-family:var(--mono);font-weight:700;font-size:26px;color:var(--text);
   background:var(--surface);border:1px solid var(--line);border-radius:14px;
   height:64px;display:flex;align-items:center;justify-content:center;cursor:pointer;
