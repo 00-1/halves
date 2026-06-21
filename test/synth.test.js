@@ -452,13 +452,15 @@ function schedRun(){
   ok(h.S.musicState().activeVoices === va, "the default phrase-boundary swap does NOT release voices early (ring intact)");
   h.restore();
 })();
-// (b) the four contexts differ across MULTIPLE audible levers, not just mode
-const CXS = ["solve", "menu", "event", "arena"].map(n => Synth.CONTEXTS[n]);
-ok(new Set(CXS.map(c => c.tempo)).size === 4, "all four contexts have distinct tempos (72/96/112/124)");
-ok(new Set(CXS.map(c => c.root)).size === 4, "all four sit in distinct registers (root)");
-ok(new Set(CXS.map(c => c.mode)).size === 4, "all four use distinct modes");
-ok(Synth.CONTEXTS.solve.kickK === 0 && Synth.CONTEXTS.solve.hatK === 0, "solve is DRUMLESS (an intimate calm bed) — a strong contrast vs the kit contexts");
-ok(new Set(CXS.map(c => c.patches.lead + "/" + (c.leadOct || 1))).size >= 3, "lead instrumentation/register varies across contexts");
+// (b) the 12 styles differ across MULTIPLE audible levers, not just mode
+const STY = Synth.STYLE_IDS.map(n => Synth.CONTEXTS[n]);
+ok(Synth.STYLE_IDS.length === 12, "the palette has 12 styles");
+ok(new Set(STY.map(c => c.tempo)).size >= 10, "the 12 styles span a wide tempo range (≥10 distinct: " + new Set(STY.map(c => c.tempo)).size + ")");
+ok(new Set(STY.map(c => c.mode)).size >= 5, "the 12 styles span ≥5 modes (" + new Set(STY.map(c => c.mode)).size + ")");
+ok(Synth.CONTEXTS.ambient.kickK === 0 && Synth.CONTEXTS.ambient.hatK === 0, "Ambient Drift is DRUMLESS (a calm bed) — a strong contrast vs the kit styles");
+ok(new Set(STY.map(c => c.patches.lead)).size >= 4, "lead instrumentation varies across the palette (bell/lead/chip/pluck)");
+ok(Synth.CONTEXTS.dubstep.wobble > 0 && Synth.CONTEXTS.dubstep.victory === true, "the Dubstep Victory has a tempo-synced wobble + is the win-sting style");
+ok(Synth.styles().length === 12 && Synth.styles()[0].label === "Neon Lobby", "Synth.styles() lists 12 labelled styles for the launcher");
 
 // =====================================================================
 // 14) T139 no-regret engine ADDITIONS (CONTEXTS held for owner OK)

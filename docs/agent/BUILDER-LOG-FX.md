@@ -6,6 +6,45 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T139 (part 2) — the 12-style palette (owner-approved) · DONE
+
+**Status: DONE — handed off for review.** B-owned files only (`synth.js`,
+`test/synth.test.js`, `test/golden-synth.test.js`, `test/golden/synth_score_*.json`);
+**zero edits to any existing Halves file.** Owner OK'd the T141 palette ("move ahead…
+add them to the song picker"); built the 12 from `research-music-styles.md` §2.
+
+### The 12 styles (`CONTEXTS`) — `id` · **label** (for A's T140 launcher + routing)
+1. `menu` · **Neon Lobby** *(kept)* — bright Ionian lobby
+2. `arena` · **Phrygian Onslaught** *(kept)* — dark driving wub
+3. `lofi` · **Lo-Fi Study** — swung 76 Dorian, soft *(calm; route the solve screen here)*
+4. `ambient` · **Ambient Drift** — 60 Lydian, **drumless**, very wet long tail *(calm)*
+5. `chiptune` · **Chiptune Rush** — 150 pentatonic square arps, dry *(uses `chip`)*
+6. `synthwave` · **Synthwave Cruise** — 112 Aeolian, gated-snare arp
+7. `dubstep` · **Dubstep Victory** — 140 half-time wobble + **the DROP win-sting** (`victory:true`)
+8. `dnb` · **Liquid DnB** — 174 breakbeat + wobble sub
+9. `bigroom` · **Festival** — 128 four-floor Lydian *(festive; route events here)*
+10. `boss8bit` · **8-Bit Boss March** — 140 Phrygian square march *(uses `chip`)*
+11. `tropical` · **Tropical Pluck** — 104 swung Mixolydian, airy
+12. `techno` · **Hypno Techno** — 126 four-floor minimal wob
+
+`Synth.STYLE_IDS` = the 12; **`Synth.styles()`** → `[{id,label}…]` for the launcher.
+The win sting: **`Synth.sting("victory")`** fires the Dubstep Victory drop (T139 pt1).
+
+### [A] hand-off (T140)
+- List `Synth.styles()` (12 labels) in the switcher; `setContext(id, {now:true})` to
+  audition. Route screens to styles: **solve→`lofi`**, menu→`menu`, arena→`arena`
+  (+`intensity()`), events→`bigroom`. Fire **`Synth.sting("victory")`** on a win.
+- **Back-compat:** `CONTEXTS.solve`/`.event` are kept as **aliases** (→`lofi`/`bigroom`)
+  so pre-T140 routing keeps playing; **drop them in T140** once screens use the named ids.
+
+### Verify
+`node -c` clean; `synth.test.js` **144** (12-style spread, ambient drumless, dubstep
+wobble+victory, `styles()` labels); **`golden-synth`** now pins **all 12** score goldens +
+the **all-12 mutual-distinctness** gate (regenerated — intentional; old solve/event
+score goldens removed). All gates green.
+
+---
+
 ## T139 (part 1) — the no-regret engine ADDITIONS the 12-style palette needs ([B])
 
 **Status: additions DONE — CONTEXTS HELD for the owner's palette OK.** B-owned files

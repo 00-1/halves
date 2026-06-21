@@ -31,29 +31,31 @@ function score(name, steps){
   return out;
 }
 
-const NAMES = ["solve", "menu", "arena", "event"];
+// All 12 launcher styles (T139) — the distinctness gate now covers the whole palette.
+const NAMES = Synth.STYLE_IDS;
+ok(NAMES.length === 12, "the palette has 12 styles");
 const scores = {};
 for(const n of NAMES){ scores[n] = score(n, 32); gold("synth_score_" + n, scores[n]); }
 
-// determinism: re-deriving a context's score is byte-identical
-ok(JSON.stringify(score("arena", 32)) === JSON.stringify(scores.arena), "a context score is deterministic for its seed");
+// determinism: re-deriving a style's score is byte-identical
+ok(JSON.stringify(score("arena", 32)) === JSON.stringify(scores.arena), "a style score is deterministic for its seed");
 
-// THE distinctness golden (the T128 catcher): every context's 32-step score is
-// mutually distinct — no two contexts produce the same notes.
+// THE distinctness golden (the T128 catcher): every one of the 12 styles' 32-step
+// score is MUTUALLY DISTINCT — no two collapse to the same notes ("samey" guard).
 let distinct = true, collision = "";
 for(let i = 0; i < NAMES.length; i++) for(let j = i + 1; j < NAMES.length; j++){
   if(JSON.stringify(scores[NAMES[i]]) === JSON.stringify(scores[NAMES[j]])){ distinct = false; collision = NAMES[i] + "≡" + NAMES[j]; }
 }
-ok(distinct, "every context is MUTUALLY DISTINCT (solve≠menu≠arena≠event)" + (distinct ? "" : " — collision: " + collision));
-gold("synth_context_distinct", { distinct: NAMES.length, pairs_compared: 6, all_distinct: distinct });
+ok(distinct, "all 12 styles are MUTUALLY DISTINCT" + (distinct ? "" : " — collision: " + collision));
+gold("synth_context_distinct", { styles: NAMES.length, pairs_compared: NAMES.length * (NAMES.length - 1) / 2, all_distinct: distinct });
 
-// the distinctness is structural, not luck: contexts differ in mode + tempo
+// the distinctness is structural, not luck: a wide spread of modes + tempos
 const specOf = n => Synth.normalizeMusic(Object.assign({ seed: Synth.hashStr(n) }, Synth.CONTEXTS[n]));
-ok(new Set(NAMES.map(n => specOf(n).mode)).size >= 3, "contexts span ≥3 distinct modes (mood variety)");
-ok(new Set(NAMES.map(n => specOf(n).tempo)).size === NAMES.length, "every context has a distinct tempo");
+ok(new Set(NAMES.map(n => specOf(n).mode)).size >= 5, "the 12 span ≥5 distinct modes (mood variety)");
+ok(new Set(NAMES.map(n => specOf(n).tempo)).size >= 10, "the 12 span ≥10 distinct tempos (60→174)");
 
-// harness regen sanity: a freshly-computed score equals what UPDATE_GOLDEN would write
-ok(typeof score("solve", 8)[0] !== "undefined", "scores are non-empty (the engine actually schedules notes)");
+// harness regen sanity: a freshly-computed score is non-empty
+ok(typeof score("lofi", 8)[0] !== "undefined", "scores are non-empty (the engine actually schedules notes)");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH-GOLDEN CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

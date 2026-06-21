@@ -453,24 +453,35 @@
   // patches · kit · reverb) so solve is CALM and Arena DRIVES *by construction*.
   // The calm-vs-energetic invariants are enforced as tests.
   function hashStr(s){ let h = 2166136261 >>> 0; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-  // The four contexts are deliberately spread across EVERY audible lever — register
-  // (root/leadOct), instrumentation (lead patch + drumless/kit), tempo, density and
-  // mode — not just mode, so they read as clearly different songs (T134). The firm
-  // calm-solve ↔ energetic-arena rule still holds.
+  // The 12-style palette (T139, from docs/research-music-styles.md §2, owner-approved).
+  // `menu` + `arena` kept exactly (owner likes them); 10 new spread across EVERY audible
+  // lever — mode · root/register · progression · tempo · density · drum kit/Euclid · patch
+  // selection · reverb (+wobble/swing/reverbDecay) — so they're obviously different songs.
+  // `label` is the launcher name (handed to [A] for T140). `victory:true` = its drop is
+  // the win sting (fired via sting("victory")).
   const CONTEXTS = {
-    // CALM & INTIMATE: slow, low, DRUMLESS, sparse, wet — a soft Dorian pad + pluck
-    solve: { tempo: 72,  mode: "dorian",   root: 50, progression: [0, 5, 3, 4], density: 0.22, reverb: 0.42,
-             kickK: 0, hatK: 0, snareK: 0, leadK: 4, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "pluck" } },
-    // BRIGHT & WELCOMING: mid tempo, a high BELL lead, light kit, major (Ionian)
-    menu:  { tempo: 96,  mode: "ionian",   root: 60, progression: [0, 3, 4, 0], density: 0.34, reverb: 0.26,
-             kickK: 4, hatK: 6, snareK: 2, leadK: 6, leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "bell" } },
-    // FESTIVE & SPARKLY: fast, HIGH floating Lydian, dense, busy hats, a bright pluck
-    event: { tempo: 112, mode: "lydian",   root: 65, progression: [0, 4, 5, 3], density: 0.50, reverb: 0.30,
-             kickK: 4, hatK: 12, snareK: 3, leadK: 8, leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "pluck" } },
-    // ENERGETIC & DARK: fast, low, dense, dark Phrygian, full driving kit + the WUB bass, dry
-    arena: { tempo: 124, mode: "phrygian", root: 45, progression: [0, 5, 6, 4], density: 0.62, reverb: 0.16,
-             kickK: 6, hatK: 12, snareK: 2, leadK: 9, leadOct: 1, patches: { pad: "pad", bass: "wub", lead: "lead" } }
+    // — kept —
+    menu:      { label: "Neon Lobby",        tempo: 96,  mode: "ionian",     root: 60, progression: [0, 3, 4, 0], density: 0.34, reverb: 0.26, kickK: 4, hatK: 6,  snareK: 2, leadK: 6,  leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "bell" } },
+    arena:     { label: "Phrygian Onslaught", tempo: 124, mode: "phrygian",  root: 45, progression: [0, 5, 6, 4], density: 0.62, reverb: 0.16, kickK: 6, hatK: 12, snareK: 2, leadK: 9,  leadOct: 1, patches: { pad: "pad", bass: "wub",  lead: "lead" } },
+    // — 10 new —
+    lofi:      { label: "Lo-Fi Study",       tempo: 76,  mode: "dorian",     root: 50, progression: [0, 5, 3, 4], density: 0.24, reverb: 0.42, kickK: 1, hatK: 3,  snareK: 0, leadK: 4,  leadOct: 1, swing: 0.2,  patches: { pad: "pad", bass: "bass", lead: "pluck" } },
+    ambient:   { label: "Ambient Drift",     tempo: 60,  mode: "lydian",     root: 55, progression: [0, 3, 0, 4], density: 0.14, reverb: 0.55, reverbDecay: 0.9, kickK: 0, hatK: 0, snareK: 0, leadK: 3, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "bell" } },
+    chiptune:  { label: "Chiptune Rush",     tempo: 150, mode: "pentatonic", root: 60, progression: [0, 4, 5, 3], density: 0.60, reverb: 0.04, kickK: 4, hatK: 8,  snareK: 2, leadK: 11, leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "chip" } },
+    synthwave: { label: "Synthwave Cruise",  tempo: 112, mode: "aeolian",    root: 50, progression: [0, 5, 3, 4], density: 0.42, reverb: 0.34, kickK: 4, hatK: 8,  snareK: 4, leadK: 7,  leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "lead" } },
+    dubstep:   { label: "Dubstep Victory",   tempo: 140, mode: "pentminor",  root: 36, progression: [0, 0, 5, 3], density: 0.40, reverb: 0.14, kickK: 4, hatK: 6,  snareK: 2, leadK: 6,  leadOct: 1, wobble: 2,  victory: true, patches: { pad: "pad", bass: "wub", lead: "lead" } },
+    dnb:       { label: "Liquid DnB",        tempo: 174, mode: "aeolian",    root: 43, progression: [0, 5, 3, 4], density: 0.44, reverb: 0.30, kickK: 4, hatK: 10, snareK: 6, leadK: 8,  leadOct: 1, wobble: 1,  patches: { pad: "pad", bass: "wub", lead: "lead" } },
+    bigroom:   { label: "Festival",          tempo: 128, mode: "lydian",     root: 57, progression: [0, 3, 4, 5], density: 0.56, reverb: 0.26, kickK: 4, hatK: 10, snareK: 4, leadK: 8,  leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "lead" } },
+    boss8bit:  { label: "8-Bit Boss March",  tempo: 140, mode: "phrygian",   root: 48, progression: [0, 1, 0, 5], density: 0.50, reverb: 0.10, kickK: 4, hatK: 6,  snareK: 4, leadK: 9,  leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "chip" } },
+    tropical:  { label: "Tropical Pluck",    tempo: 104, mode: "mixolydian", root: 57, progression: [0, 4, 5, 2], density: 0.40, reverb: 0.30, kickK: 3, hatK: 8,  snareK: 2, leadK: 7,  leadOct: 2, swing: 0.16, patches: { pad: "pad", bass: "bass", lead: "bell" } },
+    techno:    { label: "Hypno Techno",      tempo: 126, mode: "aeolian",    root: 45, progression: [0, 0, 5, 5], density: 0.34, reverb: 0.28, kickK: 4, hatK: 8,  snareK: 0, leadK: 5,  leadOct: 1, wobble: 0.5, patches: { pad: "pad", bass: "wub", lead: "lead" } }
   };
+  // The 12 canonical styles (the launcher set + the distinctness gate).
+  const STYLE_IDS = ["menu", "arena", "lofi", "ambient", "chiptune", "synthwave", "dubstep", "dnb", "bigroom", "boss8bit", "tropical", "techno"];
+  // Back-compat ALIASES so the pre-T140 game routing keeps playing: the solve screen
+  // gets the calm Lo-Fi, events get the Festival. [A]'s T140 re-routes screens to the
+  // named styles and can drop these. (Not part of the distinctness set.)
+  CONTEXTS.solve = CONTEXTS.lofi;
+  CONTEXTS.event = CONTEXTS.bigroom;
   function setContext(name, opts){
     const c = CONTEXTS[name]; if(!c) return api;
     setReverb(c.reverb);
@@ -687,8 +698,9 @@
     euclid: euclid, rotate: rotate, markovNext: markovNext, phraseSeed: phraseSeed,
     transposeMotif: transposeMotif, invertMotif: invertMotif, retrograde: retrograde,
     densityAt: densityAt, stepEvents: stepEvents, normalizeMusic: normalizeMusic,
-    // contexts (increment 5)
-    CONTEXTS: CONTEXTS, hashStr: hashStr,
+    // contexts (increment 5 / T139 12-style palette)
+    CONTEXTS: CONTEXTS, STYLE_IDS: STYLE_IDS, hashStr: hashStr,
+    styles: function(){ return STYLE_IDS.map(function(id){ return { id: id, label: CONTEXTS[id].label }; }); },   // launcher list (for [A]/T140)
     // introspection (tests / the [A] wire)
     buses: function(){ return { master: E.master, limiter: E.limiter, music: E.music, drum: E.drum, sfx: E.sfx, reverb: E.reverb, musicSend: E.musicSend, drumSend: E.drumSend }; },
     noiseBuffer: function(){ return E.noiseBuf; }
