@@ -4383,3 +4383,30 @@ notes / questions: **owner screenshot:** the gold/momentum pill is now the top h
   (legible over the backdrop); the build stamp at the bottom is plain low-contrast text (no pill). Next per
   `NEXT.md`: **`T140`** (extend the music picker to B's 12 styles + per-screen routing + the dubstep victory —
   now unblocked by T139's owner-approved palette).
+
+## T140 — Music picker for B's 12 styles + per-screen routing + dubstep victory  [HANDOFF]
+commit: (this commit, on main) — [A], OWNER-PRIORITY. Depends on B's T139 (the owner-approved 12-style
+palette). Owner wants all 12 styles auditionable + the dubstep victory to fire on a win.
+changed (A-owned only):
+  - **index.html** — the Audio-menu music picker now lists **all 12 of B's styles** (`data-music` = B's
+    `STYLE_IDS`, labels = B's `CONTEXTS[id].label`): Neon Lobby, Lo-Fi Study, Ambient Drift, Chiptune Rush,
+    Synthwave Cruise, Tropical Pluck, Festival, Hypno Techno, Liquid DnB, Phrygian Onslaught, 8-Bit Boss
+    March, Dubstep Victory. Each `<button class="mus-btn">` swaps instantly via the existing
+    `synthSwitchContext`→`setContext`+`swapNow` path (T132/T134 clean swap).
+  - **styles.css** — `.music-styles` = a 2-col grid so B's full labels fit; it lives in the scrollable
+    Audio menu (T143) so the extra rows just scroll.
+  - **main.js** — (1) **per-screen routing remapped** to B's named styles (contexts dropped solve/event):
+    `game → lofi` (calm) / `bigroom` (event gauntlet, festive), `arena → arena`, else `→ menu`; the calm
+    Lo-Fi still varies per topic via its seed. (2) **Dubstep victory:** auditioning a `victory:true` style
+    fires the engine's **`sting("victory")` DROP** (B's T139 made it a real dubstep build→sub-wub
+    drop→impact→sparkle). The win path already fires it (`wubSting`→`sting("victory")` from T128), so a real
+    Arena win / topic-complete now lands the drop.
+how I verified: **synth-wiring.test (52→63)** — the picker offers all 12 `data-music` styles (12 buttons);
+  routing maps game→lofi/bigroom, arena→arena, else→menu; the live boot auditions menu/lofi/ambient/arena/
+  dubstep (each → `setContext`), **Dubstep also fires the victory drop** (`sting("victory")`), Arena carries
+  its own phrygian harmony, leaving the menu reverts. **events.test**: the gauntlet routes to Festival.
+  `node -c` clean; **full 34-gate suite green**. [A]-owned files only.
+notes / questions: **owner by ear:** open Audio → the picker lists all 12 styles, each audibly distinct +
+  swaps instantly; Dubstep fires its drop; solves are calm (Lo-Fi), Arena drives, events are festive; a real
+  win lands the dubstep drop. Next per `NEXT.md` (reordered): **`T146`** (declutter home) → `T148` (SFX
+  range) → `T147` (FX tester → Graphics section).

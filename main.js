@@ -351,10 +351,13 @@
     curScreen = name;
     const Sy = window.Synth; if(!Sy || !synthWired) return;
     try{
-      if(musicPreview){ synthSwitchContext(musicPreview); return; }   // the Settings switcher is driving — don't fight it
-      const context = name === "game" ? (eventCtx ? "event" : "solve") : name === "arena" ? "arena" : "menu";
-      // SOLVE varies per topic (the seed keeps topics musically distinct); others use the context seed.
-      const seed = (context === "solve" && typeof mode !== "undefined" && mode && typeof mode.music === "number")
+      if(musicPreview){ synthSwitchContext(musicPreview); return; }   // the Audio-menu picker is driving — don't fight it
+      // T140 — route screens to B's 12 named styles (more styles than screens): a
+      // CALM Lo-Fi during solves, the Festival for the event gauntlet, the driving
+      // Arena context on #arena, Neon Lobby (menu) everywhere else.
+      const context = name === "game" ? (eventCtx ? "bigroom" : "lofi") : name === "arena" ? "arena" : "menu";
+      // the calm solve style varies per topic (the seed keeps topics musically distinct).
+      const seed = (context === "lofi" && typeof mode !== "undefined" && mode && typeof mode.music === "number")
         ? ((mode.music + 1) * 2654435761 >>> 0) : undefined;
       synthSwitchContext(context, seed);
       if(context === "arena" && Sy.intensity) Sy.intensity(arenaBossProx());
@@ -385,7 +388,7 @@
     // stop the game clock RAF whenever we leave the game screen (e.g. browser
     // back mid-round), so it never loops on a hidden screen.
     if(name !== "game" && raf){ cancelAnimationFrame(raf); raf = 0; }
-    if(name !== "settings") musicPreview = null;   // T129: leaving Settings drops the transient style preview → per-screen music resumes
+    if(name !== "audio") musicPreview = null;   // T129/T143: leaving the Audio menu drops the transient style preview → per-screen music resumes
     Object.values(screens).forEach(s => s.classList.remove("active"));
     screens[name].classList.add("active");
     fxSetScreen(name);     // T110/T112: full-bleed backdrop — home scene on #start, Arena scene on #arena, idle elsewhere
@@ -2115,7 +2118,10 @@
       const name = btn.dataset.music; if(!name) return;
       audioUnlock();
       musicPreview = name;
-      synthSwitchContext(name);   // distinct built-in context (Synth.setContext) + the T113 tempo
+      synthSwitchContext(name);   // one of B's 12 distinct contexts (Synth.setContext) + the T113 tempo
+      // T140 — auditioning the Dubstep style also fires its signature victory DROP (sting)
+      const Sy = window.Synth, c = Sy && Sy.CONTEXTS && Sy.CONTEXTS[name];
+      if(c && c.victory && Sy.sting) Sy.sting("victory");
       syncMusicSwitch();
     });
     const fxGrp = $("fxTest");

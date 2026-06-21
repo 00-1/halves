@@ -303,6 +303,10 @@ body{
 .set-music{flex-direction:column;align-items:stretch;gap:10px;cursor:default}
 .set-music>label{display:flex;align-items:center;justify-content:space-between;width:100%}
 .music-switch{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+/* T140 — the 12-style picker uses 2 columns so B's full style labels fit; it lives
+   in the scrollable Audio menu so the extra rows just scroll. */
+.music-styles{grid-template-columns:repeat(2,1fr)}
+.music-styles .mus-btn{font-size:11px;padding:8px 8px;line-height:1.15}
 .music-switch .mus-btn{min-height:44px;padding:8px 6px;font-family:var(--mono);font-size:12px;font-weight:700;
   color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:11px;cursor:pointer}
 .music-switch .mus-btn:focus-visible{outline:var(--focus,2px solid var(--amber));outline-offset:2px}

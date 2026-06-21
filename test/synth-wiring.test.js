@@ -26,12 +26,13 @@ ok(!/setMusic|startScheduler|setInterval|STYLES/.test(ssrc), "(2) sound.js's mus
 ok(/musicForScreen\(name\)/.test(main) && !/Sound\.setMusic/.test(main), "(2) show() drives music via Synth (musicForScreen), not the old Sound.setMusic");
 
 // ---- (3) per-screen contexts via the DISTINCT engine contexts (T128) --------
-ok(/name === "game" \? \(eventCtx \? "event" : "solve"\) : name === "arena" \? "arena" : "menu"/.test(main), "(3) screens route to contexts: game→solve/event, arena→arena, else→menu");
+// T140 — routing decoupled from style names: game→calm Lo-Fi (event→Festival), arena→arena, else→menu.
+ok(/name === "game" \? \(eventCtx \? "bigroom" : "lofi"\) : name === "arena" \? "arena" : "menu"/.test(main), "(3) T140: screens route to B's named styles (game→lofi/bigroom, arena→arena, else→menu)");
 // T128(1): musicForScreen drives the engine's distinct context (setContext via
 // synthSwitchContext) — NOT the old flat musicSpec() that shared one default chord set
-ok(/function musicForScreen\([\s\S]{0,760}synthSwitchContext\(context/.test(main), "(3) T128: per-screen music drives the DISTINCT context (synthSwitchContext), not a flat spec");
+ok(/function musicForScreen\([\s\S]{0,900}synthSwitchContext\(context/.test(main), "(3) T128: per-screen music drives the DISTINCT context (synthSwitchContext), not a flat spec");
 ok(!/function musicSpec\(/.test(main) && !/SYNTH_BPM/.test(main), "(3) T128: the old musicSpec()/SYNTH_BPM partial specs (no progression → same chords) are GONE");
-ok(/context === "solve"[\s\S]{0,140}mode\.music/.test(main), "(3) SOLVE still varies per topic (its seed mixes in mode.music) — topics stay distinct");
+ok(/context === "lofi"[\s\S]{0,140}mode\.music/.test(main), "(3) T140: the calm solve (Lo-Fi) varies per topic (its seed mixes in mode.music)");
 ok(/function synthSwitchContext\([\s\S]{0,900}Sy\.swapNow\(\)/.test(main), "(3) T132: a switch swaps the generator NOW (Synth.swapNow) — instant, not a far phrase boundary");
 ok(/Sy\.intensity\(arenaBossProx\(\)\)/.test(main) && /facingBoss \? 1/.test(main), "(3) the Arena context drives Synth.intensity() from live boss-proximity");
 
@@ -45,10 +46,13 @@ ok(/DUCK_SFX/.test(main) && /window\.Synth\.duck\(\)/.test(main), "(4) the loude
 ok(/window\.Synth\.setMuted\(!on\)/.test(main), "(4) mute silences Synth too (applySoundPref)");
 ok(/synthTempoMult\(\)/.test(main) && /loadTempo\(\) \/ 100/.test(main), "(4) the T113 tempo slider drives the Synth context tempo");
 
-// ---- (6) T129 — Settings MUSIC SWITCHER: sample + test-switch each distinct context
-ok(/id="musicSwitch"/.test(html) && /role="group"/.test(html) && /aria-labelledby="musicLabel"/.test(html), "(6) T129: Settings has a labelled music-switcher button group");
-["menu","solve","arena","event"].forEach(n => ok(new RegExp('data-music="' + n + '"').test(html), "(6) T129: the switcher offers the '" + n + "' style"));
-ok((html.match(/<button type="button" class="mus-btn"[^>]*data-music=/g) || []).length === 4 && /aria-pressed="false"/.test(html), "(6) T129: styles are 4 real, keyboard-operable <button>s with aria-pressed");
+// ---- (6) T140 — the music picker offers ALL 12 of B's styles (audition each) -----
+ok(/id="musicSwitch"/.test(html) && /role="group"/.test(html) && /aria-labelledby="musicLabel"/.test(html), "(6) the Audio menu has a labelled music-style picker group");
+const STYLES_12 = ["menu","arena","lofi","ambient","chiptune","synthwave","dubstep","dnb","bigroom","boss8bit","tropical","techno"];
+STYLES_12.forEach(n => ok(new RegExp('data-music="' + n + '"').test(html), "(6) T140: the picker offers the '" + n + "' style"));
+ok((html.match(/<button type="button" class="mus-btn"[^>]*data-music=/g) || []).length === 12 && /aria-pressed="false"/.test(html), "(6) T140: all 12 styles are real, keyboard-operable <button>s with aria-pressed");
+// the Dubstep style fires its signature victory DROP when auditioned
+ok(/c && c\.victory && Sy\.sting\) Sy\.sting\("victory"\)/.test(main), "(6) T140: auditioning a 'victory' style (Dubstep) fires the engine's victory drop");
 ok(/\.music-switch \.mus-btn\{[^}]*min-height:44px/.test(css), "(6) T129: each style button is a ≥44px tap target");
 ok(/\.mus-btn\[aria-pressed="true"\]/.test(css), "(6) T129: the picked style is visibly highlighted (aria-pressed styling)");
 ok(/\[data-ui="pixel"\] \.music-switch \.mus-btn/.test(css), "(6) T129: the switcher is data-ui=\"pixel\" styled (matches the chrome)");
@@ -74,11 +78,14 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   // the engine's DISTINCT built-in contexts (mirrors synth.js CONTEXTS shape — each
   // a different mode/progression/reverb, incl. Arena's wub bass patch).
   const CTX = {
-    menu:  { tempo: 88,  mode: "ionian",   progression: [0,3,4,0], reverb: 0.30, patches: { bass: "bass" } },
-    solve: { tempo: 80,  mode: "dorian",   progression: [0,5,3,4], reverb: 0.36, patches: { bass: "bass" } },
-    arena: { tempo: 120, mode: "aeolian",  progression: [0,5,6,4], reverb: 0.16, patches: { bass: "wub"  } },
-    event: { tempo: 100, mode: "lydian",   progression: [0,4,5,3], reverb: 0.30, patches: { bass: "bass" } }
+    menu:    { tempo: 96,  mode: "ionian",     progression: [0,3,4,0], reverb: 0.26, patches: { bass: "bass" } },
+    arena:   { tempo: 124, mode: "phrygian",   progression: [0,5,6,4], reverb: 0.16, patches: { bass: "wub"  } },
+    lofi:    { tempo: 76,  mode: "dorian",     progression: [0,5,3,4], reverb: 0.42, patches: { bass: "bass" } },
+    ambient: { tempo: 60,  mode: "lydian",     progression: [0,3,0,4], reverb: 0.55, patches: { bass: "bass" } },
+    bigroom: { tempo: 128, mode: "lydian",     progression: [0,3,4,5], reverb: 0.26, patches: { bass: "bass" } },
+    dubstep: { tempo: 140, mode: "pentminor",  progression: [0,0,5,3], reverb: 0.14, victory: true, patches: { bass: "wub" } }
   };
+  CTX.solve = CTX.lofi; CTX.event = CTX.bigroom;   // B's back-compat aliases
   global.window.Synth = {
     mount(o){ sy.mounts.push(o); return this; },
     output(){ return { disconnect(){}, connect(t){ sy.routedTo = t; } }; },
@@ -139,7 +146,7 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   route("#/arena");
   ok(sy.contexts[sy.contexts.length - 1] === "arena", "boot: T128 — the Arena drives Synth.setContext('arena') (its own distinct context)");
   const am = sy.musics[sy.musics.length - 1];
-  ok(am && am.mode === "aeolian" && am.progression && am.progression.join() === "0,5,6,4", "boot: T128 — the Arena context carries its OWN dark harmony (aeolian) — not a flat default");
+  ok(am && am.mode === "phrygian" && am.progression && am.progression.join() === "0,5,6,4", "boot: T128/T140 — the Arena context carries its OWN dark harmony (phrygian) — not a flat default");
   ok(am && am.patches && am.patches.bass === "wub", "boot: T128 — the Arena context uses the WUB bass (energetic), proving contexts differ");
   ok(sy.intensities.length > beforeI && typeof sy.intensities[sy.intensities.length-1] === "number", "boot: the Arena sets Synth.intensity() from live boss-proximity");
 
@@ -159,20 +166,21 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
   ok(sy.stings.indexOf("victory") >= 0 && sy.stings.length > stingsBefore, "boot: T128 — a real Arena win fires Synth.sting('victory') (the wub + bell cue, not a self-ducked wub)");
 
-  // T129 — the Settings music switcher samples + switches each DISTINCT context live
-  route("#/settings");
-  const ctxBefore = sy.contexts.length;
+  // T140 — the Audio-menu picker auditions B's 12 styles; each swaps the live music
+  route("#/audio");
+  const ctxBefore = sy.contexts.length, stingsB = sy.stings.length;
   const clickMus = name => (els.musicSwitch._h.click||[]).forEach(f => f({ target:{ closest:s => (s === ".mus-btn" ? { dataset:{ music: name } } : null) } }));
-  ["menu","solve","arena","event"].forEach(clickMus);
-  ["menu","solve","arena","event"].forEach(n => ok(sy.contexts.indexOf(n) >= 0, "boot: T129 — picking '" + n + "' calls Synth.setContext('" + n + "') (the distinct built-in context)"));
-  ok(sy.contexts.length - ctxBefore >= 4, "boot: T129 — each pick switches the live music via setContext");
-  const lastPick = sy.musics[sy.musics.length - 1];
-  ok(lastPick && lastPick.mode === "lydian" && lastPick.progression && lastPick.progression.join() === "0,4,5,3", "boot: T129 — the Event pick drove the event context's OWN harmony (lydian, its progression), not a flat default");
-  ok(sy.reverbs.length >= 4, "boot: T129 — each context applies its own reverb (distinct space, not identical)");
-  // leaving Settings drops the preview → per-screen music resumes
+  ["menu","lofi","ambient","arena","dubstep"].forEach(clickMus);
+  ["menu","lofi","ambient","arena","dubstep"].forEach(n => ok(sy.contexts.indexOf(n) >= 0, "boot: T140 — picking '" + n + "' calls Synth.setContext('" + n + "')"));
+  ok(sy.contexts.length - ctxBefore >= 5, "boot: T140 — each pick switches the live music via setContext");
+  ok(sy.stings.length > stingsB && sy.stings[sy.stings.length - 1] === "victory", "boot: T140 — picking Dubstep also fires the victory DROP (sting)");
+  const arenaPick = sy.musics.filter(m => m && m.mode === "phrygian").pop();
+  ok(arenaPick && arenaPick.progression.join() === "0,5,6,4", "boot: T140 — the Arena pick drove its OWN harmony (phrygian), not a flat default");
+  ok(sy.reverbs.length >= 5, "boot: T140 — each context applies its own reverb (distinct space)");
+  // leaving the Audio menu drops the preview → per-screen music resumes
   route("#/");
   const reverted = sy.musics[sy.musics.length - 1];
-  ok(reverted && reverted.mode === "ionian", "boot: T129 — leaving Settings reverts to the per-screen (menu) music");
+  ok(reverted && reverted.mode === "ionian", "boot: T140 — leaving the Audio menu reverts to the per-screen (menu) music");
 })();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SYNTH-WIRING CHECKS PASSED" : fails + "/" + checks + " FAILED"));

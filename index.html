@@ -231,11 +231,21 @@
       </div>
       <div class="set-row set-music">
         <label id="musicLabel"><span>Music style</span><span class="set-val" id="setMusicVal">Auto</span></label>
-        <div class="music-switch" id="musicSwitch" role="group" aria-labelledby="musicLabel">
-          <button type="button" class="mus-btn" data-music="menu"  aria-pressed="false">Menu</button>
-          <button type="button" class="mus-btn" data-music="solve" aria-pressed="false">Solve</button>
-          <button type="button" class="mus-btn" data-music="arena" aria-pressed="false">Arena</button>
-          <button type="button" class="mus-btn" data-music="event" aria-pressed="false">Event</button>
+        <!-- T140 — all 12 engine styles (B's T139 palette) to audition; each swaps
+             instantly via Synth.setContext(name,{now:true}); Dubstep fires its drop. -->
+        <div class="music-switch music-styles" id="musicSwitch" role="group" aria-labelledby="musicLabel">
+          <button type="button" class="mus-btn" data-music="menu"      aria-pressed="false">Neon Lobby</button>
+          <button type="button" class="mus-btn" data-music="lofi"      aria-pressed="false">Lo-Fi Study</button>
+          <button type="button" class="mus-btn" data-music="ambient"   aria-pressed="false">Ambient Drift</button>
+          <button type="button" class="mus-btn" data-music="chiptune"  aria-pressed="false">Chiptune Rush</button>
+          <button type="button" class="mus-btn" data-music="synthwave" aria-pressed="false">Synthwave Cruise</button>
+          <button type="button" class="mus-btn" data-music="tropical"  aria-pressed="false">Tropical Pluck</button>
+          <button type="button" class="mus-btn" data-music="bigroom"   aria-pressed="false">Festival</button>
+          <button type="button" class="mus-btn" data-music="techno"    aria-pressed="false">Hypno Techno</button>
+          <button type="button" class="mus-btn" data-music="dnb"       aria-pressed="false">Liquid DnB</button>
+          <button type="button" class="mus-btn" data-music="arena"     aria-pressed="false">Phrygian Onslaught</button>
+          <button type="button" class="mus-btn" data-music="boss8bit"  aria-pressed="false">8-Bit Boss March</button>
+          <button type="button" class="mus-btn" data-music="dubstep"   aria-pressed="false">Dubstep Victory</button>
         </div>
       </div>
       <button class="set-row" id="setTest"><span>Test sound</span><span class="set-val"><span class="px-ic play"></span> Play</span></button>
