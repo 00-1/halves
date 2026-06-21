@@ -1454,3 +1454,41 @@ how I verified:
 notes / questions: milestones render in the inventory **Awards** tab like the other
   Milestone collectibles; they're granted at the moment their condition is met
   (drill finish or Arena win). Next per REVIEW order: T26 (Goblin Gold currency).
+
+## T26 — Currency (Goblin Gold): earn/display/persist  [HANDOFF]
+commit: c83889e (on main)
+changed:
+  - main.js — the Goblin Gold system. `GOLD_LABEL="Goblin Gold"` (the ONE
+    user-facing label); `loadGold`/`saveGold` (`halves.gold`, in-memory fallback);
+    `fmtGold` (grouped <1000 then K/M/B/T/Qa/Qi/Sx/Sp/Oc/No/Dc… 3 sig figs, never
+    NaN/∞); pure earn formulas `questionGold`/`roundBonusGold`/`tierGold` +
+    `goldMult` (1 + items·0.05 + mastered·0.5 + heroes·0.5 + tiers·1); `earnGold`
+    (persists + grants wealth milestones). Accrues per clean question in
+    `correct()` (× combo streak × mult; a skip accrues nothing); commits the round
+    bonus + first-Mastery(+50)/first-100%(+100) in `finish()` and the tier bonus
+    in `finishBattle()`. **Display:** `renderGold` (start-screen bar) + `showGold`
+    (results — a RAF **ticking counter** + a `+N` flourish) + the Arena result
+    line. Exposes **`window.Gold`** (label/fmtGold/mult/questionGold/roundBonus/
+    tierGold/load/evaluate) as the module API + test seam.
+  - collectibles.js — **11 wealth-milestone collectibles** `gold:<n>` (Coin Purse →
+    Money Bags → Nest Egg → Gold Hoard → Tycoon → Magnate → Croesus → Dragon Hoard
+    → Goblin Vault → Midas Touch → Cosmic Fortune) at 1K…1Qa; **`evaluateGold(total,
+    has)`** (exported); `evaluate()` skips `gold` items.
+  - index.html / styles.css — start-screen `#goldBar`, results `#resGold`, Arena
+    `.ar-gold`; gold styling + a `gold-pop` flourish keyframe.
+  - **No spend mechanic** — Gold only accumulates (per the owner decision).
+how I verified:
+  - node -c (collectibles/main) OK; CSS balanced; icon-variation test still green;
+    no TODO/stub; catalogue 1030→**1041**, all names still globally unique.
+  - **T26 Node test (32 checks, ALL PASSED):** `fmtGold` across the whole ladder
+    (0/1/999/1.00K/1.23K/12.3K/123K/1.23M/1.00B/1.00T/1.00Qa/1.00Qi/1.00Sx/1.00Dc),
+    never NaN/∞, negatives→0; per-question **faster→more, higher combo→more, higher
+    multiplier→more**, clean>0; **multiplier grows** with items/mastery/tiers;
+    round + tier formulas (deeper tier → more); **wealth milestones fire at 1K/1M/
+    1Qa** and owned ones aren't re-earned; label = "Goblin Gold".
+  - **Live DOM harness (5 checks, ALL PASSED):** driving a real **clean** drill
+    round earns and **persists** `halves.gold` > 0; an **all-skipped** round earns
+    **0** — gold tracks doing maths well.
+notes / questions: Gold is earn/display/persist only (no sink), per the owner
+  decision. Phase 3 is now complete. Next per REVIEW order: Phase 4 — T31 (daily
+  momentum counter).
