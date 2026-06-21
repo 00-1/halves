@@ -1761,7 +1761,7 @@ Console account, a signing keystore, the actual upload).
 
 ## Phase 13 — Visual polish
 
-### T73 — Replace the coloured left-border accents with a coloured square · status: OPEN
+### T73 — Replace the coloured left-border accents with a coloured square · status: DONE
 Owner (screenshot, hero detail): "we've got **AI-smell left borders** again. I prefer a
 **coloured square or something else — not a curved border**." (Recurring — the owner
 flagged the same pattern earlier for the topic picker, which was fixed by dropping the

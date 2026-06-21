@@ -1,14 +1,17 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T74` (topic unlock now requires genuine engagement) · live
-build **`e7905c0`**. Skipping every question no longer grants `init:<mode>` / unlocks the next
-topic. Gate: `INIT_ANSWER_FRAC = 0.5` (single tunable constant) — `init` requires
-`answered >= ceil(total/2)`, measuring **answered** (`times.length`, since skips never push to
-`times`), not clean-first-try score. Independently verified: all-skipped → no init / topic
-stays LOCKED; 10/21 not granted, 11/21 granted; already-owned `init` kept (migration-safe,
-not revocable); Practice grants no init. `init-gate.test.js` (11 checks) green **and the full
-17-gate suite passes** (no unlock-chain regression). `node -c` clean. Default bar = "answer at
-least half" (owner may tune the one constant). T74 → DONE.
+**Current verdict:** `APPROVED — T73` (AI-smell left-borders → coloured square) · live build
+**`0f7796f`**. Removed the rarity/status `border-left-color` accents from `.hd-boost` (hero
+detail) and `.map-row` (journey map) — **zero `border-left` rules remain** — and replaced
+them with a `.row-sq`: a **sharp-cornered 10×10 square** (no border-radius), coloured by
+rarity/status, **consistent across both lists**. Verified independently: grep clean, square is
+sharp, `node -c` clean, and the two affected tests still pass (hero-detail 13, wayfinding 13).
+T73 → DONE.
+
+**Previously approved (done):** `T74` (topic unlock requires genuine engagement) · build
+`e7905c0` — skipping every question no longer grants `init`/unlocks; gate `answered ≥
+ceil(total/2)` (`INIT_ANSWER_FRAC = 0.5`, tunable); all-skipped stays LOCKED, migration-safe,
+Practice unaffected; `init-gate.test.js` (11) + full 17-gate suite green.
 
 **Previously approved (done):** `T54` (version check + Update button) · build `8af41a5` —
 `build.json` poll + dismissible Update bar, user-tap reload only, offline/local no-op; 9 checks.
@@ -52,11 +55,9 @@ to `.85`.)
 - `T57` — scrubbed the school/town/county names (repo-wide grep zero); doc-only.
 - `T50` — procedural icons on the 4 menu buttons + Arena hero portraits; 16 checks.
 
-**Next-task order:** **`T73` → `T55` → `T56`**, then content extension
+**Next-task order:** **`T55` → `T56`**, then content extension
 (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness).
-**Do `T73` next** — replace the coloured left-border accents (`.hd-boost`, `.map-row`) with a
-coloured square. Then `T55` (Collector→10k), `T56` (pixel mark/glyphs + favicon). Specs in
-BACKLOG; this line is authoritative.
+**Do `T55` next** — extend the Collector award ladder to 10,000 (keep collector:25/75/150 ids; varied British names). Then `T56` (pixel mark/glyphs + favicon). Specs in BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**
