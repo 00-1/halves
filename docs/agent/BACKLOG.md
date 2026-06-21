@@ -2314,6 +2314,18 @@ depth — NOT to force a uniform 3-wide tree (T106 handles varying depth).
   to match). Each existing-P1 rebalance is a **content edit** (curated set changes) → re-curate per
   `QUESTION-SETS.md`; each new part/topic = the full anti-dilution kit (icons/names/guide/glyph/
   `explain`/`masterSecs`).
+- **DOC/TEXT CASCADE — when content moves between parts/topics, the coupled TEXT must move with it
+  (owner, 2026-06-21).** Re-curating a part's question set is **not** enough — every part's wording
+  must match its NEW content: **(1)** the **`mode.tag`/description** (e.g. Place Value P1 "Whole ×÷
+  10·100" must drop the decimals once they move to P2; the new P2/P3 need their own tags); **(2)**
+  the **topic guide** (`guides.js` — the "how to approach this" text per part); **(3)** the
+  **`Guides.explain()` hint branch** for that part — it must produce method-only, number-specific,
+  **place-value-honest** hints for the questions the part NOW contains and **not** reference cases
+  it no longer holds (and never leak the answer in digits OR words — the `hints.test.js` gate);
+  **(4)** the **glyph tokens** (T56) if a part's operator/representation changes. The blueprint must
+  **list, per moved skill, every text artifact that has to change**, and each build task must update
+  them in lockstep — re-run `hints.test.js` + the guide/contrast gates so the docs can't drift from
+  the content.
 - **The coupling map (explain, accurate to the code).** A new topic adds collectibles
   (`init` · `mastery` · `flawless` · `4×speed` · per-question `Solved`+`Spark`, ≈ 7+2N
   for N questions). Collectibles carry **boosts** (hero+stat) → raise **hero ratings** →
