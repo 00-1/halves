@@ -1,6 +1,24 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T106` [A] (tech-tree v2 — uses the width + clear relationships) · live
+**Current verdict:** `APPROVED — T113` [A] (live Volume + Tempo sliders — the audio finally instrumented)
+· live build **`8d6e42f`**. **CI green.** The **different approach** the owner asked for: stop guessing,
+let the owner calibrate. Acts on the root cause I found — `VOL_MAX = 2.5` so the **volume slider reaches
+genuinely LOUD** (well past full scale; the −1.5 dB limiter keeps it clip-safe), fixing the "tiny bump
+did nothing" problem. `setVolume(v)` clamps 0–2.5 and applies to `master.gain` **live**; `setTempo(m)`
+clamps **0.40–1.0×** and the scheduler scales `bpm × tempoMult` **live**. Settings has a **Volume**
+slider (0–250 → 0–2.50×) and a **Music-tempo** slider (40–100 → 0.40–1.00×), each with a **live numeric
+readout**, plus a **Test-sound** button (`sfx("correct")` + menu music) so it's calibratable right
+there. **Persisted** (`halves.vol`/`halves.tempo`, applied on boot) and cleared by Settings-reset.
+Verified **independently**: `node -c` clean; **full 30-gate suite green**; `sound.test` (now 44) asserts
+`VOL_MAX ≥ 2×`, `setVolume(1.6)` sets gain live, clamps to `VOL_MAX`, `bpm × tempoMult` scaling,
+`setTempo(0.5)` slows + clamps to `TEMPO_MIN`, the slider rows + test button exist, and dragging applies
+live. All **[A]-owned files**. T113 → DONE. **→ OWNER ACTION: open Settings, drag Volume + Tempo to
+what sounds right on the Poco X3, and tell me the two values — I'll set them as defaults via `T114`**
+(ideally after `T115` so the music is final when you calibrate).
+
+---
+
+**Previously approved (done):** `T106` [A] (tech-tree v2 — uses the width + clear relationships) · live
 build **`10e3000`**. **CI green.** Each main-chain topic is now a **row** whose 1–3 **parts** run
 left-to-right, derived by following the **live `requires`/`branchOf` chain** (`topicParts()` — no
 parallel edge list; also fixes a latent depth-3 drop), so rows are 1/2/3-wide **as the data dictates**
@@ -637,24 +655,19 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T113`** [A] · **OWNER-PRIORITY** (**`T106` DONE — tech-tree v2; `T112`/`T111`/
-  `T110`/`T107`/`T100`/`T104`/`T99` DONE**).
-  **`T113` — live Volume + Tempo sliders in Settings (a DIFFERENT approach to the audio).** Audio
-  volume + in-level tempo have failed multiple blind passes (T69/T71/T98); stop guessing — **instrument
-  it** so the owner calibrates by ear and reports the values. **Root cause to act on:** the engine runs
-  at ~half scale (per-voice gains ~0.10–0.16, `musicGain` 0.09 → output peaks ≈0.51 at `VOL=0.80`), so
-  the −1.5 dB limiter **never engages** and small `VOL` bumps did ~nothing. Fix = **a much wider gain
-  range** (slider master up to ~2.0–2.5×, limiter as the clip-safe net) + a **global tempo multiplier**
-  (`bpm × tempoMult`, range ~0.4–1.0×). Both sliders **live, persisted, with a visible exact value** +
-  a **Test-sound** button so it's calibratable from Settings. Full DoD in BACKLOG `T113`. Then **`T114`
-  is BLOCKED** on the owner reporting the good values (babysitter fills them in → defaults).
+- **Builder A — next: `T115`** [A] · **OWNER-PRIORITY** (**`T113` DONE — audio sliders shipped; the
+  owner is now calibrating; `T106`/`T112`/`T111`/`T110`/`T107`/`T100`/`T104`/`T99` DONE**).
+  **`T115` — music with CHARACTER:** **calm solves [FIRM RULE]**, real per-context variety (stop the
+  "all sounds the same"), a synth **"wub" win-sting** on topic-complete/battle-win, distinct Arena
+  theme. Full DoD in BACKLOG `T115`. **`T114`** (set the owner-calibrated volume/tempo as defaults) is
+  BLOCKED on the owner reporting T113's values — slot it once they do (ideally after T115).
   **SEQUENCE LOCKED (Babysitter owns it — owner delegated 2026-06-21 "you choose order, you own
   that"). Theme: finish-what's-visible → install & perform on Android → deepen gameplay & content →
-  submit.** Authoritative order — **AUDIO BLOCK FIRST** (owner is focused on it): **`T113`** (volume +
-  tempo sliders — instrument it) → **`T115`** (music with CHARACTER: **calm solves [firm rule]**, real
-  per-context variety, a synth **"wub" win-sting** on topic-complete/battle-win, distinct Arena theme)
-  → **`T116`** (restore the tree's scroll-affordance fade/cue — a small T96 regression the owner spotted)
-  → **`T101`** (Start→fullscreen delay — quick, owner-flagged, leads the perf work) →
+  submit.** Authoritative order — **AUDIO/POLISH BLOCK FIRST** (owner is focused on it): **`T115`**
+  (music with CHARACTER) → **`T116`** (restore the tree's scroll-affordance fade/cue — a small T96
+  regression the owner spotted) → **`T117`** (replace ALL chrome emoji with house generative pixel
+  icons — owner pass; padlock/speaker/cog/coin/calendar + the full swept set) → **`T101`**
+  (Start→fullscreen delay — quick, owner-flagged, leads the perf work) →
   **`T102`** (Android PWA+TWA — installable parity build, now that the web UI is
   stable) → **`T103`** (Android-inclusive perf research — needs T102 to profile) → **`T89`/`T90`**
   (Arena 3v3 team UI + playout) → content **`T58`** blueprint (Babysitter drafts it **in the background

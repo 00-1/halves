@@ -2087,7 +2087,7 @@ is deferred to a later step.)
   far as headless allows). (Babysitter: confirm it reads "game not web-app", the focus ring +
   contrast + tap targets survive, body text is unaffected, and `data-ui="classic"` restores today.)
 
-### T113 — [A] Audio: live Volume + Tempo sliders in Settings (owner-calibrated) · status: OPEN · OWNER-PRIORITY
+### T113 — [A] Audio: live Volume + Tempo sliders in Settings (owner-calibrated) · status: DONE (`8d6e42f`)
 **A different approach — stop tuning blind.** Audio volume + in-level tempo have had multiple passes
 (T69/T71/T98) and STILL don't match what the owner hears on the Poco X3. Instead of guessing constants,
 **instrument the app**: give the owner real-time sliders to find the right values by ear, **display the
@@ -2197,6 +2197,42 @@ applied to the tree. It's now obvious because T112/T106 make the tree taller/mor
   tree re-renders and on resize/fullscreen toggle; taps still hit nodes; reduced-motion safe; 360px-safe;
   `node -c` clean; all gates green (a small check that `updateTreeScroll` toggles the classes from
   scroll metrics). (Babysitter: confirm the fade/cue appears only when scrollable and tracks scroll.)
+
+### T117 — [A] Replace ALL chrome emoji with house generative pixel icons · status: OPEN · OWNER-PRIORITY
+Owner: "do a pass where we replace all the emojis we're using with our own icons, in the style of our
+existing generative icons … padlock, audio, settings cog, coin, calendar … do a pass to pick up
+everything." Build the missing icons in the **existing procedural pixel-icon style** (the `glyphs.js`
+pixel-mark system / the T50 nav-icon canvases / T56 topic glyphs) — small, crisp, on-brand — and swap
+**every** emoji for one.
+- **Babysitter's emoji audit (starting inventory — NOT exhaustive; sweep for more, e.g. ▶ and other
+  Geometric-Shapes/Misc-Symbols my scan missed):** 🔒 padlock (×8, locked nodes/features) · 🔊/🔇
+  speaker on·off (×10, sound) · ⚙ cog (×1, settings) · 🪙 coin (×6, gold) · 🗓 calendar (×2,
+  momentum/events) · ⚔ swords (×4, boss/battle) · 🏁 flag (×1, boss/finish) · 🗺 map (×1, journey) ·
+  ⭐/★ star (×7, rating/badge) · ✨ sparkles (×1) · ⛶ fullscreen (×3) · ⌫ backspace (×2, numpad) · ✕
+  close (×1, modal) · ✓ check (×4, owned/correct) · ▶ play (CTA + node badge). **Do a fresh sweep of
+  `index.html` + all `*.js` to catch every pictographic/symbol char, not just this list.**
+- **KEEP (do NOT replace — these are semantic content, not chrome):** the **`→` flow/answer arrow
+  (×118)** in hints/answers (e.g. "6 × 7 → 42") and the inline **`↑`/`↓`** in hint text. They're maths/
+  reading content; leave them. (The scroll-cue `↓` is T116's concern, not this.)
+- **Two contexts, handle both.** (a) **Standalone icon slots** (nav buttons, gold bar, momentum bar,
+  rank/badge) → a small procedural pixel-icon canvas (like the T50 nav icons). (b) **Inline-in-text**
+  (e.g. `'🔒 '+unlockHint`, `'⚔ Boss next'`) → either a pixel-glyph token rendered inline or a tiny
+  inline canvas/`<span>` icon — keep the line readable and aligned.
+- **Preserve a11y + state semantics.** Buttons keep their `aria-label` (the icon is decorative →
+  `aria-hidden`); the **node-state badges (✓ done / 🔒 locked / ▶ playable)** must keep conveying state
+  AND stay non-colour-only (the T100/a11y rule). Don't break the sound on/off swap, the fullscreen
+  ⛶⇄Exit sync, or the numpad ⌫ key behaviour.
+- **House style + no-build.** Pixel-art, crisp at small size, matching the existing palette/aesthetic;
+  pure procedural canvas / glyph tokens (no image assets, no-build); style under `data-ui="pixel"`
+  consistently; 360px-safe; legible (kid audience).
+- **DoD:** every targeted chrome emoji is replaced by an on-style generative pixel icon (padlock,
+  speaker on/off, cog, coin, calendar, swords, flag, map, star, fullscreen, backspace, close, check,
+  play, + any others the sweep finds); the `→` answer-arrows and hint `↑/↓` are **untouched**; icons
+  carry `aria-hidden` while their controls keep `aria-label`; node-state badges still read state +
+  a11y-safe; mute/fullscreen/numpad still work; no image assets added; `node -c` clean; all gates
+  green + **a new gate asserting NONE of the targeted emoji remain** in `index.html`/the icon-render
+  source (allow-list the kept `→`/`↑`/`↓`) and that the new icon renderers produce non-empty output.
+  (Babysitter: grep the served output for leftover emoji; eyeball the icons read clearly + on-brand.)
 
 ### T106 — [A] Tech-tree v2: use the full width + a clearer relationship visual language · status: DONE (`10e3000`)
 Owner: the tree nodes **don't use the full screen width** (only ~2 abreast in a ~360px column) and
