@@ -1258,7 +1258,6 @@
   window.addEventListener("hashchange", applyRoute);
 
   $("startBtn").addEventListener("click", start);
-  $("againBtn").addEventListener("click", start);
   $("menuBtn").addEventListener("click", navStart);
 
   $("statsBtn").addEventListener("click", () => { location.hash = "#/best-times"; });

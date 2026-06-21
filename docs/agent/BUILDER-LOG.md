@@ -2513,3 +2513,24 @@ how I verified:
     new-rank toasts is handled by the T64 queue.
 notes / questions: direct owner bug fix (not a BACKLOG task); logged for visibility.
   T54 verdict still pending; resumes after.
+
+## UX change (owner direct) — results screen: keep only "Back" (drop "Play again")  [HANDOFF]
+commit: (this commit, on main)
+Owner (direct, mid-process — flagged that they were addressing me rather than the
+Babysitter and asked me to note the deviation): on the results screen the two
+buttons were "Play again" (`#againBtn` → replay same topic) and "Back" (`#menuBtn`
+→ home). Owner: "I think we only need Back — they can manually replay if they want;
+generally people will want to do something else at that point."
+changed:
+  - index.html — removed the **"Play again"** button; the single remaining action is
+    **"Back"** (`#menuBtn`, now a solid primary `.btn`, → `navStart`/home).
+  - main.js — removed the now-dangling `$("againBtn")` click wiring.
+how I verified: `node -c` OK; **0 `againBtn` refs** remain; `$("id")` cross-check
+  clean (84); all sixteen gates green; no regressions (Best Times still lets you
+  re-play a topic by tapping it).
+### Process note for the Babysitter
+This + the prior two entries ("Modes"→"Back" rename, and the rank-reward cascade
+fix) were **direct owner instructions** given to the Builder in chat, outside the
+BACKLOG/REVIEW verdict loop. The owner acknowledged the deviation and asked me to
+proceed and log it. All three are small, gate-covered, and on `main`. (T54's verdict
+is still pending; the normal loop resumes after.)
