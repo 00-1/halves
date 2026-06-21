@@ -693,7 +693,7 @@
   // (Enemies.statBattle over the REAL collected set). Drilling the topics is
   // where buffs are earned; the Arena is the payoff. Clearing it still demands a
   // near-complete collection (the win == the old max-perf win, T23/T43).
-  let arenaHero = null, lastBattle = null, practiceCtx = null;
+  let arenaHero = null, lastBattle = null, practiceCtx = null, arenaMapOpen = false;
 
   // ---- per-question best-time store (halves.qbest) for the Practice view -----
   let memQbest = null;
@@ -776,16 +776,43 @@
         '<div class="ar-maths">'+Math.round(r.res.rating)+' ★ × '+r.res.matchup+
           ' = power <b>'+r.res.power+'</b> vs DEF <b>'+r.res.def+'</b></div>'+
         (r.won ? "" : '<div class="ar-hint">Not strong enough — collect more buffs (drill the topics) or pick the advantage-type hero.</div>')+
+        (r.regionCleared ? '<div class="ar-region-clear">🏁 Region conquered! Next: '+esc(r.regionCleared)+'</div>' : '')+
         (r.goldEarn > 0 ? '<div class="ar-gold">🪙 +'+esc(fmtGold(r.goldEarn))+' '+esc(GOLD_LABEL)+'</div>' : '')+
         (r.newHeroes.length ? '<div class="ar-new">★ New hero: '+r.newHeroes.map(esc).join(", ")+'!</div>' : '')+
         '</div>';
+    }
+    // ---- wayfinding helpers (T68) — all from the Enemies region API ----
+    const RS = E.REGION_SIZE || 12, REGIONS = Math.ceil(E.TIER_COUNT / RS);
+    const bossTierOf = r => Math.min((r + 1) * RS, E.TIER_COUNT);
+    const bossNameOf = r => E.byTier(bossTierOf(r)).name;
+    const conquered = r => !!col["tier:" + bossTierOf(r)];
+    // a journey-map toggle is available whenever you're still climbing
+    html += '<button class="arena-map-btn" id="arenaMapBtn">'+(arenaMapOpen ? "▾ Hide journey map" : "🗺 Journey map")+'</button>';
+    if(arenaMapOpen){
+      html += '<div class="arena-map">'+Array.from({length:REGIONS}, (_, r) => {
+        const isCur = !cleared && r === E.tierRegion(tier.n), conq = conquered(r);
+        const st = conq ? "done" : isCur ? "cur" : "locked";
+        const tag = conq ? "✓ conquered" : isCur ? "you are here" : "locked";
+        return '<div class="map-row '+st+'"><span class="map-name">'+esc(E.regionLabel(r))+'</span>'+
+          '<span class="map-boss">⚔ '+esc(bossNameOf(r))+'</span><span class="map-tag">'+tag+'</span></div>';
+      }).join("")+'</div>';
     }
     if(cleared){
       html += '<div class="arena-tier done"><div class="at-name">⭐ Arena cleared — you defeated The Void Sovereign!</div>'+
         '<div class="at-region">Every tier has fallen. Champion of the realm.</div></div>';
     } else {
+      const reg = E.tierRegion(tier.n), posInReg = ((tier.n - 1) % RS) + 1;
+      const isBossNow = posInReg === RS, bossNext = posInReg === RS - 1;
+      const pips = Array.from({length:RS}, (_, i) => {
+        const at = reg * RS + i + 1, isB = (i + 1) === RS;
+        const cl = col["tier:" + at] ? "done" : (at === tier.n ? "cur" : "");
+        return '<span class="at-pip '+(isB ? "boss " : "")+cl+'" title="Tier '+at+'"></span>';
+      }).join("");
       html += '<div class="arena-tier t-'+tier.type.toLowerCase()+'">'+
-        '<div class="at-region">'+esc(E.regionLabel(E.tierRegion(tier.n)))+' · Tier '+tier.n+'</div>'+
+        '<div class="at-region">'+esc(E.regionLabel(reg))+' · region '+(reg+1)+'/'+REGIONS+' · tier '+posInReg+'/'+RS+'</div>'+
+        '<div class="at-pips">'+pips+'</div>'+
+        (isBossNow ? '<div class="at-boss now">⚔ Region boss — defeat '+esc(tier.name)+' to conquer '+esc(E.regionLabel(reg))+'</div>'
+         : bossNext ? '<div class="at-boss next">⚔ Boss next: '+esc(bossNameOf(reg))+'</div>' : '')+
         '<div class="at-name"><i class="typedot"></i>'+esc(tier.name)+'</div>'+
         '<div class="at-stats"><span class="at-type">'+esc(tier.type)+'</span><span class="at-def">DEF '+tier.def+'</span></div></div>';
       if(!heroes.length){
@@ -846,8 +873,11 @@
     const col = loadCollected();
     const heroName = (C.HERO_NAMES && C.HERO_NAMES[heroId]) || heroId;
     const goldBefore = loadGold();
-    let earn = 0, loot = [], newHeroes = [];
+    const RS = E.REGION_SIZE || 12;
+    let earn = 0, loot = [], newHeroes = [], regionCleared = null;
     if(res.win){
+      // a region is conquered when its boss (the region's last tier) falls (T68)
+      if(tier.n % RS === 0 && tier.n < E.TIER_COUNT) regionCleared = E.regionLabel(E.tierRegion(tier.n + 1));
       const before = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col)).map(h => h.id);
       col["tier:" + tier.n] = { ts: Date.now() };
       E.tierLoot(tier.n).forEach(id => { if(!col[id]) col[id] = { ts: Date.now() }; });
@@ -864,7 +894,7 @@
     const wealth = earnGold(earn, col);               // grants any wealth milestones into col
     saveCollected(col);
     loot = loot.concat(wealth);
-    lastBattle = { won: res.win, res: res, heroName: heroName, heroId: heroId, heroType: (Hs.byId(heroId)||{}).type, tierName: tier.name, loot: loot, newHeroes: newHeroes, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
+    lastBattle = { won: res.win, res: res, heroName: heroName, heroId: heroId, heroType: (Hs.byId(heroId)||{}).type, tierName: tier.name, loot: loot, newHeroes: newHeroes, regionCleared: regionCleared, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
     arenaHero = null;
     renderArena();
     const ab = $("arenaBody"); if(ab) ab.scrollTop = 0;   // T65: show the result + tier, not the hero list
@@ -1209,7 +1239,7 @@
       if(renderHeroDetail(h.slice(5))) show("heroDetail");
       else { location.hash = "#/heroes"; return; }   // unknown/locked → back to the list
     }
-    else if(h === "arena"){ lastBattle = null; arenaHero = null; renderArena(); show("arena"); }
+    else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
     else { renderTabs(); renderBest(); renderStartState(); renderGold(); renderMomentum(); show("start"); }
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
@@ -1243,6 +1273,7 @@
   $("arenaBack").addEventListener("click", navStart);
   $("arenaFight").addEventListener("click", startBattle);
   $("arenaBody").addEventListener("click", e => {
+    if(e.target.closest(".arena-map-btn")){ arenaMapOpen = !arenaMapOpen; renderArena(); return; }
     const card = e.target.closest(".arena-hero"); if(!card) return;
     arenaHero = (arenaHero === card.dataset.hero) ? null : card.dataset.hero;
     renderArena();

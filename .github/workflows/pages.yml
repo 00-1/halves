@@ -48,6 +48,8 @@ jobs:
         run: node test/sound.test.js
       - name: Hero detail test (gate)
         run: node test/hero-detail.test.js
+      - name: Arena wayfinding test (gate)
+        run: node test/wayfinding.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info

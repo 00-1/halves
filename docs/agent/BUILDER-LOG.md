@@ -2343,3 +2343,42 @@ notes / questions: loot total rose to 350 by the existing per-depth rule (spec:
   "keep the rule; confirm totals make sense") — sane, procedurally registered.
   Next per REVIEW order: **T68** (Arena wayfinding — regions, boss anticipation, a
   journey map — built on this 12-per-region structure).
+
+## T68 — Arena wayfinding: regions, boss anticipation, journey map  [HANDOFF]
+commit: (this commit, on main)
+changed (main.js renderArena/finishBattle + styles.css; all from the Enemies region
+API, structure-agnostic so it's correct at 120 = 10×12 and would be at 100):
+  - **(1) Region wayfinding on the tier card.** The bare "Tier n" line is now
+    **"<Region> · region R/10 · tier P/12"** (region index + in-region position),
+    with a **row of per-region pips** — cleared (mint), current (amber, ringed), and
+    the **boss pip distinctly marked** (coral, round). Region size read from
+    `E.REGION_SIZE` (regions = `ceil(TIER_COUNT/REGION_SIZE)`), never hard-coded.
+  - **(2) Boss anticipation.** When the current tier is the region's **penultimate**,
+    a banner flags **"⚔ Boss next: <Boss>"**; when it IS the boss tier, **"⚔ Region
+    boss — defeat <Boss> to conquer <Region>"**. Boss names via
+    `E.byTier(regionLastTier).name` (no need to export BOSSES).
+  - **(3) Journey map.** A **"🗺 Journey map"** toggle (`#arenaMapBtn`, delegated on
+    `#arenaBody`) opens an overview of **all 10 regions**: **conquered ✓** (boss
+    beaten), **current "you are here"**, and **locked-ahead** — each teased by its
+    **boss landmark** (so you see "Dragon's Roost", "The Void Throne" ahead). Resets
+    closed on entering the Arena.
+  - **(4) Region-clear moment.** Beating a region boss (`tier.n % REGION_SIZE === 0`)
+    sets `lastBattle.regionCleared` → the result header shows **"🏁 Region conquered!
+    Next: <Region>"** (reuses the result card + the existing win sfx).
+  - styles.css — pips, boss banners, the map button + `.map-row` (done/cur/locked)
+    using the **T46 AA palette** (mint/amber/coral on surfaces).
+how I verified:
+  - `node test/wayfinding.test.js` (NEW, 13th gate; drives `renderArena` at seeded
+    tiers) → **ALL 13 PASS**: header maths correct (penultimate tier 11 → "region
+    1/10 · tier 11/12"); **10 cleared pips + a current pip + a boss pip**; **boss-next
+    names Goblin King**; at tier 12 the **facing-the-boss banner** shows; crossing to
+    tier 13 updates to **"Gallowmarch · region 2/10 · tier 1/12"**; the **map lists
+    all 10 regions** (Goblin Warren conquered, Gallowmarch "you are here", The Void
+    Sovereign teased ahead); and **beating the region boss shows "Region conquered!
+    Next: Gallowmarch"**.
+  - `node -c main.js` OK; **82 `$("id")` refs present**; **contrast gate green**
+    (AA palette); all thirteen gates pass; **static (no RAF)**, scroll-to-top (T65)
+    intact, 360px-safe. No change to battle/def/loot. No regressions.
+notes / questions: computed everything from `tierRegion`/`regionLabel`/`REGION_SIZE`
+  so it auto-tracks the structure. Next per REVIEW order: **T52** (procedural enemy
+  sprites in the Arena — a new generator).
