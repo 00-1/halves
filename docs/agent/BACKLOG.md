@@ -515,6 +515,13 @@ they key item boosts, `HERO_NAMES`, and `heroes.js`. Update only **`HERO_NAMES`*
 `DESIGN-heroes.md`. The Babysitter will paste the **owner-approved** mapping here
 (id → new name) once the naming research returns and the owner signs off. Preserve
 each hero's type + stat-archetype.
+- **PROPOSED (research output — AWAITING OWNER SIGN-OFF; do not apply yet):**
+  `bram→Brannon, greta→Hilde, tovar→Ser Aldric, mo→Magnar, wisp→Wisp (kept),
+  mira→Maerwen, nim→Emrys, zeph→Aerith, pip→Fenn, vex→Vesh, sela→Selwen,
+  roon→Rendel`. Aesthetic: Brawn = Old Norse/Germanic (hard consonants), Arcane &
+  Cunning = Welsh/Celtic (softer vowels); each keeps a sound-thread to its original
+  (Br-, M-r, Sel-, R-…); only one title (Ser Aldric). (Note: "Aerith" echoes FF7 —
+  owner may want an alternative for `zeph`.)
 - **DoD:** every one of the 12 ids has its new display name in `HERO_NAMES`; ids
   unchanged everywhere; item boosts still resolve (Node: each boost's `HERO_NAMES`
   lookup non-empty); heroes screen + inventory boost labels show the new names;
