@@ -6,6 +6,67 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T95 — Semantic home/menu backdrop (engine side; [B])
+
+**Status: DONE — handed off for review.** Edited only B-owned files
+(`fxgl.js`, `test/fxgl.test.js`); **zero edits to any existing Halves file**
+(the [A] side reads home state and calls the new API). No deps/bundler;
+deploy-safe; all existing gates green.
+
+### What shipped
+- **New API: `FXGL.setHomeState(state)`** (and `controller.setHomeState`,
+  `FXGL.deriveHomeScene(state)`). Purpose = **AMBIENT STATUS** — the home
+  backdrop *reflects real state*, it is **not decoration**. It **derives** a
+  calm ambient scene (the T93 dither+palette+motes layer) from live home state
+  passed in by the caller:
+  - `state = { progress: 0..1, streak: int, event: { palette, seed, name, mood } | null, seed?, cols?, rows? }`
+  - **today's event** → the home *wears the event's palette* and its seed drives
+    the look (the strongest semantic: home literally shows the day's event).
+  - **momentum (progress)** → a cool→warm dawn palette + a **horizon glow that
+    rises and brightens** as you progress, and a denser particle field.
+  - **streak** → kind: a streak (≥3) brings warm "on-a-roll" **embers**; else
+    calm **motes** (an event `mood` can override the kind).
+  - **deterministic** from a state-derived seed (`seedFromHome`: event + momentum
+    band + streak) — stable for a given state, shifts when the day/event or a
+    milestone changes.
+- **Calm + budgeted:** the home field is capped at **`HOME_PARTICLE_MAX = 120`**
+  (well under the Arena's 512) so home stays legible and cheap; renders through
+  the existing T93 backends (single RAF, one draw/frame, **idles when stopped /
+  off-home**, reduced-motion → a static still, no-WebGL2 → the CPU still).
+- Reuses the whole T93 render pipeline — `deriveHomeScene` simply emits a
+  `setScene`-shaped scene, so there's no new GPU code, just the **semantic
+  mapping** from state → palette/grid/particles.
+
+### Brickmap borrowing (T95)
+None new — T95 is pure state→scene mapping feeding the **T93** ports (Bayer
+dither, luminance→palette ramp, atmospheric gradient, instanced motes). The
+rising-dawn glow is our own, built on T93's gradient/fog recipe.
+
+### Verification
+`node -c` clean; `node test/fxgl.test.js` → **82 checks** (T94's 67 + 15 new):
+deterministic for a state; **density encodes momentum** + stays ≤ cap; a
+different state → a different backdrop; **the glow rises with progress**; streak
+threshold switches motes→embers; **an event makes the home wear the event
+palette + mood + seed**; the seed shifts when the event changes; renders through
+a real backend on a **single RAF, one draw/frame, idles when stopped**, and
+**reduced-motion → a static still**. Full existing 24-gate Halves suite green.
+
+### Hand-off to Builder A (the [A] home-backdrop wiring task)
+- Mount a backdrop canvas *behind* the (compact, T91) home UI
+  (`aria-hidden`, `pointer-events:none`), then feed it the **real** home state:
+  `FXGL.mount(bg, { width, height }); FXGL.setHomeState({ progress, streak, event }); FXGL.start();`
+  Re-call `setHomeState(...)` when state changes (return-to-home / new event /
+  streak tick); `FXGL.stop()` when leaving home (idles the RAF). Source the
+  inputs from the live home model (progress from collection/mastery, streak from
+  the day-counter, `event` from today's event theme). Keep the home one-screen +
+  legible (a scrim if needed, as `scenery.js`/Arena does). Register the CI gate.
+
+### Next (Builder B)
+- Await the Babysitter's verdict + next pointer (more FX surfaces are flagged as
+  follow-ups once the foundation proves on a real Poco-X3-class device).
+
+---
+
 ## T94 — Celebration-burst capability on `fxgl.js` (engine side; [B])
 
 **Status: DONE — handed off for review.** Edited only B-owned files

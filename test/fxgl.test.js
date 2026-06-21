@@ -269,5 +269,56 @@ ok(!rc.isBursting() && rq.length === 0, "the reduced-motion burst also auto-stop
 ok(/exp\(-k\*lt\)/.test(FXGL.shaders.GLSL_BURST_VS) && /exp\(-k\*lt\)/.test(FXGL.shaders.WGSL_BURST),
    "both burst shaders use the closed-form drag trajectory");
 
+// =====================================================================
+// 9) Semantic home backdrop (T95) — derived from LIVE home state, not noise
+// =====================================================================
+const meanLumaRow = (g, r) => { let s = 0; for(const cell of g[r]) s += FXGL.luma(FXGL.parseColor(cell)); return s / g[r].length; };
+const brightestRow = (g) => { let bi = 0, bl = -1; for(let r = 0; r < g.length; r++){ const l = meanLumaRow(g, r); if(l > bl){ bl = l; bi = r; } } return bi; };
+
+// deterministic: same state → identical backdrop
+const stLo = { progress: 0.1, streak: 0 };
+const hsA = FXGL.deriveHomeScene(stLo), hsB = FXGL.deriveHomeScene({ progress: 0.1, streak: 0 });
+ok(JSON.stringify(hsA) === JSON.stringify(hsB), "deriveHomeScene is deterministic for a given state");
+
+// momentum drives density: more progress/streak → a livelier (but capped) field
+const hsHi = FXGL.deriveHomeScene({ progress: 0.9, streak: 6 });
+ok(hsHi.particles.count > hsA.particles.count, "particle density encodes momentum (progress/streak)");
+ok(hsHi.particles.count <= FXGL.HOME_PARTICLE_MAX, "home field stays capped + calm (≤ HOME_PARTICLE_MAX)");
+ok(JSON.stringify(hsHi) !== JSON.stringify(hsA), "a different home state → a different backdrop");
+
+// momentum raises the dawn: the glow band sits higher (smaller row) with progress
+ok(brightestRow(hsHi.grid) < brightestRow(hsA.grid), "the horizon glow RISES with progress (status: momentum)");
+
+// streak is read as status: crossing a streak threshold switches to warm embers
+ok(FXGL.deriveHomeScene({ progress: 0.3, streak: 0 }).particles.kind === "motes", "no streak → calm motes");
+ok(FXGL.deriveHomeScene({ progress: 0.3, streak: 4 }).particles.kind === "embers", "a streak (≥3) → warm embers (on a roll)");
+
+// today's EVENT is worn: its palette + seed drive the backdrop (real source)
+const evState = { progress: 0.5, streak: 1, event: { palette: ["#101826", "#3a1f5c", "#b048a0", "#ffd0f0"], seed: 777, name: "Spring Rush", mood: "stars" } };
+const hsEv = FXGL.deriveHomeScene(evState);
+ok(JSON.stringify(hsEv.palette) === JSON.stringify(evState.event.palette), "with an event, the home wears the event palette");
+ok(hsEv.particles.kind === "stars", "the event mood sets the particle kind");
+ok(FXGL.seedFromHome(evState) === hsEv.seed && hsEv.seed === FXGL.deriveHomeScene(evState).seed, "the seed is derived from event state (stable)");
+ok(FXGL.seedFromHome({ progress: 0.5 }) !== FXGL.seedFromHome({ progress: 0.5, event: { seed: 777, name: "Spring Rush" } }), "the seed shifts when today's event changes");
+
+// it renders through the T93 pipeline on a real backend (single RAF, idles)
+const hrec = { texImage2D: 0, drawArraysInstanced: 0, drawArrays: 0, bufferData: 0 };
+let hq = [], hcaf = 0;
+const hc = new FXGL.Controller(stubCanvas(), { gl: makeGL(hrec), raf: cb => { hq.push(cb); return hq.length; }, caf: () => { hcaf++; }, width: 360, height: 640, dpr: 1, quality: 2, reducedMotion: false });
+hc.setHomeState({ progress: 0.7, streak: 5 });
+ok(hrec.texImage2D === 2 && hc.particleCount() > 0, "setHomeState uploads the derived scene (textures once)");
+hc.start();
+let ht = 0; for(let i = 0; i < 4; i++){ const cb = hq.shift(); ht += 16; cb(ht); }
+ok(hq.length === 1 && hrec.drawArraysInstanced === 4, "home backdrop animates on a single RAF (one draw/frame)");
+hc.stop();
+ok(hcaf >= 1 && !hc.isAnimating(), "the home backdrop idles when stopped (off-home: no RAF)");
+
+// reduced motion → a static still, no loop (legible, motion-safe)
+let hrm = 0;
+const hcRm = new FXGL.Controller(stubCanvas(), { gl: makeGL({}), raf: () => { hrm++; }, caf: () => {}, width: 360, height: 640, dpr: 1, reducedMotion: true });
+hcRm.setHomeState({ progress: 0.4, streak: 2 });
+hcRm.start();
+ok(hrm === 0 && !hcRm.isAnimating(), "reduced-motion home backdrop is a static still (no RAF)");
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FXGL CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

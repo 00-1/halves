@@ -52,6 +52,10 @@
   const BURST_GRAVITY = 1.2;        // screen-fractions / s²  (down = +y)
   const BURST_DRAG = 1.6;           // velocity damping rate (1/s)
 
+  // Home backdrop (T95): a calm, legible ambient field — its own modest cap,
+  // well under the Arena's, so the home screen stays readable and cheap to idle.
+  const HOME_PARTICLE_MAX = 120;
+
   // The 4×4 ordered (Bayer) matrix, row-major — the same lattice brickmap uses
   // for its palette dither and its foliage stipple.
   const BAYER = [ 0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5 ];
@@ -269,6 +273,98 @@
       image: gridToImage(scene.grid),
       particles: seedParticles(scene, ramp, cap),
       dither: (scene.dither == null) ? 1 : scene.dither
+    };
+  }
+
+  // =========================================================================
+  // SEMANTIC HOME BACKDROP (T95) — purpose: AMBIENT STATUS, never decoration.
+  // Pure mapping from *live home state* (passed in by the [A] caller) to a calm
+  // ambient scene: today's-event mood and momentum/streak drive the palette,
+  // the rising-dawn glow, the particle kind, and the density — all deterministic
+  // from a state-derived seed. Same state → same backdrop; the look *changes
+  // because the state changed*, so the home literally reads your progress.
+  // =========================================================================
+  function mixRgb(a, b, t){ return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+
+  // A stable per-state seed: today's event (its seed/name) dominates, then the
+  // momentum band + streak. Stable for a given state, shifts when the day/event
+  // or a milestone changes.
+  function seedFromHome(state){
+    if(state.seed != null) return (state.seed | 0) || 1;
+    let h = 2166136261 >>> 0;
+    const mix = function(n){ h ^= (n >>> 0); h = Math.imul(h, 16777619) >>> 0; };
+    if(state.event){
+      if(state.event.seed != null) mix(state.event.seed | 0);
+      if(state.event.name) for(let i = 0; i < state.event.name.length; i++) mix(state.event.name.charCodeAt(i));
+    }
+    mix(Math.round(clamp01(state.progress || 0) * 20));   // bucketed momentum
+    mix(Math.max(0, state.streak | 0));
+    return h || 1;
+  }
+
+  // Palette: wear today's event colours if there's an event; otherwise derive a
+  // cool→warm dawn ramp whose warmth/brightness encodes momentum (progress).
+  function homePalette(state){
+    if(state.event && state.event.palette && state.event.palette.length >= 2) return state.event.palette.slice();
+    const p = clamp01(state.progress != null ? state.progress : 0);
+    const base = [10, 12, 22];                              // always-dark top
+    const horizon = mixRgb([30, 34, 54], [120, 80, 60], p); // cool → warm horizon
+    const glow = mixRgb([70, 84, 130], [245, 205, 150], p); // cool glow → warm dawn
+    return [ toHex(base), toHex(mixRgb(base, horizon, 0.5)), toHex(horizon), toHex(mixRgb(horizon, glow, 0.6)), toHex(glow) ];
+  }
+
+  // A calm gradient backdrop: vertical dark→mid wash + a soft horizon glow band
+  // that RISES and brightens with momentum (more progress = a higher dawn). A
+  // tiny seeded per-column shimmer keeps it from dead-flat banding.
+  function homeGrid(state, palette, cols, rows){
+    const rgb = palette.map(parseColor);
+    const dark = rgb[0], mid = rgb[(rgb.length / 2) | 0], glow = rgb[rgb.length - 1];
+    const p = clamp01(state.progress != null ? state.progress : 0);
+    const rng = makeRng(seedFromHome(state));
+    const horizon = rows * (0.78 - 0.42 * p);               // rises with momentum
+    const shimmer = new Array(cols);
+    for(let c = 0; c < cols; c++) shimmer[c] = rng() - 0.5;
+    const g = [];
+    for(let r = 0; r < rows; r++){
+      g[r] = new Array(cols);
+      const vy = rows > 1 ? r / (rows - 1) : 0;
+      const d = Math.abs(r - horizon) / rows;
+      const band = Math.max(0, 1 - d * 4) * (0.35 + 0.65 * p);
+      for(let c = 0; c < cols; c++){
+        let col = mixRgb(dark, mid, vy);
+        col = mixRgb(col, glow, band * 0.8);
+        const s = 1 + shimmer[c] * 0.06;
+        g[r][c] = toHex([col[0] * s, col[1] * s, col[2] * s]);
+      }
+    }
+    return g;
+  }
+
+  // Particles: kind names the status (an event sets the mood; a streak brings
+  // warm "on-a-roll" embers; else calm motes), density encodes momentum, capped
+  // so home stays calm + legible.
+  function homeParticles(state, palette){
+    const p = clamp01(state.progress != null ? state.progress : 0);
+    const streak = Math.max(0, state.streak | 0);
+    let kind = "motes";
+    if(state.event && state.event.mood && KIND[state.event.mood] != null) kind = state.event.mood;
+    else if(streak >= 3) kind = "embers";
+    const count = Math.min(HOME_PARTICLE_MAX, Math.round(18 + p * 60 + Math.min(streak, 10) * 4));
+    const colors = palette.slice(Math.max(0, palette.length - 2));
+    return { kind: kind, count: count, colors: colors };
+  }
+
+  // The public derivation: live home state → a setScene-shaped ambient scene.
+  function deriveHomeScene(state){
+    state = state || {};
+    const cols = state.cols || 28, rows = state.rows || 16;
+    const palette = homePalette(state);
+    return {
+      grid: homeGrid(state, palette, cols, rows),
+      palette: palette,
+      particles: homeParticles(state, palette),
+      seed: seedFromHome(state),
+      dither: 1
     };
   }
 
@@ -948,6 +1044,9 @@
     }
     return this;
   };
+  // Semantic home backdrop (T95): derive a calm ambient scene from live home
+  // state and apply it. Re-callable as state changes (progress / event / streak).
+  Controller.prototype.setHomeState = function(state){ return this.setScene(deriveHomeScene(state)); };
   Controller.prototype.setQuality = function(q){
     this.quality = Math.max(0, Math.min(2, q | 0));
     // Re-seed at the new particle cap and re-fit the buffer.
@@ -1007,23 +1106,24 @@
   function setQuality(q){ if(active) active.setQuality(q); return active; }
   function dispose(){ if(active){ active.dispose(); active = null; } }
   function burst(opts){ if(active) active.burst(opts); return active; }
+  function setHomeState(state){ if(active) active.setHomeState(state); return active; }
 
   window.FXGL = {
     // runtime API
-    mount: mount, setScene: setScene, start: start, stop: stop, burst: burst,
+    mount: mount, setScene: setScene, setHomeState: setHomeState, start: start, stop: stop, burst: burst,
     setQuality: setQuality, dispose: dispose, resize: function(){ if(active) active.resize(); },
     capabilities: capabilities, active: function(){ return active; },
     Controller: Controller,
     // budget constants
     PARTICLE_CAP: PARTICLE_CAP, BURST_CAP: BURST_CAP, BURST_GRAVITY: BURST_GRAVITY, BURST_DRAG: BURST_DRAG,
-    QUALITY: QUALITY, KIND: KIND, BAYER: BAYER,
+    HOME_PARTICLE_MAX: HOME_PARTICLE_MAX, QUALITY: QUALITY, KIND: KIND, BAYER: BAYER,
     // pure math (headless-tested)
     bayer4: bayer4, parseColor: parseColor, toHex: toHex, luma: luma,
     buildRamp: buildRamp, rampIndex: rampIndex, quantizePixel: quantizePixel,
     gridToImage: gridToImage, gridColors: gridColors,
     makeRng: makeRng, seedParticles: seedParticles, animateParticle: animateParticle,
     seedBurst: seedBurst, burstPos: burstPos, burstMaxDeath: burstMaxDeath,
-    deriveScene: deriveScene,
+    deriveScene: deriveScene, deriveHomeScene: deriveHomeScene, seedFromHome: seedFromHome,
     // shader sources (so a wiring task / tests can inspect them)
     shaders: { GLSL_SCENE_VS: GLSL_SCENE_VS, GLSL_SCENE_FS: GLSL_SCENE_FS, GLSL_PART_VS: GLSL_PART_VS, GLSL_PART_FS: GLSL_PART_FS, GLSL_BURST_VS: GLSL_BURST_VS, WGSL_SCENE: WGSL_SCENE, WGSL_PART: WGSL_PART, WGSL_BURST: WGSL_BURST }
   };
