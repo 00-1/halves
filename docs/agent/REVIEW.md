@@ -1,6 +1,25 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T104` [A] (legible fraction glyphs ½/¾) · live build **`c6a96da`**.
+**Current verdict:** `APPROVED — T95` [B] (semantic home backdrop on `fxgl.js`) · live build
+**`beedfd8`**. **CI green.** Third Builder-B handoff, and **picked up with NO human nudge** (the
+self-continue is working). **Collision rule honoured** (only `fxgl.js`, `test/fxgl.test.js`,
+`BUILDER-LOG-FX.md`). Adds `deriveHomeScene(state)` → a `setScene`-shaped ambient backdrop **driven by
+LIVE home state, not noise** (the effect names its purpose: **status**): today's-event palette/seed
+**dominate**; **progress raises the horizon glow** (momentum); a **streak ≥3 flips calm motes → warm
+embers** ("on a roll"); seed is state-derived so **same state → same backdrop, and it shifts because
+the state changed**. `Controller.setHomeState(state)` wires it through `setScene`. Verified
+**independently**: `node -c` clean; **full fxgl gate green (82 checks, +15 for T95)** — deterministic
+per state, textures uploaded **once**, **single RAF** (one draw/frame), **idles when stopped**
+(off-home → no RAF), **reduced-motion → static still** (no loop); **full 27-gate suite green**.
+Standalone — the **[A] side** reads real home state (event/progress/streak) and calls `setHomeState`.
+T95 → DONE. **Builder B's specced engine trio (T93·T94·T95) is COMPLETE.** Pointer advances to **T108**
+(semantic Arena-biome derivation — the Arena sibling of T95) to keep B on collision-free work while
+the FX **[A] wiring** is sequenced. *(Note: nothing FX is visible until [A] mounts `FXGL`; the wiring
+is the real payoff — see the owner note below.)*
+
+---
+
+**Previously approved (done):** `T104` [A] (legible fraction glyphs ½/¾) · live build **`c6a96da`**.
 **CI green.** Replaces the T56 **stacked** vulgar-fraction (a 3-wide vertical num·bar·den that turned
 to mud at the ~22px tree-node size) with a **5-wide diagonal slashed** form — numerator top-left
 (cols 0–2, rows 0–3), denominator bottom-right (cols 2–4, rows 5–8), a clean staircase slash from
@@ -458,15 +477,19 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   — home backdrop after `T100`, Arena biome after `T89`/`T90`. Owns ALL existing Halves files; log
   = `BUILDER-LOG.md`. *(If A is mid-task, finish it
   first.)*
-- **Builder B — next: `T95` [B]** (the **engine side** of the semantic home backdrop — a new
-  capability on `fxgl.js` that derives a calm ambient scene from **live home state** passed in by the
-  caller: progress/streak/today's-event mood → palette + particle kind/density, deterministic from a
-  state-derived seed, capped, single-RAF, reduced-motion-safe). New API on the B-owned engine,
-  headless-tested. Creates/edits **only B-owned files** (`fxgl.js`, its tests) + brickmap; **never
-  edits existing Halves files**; the [A] side reads home state and calls it. Log = `BUILDER-LOG-FX.md`.
-  *(T93 + T94 DONE — engine + celebration burst shipped.)* **Unblocked for [A]:** the FX **wiring**
-  tasks (mount `FXGL`, fire `FXGL.burst()` on reward/loot/event gains, + register its CI gate) can now
-  be specced — home backdrop after `T100`, Arena biome after `T88`–`T90`.
+- **Builder B — next: `T108` [B]** (semantic **Arena-biome** derivation — the Arena sibling of T95).
+  A new engine API `deriveArenaScene(state)` that maps **live Arena state** (region 1–10, tier, boss-
+  proximity, win/defeat mood) → a `setScene`-shaped backdrop: **region** sets the palette/scenery
+  mood (sense of place), **tier/boss-proximity** raises intensity (denser particles / hotter glow as
+  a boss nears), deterministic from a state-derived seed, capped, single-RAF, reduced-motion → static
+  still. Mirror T95's discipline exactly; **B-owned files only** (`fxgl.js`, `test/fxgl.test.js`) +
+  brickmap; headless-tested. *(T93·T94·T95 DONE — engine, burst, home backdrop all shipped; this keeps
+  B productive on collision-free work. If the [A] FX wiring lands and surfaces an engine need, that
+  preempts T108.)* Log = `BUILDER-LOG-FX.md`.
+  **FX [A] wiring now fully unblocked (the real payoff):** mount `FXGL` + register its gate; home
+  backdrop via `setHomeState(liveState)` (after `T100`); fire `FXGL.burst()` on Arena wins + collect/
+  loot/event gains (**T94w**); Arena biome via `setScene`/`deriveArenaScene` (after `T89`/`T90`).
+  These are **[A]** tasks — Babysitter to slot into A's queue once the shipping/restyle block clears.
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —

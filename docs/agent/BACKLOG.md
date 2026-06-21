@@ -2265,16 +2265,44 @@ event reward** (inventory gains). Builds on the T93 layer (GPU particles) and/or
   (Babysitter: confirm it triggers on real win/gain events, stays within budget, and never blocks
   readability.)
 
-### T95 — Semantic home/menu backdrop · status: OPEN
+### T95 — Semantic home/menu backdrop · status: [B] engine DONE (`beedfd8`) · [A] wiring PENDING
 **Purpose = ambient status.** A living home backdrop that **reflects real state** — e.g. **today's
 event theme** (palette/emblem seed) and/or **momentum/progress** — rendered through the T93 layer
 (dither + palette + gentle motes). **Not generic noise.** Stays behind the (now compact, T91) home
 UI; never competes with text or the topic picker.
+> **[B] engine DONE (`beedfd8`):** `FXGL.deriveHomeScene(state)` + `Controller.setHomeState(state)` —
+> event palette/seed dominate, progress raises the horizon glow, streak ≥3 → warm embers; deterministic
+> per state, single-RAF, idle off-home, reduced-motion still. **[A] wiring PENDING:** mount `FXGL` on a
+> home backdrop canvas (behind the DOM, `aria-hidden`/`pointer-events:none`) and call `setHomeState`
+> with the real live state (today's event + progress + streak); stop it when off-home.
 - **DoD:** the home backdrop is **driven by live state** (today's event / progress — verify it
   reads the real source; the effect **names its purpose: status**); behind the DOM UI, legible,
   360px-safe, reduced-motion + no-WebGL2 fallbacks; perf budget holds (idle when off-home); `node
   -c` clean; all gates green. (Babysitter: confirm it encodes real state, not decoration, and the
   home screen stays readable + one-screen per T91.)
+
+### T108 — [B] Semantic Arena-biome backdrop derivation (the Arena sibling of T95) · status: OPEN
+**Purpose = sense of place + status (Arena).** Serves the owner's locked vision — atmosphere as a
+*purposeful* layer in the Arena (sense of place per region; intensify near a boss; amplify the win).
+Engine-side only; the [A] Arena wiring will call it (after T89/T90). Mirror T95's discipline exactly.
+- **`FXGL.deriveArenaScene(state)` → a `setScene`-shaped backdrop from LIVE Arena state.** Inputs:
+  region (1–10), tier within region, boss-proximity / facing-boss, and a mood (neutral / victory /
+  defeat). **Region** drives the palette + scenery mood (a distinct sense of place per region — reuse
+  the `scenery.js` region grid shape the engine already consumes); **tier + boss-proximity** raise
+  intensity (denser particles / hotter glow as the boss nears, peak at the boss); **victory** mood
+  briefly warms/brightens (pairs with a T94 `burst()` the [A] side fires). Deterministic from a
+  state-derived seed (same state → same backdrop; shifts as you advance), capped, single-RAF,
+  reduced-motion → static still, idle when off-Arena.
+- **Scope:** B-owned files ONLY — `fxgl.js` (+ `test/fxgl.test.js`) + brickmap if a recipe is
+  borrowed. **Never** edit existing Halves files. Headless-tested like T95 (deterministic per state,
+  encodes real region/tier/boss as status not noise, textures-once, single-RAF, idles, reduced-motion
+  still). Log = `BUILDER-LOG-FX.md`.
+- **DoD:** `deriveArenaScene` returns a valid `setScene` shape that **demonstrably encodes region +
+  tier + boss-proximity** (a Node check: different regions → different palette/mood; nearer-boss →
+  higher intensity; deterministic per state); capped + single-RAF + idle + reduced-motion still;
+  `node -c` clean; the fxgl gate extends to cover it; all gates green. (Babysitter: confirm it's
+  state-driven sense-of-place, not decoration, and matches T95's budget discipline. **If the [A] FX
+  wiring lands first and surfaces an engine gap, that work preempts T108.**)
 
 ---
 
