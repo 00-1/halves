@@ -1168,7 +1168,7 @@ each location feels distinct. Build on T52 (enemy sprites land first).
   to the Arena flow; deploy green. (Babysitter checks the 10 region grids differ, the
   draw is static/idle, and text contrast over the backdrop is preserved.)
 
-### T54 — Version check + "Update" button (poll build.json) · status: OPEN ⭐ NEXT (owner-elevated ASAP)
+### T54 — Version check + "Update" button (poll build.json) · status: DONE
 Owner: "add a version check — poll a version.json and give the user a button to update
 (refresh) when we see a new version." **Reuse the existing `build.json`** (already
 written at deploy time with `{sha, shortSha, time}` and fetched once at load,
@@ -1784,3 +1784,45 @@ on a rounded row:
   clean (CSS-only, no JS change expected — or trivial markup if a swatch element is needed);
   deploy green. (Babysitter greps for residual `border-left` colour accents and checks both
   lists use the square.)
+
+---
+
+## Phase 14 — Progression integrity
+
+### T74 — Topic unlock must require genuine engagement (not all-skipped) · status: OPEN
+Owner: "if you **skip all** the questions on a topic you still **unlock the next topic** —
+that doesn't seem right. Maybe some skips are OK, but not 100%." Cause: the `init:<mode>`
+collectible (whose ownership unlocks the next topic via `isUnlocked`) has **`test: () =>
+true`** (`collectibles.js` ~109) — so finishing a round by skipping every question still
+grants it. (`skip()` increments `mistakes` and advances but does **not** push to `times`, so
+skipped questions just aren't "answered".)
+- **Gate `init:<mode>` on genuine engagement.** Require the player to have **answered** (not
+  skipped) at least a threshold of the round. **Recommended default: at least half** the
+  questions answered (skipped < 50%) — define it as a single named constant so the bar is
+  trivially tunable. **Measure ANSWERED, not clean-first-try `score`** — a question the
+  player got right *after a mistake* still counts (the game only advances on a correct entry
+  or a skip, so "answered" = `times.length` = got-right questions).
+- **Expose the count in the finish `ctx`** (e.g. `answered`/`skipped`) and change the init
+  `test` to `ctx => ctx.answered >= THRESHOLD(ctx.total)`. Don't touch flawless/speed/mastery.
+- **Migration-safe:** players who already own `init:<mode>` keep it (only *new* grants gated);
+  **Practice** never grants `init`; the unlock chain (T1) still fires for a genuinely-played round.
+- **OWNER DECISION (flag):** the exact bar — "at least half" (default), gentler ("a third" /
+  "at least one", just not 100% skipped), or stricter. Implement as one constant + name the value.
+- **DoD:** a **Node logic check** proving: (a) `init` NOT granted when every question skipped
+  (`answered===0`); (b) granted on a normal round meeting the threshold; (c) the topic-chain
+  unlock (T1) fires for a genuinely-played round but **not** after an all-skipped round; (d)
+  a player who already owns `init` keeps it; (e) Practice still grants no `init`. No
+  regressions to scoring/rank/other collectibles; `node -c` clean; deploy green.
+
+### T75 — (UNPLANNED, owner-prompted Builder directly) Rename results "Modes" → "Back" · status: DONE
+Owner prompted the Builder directly (outside this queue). `6c84af8`: the results-screen
+`#menuBtn` label "Modes" → "Back" (text-only; id + `navStart` handler unchanged). Babysitter
+reviewed retroactively: trivial, safe, no regressions; all gates green. Recorded for ledger.
+
+### T76 — (UNPLANNED, owner-prompted Builder directly) Rank rewards backfill lower ranks · status: DONE
+Owner prompted the Builder directly (outside this queue). `8af41a5`: each Rank collectible's
+`test` changed `ctx.rankIndex === i` → `>= i`, so reaching a rank also grants every lower
+rank in one round. Babysitter reviewed retroactively: a genuine **fix** (ranks are a ladder;
+old exact-match needed playing worse to backfill + could skip the `rank:darkwizard`/`archmage`
+hero unlocks). Verified: rankIndex 10 → 11 ranks, rankIndex 2 → 3; additive, migration-safe,
+no Arena-calibration impact (full-drill-set ceiling unchanged). All 16 gates green. Ledger record.

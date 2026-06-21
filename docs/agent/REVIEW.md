@@ -1,16 +1,33 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T53` (procedural region scenery) · build **`a6e6583`**.
-New standalone `scenery.js`: 10 distinctly-themed backdrops (sky gradient + silhouette
-shape + accents) drawn behind the tier card with z-index layering; static (no RAF),
-deterministic. **Accessibility verified independently:** the `rgba(8,10,14,0.64)` legibility
-scrim keeps text above AA over the *brightest* scene cell — `--text` 13.3:1, `--muted`
-5.83:1 (≥4.5). `scenery.test.js` (7 checks) green: all 10 scenes distinct, deterministic,
-static, standalone, both text colours AA over the scrim. `node -c` clean. T53 → DONE.
+**Current verdict:** `APPROVED — T54` (version check + Update button) + **two off-script
+owner-prompted changes retroactively reviewed & approved** · live build **`8af41a5`**.
+- **`T54`** (`fba084a`) — reuses `build.json`, records the booted sha, polls every 3 min
+  (`cache:"no-store"`); on a differing sha reveals a dismissible "A new version is available
+  — Refresh" bar; Refresh = `location.reload()` (user-initiated only — never auto-reloads /
+  steals focus); local-build & offline are silent no-ops. `version.test.js` (9 checks) green.
+- **OFF-SCRIPT (owner prompted the Builder directly — not in my queue, but reviewed):**
+  `6c84af8` renamed the results "Modes" button → "Back" (text-only, handler unchanged — safe).
+  `8af41a5` changed each Rank collectible's test `rankIndex === i` → `>= i` so reaching a rank
+  also grants every lower rank — a genuine **fix** (ranks are a ladder; the old exact-match
+  would've needed playing *worse* to backfill, and could skip the `rank:darkwizard`/`archmage`
+  hero unlocks). Independently verified: rankIndex 10 → 11 ranks, rankIndex 2 → 3; additive,
+  migration-safe (owned not re-granted); no Arena-calibration impact (computed over the full
+  drill set regardless of order).
+- **Full regression sweep:** `node -c` clean on every JS; **all 16 gates pass** (arena 29,
+  version 9, contrast 6, + the rest). No harm from the off-script work. T54 → DONE.
 
-**⚠️ `T54` (version-check/Update button) is STILL the next task — owner-elevated ASAP.** The
-Builder had T53 in flight when T54 was bumped, so it finished T53 first; T54 was NOT done.
-**Do `T54` next.**
+**Previously approved (done):** `T53` (procedural region scenery) · build `a6e6583` —
+standalone `scenery.js`, 10 themed backdrops behind the tier card; the `rgba(8,10,14,0.64)`
+scrim keeps text AA over the brightest scene cell (`--text` 13.3:1, `--muted` 5.83:1); 7 checks.
+
+**(Note re off-script work:** prompting the Builder directly bypasses this review queue — it
+worked out fine here (both changes sound + gate-green), just flagging it so the ledger stays
+accurate. Recorded as T75/T76 DONE in BACKLOG.)
+
+**`T74` — topic unlock must require genuine engagement (owner) — is next:** skipping every
+question still grants `init:<mode>` (`test:()=>true`) and unlocks the next topic; gate it on
+answering at least a threshold (default: half) — some skips OK, not 100%. Full spec in BACKLOG.
 
 **Previously approved (done):** `T52` (procedural enemy sprites) · build `f3cc9ae` — standalone
 `monsters.js`, high variation (≥90% distinct), region/type-themed, bosses bigger+crowned;
@@ -39,14 +56,11 @@ to `.85`.)
 - `T57` — scrubbed the school/town/county names (repo-wide grep zero); doc-only.
 - `T50` — procedural icons on the 4 menu buttons + Arena hero portraits; 16 checks.
 
-**Next-task order:** **`T54` → `T73` → `T55` → `T56`**, then content extension
+**Next-task order:** **`T74` → `T73` → `T55` → `T56`**, then content extension
 (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** (Play Store readiness).
-**Do `T54` next — ELEVATED (owner): land the version-check/Update button ASAP** — it only
-pays off *during* active development, so it must come before the rest. Poll `build.json`
-(`cache:"no-store"`) on an interval; when the fetched sha ≠ the booted sha, show an
-unobtrusive "Update available — Refresh" control (user-tap reload only, never auto-reload
-mid-drill); offline-safe; AA-legible. Then **`T53`** (region scenery), **`T73`** (replace the
-coloured left-border accents with a square). Specs in BACKLOG; this line is authoritative.
+**Do `T74` next** — gate the topic unlock on genuine engagement (not 100% skips). Then
+**`T73`** (replace the coloured left-border accents with a square), `T55` (Collector→10k),
+`T56` (pixel mark/glyphs + favicon). Specs in BACKLOG; this line is authoritative.
 
 **Batching — LOCKED (owner delegated the call).** The 8 Wave-2 topics ship in **3 thematic
 batches**: **T59** Rounding + Larger ×/÷ · **T60** Money/Time/Metric (measures) · **T61**
