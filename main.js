@@ -1110,6 +1110,7 @@
     times.forEach(t => { qmap[t.p] = { t:t.t, miss:t.miss }; });
     const ctx = {
       mode: mode, mistakes: mistakes, score: score, total: order.length,
+      answered: times.length, skipped: order.length - times.length,   // T74: skips never push to `times`
       totalTime: total, avg: total/order.length, rankIndex: rankIdx, qmap: qmap,
       stats: {
         games: stats.games,

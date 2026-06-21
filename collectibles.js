@@ -106,10 +106,16 @@
     test: ctx => ctx.rankIndex >= i
   }));
 
+  // A topic is only "initiated" (which unlocks the next topic) if the player
+  // genuinely engaged — answered at least this fraction of the round, not skipped
+  // it all (T74). Single tunable constant; "at least half answered" by default.
+  const INIT_ANSWER_FRAC = 0.5;
+  function initReached(ctx){ return (ctx.answered || 0) >= Math.ceil((ctx.total || 0) * INIT_ANSWER_FRAC); }
+
   // per-mode: initiation, flawless, speed brackets, mastery
   MODES.forEach(m => {
     add({ id:"init:"+m.id, name:m.name+" Initiate", rarity:"uncommon", cat:"Initiation", modeId:m.id,
-      desc:"Finish your first "+m.name+" round.", test: () => true });
+      desc:"Answer at least half a "+m.name+" round (don't skip it all).", test: ctx => initReached(ctx) });
     add({ id:"flawless:"+m.id, name:"Flawless "+m.name, rarity:"rare", cat:"Flawless", modeId:m.id,
       desc:"Finish "+m.name+" without skipping a question.", test: ctx => ctx.mistakes === 0 });
     SPEED.forEach((lv,i) => add({

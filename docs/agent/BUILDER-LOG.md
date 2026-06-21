@@ -2534,3 +2534,33 @@ fix) were **direct owner instructions** given to the Builder in chat, outside th
 BACKLOG/REVIEW verdict loop. The owner acknowledged the deviation and asked me to
 proceed and log it. All three are small, gate-covered, and on `main`. (T54's verdict
 is still pending; the normal loop resumes after.)
+
+## T74 — Topic unlock must require genuine engagement (not all-skipped)  [HANDOFF]
+commit: (this commit, on main)
+Owner: skipping every question still unlocked the next topic. Cause: the
+`init:<mode>` collectible (whose ownership gates the next topic via `isUnlocked`)
+had `test: () => true`. Now gated on having **answered** (not skipped) at least a
+threshold of the round.
+changed:
+  - main.js — finish `ctx` now carries **`answered: times.length`** and
+    **`skipped: order.length - times.length`** (skips never push to `times`, so
+    `answered` = questions got right, *including* ones got right after a mistake).
+  - collectibles.js — added the named constant **`INIT_ANSWER_FRAC = 0.5`** + a
+    helper `initReached(ctx) = ctx.answered >= ceil(ctx.total * FRAC)`; the init
+    test is now `ctx => initReached(ctx)` (was `() => true`). Desc updated ("Answer
+    at least half a … round"). **OWNER DECISION** flagged in spec — implemented the
+    recommended **"at least half"** default; trivially tunable via the one constant.
+how I verified:
+  - `node test/init-gate.test.js` (NEW, 17th gate) → **ALL 11 PASS**: **(a)** answered
+    0 (all-skipped) → init NOT granted; **(b)** fully-answered & 11/21 (≥half) →
+    granted; boundary 10/21 not / 11/21 yes; **(c)** the chain (mirrors `isUnlocked`)
+    — all-skipped `halves` keeps `times` LOCKED, genuinely-played `halves` UNLOCKS
+    `times`; **(d)** already-owned init is not re-granted and an all-skipped round
+    can't revoke it (migration-safe); **(e)** `finishPractice` runs no `C.evaluate`
+    (Practice grants no init); and the bar is one named constant.
+  - `node -c` clean; **all seventeen gates pass**. flawless/speed/mastery untouched;
+    no scoring/rank change. No regressions.
+notes / questions: bar = answer ≥ half (some skipping is fine, 100%-skip isn't).
+  Easy to soften ("a third"/"at least one") or tighten — change `INIT_ANSWER_FRAC`.
+  Also pushed earlier (post-T54-verdict): `74ac75e` results screen keeps only
+  "Back" (dropped "Play again") — direct owner request, awaiting Babysitter notice.
