@@ -479,7 +479,7 @@ the scroll-cue (▾) working with the picker's own scroll.
   with **no page overflow**; only the picker scrolls; scroll cue still toggles;
   360px-safe; other screens unaffected; no regressions; deploy green.
 
-### T39 — Floating Back on the Inventory (and other long-scroll screens) · status: OPEN
+### T39 — Floating Back on the Inventory (and other long-scroll screens) · status: DONE
 Owner: on the Inventory you must scroll all the way to the bottom to reach Back.
 Give it an **always-visible Back** — a floating/sticky control that stays put while
 the list scrolls (e.g. a sticky top bar with Back, or a fixed button pinned to a
