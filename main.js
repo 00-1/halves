@@ -37,6 +37,24 @@
   // ranking: higher score first, then shorter time, then earlier entry
   function rank(a,b){ return b.score - a.score || a.time - b.time || a.ts - b.ts; }
 
+  // Event best-attempt store (T80) — keyed by EVENT id (not date), so the best
+  // attempt persists across the 14-day recurrence and can be beaten next time.
+  let memEventBest = null;
+  function loadEventBest(){
+    if(memEventBest) return memEventBest;
+    let o; try{ o = JSON.parse(localStorage.getItem("halves.eventBest")); }catch(e){ o = null; }
+    memEventBest = (o && typeof o === "object") ? o : {};
+    return memEventBest;
+  }
+  function saveEventBest(o){ memEventBest = o; try{ localStorage.setItem("halves.eventBest", JSON.stringify(o)); }catch(e){} }
+  // Keep the better attempt (same rank ordering as the topic boards).
+  function recordEventBest(id, entry){
+    const o = Object.assign({}, loadEventBest()), prev = o[id];
+    if(!prev || rank(entry, prev) < 0) o[id] = entry;
+    saveEventBest(o);
+    return o[id];
+  }
+
   // collectibles + cumulative stats (also degrade to in-memory)
   let memCollected = null, memStats = null;
   function loadCollected(){
@@ -427,7 +445,36 @@
             '<span style="color:'+rk.color+'">'+esc(rk.name)+'</span></span></span>'+
         '<span class="sc">'+best.score+'/'+(best.total||"?")+'</span>'+
         '<span class="tm">'+fmt(best.time)+'s</span><span class="go">▶</span></div>';
+    }).join("") + eventSummaryRows();
+  }
+
+  // Is this event playable/retryable right now? True iff it is live today.
+  function isRetryable(id){ return !!(window.Events && window.Events.isLive(id)); }
+
+  // Daily-event entries on the best-attempt board (T80). A LIVE event is routable
+  // into play (carries data-event) and shows its persisted best; a non-live event
+  // renders LOCKED — visible (best + when it returns) but NOT routable.
+  function eventSummaryRows(){
+    const Ev = window.Events; if(!Ev || !Ev.roster) return "";
+    const best = loadEventBest();
+    const rows = Ev.roster().map(e => {
+      const b = best[e.id];
+      const cells = b ? '<span class="sc">'+b.score+'/'+(b.total||"?")+'</span><span class="tm">'+fmt(b.time)+'s</span>'
+                      : '<span class="sc">—</span><span class="tm">—</span>';
+      if(isRetryable(e.id)){
+        return '<div class="sum-row event played" data-event="'+esc(e.id)+'" style="background:var(--amber)1f">'+
+          '<span class="md">'+esc(e.name)+
+            '<span class="holder"><i class="rankdot" style="background:var(--amber)"></i>'+
+            '<span style="color:var(--amber)">Live today</span></span></span>'+
+          cells+'<span class="go">▶</span></div>';
+      }
+      const days = Ev.daysUntilLive(e.id);
+      const when = days === 1 ? "Live tomorrow" : ("Live in " + days + " days");
+      return '<div class="sum-row event locked">'+
+        '<span class="md">'+esc(e.name)+'<span class="holder">🔒 '+esc(when)+'</span></span>'+
+        cells+'<span class="go">🔒</span></div>';
     }).join("");
+    return '<div class="sum-event-head">Daily Events</div>' + rows;
   }
 
   // ---- ranks, collectible modal & inventory -------------------------------
@@ -1003,7 +1050,7 @@
   }
   function start(){
     if(!isUnlocked(mode)) return;   // locked topics aren't playable
-    practiceCtx = null;
+    practiceCtx = null; eventCtx = null;   // a normal round is neither practice nor an event
     order = mode.build();
     elEyebrow.innerHTML = mode.eyebrow;
     sfx("roundStart");
@@ -1013,7 +1060,7 @@
   // still timed; grants ONLY that question's Beat/Spark + updates qbest.
   function startPractice(modeId, q){
     const m = byId(modeId); if(!m || !isUnlocked(m) || !q) return;
-    mode = m; practiceCtx = { modeId: modeId, prompt: q.p };
+    mode = m; practiceCtx = { modeId: modeId, prompt: q.p }; eventCtx = null;
     order = [{ p:q.p, a:q.a }];
     sfx("roundStart");
     beginRound();
@@ -1051,6 +1098,10 @@
       '<div class="slow-item"><span class="q">'+esc(s.p)+'<span class="h"> → </span>'+esc(s.h)+
       (s.miss ? '<span class="miss">'+s.miss+'×</span>' : '')+'</span><span class="t">'+fmt(s.t)+'s</span></div>').join("");
     renderResultRank(C.rankIndex(score, order.length, total));
+
+    // Best-attempt board (T80): keep the better attempt, keyed by event id so it
+    // persists across the 14-day recurrence (beatable next time it comes around).
+    recordEventBest(eid, { score:score, time:total, total:order.length, ts:Date.now() });
 
     // Grant the reward — only while still live today, and only once (idempotent).
     const collected = loadCollected();
@@ -1402,6 +1453,10 @@
   // Tap an unlocked topic on Best Times to play it right away (locked rows
   // carry no data-mode, so they aren't startable).
   $("sumList").addEventListener("click", e => {
+    // Live events carry data-event and route into the gauntlet; locked event rows
+    // (not live today) carry none, so they render but can't be played.
+    const evRow = e.target.closest(".sum-row.event[data-event]");
+    if(evRow){ startEvent(evRow.dataset.event); return; }
     const row = e.target.closest(".sum-row[data-mode]"); if(!row) return;
     const m = byId(row.dataset.mode); if(!m || !isUnlocked(m)) return;
     selectMode(m.id);
@@ -1586,6 +1641,7 @@
   window.Toasts = { CAP: TOAST_CAP, enqueue: enqueueToast, shown: () => toastShown, queued: () => toastQ.length };
   // Event play API (T79) — start today's live event gauntlet (used by the Events
   // tab now, the best-attempt board in T80 / the home banner in T81, and tests).
-  window.EventPlay = { start: startEvent, active: () => !!eventCtx };
+  window.EventPlay = { start: startEvent, active: () => !!eventCtx,
+    isRetryable: isRetryable, bestOf: id => loadEventBest()[id] || null };
   show("entry");      // splash first; entry buttons reveal the menu via applyRoute()
 })();

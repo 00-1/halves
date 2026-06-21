@@ -2762,3 +2762,39 @@ notes / questions: events pay **no Goblin Gold** and don't write the per-topic
   best-times board — the best-attempt board + live-window lockout is **T80**, and the
   bespoke per-event art/copy/music + prominent home banner is **T81** (next per REVIEW
   order: T80).
+
+## T80 — Best-attempt board: event entries + live-window lockout  [HANDOFF]
+commit: (this commit, on main)
+Goal: surface events on the best-attempt board (the "Best times" / `#summary`
+screen), playable only during their live window, with the best attempt persisting
+across the 14-day recurrence.
+changed:
+  - **main.js** — a new **event best-attempt store** keyed by EVENT id (not date):
+    `loadEventBest/saveEventBest/recordEventBest` in `halves.eventBest` (in-memory
+    fallback), keeping the better attempt via the existing `rank` ordering — so the
+    best **survives the 14-day gap** and is beatable next time. `finishEvent()`
+    records the attempt. `renderSummary()` now appends an **"Daily Events"** section
+    (`eventSummaryRows()`): today's event renders **LIVE + routable** (amber tint,
+    carries `data-event`, shows its persisted best); the other 13 render **LOCKED** —
+    visible (best + "Live in N days") but with **no `data-event`** so they can't be
+    played. `isRetryable(id) = Events.isLive(id)`. The `#sumList` tap handler routes
+    a `.sum-row.event[data-event]` into `startEvent` (locked rows aren't routable;
+    `startEvent` re-guards live). `start()`/`startPractice()` now clear `eventCtx`
+    (so abandoning an event mid-round can't misroute a later normal `finish()`).
+    `window.EventPlay` gains `isRetryable` + `bestOf`.
+  - **styles.css** — `.sum-event-head` section label + locked-event row tweak (AA;
+    reuses the existing `.sum-row` heat-map styling, 360px-safe).
+how I verified:
+  - **Extended `test/events.test.js`** → **ALL 62 PASS** (was 45; +17 for T80, incl. a
+    second DOM drive with an injected clock): `isRetryable` **true iff live today**;
+    the board lists a **Daily Events** section with **1 live (routable) + 13 locked
+    (no `data-event`)** rows; the live row shows the persisted best and **tapping it
+    starts the gauntlet**; play-with-a-skip records a beatable best (12/13); advancing
+    the clock **+14 days → the same event is live again, the prior best persisted**,
+    and a clean replay **beats it (13/13)** while the reward stays owned (idempotent);
+    **off its day** the event is **locked + not routable** (no `data-event`).
+  - `node -c` clean; **full 20-gate suite green** (practice/arena unaffected by the
+    `eventCtx`-clear); no regressions.
+notes / questions: events still pay no Gold and don't touch the per-topic boards.
+  Next per REVIEW order: **T81** (per-event procedural art + copy + event music + the
+  prominent front-and-centre home banner with a UTC countdown).

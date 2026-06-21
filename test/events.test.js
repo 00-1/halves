@@ -221,5 +221,95 @@ ok(Ev.buildGauntlet("not-an-event", MODES).length === 0, "buildGauntlet of an un
   Date.now = realDateNow;
 })();
 
+// ============ T80 — best-attempt board + live-window lockout ================
+(function eventBoardDrive(){
+  const DAYMS = 86400000;
+  const FIXED = Date.UTC(2026, 5, 21, 12, 0, 0);
+  const liveId = Ev.today(FIXED).id;
+  const otherId = Ev.roster().find(e => e.id !== liveId).id;   // not live on FIXED
+
+  let els = {}, store = {}, winH = {};
+  function mkEl(id){ return { id, _html:"", _text:"", _h:{}, dataset:{}, style:{}, disabled:false,
+    parentElement:{ clientWidth:300, dataset:{} }, width:48, height:48, scrollWidth:120, clientWidth:300, scrollHeight:400, scrollTop:0,
+    classList:{ _s:new Set(), add(c){this._s.add(c);}, remove(c){this._s.delete(c);},
+      toggle(c,f){ if(f===undefined){ this._s.has(c)?this._s.delete(c):this._s.add(c); return this._s.has(c);} else { f?this._s.add(c):this._s.delete(c); return !!f; } }, contains(c){return this._s.has(c);} },
+    addEventListener(e,fn){ (this._h[e]=this._h[e]||[]).push(fn); }, removeEventListener(){},
+    appendChild(c){return c;}, insertBefore(c){return c;}, setAttribute(){}, getAttribute(){return null;}, removeAttribute(){}, remove(){}, focus(){}, blur(){},
+    querySelector(s){ return /canvas/.test(s||"") ? mkEl("_c") : null; }, querySelectorAll(){ return []; }, closest(){ return null; },
+    getContext(){ return { clearRect(){}, fillRect(){}, save(){}, restore(){}, beginPath(){}, fill(){}, set fillStyle(v){}, get fillStyle(){return"";} }; },
+    get innerHTML(){return this._html;}, set innerHTML(v){this._html=String(v);}, get textContent(){return this._text;}, set textContent(v){this._text=String(v);} }; }
+  global.window = {}; global.window.addEventListener = (e,f) => { (winH[e]=winH[e]||[]).push(f); }; global.window.removeEventListener = () => {};
+  global.window.matchMedia = () => ({ matches:false, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} });
+  global.window.location = { hash:"" }; global.location = global.window.location; global.window.innerWidth = 360;
+  global.requestAnimationFrame = () => 1; global.window.requestAnimationFrame = global.requestAnimationFrame;
+  global.cancelAnimationFrame = () => {}; global.window.cancelAnimationFrame = global.cancelAnimationFrame;
+  global.performance = { now: () => 1000 };
+  global.CSS = { escape:s=>s }; global.fetch = () => Promise.reject(new Error("no")); global.setInterval = () => 0; global.clearInterval = () => {};
+  global.setTimeout = (fn) => { if(typeof fn === "function") fn(); return 0; }; global.clearTimeout = () => {};
+  global.window.setTimeout = global.setTimeout; global.window.clearTimeout = global.clearTimeout;
+  global.localStorage = { getItem:k => k in store ? store[k] : null, setItem:(k,v)=>{ store[k]=String(v); }, removeItem:k=>{ delete store[k]; } };
+  global.window.localStorage = global.localStorage;
+  global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
+    addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
+    documentElement:mkEl("html"), body:mkEl("body"), fullscreenElement:null };
+  const realDateNow = Date.now; let clock = FIXED; Date.now = () => clock;
+  ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
+  const EP = global.window.EventPlay, Events2 = global.window.Events, MODES2 = global.window.MODES;
+  function key(k){ (els.pad._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".key" ? { dataset:{ k } } : null) } })); }
+  function play(skipFirst){
+    EP.start(liveId);
+    const set = Events2.buildGauntlet(liveId, MODES2);
+    for(let i=0;i<set.length;i++){
+      if(skipFirst && i === 0){ key("skip"); continue; }
+      for(const ch of String(set[i].a)) key(ch);
+    }
+  }
+  const renderBoard = () => { global.window.location.hash = "#/best-times"; (winH.hashchange||[]).forEach(f=>f()); return els.sumList._html; };
+
+  // (a) isRetryable iff live today
+  ok(EP.isRetryable(liveId) === true, "isRetryable(today's event) is true");
+  ok(EP.isRetryable(otherId) === false, "isRetryable(a non-live event) is false");
+
+  // (b) play once with a deliberate skip → a beatable best is stored
+  play(true);
+  const total = Events2.buildGauntlet(liveId, MODES2).length;
+  const b1 = EP.bestOf(liveId);
+  ok(b1 && b1.score === total - 1, "best attempt recorded with the skipped-question score (" + (b1 && b1.score) + "/" + total + ")");
+
+  // (c) the board lists event entries: one LIVE (routable) + locked ones (not)
+  let h = renderBoard();
+  ok(/Daily Events/.test(h), "the board has a Daily Events section");
+  ok(new RegExp('sum-row event played[^>]*data-event="' + liveId + '"').test(h), "today's event renders LIVE + routable (data-event)");
+  ok((h.match(/sum-row event locked/g) || []).length === 13, "the other 13 events render LOCKED");
+  ok(!/sum-row event locked[^>]*data-event/.test(h), "locked event rows carry NO data-event (not routable)");
+  ok(new RegExp(liveId).test(h) && new RegExp('' + (total - 1) + '/' + total).test(h), "the live row shows the persisted best attempt");
+  // tapping the live row routes into play
+  els.game.classList.remove("active");
+  (els.sumList._h.click||[]).forEach(f=>f({ target:{ closest:s => (s === ".sum-row.event[data-event]" ? { dataset:{ event:liveId } } : null) } }));
+  ok(els.game.classList.contains("active"), "tapping the live event row starts the gauntlet");
+  // abandon that round cleanly
+  global.window.location.hash = "#/"; (winH.hashchange||[]).forEach(f=>f());
+
+  // (d) best persists across the 14-day recurrence and is beatable
+  clock = FIXED + 14 * DAYMS;                       // same event live again
+  ok(Events2.isLive(liveId), "14 days later the same event is live again");
+  ok(EP.bestOf(liveId) && EP.bestOf(liveId).score === total - 1, "the prior best persisted across the 14-day gap");
+  h = renderBoard();
+  ok(new RegExp('sum-row event played[^>]*data-event="' + liveId + '"').test(h), "on recurrence the event is routable again");
+  play(false);                                      // full clean run beats the prior best
+  const b2 = EP.bestOf(liveId);
+  ok(b2 && b2.score === total, "beating it on recurrence updates the stored best (" + (b2 && b2.score) + "/" + total + ")");
+  ok(!!JSON.parse(store["halves.collected"] || "{}")["event:" + liveId], "reward still owned after the recurrence replay (idempotent)");
+
+  // (e) lockout: when NOT live, the event is locked on the board and unplayable
+  clock = FIXED + DAYMS;                             // next UTC day → liveId not live
+  ok(EP.isRetryable(liveId) === false, "off its day the event is not retryable");
+  h = renderBoard();
+  ok(!new RegExp('data-event="' + liveId + '"').test(h), "off its day the event row carries no data-event (locked, not routable)");
+  ok((h.match(/sum-row event locked/g) || []).length === 13 && !new RegExp('data-event="' + liveId + '"').test(h),
+     "off its day our event is locked (a different one is the day's live event)");
+  Date.now = realDateNow;
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " EVENT CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
