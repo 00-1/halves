@@ -38,6 +38,7 @@
     <button class="btn" id="startBtn">Start</button>
     <div class="linkrow">
       <button class="linkbtn" id="statsBtn">Best times</button>
+      <button class="linkbtn" id="practiceBtn">Practice</button>
       <button class="linkbtn" id="invBtn">Inventory</button>
       <button class="linkbtn" id="heroesBtn">Heroes</button>
       <button class="linkbtn" id="arenaBtn">Arena</button>
@@ -73,6 +74,8 @@
       </div>
       <div class="answer empty" id="answer"><span class="placeholder">— —</span></div>
     </div>
+
+    <div class="practice-note hidden" id="practiceNote"></div>
 
     <div class="pad" id="pad">
       <div class="key" data-k="7">7</div>
@@ -120,6 +123,16 @@
     <button class="jump-top" id="invTop" aria-label="Jump to top">↑ Top</button>
     <div class="res-actions">
       <button class="btn ghost" id="invBack">Back</button>
+    </div>
+  </section>
+
+  <!-- PRACTICE / REVIEW -->
+  <section id="practice" class="screen">
+    <div class="res-label">Practice <span class="inv-meta" id="practiceMeta"></span></div>
+    <div class="practice-sub" id="practiceTitle"></div>
+    <div class="pq-grid" id="practiceGrid"></div>
+    <div class="res-actions">
+      <button class="btn ghost" id="practiceBack">Back</button>
     </div>
   </section>
 

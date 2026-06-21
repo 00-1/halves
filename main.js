@@ -142,7 +142,7 @@
 
   // ---- elements -----------------------------------------------------------
   const $ = id => document.getElementById(id);
-  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), arena:$("arena") };
+  const screens = { entry:$("entry"), start:$("start"), game:$("game"), results:$("results"), summary:$("summary"), inventory:$("inventory"), heroes:$("heroes"), arena:$("arena"), practice:$("practice") };
   const elPrompt=$("prompt"), elGhost=$("ghost"), elAnswer=$("answer"),
         elCounter=$("counter"), elClock=$("clock"), elProgress=$("progress"),
         elStage=$("stage"), elPad=$("pad"), elEyebrow=$("eyebrow"),
@@ -302,6 +302,16 @@
   }
   $("guideClose").addEventListener("click", closeGuide);
   $("guideModal").addEventListener("click", e => { if(e.target === $("guideModal")) closeGuide(); });
+
+  // Practice / Review view wiring (T32).
+  $("practiceBtn").addEventListener("click", openPractice);
+  $("practiceBack").addEventListener("click", () => show("start"));
+  $("practiceGrid").addEventListener("click", e => {
+    const tile = e.target.closest(".pq-tile"); if(!tile) return;
+    const m = byId(tile.dataset.mode); if(!m) return;
+    const q = m.build().find(x => String(x.p) === tile.dataset.prompt);
+    if(q) startPractice(m.id, q);
+  });
   elModeTabs.addEventListener("scroll", updateScrollCues, { passive:true });
 
   function renderBest(){
@@ -592,7 +602,53 @@
   // within a band (0.4…1.0) but can never substitute for missing hero rating, so
   // clearing the Arena genuinely demands a near-complete collection (T23/T43).
   const BATTLE_LEN = 12;
-  let arenaHero = null, lastBattle = null, battleCtx = null;
+  let arenaHero = null, lastBattle = null, battleCtx = null, practiceCtx = null;
+
+  // ---- per-question best-time store (halves.qbest) for the Practice view -----
+  let memQbest = null;
+  function loadQbest(){
+    if(memQbest) return memQbest;
+    let o; try{ o = JSON.parse(localStorage.getItem("halves.qbest")); }catch(e){ o = null; }
+    memQbest = (o && typeof o === "object") ? o : {};
+    return memQbest;
+  }
+  function saveQbest(o){ memQbest = o; try{ localStorage.setItem("halves.qbest", JSON.stringify(o)); }catch(e){} }
+  // Pure: fold a round's solved per-question times into qbest, keeping the min.
+  function recordQbest(qbest, modeId, roundTimes){
+    const out = Object.assign({}, qbest);
+    const mb = Object.assign({}, out[modeId] || {});
+    (roundTimes || []).forEach(t => {
+      if(t.miss === 0){ const cur = mb[t.p]; if(cur == null || t.t < cur) mb[t.p] = t.t; }
+    });
+    out[modeId] = mb;
+    return out;
+  }
+  // Heat-map colour for a question's best solve time (null = never solved → grey).
+  function qTileColor(t){
+    if(t == null) return null;
+    if(t < 1.5) return "#f0ad3c";   // Spark-fast → gold
+    if(t < 2.2) return "#4ade9a";   // mint
+    if(t < 3.5) return "#3f97d8";   // blue
+    return "#f5b544";               // solved but work on speed → amber
+  }
+  function renderPractice(modeId){
+    const m = byId(modeId); if(!m) return;
+    const qs = m.build().slice().sort((a, b) =>
+      String(a.p).localeCompare(String(b.p), undefined, { numeric: true }));
+    const qb = loadQbest()[modeId] || {};
+    const solved = qs.filter(q => qb[q.p] != null).length;
+    $("practiceTitle").innerHTML = '<span class="g-glyph">' + (m.glyph || "") + '</span> ' + esc(m.name);
+    $("practiceMeta").textContent = solved + " / " + qs.length + " solved";
+    $("practiceGrid").innerHTML = qs.map(q => {
+      const t = qb[q.p], col = qTileColor(t);
+      return '<button class="pq-tile' + (t == null ? " unsolved" : "") + '"' +
+        (col ? ' style="border-color:' + col + ';background:' + col + '22"' : '') +
+        ' data-mode="' + esc(modeId) + '" data-prompt="' + esc(q.p) + '">' +
+        '<span class="pq-p">' + esc(q.p) + '</span>' +
+        '<span class="pq-t">' + (t != null ? fmt(t) + 's' : '—') + '</span></button>';
+    }).join("");
+  }
+  function openPractice(){ if(!isUnlocked(mode)) return; renderPractice(mode.id); show("practice"); }
   const BATTLE_MODE = {
     id: "battle", name: "Arena", eyebrow: "Battle — solve fast!", expr: false,
     build: function(){
@@ -665,9 +721,13 @@
     if(!E || col["tier:" + E.TIER_COUNT]) return;                 // cleared
     if(!arenaHero || !window.Heroes.isHeroUnlocked(arenaHero, col)) return;
     battleCtx = { heroId: arenaHero, tier: E.currentTier(col), prevMode: mode };
+    practiceCtx = null;
     lastBattle = null;
     mode = BATTLE_MODE;
-    start();
+    order = mode.build();
+    elEyebrow.innerHTML = mode.eyebrow;
+    sfx("roundStart");
+    beginRound();
   }
 
   // Grant any hero/arena milestones now satisfied (unlock-all-heroes + tier
@@ -726,15 +786,37 @@
   let order=[], idx=0, input="", mistakes=0, qMiss=0, combo=0,
       startTime=0, qStart=0, times=[], raf=0, locked=false, roundGold=0;
 
-  function start(){
-    if(!isUnlocked(mode)) return;   // locked topics aren't playable
-    order = mode.build(); idx=0; mistakes=0; times=[]; combo=0; roundGold=0;
-    elEyebrow.innerHTML = mode.eyebrow;
+  // Shared per-round setup (order is set by the caller).
+  function beginRound(){
+    idx=0; mistakes=0; times=[]; combo=0; roundGold=0;
     startTime = performance.now();
     show("game");
-    sfx("roundStart");
     loop();
     nextQuestion();
+  }
+  function start(){
+    if(!isUnlocked(mode)) return;   // locked topics aren't playable
+    battleCtx = null; practiceCtx = null;
+    order = mode.build();
+    elEyebrow.innerHTML = mode.eyebrow;
+    sfx("roundStart");
+    beginRound();
+  }
+  // ---- Practice / Review (T32): attempt one question at a time, self-paced but
+  // still timed; grants ONLY that question's Beat/Spark + updates qbest.
+  function startPractice(modeId, q){
+    const m = byId(modeId); if(!m || !isUnlocked(m) || !q) return;
+    mode = m; battleCtx = null; practiceCtx = { modeId: modeId, prompt: q.p };
+    order = [{ p:q.p, a:q.a }];
+    sfx("roundStart");
+    beginRound();
+  }
+  function finishPractice(){
+    const pc = practiceCtx; practiceCtx = null;
+    // record the per-question best time (Beat/Spark already granted in correct()).
+    saveQbest(recordQbest(loadQbest(), pc.modeId, times));
+    renderPractice(pc.modeId);
+    show("practice");
   }
 
   function loop(){
@@ -757,6 +839,14 @@
     elGhost.textContent  = numStr(it.a);
     elCounter.textContent = (idx+1)+" / "+order.length;
     elProgress.style.width = (idx/order.length*100)+"%";
+    // Practice view surfaces a short "how to approach this" note for the question.
+    const note = $("practiceNote");
+    if(note){
+      if(practiceCtx && window.Guides && window.Guides.explain){
+        note.textContent = window.Guides.explain(mode.id, it);
+        note.classList.remove("hidden");
+      } else note.classList.add("hidden");
+    }
     fitText(elPrompt); fitText(elGhost);
     renderInput();
     qStart = performance.now();
@@ -827,10 +917,12 @@
     // live, non-blocking unlocks for nailing this question (first time / fast)
     const col = loadCollected();
     // Goblin Gold: per clean question = (2 + speed bonus) × combo streak × global
-    // multiplier (a skip earns 0 — handled by not accruing here).
-    const qm = it._mode || mode;
-    const target = (typeof qm.masterSecs === "number") ? qm.masterSecs : 4;
-    roundGold += questionGold(target, dt, combo, goldMult(col));
+    // multiplier (a skip earns 0; Practice attempts earn no Gold — training only).
+    if(!practiceCtx){
+      const qm = it._mode || mode;
+      const target = (typeof qm.masterSecs === "number") ? qm.masterSecs : 4;
+      roundGold += questionGold(target, dt, combo, goldMult(col));
+    }
     const fresh = C.evaluateQuestion(mode.id, it.p, dt, id => !!col[id]);
     if(fresh.length){
       fresh.forEach(c => col[c.id] = { ts: Date.now() });
@@ -847,7 +939,8 @@
   // ---- results -----------------------------------------------------------
   function finish(){
     cancelAnimationFrame(raf);
-    if(battleCtx){ finishBattle(); return; }   // Arena battle round → resolve, not results
+    if(battleCtx){ finishBattle(); return; }       // Arena battle round → resolve, not results
+    if(practiceCtx){ finishPractice(); return; }   // Practice attempt → grade just that question
     const total = (performance.now()-startTime)/1000;
     const score = times.filter(t => t.miss === 0).length;   // clean first-try answers
 
@@ -933,6 +1026,8 @@
     // ----- best time: keep the per-mode top-10 board (no names, single-player)
     const entry = { name:"", score:score, time:total, total:order.length, ts:Date.now() };
     saveBoard(mode.id, loadBoard(mode.id).concat([entry]).sort(rank).slice(0, MAX));
+    // per-question best times for the Practice heat-map (normal rounds only)
+    saveQbest(recordQbest(loadQbest(), mode.id, times));
 
     show("results");
     renderBest();
@@ -1175,5 +1270,7 @@
   // Momentum module API (pure reducer + helpers, also used by the Node tests).
   window.Momentum = { label: MOMENTUM_LABEL, MAX: MOMENTUM_MAX, reduce: reduceMomentum,
     localDay: localDay, load: loadMomentum, evaluate: (best, has) => C.evaluateMomentum(best, has) };
+  // Practice module API (pure qbest reducer, used by the Node tests).
+  window.Practice = { recordQbest: recordQbest, qTileColor: qTileColor };
   show("entry");      // splash first; entry buttons reveal the menu via applyRoute()
 })();
