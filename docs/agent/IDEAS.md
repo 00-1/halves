@@ -232,7 +232,18 @@ with a selected-node detail panel — coordinated with the T82 visual direction 
 
 ---
 
-## I4 — Progressive feature gating / staged onboarding (owner idea, 2026-06-21)
+## I4 — Progressive feature gating — ✅ PROMOTED to BACKLOG (T86 + T87) on 2026-06-21
+
+> Owner: "promote the feature gating" + add a **clear-all-data** reset (needed to test the early
+> gating). Now BACKLOG **Phase 6.9**: **T85** (Settings screen + Clear-all-data behind a serious
+> countdown + numpad-code confirmation) → **T86** (unlock-state model + first-run single-question
+> intro + Inventory gate + highlight system) → **T87** (wire the remaining gates:
+> Practice/Heroes/Arena/Event-banner/Gold). Cross-cutting guardrails locked in the BACKLOG —
+> esp. **migration safety** (never re-gate existing players) and **access-layer-only** (don't
+> touch earn/collection logic or Arena invariants). **BACKLOG is authoritative**; notes below
+> retained for provenance.
+
+## I4 (original) — Progressive feature gating / staged onboarding (owner idea, 2026-06-21)
 
 **The idea (owner).** **Everything starts gated**; features unlock **one by one as you
 progress**, so the staged reveal doubles as a **tutorial** (progressive disclosure — teach one

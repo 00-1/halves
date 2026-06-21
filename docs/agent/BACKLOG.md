@@ -1563,6 +1563,113 @@ added). Built in the current idiom (DOM + our canvas icons); coordinated with T8
 
 ---
 
+## Phase 6.9 — Settings + data reset, and progressive onboarding gating (owner, 2026-06-21)
+
+> Two linked owner asks. (1) **A Settings screen with "Clear all data"** behind a *serious*
+> confirmation (countdown + numpad-entered code) — a genuine privacy/reset feature **and** the
+> tool needed to **reset to first-run to test the onboarding gating**. (2) **Progressive feature
+> gating** (promoted from IDEAS I4): everything starts gated and unlocks one-by-one as you
+> progress, doubling as a tutorial; on first play you're dropped into ONE easy problem whose
+> solve ungates the Inventory; the event banner waits until a few topic runs in; each ungate
+> highlights where it's accessed.
+>
+> **Order: `T85` (settings + clear-data) → `T86` (gating engine + first-run + Inventory gate) →
+> `T87` (wire the remaining gates).** Clear-data ships first so the gating can be QA'd by
+> resetting to first-run. *(Sequenced after the tech-tree T84; reorderable — say the word to move
+> this block ahead of T84.)*
+>
+> **Cross-cutting guardrails for the whole block (non-negotiable):**
+> - **MIGRATION SAFETY.** Existing players must **never be re-gated** — hiding a current player's
+>   Inventory/Heroes/etc. would be a serious regression. A pre-existing profile (any collected /
+>   completed runs / stats) is treated as **legacy → fully unlocked**. Only a genuinely fresh
+>   profile enters onboarding.
+> - **Access layer only.** Gating hides/reveals *surfaces*; it must **not** change what's earned,
+>   the collection logic, or the **Arena buff-gating invariants** (tiers 1–5 winnable at 0 items,
+>   def monotonic, no tier behind own loot).
+> - **Never trap the user** — every gate reachable in a short stretch of normal play; calm, no
+>   streak-anxiety; highlights fire **once**.
+> - **Static/offline/local** — all settings + unlock state in `localStorage` (`halves.*`), no
+>   backend.
+
+### T85 — Settings screen + "Clear all data" (serious confirmation) · status: OPEN
+There is **no settings screen** today (only a sound/mute pref via `applySoundPref`). Add one,
+housing a **destructive "Clear all data"** action — a real reset/privacy feature **and** the way
+to return to a genuine first-run state to test the T86/T87 onboarding gating.
+- **Settings screen**, reachable from the home screen (a small **gear/settings control** on
+  `#start`, or a nav button) — 360px-safe, routing/back consistent with the other screens.
+- **"Clear all data" / "Reset progress"** wipes **every `halves.*` localStorage key**
+  (`halves.collected`, `halves.stats`, `halves.eventBest`, `halves.qbest`, the sound pref, the
+  T54 version-dismiss, the T86 unlock-state, …) → the app returns to a **genuine first-run
+  state** (so onboarding can be re-tested). Clear by enumerated list **or** `halves.` prefix scan;
+  don't leave an app key behind.
+- **Serious confirmation (destructive, irreversible).** A blunt warning ("This permanently
+  deletes ALL your progress — heroes, items, scores, events. It cannot be undone."), plus
+  **deliberate friction**: a **countdown** (Confirm disabled for ~5s) **and** a **numpad-entered
+  confirmation code** (reuse the existing numpad — show a code, e.g. a 4-digit number, the user
+  must re-enter it). Confirm stays disabled until **both** the countdown has elapsed **and** the
+  correct code is entered. **Cancel** is always safe (no wipe). On confirm → wipe → reset to
+  first-run (reload or re-init), landing on `#start` (or the T86 first-run intro once it exists).
+- Optionally fold the existing **mute toggle** into Settings (Babysitter's call in review).
+- **DoD:** a Settings screen reachable from home (360px-safe, routing/back work); the Clear action
+  is gated behind warning + countdown + correct numpad code (Confirm impossible until BOTH met —
+  verify wrong code and early-press do nothing); confirming **clears every `halves.*` key**
+  (verify none survive → genuine first-run) and resets the app; cancel/back leave data intact;
+  every `$("id")`/listener resolves; `node -c` clean; no console errors; all gates green; a
+  Node/DOM test covers the confirm gating (wrong code / countdown-not-elapsed → no wipe; correct →
+  all keys cleared) and that an untouched profile is unharmed by merely opening Settings.
+  (Babysitter: confirm the wipe is total + first-run-true, the confirmation can't be fat-fingered,
+  and cancel is safe.)
+
+### T86 — Onboarding gating I: unlock-state model + first-run intro + Inventory gate + highlight · status: OPEN
+The onboarding engine + the first gate (promoted from IDEAS I4). Pure, local, migration-safe.
+- **Unlock-state model** in `localStorage` (e.g. `halves.unlocked`) with pure helpers
+  `isFeatureUnlocked(id)` / `unlockFeature(id)`. **Migration-safe:** a **legacy profile** (has any
+  collected / completed runs / stats) is treated as **all-unlocked** — never re-gated. Only a
+  genuinely fresh profile (no progress, no unlock record) enters onboarding.
+- **First-run flow:** a fresh profile, on launch, is **dropped straight into ONE easy single
+  question** — *not* a topic round (a trivially easy problem, e.g. halve a small even number or a
+  one-digit add; numeric, non-negative, numpad-safe). **Solving it grants the first reward and
+  unlocks the Inventory**, which becomes the **first ungated + highlighted** surface. (The topic
+  picker/Halves remains available afterwards per the existing T1 chain; only the *extra features*
+  are gated.)
+- **Gating mechanism:** establish the pattern for **hiding a nav/surface until unlocked** and
+  revealing it after; gate the **Inventory** here as the first feature (the rest land in T87).
+- **Highlight-on-ungate:** a one-time **pulse/spotlight** on the newly-available nav control + a
+  short **coachmark toast** ("Inventory unlocked — your rewards live here"); reuse the toast
+  system, persist "highlight shown" so it **fires once**, calm and non-nagging.
+- **DoD:** a fresh profile is dropped into a single easy question (not a full topic; valid/numpad-
+  safe), and solving it **unlocks + highlights the Inventory** and grants the first reward; a
+  **legacy profile is NEVER re-gated** (all features available — verify in Node with a seeded
+  pre-existing profile); unlock-state persists; the highlight fires once; gating hides the feature
+  until unlocked then reveals it; **earn/collection logic + Arena invariants untouched** (access
+  layer only — re-run `arena.test.js`); `node -c` clean; all gates green; a Node/DOM test proves
+  first-run → Inventory-unlock and the legacy-not-re-gated migration. (Babysitter: verify the
+  fresh-vs-legacy branch, the single-question intro, the one-time highlight, and zero logic/Arena
+  regression.)
+
+### T87 — Onboarding gating II: wire the remaining feature gates + reveals · status: OPEN
+Hang the rest of the features on the T86 engine, each revealed + highlighted at a **good progress
+point**. Draft ladder (owner delegated "add good points"; confirm/adjust in review):
+- **Practice** ← first full topic round finished (first `init:`).
+- **Heroes** ← first **loot**/**mastery** earned (≈2–3 runs) — you now have a hero/collection to
+  care about.
+- **Arena** ← a hero owned (tier 1 is already winnable at 0 items, so this gates on having a
+  champion to send, not on collection).
+- **Event banner** ← **a few topic runs in** (owner's explicit example) — a brand-new player isn't
+  met with the daily event before the basics; gating is one added condition in `renderEventBanner()`
+  (must not break the live-event/countdown logic).
+- **Gold / Momentum** readouts ← first earned.
+- Each ungate fires the T86 highlight/coachmark.
+- **DoD:** each feature is gated to its milestone and revealed+highlighted on reaching it; a
+  brand-new player does **not** see the event banner until the run threshold; **legacy profiles see
+  everything** (no re-gate); no gate **traps** the user (each reachable in a short stretch); the
+  Events-banner gate doesn't break its live/countdown behaviour; `node -c` clean; all gates green
+  (incl. `arena.test.js` — access layer only); a Node/DOM test covers each gate's unlock condition
+  + the legacy bypass. (Babysitter: verify each milestone unlocks its feature, the event banner is
+  withheld from brand-new players, legacy profiles bypass all gates, and nothing is trapped.)
+
+---
+
 ### T57 — Scrub the specific school/town/county references from the docs · status: DONE
 Owner: remove the named-school and place references from the codebase, keeping only the
 generic "11+" and the exam board. Babysitter sweep: the only occurrences are in
