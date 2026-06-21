@@ -4162,3 +4162,26 @@ notes / questions: gates are necessary-not-sufficient here — **babysitter live
 vs menu music should now be audibly different + swap instantly on screen change, and a wub+bells should
 land on a win. (3) awaits the [B] overlay-context fix. Next per `NEXT.md`: **`T123`** (a11y contrast
 floor over the backdrop) → `T124` (fraction glyphs) → `T101` (Start delay) → Android.
+
+## T136 — Wire the celebration overlay: mount #fxBurst with {backend:"2d"}  [HANDOFF]
+commit: (this commit, on main) — [A] task, OWNER-PRIORITY. Activation of B's T133. The celebration the
+owner kept asking for was one wiring change away: the burst overlay (#fxBurst) was a 2nd WebGL/WebGPU
+context (separate from the working #fxBackdrop) that mobile GPUs often refuse → "no celebration visuals."
+B's T133 (`3e7da28`) added a Canvas2D backend (`FXGL.Controller(canvas, { backend:"2d" })`) that ALWAYS
+presents. This task re-points the overlay to it.
+changed (A-owned only):
+  - **main.js `setupFx`** — the `#fxBurst` mount now passes **`{ backend: "2d" }`** (Canvas2D overlay).
+    The backdrop `#fxBackdrop` stays on its default WebGL path (the first, working context). The T125
+    resize-before-fire + `fxResizeAll` (window/fullscreen) behaviour is unchanged → the 2D buffer still
+    matches the live viewport across the Start→fullscreen transition.
+how I verified:
+  - **test/fx-wiring.test.js (54→58)** — the stub records each Controller's mount opts; new checks assert
+    the burst mounts with `{backend:"2d"}` while the backdrop does NOT (stays WebGL), at both the source
+    and live-boot level. The existing T125 checks (resize on construction/fullscreen, win/run/item each
+    fire a `celebrate()` on a correctly-sized controller) stay green on the 2D-backed overlay.
+  - **`node -c main.js` clean; full 34-gate suite green** (rebased onto B's T133 `3e7da28`; the engine-side
+    `fx_celebrate_2d_frame` golden + ready/sized asserts guard the render). Only [A]-owned files touched.
+notes / questions: **babysitter live-check (the bar):** on a real device, finishing a topic run / winning
+  an Arena fight / gaining a new item should now throw a VISIBLE particle shower over the UI (z-58) — the
+  owner's "I finally see celebrations." Next per `NEXT.md`: **`T135`** (volume recalibration — HELD until
+  the owner's chosen MAX is posted) → `T123` (a11y contrast floor) → `T124` → `T101`.

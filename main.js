@@ -190,7 +190,11 @@
     const FXGL = window.FXGL; if(!FXGL || !FXGL.Controller) return;
     try{
       const bg = $("fxBackdrop"); if(bg) fxBg = new FXGL.Controller(bg, {});
-      const bu = $("fxBurst");    if(bu) fxBurst = new FXGL.Controller(bu, {});
+      // T136 — the celebration overlay uses the Canvas2D backend (T133): a 2D context
+      // ALWAYS presents, so the z-58 burst renders on-device — unlike a 2nd WebGL
+      // context, which mobile GPUs often refuse (the "no celebration visuals" bug).
+      // The backdrop stays on its WebGL path (the first, working context).
+      const bu = $("fxBurst");    if(bu) fxBurst = new FXGL.Controller(bu, { backend: "2d" });
     }catch(e){ fxBg = null; fxBurst = null; }
     // Size both now (laid out) and on the next frame (in case layout settled late),
     // then keep them matched on every viewport change.

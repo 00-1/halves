@@ -16,6 +16,9 @@ const html = read("index.html"), css = read("styles.css"), main = read("main.js"
 
 // ---- (1) the engine is mounted: script + two canvases -----------------------
 ok(/<script src="fxgl\.js"><\/script>/.test(html), "(1) index.html loads fxgl.js");
+// T136: the burst overlay is mounted on the Canvas2D backend; the backdrop is not.
+ok(/\$\("fxBurst"\)[\s\S]{0,80}new FXGL\.Controller\(bu, \{ backend: "2d" \}\)/.test(main), "(1) T136: #fxBurst mounts with {backend:'2d'} (Canvas2D overlay)");
+ok(/\$\("fxBackdrop"\)[\s\S]{0,60}new FXGL\.Controller\(bg, \{\}\)/.test(main), "(1) T136: #fxBackdrop stays on the default WebGL backend");
 ok(html.indexOf("fxgl.js") < html.indexOf("main.js"), "(1) fxgl.js loads before main.js (the wiring can read window.FXGL)");
 ok(/<canvas id="fxBackdrop"[^>]*class="fx-backdrop[^"]*"[^>]*aria-hidden="true"/.test(html), "(1) a full-bleed BACKDROP canvas exists (aria-hidden)");
 ok(/<canvas id="fxBurst"[^>]*class="fx-burst"[^>]*aria-hidden="true"/.test(html), "(1) a celebration BURST overlay canvas exists (aria-hidden)");
@@ -50,7 +53,7 @@ ok(/function fxBigBurst\(opts\)\{[\s\S]{0,160}\.resize\(\)[\s\S]{0,140}\.celebra
    "(T125) each celebration RESIZES the controller first, then fires FXGL.celebrate() (T126's big shower)");
 ok(/window\.addEventListener\("resize", fxResizeAll\)/.test(main), "(T125) a window resize re-sizes the FX controllers");
 ok(/fullscreenchange[\s\S]{0,90}fxResizeAll/.test(main), "(T125) the Start→fullscreen transition re-sizes the FX controllers (the rendering fix)");
-ok(/function setupFx\([\s\S]{0,700}fxResizeAll\(\)/.test(main), "(T125) the controllers are sized right after construction (not left 1×1)");
+ok(/function setupFx\([\s\S]{0,1000}fxResizeAll\(\)/.test(main), "(T125) the controllers are sized right after construction (not left 1×1)");
 // the three celebration entry points all route through the resize-then-celebrate helper
 ["fxCelebrate","fxCelebrateRank","fxCelebrateWin"].forEach(fn =>
   ok(new RegExp("function " + fn + "\\([\\s\\S]{0,800}fxBigBurst\\(").test(main), "(T125) " + fn + "() routes through fxBigBurst (resize + big celebrate)"));
@@ -61,7 +64,7 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
 
 // ============ live boot: drive the wiring with a stub FXGL ===================
 (function boot(){
-  const fx = { homeStates: [], arenaStates: [], bursts: [], celebrates: [], starts: 0, stops: 0, mounts: 0, ctls: [] };
+  const fx = { homeStates: [], arenaStates: [], bursts: [], celebrates: [], starts: 0, stops: 0, mounts: 0, ctls: [], mountOpts: [] };
   // The stub models the DRAWING-BUFFER size (T125): resize() copies the CURRENT
   // viewport into the controller's buffer; burst()/celebrate() record the buffer
   // size AT FIRE TIME. So a celebration that fires without a fresh resize would be
@@ -98,7 +101,7 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   global.localStorage = { getItem:k => k in store ? store[k] : null, setItem:(k,v)=>{ store[k]=String(v); }, removeItem:k=>{ delete store[k]; } };
   global.window.localStorage = global.localStorage;
   // the STUB engine — records what the wiring calls (engine internals are fxgl.test.js)
-  global.window.FXGL = { Controller: function(){ fx.mounts++; return Ctl(); }, capabilities(){ return { webgl2:true, webgpu:false, reducedMotion:false }; } };
+  global.window.FXGL = { Controller: function(canvas, opts){ fx.mounts++; fx.mountOpts.push(opts || {}); return Ctl(); }, capabilities(){ return { webgl2:true, webgpu:false, reducedMotion:false }; } };
   let docH = {};
   global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
     addEventListener(e,fn){ (docH[e]=docH[e]||[]).push(fn); }, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
@@ -112,6 +115,10 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   new Function(read("main.js"))();
 
   ok(fx.mounts === 2, "boot: the wiring mounts TWO controllers (backdrop + burst) — " + fx.mounts);
+  // T136 — the celebration overlay mounts with the Canvas2D backend (a 2D context
+  // always presents on-device); the backdrop stays on its default WebGL path.
+  ok((fx.mountOpts[0] || {}).backend !== "2d", "boot: T136 — the backdrop (#fxBackdrop) keeps its WebGL backend (the working first context)");
+  ok((fx.mountOpts[1] || {}).backend === "2d", "boot: T136 — the burst overlay (#fxBurst) mounts with {backend:'2d'} (Canvas2D — always presents, no 2nd GL context)");
 
   // T125 — the RENDERING fix: both controllers are sized on construction, and the
   // Start→fullscreen viewport change re-sizes their buffers (no stale 1×1).
