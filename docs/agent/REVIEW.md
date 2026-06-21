@@ -1,6 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T97` [A] (UI-direction research · **doc only**) · build
+**Current verdict:** `APPROVED — T93` [B] (FX engine `fxgl.js`) · live build **`f3eb20e`**. **🎉
+First Builder-B handoff — collision rule honoured perfectly** (only the 3 new B-owned files:
+`fxgl.js`, `test/fxgl.test.js`, `BUILDER-LOG-FX.md`; **zero edits to any existing Halves file**).
+A standalone WebGPU→WebGL2→CPU-still FX engine: clean `window.FXGL` API (`mount/setScene/start/
+stop/setQuality/dispose/capabilities`); Bayer dither + luminance-ramp palette quantise + capped
+**deterministic** particle field; `setScene({grid,palette,particles,seed})` where **`grid` is the
+exact COLS×ROWS shape `scenery.js` emits** (drop-in for the [A] wiring). Verified **independently**:
+`node -c` clean; **zero deps/bundler**; `fxgl.test.js` (**46 checks**) passes — single RAF / one
+instanced draw per frame / textures uploaded once / idle when stopped / quality-clamp degrade /
+**no-GPU→CPU still** / **reduced-motion→static** / **bundles NO brickmap Rust/WASM** (recipes
+ported). brickmap borrowing recorded in `BUILDER-LOG-FX.md`. Correctly **does NOT touch
+`pages.yml`** (gate registration is the [A] wiring task). Existing 24 gates still green (B touched
+nothing). T93 → DONE. *(The `fxgl.test.js` gate gets CI-registered by the first [A] FX-wiring task.)*
+
+**Previously approved (done):** `T97` [A] (UI-direction research · **doc only**) · build
 **`793d7fa`**. `docs/UI-DIRECTION-RESEARCH.md` (241 lines); **doc + BUILDER-LOG only** — no code/
 gates touched (verified). Substantively answers (1)–(5), grounded in the **live CSS**: §1 audit
 (real `border-radius` tallies, the `.btn radius:14px` pill, 13 soft shadows, Space-Grotesk →
@@ -319,9 +333,12 @@ polish tasks, ahead of the content wave; reorderable on owner's word.)*
   tokens — owner approved my T97 leans). **Then** `T88`–`T90` (Arena 3v3) → content `T58`–`T61` →
   `T72`, **+ FX wiring tasks** (mount `FXGL`) once B's engine + surfaces exist. Owns ALL existing
   Halves files; log = `BUILDER-LOG.md`. *(If A is already mid-`T88`, finish it, then take `T98`.)*
-- **Builder B — next: `T93`** [B] (`fxgl.js` FX engine — standalone, brickmap-borrowed,
-  headless-tested, `window.FXGL`). Then the engine sides of `T94`/`T95`. Creates NEW files only +
-  brickmap; **never edits existing Halves files**; log = `BUILDER-LOG-FX.md`.
+- **Builder B — next: `T94` [B]** (add a **celebration-burst capability** to `fxgl.js` — brief,
+  capped, seeded particle burst; new API on the B-owned engine, headless-tested). Then the engine
+  side of `T95`. Creates/edits **only B-owned files** (`fxgl.js`, its tests) + brickmap; **never
+  edits existing Halves files**; log = `BUILDER-LOG-FX.md`. *(T93 DONE — `fxgl.js` engine shipped.)*
+  **Unblocked for [A]:** the FX **wiring** tasks (mount `FXGL` + register its CI gate) can now be
+  specced — home backdrop after `T100`, Arena biome after `T88`–`T90`.
 
 **Gating block (T86+T87) COMPLETE; `T92` event tiers DONE.** **Builder A: do `T96` next** (was
 skipped once — do it NOW; owner is actively iterating the home screen). Home-screen overhaul —

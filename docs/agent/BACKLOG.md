@@ -2044,7 +2044,7 @@ Make the fight *readable* — show the deterministic sim resolving, calmly.
 > tech-tree path glow) come as follow-ups once the foundation proves out on a real Poco-X3-class
 > device.
 
-### T93 — [B] FX engine `fxgl.js` (standalone, brickmap-borrowed, headless-tested) · status: OPEN
+### T93 — [B] FX engine `fxgl.js` (standalone, brickmap-borrowed, headless-tested) · status: DONE
 **Builder B; NEW files only — does NOT edit any existing Halves file** (wiring it into the Arena is
 a later **[A]** task). **First: resolve brickmap access** (read `00-1/brickmap`'s `bm-render` WGSL)
 and record what was borrowed in `docs/agent/BUILDER-LOG-FX.md`.
@@ -2083,6 +2083,10 @@ and record what was borrowed in `docs/agent/BUILDER-LOG-FX.md`.
 **Purpose = amplify reward.** Heightened, *brief* particle/flourish moments so earning *feels* like
 something — on **Arena wins** (the T90 playout's victory) and on **earning a collectible / loot /
 event reward** (inventory gains). Builds on the T93 layer (GPU particles) and/or extends `fx.js`.
+> **Two-builder split:** **T94 [B] (NEXT for Builder B):** add a **celebration-burst capability** to
+> `fxgl.js` (a brief, capped, seeded particle-burst mode — new API on the B-owned engine; NEW-file-
+> only, no edits to existing Halves files; headless test). **T94w [A]:** wire that burst onto the
+> real win/collectible-gain hooks (`main.js`) once T93 is mounted. Babysitter specs T94w when ready.
 - Fire on the existing win/unlock moments (don't invent new ones); reduced-motion → a calm
   reduced flourish; never obscures the question/result text; respects the toast system.
 - **DoD:** a distinct celebratory burst on Arena wins AND on collectible/loot/event-reward gains
