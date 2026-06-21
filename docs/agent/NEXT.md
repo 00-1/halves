@@ -10,16 +10,13 @@
 
 ---
 
-**Builder A → `T122`  · WIRE `synth.js` into the app (make the new audio audible — the payoff)**
-`T117` DONE. The B-built `synth.js` engine is COMPLETE; now wire it. Mount `Synth`
-on `sound.js`'s **existing** AudioContext/master/limiter (`Synth.mount({ctx,dest})`;
-register `synth.test.js` as a CI gate). Make **Synth the MUSIC** and **retire the
-old `sound.js` music scheduler** (ONE scheduler; keep `sfx()`). Route screens to
-contexts (`#game`→solve **calm**, home→menu, `#arena`→arena +`intensity()` from
-boss-proximity, event→event); start-on-enter/stop-on-leave. Fire the **wub** once on
-a real win; **duck** music under SFX; the T113 **volume/tempo sliders + mute** drive
-the combined output. Full DoD: `BACKLOG.md` T122. Then the visual-readability batch →
-`T121` (scroll-fade reveal **+ coin gold + calendar green**) → `T123` (a11y: grey
+**Builder A → `T121`  · visual-readability batch (scroll-fade + status-icon colours)**
+`T122` DONE (synth engine wired & audible 🎙). Now the readability batch: **T121** —
+the T116 scroll-fade paints `--bg` (near-black) over the purple FX backdrop → black
+smear: **mask the `.tree` content to fade to transparent** (reveal the backdrop),
+tied to `can-scroll`; keep the ▾ cue. AND **status icons take their text colour**:
+`.px-ic.coin` = `var(--amber)` (gold), `.px-ic.calendar` = `var(--mint)` (green); all
+other icons stay muted. Full DoD: `BACKLOG.md` T121. Then → `T123` (a11y: grey
 text fails AA over the purple backdrop — contrast floor + honest gate) → `T124`
 (fraction tree-glyphs still illegible — draw them bigger/clearer using the node
 width) → `T101` (Start delay) → `T102`/`T103` (Android) → `T89`/`T90` → content → `T72`.

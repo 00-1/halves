@@ -2305,7 +2305,7 @@ applied to the tree. It's now obvious because T112/T106 make the tree taller/mor
   `node -c` clean; all gates green (a small check that `updateTreeScroll` toggles the classes from
   scroll metrics). (Babysitter: confirm the fade/cue appears only when scrollable and tracks scroll.)
 
-### T122 — [A] WIRE the `synth.js` engine into the app (make it audible) — phase 6 · status: OPEN · OWNER-PRIORITY
+### T122 — [A] WIRE the `synth.js` engine into the app (make it audible) — phase 6 · status: DONE (`a4e81b8`)
 The B-built `synth.js` (`window.Synth`) generative-audio engine is **complete** (T120 #1–#5: patches,
 FDN reverb/space, harmony, rhythm/variation, contexts; 107 headless checks) but **standalone — nothing
 plays it yet.** This [A] wiring makes it the live **music** engine (the moment the owner finally HEARS

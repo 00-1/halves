@@ -1,6 +1,28 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T120 COMPLETE` [B] (`synth.js` generative-audio engine — all 5 phases)
+**Current verdict:** `APPROVED — T122` [A] (🎙 the new synth engine is WIRED & AUDIBLE) · live build
+**`a4e81b8`**. **CI green.** The payoff: B's `synth.js` is now the **live music engine**. **One audio
+chain:** `Synth.mount({ctx})` reuses `sound.js`'s **existing AudioContext** and its output routes **into
+sound.js's master** → so the **T113 volume slider + the brickwall limiter apply to everything** (music +
+SFX), and **mute silences both** (`applySoundPref` sets `Sound.setMuted` AND `Synth.setMuted`). **One
+scheduler:** sound.js's old music scheduler (`STYLES`/`startScheduler`/`musicTick`/the old `wub`) is
+**deleted** (−219 lines → sound.js is SFX-only) — verified no second scheduler/`setInterval` remains.
+**Context routing** (`musicForScreen` mirrors `fxSetScreen`): `#game`→**solve** (CALM **by
+construction** — `kickK:0`, no snare, tempo 60 < menu 80), event→**event**, `#arena`→**arena**
+(phrygian/driving) with **`Synth.intensity()` driven by live boss-proximity**, else **menu**;
+start-on-enter, **`Synth.stop()` when the tab is hidden** (no off-screen drain). **Wins:** `wubSting()`
+fires **Synth's wub** on a real Arena victory + topic-complete/mastery (replacing the removed sound.js
+wub), **ducking** the music; louder SFX stings also **`Synth.duck()`** (`DUCK_SFX`). **Tempo slider** now
+re-derives the per-context spec (`synthTempoMult` × context BPM). Verified **independently**: `node -c`
+clean; **full 33-gate suite green** incl. the new **`synth-wiring.test` (25)** (mount-on-shared-ctx,
+routed-into-master, no-second-scheduler, context routing, calm-solve, arena-intensity, wub-on-win, duck,
+mute-both, tempo→Synth) + `synth.test` (107) + `sound.test` (38, SFX-only); both synth gates registered
+in `pages.yml`; `cache-bust` versions `synth.js`. All **[A]-owned files** (consumes Synth's API only).
+T122 → DONE. **→ 🔊 OWNER EAR-CHECK on the Poco X3:** calm solves · driving Arena that swells near a
+boss · a wub on wins · real reverb/space — all under your volume/tempo sliders + mute. **Tell me how it
+sounds + any tuning** (per-context levels/tempo/reverb are easy dials now).
+
+> **Previously approved (done):** `T120 COMPLETE` [B] (`synth.js` generative-audio engine — all 5 phases)
 · live build **`976e575`** (#5 contexts). **CI green; collision-clean throughout** (only `synth.js`,
 `test/synth.test.js`, `BUILDER-LOG-FX.md` across all 5 pushes — never an existing file). The principled
 rebuild the owner asked for is **built**: **#1** ADSR + a 6-patch table (materially distinct graphs) +
@@ -792,16 +814,9 @@ extension (`T58` playbook → Wave-2 batches `T59`/`T60`/`T61`), then **`T72`** 
 readiness). *(Events brought forward by the owner 2026-06-21 — slotted after the two small
 polish tasks, ahead of the content wave; reorderable on owner's word.)*
 ### Two-Builder queue (see `ORCHESTRATION.md`)
-- **Builder A — next: `T122`** [A] · **OWNER-PRIORITY (the payoff: make the new audio audible)**
-  (**`T117` DONE — emoji→pixel icons; `T114`/`T118`/`T116`/`T115`/`T113`/`T106`/`T112`/`T111`/`T110`/
-  `T107`/`T100`/`T104`/`T99` DONE**). *(Read `NEXT.md` fresh before starting — canonical.)*
-  **`T122` — WIRE `synth.js` into the app** (phase 6): mount `Synth` **on `sound.js`'s existing
-  AudioContext/master/limiter** (`Synth.mount({ctx,dest})`, register `synth.test.js` as a CI gate);
-  make **Synth the MUSIC** + **retire the old `sound.js` music scheduler** (one scheduler only; keep
-  `sfx()`); route each screen to its context (`#game`→**solve calm**, home→**menu**, `#arena`→**arena**
-  +`intensity()` from boss-proximity, event→**event**), start-on-enter/stop-on-leave; fire the **wub**
-  once on a real win; **duck** music under SFX; the **T113 volume/tempo sliders + mute** drive the
-  combined output. Full DoD `T122`. **Then the visual-readability batch → `T121`** (scroll-fade reveal +
+- **Builder A — next: `T121`** [A] (**`T122` DONE — synth engine wired & audible; the whole prior queue
+  DONE**). *(Read `NEXT.md` fresh before starting — canonical.)* **Visual-readability batch → `T121`**
+  (scroll-fade reveal +
   **coin gold + calendar green**) → **`T123`** (a11y: grey text fails AA over the purple FX backdrop —
   contrast floor/scrim + honest `contrast.test`) → **`T124`** (fraction tree-glyphs still illegible —
   bigger/clearer using the node width; T104 follow-up) → **`T101`** (Start delay) → **`T102`/`T103`**
