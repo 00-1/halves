@@ -5536,3 +5536,19 @@ view-only (the collection is never written). `hoard-wiring` updated to the new `
 **Full suite 52/52.** [A]-only (main.js, index.html, the two gates + pages.yml).
 notes: T182 (the log-of-magnitude hoard curve + the gold-setter mechanism) ships in the same push — both were
 the 🔴 do-first pair. Next: wire the Codex **Emblems** section (B's `T181` `emblems.js`).
+
+---
+### [A] Codex EMBLEMS section — wire B's T181 emblems.js
+what: loaded B's `emblems.js` (`<script>` before main.js) and added a 5th **Emblems** section to the Codex —
+the owner's app-icon-review surface. It renders B's 6 brand candidates (`window.Emblems.IDS`: coin / crowncoin
+/ hoard / goblin / voidthrone / sigil) via `Emblems.draw(canvas,id)`, mirroring the other Codex sections (bar
+row + tile grid + the silhouette-locked treatment). They ladder in by CONQUEST: emblem *i* unlocks once *i*
+region bosses are felled (`bossesDefeated(col)`), so the first shows by default and the rest are milestone-
+unlocked silhouettes — and dev reveal-all (T184) shows them all for review. Registered B's `test/emblems.test.js`
+in CI (B delegated that to [A]) and added `emblems.js` to the cache-bust asset set.
+how I verified: `codex.test` 19→22 (the five sections; Emblems = the 6 candidates; the first unlocked + the rest
+milestone-locked at 0 bosses; the per-generator draw dispatch now incl. emblems). `emblems.test` (B's, 45) green
+in CI; `cache-bust` 49 (emblems.js versioned). **Full suite 52/52.** [A]-only wiring (index.html, main.js, the
+Codex/cache-bust gates + pages.yml). `emblems.js` itself is B-owned (untouched).
+notes: this clears the [A] queue (the 🔴 T184+T182 pair, then the Codex Emblems wiring). Awaiting the next
+pointer from the babysitter.

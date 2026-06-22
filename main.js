@@ -1286,9 +1286,17 @@
       const enc = Object.keys(col).some(k => k.indexOf("event:" + ev.id) === 0); if(enc) eGot++;
       events.push(codexCell(ev.name, enc, 48, 32, { codex:"event", seed:ev.artSeed }));
     });
-    const totGot = bGot + boGot + rGot + eGot, totAll = beasts.length + bosses.length + realms.length + events.length;
+    // Emblems (T179/T181) — B's brand / app-icon candidates; the owner's icon-review
+    // surface. Earned by conquest: emblem i unlocks once i region bosses are felled
+    // (the first is always shown), so they ladder in via milestones.
+    const emblems = []; let emGot = 0;
+    const Em = window.Emblems, emIds = (Em && Em.IDS) || [];
+    const felled = bossesDefeated(col);
+    emIds.forEach((id, i) => { const enc = felled >= i; if(enc) emGot++;
+      emblems.push(codexCell(id.charAt(0).toUpperCase() + id.slice(1), enc, 48, 48, { codex:"emblem", emblem:id })); });
+    const totGot = bGot + boGot + rGot + eGot + emGot, totAll = beasts.length + bosses.length + realms.length + events.length + emblems.length;
     const bars = [["Beasts", bGot, beasts.length], ["Bosses", boGot, bosses.length],
-                  ["Realms", rGot, realms.length], ["Events", eGot, events.length]]
+                  ["Realms", rGot, realms.length], ["Events", eGot, events.length], ["Emblems", emGot, emblems.length]]
       .map(s => invBarRow(s[0], s[1], s[2])).join("");
     const block = '<div class="inv-cat"><h4>Codex <span>' + totGot + '/' + totAll + ' discovered</span></h4>' +
       '<div class="topic-prog">' + bars + '</div></div>';
@@ -1296,7 +1304,8 @@
       codexGroup("Beasts", beasts, bGot, beasts.length) +
       codexGroup("Bosses", bosses, boGot, bosses.length) +
       codexGroup("Realms", realms, rGot, realms.length) +
-      codexGroup("Events", events, eGot, events.length);
+      codexGroup("Events", events, eGot, events.length) +
+      codexGroup("Emblems", emblems, emGot, emblems.length);
   }
   // Paint a COLS×ROWS hex-colour grid into a canvas, full-bleed (no scrim) — the
   // Codex realm thumbnails (Scenery.buildGrid) shown "full-lit".
@@ -1310,13 +1319,14 @@
     }
   }
   function drawCodexCanvases(){
-    const M = window.Monsters, S = window.Scenery, EA = window.EventArt;
+    const M = window.Monsters, S = window.Scenery, EA = window.EventArt, Em = window.Emblems;
     $("invList").querySelectorAll(".codex-cell canvas").forEach(cv => {
       const d = cv.parentElement.dataset;
       try{
         if((d.codex === "beast" || d.codex === "boss") && M) M.draw(cv, { n:+d.n, name:"", type:d.type });
         else if(d.codex === "realm" && S && S.buildGrid) paintCodexGrid(cv, S.buildGrid(+d.region));
         else if(d.codex === "event" && EA) EA.draw(cv, +d.seed);
+        else if(d.codex === "emblem" && Em) Em.draw(cv, d.emblem);
       }catch(e){}
     });
   }

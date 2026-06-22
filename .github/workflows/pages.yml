@@ -112,6 +112,8 @@ jobs:
         run: node test/fonts.test.js
       - name: FXGL engine test (gate)
         run: node test/fxgl.test.js
+      - name: Brand emblems (T181) test (gate)
+        run: node test/emblems.test.js
       - name: FX wiring test (gate)
         run: node test/fx-wiring.test.js
       - name: Gold-hoard wiring (T173) test (gate)
