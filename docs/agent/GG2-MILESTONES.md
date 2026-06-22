@@ -73,7 +73,7 @@ topics with no guide.)*
 - **Gold:** carries over but **buys nothing** — it just **goes UP** (the absurd-wealth meta-joke + hoard, same as
   GG1). Seeds come from **drilling drops**; plots unlock from **progression** — NOT bought with gold.
 - **Balance pass:** a sim (like GG1's `economy-sim.js`) for grow-times, plot count, seed drop rates,
-  pacification math, gold sinks — so progression feels right and a kid is never *stuck* waiting (can
+  pacification math (NO gold sinks — gold isn't spent) — so progression feels right and a kid is never *stuck* waiting (can
   always drill for more).
 - **Deliverable:** the working metagame + a balance doc.
 
