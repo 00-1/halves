@@ -293,6 +293,24 @@
       ],
       example: "3 × £2.40 → 3 × £2 = £6, 3 × 40p = £1.20 → £7.20."
     },
+    pctup: {
+      intro: "A percentage INCREASE adds that slice ON — find the part, then add it to the original.",
+      tips: [
+        "Find the percentage of the number, then add it to the start value.",
+        "Or scale in one go: +10% is ×1.1, +25% is ×1.25, +50% is ×1.5.",
+        "Build the percentage from 10%: 30% is three tenths."
+      ],
+      example: "200 + 15% → 10% is 20, 5% is 10, so 15% is 30 → 200 + 30 → 230."
+    },
+    fdp: {
+      intro: "Fractions, decimals and percentages are three ways to write the same value — convert between them.",
+      tips: [
+        "Percent → decimal: divide by 100 (45% = 0.45). Decimal → percent: ×100 (0.6 = 60%).",
+        "Fraction → percent: scale it to hundredths (3/5 = 60/100 = 60%).",
+        "The anchors: ½ = 0.5 = 50%, ¼ = 0.25 = 25%, ⅕ = 0.2 = 20%, 1/10 = 0.1 = 10%."
+      ],
+      example: "3/4 as a % → 3/4 = 0.75 = 75%."
+    },
     roman: {
       intro: "Roman numerals build a number from letter-symbols, mostly adding left to right.",
       tips: [
@@ -523,6 +541,16 @@
         if(mm) return "Multiply £" + mm[2] + " by " + mm[1] + " — the pence scale up just like the pounds.";
         const mc = p.match(/^change from £(\d+) of £([\d.]+)$/);
         if(mc) return "Count up from £" + mc[2] + " to £" + mc[1] + ", or subtract — that's the change.";
+        break; }
+      case "pctup": { const m = p.match(/^(\d+) \+ (\d+)%$/); if(!m) break; const base = +m[1], pct = +m[2];
+        return "Find " + pct + "% of " + base + ", then add it on to " + base + " for the new total."; }
+      case "fdp": {
+        const md = p.match(/^(\d+)% as a decimal$/);
+        if(md) return "A percent is out of 100 — divide " + md[1] + " by 100 (shift the digits two places smaller).";
+        const mp = p.match(/^([\d.]+) as a %$/);
+        if(mp) return "To make a decimal a percent, multiply " + mp[1] + " by 100 (shift two places bigger).";
+        const mf = p.match(/^(\d+)\/(\d+) as a %$/);
+        if(mf) return "Scale " + mf[1] + "/" + mf[2] + " to an equivalent fraction over 100 — the new top is the percent.";
         break; }
       case "roman":
         // METHOD only — the same rule reads every numeral; never the value.

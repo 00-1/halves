@@ -5984,3 +5984,21 @@ T217/T220 (caps / vertical stretch / on-off flicker) all still apply.
 verified: pwa (a2) updated (the `ls` ternary, the per-row `rs` skew about `cx`, `.pixtitle` max-width). Full suite
 **56/56**. [A]-only (main.js, styles.css, test/pwa.test.js). Owner device-confirms the live splash; then back to
 T219 batch 2.
+
+---
+### [A] T219 batch 2 (Fractions & % group) — Percent Increase + F·D·P
+Second T219 group batch.
+- **`pctup`** — increase a number by a % and give the NEW total (200 + 15% → 230), the one-way direction
+  `percentoff` (decrease) doesn't cover. 21 items, integer answers. Chains off `fdp` (NOT `scaling` — that row
+  was already 4 abreast; chaining there hit 5 and tripped the T170 ≤4-abreast invariant, caught by
+  home-layout). Glyph `+%`.
+- **`fdp`** — three-way Fraction↔Decimal↔Percent conversion (45% → 0.45, 0.6 → 60%, 3/5 → 60%). 21 items
+  across all three shapes, clean terminating answers. Chains off `fractions2` (extends fraction→decimal into
+  the full triangle); lineage fractions→fractions2→fdp→pctup sits at the 4-abreast max. Glyph `½%`.
+- Both group Fractions & %, single-child branches, guides + answer-free explains (the explains echo only
+  prompt numbers + 100, never the converted value / new total).
+verified: new `test/t219-pctup-fdp.test.js` (24 checks, independent re-derivation of every answer; wired into
+pages.yml); hero-icons catalogue 1764 → 1862; question-integrity + glyph-distinctness gates green across all 34
+modes; full suite **57/57**. [A]-only (modes.js, guides.js, tests, pages.yml). Remaining T219: Part-1 BODMAS,
+×-tricks, Negatives-P1, Algebra/function-machines; Part-2 Geometry group (Area/Volume/Angles), Speed-Distance-
+Time, Median/Mode/Range, Prime-factorisation; then the Collector-ladder rebalance LAST.

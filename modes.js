@@ -420,6 +420,26 @@
     [22,23],[24,29],[26,29],[30,31],[32,37],[36,37],[40,41],[44,47],[48,53],[50,53],[60,61]
   ];
 
+  // ---- T219 batch 2 (Fractions & % group) — % increase + F↔D↔P conversion ----
+  // `pctup` — INCREASE a number by a percentage, find the new total (the one-way
+  // gap `percentoff` doesn't cover). Each entry [pct, base, A] with A = base +
+  // pct·base/100 (integer in this set).
+  const PCTUP_SRC = [
+    [10,200,220],[20,150,180],[25,80,100],[50,60,90],[15,200,230],
+    [10,90,99],[5,80,84],[20,45,54],[10,350,385],[25,40,50],
+    [30,40,52],[50,24,36],[20,60,72],[10,60,66],[15,40,46],
+    [25,200,250],[5,100,105],[20,80,96],[10,150,165],[50,30,45],[20,250,300]
+  ];
+  // `fdp` — three-way Fraction↔Decimal↔Percent conversion. Tagged entries:
+  //   ["d", pct, A]    → "pct% as a decimal"  (A = pct/100, terminating literal)
+  //   ["p", dec, A]    → "dec as a %"         (A = dec·100, integer)
+  //   ["f", n, d, A]   → "n/d as a %"         (A = n/d·100, integer in this set)
+  const FDP_SRC = [
+    ["d",45,0.45],["d",20,0.2],["d",75,0.75],["d",8,0.08],["d",60,0.6],["d",5,0.05],["d",90,0.9],
+    ["p",0.6,60],["p",0.25,25],["p",0.4,40],["p",0.07,7],["p",0.85,85],["p",0.5,50],["p",0.12,12],
+    ["f",3,5,60],["f",1,4,25],["f",7,10,70],["f",1,2,50],["f",4,5,80],["f",9,20,45],["f",3,4,75]
+  ];
+
   // ---- T59 — Wave-2 Batch A: Rounding + Larger ×/÷ (genuinely NEW topics; no
   // overlap with the T162 mock modes). Specs from docs/research-11plus.md.
   // `rounding` — round N to the nearest 10/100/1000. Each entry [N, unit, A] with
@@ -536,6 +556,13 @@
   // Roman numeral: show the numeral, answer the value. Prime: "next prime > n".
   function romanItem(e){ return { p: e[0], a: e[1] }; }
   function primeItem(e){ return { p: "next prime > " + e[0], a: e[1] }; }
+  // Percent increase: "base + pct%" → the new total. F↔D↔P: three conversion shapes.
+  function pctUpItem(e){ return { p: e[1] + " + " + e[0] + "%", a: e[2] }; }
+  function fdpItem(e){
+    if(e[0] === "d") return { p: e[1] + "% as a decimal", a: e[2] };
+    if(e[0] === "p") return { p: e[1] + " as a %", a: e[2] };
+    return { p: e[1] + "/" + e[2] + " as a %", a: e[3] };
+  }
   // Cubes & roots: "n³" (cube), or "∛cube" / "√sq" (the inverse roots).
   function cubeRootItem(e){
     if(e[0] === "c") return { p: e[1] + "³", a: e[1] * e[1] * e[1] };
@@ -825,6 +852,24 @@
       glyph:'1<span class="slash">·</span>n',
       eyebrow:'next prime <b>↓</b>', expr:false, requires:"mastery:digitsum", masterSecs:7, group:"Number",
       build(){ return shuffle(PRIMES_SRC).map(primeItem); }
+    },
+    // ---- T219 batch 2 (Fractions & % group) — % increase + F↔D↔P ---------------
+    {
+      // % increase — the new total after adding pct%. Branches off `fdp` (keeps the
+      // Fractions-&-% lineage fractions→fractions2→fdp→pctup at the ≤4-abreast max;
+      // chaining off the percentoff/scaling row would make it 5). Group Fractions & %.
+      id:"pctup", name:"Percent Increase", tag:"Add the % — new total.",
+      glyph:'<span class="slash">+</span>%',
+      eyebrow:'new total <b>↓</b>', expr:true, requires:"mastery:fdp", masterSecs:9, group:"Fractions & %",
+      build(){ return shuffle(PCTUP_SRC).map(pctUpItem); }
+    },
+    {
+      // F↔D↔P three-way conversion. Branches off `fractions2` (extends fraction→
+      // decimal into the full %/decimal/fraction triangle). Group Fractions & %.
+      id:"fdp", name:"F · D · P", tag:"Convert %, decimal, fraction.",
+      glyph:'%<span class="slash">/</span>d',
+      eyebrow:'convert <b>↓</b>', expr:false, requires:"mastery:fractions2", masterSecs:8, group:"Fractions & %",
+      build(){ return shuffle(FDP_SRC).map(fdpItem); }
     }
   ];
 
@@ -892,7 +937,10 @@
     sequences2:   ["n","*×","k"],      // n×k — evaluate the rule Mn ± A at term k
     // T219 batch 1 — Number recall topics (supported chars; distinct grids).
     roman:        ["*x"],              // X — the iconic Roman numeral (accented)
-    primes:       ["*1","n"]           // 1·n — a prime's only factors are 1 and itself
+    primes:       ["*1","n"],          // 1·n — a prime's only factors are 1 and itself
+    // T219 batch 2 — Fractions & % additions (distinct grids).
+    pctup:        ["*+","%"],          // +% — increase by a percent
+    fdp:          ["f12","*%"]         // ½% — fraction ↔ decimal ↔ percent
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 
