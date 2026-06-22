@@ -3140,27 +3140,33 @@ where the surface and edge have different colours."*
 **Owner (2026-06-22, on T192 `61efcc6`): "looks a bit better. I think what it needs is a filter pass — dithering
 and pixelation — e.g. along the lines of filters in brickmap. Also I think we need a lot of steps of gradation to
 the pile, not just (for example) 5 big steps — not sure exactly how it's done currently."**
-- **✅ ROOT CAUSE (Babysitter-verified):** the engine renders the whole scene with **ordered 4×4 Bayer dithering +
-  palette quantisation** (per the `fxgl.js` header / `palette.wgsl`), but the **HOARD silhouette does NOT** — it
-  draws a **smooth analog gradient** (`drawHoard`: `shade(base, 0.25 - depth*0.6)` over `step≈W/160` cells). So the
-  pile reads *smooth* against a *dithered pixel* scene — out of place. (*"brickmap filters"* reads as the classic
-  ordered-dither + pixelation pixel-art look — which the engine already has; the hoard is the odd one out.)
-- **Filter pass (`drawHoard`):** bring the pile into the **same ordered-Bayer dither + pixel-quantised** look as the
-  scene — a **chunkier pixel grid** (pixelation) and **Bayer-threshold dithering** between a **multi-tone gold
-  ramp** (crest-light → base-dark), instead of the smooth gradient. Reuse the engine's existing dither machinery /
-  Bayer matrix rather than inventing a new one, so the pile matches the biome behind it. (Apply to the silhouette;
-  the flat cell-shaded cylinders can stay, but make sure they sit cohesively in the dithered field.)
-- **Lots of gradation steps:** (a) shade the pile across a **many-tone gold ramp** dithered (not ~5 flat bands) →
-  fine pixel gradation crest→base; (b) raise **`HOARD_TIERS`** (currently **8** — the coin-buffer re-seed
-  granularity) to ~**24–32** so the pile/coins grow in **many fine increments** with wealth, not coarse jumps.
-  *(NB: the dev gold-setter's ~5 discrete buttons are just test points — the real `hoardLevel` curve is continuous;
-  the visible "big steps" are the smooth-gradient banding + the coarse tier count, which this fixes.)*
-- **DoD:** the pile is **dithered + pixelated to match the scene** (ordered Bayer, palette-quantised — no smooth
-  analog gradient), with **many fine gradation steps** (multi-tone dithered shading + finer `HOARD_TIERS`); reads
-  cohesive with the biome on the **WebGL/WebGPU 2D overlay** (owner's device) AND CPU still; scenes byte-identical
-  when no hoard; `golden-fx`/`fxgl`/`hoard-wiring` green (update goldens, note it); `node -c` clean; **owner
-  device-confirms**. **[B]-only** (`fxgl.js`, tests). *(If "brickmap" means a specific filter beyond ordered-dither
-  + pixelation, the owner will refine.)*
+- **REFERENCE — `brickmap` (`00-1/brickmap`, PUBLIC; B has access — fxgl originated as inspiration from it).** Use
+  brickmap's **palette post-process** as the authoritative look (B knows it firsthand): a **luminance gradient-map**
+  through a curated palette + **Ordered (Bayer 4×4) dithering** that **posterises shading into a FEW levels with a
+  visible dot pattern** (reads as a **halftone**, "crisp not smoothed", nearest-neighbour), at a tunable **pixel
+  scale** — the same screen-locked Bayer threshold reused everywhere for coherence.
+- **✅ ROOT CAUSE (Babysitter-verified):** the rest of fxgl already renders with that ordered-Bayer dither + palette
+  quantise (header / `palette.wgsl`), but the **HOARD silhouette is the ONE part that doesn't** — `drawHoard` draws
+  a **smooth analog gradient** (`shade(base, 0.25 - depth*0.6)` over `step≈W/160` cells). So the pile reads *smooth*
+  against the *dithered/halftone pixel* scene — out of place. That's the "needs a filter pass."
+- **Filter pass (`drawHoard`):** render the pile with the **brickmap halftone-dither**, not the smooth gradient:
+  a **luminance/depth gradient-map** through a **curated gold ramp** (crest-light → base-dark) **posterised to a few
+  levels**, with the engine's **ordered Bayer 4×4** dot pattern between levels (the visible halftone), at a chunky
+  **pixel scale** (nearest-neighbour, crisp). **Reuse the existing fxgl/brickmap dither machinery + screen-locked
+  threshold** (don't invent a new one) so the pile is dot-locked to the biome behind it. (The flat cell-shaded
+  cylinders can stay; make sure they sit cohesively in the halftone field.)
+- **Lots of gradation steps:** the **halftone dither between the posterised gold levels** is what *creates* the
+  impression of many gradation steps (vs the current ~5 flat-looking bands) — that's the brickmap trick. Also raise
+  **`HOARD_TIERS`** (currently **8** — coin-buffer re-seed granularity) to ~**24–32** so the pile/coins grow in
+  **many fine increments** with wealth, not coarse jumps. *(NB: the dev gold-setter's ~5 buttons are just test
+  points — the real `hoardLevel` curve is continuous; the visible "big steps" are the smooth-gradient banding + the
+  coarse tier count, which this fixes.)*
+- **DoD:** the pile renders in the **brickmap palette post-process look** (luminance→gold-ramp gradient-map,
+  posterised + ordered-Bayer **halftone** dot pattern, pixel-scaled/crisp — NO smooth analog gradient), dot-locked
+  to and cohesive with the biome on the **WebGL/WebGPU 2D overlay** (owner's device) AND CPU still; the halftone +
+  finer `HOARD_TIERS` give the many fine gradation steps; scenes byte-identical when no hoard; `golden-fx`/`fxgl`/
+  `hoard-wiring` green (update goldens, note it); `node -c` clean; **owner device-confirms**. **[B]-only**
+  (`fxgl.js`, tests). *(B: consult brickmap's palette/dither shader directly for the exact threshold/matrix.)*
 
 ### T193 — [B] **Money-gain celebration = the same spinning cell-shaded CYLINDER coins** (not square/disc particles) · status: OPEN · owner-reported
 **Owner (2026-06-22): "I'd like to see the same rotating cell-shaded cylinders in the money-gain celebrations.
