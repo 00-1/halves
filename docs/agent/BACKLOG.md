@@ -3151,6 +3151,28 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
+### T218 — [A] **Notification BADGES on nav menu items (new / "there's something here")** · status: OPEN · owner-requested
+**Owner (2026-06-22): "we're missing alert bubbles on menu items where there's something new. GG1 should have it —
+new hero or new inventory item = alert. Maybe there's others. (GG2 will need it for when crops are ready.)"**
+A small **badge/dot** on a nav button (`#navRow`: Best/Items/Heroes/Arena/Setup) when that surface has something
+NEW the user hasn't seen; **clears when they open it.** This is also a **CORE/shell feature** GG2 inherits (crops
+ready → Plants badge).
+- **System:** a reusable "**new-since-seen**" tracker — persist a per-surface **acknowledged** marker (localStorage),
+  computed on the home render (`applyGates`); render a corner badge (count or dot) on the navbtn when current state
+  has unacknowledged new entries; **clear/acknowledge when the user opens that surface.** Survive reload; no false
+  positives (don't badge things collected before the feature existed → seed the acknowledged marker at first run).
+- **GG1 triggers:** **Items** (`#invBtn`) = newly-collected loot not yet viewed in Items; **Heroes** (`#heroesBtn`)
+  = newly-unlocked hero not yet viewed. **Candidate "others" (owner: "maybe others"):** **Arena** (`#arenaBtn`) =
+  a new realm/tier or boss now reachable; **Codex** new discovery (beast/realm/event/award) — within Items;
+  **Best** (`#statsBtn`) = a newly-unlocked topic. *(Do Items + Heroes for sure; propose the rest.)*
+- **Style:** small badge in the navbtn's top corner, the pixel/clean aesthetic (a dot, or a count for >1);
+  accessible (`aria-label` "N new"); doesn't break the nav layout.
+- **DoD:** the right nav item shows a badge when there's genuinely something new (Items: new loot; Heroes: new
+  hero; + any agreed others); it **clears on viewing** + persists across reloads; no false badges (esp. not on
+  first run for already-owned things); `node -c` clean; a test for the new-since-seen logic; **owner device-confirms**.
+  **[A]-only** (`main.js`, `index.html`, `styles.css`, tests). *(Queue: after T213; a nice pre-launch retention
+  touch. Also note in GG2-MILESTONES as a CORE feature.)*
+
 ### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (iterative: assess ↔ fix until perfect) · status: PHASE 1 DONE · PHASE 2 FIXES → [A] HIGH-PRIORITY (after T216) · PHASE 3 re-assess loop (Babysitter) · owner: "as perfect as we can get it"
 **Owner (2026-06-22): "queue up a quality pass for the questions and guides/questions text — a DEEP pass where
 every question and piece of text gets looked over by an AI agent and assessed on various criteria to make sure

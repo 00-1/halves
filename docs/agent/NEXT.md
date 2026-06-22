@@ -16,7 +16,9 @@
   `bonds2`, `rounding` 560-tie); verify the `money` decimal matcher; add `cubes`+roots.
 - **2c — de-dup pool slots + re-run the harness + add a regression gate.**
 After each batch: Babysitter re-runs the enumeration harness + sub-agent assessment, surfaces more recs → loop until
-clean. [A] (`modes.js`, `guides.js`, tests). Then **`T168`** (held on Play ID-verify).
+clean. [A] (`modes.js`, `guides.js`, tests).
+- **Then `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view; persists). A
+  core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests). Then **`T168`** (held on Play ID-verify).
 **Re-read this line fresh before each task + push.**
 
 **Builder B → STAND BY.** `T103` (perf pass) + `T211`/`T207` **APPROVED** (live `951e532`); queue clear. Hold until

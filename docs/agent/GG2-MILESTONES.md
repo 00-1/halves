@@ -11,7 +11,7 @@
 **Goal:** the core/pack split + pluggable input — GG2 is built on this, not a fork of GG1.
 - **P0.1 Core/pack refactor:** extract GG1 into CORE (shell, `fxgl`, `synth`, round loop, progression/
   mastery/streak, collection, **gold/economy**, dev mode, guide framework, settings/onboarding, update
-  flow) vs CONTENT-PACK (questions, input, answer-checker, assets, metagame). *(FRANCHISE-DESIGN §3)*
+  flow; **the nav notification-BADGE system — "new-since-seen" — built in GG1 T218**) vs CONTENT-PACK (questions, input, answer-checker, assets, metagame). *(FRANCHISE-DESIGN §3)*
 - **P0.2 Pluggable INPUT system:** input as a module — **multiple-choice (build first)**, letter-tiles/
   on-screen keys, tap-a-target, numpad. A question declares its mode; the shell renders widget +
   checker. *(FRANCHISE-DESIGN §4 — the make-or-break investment.)*
@@ -92,6 +92,8 @@ topics with no guide.)*
 
 ## M10 — Onboarding, dev mode, Codex
 **Goal:** the shell experiences, reflavoured.
+- **Nav badges (from core, GG1 T218): crops-ready alert** on the Plants/farm nav item when a crop has ripened (+
+  new seed/beast/realm). The headline GG2 use of the badge system.
 - First-run onboarding that teaches **planting/pacifying** (new mechanic — needs teaching). Dev mode
   (gold-setter, reveal-all, testers — from core). A **Codex/collection** of crops/beasts/realms art.
 - **Deliverable:** onboarding + dev + Codex packs.
