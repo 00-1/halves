@@ -1219,10 +1219,40 @@
   // flat foreshortened TOP-FACE ellipse + a darker flat EDGE band below it (the cylinder
   // side) — two flat tones, NO outline, no gradient (an optional tiny flat highlight). The
   // `rot` spins it; `aspect` tips it (face-on → a disc, edge-on → the edge band dominates).
-  function drawCoin(ctx, cx, cy, r, rot, aspect, rgb, hi){
+  function drawCoin(ctx, cx, cy, r, rot, aspect, rgb, hi, cell){
     r = Math.max(1, r); aspect = Math.max(0.12, Math.min(1, aspect || 1));
     const ry = r * aspect, edgeH = r * (0.18 + 0.5 * (1 - aspect));   // tip more → taller edge
     const edge = shade(rgb, -0.4);                                    // darker flat edge tone
+    // T197 — PIXEL-DITHER path (when a `cell` is given): rasterise the cylinder into the SAME
+    // screen cell-grid as the T195 pile, ordered-Bayer-dithering between the coin's OWN tones
+    // (edge → face → highlight) — so the coins are pixelated + dithered cohesively with the
+    // pile (one shared dot lattice), with NO colour shift (the owner dropped that). No canvas
+    // read-back → cheap enough for the per-frame gain-burst coins.
+    if(cell && cell >= 2 && ctx.fillRect){
+      const ramp = [edge, rgb, shade(rgb, 0.42)];                    // dark→light, the coin's own 3 tones
+      const cos = Math.cos(rot || 0), sin = Math.sin(rot || 0);
+      const reach = Math.ceil(r + edgeH) + cell;                     // screen-px bounding radius
+      const gx0 = Math.floor((cx - reach) / cell), gx1 = Math.ceil((cx + reach) / cell);
+      const gy0 = Math.floor((cy - reach) / cell), gy1 = Math.ceil((cy + reach) / cell);
+      const r2 = r * r, ry2 = ry * ry;
+      for(let gx = gx0; gx <= gx1; gx++) for(let gy = gy0; gy <= gy1; gy++){
+        const sx = gx * cell + cell / 2, sy = gy * cell + cell / 2;  // cell centre (screen space)
+        const dx = sx - cx, dy = sy - cy;
+        const lx = dx * cos + dy * sin, ly = -dx * sin + dy * cos;   // inverse-rotate into the coin frame
+        let v;
+        if((lx * lx) / r2 + (ly * ly) / ry2 <= 1){                   // on the TOP FACE → lit, hi toward upper-left
+          v = clamp01(0.55 + 0.5 * (-lx / r) + 0.35 * (-ly / ry));
+        } else if((Math.abs(lx) <= r && ly >= 0 && ly <= edgeH) ||   // the side band …
+                  ((lx * lx) / r2 + ((ly - edgeH) * (ly - edgeH)) / ry2 <= 1 && ly >= 0)){   // … + its rounded bottom
+          v = 0.12;                                                  // the dark cylinder SIDE
+        } else continue;                                             // outside the coin → transparent
+        let idx = rampIndex(v, ramp.length, bayer4(gx, gy), 1);
+        idx = idx < 0 ? 0 : idx > 2 ? 2 : idx;
+        ctx.fillStyle = toHex(ramp[idx]);
+        ctx.fillRect(gx * cell, gy * cell, cell + 1, cell + 1);
+      }
+      return;
+    }
     if(ctx.beginPath && ctx.ellipse && ctx.fill && ctx.save){
       ctx.save(); ctx.translate(cx, cy); if(rot) ctx.rotate(rot);
       ctx.fillStyle = toHex(edge);                                    // the cylinder SIDE (flat, no outline)
@@ -1275,7 +1305,7 @@
     const scale = pxScale || 1;
     for(const c of h.coins){
       const r = Math.max(2, Math.round(c.size * scale)) / 2;
-      drawCoin(ctx, c.x * W, c.y * H, r, c.rot || 0, c.aspect || 1, [c.r, c.g, c.b], 0);
+      drawCoin(ctx, c.x * W, c.y * H, r, c.rot || 0, c.aspect || 1, [c.r, c.g, c.b], 0, cell);   // T197: pixel-dither, shared lattice
     }
   }
   // T193 — draw one coin-look BURST particle (the money-gain coins) at burst-time `t`: its
@@ -1290,7 +1320,8 @@
     const rot = (p.rot || 0) + (p.spin ? lt * p.spin : 0);
     const aspect = p.spin ? (0.22 + 0.72 * Math.abs(Math.cos(lt * (p.wob || 10) + (p.phase || 0)))) : (p.aspect || 1);
     if(ctx.globalAlpha != null) ctx.globalAlpha = bp.alpha;
-    drawCoin(ctx, bp.x * W, bp.y * H, px / 2, rot, aspect, [p.r, p.g, p.b], 0);
+    const cell = Math.max(2, Math.round((scale || 1) * 3));   // T197: same pixel lattice as the pile
+    drawCoin(ctx, bp.x * W, bp.y * H, px / 2, rot, aspect, [p.r, p.g, p.b], 0, cell);
   }
   function CPUBackend(ctx2d){ this.name = "cpu-still"; this.ctx = ctx2d; this.w = 1; this.h = 1; this.burst = null; this.pxScale = 1; }
   CPUBackend.prototype.setData = function(derived){ this.derived = derived; };
@@ -1715,7 +1746,7 @@
     // gold hoard (T172)
     HOARD_CAP: HOARD_CAP, HOARD_K: HOARD_K, HOARD_MAX_H: HOARD_MAX_H, HOARD_TIERS: HOARD_TIERS, GOLD_TONES: GOLD_TONES,
     hoardLevel: hoardLevel, hoardTier: hoardTier, moundProfile: moundProfile, hash01i: hash01i,
-    hoardRamp: hoardRamp, drawHoard: drawHoard, HOARD_SHADES: HOARD_SHADES,
+    hoardRamp: hoardRamp, drawHoard: drawHoard, drawCoin: drawCoin, shade: shade, HOARD_SHADES: HOARD_SHADES,
     seedHoard: seedHoard, convergePos: convergePos, seedConverge: seedConverge,
     deriveScene: deriveScene, deriveHomeScene: deriveHomeScene, seedFromHome: seedFromHome,
     deriveArenaScene: deriveArenaScene, seedFromArena: seedFromArena, arenaIntensity: arenaIntensity, ARENA_PARTICLE_MAX: ARENA_PARTICLE_MAX, ARENA_REGIONS: ARENA_REGIONS,

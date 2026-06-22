@@ -6,6 +6,36 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T197 — pixelate + dither the COINS too (T195 filtered only the pile shape) ([B], owner-reported)
+
+Owner on the T195 build: *"the shape got a filter but not the coins themselves — pixelate the
+coins too."* (And: *"the colour is ok, ignore that"* → **NO colour shift.**) T195's halftone ran
+on the silhouette only; the cylinder coins (`drawCoin` + the gain-burst `drawCoinParticle`) were
+smooth canvas ellipse fills that bypassed the ramp + Bayer, so they read smooth against the
+dithered pile. Fixed in `fxgl.js`:
+- **`drawCoin` gains a PIXEL-DITHER path** (engaged when a `cell` is passed): it rasterises the
+  cylinder into the **same screen cell-grid as the T195 pile** (`cell = round(pxScale·3)`,
+  pixel-snapped, nearest-neighbour, crisp) and ordered-Bayer-dithers (`rampIndex`/`bayer4`,
+  spread 1) between the coin's **OWN three tones** — edge `shade(rgb,-0.4)` → face `rgb` →
+  highlight `shade(rgb,0.42)`. A soft upper-left face light gives a real gradient for the dither
+  to work on. **No colour shift** (only the coin's existing tones), and **no canvas read-back**
+  → cheap enough for the per-frame gain-burst coins. The smooth/vector + path-less fallbacks stay
+  for callers/tests that pass no `cell`.
+- Both call sites pass the **shared `cell`**: the static hoard coins (`drawHoard`) and the
+  animated gain-burst coins (`drawCoinParticle`) — so silhouette + settled coins + flying coins
+  all share one dot lattice.
+- 🌐 **Browser-verified on WebGL2**: the pile and coins now read as one cohesive pixel-dithered
+  gold field — no smooth ellipses standing out (`hoard-halftone-crop.png`, `coinburst-webgl.png`).
+
+Verify: `node -c` clean; **golden-fx 87** (+5 T197 assertions — the coin rasterises into many
+cell-aligned fills, dithers ≥2 of its tones, every tone is one of its OWN 3 (no colour shift),
+teeth: no-`cell` keeps the smooth ellipse path); full Node suite green (fxgl 124 / hoard-wiring
+47 / fx-wiring 84 / synth 177 / emblems 61); render/visual/audio gates green; scenes byte-
+identical when no hoard. B-only (`fxgl.js`, `test/golden-fx.test.js`). Owner device-confirms.
+**Next B: T199 (full pile reaches the top) → T200 (coin colour by height).**
+
+---
+
 ## T193 (RE-OPEN) — the money-gain burst tagged no coins → fixed `seedBurst`/`seedCelebrate` to honor `look:"coin"` ([B], CHANGES REQUESTED)
 
 Babysitter re-opened (my earlier renderer was correct but never fired): the live money-gain

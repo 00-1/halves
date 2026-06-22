@@ -333,6 +333,28 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
   ok(rgb.every(c => c[0] >= c[2]), "T195: every ramp stop is gold-family (R ≥ B) — a warm metal palette");
   ok(distinct.length < 24, "T195: the gate HAS TEETH — the OLD smooth gradient (≈" + Math.round(1200/2) + " depth steps × shade) would blow far past the ramp's " + ramp.length + " tones; posterisation holds it to " + distinct.length);
 })();
+// T197 — the COINS are pixelated + dithered in the SAME brickmap look as the pile (T195 filtered
+// the silhouette only). drawCoin(cell) rasterises into the cell-grid, ordered-Bayer between the
+// coin's OWN tones — pixel-snapped, no colour shift.
+(function(){
+  function recCtx(){ const f = []; let fs = "#000";
+    return { ctx: { get fillStyle(){ return fs; }, set fillStyle(v){ fs = v; }, globalAlpha: 1,
+      fillRect(x, y, w, h){ f.push({ x: x | 0, y: y | 0, c: fs }); } }, fills: f }; }
+  const rgb = [212, 158, 46], cell = 8;
+  const r = recCtx();
+  FXGL.drawCoin(r.ctx, 200, 200, 40, 0.4, 0.8, rgb, 0, cell);
+  const distinct = Array.from(new Set(r.fills.map(p => p.c)));
+  const ownRamp = [FXGL.shade(rgb, -0.4), rgb, FXGL.shade(rgb, 0.42)].map(FXGL.toHex);
+  ok(r.fills.length > 12, "T197: the coin is rasterised into many pixel-cells (" + r.fills.length + " fills) — pixelated, not one smooth ellipse");
+  ok(r.fills.every(p => p.x % cell === 0 && p.y % cell === 0), "T197: every coin cell is SNAPPED to the same pixel lattice as the pile (cell-aligned)");
+  ok(distinct.length >= 2, "T197: the coin is DITHERED — ≥2 of its tones interleave (" + distinct.length + " distinct), not a flat fill");
+  ok(distinct.every(c => ownRamp.indexOf(c) >= 0), "T197: every coin tone is one of the coin's OWN 3 tones (edge/face/highlight) — NO colour shift (owner dropped that)");
+  // teeth: WITHOUT a cell, drawCoin keeps the smooth vector path (uses ellipse, not a cell grid).
+  let usedEllipse = false, fr = 0;
+  const smooth = { beginPath(){}, ellipse(){ usedEllipse = true; }, fill(){}, save(){}, restore(){}, translate(){}, rotate(){}, set fillStyle(v){}, get fillStyle(){ return "#000"; }, fillRect(){ fr++; } };
+  FXGL.drawCoin(smooth, 200, 200, 40, 0.4, 0.8, rgb, 0);   // no cell
+  ok(usedEllipse, "T197: the gate HAS TEETH — without a `cell` drawCoin still uses the smooth ellipse path (so the pixel-dither only engages on the hoard/coin overlay lattice)");
+})();
 // the earn burst converges toward the hoard (coins move from the earn-point downward over time)
 (function(){
   const w = 400, h = 800, dpr = 2, W = Math.round(w * dpr), H = Math.round(h * dpr);
