@@ -19,8 +19,8 @@ function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } els
 const main = read("main.js"), html = read("index.html"), wf = read(".github/workflows/pages.yml");
 
 // ---- (1) static wiring -------------------------------------------------------
-ok(/const GOLD_FULL_MAG = 1e12/.test(main), "(1) GOLD_FULL_MAG constant (the owner's one dial, ≈1e12)");
-ok(/function hoardLevel\(gold\)\{[\s\S]{0,160}Math\.log10\(1 \+ gold\) \/ HOARD_DENOM/.test(main), "(1) T182: hoardLevel() is a LOG-of-magnitude curve (visible from the start)");
+ok(/const GOLD_EMPTY = 500, GOLD_FULL = 1e15/.test(main), "(1) T198: GOLD_EMPTY (floor) + GOLD_FULL (the owner's dial) constants");
+ok(/function hoardLevel\(gold\)\{[\s\S]{0,180}\(Math\.log10\(1 \+ gold\) - HOARD_LO\) \/ HOARD_SPAN/.test(main), "(1) T198: hoardLevel() is a floor-offset log curve (gentle, visible starter)");
 // homeFxState carries the hoard level (alongside the fixed-purple T153 contract)
 ok(/hoard:\s*hoardLevel\(loadGold\(\)\)/.test(main.slice(main.indexOf("function homeFxState"), main.indexOf("function arenaFxState"))), "(1) homeFxState feeds hoard: hoardLevel(loadGold()) into the backdrop");
 // the earn burst fires from the gold readout, scaled by the gain
@@ -90,16 +90,16 @@ store["halves.gold"] = String(5e9);
 new Function(read("main.js"))();
 const G = global.window.Gold;
 ok(!!G && typeof G.hoardLevel === "function", "(2) window.Gold exposes hoardLevel + earnBurstSpec");
-ok(G.GOLD_FULL_MAG === 1e12, "(2) GOLD_FULL_MAG is the documented dial (1e12)");
-ok(G.hoardLevel(0) === 0 && G.hoardLevel(G.GOLD_FULL_MAG) === 1 && G.hoardLevel(1e20) === 1, "(2) hoardLevel: 0 at no gold, 1 at GOLD_FULL_MAG, clamped past it");
+ok(G.GOLD_FULL === 1e15 && G.GOLD_EMPTY === 500, "(2) T198: GOLD_FULL is the dial (1e15) with a GOLD_EMPTY floor (500)");
+ok(G.hoardLevel(0) === 0 && G.hoardLevel(G.GOLD_FULL) === 1 && G.hoardLevel(1e20) === 1, "(2) hoardLevel: 0 at no gold, 1 at GOLD_FULL, clamped past it");
 // T182 — the pile is VISIBLE from the very start: a real first-day ~1.2K player shows a mound
-ok(G.hoardLevel(1230) > 0.2, "(2) T182: at a realistic first-day ~1.2K gold the pile is clearly visible (" + G.hoardLevel(1230).toFixed(3) + ", was ~0.002 on the broken power curve)");
+ok(G.hoardLevel(1e3) > 0.01 && G.hoardLevel(1e3) < 0.05, "(2) T198: at ~1K gold the pile is a SMALL but visible starter (" + (G.hoardLevel(1e3)*100).toFixed(1) + "%, owner wanted ~2.5% — was ~25% before)");
 // monotone non-decreasing across the wealth range
 (function(){ const xs = [0, 1e3, 1e6, 1e8, 1e9, 1e10, 1e12], ys = xs.map(G.hoardLevel); let mono = true; for(let i=1;i<ys.length;i++) if(ys[i] < ys[i-1]) mono = false;
   ok(mono, "(2) hoardLevel is monotone non-decreasing over gold");
-  // log-of-magnitude: ~25% at 1K, ~50% at 1M, ~75% at 1B — grows across the magnitudes
-  ok(Math.abs(G.hoardLevel(1e3) - 0.25) < 0.03 && Math.abs(G.hoardLevel(1e6) - 0.50) < 0.03 && Math.abs(G.hoardLevel(1e9) - 0.75) < 0.03,
-     "(2) T182: the pile climbs the magnitudes — 1K≈25% (" + G.hoardLevel(1e3).toFixed(2) + "), 1M≈50% (" + G.hoardLevel(1e6).toFixed(2) + "), 1B≈75% (" + G.hoardLevel(1e9).toFixed(2) + ")"); })();
+  // T198 floor-offset (EMPTY=500, FULL=1e15): 60K≈17%, 1M≈27%, 1Bn≈51%, 1T≈76%
+  ok(Math.abs(G.hoardLevel(6e4) - 0.17) < 0.03 && Math.abs(G.hoardLevel(1e6) - 0.27) < 0.03 && Math.abs(G.hoardLevel(1e9) - 0.51) < 0.03 && Math.abs(G.hoardLevel(1e12) - 0.76) < 0.03,
+     "(2) T198: the pile climbs gently — 60K≈17% (" + G.hoardLevel(6e4).toFixed(2) + "), 1M≈27% (" + G.hoardLevel(1e6).toFixed(2) + "), 1Bn≈51% (" + G.hoardLevel(1e9).toFixed(2) + "), 1T≈76% (" + G.hoardLevel(1e12).toFixed(2) + ")"); })();
 // earnBurstSpec: log-scaled, capped, tiered
 (function(){ const s5 = G.earnBurstSpec(5), s1e6 = G.earnBurstSpec(1e6), s1e12 = G.earnBurstSpec(1e12);
   ok(s5.count >= 6 && s5.count <= 88 && s1e6.count > s5.count, "(2) earn-burst count rises with the gain (" + s5.count + " → " + s1e6.count + ")");

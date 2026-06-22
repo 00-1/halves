@@ -90,6 +90,8 @@ ok(/function paintAppIcon\(cv\)[\s\S]{0,400}C\.iconColorGrid\(ICON_HERO, HERO_PA
 ok(/function installFavicon\(\)[\s\S]{0,200}paintAppIcon\(cv\)/.test(main), "(d) installFavicon uses paintAppIcon (favicon == app icon)");
 ok(!/Glyphs\.draw\(cv, halves\.glyphTokens/.test(main), "(d) the old x/2 glyph favicon is gone");
 ok(/test\/icon-app\.test\.js/.test(wf), "(d) this gate is registered in CI");
+// T202 — the entry/splash mark is Magnar too (same generator), not the x/2 glyph
+ok(/function renderBrand\(\)[\s\S]{0,500}C\.iconColorGrid\(ICON_HERO, HERO_PAL\.Brawn, "familiar"\)/.test(main), "(d) T202: the entry mark paints Magnar (hero:mo) from the icon grid");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " APP-ICON CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

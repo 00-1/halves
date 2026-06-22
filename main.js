@@ -124,17 +124,18 @@
     const base = 1 + items * 0.05 + mastered * 0.5 + heroes * 0.5 + tiers * 1;
     return base * hoardMult(col);
   }
-  // T173/T182 — the VISUAL hoard level (0..1) that drives the home-backdrop coin
-  // mound (B's T172 engine). A LOG-OF-MAGNITUDE curve over lifetime gold: the pile is
-  // VISIBLE from the very start (a first-day ~1K player already shows a real mound)
-  // and grows steadily across the orders of magnitude K→M→B→T as the displayed NUMBER
-  // explodes (the T178 absurd-wealth comedy). `GOLD_FULL_MAG` (the gold that fills the
-  // pile) is the single knob the owner dials. At 1e12: 1K≈25%, 1M≈50%, 1B≈75%, 1T≈100%.
-  //   (T182 fix: the old `(gold/1e10)^0.4` power curve read ~0.17% at real ~1.2K gold —
-  //    the owner couldn't see the pile at all. A log-of-magnitude curve fixes that.)
-  const GOLD_FULL_MAG = 1e12;
-  const HOARD_DENOM = Math.log10(GOLD_FULL_MAG);
-  function hoardLevel(gold){ gold = Math.max(0, gold || 0); return Math.max(0, Math.min(1, Math.log10(1 + gold) / HOARD_DENOM)); }
+  // T173/T182/T198 — the VISUAL hoard level (0..1) driving the home-backdrop coin
+  // mound (B's T172 engine). A FLOOR-OFFSET log over lifetime gold: a small but VISIBLE
+  // starter mound, growing across the orders of magnitude K→M→B→T as the displayed
+  // NUMBER explodes (the T178 absurd-wealth comedy). `GOLD_EMPTY` is where the pile
+  // starts to show; `GOLD_FULL` (the owner's dial) is where it tops out.
+  //   level = clamp((log10(1+gold) − log10(GOLD_EMPTY)) / (log10(GOLD_FULL) − log10(GOLD_EMPTY)), 0, 1)
+  //   At EMPTY=500, FULL=1e15: 1K≈2.5%, 60K≈17%, 1M≈27%, 1Bn≈51%, 1T≈76%, 1e15 full.
+  //   (T198: the owner found 1K too high on the old /log10(1e12) curve — ~25% — and
+  //    wanted ~a tenth of that; the floor-offset + 1e15 ceiling gives the gentle ramp.)
+  const GOLD_EMPTY = 500, GOLD_FULL = 1e15;
+  const HOARD_LO = Math.log10(GOLD_EMPTY), HOARD_SPAN = Math.log10(GOLD_FULL) - HOARD_LO;
+  function hoardLevel(gold){ gold = Math.max(0, gold || 0); return Math.max(0, Math.min(1, (Math.log10(1 + gold) - HOARD_LO) / HOARD_SPAN)); }
   // T184 — DEVELOPER MODE (gated, off by default, inert in production). Enabled from
   // the MENU (tap the build pill ~7×, below) → persisted `halves.dev`; `?dev` in the
   // URL is kept as a fallback. It surfaces a "Developer" section in Setup with all the
@@ -821,10 +822,26 @@
     }
   }
 
-  // The entry/splash mark is the fixed "x/2" Halves-topic glyph (the product is
-  // "Goblin Gold" — see the .brand wordmark; the topic mark stays x/2). Paint once.
+  // T202 — the entry/splash mark is MAGNAR (the app's face / launcher icon), painted
+  // from the SAME generator as the icon (T194): his pixel portrait on the dark entry
+  // bg (transparent canvas → no tile square), crisp-upscaled by `.mark canvas` CSS.
+  // The "Goblin Gold" wordmark (.brand) is separate and stays. Falls back to the
+  // Halves glyph if the generator is unavailable.
   function renderBrand(){
     const el = screens.entry && screens.entry.querySelector(".mark");
+    if(!el) return;
+    if(C.iconColorGrid && document.createElement){
+      const grid = C.iconColorGrid(ICON_HERO, HERO_PAL.Brawn, "familiar"), G = grid.length, scale = 10;
+      const cv = document.createElement("canvas"); cv.width = cv.height = G * scale;
+      const cx = cv.getContext && cv.getContext("2d");
+      if(cx){
+        for(let gy = 0; gy < G; gy++) for(let gx = 0; gx < G; gx++){
+          const hex = grid[gy][gx]; if(!hex) continue;
+          cx.fillStyle = hex; cx.fillRect(gx * scale, gy * scale, scale, scale);
+        }
+        el.innerHTML = ""; el.appendChild(cv); return;
+      }
+    }
     paintGlyph(el, byId("halves"), 10);
   }
 
@@ -3025,7 +3042,7 @@
   window.Gold = { label: GOLD_LABEL, fmtGold: fmtGold, mult: goldMult,
     questionGold: questionGold, roundBonus: roundBonusGold, tierGold: tierGold,
     hoardMult: hoardMult, bossesDefeated: bossesDefeated, HOARD_G: HOARD_G,   // T178 — the exponential mid/late ramp
-    GOLD_FULL_MAG: GOLD_FULL_MAG, hoardLevel: hoardLevel, earnBurstSpec: earnBurstSpec, // T173/T182 — the visual hoard curve + earn-burst scaling
+    GOLD_EMPTY: GOLD_EMPTY, GOLD_FULL: GOLD_FULL, hoardLevel: hoardLevel, earnBurstSpec: earnBurstSpec, // T173/T182/T198 — the visual hoard curve + earn-burst scaling
     load: loadGold, evaluate: (total, has) => C.evaluateGold(total, has) };
   // Momentum module API (pure reducer + helpers, also used by the Node tests).
   window.Momentum = { label: MOMENTUM_LABEL, MAX: MOMENTUM_MAX, reduce: reduceMomentum,

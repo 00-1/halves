@@ -5647,3 +5647,25 @@ verified: `pwa.test` 33→36 — `FRESH_RE` matches the manifest+icons, `isFresh
 cache-first + build.json never cached, and `activate` now purges BOTH the superseded v2 AND v3 caches. **Full
 suite 53/53.** [A]-only (`sw.js`, `test/pwa.test.js`). Pushed FIRST per the 🔴; T202 (entry mark) + T198 (fill
 curve) follow.
+
+---
+### [A] T202 — entry/splash mark = Magnar (was the x/2 glyph)
+what: `renderBrand()` painted the Halves `x/2` glyph onto the `#entry` `.mark`; swapped it to paint **Magnar**
+(the app's face) from the SAME generator as the icon (T194): `C.iconColorGrid("hero:mo", HERO_PAL.Brawn,
+"familiar")` → his pixel portrait on a transparent canvas (so the dark entry bg shows — NO tile square),
+crisp-upscaled by the existing `.mark canvas{image-rendering:pixelated}` rule. The "Goblin Gold" wordmark
+(`.brand`) is untouched. Falls back to the Halves glyph if the generator is absent. [A]-only (`main.js`).
+verified: `icon-app.test` 13→14 (renderBrand composes `hero:mo` from the icon grid). Full suite 53/53.
+
+### [A] T198 — hoard fills too fast (recurve the wealth→pile mapping)
+what: the T182 curve `log10(1+gold)/log10(1e12)` read **~25% at 1K** gold; the owner wanted **~a tenth of that**
+(a small but visible starter). Recurved to a **floor-offset log** (`main.js`):
+`level = clamp((log10(1+gold) − log10(GOLD_EMPTY)) / (log10(GOLD_FULL) − log10(GOLD_EMPTY)), 0, 1)` with
+`GOLD_EMPTY = 500`, `GOLD_FULL = 1e15`. Measured: **1K≈2.5%, 60K≈17%, 1M≈27%, 1Bn≈51%, 1T≈76%, 1e15 full** —
+exactly the owner's targets; the pile starts small and climbs gently across the magnitudes while the NUMBER
+keeps exploding. Visual only (the curve isn't read by the Arena sim). Exposed `GOLD_EMPTY`/`GOLD_FULL` on
+`window.Gold` (renamed from `GOLD_FULL_MAG`). [A]-only (`main.js`).
+verified: `hoard-wiring.test` updated to the new curve + targets (47 green); the monotone + clamp + view-only
+invariants hold. Full suite 53/53.
+notes: `docs/agent/GOLD-HOARD-DESIGN.md` is babysitter-owned (agent branch) — the new curve/constants are
+recorded here for the babysitter to mirror into §calibration.
