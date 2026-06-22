@@ -3002,26 +3002,43 @@ popup** mirroring the existing inventory `openModal` pattern (:1012) — the sam
   regression to the existing inventory-item popups; `node -c` clean; `codex` test green (+ a check the Codex click
   path resolves a cell to its art/label). **[A]-only** (`main.js`, maybe `index.html`/`styles.css`, tests).
 
-### T190 — [B] **Lo-Fi Study STILL feels dark + stressful** — the T183 tweak wasn't enough (go to a BRIGHT/major mode) · status: OPEN · owner-reported
-**Owner (2026-06-22, on live build): "did we do the research and fix for lofi study? still feels dark and a little
-stressful to me."** T183 (`5633895`) *did* land — but it only nudged **pitch + reverb** (root +5, lead octave +1,
-reverb 0.42→0.32) and **left the tonality MINOR**, which is the actual source of "dark." Current `lofi`
-(`synth.js:485`): `mode: "dorian"` (a **minor** mode → dark/melancholic), `progression: [0,5,3,4]` (resolves on
-the **4 / subdominant**, never home → the looping "unease/stress"), `tempo: 78`, `density: 0.24`, `leadOct: 2`.
-- **Fix (research-led, B's call):** make it genuinely **calm + bright** for studying. Prime levers, in order:
-  - **Mode → brighter/major:** move off `dorian` (minor) to a **major-family** mode — **Ionian (major)** for warm
-    + safe, or **Lydian** for dreamy-bright, or **Mixolydian** for warm-major. This is the single biggest "dark"
-    lever. *(Study/focus-music research: consonant, major-leaning, low-information, predictable.)*
-  - **Progression → resolves HOME:** end the loop on the **tonic** (e.g. `I–V–vi–IV` or `I–vi–IV–V` resolving to 0,
-    or a gentle `ii–V–I`) so it doesn't sit on unresolved tension. Avoid ending on degree 4/5.
-  - **Soften the lead:** it's the most "present"/stressful element — drop its busyness (lower `leadK`/`density`) or
-    a warmer/softer patch + gentler octave; keep pads warm and round. Keep the tempo slow (≈72–80), sparse.
-  - Keep it **distinct** from `ambient`/`tropical` (the distinctness gate) — lofi should still read as lo-fi (swing,
-    a touch of grit), just **not minor/tense.**
-- **DoD:** `lofi` reads **bright, warm, calm, unstressful** (major/bright mode, home-resolving progression, softer
-  lead); still passes the **golden-synth** + **distinctness** gates (update the goldens — note the change); the
-  `solve` alias (`CONTEXTS.solve = CONTEXTS.lofi`) inherits it; `node -c` clean; owner device-confirms it's no
-  longer dark/stressful. **[B]-only** (`synth.js`, golden tests). Follow-up to T183; ref `RESEARCH`/study-music note.
+### T190 — [B] **Lo-Fi Study still feels dark + stressful — IMPLEMENT the research findings** (not blind nudges) · status: OPEN · owner-reported
+**Owner (2026-06-22): "lo-fi doesn't need blind (deaf) nudges — we need a research pass to check what music is
+actually good for drills like this (low stress!) and implement the findings."** T183 (`5633895`) only nudged
+pitch/reverb and **left the mode minor** — that's why it still reads dark.
+- **✅ The research pass is DONE** (Babysitter): see **`docs/agent/research-study-music.md`** — cited evidence on
+  tempo, mode, consonance, predictability, and timbre for low-stress timed drills. **Implement against it.** Headline
+  findings → `lofi` (`synth.js:485`, current `mode:"dorian"` minor, `progression:[0,5,3,4]` ends on 4, `tempo:78`):
+  - **MAJOR mode, not minor** (major mode → lower cortisol; `dorian` is the "dark"). → `ionian` or `mixolydian`.
+  - **Consonant progression that RESOLVES HOME** (dissonance≡tension≡stress; `[0,5,3,4]` never resolves to tonic →
+    looping unease). → `I–vi–IV–V` / `I–IV–V–I` / `ii–V–I`, with maj7/min7 colour for warmth, ending on 0.
+  - **Keep tempo ~78, sparse density** (70–85 BPM ≈ resting HR; slow+steady lowers arousal).
+  - **Sparse, soft, low-passed LEAD** (a busy lead is an "orienting trigger" = stress; warmth = rolled-off highs ~3
+    kHz + soft attacks). It should murmur, not ping.
+  - **Keep it distinct** from `ambient`/`tropical` (distinctness gate) — still lo-fi (swing + a touch of grit), just
+    not minor/tense.
+- **DoD:** `lofi` implements the doc — **major/bright mode, home-resolving consonant progression, softer/low-passed
+  lead, ~78 BPM, sparse** → reads **warm/calm/cozy/unstressful** yet still recognisably lo-fi; **golden-synth +
+  distinctness gates** pass (regenerate the goldens, note the change in the commit); the `solve` alias inherits it;
+  `node -c` clean; **owner device-confirms** it's no longer dark/stressful. **[B]-only** (`synth.js`, golden tests).
+  *(Implements `research-study-music.md`; supersedes the T183 nudge.)*
+
+### T191 — [B] **Audio crackling / popping** (engine-wide; "not terrible though") · status: OPEN · owner-reported
+**Owner (2026-06-22): "the audio can have some crackling/popping. not terrible though."** Low-severity but real,
+and it spans styles (not just lofi). Crackle/pop in a Web-Audio synth is almost always **envelope discontinuities**
+(a voice that starts/stops on a non-zero sample with no ramp → a click), **DC offset**, **summed-voice clipping**
+into the limiter, or **scheduling underruns** (not enough look-ahead → buffer gaps).
+- **Investigate + fix (`synth.js`):** (1) **declick every voice** — a short attack **and** release ramp (a few ms,
+  to/from zero) on each note's gain so it never begins/ends on a discontinuity; (2) check oscillator/note
+  **start/stop** scheduling for clicks (stop via a release ramp, not an abrupt `stop()`); (3) verify the master
+  chain isn't **clipping** (sum of voices × patch gains hitting the limiter hard — the T175 reverb-return
+  compressor stays, but confirm headroom); (4) confirm the scheduler look-ahead/`AudioContext` buffering is
+  sufficient (no underruns on the device). Pairs naturally with T190's "soft attacks / low-pass" warmth pass —
+  the same soft-envelope work removes both harshness AND clicks.
+- **DoD:** sustained playback across the styles is **click/pop-free** (no transient crackle on note on/off or
+  loop boundaries); no clipping into the limiter; the foghorn/reverb safety (T175) still holds; `golden-synth`
+  green (regenerate if envelopes change, note it); `node -c` clean; owner device-confirms the crackle is gone.
+  **[B]-only** (`synth.js`, golden tests). *(Adjacent to T190 — both are soft-envelope/declick work.)*
 
 ### T188 — [B] **More icon candidates — in the BEASTS/HEROES generative style** (into `emblems.js` / Codex Emblems) · status: OPEN · owner-requested
 **Owner (2026-06-22, after reviewing the live emblems): "now I see the emblems. they could be useful for

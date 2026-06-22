@@ -13,7 +13,12 @@
   → filed **T190** (T183 left the mode minor — needs a bright/major mode + home-resolving progression).
 **Verified:** worktree at `39459e7`; `node -c` clean; **52/52** suite + codex gate green; deploy confirmed.
 **→ A: `T189` (fixed Back-button location — owner-reported) → then HOLD for the icon pick.  → B: `T185` 🔴 (pile
-not drawing) → `T190` (brighten/calm the lofi) → `T188` (beasts/heroes icon candidates).**
+not drawing) → `T190` (calm the lofi — IMPLEMENT `research-study-music.md`) → `T191` (declick the crackle/pop) →
+`T188` (beasts/heroes icon candidates).**
+**Babysitter research pass:** owner rejected "blind/deaf nudges" on the lofi → I ran a cited research pass and
+wrote **`docs/agent/research-study-music.md`** (tempo/mode/consonance/predictability/timbre for low-stress drills);
+T190 now = *implement the findings* (headline: it's still **`dorian`/minor** = the "dark"; go major + resolve home
++ soft low-passed lead). New crackle/pop report → **T191** (declick envelopes; pairs with T190's soft-attack work).
 
 > **Prior verdict:** `APPROVED — T184 [A] · T182 [A] · T186 [A]` + the Codex **Emblems** wiring (T179 remnant).
 Live build **`8cbfa68`** (all deployed); full suite **52/52** + `node -c` green; arena gates green.

@@ -37,11 +37,17 @@ backdrop / below the buttons), reusing the existing `_hoard` + `drawCoin` 2D cod
 redraws it on `setData`. DoD: pile visible **on the WebGL2/WebGPU backends** (not just CPU); scenes byte-identical
 when `scene.hoard` absent; `fxgl`/`fx-wiring`/`hoard-wiring` green. B-owned (`fxgl.js`, `index.html`, tests).
 *(BACKLOG T185.)*
-- **Then `T190` — Lo-Fi Study STILL feels dark + stressful** (owner re-raised). T183 only nudged pitch/reverb and
-  **left the mode MINOR** (`dorian`) — that's the actual "dark." Make it genuinely calm + bright: move to a
-  **major-family mode** (Ionian/Lydian/Mixolydian), a **home-resolving progression** (don't end on 4/5), and
-  **soften the busy lead**; keep it slow/sparse + still distinct from ambient/tropical. Update the golden-synth +
-  distinctness goldens. [B]-only (`synth.js`, goldens). *(BACKLOG T190.)*
+- **Then `T190` — Lo-Fi Study still dark/stressful → IMPLEMENT the research** (no more blind nudges). The research
+  pass is **already done**: read **`docs/agent/research-study-music.md`** (cited) and implement it. Headlines:
+  **MAJOR mode not `dorian`** (minor = the "dark"; → ionian/mixolydian), a **consonant progression that resolves
+  HOME** (current `[0,5,3,4]` ends on 4 = looping tension; → I–vi–IV–V / I–IV–V–I with maj7/min7 warmth), keep
+  **~78 BPM + sparse**, and a **soft, low-passed, sparse lead** (busy lead = stress). Keep it distinct from
+  ambient/tropical. Regenerate golden-synth + distinctness goldens. [B]-only (`synth.js`, goldens). *(BACKLOG T190.)*
+- **Then `T191` — audio CRACKLING/POPPING** (owner, low-severity, engine-wide). Almost certainly **envelope
+  discontinuities** — declick every voice with short attack **and** release ramps (to/from zero) so notes never
+  start/stop on a click; stop via a release ramp not abrupt `stop()`; confirm no clipping into the limiter + enough
+  scheduler look-ahead. Pairs with T190's soft-attack/low-pass work (same fix removes harshness AND clicks). Keep
+  the T175 reverb safety. golden-synth green. [B]-only (`synth.js`, goldens). *(BACKLOG T191.)*
 - **Then `T188` — MORE icon candidates, in the BEASTS/HEROES style.** The owner reviewed the live emblems: they're
   fine but **heroes/beasts/bosses are the preferred icon direction.** Add ≈3–5 **character-forward** candidates to
   `emblems.js` (so they show in Codex ▸ Emblems) in the `monsters.js` generative LOOK — a 16×16 role-grid pixel
