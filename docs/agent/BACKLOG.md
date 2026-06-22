@@ -3151,6 +3151,37 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
+### T224 — [A] **Audio settings overhaul: new defaults @ midpoint, REMOVE tempo, normalise sliders to a 0–11 scale** · status: OPEN · owner-requested
+**Owner (2026-06-22, AUDIO screenshot): "change the default audio settings to the values shown. Remove tempo as an
+option. Set those levels as the new MIDPOINT, and normalise the ×n values — one goes to 1× the other 0.1× which is
+confusing. Just use 0 to 11 as placeholders for the underlying values."** The audio menu (`renderAudio`/
+`wireAudioControls`/`fmtVol`/`fmtTempo`/`loadMusicVol`/`loadSfxVol`/`loadTempo` in `main.js`, slider markup in
+`index.html`). **Today the two sliders show the same `…×` suffix on DIFFERENT scales** — music slider 0–10 → gain
+`/100` = **0–0.10×**; SFX slider 0–100 → gain `/100` = **0–1.00×** — hence "0.10×" vs "1.00×" is confusing.
+- **REMOVE Music tempo entirely.** Delete the tempo slider + its row from `index.html`; drop `loadTempo`/`saveTempo`/
+  `fmtTempo` wiring and the `tempoRange` handler. **Lock playback tempo to 1.0×** — `synthTempoMult()` returns `1`
+  always (the screenshot is at 1.00×, so nothing audibly changes). Leave the stale `halves.tempo` key ignored (no
+  migration needed); no dead refs (`node -c` + id-cross-check clean).
+- **Normalise BOTH volume sliders to ONE shared 0–11 integer scale** (the "these go to 11" placeholder) — **drop the
+  `×` suffix**; the displayed number is just an abstract 0–11 level, identical scale for Music and SFX, so they're no
+  longer comparable-but-mismatched. (Range input `min=0 max=11 step=1`; show the integer.)
+- **New defaults = the screenshot levels, placed at the MIDPOINT of the 0–11 track** (equal headroom up/down). So at
+  the default-centre, the UNDERLYING gains equal today's shown values: **Music ≈ 0.10× actual gain, SFX ≈ 0.50×
+  actual gain.** Map display→gain so **centre→those gains** and **11→~2× the centre gain** (Music max ≈ 0.20×, SFX max
+  ≈ 1.00×), **0→silent**. (E.g. gain = `(disp/5.5) × centreGain` so disp 5.5 = centre; pick the cleanest integer
+  default that reads as the middle notch — ~5–6 — and tune the centre gain to the screenshot. Confirm no
+  clipping/distortion at 11 — there's a master/limiter.)
+- **Migration:** existing `halves.musicVol` (0–10) / `halves.sfxLvl` (0–100) → remap onto the new 0–11 scale sensibly,
+  OR just reset to the new midpoint default (audio prefs are low-stakes) — but **no NaN/out-of-range**; a returning
+  user must land on a valid in-range level, never a broken slider.
+- **Keep working:** live drag-to-hear (music gain applies immediately; SFX fires a preview blip), persistence, the
+  "Sound On/Off", and the Music-style picker (untouched).
+- **DoD:** no Music-tempo control anywhere; tempo locked to 1.0×; both volume sliders share one **0–11** scale with
+  **no `×`**; fresh-install defaults sit at the **midpoint** and sound like the screenshot (music quiet ~0.10× gain,
+  SFX mid ~0.50× gain); max is ~2× louder, min silent; live preview + persistence intact; returning users migrate to
+  a valid level; `node -c` clean; every `$("…")` id still exists; an audio-settings test updated/added; **owner
+  device-confirms.** **[A]-only** (`main.js`, `index.html`, maybe `styles.css`, tests). *(Quick-ish settings pass.)*
+
 ### T219 — [A] **Build the PLANNED-BUT-UNBUILT topics** (BODMAS, Negatives, Roman, ×-tricks, Primes, Algebra, Roots + the 8 coverage-pass additions) · status: IN PROGRESS (batch 1 `efb1abf` APPROVED — Roman + Primes) · owner-requested
 **PROGRESS:** ✅ **batch 1 (`efb1abf`): `roman` + `primes`** (group Number) — APPROVED. ✅ **`Roots` already delivered**
 via T213's `cubes`→"Cubes & Roots" (√/∛) — strike from the list below. **Remaining:** Part-1 BODMAS, ×-tricks,

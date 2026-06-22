@@ -21,7 +21,16 @@ DOUBLE the void-line height (`PXY 3→6` and/or a taller source raster). If stil
 top-compression (`rs = 0.78 + 0.22·d`, not `0.6 + 0.4·d`). Keep wide spacing + caps/flicker, centred, no clip at
 360px. Headline DoD = **it READS.** Push on its own for owner device-confirm. *(BACKLOG T221 reopened.)*
 
-**→ 2. THEN `T222` — the GHP multi-app RESTRUCTURE (owner: "move all now" — was SKIPPED last round, still TODO).**
+**→ 2. THEN `T224` — AUDIO settings overhaul.** REMOVE the Music-tempo slider (lock tempo to 1.0×); normalise BOTH
+volume sliders to ONE shared **0–11** integer scale (drop the `×`; today music maxes 0.10× / SFX 1.00× — mismatched);
+new fresh-install **defaults at the MIDPOINT** = the screenshot levels (music ≈0.10× gain, SFX ≈0.50× gain), 11≈2×
+louder, 0=silent; migrate existing prefs to a valid level; keep live-preview + persistence + the style picker. Push on
+its own for owner device-confirm. *(BACKLOG T224.)*
+
+**→ 3. THEN `T222` — the GHP multi-app RESTRUCTURE (owner: "move all now" — was SKIPPED last round, still TODO).**
+*(Sequenced AFTER the quick splash/audio tweaks ON PURPOSE: the restructure MOVES the dev URL, so it shouldn't land
+while the owner is actively device-testing visual/audio tweaks on the current URL. Do it once the live-iteration
+settles — but it IS still owed; don't drop it.)*
 READ `FRANCHISE-HOSTING.md` first. Move the live app into **`gg1/dev/`**, create **`gg1/prod/`** (promoted copy, TWA
 target) + **`gg2/dev/`**; root `index.html` = a **franchise landing** that scans **`apps.json`** + reads each app's
 `manifest.webmanifest` to list links. **ISOLATED saves** per scope (`gg1dev.*`/`gg1prod.*`/`gg2dev.*`); **NO
@@ -29,7 +38,7 @@ cross-game gold** (per-game, starts at 0 — no wallet); **`sw.js` cache cleanup
 **one-time `halves.*`→`gg1prod.*` migration** so the live save survives. `gg1/v1/` waits for the tag (T223). **On
 handoff, tell the owner the NEW dev URL `…/halves/gg1/dev/`.** *(BACKLOG T222.)*
 
-**→ 3. THEN continue `T219`** (batched by group — push each on its own for re-assessment).
+**→ 4. THEN continue `T219`** (batched by group — push each on its own for re-assessment).
   ✅ DONE: Roman, Primes, Percent-Increase, F·D·P, BODMAS, Function-Machines (+ Roots via cubes).
   **REMAINING:** Part-1 **×-tricks, Negatives-P1**; Part-2 **Area&Perimeter, Volume, Angles (new Geometry group),
   Speed-Distance-Time, Median/Mode/Range, Prime-factorisation/factors&multiples**; then the **Collector-ladder
