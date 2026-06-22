@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T188 — character-forward creature/hero emblems in the bestiary style ([B], owner-requested)
+
+Owner (after reviewing the live emblems): the abstract marks "could be useful," but
+heroes/beasts are the best app-icon bet — do one more pass in the **bestiary generative
+style**, into `emblems.js`. Added **3 character-forward creature candidates** (kept the
+original 6): **`beast`** (horned, multi-eye gold brute), **`goblinking`** (a crowned
+goblin-king bust), **`voidbeast`** (a smooth cosmic head with 3 purple eyes).
+
+Re-implemented the `monsters.js` LOOK **self-contained** (no Monsters import — `emblems.js`
+stays a pure, dep-free `cells(id)`→`draw` module like `glyphs.js`): a `creature(g,seed,opts)`
+generator draws a lumpy, vertically-symmetric blob (gold-shaded upper-left→lower-right via
+the same light dir as the coin bevel), horns/antennae or a smooth/crowned head, glinting
+eyes (white or cosmic-purple), shadow teeth + spots, a dark outline ring, feet stubs —
+deterministic from the seed. Bold, centred, **maskable** (full-bleed violet field, 14% safe
+margin, legible 48→512 px).
+
+Verify: `node -c` clean; `emblems.test` now **9 emblems** (the new ids are golden-pinned +
+asserted non-empty/deterministic/gold-ramp/maskable by the IDS loop, + an explicit
+character-forward check); full Node suite green. New goldens `emblem_{beast,goblinking,
+voidbeast}`. B-owned (`emblems.js` + test). **[A]:** they auto-appear in Codex ▸ Emblems;
+owner picks the launcher from the now-9 candidates.
+
+---
+
 ## T191 — declick the engine-wide crackle/popping ([B], owner-reported, low-severity)
 
 Owner: "the audio can have some crackling/popping, not terrible though." Two safe,

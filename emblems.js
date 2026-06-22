@@ -28,7 +28,7 @@
     6: [156, 94, 246]              // cosmic purple (voidthrone)
   };
   const BG = [26, 16, 46];         // deep-violet field (full-bleed → maskable-safe)
-  const IDS = ["coin", "crowncoin", "hoard", "goblin", "voidthrone", "sigil"];
+  const IDS = ["coin", "crowncoin", "hoard", "goblin", "voidthrone", "sigil", "beast", "goblinking", "voidbeast"];
 
   // ---- grid + drawing primitives (pure) -------------------------------------
   function newGrid(){ const g = new Array(SIZE); for(let y = 0; y < SIZE; y++) g[y] = new Array(SIZE).fill(0); return g; }
@@ -51,6 +51,43 @@
     const p = [[-1,-3],[-1,-2],[-2,-1],[-2,0],[-3,1],[-2,1],[-1,2],[-1,3],[1,-3],[1,-2],[1,3],[2,3]];
     for(const [ox, oy] of p) set(g, cx + ox, cy + oy, 1);
     set(g, cx + 1, cy - 1, 5);   // a tiny eye glint
+  }
+
+  // T188 — a CHARACTER-FORWARD creature in the bestiary (monsters.js) generative style,
+  // re-implemented self-contained: a lumpy, vertically-symmetric gold blob (lit upper-left
+  // → shadow lower-right), horns/antennae or a smooth/crowned head, glinting eyes, shadow
+  // teeth + spots, a dark outline ring, feet stubs. Deterministic from `seed`. Fills `g`.
+  function mulberry(seed){ let s = seed >>> 0; return function(){ s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function setSym(g, x, y, ink){ set(g, x, y, ink); set(g, SIZE - 1 - x, y, ink); }
+  function creature(g, seed, o){
+    o = o || {}; const rnd = mulberry(seed), cx = (SIZE - 1) / 2;
+    const rx = o.rx || 7, ry = o.ry || 7.6, cy = o.cy || 13;
+    let topY = SIZE, botY = 0;
+    for(let y = 0; y < SIZE; y++){
+      const dy = (y - cy) / ry; if(Math.abs(dy) > 1) continue;
+      const lump = 0.84 + 0.34 * (((y * 73 + seed) % 7) / 7);
+      const hw = rx * Math.sqrt(1 - dy * dy) * lump;
+      for(let x = 0; x <= Math.floor(cx); x++){
+        if(cx - x <= hw){
+          const dxn = (x - cx) / rx, lit = -(dxn + dy) / 1.6;     // upper-left light
+          setSym(g, x, y, lit > 0.3 ? 4 : lit > -0.1 ? 3 : 2);
+          if(y < topY) topY = y; if(y > botY) botY = y;
+        }
+      }
+    }
+    if(o.smooth){ /* void head: no horns */ }
+    else { const hx = o.hornX || 4; for(let k = 1; k <= 3; k++) setSym(g, hx, topY - k, 4); }   // horns
+    if(o.crown){ for(let x = 4; x <= Math.floor(cx); x++) setSym(g, x, topY - 1, 4); setSym(g, 6, topY - 2, 4); setSym(g, 9, topY - 3, 4); }
+    const eyeY = Math.round(cy - ry * 0.35), ec = o.eye || 5;
+    for(const ex of (o.eyes || [7, 9])) setSym(g, ex, eyeY, ec);
+    const mY = eyeY + (o.mouthDy || 4);                            // teeth (shadow)
+    for(let x = 7; x <= Math.floor(cx); x++) if(g[mY] && g[mY][x] && x % 2 === 0) setSym(g, x, mY, 2);
+    for(let y = topY; y <= botY; y++) for(let x = 0; x <= Math.floor(cx); x++) if(g[y][x] === 3 && rnd() < 0.10) setSym(g, x, y, 2);   // spots
+    if(botY + 1 < SIZE) for(const fx of (o.feet || [8, 10])) setSym(g, fx, botY + 1, 2);   // feet
+    const body = (x, y) => x >= 0 && x < SIZE && y >= 0 && y < SIZE && g[y][x];   // outline ring
+    const ring = [];
+    for(let y = 0; y < SIZE; y++) for(let x = 0; x < SIZE; x++) if(!g[y][x] && (body(x-1,y)||body(x+1,y)||body(x,y-1)||body(x,y+1))) ring.push([x, y]);
+    for(const [x, y] of ring) g[y][x] = 1;
   }
 
   // ---- the emblems (each fills a fresh grid, deterministically) --------------
@@ -105,7 +142,12 @@
       stampProfile(g, 12, 12, 9);
       // re-lay the slash highlight over the profile so the mark stays dominant
       for(let i = -6; i <= 6; i++) set(g, 12 + i + 1, 12 - i, 4);
-    }
+    },
+    // T188 — character-forward creatures in the bestiary style (the owner prefers these
+    // over the abstract marks). Bold, centred, maskable gold portraits with glinting eyes.
+    beast:      function(g){ creature(g, 0xb3a57, { horns: true, hornX: 4, eyes: [6, 9], rx: 7.2 }); },        // horned multi-eye brute
+    goblinking: function(g){ creature(g, 0x90b14, { horns: true, hornX: 5, crown: true, eyes: [7, 9], ry: 7.2 }); }, // a crowned goblin-king bust
+    voidbeast:  function(g){ creature(g, 0x501d3, { smooth: true, eyes: [6, 8, 10], eye: 6, cy: 12.5, ry: 8 }); }  // smooth cosmic head, 3 purple eyes
   };
 
   // ---- public: cells(id) (pure) + draw(canvas,id,opts) (renders) ------------

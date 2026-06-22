@@ -13,6 +13,7 @@ function gold(name, value){ const r = check(name, value); ok(r.match, "golden '"
 // the candidate set (the owner picks the launcher icon; the rest become unlockable)
 ok(Array.isArray(Emblems.IDS) && Emblems.IDS.length >= 5, "≥5 emblem candidates (" + Emblems.IDS.length + ": " + Emblems.IDS.join(", ") + ")");
 ok(Emblems.IDS.indexOf("coin") >= 0 && Emblems.IDS.indexOf("goblin") >= 0 && Emblems.IDS.indexOf("hoard") >= 0 && Emblems.IDS.indexOf("voidthrone") >= 0 && Emblems.IDS.indexOf("crowncoin") >= 0, "the owner's five proposals are present (coin/goblin/hoard/voidthrone/crowncoin)");
+ok(["beast", "goblinking", "voidbeast"].every(id => Emblems.IDS.indexOf(id) >= 0), "T188: ≥3 character-forward CREATURE candidates in the bestiary style (beast/goblinking/voidbeast)");
 
 // (1) each emblem builds a deterministic, non-trivial cell grid — golden-pinned.
 const BG = "#" + Emblems.BG.map(v => v.toString(16).padStart(2, "0")).join("");
