@@ -5857,3 +5857,26 @@ normalise (flip-to-consistent vs add-big-first-variety are opposite fixes — de
 tech tree or pick between audit alternatives, so they most benefit from the Babysitter re-running the harness.
 verified: full suite **54/54** (t60-t61, t162-p2/p3, t59, hints, guides-coverage all green). [A]-only (modes.js,
 guides.js, tests). Then queued: 2b (part 2 — the deferred structural items) once the re-assessment lands; then 2c.
+
+---
+### [A] T213 Phase 2b (part 2) — split `sequences` nth-term into a locked Part-2
+Per the audit's HIGH item #2 / the pointer's decisive "split sequences nth-term to a locked Part-2"
+(research-11plus.md classes an+b as Part-2/locked; mixing term-to-term and nth-term under one unlabelled
+pool hid which skill was being asked).
+- **`sequences` (base, spine)** now holds term-to-term LINEAR "next term" only. Re-pooled + EXPANDED to 21
+  items (was 10 next-term after removing the nth ones) — added 11 more genuinely-linear runs, ascending and
+  descending, all terms + the next term non-negative, prompts distinct. Tag → "Next term in the pattern.",
+  eyebrow → "continue the pattern ↓".
+- **`sequences2` (NEW, locked Part-2)** holds the nth-term RULE: evaluate "Mn ± A" at term k. 21 items (the
+  original 11 + 10 new, every answer = M·k ± A and ≥ 0). Chains off `sequences` as a single-child branch
+  (`requires:"mastery:sequences"`, group Reasoning) so the tree stays linear: continue-the-pattern →
+  evaluate-the-rule. Distinct glyph `n×k` (vs base `n+k`), its own guide + tailored `explain()` case.
+- **Guides/explain split** — the `sequences` guide + explain are now next-term-only; `sequences2` gets its
+  own. No topic falls back.
+- **Tests** — t60-t61 (3) rewritten to assert `sequences` is term-to-term ONLY (no nth leak) + all linear;
+  new (3b) validates `sequences2` is a locked Part-2 whose every answer = M·k ± A ≥ 0; (5) extended to cover
+  `sequences2`'s guide/explain. hero-icons catalogue counter 1566 → 1615 (the new mode contributes its
+  per-mode collectibles, ~49, same as every topic). guides-coverage/hints/glyphs/tech-tree all green
+  (glyph distinctness holds across all 31 modes; tech-tree node/branch counts are data-driven).
+verified: full suite **54/54**. [A]-only (modes.js, guides.js, tests). Then queued: the rest of 2b
+(`fractions` 1/16 re-tier, `cubes`+roots, `ratioshare` ordering) + 2c; T168 held on Play ID-verify.

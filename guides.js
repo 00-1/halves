@@ -176,13 +176,22 @@
       example: "3 km in m → smaller unit, so × 1000 → 3000 m."
     },
     sequences: {
-      intro: "A linear sequence goes up (or down) by the same step each time — spot the step, then extend the rule.",
+      intro: "A linear sequence goes up (or down) by the same step each time — spot the step, then carry it on.",
       tips: [
         "Find the common difference: subtract one term from the next.",
-        "For the NEXT term, add the difference to the last one.",
-        "For the rule 'Mn + A', M is the step and A shifts it; the kth term is M×k + A."
+        "For the NEXT term, add that difference to the last one.",
+        "Going DOWN? The step is a take-away — keep subtracting it."
       ],
       example: "Next in 2, 5, 8, 11 → step is 3 → 11 + 3 = 14."
+    },
+    sequences2: {
+      intro: "An nth-term rule like 'Mn + A' is a formula — put the term number in for n and work it out.",
+      tips: [
+        "Multiply the term number by M first, then add (or subtract) A.",
+        "n is just 'which term' — for the 10th term, n = 10.",
+        "'3n + 2' at term 10: 3 × 10 = 30, then + 2 = 32."
+      ],
+      example: "4n − 1, term 8 → 4 × 8 = 32, then − 1 → 31."
     },
     scaling: {
       intro: "Scaling keeps two amounts in proportion — find what one unit is worth, then scale up.",
@@ -426,6 +435,8 @@
           // step value itself, which can equal the answer in a descending run).
           return "Find the step from " + nums[0] + " to " + nums[1] +
             ", then carry that same step on past the last term, " + nums[nums.length - 1] + "."; }
+        break; }
+      case "sequences2": {
         const nth = p.match(/^(\d+)n\s*([+−]\s*\d+)?,\s*term\s*(\d+)$/);
         if(nth){ const M = +nth[1], k = +nth[3];
           return "Evaluate the rule: work out " + M + " × " + k + (nth[2] ? ", then " + (nth[2][0] === "+" ? "add " : "subtract ") + nth[2].replace(/[+−]\s*/, "") : "") + "."; }

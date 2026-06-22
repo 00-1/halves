@@ -67,11 +67,11 @@ function isClean(a){ return typeof a === "number" && isFinite(a) && a >= 0 && St
   ok(qs.every(q => Number.isInteger(q.a) || /^\d+\.\d{1,3}$/.test(String(q.a))), "(2) metric: decimal answers are short terminating literals (numpad-clean)");
 })();
 
-// ---- (3) sequences: next-term (linear) + nth-term value ----------------------
+// ---- (3) sequences: term-to-term LINEAR "next term" only (nth-term split out) -
 (function checkSequences(){
   const m = byId("sequences"); if(!m) return;
   const qs = m.build();
-  let nextOk = 0, nthOk = 0, nextN = 0, nthN = 0;
+  let nextOk = 0, nextN = 0, nthLeak = 0;
   qs.forEach(q => {
     const nx = /^next: ([\d,\s]+)$/.exec(q.p);
     if(nx){ nextN++;
@@ -81,16 +81,30 @@ function isClean(a){ return typeof a === "number" && isFinite(a) && a >= 0 && St
       if(linear && q.a === nums[nums.length-1] + d) nextOk++;
       return;
     }
+    if(/term \d+$/.test(q.p)) nthLeak++;   // the nth-term rule must NOT live here any more
+  });
+  ok(nthLeak === 0, "(3) sequences: the nth-term rule has been split out — base pool is term-to-term only (" + nthLeak + " leaked)");
+  ok(nextN === qs.length, "(3) sequences: every prompt is a 'next term' item (" + nextN + "/" + qs.length + ")");
+  ok(nextOk === nextN, "(3) sequences: every item is genuinely linear and answer = last + step (" + nextOk + "/" + nextN + ")");
+})();
+
+// ---- (3b) sequences2: the locked Part-2 nth-term rule (Mn ± A at term k) -------
+(function checkSequences2(){
+  const m = byId("sequences2"); if(!m) return;
+  const qs = m.build();
+  ok(typeof m.requires === "string" && /^mastery:sequences$/.test(m.requires), "(3b) sequences2 is a LOCKED Part-2 off `sequences` (requires mastery:sequences)");
+  ok(m.group === "Reasoning", "(3b) sequences2 is a Reasoning topic");
+  ok(qs.length >= 20 && new Set(qs.map(q => q.p)).size === qs.length, "(3b) sequences2 builds a full, distinct curated set (" + qs.length + ")");
+  let nthOk = 0, nthN = 0;
+  qs.forEach(q => {
     const nth = /^(\d+)n(?: ([+−]) (\d+))?, term (\d+)$/.exec(q.p);
     if(nth){ nthN++;
       const M = +nth[1], sign = nth[2] === "−" ? -1 : 1, add = nth[3] ? +nth[3] : 0, k = +nth[4];
-      if(q.a === M * k + sign * add) nthOk++;
+      if(q.a === M * k + sign * add && q.a >= 0) nthOk++;
     }
   });
-  ok(nextN >= 8 && nthN >= 8, "(3) sequences: the set mixes next-term and nth-term items (next " + nextN + ", nth " + nthN + ")");
-  ok(nextOk === nextN, "(3) sequences: every next-term item is genuinely linear and answer = last + step (" + nextOk + "/" + nextN + ")");
-  ok(nthOk === nthN, "(3) sequences: every nth-term answer = M·k ± A (" + nthOk + "/" + nthN + ")");
-  ok(nextN + nthN === qs.length, "(3) sequences: every prompt parses as one of the two forms");
+  ok(nthN === qs.length, "(3b) sequences2: every prompt is an 'Mn ± A, term k' rule (" + nthN + "/" + qs.length + ")");
+  ok(nthOk === nthN, "(3b) sequences2: every answer = M·k ± A and is non-negative (" + nthOk + "/" + nthN + ")");
 })();
 
 // ---- (4) the spine grew by exactly these two; correct groups -----------------
@@ -103,7 +117,7 @@ function isClean(a){ return typeof a === "number" && isFinite(a) && a >= 0 && St
 })();
 
 // ---- (5) each has a Guide + an answer-free, non-empty method hint -------------
-["metric", "sequences"].forEach(id => {
+["metric", "sequences", "sequences2"].forEach(id => {
   const m = byId(id); if(!m) return;
   ok(Guides.has(id), "(5) `" + id + "` has a Guide entry");
   const qs = m.build();

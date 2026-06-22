@@ -420,15 +420,26 @@
     [4, "kg", "g", 4000], [2, "kg", "g", 2000], [3500, "g", "kg", 3.5], [750, "g", "kg", 0.75], [1500, "g", "kg", 1.5],
     [3, "L", "mL", 3000], [6, "L", "mL", 6000], [2500, "mL", "L", 2.5], [400, "mL", "L", 0.4], [1250, "mL", "L", 1.25], [5, "L", "mL", 5000]
   ];
-  // `sequences` — next term (term-to-term linear) OR the nth-term value. Tagged:
-  //   ["next", [a,b,c,d], A]        → "a, b, c, d → next"   (A = d + common difference)
-  //   ["nth", mult, add, n, A]      → "<mult>n±<add>: <n>th" (A = mult·n + add, ≥ 0)
+  // `sequences` — term-to-term LINEAR "next term" only (spot the common step, carry
+  // it on). The nth-term RULE (an+b) moved to a locked Part-2 `sequences2` (T213 2b)
+  // — research-11plus.md classes the nth-term as Part-2/locked, and mixing the two
+  // skills under one unlabelled pool hid which was being asked.
+  //   ["next", [a,b,c,d], A]   → "next: a, b, c, d"   (A = d + common difference)
   const SEQUENCES_SRC = [
     ["next", [2,5,8,11], 14], ["next", [3,7,11,15], 19], ["next", [10,8,6,4], 2], ["next", [1,4,7,10], 13],
     ["next", [5,10,15,20], 25], ["next", [20,17,14,11], 8], ["next", [2,4,6,8], 10], ["next", [6,11,16,21], 26],
     ["next", [100,90,80,70], 60], ["next", [1,3,5,7], 9],
+    ["next", [4,9,14,19], 24], ["next", [7,13,19,25], 31], ["next", [2,10,18,26], 34], ["next", [50,45,40,35], 30],
+    ["next", [3,9,15,21], 27], ["next", [8,16,24,32], 40], ["next", [30,26,22,18], 14], ["next", [1,8,15,22], 29],
+    ["next", [5,9,13,17], 21], ["next", [12,21,30,39], 48], ["next", [60,48,36,24], 12]
+  ];
+  // `sequences2` (locked Part-2) — the nth-term RULE: evaluate "Mn ± A" at term k.
+  //   ["nth", mult, add, n, A]   → "<mult>n±<add>, term <n>" (A = mult·n + add, ≥ 0)
+  const SEQUENCES2_SRC = [
     ["nth", 3, 2, 10, 32], ["nth", 2, 1, 8, 17], ["nth", 4, 0, 6, 24], ["nth", 5, -2, 5, 23], ["nth", 2, 3, 12, 27],
-    ["nth", 3, 1, 7, 22], ["nth", 10, 0, 9, 90], ["nth", 6, 4, 5, 34], ["nth", 2, 5, 10, 25], ["nth", 4, -1, 8, 31], ["nth", 5, 5, 6, 35]
+    ["nth", 3, 1, 7, 22], ["nth", 10, 0, 9, 90], ["nth", 6, 4, 5, 34], ["nth", 2, 5, 10, 25], ["nth", 4, -1, 8, 31], ["nth", 5, 5, 6, 35],
+    ["nth", 3, 4, 8, 28], ["nth", 6, 1, 6, 37], ["nth", 2, 7, 9, 25], ["nth", 4, 2, 7, 30], ["nth", 5, 1, 8, 41],
+    ["nth", 3, -1, 9, 26], ["nth", 8, 0, 5, 40], ["nth", 2, 9, 7, 23], ["nth", 4, 3, 6, 27], ["nth", 6, -2, 7, 40]
   ];
 
   // The proper minus sign (matches the "×" used by Times), for ± prompts.
@@ -636,10 +647,19 @@
       build(){ return shuffle(METRIC_SRC).map(metricItem); }
     },
     {
-      id:"sequences", name:"Sequences", tag:"Next term · nth-term value.",
+      id:"sequences", name:"Sequences", tag:"Next term in the pattern.",
       glyph:'n<span class="slash">+</span>k',
-      eyebrow:'find <b>↓</b>', expr:true, unlockedBy:"metric", masterSecs:9, group:"Reasoning",
+      eyebrow:'continue the pattern <b>↓</b>', expr:true, unlockedBy:"metric", masterSecs:9, group:"Reasoning",
       build(){ return shuffle(SEQUENCES_SRC).map(sequenceItem); }
+    },
+    {
+      // T213 2b — nth-term rule as a LOCKED Part-2 (research-11plus.md marks an+b as
+      // Part-2/locked). Chains off `sequences` (single-child branch, tree stays
+      // linear): continue-the-pattern → evaluate-the-rule.
+      id:"sequences2", name:"Sequences II", tag:"Evaluate the nth-term rule.",
+      glyph:'n<span class="slash">×</span>k',
+      eyebrow:'evaluate the rule <b>↓</b>', expr:true, requires:"mastery:sequences", masterSecs:10, group:"Reasoning",
+      build(){ return shuffle(SEQUENCES2_SRC).map(sequenceItem); }
     },
     // T162 P1 — mock-driven drill gaps (per docs/agent/T162-calibration.md). Each
     // sits OFF the main chain via `requires:"mastery:<predecessor>"`, so the live
@@ -801,7 +821,9 @@
     largermd:     ["*×","*÷"],         // ×÷ both accented (distinct from placevalue ×÷)
     // T60 / T61 — two more spine topics (supported chars only; pairwise-distinct).
     metric:       ["a","*/","k"],      // a/k — a quantity rescaled per unit (conversion)
-    sequences:    ["n","*+","k"]       // n+k — the linear nth-term rule (Mn ± A)
+    sequences:    ["n","*+","k"],      // n+k — continue the linear pattern (common step)
+    // T213 2b — nth-term Part-2 (distinct grid from `sequences`' n+k).
+    sequences2:   ["n","*×","k"]       // n×k — evaluate the rule Mn ± A at term k
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 
