@@ -22,14 +22,17 @@
   `T103`/`T72` need owner creds.)*
 **Re-read this line fresh before each task + push.**
 
-**Builder B → HOLD for the owner's thumbs-up on the hoard technique, then `T172` (gold-hoard engine).**
-`T174` research DONE+APPROVED (`7df7699`) — recommends a **three-layer composite** (A: dithered mound silhouette
-as scenery/0-particles · B: `hash01`-scattered beveled-coin splats w/ per-coin rotation+squash, count on a
-saturating curve · C: attractor earn-burst), ≤340 coins (under the 512 cap), reduced-motion still, brickmap
-recipes borrowed. **Babysitter is surfacing it to the owner now.** On thumbs-up → build **`T172`** per
-`docs/research-coin-hoard.md` §3 + `GOLD-HOARD-DESIGN.md` (beveled-coin splat, hoard scene mode, attractor burst;
-headless-test the pure math; capped + reduced-motion-safe; opt-in so existing scenes stay byte-identical). Then
-`T173` is the [A] wiring. **B-owned (`fxgl.js` + tests; brickmap) only.**
+**Builder B → `T175` 🔴 BUG-DO-FIRST (the FOGHORN is back — music BUILDS UP to a drone over time).**
+Owner on the latest build (`7df7699`): *"music started nice then BUILT UP to foghorn."* = a **gradual divergence**
+(output grows unboundedly until the −1.5 dB limiter rails it into a sustained drone). **Why the gate missed it:**
+`audio.test` renders the **reverb alone, noise, only 5 s** — a buildup that diverges by 20–30 s, or only via the
+real **sustained T155 pads** feeding the FDN, is invisible. **Fix:** measure a **LONG (~25–30 s) render of the
+REAL music path** (`setContext`+`setMusic`+`start` in a real `AudioContext` via `AnalyserNode`, per context) →
+find the diverging context + root (sustained pad → FDN accumulation? T165 `flush` restoring `curDecay` wrong? a
+`reverbDecay` near the cliff? voice accumulation?), **bound it**, and **EXTEND the gate to a long real-music
+render** so this slow-buildup class is caught. `golden-synth` stays green. I'll re-measure the long peaks before
+DONE. **B-owned (`synth.js` + tests) only.** *(BACKLOG T175.)*
+**The gold-hoard `T172` is PAUSED behind this** (and still awaiting the owner's thumbs-up on the technique anyway).
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

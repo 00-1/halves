@@ -2812,6 +2812,29 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
+### T175 — [B] **BUG (live, recurring):** the FOGHORN is back — music BUILDS UP to a sustained drone over time · status: OPEN · 🔴 DO-FIRST (ahead of the hoard T172)
+**Owner (2026-06-22, latest build `7df7699`): "got foghorn on latest build. Music started nice then BUILT UP to
+foghorn."** The "**built up**" is the key tell: a **gradual divergence** — the output grows **unboundedly over
+time** until the **−1.5 dB brickwall limiter** rails it into a sustained ceiling-level drone (= the foghorn).
+Recurs despite T151 (FDN cap) / T159 (resume) / T165 (switch flush).
+- **Why the gate MISSED it:** `test/browser/audio.test.js` renders the **reverb ALONE, with white noise, for only
+  5 s**, asserting peak ≤ 2. A buildup still <2 at 5 s but diverging by **20–30 s**, OR appearing only when the
+  **real sustained PADS (T155: `padglass`/`padep`/`padpwm`/`padorgan` — long sustain/release) feed the FDN through
+  the actual music path**, is invisible to a 5-s reverb+noise test.
+- **Likely roots (B confirms by measurement):** (a) a **sustained pad continuously feeding the FDN** accumulates
+  past the stability point over >5 s; (b) **T165's `reverb.flush()` restoring the feedback gain wrong** (`curDecay`
+  restore) → FDN left hotter than safe after a switch; (c) a per-style `reverbDecay` near the cliff under
+  sustained (not impulse) input; (d) **voice accumulation** (pad voices not released). The new T155 pads are the
+  most-changed variable since the last clean state.
+- **FIX:** (1) **Reproduce/measure with a LONG render of the REAL music path** — `setContext`+`setMusic`+`start`
+  in a real `AudioContext` sampled via `AnalyserNode` over **~25–30 s** per context (the scheduler is real-time,
+  not offline-renderable) → find the **diverging context(s) + timescale**; (2) **root-cause + bound it** (lower the
+  offending decay / cut the pad's reverb send / fix voice release / verify the flush restores `curDecay` correctly
+  / add a pre-limiter safety so a runaway DECAYS not rails); (3) **EXTEND THE GATE** — assert bounded over a LONG
+  real-music render (not just 5 s reverb+noise). **DoD:** no unbounded buildup on any context over ≥30 s
+  (measured); root identified + fixed; gate extended; `golden-synth` green; **B-owned (`synth.js` + tests) only.**
+  I'll independently re-measure the long-render peaks before DONE. Owner confirms on device.
+
 ### T174 — [B] RESEARCH/ART pass: representing an accumulating COIN HOARD (impression, not physics) · status: DONE (`7df7699`) · APPROVED· research-first (gold-hoard feature)
 **Owner wants a Smaug/Scrooge gold hoard that piles up organically on the home screen** with **individual coins
 visible** ("circles at different angles, with the bevel"), fed by **coins that fly in from the earn-point** — but
