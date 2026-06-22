@@ -371,7 +371,7 @@
   // ===========================================================================
   const HOARD_CAP = 480;            // surface-coin ceiling at full level (≪ PARTICLE_CAP 512) — fuller pile (T192)
   const HOARD_K = 600;              // saturating-curve constant: gold==K → level 0.5
-  const HOARD_MAX_H = 0.82;         // T192: a deep pile — at high wealth it climbs most of the screen
+  const HOARD_MAX_H = 1.0;          // T199: a level-1.0 pile's wall-banked sides reach the TOP (centre dips lower)
   const HOARD_TIERS = 8;            // re-seed the static coin buffer only when the tier changes
   // gold highlight / mid / shadow — a lit metal ramp (the bevel reads from these).
   const GOLD_TONES = [[255, 214, 110], [212, 158, 46], [120, 84, 22]];
@@ -399,10 +399,13 @@
     if(level <= 0) return 0;
     const s = (seed | 0) || 1;
     const wall = Math.pow(Math.abs(x - 0.5) * 2, 1.5);            // 0 centre → 1 at the walls
-    // a couple of organic drifts/clumps (seeded) + hashed micro-roughness on top
-    const drift = 0.10 * Math.sin(x * 9.1 + (s % 17)) + 0.07 * Math.sin(x * 17.3 + (s % 23));
-    const rough = (hash01i(Math.floor(x * 40), s ^ 0x9e37) - 0.5) * 0.10;
-    let f = 0.42 + 0.50 * wall + drift + rough;                  // full-width base + wall banking + organics
+    // a couple of organic drifts/clumps (seeded) + hashed micro-roughness on top, TAPERED toward
+    // the walls (T199) — so the banked sides climb CLEANLY to the top while the centre keeps the
+    // organic dip/undulation. Without the taper, drift could pull a wall down off the ceiling.
+    const taper = 1 - 0.7 * wall;
+    const drift = (0.10 * Math.sin(x * 9.1 + (s % 17)) + 0.07 * Math.sin(x * 17.3 + (s % 23))) * taper;
+    const rough = (hash01i(Math.floor(x * 40), s ^ 0x9e37) - 0.5) * 0.10 * taper;
+    let f = 0.44 + 0.58 * wall + drift + rough;                  // T199: walls reach ~1.0 (touch the top); centre ~0.44 (dips)
     f = Math.max(0.12, f);                                       // always some floor of coins across the width
     return clamp01(level * HOARD_MAX_H * f);
   }

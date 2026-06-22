@@ -246,6 +246,13 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
   ok(FXGL.moundProfile(0.5, 0, 1) === 0, "mound is 0 at level 0 (no gold → no pile)");
   ok(FXGL.moundProfile(0.5, 1, 1) > FXGL.moundProfile(0.5, 0.3, 1) && FXGL.moundProfile(0.5, 1, 1) <= FXGL.HOARD_MAX_H, "the pile grows with level, capped at HOARD_MAX_H");
   ok(FXGL.HOARD_MAX_H >= 0.7 && FXGL.moundProfile(0.02, 1, 9) > 0.55, "T192: at full wealth the pile climbs HIGH (walls reach " + FXGL.moundProfile(0.02, 1, 9).toFixed(2) + " of the screen)");
+  // T199 — a level-1.0 pile REACHES THE TOP (no dead gap at the ceiling): the wall-banked sides
+  // climb to ~the top across seeds, while the centre dips lower (it's a banked container).
+  ok(FXGL.HOARD_MAX_H >= 0.95, "T199: HOARD_MAX_H raised so a maxed pile can fill the screen (" + FXGL.HOARD_MAX_H + ")");
+  ok([1, 9, 42, 7].every(s => FXGL.moundProfile(0.02, 1, s) >= 0.88 && FXGL.moundProfile(0.98, 1, s) >= 0.88),
+     "T199: at level 1.0 the WALLS reach ~the top across seeds (≥0.88; e.g. seed9 wall=" + FXGL.moundProfile(0.02, 1, 9).toFixed(2) + ")");
+  ok(FXGL.moundProfile(0.5, 1, 9) < FXGL.moundProfile(0.02, 1, 9) && FXGL.moundProfile(0.5, 1, 9) > 0.2,
+     "T199: the CENTRE still dips lower than the walls (a banked container, not a flat ceiling) — centre=" + FXGL.moundProfile(0.5, 1, 9).toFixed(2));
   // (3) surface-coin scatter: count rides level (capped), coins on the lower-half surface,
   //     deterministic, each a beveled coin with a varied angle/squash.
   const big = FXGL.seedHoard({ level: 1, seed: 7 }, false, FXGL.HOARD_CAP);

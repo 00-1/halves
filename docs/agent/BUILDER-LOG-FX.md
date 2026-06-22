@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T199 — a maxed pile reaches the TOP of the screen (1T left a gap) ([B], owner-reported)
+
+Owner: *"1T still doesn't fill the screen — better than before though."* T192 raised `HOARD_MAX_H`
+to 0.82, so a level-1.0 pile climbed ~82% and stopped short of the ceiling. Fixed in `fxgl.js`:
+- **`HOARD_MAX_H` 0.82 → 1.0** so a level-1.0 pile can fill the screen.
+- **`moundProfile` wall-banking** nudged (`0.42 → 0.44` base, wall term `0.58`) and the organic
+  drift/roughness **tapered toward the walls** (`taper = 1 − 0.7·wall`) — so the banked sides climb
+  **cleanly to the top** (≥~0.95 across seeds) while the **centre keeps its organic dip** (~0.44),
+  reading as a banked container, not a flat lid. (Without the taper, drift could pull a wall off
+  the ceiling.)
+- Interaction with the [A] fill-curve recurve (T198): once that lands, **level 1.0 = the top of the
+  economy** (not 1T), so 1T reads tall-but-not-full and only peak wealth fills the screen — intended;
+  T199 just makes level 1.0 *able* to fill it. Stays behind the UI (partial occlusion is fine).
+- 🌐 **Browser-verified on WebGL2** at level 1.0: gold banks up BOTH walls to the top edge with a
+  centre valley (`hoard-halftone-webgl.png`), halftone + pixel-dithered coins intact.
+
+Verify: `node -c` clean; **golden-fx 90** (+3 T199 assertions — `HOARD_MAX_H ≥ 0.95`, walls ≥0.88
+at level 1.0 across seeds, centre still dips below the walls; `fx_hoard_scatter` re-blessed —
+only `maxH` 0.82→1); full Node suite green (fxgl 124 / hoard-wiring 47 / fx-wiring 84); scenes
+byte-identical when no hoard. B-only (`fxgl.js`, `test/golden-fx.test.js`, golden). Owner
+device-confirms. **Next B: T200 (coin colour by height).**
+
+---
+
 ## T197 — pixelate + dither the COINS too (T195 filtered only the pile shape) ([B], owner-reported)
 
 Owner on the T195 build: *"the shape got a filter but not the coins themselves — pixelate the
