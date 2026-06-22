@@ -153,6 +153,38 @@
     [75,60,45],[75,80,60],[75,200,150],[75,40,30],[75,120,90],[75,16,12]
   ];
 
+  // T162 P1 — Mock-driven drill gaps (the calibration doc + IDEAS I9 are the spec).
+  // 1. `scaling` — Proportion / unit-rate ("N→X, M→?"). Each entry [N, X, M, A] with
+  //    A = M·X/N (always integer in this set: clean unit rate or ×1.5/×2.5 variants).
+  const SCALING_P1_SRC = [
+    [4,200,6,300],[5,75,8,120],[3,18,7,42],[6,90,10,150],[8,200,5,125],
+    [2,9,6,27],[5,60,7,84],[3,21,8,56],[4,6,10,15],
+    [2,14,5,35],[3,12,7,28],[6,24,9,36],[4,32,5,40],
+    [5,45,8,72],[2,18,11,99],[3,30,7,70],[4,50,6,75],
+    [6,48,11,88],[2,25,10,125],[5,35,9,63],[4,100,7,175]
+  ];
+  // 2. `percentoff` — % decrease / "the rest". Each entry [pct, base, A] with A =
+  //    base − (pct·base)/100 (integer or 1-dp). Bases mostly ≤100, a few stretch.
+  const PERCENTOFF_P1_SRC = [
+    [20,50,40],[10,80,72],[25,60,45],[15,40,34],[30,90,63],
+    [5,80,76],[50,38,19],[10,350,315],[45,360,198],
+    [10,60,54],[25,80,60],[50,60,30],[50,24,12],[20,30,24],
+    [20,80,64],[30,40,28],[15,60,51],[10,150,135],[25,40,30],
+    [5,100,95],[25,200,150]
+  ];
+  // 3. `partwhole` — Reverse: find the whole from a part. Mixed prompts: a unit
+  //    fraction OR a percent. Each entry tagged:
+  //      ["f", num, den, given, A]  → "num/den of ? = given"  (A = given·den/num)
+  //      ["p", pct,      given, A]  → "pct% of ? = given"     (A = given·100/pct)
+  //    The literal A is stored so it round-trips exactly on the numpad.
+  const PARTWHOLE_P1_SRC = [
+    ["f",1,4,7,28],["f",1,5,6,30],["f",1,2,19,38],["f",1,3,8,24],["f",1,8,5,40],
+    ["f",1,2,12,24],["f",1,4,9,36],["f",1,5,8,40],["f",1,3,12,36],["f",1,4,12,48],
+    ["p",10,9,90],["p",20,9,45],["p",25,7,28],["p",10,7,70],
+    ["p",50,12,24],["p",25,15,60],["p",20,14,70],["p",10,15,150],
+    ["p",50,25,50],["p",25,9,36],["p",20,12,60]
+  ];
+
   // The proper minus sign (matches the "×" used by Times), for ± prompts.
   const MINUS = "−";
   // Map a fixed Add/Subtract entry [a, b, sub] to a { p, a } question.
@@ -175,6 +207,17 @@
 
   // Map a fixed Percentages-of entry [pct, base, answer] to a question.
   function percentItem(e){ return { p: e[0] + "% of " + e[1], a: e[2] }; }
+
+  // T162 P1 item builders.
+  // Scaling: prompt as the proportion "N→X, M→?"; answer = literal A.
+  function scalingItem(e){ return { p: e[0] + "→" + e[1] + ", " + e[2] + "→?", a: e[3] }; }
+  // Percent-off: prompt as "P% off N"; answer = N − P·N/100 (stored literal).
+  function percentOffItem(e){ return { p: e[0] + "% off " + e[1], a: e[2] }; }
+  // Part-whole: either a fraction ("a/b of ? = N") or a percent ("P% of ? = N").
+  function partWholeItem(e){
+    if(e[0] === "f") return { p: e[1] + "/" + e[2] + " of ? = " + e[3], a: e[4] };
+    return { p: e[1] + "% of ? = " + e[2], a: e[3] };
+  }
 
   // Listed in importance / unlock order: Halves → Times → Doubles →
   // Add&Subtract → Number Bonds → Place Value → Fractions of → Percentages of →
@@ -272,6 +315,33 @@
       glyph:'x<span class="slash">²</span>',
       eyebrow:'square of <b>↓</b>', expr:false, unlockedBy:"fractions", masterSecs:3.5, group:"Core",
       build(){ return shuffle(SQUARES_SRC).map(n => ({ p:n+"²", a:n*n })); }
+    },
+    // T162 P1 — mock-driven drill gaps (per docs/agent/T162-calibration.md). Each
+    // sits OFF the main chain via `requires:"mastery:<predecessor>"`, so the live
+    // chain (Halves → … → Squares) is unchanged and they become available only
+    // when the predecessor topic has been mastered.
+    {
+      // Chains off `percentoff` (not directly off `percentages2`) so the existing
+      // single-child `branchOf` part-chain remains linear: percentages → P2 →
+      // percentoff (P3) → scaling (P4). Still satisfies the calibration's
+      // "unlock after `percentages2`" via transitivity. Group is "Reasoning" so the
+      // PICKER lists it as a Reasoning topic (group is independent of the chain).
+      id:"scaling", name:"Scaling", tag:"Unit-rate proportion.",
+      glyph:'a<span class="slash">→</span>b',
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:percentoff", masterSecs:10, group:"Reasoning",
+      build(){ return shuffle(SCALING_P1_SRC).map(scalingItem); }
+    },
+    {
+      id:"percentoff", name:"Percent Off", tag:"% decrease — the rest.",
+      glyph:'<span class="slash">−</span>%',
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:percentages2", masterSecs:9, group:"Fractions & %",
+      build(){ return shuffle(PERCENTOFF_P1_SRC).map(percentOffItem); }
+    },
+    {
+      id:"partwhole", name:"Part → Whole", tag:"Reverse: find the whole.",
+      glyph:'?<span class="slash">/</span>n',
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:fractionsof2", masterSecs:8, group:"Fractions & %",
+      build(){ return shuffle(PARTWHOLE_P1_SRC).map(partWholeItem); }
     }
   ];
 
@@ -311,7 +381,13 @@
     percentages:  ["*%"],
     percentages2: ["n","*%"],
     fractions:    ["*f34"],
-    squares:      ["x","*s2"]
+    squares:      ["x","*s2"],
+    // T162 P1 — each new mode gets an accented operator marking its shape, using
+    // only chars the pixel font supports (BIG: 0-9, a, b, n, k, x, ×, ÷, +, −,
+    // ±, /, %). Each grid must be distinct from the 15 existing topic glyphs.
+    scaling:      ["a","*×","n"],      // a×n — scale by an unknown factor (proportion)
+    percentoff:   ["%","*−"],          // %− — percent decrease
+    partwhole:    ["%","*/","n"]       // %/n — reverse: given a part %, find the whole
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 

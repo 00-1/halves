@@ -50,6 +50,16 @@ positive distances, times as elapsed minutes, so no minus/colon keys).
   as a low-priority fun mode.
 - **Mult. tricks:** ×11 (2-digit) is the real payoff; ×25/×9/×5 are enrichment.
   Times-table fluency matters more than exotic tricks.
+- **T162 P1 — mock-driven building blocks** *(added 2026-06-22; per Luke's BWS
+  Mock 7 diagnostic in IDEAS I9; calibration spec in `docs/agent/T162-calibration.md`)*:
+  - **Proportion / unit-rate (`scaling`):** clean integer unit rate; `M · X / N`
+    answer ≤ 999 (short numpad). Mix `÷-then-×` with a few `×1.5 / ×2.5` (still
+    integer results). Notation `N→X, M→?`. *masterSecs ≈ 10.*
+  - **% decrease / "the rest" (`percentoff`):** %s from {5, 10, 15, 20, 25, 30, 45,
+    50}; bases ≤ 100 (a few ≤ 500 stretch); integer or 1-dp answers. *masterSecs ≈ 9.*
+  - **Reverse part → whole (`partwhole`):** unit fractions ½ ¼ ⅓ ⅕ ⅛ and %s
+    {10, 20, 25, 50}; whole ≤ 200, integer. Prompt `a/b of ? = g` or `p% of ? = g`.
+    *masterSecs ≈ 8.*
 
 ## Design principles (pass 2 — apps & pedagogy)
 

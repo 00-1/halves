@@ -4899,3 +4899,51 @@ how I verified: no code touched (`node -c` clean; full suite unaffected — the 
   coupling description was cross-checked against `collectibles.js`/`enemies.js`/`guides.js`/`modes.js` (file:line
   recon). [A]-only (new doc). Next per `NEXT.md`: `T59` (Wave-2 Batch A) builds from this — but re-read NEXT
   first (owner flags keep jumping the queue).
+
+---
+
+## Builder A — T162 P1: 3 mock-driven drill modes (scaling, percentoff, partwhole)
+commit: (this commit) — [A], content (Phase 7 / T162 Tier P1). Owner-blessed (2026-06-22) build of the first
+of three tiered pushes per `docs/agent/T162-calibration.md`. Drills the building blocks Luke missed in the BWS
+Mock 7 diagnostic (IDEAS I9 / `T162-calibration.md`): proportion / unit-rate, % decrease ("the rest"), and
+reverse part→whole.
+changed:
+  - **`modes.js`** ([A]-owned):
+    - **`scaling`** (Reasoning group, requires `mastery:percentoff`, masterSecs 10) — 21 items, prompt
+      `N→X, M→?`, answer `M·X/N` (integer in this set, mix of clean unit rate + a few `×1.5/×2.5`).
+    - **`percentoff`** (Fractions & % group, requires `mastery:percentages2`, masterSecs 9) — 21 items,
+      prompt `P% off N`, answer `N − P·N/100` (integer / 1-dp).
+    - **`partwhole`** (Fractions & % group, requires `mastery:fractionsof2`, masterSecs 8) — 21 mixed items,
+      prompt `a/b of ? = g` OR `P% of ? = g`, answer the WHOLE (`g·b/a` or `g·100/P`). Tagged tuple matches
+      the existing `addsub` style so the data file stays terse.
+    - All three carry **structured `glyphTokens`** for the procedural pixel mark (pairwise distinct from the
+      15 existing topic glyphs; uses only chars `glyphs.js` BIG supports).
+    - **Tech-tree fit** — the live `branchOf` is a single-child map keyed by parent, so two new modes can't
+      both require the same parent. I chained `scaling` off `percentoff` (transitively still after
+      `percentages2`, per the calibration) so the chain stays linear: percentages → P2 → percentoff → scaling
+      (depth 4). The "Reasoning" group is independent of the chain — it labels the PICKER section, not the
+      tree edge.
+  - **`docs/research-11plus.md`** — appended the three modes' calibrated ranges in the existing
+    "Calibrated value ranges" section, marked T162 P1 with a back-link to IDEAS I9 + the calibration doc.
+  - **`test/hero-icons.test.js`** — bumped the catalogue-size counter `846 → 993` (3 new modes × 49 collectibles
+    each [the `7 + 2N` formula] = +147).
+  - **NEW `test/t162-p1-modes.test.js` (45 checks, gated in `pages.yml`)** — per-mode logic gate:
+    every mode exists with name/tag/build/group/masterSecs/glyphTokens; sits OFF the spine via a real
+    mastery gate; builds **21** unique, finite, non-negative, ≤8-char numpad answers; the math of every
+    prompt **matches the documented formula** (`scaling`: `M·X/N` = answer; `percentoff`: `N − P·N/100`;
+    `partwhole`: both fraction and percent forms recover the whole, and prompt mix exercises BOTH); ranges
+    respect the calibration (`scaling` ≤ 999, `percentoff` base ≤ 500, `partwhole` whole ≤ 200); and the
+    single-child tree model still holds (no two modes share a parent).
+how I verified: **all 37 suites green** — every existing gate (arena/arena3 invariants on the grown pool,
+  hints, icon-variation, glyphs pairwise-distinct on 18 topic glyphs, contrast, perf) + the new T162-P1 gate.
+  `node -c` clean. [A]-only files: `modes.js`, `docs/research-11plus.md`, `test/hero-icons.test.js`,
+  `test/t162-p1-modes.test.js`, `.github/workflows/pages.yml`, `BUILDER-LOG.md`. No edits to `index.html`
+  (MODE_GROUPS already listed "Reasoning"; no new picker UI), no edits to `guides.js` (per-question hints are
+  a follow-up — the doc/text cascade in T58 calls them out; not required by the T162 DoD per the calibration
+  doc — but a P2/P3 push or a follow-up should ship them).
+notes: **babysitter sample-verify** — the three modes are owner-facing once `mastery:percentages2` /
+  `mastery:fractionsof2` are earned in test play; sample items live in `modes.js`'s new `*_P1_SRC` arrays and
+  in the calibration doc. Calibration honoured: every numeric answer matches the formula behaviourally (logic
+  gate), 21-item sets, numpad-clean. **Open follow-ups for T162 P2/P3** (next pushes): `ratioshare`, `timegap`,
+  `lcmhcf`, `mean` (P2) → `cubes`, `money`, `digitsum`, doubles/halves range (P3). And `guides.js` `explain()`
+  branches for the new P1 modes are a sensible follow-up (low risk; not gating).
