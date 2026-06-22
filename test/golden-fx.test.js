@@ -258,6 +258,28 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
   ok(JSON.stringify(FXGL.seedHoard({ level: 1, seed: 7 }, false, FXGL.HOARD_CAP)) === JSON.stringify(big), "the hoard scatter is deterministic for its (level, seed)");
   ok(FXGL.seedHoard({ level: 1, seed: 7 }, true, FXGL.HOARD_CAP).length < big.length, "reduced-motion → a smaller (calmer) pile");
   gold("fx_hoard_scatter", { n: big.length, at_0_3: small.length, cap: FXGL.HOARD_CAP, maxH: FXGL.HOARD_MAX_H, sample: { x: Math.round(big[0].x * 100), y: Math.round(big[0].y * 100), look: big[0].look } });
+  // T196 — STABLE ACCUMULATION: the pile rises GRADUALLY (~HOARD_CAP fine steps, not 8 jumps)
+  // and coins NEVER teleport — a lower-level scatter is a byte-identical PREFIX of a higher one.
+  (function(){
+    const lo = FXGL.seedHoard({ level: 0.30, seed: 7 }, false, FXGL.HOARD_CAP);
+    const hi = FXGL.seedHoard({ level: 0.90, seed: 7 }, false, FXGL.HOARD_CAP);
+    ok(hi.length > lo.length, "T196: more wealth → more coins (" + lo.length + " → " + hi.length + ")");
+    ok(JSON.stringify(hi.slice(0, lo.length)) === JSON.stringify(lo),
+       "T196: STABLE ACCUMULATION — the lower pile is a byte-identical PREFIX of the higher one (existing coins DON'T move/teleport; new coins stack on top)");
+    // gradual: the visible coin count changes in MANY fine steps across 0..1 (≫ the old 8 tiers).
+    const counts = new Set(); for(let L = 0; L <= 1.0001; L += 0.01) counts.add(FXGL.seedHoard({ level: L, seed: 7 }, false, FXGL.HOARD_CAP).length);
+    ok(counts.size >= 60, "T196: the pile grows in MANY fine height steps (" + counts.size + " distinct counts across 1%-level increments — not ~8 big jumps)");
+    // fills UPWARD: higher-rank coins (added later) sit HIGHER (smaller y) than the first-laid ones.
+    const k = Math.max(1, hi.length / 5 | 0);
+    const baseY = hi.slice(0, k).reduce((s, c) => s + c.y, 0) / k;          // first-laid (lowest rank)
+    const crestY = hi.slice(hi.length - k).reduce((s, c) => s + c.y, 0) / k; // last-laid (highest rank)
+    ok(crestY < baseY, "T196: the pile fills UPWARD — last-laid coins crest higher (y≈" + crestY.toFixed(2) + ") than first-laid (y≈" + baseY.toFixed(2) + ")");
+    // teeth: the home backdrop seed no longer JUMPS with an 8-tier quantiser — two nearby
+    // wealth levels yield the SAME stable seed (so the field doesn't reshuffle between earns).
+    const sA = FXGL.deriveHomeScene({ seed: 5, hoard: { level: 0.41 } }).hoard.seed;
+    const sB = FXGL.deriveHomeScene({ seed: 5, hoard: { level: 0.74 } }).hoard.seed;
+    ok(sA === sB, "T196: the home hoard seed is STABLE across wealth (no 8-tier re-seed → no teleport between earns)");
+  })();
   // (4) converge path: starts at the earn-point, ends absorbed at the hoard target, in-bounds.
   const cv = FXGL.seedConverge({ x: 0.2, y: 0.2, tx: 0.5, ty: 0.9, count: 24, seed: 3 }, false, FXGL.BURST_CAP);
   const p0 = FXGL.convergePos(cv[0], 0), pe = FXGL.convergePos(cv[0], cv[0].life);

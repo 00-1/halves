@@ -382,30 +382,40 @@
   // surface, each coin carrying position + size + rotation + aspect(squash) + a gold
   // tone + a glint phase. Count rides `level` (capped); deterministic from `seed`;
   // reduced-motion → fewer, no glint. Only the surface is ever emitted (impression).
+  //
+  // T196 — STABLE ACCUMULATION so the pile rises GRADUALLY (~`full`≈480 fine steps, not 8
+  // jumps) with NO teleporting coins: each coin's place is fixed by its **fill-rank** `q`
+  // (its index over the FULL-pile count, which depends on cap/reduced — NOT on the current
+  // level), so raising `level` only APPENDS higher-rank coins on top. seedHoard at a lower
+  // level is therefore a byte-identical PREFIX of seedHoard at a higher one (existing coins
+  // never move); a coin sits at the surface height of ITS OWN rank, so the pile fills upward.
   function seedHoard(opts, reduced, cap){
     opts = opts || {};
     const level = clamp01(opts.level != null ? opts.level : 1);
     const seed = (opts.seed | 0) || 0x601d;
     const ceil = Math.max(0, Math.min((cap == null ? HOARD_CAP : cap) | 0, HOARD_CAP));
-    const want = Math.round(ceil * level * (reduced ? 0.6 : 1));
-    const n = Math.max(0, Math.min(ceil, want));
+    const full = Math.max(1, Math.min(ceil, Math.round(HOARD_CAP * (reduced ? 0.6 : 1))));   // coins at level 1 (level-independent)
+    const n = Math.max(0, Math.min(full, Math.round(full * level)));
     const rng = makeRng(seed);
     let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor) : GOLD_TONES;
     if(!pool.length) pool = [[255, 255, 255]];
     const out = new Array(n);
     for(let i = 0; i < n; i++){
+      const q = (i + 0.5) / full;                              // this coin's fill rank (0..1), level-independent
       // T192 — scatter across the FULL WIDTH (the pile fills wall-to-wall), with a mild
       // wall bias so the banked sides read as denser.
       let x = rng(); if(rng() < 0.4) x = (x < 0.5 ? x * x : 1 - (1 - x) * (1 - x));   // gentle pull toward the walls
-      const h = moundProfile(x, level, seed);
+      // T196 — height of THIS coin's rank (NOT the current level) → lower-rank coins settle
+      // toward the base, higher-rank coins stack toward the crest; existing coins stay put.
+      const h = moundProfile(x, q, seed);
       const surfaceY = 1 - h;                                  // y=1 is the bottom of the backdrop
-      // coins layer down the visible face of the pile (a deeper band for a deep pile)
+      // coins layer down the visible face of the pile (a deeper band for a deeper rank)
       const band = 0.03 + 0.16 * h;
       const y = clamp01(surfaceY + rng() * band);
       const col = pool[(rng() * pool.length) | 0];
       out[i] = {
         x: x, y: y,
-        size: lerp(reduced ? 5 : 6, reduced ? 8 : 13, rng()) * (0.85 + 0.3 * level),   // grow with the pile
+        size: lerp(reduced ? 5 : 6, reduced ? 8 : 13, rng()) * (0.85 + 0.3 * q),   // grow with the rank (stable)
         rot: rng() * TAU,                                      // spin orientation
         aspect: lerp(0.35, 0.95, rng()),                       // tip (face-on … edge-on cylinder)
         r: col[0], g: col[1], b: col[2],
@@ -579,11 +589,13 @@
     };
     // T172 — the gold hoard rides the home backdrop. [A]'s T173 feeds `state.hoard`
     // (a saturating gold→level 0..1, or {level,seed,palette}); absent → no pile (the
-    // home stays exactly as before). The level re-seeds only on a tier change.
+    // home stays exactly as before).
+    // T196 — use a FIXED seed (NOT the old 8-tier-quantised seed): the coin field is now a
+    // STABLE ACCUMULATION (seedHoard places each coin by its level-independent fill-rank), so
+    // the pile rises gradually with the continuous `lvl` and coins never reshuffle/teleport.
     if(state.hoard != null){
       const lvl = (typeof state.hoard === "object") ? clamp01(state.hoard.level || 0) : clamp01(state.hoard);
-      const tier = hoardTier(lvl);   // quantise so the static buffer is stable between earns
-      scene.hoard = { level: lvl, seed: (scene.seed ^ (0x60_1d + tier)) | 0,
+      scene.hoard = { level: lvl, seed: (scene.seed ^ 0x601d) | 0,
                       palette: (typeof state.hoard === "object" && state.hoard.palette) || null };
     }
     return scene;

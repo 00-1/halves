@@ -6,6 +6,35 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T196 — hoard rises GRADUALLY: ~100+ fine height levels via STABLE ACCUMULATION ([B], owner-reported)
+
+Owner: *"more gradations of pile HEIGHT — not just 8, maybe 100. The user should see it gradually
+rise as wealth increases, not big jumps."* Root cause: `deriveHomeScene` keyed the coin-buffer
+**seed off an 8-tier quantiser** (`hoardTier`), so a whole wealth band showed the same pile then
+jumped — and the seed change **reshuffled every coin** (teleport). Fixed in `fxgl.js` (the
+re-seed trap avoided — a naïve `HOARD_TIERS=100` would reshuffle ~100×):
+- **`seedHoard` is now a STABLE ACCUMULATION.** Each coin's place is fixed by its **fill-rank**
+  `q = (i+0.5)/full`, where `full` = the level-1 coin count (depends on cap/reduced, **NOT** the
+  current level). A coin sits at the surface height of **its own rank** (`moundProfile(x, q)`),
+  and size scales with `q` — both level-independent. Raising `level` only raises `n =
+  round(full·level)`, i.e. **appends higher-rank coins on top**. So `seedHoard(lowLevel)` is a
+  **byte-identical PREFIX** of `seedHoard(highLevel)` — existing coins never move; the pile
+  builds upward in ~`full` (≈480) fine steps.
+- **`deriveHomeScene` uses a FIXED seed** (`scene.seed ^ 0x601d`) — the 8-tier seed keying is
+  gone, so the field is stable across earns (no teleport) and the continuous `lvl` drives a
+  smooth rise. The silhouette (`moundProfile(x, level)`) was already continuous.
+- 🌐 **Browser-verified on WebGL2**: the same hoard at levels 0.15 / 0.4 / 0.65 / 0.9 builds
+  upward smoothly — each lower pile is visibly a sub-pile of the higher (`hoard-rise-strip.png`).
+
+Verify: `node -c` clean; **golden-fx 75** (+5 T196 assertions — prefix/no-teleport, **101**
+distinct counts across 1%-level steps = ~100 levels, fills-upward, stable home seed; teeth on
+all; `fx_hoard_scatter` re-blessed — rank-0 coin now sits at the base y≈100 not the old crest);
+full Node suite green (fxgl 124 / hoard-wiring 47 / fx-wiring 84 / synth 177 / emblems 61);
+render/visual/audio gates green. B-only (`fxgl.js`, `test/golden-fx.test.js`, golden). Owner
+device-confirms the gradual rise.
+
+---
+
 ## T195 — hoard FILTER pass: render the pile in brickmap's halftone-dither look (shading only) ([B], owner-reported)
 
 Owner on the T192 pile: *"needs a filter pass — dithering and pixelation, along the lines of
