@@ -3418,10 +3418,27 @@ can stay. By subtitle I mean THE VOID THRONE."*
   behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
-### T221 — [A] **Void Throne: wide LETTER-SPACING + Star-Wars perspective skew (bottom wider)** · status: OPEN · owner-requested
-**Owner (2026-06-22, on `6a5524a`): "let's add some letter spacing to the Void Throne text, give it plenty of space
-between letters. Can we also skew it so the bottom is wider, Star Wars style."** Continues the void-line styling
-(`paintPixelTitle`/`renderTitles` in `main.js`). GOLD "Goblin Gold" line UNCHANGED — void line only.
+### T221 — [A] **Void Throne: wide LETTER-SPACING + Star-Wars perspective skew (bottom wider)** · status: CHANGES (`e879629` made it UNREADABLE — fix: ~2× height) · owner-requested
+**🔴 REOPEN (owner device-confirm on `e879629`): "void throne not readable now. Probably needs 2× height to be
+readable (stretch)."** The wide spacing + skew collapsed "THE VOID THRONE" into a splayed fan of unreadable purple
+streaks. **Cause:** the perspective ramp crushes the TOP rows to `0.6×` width (`rs = 0.6 + 0.4·((y-yMin)/span)`)
+while the glyphs are only `PXY=3` tall — not enough vertical resolution to stay legible under the skew.
+- **PRIMARY FIX — ~2× the void-line HEIGHT (owner's call):** roughly **double the void line's rendered height** —
+  e.g. `PXY 3 → 6` (and/or raise the void raster `cellsH` so it's taller at the source, not just upscaled-chunky),
+  so the letters have the vertical resolution to read clearly through the skew + glitch. Keep the gold line as-is.
+- **SECONDARY (if 2× height alone isn't enough — reviewer note from the screenshot):** the top-compression is the
+  other culprit — **ease the perspective** so the top isn't crushed (raise the top scale, e.g. `rs = 0.78 + 0.22·d`
+  instead of `0.6 + 0.4·d`), keeping a gentle bottom-wider trapezoid rather than an aggressive one.
+- Keep the **wide letter-spacing**, the **caps/stretch/flicker** (T217/T220), centred, **no clip at 360px** (taller +
+  wide-tracked caps must still fit the splash width — shrink the cell or tracking before letting it overflow).
+- **DoD:** "THE VOID THRONE" is **clearly READABLE** (the headline test) with the wider spacing + a (gentler if
+  needed) bottom-wider skew; gold unchanged; centred + no clip at 360px; glitch/flicker still work; reduced-motion
+  static; `node -c` clean; entry tests green; **owner device-confirms it reads.** **[A]-only** (`main.js`, maybe
+  `styles.css`). *(Owner is live on this — do it FIRST.)*
+
+**[original spec, for reference]** Owner (on `6a5524a`): "add letter spacing… plenty of space between letters; skew
+it so the bottom is wider, Star Wars style." Continues the void-line styling (`paintPixelTitle`/`renderTitles` in
+`main.js`). GOLD "Goblin Gold" line UNCHANGED — void line only.
 - **Wide letter-spacing (void line only):** today both lines rasterise at `letterSpacing = "-1.5px"` (tight). Give
   the VOID line **generous POSITIVE tracking** — plenty of air between letters (try ~`+3…6px` at the 26px raster
   cell-height; tune to taste). Keep the gold line tight as-is. Re-verify the void line still fits the splash width

@@ -15,17 +15,25 @@ Percentage-increase, Prime-factorisation/factors&multiples**; then the **Collect
 full curated pool (~21, calibrated), guide + `explain()`, chain-gating, the enumeration-harness + assessment loop.
 *(BACKLOG T219.)*
 
-**→ DO `T222` FIRST — the GHP multi-app RESTRUCTURE (owner: "move all now").** READ `FRANCHISE-HOSTING.md` first.
-Move the live app into **`gg1/dev/`**, create **`gg1/prod/`** (promoted copy, TWA target) + **`gg2/dev/`**; root
-`index.html` = a **franchise landing** that scans **`apps.json`** + reads each app's `manifest.webmanifest` to list
-links. **ISOLATED saves** per scope (`gg1dev.*`/`gg1prod.*`/`gg2dev.*`); **`sw.js` cache cleanup → prefix-scoped**
-(no cross-eviction); **one-time `halves.*`→`gg1prod.*` migration** so the live save survives. `gg1/v1/` waits for the
-tag (T223). **On handoff, tell the owner the NEW dev URL `…/halves/gg1/dev/`.** *(BACKLOG T222.)*
+**→ 1. FIX `T221` FIRST — the Void Throne is UNREADABLE (owner is live on it).** `e879629`'s wide-spacing + skew
+collapsed "THE VOID THRONE" into illegible streaks. **Owner: "~2× height to be readable (stretch)"** — roughly
+DOUBLE the void-line height (`PXY 3→6` and/or a taller source raster). If still not legible, EASE the skew's
+top-compression (`rs = 0.78 + 0.22·d`, not `0.6 + 0.4·d`). Keep wide spacing + caps/flicker, centred, no clip at
+360px. Headline DoD = **it READS.** Push on its own for owner device-confirm. *(BACKLOG T221 reopened.)*
 
-**→ THEN `T221` (splash tweak, in the new `gg1/dev/`):** void line gets **wide POSITIVE letter-spacing** (gold stays
-tight) + a **Star-Wars perspective skew — bottom wider than top** (per-row horizontal scale ramped by depth, about
-the centre); keep legible + centred + no clip at 360px; T217/T220 caps/stretch/flicker still apply. Push on its own
-for owner device-confirm. *(BACKLOG T221.)*
+**→ 2. THEN `T222` — the GHP multi-app RESTRUCTURE (owner: "move all now" — was SKIPPED last round, still TODO).**
+READ `FRANCHISE-HOSTING.md` first. Move the live app into **`gg1/dev/`**, create **`gg1/prod/`** (promoted copy, TWA
+target) + **`gg2/dev/`**; root `index.html` = a **franchise landing** that scans **`apps.json`** + reads each app's
+`manifest.webmanifest` to list links. **ISOLATED saves** per scope (`gg1dev.*`/`gg1prod.*`/`gg2dev.*`); **NO
+cross-game gold** (per-game, starts at 0 — no wallet); **`sw.js` cache cleanup → prefix-scoped** (no cross-eviction);
+**one-time `halves.*`→`gg1prod.*` migration** so the live save survives. `gg1/v1/` waits for the tag (T223). **On
+handoff, tell the owner the NEW dev URL `…/halves/gg1/dev/`.** *(BACKLOG T222.)*
+
+**→ 3. THEN continue `T219`** (batched by group — push each on its own for re-assessment).
+  ✅ DONE: Roman, Primes, Percent-Increase, F·D·P, BODMAS, Function-Machines (+ Roots via cubes).
+  **REMAINING:** Part-1 **×-tricks, Negatives-P1**; Part-2 **Area&Perimeter, Volume, Angles (new Geometry group),
+  Speed-Distance-Time, Median/Mode/Range, Prime-factorisation/factors&multiples**; then the **Collector-ladder
+  rebalance LAST**. *(BACKLOG T219.)*
 - **After `T219` → `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view;
   persists). A core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests). Then
   **`T168`** (held on Play ID-verify).

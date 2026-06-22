@@ -1,6 +1,27 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T213 (content loop CONVERGED) · T220 · T219 batch 1` — live `efb1abf`; **56/56
+**Current verdict:** `APPROVED — T219 batch 2 + batch 3` · `🔴 CHANGES — T221 (void line UNREADABLE)` — live
+`e523996`; **58/58 tests + `node -c` clean** (verified at a detached worktree). Also: **T222 was SKIPPED** — see below.
+
+- **🟢 `T219` batch 2 (`5b50266`) + batch 3 (`e523996`) — APPROVED.** Four new topics, all in the chain:
+  **`pctup`** (Percent Increase), **`fdp`** (F·D·P conversions), **`bodmas`** (Order of Operations), **`algebra`**
+  (Function Machines). Enumerated all four pools (21 each); **every answer recomputed** — pctup (`40+15%=46`,
+  `80+25%=100`), fdp (`4/5=80%`, `0.07=7%`, all clean terminating decimals), bodmas (precedence + brackets + the
+  `2×3+4×5=26` two-product case), algebra (every machine output positive, no negative intermediate) — **all correct,
+  unambiguous, numpad-safe.** All four have a **full guide + tailored `explain()`** (guides-coverage test passes,
+  15/15); guide content verified correct (bodmas teaches `3+4×2=11 NOT 7×2`; algebra warns "left-to-right, **not**
+  BODMAS" — the exact trap). Tests 58/58. **T219 progress:** ✅ Roman, Primes, Percent-Increase, F·D·P, BODMAS,
+  Function-Machines (+ Roots via cubes). **Remaining:** ×-tricks, Negatives-P1; Area&Perimeter, Volume, Angles,
+  Speed-Distance-Time, Median/Mode/Range, Prime-factorisation; then the Collector rebalance LAST.
+- **🔴 `T221` (`e879629`) — CHANGES (failed owner device-confirm).** The wide letter-spacing + Star-Wars skew made
+  "THE VOID THRONE" **unreadable** — it collapsed into a splayed fan of purple streaks (owner screenshot). Cause: the
+  perspective ramp crushes the TOP rows to `0.6×` width (`rs = 0.6 + 0.4·depth`) while the glyphs are only `PXY=3`
+  tall — too little vertical resolution to survive the skew. **Owner fix: ~2× the void-line HEIGHT (more stretch)**
+  so the letters have the resolution to read. → **back to A (see BACKLOG T221 reopened).**
+
+---
+
+**Prior:** `APPROVED — T213 (content loop CONVERGED) · T220 · T219 batch 1` — live `efb1abf`; **56/56
 tests + `node -c` clean** (independently verified at a detached worktree). Three things landed together:
 
 - **🟢 `T213` — DONE (the content quality loop has CONVERGED).** Every round-1 + round-2 item is resolved and
