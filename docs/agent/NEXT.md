@@ -43,10 +43,17 @@ handoff, tell the owner the NEW dev URL `…/halves/gg1/dev/`.** *(BACKLOG T222.
   **REMAINING:** Part-1 **×-tricks, Negatives-P1**; Part-2 **Area&Perimeter, Volume, Angles (new Geometry group),
   Speed-Distance-Time, Median/Mode/Range, Prime-factorisation/factors&multiples**; then the **Collector-ladder
   rebalance LAST**. *(BACKLOG T219.)*
-- **After `T219` → `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view;
-  persists). A core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests). Then
-  **`T168`** (held on Play ID-verify).
-- **Post-T219-landing:** re-run the **T213 deep quality loop** over the full expanded topic set (owner-requested).
+- **5. THEN `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view;
+  persists). A core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests).
+- **6. THEN `T225` — the FINAL deep quality pass (TERMINAL v1 GATE).** Agent assesses EVERY question + EVERY
+  doc/text string → **Babysitter double-checks** every finding → [A] fixes → loop until clean. Only when clean does
+  the **Babysitter sign off GG1 v1**. *(BACKLOG T225.)*
+
+**v1 SIGN-OFF → TAG → GG2 (Babysitter-owned, no owner action — owner delegated the call):** once T225 is clean the
+Babysitter records "v1 SIGNED OFF", cuts + pushes **`gg1-v1`** + a GitHub Release (`T223`), confirms `gg1/v1/` is
+populated, then **immediately kicks off GG2 P0** (`GG2-MILESTONES.md` → `GG2-P0-EXTRACTION.md` + `GG2-P0-INPUT.md`).
+*(`T168` Play-Store productionisation is NOT a v1-tag blocker — held on the owner's Google ID-verify, runs in
+parallel/after.)*
 **Re-read this line fresh before each task + push.**
 
 **Builder B → STAND BY.** `T103` (perf pass) + `T211`/`T207` **APPROVED** (live `951e532`); queue clear. Hold until

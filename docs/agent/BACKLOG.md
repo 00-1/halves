@@ -3276,14 +3276,41 @@ ready → Plants badge).
   **[A]-only** (`main.js`, `index.html`, `styles.css`, tests). *(Queue: after T213; a nice pre-launch retention
   touch. Also note in GG2-MILESTONES as a CORE feature.)*
 
+### T225 — **FINAL deep quality pass — EVERY question + EVERY doc/question text** (agent assesses → Babysitter double-checks) · status: OPEN (runs LAST — the FINAL GATE before v1 sign-off) · owner-requested
+**Owner (2026-06-22): "a final deep quality pass on every individual question and document/question text. Performed by
+an agent then double-checked by you. Add it to the END of the queue. Final gate before v1 sign-off."** This is the
+LAST thing before the `gg1-v1` tag — runs only after the whole v1 queue (T221, T224, T222, T219 incl. Collector
+rebalance, T218) is APPROVED.
+- **SCOPE — exhaustive, two halves:**
+  1. **Every QUESTION** — enumerate the COMPLETE set (all ~40 topics via the harness, each `build()` ×400 deduped =
+     the full curated pools, both P1 and locked P2), and assess **every single one**: correctness (recompute the
+     answer), numpad/input-safety, range/difficulty calibration (vs `research-11plus.md`), age-appropriateness
+     (10–11), clarity/notation, no degenerate/duplicate/ambiguous items.
+  2. **Every DOC / TEXT string** — ALL user-facing copy: guides + `explain()`, topic tags + eyebrows, onboarding,
+     settings/menu labels, toasts, screen copy, the splash/title text, collectible/award **names + descriptions**,
+     hero/enemy/beast flavour, event text. Assess: factual/mathematical correctness, **typos/spelling/grammar**,
+     British English, consistent notation + tone, age-appropriateness, no stale/placeholder text.
+- **METHOD (owner-specified):** an **AI agent performs** the full assessment (fan-out sub-agents over topic/text
+  batches, read-only, against the criteria above) → **the Babysitter DOUBLE-CHECKS** every finding independently
+  (recompute, re-read in context — never trust the agent's say-so) → confirmed issues go to **[A]** to fix → the
+  Babysitter re-assesses → **loop until clean.** (Same proven T213 method, now over the FULL expanded set + ALL
+  text, as the formal gate.)
+- **DoD:** the agent assessment + Babysitter double-check are COMPLETE across every question and every string; **all
+  confirmed issues fixed and re-verified**; **zero** correctness errors, **zero** typos, consistent notation/tone;
+  the enumeration harness + question-integrity regression gate green; results written to a final audit doc
+  (`QUESTION-QUALITY-AUDIT.md` final section). **Only when this is clean does the Babysitter record "GG1 v1 SIGNED
+  OFF" → then T223 (tag + release).** *(Babysitter-run assessment; fixes = [A]. The terminal v1 gate.)*
+
 ### T223 — **Tag + freeze GG1 v1** (cut `gg1-v1`, snapshot to `gg1/v1/`) · status: BLOCKED (do at "GG1 v1 done") · owner-requested
-**Owner: "create a tag for GG1 v1 once the current work is done"** + confirmed the **Babysitter cuts the tag** (owner
-doesn't have to). When GG1 v1 is COMPLETE — current splash iterations (T220/T221…) + T224 + T219 (all topics +
-Collector rebalance) + the post-T219 deep quality pass + T222 restructure all APPROVED, and the **owner gives the
-"v1 is done" go** — the **Babysitter** cuts an **annotated git tag `gg1-v1`** at that `main` commit and pushes it
-(`git push origin gg1-v1`). A tag is a non-destructive pointer to an existing commit — NOT a write to the `main`
-branch — so this is within the Babysitter's remit; no owner action needed. (Optionally also publish a **GitHub
-Release** from the tag.) The `gg1/v1/` frozen snapshot is then populated as part of **T222** ([A]).
+**Owner (2026-06-22): "GG1 v1 is ready as soon as the current queue clears. YOU make the final call on that, then
+make the tag + release and immediately start moving on GG2."** So the Babysitter OWNS the v1 sign-off + the tag +
+release — **no owner action needed.** When the whole v1 queue is APPROVED — splash (T220/T221) + T224 + T222
+restructure + T219 (all topics + Collector rebalance) + T218 + **T225 the final quality pass (the terminal gate)** —
+the **Babysitter** records "GG1 v1 SIGNED OFF", then cuts + pushes an **annotated tag `gg1-v1`** at that `main`
+commit (`git push origin gg1-v1`) and publishes a **GitHub Release** from it. A tag/release is a non-destructive
+pointer to an existing commit — NOT a write to the `main` branch — so it's within the Babysitter's remit. The
+`gg1/v1/` frozen snapshot is populated as part of **T222** ([A]). **Then immediately kick off GG2 P0** (per
+`GG2-MILESTONES.md` / `GG2-P0-EXTRACTION.md` / `GG2-P0-INPUT.md`).
 - **DoD:** `gg1-v1` annotated tag exists + pushed at the agreed "v1 done" commit; (optional) a GitHub Release from
   it; `gg1/v1/` holds that frozen build, excluded from further edits; recorded in REVIEW.md. **[Babysitter cuts the
   tag; A populates `gg1/v1/`].** *(Gate: ONLY when the Babysitter marks GG1 v1 all-approved AND the owner says go.)*
