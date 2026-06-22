@@ -2661,7 +2661,7 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
-### T160 — [A] Arena: per-enemy-death VFX (localised) + slow the battle playout a touch · status: OPEN · OWNER-REQUESTED
+### T160 — [A] Arena: per-enemy-death VFX (localised) + slow the battle playout a touch · status: DONE (`1c949e0`) · APPROVED· OWNER-REQUESTED
 Owner (2026-06-22, on the live Arena 3v3): **"add some VFX on each enemy death, localised at the location of the
 defeated enemy. And slow down the battle animation a touch."** Both are small, contained tweaks to the **T90
 playout** (`playBattle`/`applyEvent` in `main.js`, ~L1421-1486) — **no engine change** (T152[B] already gave us
@@ -2694,7 +2694,7 @@ localised small bursts; reuse the existing `fxBigBurst` + the `elCentre(el)` hel
   this VFX actually reaches the owner's clients and they can confirm via a truthful build number. Sequence:
   T161 → T158 → T160.
 
-### T159 — [A]-led / [B]-support: fix the foghorn on AudioContext resume (app-switch / cold-start) · status: OPEN · 🔴 BUG (now REPRODUCIBLE)
+### T159 — [A]-led / [B]-support: fix the foghorn on AudioContext resume (app-switch / cold-start) · status: DONE (`aa583b8`) · APPROVED· 🔴 BUG (now REPRODUCIBLE)
 **Owner (2026-06-22): "the foghorn came back on PWA when switching between apps."** (Earlier: foghorn on first
 launch, gone on relaunch.) **Upgraded from transient-investigation to a real, reproducible bug** with a clear
 trigger: **backgrounding the PWA and returning** (app-switch) → the OS **suspends the AudioContext**, and on
@@ -2780,7 +2780,7 @@ marker reads build.json instead of the running bundle.)*
   mismatch and does NOT fire when equal. `node -c` clean; **[A]-only** (`main.js`, `test/version.test.js`).
   **This is the highest-value fix in the queue** — once it lands, every subsequent live review is trustworthy.
 
-### T158 — [A] SW: make the navigation/`build.json` fetch bypass the HTTP cache (so a stale `index.html` can't shadow a deploy) · status: OPEN · IMPORTANT (likely the Firefox-staleness root) · pairs with T161
+### T158 — [A] SW: make the navigation/`build.json` fetch bypass the HTTP cache (so a stale `index.html` can't shadow a deploy) · status: DONE (`41bd1d8`) · APPROVED· IMPORTANT (likely the Firefox-staleness root) · pairs with T161
 **Re-scoped 2026-06-22 (earlier diagnosis CORRECTED).** My first take — "the SW cache-firsts *un-versioned* JS"
 — was **wrong**: T107/`scripts/cachebust.js` appends `?v=<sha>` to **every** deployed script URL (and gates that
 no bare ref survives), so deployed assets ARE versioned + immutable, and the SW cache-firsting those `?v=` URLs
@@ -2804,7 +2804,7 @@ JS) even "online." That fits the owner's Firefox-frozen-pre-3v3.
   shows the running sha advancing to match the deploy + 3v3 appears. *(Headless SW re-check blocked — harness
   OOM-down; lean on the `pwa.test` logic gate + owner confirmation.)*
 
-### T156 — [A] Hide the fullscreen affordances when running installed/standalone (TWA/PWA) · status: OPEN · OWNER-REQUESTED · Play-Store track
+### T156 — [A] Hide the fullscreen affordances when running installed/standalone (TWA/PWA) · status: DONE (`eaf40bd`) · APPROVED· OWNER-REQUESTED · Play-Store track
 Owner (2026-06-22, exploring the Android wrap): *"one difference will be the full-screen buttons will no longer
 be needed. It'll be locked full screen presumably."* Correct — in a **TWA / installed PWA** the app launches
 **locked fullscreen** (no browser chrome), so the in-app fullscreen controls are **redundant there**. But the
@@ -2828,7 +2828,7 @@ hide them by display-mode.**
   hide is best browser-verified (matchMedia display-mode) when the harness is back — until then assert the
   helper's logic in a Node test + the owner confirms on his installed PWA.
 
-### T157 — [A] Handle the Android back button / back-gesture (don't exit the app mid-game) · status: OPEN · OWNER-track (Babysitter-caught) · Play-Store track
+### T157 — [A] Handle the Android back button / back-gesture (don't exit the app mid-game) · status: DONE (`1a3e3fb`) · APPROVED· OWNER-track (Babysitter-caught) · Play-Store track
 The classic **TWA surprise**: our navigation is **JS screen-state, not URL history**, so the Android system
 **back gesture** finds no web-history to pop and **exits the app** instead of going "back one screen." To a
 10-year-old mid-Arena, hitting back to leave a fight would **quit the game** — feels broken. Make back navigate
@@ -3985,7 +3985,7 @@ named schools). No user-facing/code references exist. (NB: this spec deliberatel
 > unified blueprint; **T59–T61 will be re-batched to match it**). Anti-dilution still rules:
 > a new part only where the curriculum has real depth (T106's tree handles varying depth).
 
-### T58 — UNIFIED content blueprint: existing-topic rebalance + Part-3s + new topics (`docs/CONTENT-EXTENSION.md`) · status: OPEN
+### T58 — UNIFIED content blueprint: existing-topic rebalance + Part-3s + new topics (`docs/CONTENT-EXTENSION.md`) · status: DONE (`c89eebc`) · APPROVED
 Write the canonical doc for **how to extend the game with new topics/content** without
 breaking the coupled systems, with **new content, not dilution** — **AND** (owner, 2026-06-21:
 "combine this work with the introduction of the new topics") design the **existing-topic

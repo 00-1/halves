@@ -1,6 +1,42 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T89 + T90` [A] (Arena 3v3: team-selection UI + watchable deterministic turn
+**Current verdict:** `APPROVED — T161 · T158 · T159 · T160 · T156 · T157 · T58` [A] (a 7-task batch A pushed
+ahead of review; all independently verified, full suite + `node -c` green). Live build **`c89eebc`**.
+- **`T161`** (`555464f`) — **the trust fix, verified.** `RUNNING_V` is read from **`main.js`'s own `?v=<sha>`**
+  (`document.currentScript.src`, with a `querySelector` fallback); the pill shows the **running** sha (truthful
+  per client; "local build" with no `?v=`); the update-check compares `RUNNING_V` vs the fresh `build.json` sha
+  and fires **only on mismatch**. `version.test` rebuilt with a controllable boot — asserts running-comes-from-`?v=`
+  + update-fires-on-stale + no-op when equal. This ends the "same build number, different code" trap.
+- **`T158`** (`41bd1d8`, rescoped — the earlier network-first `e454208` is cleanly **superseded**, no hybrid
+  left). Net `sw.js`: nav + `build.json` are **network-first with `cache:"no-store"`** (defeats the HTTP-cache
+  shadow that froze the owner's Firefox), immutable `?v=` assets + fonts stay **cache-first** (correct — new
+  deploy = new URL), `build.json` never cached, **`CACHE` bumped v1→v3** so `activate` purges. `pwa.test` has
+  real teeth: a simulated fetch handler asserts the no-store nav, never-cache-build.json, cache-first-`?v=`, bump.
+- **`T159`** (`aa583b8`) — the **foghorn-on-resume** fix. A guard refuses to schedule into a `suspended`/
+  `sampleRate:0` context (main.js:371); `visibilitychange` **stops** the scheduler on hide and **clean-resyncs**
+  (`resyncMusic`, drop the surviving tail, restart only once running) on return. Addresses the app-switch drone.
+- **`T160`** (`1c949e0`) — Arena death VFX + calmer pace. Foe KO (`ev.tSide===1`) fires a tight localised
+  `fxBigBurst` at `elCentre(cellEl[k])` (foe-type palette + impact white, count 180, `FX_SMALL`, spread 0.7);
+  pace budget 2600→4000, floor 130, ceil 480; reduced-motion path intact. **Exemplary behavioural gate**
+  (`arena-playout-fx.test`, CI-registered): drives a real fight with non-centre foe rects and asserts the burst
+  emits **AT the foe cell** (x=0.564, not the 0.5/0.55 fallback) with the right signature+palette — proves
+  localised emission, not just a setter call.
+- **`T156`** (`eaf40bd`) — `isInstalledDisplay()` (`display-mode: standalone|fullscreen` / `navigator.standalone`)
+  hides the Settings `#fsToggle` and drops the entry "Play in fullscreen" wording → "Tap to begin" (keeps the
+  audio gesture) when installed; **manifest → `display:"fullscreen"` + `display_override`**, `orientation`
+  portrait. Browser-tab behaviour unchanged.
+- **`T157`** (`1a3e3fb`) — Android back-gesture trapped via a `history.pushState` sentinel kept on top + a
+  `popstate` handler that navigates our screen stack (`stay`/`nav`/`exit`), confirm-exit at home; guarded for no-`history` envs.
+- **`T58`** (`c89eebc`) — content-extension blueprint **doc only** (`docs/CONTENT-EXTENSION.md`); no code risk.
+
+**Verification:** full gate suite + `node -c` (main/sw/modes/synth) green on `c89eebc`; each task's gate teeth
+inspected (not just "suite passed"). **Honest caveat:** `T156`/`T157`/`T159` are *visible/device* behaviours
+(installed display-mode, the real Android back gesture, mobile audio resume) the **OOM-down headless harness
+can't confirm** this session — logic + Node gates are sound; **final confirmation is the owner's on the installed
+PWA**. All 7 → DONE. **⚠ A again built far ahead of the `NEXT.md` order** (shipped T161→T58 in a burst) — re-flagged
+"re-read NEXT before each task". **→ A: `T162` drill modes (Tier P1 first).**
+
+> **Previously approved (done):** `T89 + T90` [A] (Arena 3v3: team-selection UI + watchable deterministic turn
 playout) · live builds **`9197265`** (T89) + **`dffa345`** (T90). **All gates green** (full suite + `arena3`
 27 checks); `node -c` clean; **owner-accepted live** ("arena 3v3 looks good"). T89 fields a 1–3 hero party vs
 the tier's 3-foe enemy team with per-foe matchup chips; T90 plays the EXACT `teamBattleLog` sim turn-by-turn
