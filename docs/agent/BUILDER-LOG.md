@@ -5739,3 +5739,18 @@ Owner: "looks good, but 3× the size of both; the Void Throne needs lightening; 
 verified: `pwa.test` 42→45 (both titles ~3×, the void ramp lightened to `#cda9ff`, the subtitle glint is null).
 Full suite 53/53. [A]-only (main.js, styles.css). Owner verifies the live splash. Then T168 stays HELD on Play
 ID verification.
+
+---
+### [A] T212 — title polish #2 (four owner tweaks on the stylised splash)
+- **Fixed the "i".** The title rasterised at `cellsH=18px` merged the "i" dot into the stem → read "Goblln"/
+  "Vold". Raised the base raster res to **cellsH=26** (dot/stem now separate) and dropped **PX 3→2** so the
+  display size is unchanged.
+- **Corrupted the Void Throne** (distinct from the clean gold line): a deterministic, static **glitch pass** on
+  the void raster — ~7% dropped cells (holes) + ~11% displaced ±1 cell (hash-keyed off x,y, so stable not
+  flickering) — still legible, just glitchier. Gold line stays clean (`corrupt=false`).
+- **Tighter letter-spacing:** `ctx.letterSpacing = "-1.5px"` on the raster (guarded; measured + drawn with it).
+- **~0.9× both:** `.brand` clamp(60→**54**px,20→18vw,92→**82**px), `.subtitle` clamp(42→**38**px,14→12.6vw,
+  64→**58**px).
+verified: `pwa.test` 45→48 (cellsH 26 / PX 2, the tighter letter-spacing, the corruption pass + void-line
+`corrupt=true`, the 0.9× sizes). Full suite 53/53. [A]-only (main.js, styles.css). Owner verifies the live
+splash. Then T168 stays HELD on Play ID verification.

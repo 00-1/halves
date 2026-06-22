@@ -51,9 +51,13 @@ if(mani){
   const cssT = read("styles.css");
   ok(/\.pixtitle\{[^}]*image-rendering:pixelated/.test(cssT), "(a2) T209: the pixel-title canvas renders crisp (image-rendering:pixelated)");
   // T210 — refinements: ~3× bigger, lightened void ramp, no void glint
-  ok(/\.brand\{[^}]*font-size:clamp\(60px/.test(cssT) && /\.subtitle\{[^}]*font-size:clamp\(42px/.test(cssT), "(a2) T210: both titles are ~3× bigger");
+  ok(/\.brand\{[^}]*font-size:clamp\(54px/.test(cssT) && /\.subtitle\{[^}]*font-size:clamp\(38px/.test(cssT), "(a2) T210/T212: the titles are big (3× then ~0.9×)");
   ok(/TITLE_VOID = \[\[205,169,255\]/.test(mn), "(a2) T210: the Void Throne ramp is lightened toward the brand purple (luminous)");
-  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null\)/.test(mn), "(a2) T210: the Void Throne has NO glint (gold keeps its sparkle)");
+  // T212 — fix the "i" (higher raster res), corrupt the void line, tighter letters
+  ok(/const cellsH = 26/.test(mn) && /span = Math\.max\(1, yMax - yMin\), PX = 2/.test(mn), "(a2) T212: raster res cellsH 18→26 (the 'i' dot/stem separate), PX 3→2");
+  ok(/letterSpacing = "-1\.5px"/.test(mn), "(a2) T212: tighter letter-spacing on the title raster");
+  ok(/if\(corrupt\)\{[\s\S]{0,260}continue;[\s\S]{0,160}ox \+=/.test(mn), "(a2) T212: a corruption pass (dropped + displaced cells) glitches the void line");
+  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true\)/.test(mn), "(a2) T212: the void line is corrupted (4th arg true); gold stays clean + glinting");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------

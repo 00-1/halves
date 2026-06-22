@@ -107,12 +107,12 @@ body{
    stays the Halves drill icon; the product is Goblin Gold). Gold to match the name. */
 /* T210 — ~3× bigger (the pixel-title canvas is sized at 1.25em, so tripling the
    line font-size triples the chunky-pixel title, crisp via image-rendering:pixelated). */
-.brand{font-family:var(--display);font-weight:700;font-size:clamp(60px,20vw,92px);letter-spacing:.01em;
+.brand{font-family:var(--display);font-weight:700;font-size:clamp(54px,18vw,82px);letter-spacing:.01em;
   color:var(--amber);margin-top:10px;line-height:1}
 /* T208 — the full title is "Goblin Gold: The Void Throne"; the void line is the
    subtitle between the wordmark and the maths tag. Plain gold/amber for now —
    T209 stylises it (pixel-gold name / dithered-purple void line). */
-.subtitle{font-family:var(--display);font-weight:600;font-size:clamp(42px,14vw,64px);letter-spacing:.02em;
+.subtitle{font-family:var(--display);font-weight:600;font-size:clamp(38px,12.6vw,58px);letter-spacing:.02em;
   color:var(--amber-2,#e0a93c);margin-top:4px;line-height:1.05;opacity:.92}
 /* T209 — the pixel-art title canvas (gold wordmark / void subtitle) replaces the text
    node; sized to the parent line's font-size, crisp nearest-neighbour. */

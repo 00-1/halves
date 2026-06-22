@@ -859,24 +859,27 @@
   // mid-purple (no near-black shadow).
   const TITLE_VOID = [[205,169,255],[154,92,246],[74,47,122]];
   const TITLE_GOLD_GLINT = [255,248,214];                        // T210 — gold glints; the void line gets NO sparkle
-  function paintPixelTitle(el, ramp, glint){
+  function paintPixelTitle(el, ramp, glint, corrupt){
     if(!el || !document.createElement) return;
     const text = (el.dataset && el.dataset.title) || el.textContent; if(!text) return;
     try{
       if(el.dataset) el.dataset.title = text;                    // remember it (textContent gets replaced by the canvas)
-      const cellsH = 18, weight = 800, fontFam = "'Space Grotesk',system-ui,sans-serif";
+      // T212 — raster at a HIGHER base res (cellsH 18→26) so the "i"/"l" dot+stem
+      // separate (was merging → "Goblln"/"Vold"); PX 3→2 keeps the display size.
+      const cellsH = 26, weight = 800, fontFam = "'Space Grotesk',system-ui,sans-serif";
       const off = document.createElement("canvas"); const m = off.getContext && off.getContext("2d");
       if(!m || !m.measureText || !m.getImageData) return;        // headless/no-2d → keep the CSS text
       const font = weight + " " + cellsH + "px " + fontFam;
-      m.font = font;
+      m.font = font; try{ m.letterSpacing = "-1.5px"; }catch(e){}   // T212 — tighter letters
       const w = Math.max(1, Math.ceil(m.measureText(text).width) + 2), h = Math.ceil(cellsH * 1.4);
       off.width = w; off.height = h;
-      const c = off.getContext("2d"); c.font = font; c.textBaseline = "middle"; c.fillStyle = "#fff";
+      const c = off.getContext("2d"); c.font = font; try{ c.letterSpacing = "-1.5px"; }catch(e){}
+      c.textBaseline = "middle"; c.fillStyle = "#fff";
       c.fillText(text, 1, h / 2);
       const data = c.getImageData(0, 0, w, h).data;
       let yMin = h, yMax = 0;
       for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(data[(y*w+x)*4+3] > 96){ if(y<yMin)yMin=y; if(y>yMax)yMax=y; }
-      const span = Math.max(1, yMax - yMin), PX = 3;
+      const span = Math.max(1, yMax - yMin), PX = 2;
       const disp = document.createElement("canvas"); disp.width = w * PX; disp.height = h * PX; disp.className = "pixtitle";
       const d = disp.getContext("2d"); if(!d) return;
       const draw = glintX => {
@@ -887,8 +890,16 @@
           v = v < 0 ? 0 : v > 1 ? 1 : v;
           let col = ramp[Math.min(ramp.length - 1, (v * ramp.length) | 0)];
           if(glintX != null && Math.abs(x - glintX) < 1.6) col = glint;
+          // T212 — a static CORRUPTION pass on the void line: deterministic dropped/
+          // displaced cells (a glitch look), still legible. Gold line: corrupt=false.
+          let ox = x, oy = y;
+          if(corrupt){
+            const hsh = ((x * 73856093) ^ (y * 19349663)) >>> 0, r = hsh % 100;
+            if(r < 7) continue;                                  // ~7% dropped cells (glitch holes)
+            else if(r < 18) ox += ((hsh >> 5) & 1) ? 1 : -1;     // ~11% displaced ±1 cell
+          }
           d.fillStyle = "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
-          d.fillRect(x * PX, y * PX, PX, PX);
+          d.fillRect(ox * PX, oy * PX, PX, PX);
         }
       };
       draw(null);
@@ -914,8 +925,8 @@
   // load so the pixel shapes use the real display face, not a fallback.
   function renderTitles(){
     const e = screens.entry; if(!e) return;
-    paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT);
-    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, null);   // T210 — no sparkle on the Void Throne
+    paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT, false);   // gold: clean + glint
+    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, null, true);             // void: corrupted/glitchy, no glint (T212)
   }
 
   // Mint the favicon / home-screen icon from the same pixel renderer: draw the
