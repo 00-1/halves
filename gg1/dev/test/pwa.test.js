@@ -42,45 +42,29 @@ if(mani){
   ok(/<div class="mark"><\/div>/.test(idx) && !/<div class="mark">x<span/.test(idx), "(a2) T208: the splash mark is empty (painted by renderBrand; the old x/2 flash is gone)");
   // T208 — the full title is "Goblin Gold: The Void Throne" — the void line is the subtitle
   ok(/<div class="subtitle">The Void Throne<\/div>/.test(idx), "(a2) T208: 'The Void Throne' subtitle sits below the Goblin Gold wordmark");
-  // T209 — the title pair is rendered as pixel-art (gold wordmark / void subtitle) with Bayer dither + glints
+  // T209/T212 — the GOLD wordmark is rendered as pixel-art (Bayer dither + glint)
   const mn = read("main.js");
   ok(/function paintPixelTitle\(/.test(mn) && /BAYER4/.test(mn), "(a2) T209: paintPixelTitle renders dithered pixel text (Bayer-4)");
-  ok(/TITLE_GOLD\s*=\s*\[\[255/.test(mn) && /TITLE_VOID\s*=/.test(mn), "(a2) T209: a GOLD ramp (Goblin Gold) + a VOID ramp (The Void Throne)");
-  ok(/paintPixelTitle\(e\.querySelector\("\.brand"\), TITLE_GOLD/.test(mn) && /paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID/.test(mn), "(a2) T209: the wordmark is gold, the subtitle is void");
-  ok(/glint && !prefersReducedMotion\(\)/.test(mn), "(a2) T209: the glint sweep is throttled + skipped under reduced-motion");
+  ok(/TITLE_GOLD\s*=\s*\[\[255/.test(mn), "(a2) T209: a GOLD ramp (the Goblin Gold wordmark)");
+  ok(/paintPixelTitle\(e\.querySelector\("\.brand"\), TITLE_GOLD/.test(mn), "(a2) T209: the wordmark is gold");
+  ok(/glint && !prefersReducedMotion\(\)/.test(mn), "(a2) T209: the gold glint sweep is throttled + skipped under reduced-motion");
   const cssT = read("styles.css");
   ok(/\.pixtitle\{[^}]*image-rendering:pixelated/.test(cssT), "(a2) T209: the pixel-title canvas renders crisp (image-rendering:pixelated)");
-  // T210 — refinements: ~3× bigger, lightened void ramp, no void glint
-  ok(/\.brand\{[^}]*font-size:clamp\(54px/.test(cssT) && /\.subtitle\{[^}]*font-size:clamp\(30px/.test(cssT), "(a2) T210/T217: the titles are big (3×), subtitle shrunk for wider mono ALL-CAPS");
-  ok(/TITLE_VOID = \[\[205,169,255\]/.test(mn), "(a2) T210: the Void Throne ramp is lightened toward the brand purple (luminous)");
-  // T212 — fix the "i" (higher raster res), corrupt the void line, tighter letters
-  ok(/const cellsH = 26/.test(mn) && /span = Math\.max\(1, yMax - yMin\), PXX = 2/.test(mn), "(a2) T212/T220: raster res cellsH 18→26 (the 'i' dot/stem separate), base cell PXX=2");
-  ok(/const ls = corrupt \? "2px" : "-1\.5px"/.test(mn) && /letterSpacing = ls/.test(mn), "(a2) T212/T221: gold raster stays tight (-1.5px); the void line gets WIDE positive spacing (2px)");
-  ok(/if\(corrupt\)\{[\s\S]{0,260}continue;[\s\S]{0,160}ox \+=/.test(mn), "(a2) T212: a corruption pass (dropped + displaced cells) glitches the void line");
-  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true/.test(mn), "(a2) T212: the void line is corrupted (4th arg true); gold stays clean + glinting");
-  // T214 — more corruption + transparency dither + tighter gap + action block at the bottom
-  ok(/r < 12\) continue;/.test(mn) && /r < 28\) ox \+=/.test(mn), "(a2) T214: the void line is corrupted FURTHER (~12% dropped / ~16% displaced)");
-  ok(/alpha = 0\.4/.test(mn) && /rgba\(/.test(mn), "(a2) T214: TRANSPARENCY dither dissolves void cells (alpha < 1 → rgba)");
-  ok(/\.subtitle\{[^}]*margin-top:-6px/.test(cssT), "(a2) T214: the brand↔subtitle gap is tightened");
+  ok(/\.brand\{[^}]*font-size:clamp\(54px/.test(cssT), "(a2) T210: the wordmark is big (3×)");
+  ok(/const cellsH = 26/.test(mn) && /span = Math\.max\(1, yMax - yMin\), PX = 2/.test(mn), "(a2) T212: gold raster res cellsH 26 / PX 2 (the 'i' dot/stem separate)");
+  ok(/m\.letterSpacing = "-1\.5px"/.test(mn), "(a2) T212: the gold raster is tight (-1.5px letter-spacing)");
   ok(/\.tag\{[^}]*margin-top:auto/.test(cssT), "(a2) T214: the tag + action block is pushed to the BOTTOM");
-  // T216 — distinct void font, animated glitch, title back to upper-centre
-  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true, "'JetBrains Mono'/.test(mn), "(a2) T216: the Void Throne uses a DISTINCT self-hosted face (JetBrains Mono)");
-  ok(/Math\.imul\(cseed \| 0, 2654435761\)/.test(mn), "(a2) T216: the corruption pattern re-rolls per frame (cseed in the hash) — animated glitch");
-  ok(/if\(corrupt && !prefersReducedMotion\(\)/.test(mn), "(a2) T216/T217: the corruption animation is skipped under reduced-motion → fully static");
-  ok(/#entry\{[^}]*padding:clamp\(40px,11vh,120px\)/.test(cssT), "(a2) T216: the title is back upper-centre (space above via padding-top); actions stay at the bottom");
-  // T217 — void line ALL CAPS + intermittent (bursting) interference, not continual
-  ok(/function paintPixelTitle\(el, ramp, glint, corrupt, fontOverride, upper\)/.test(mn) && /const text = upper \? src\.toUpperCase\(\) : src/.test(mn), "(a2) T217: paintPixelTitle takes an `upper` flag → renders the void line ALL CAPS");
-  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true, "'JetBrains Mono',ui-monospace,monospace", true\)/.test(mn), "(a2) T217: the void subtitle is rendered uppercase ('THE VOID THRONE')");
-  ok(/const burst = \(\) =>/.test(mn) && /function flick\(\)/.test(mn), "(a2) T217: a burst/flick scheduler replaces the continual tick (intermittent interference)");
-  // T220 — the void line is stretched VERTICALLY + the flicker is faster/more random, cutting fully on/off
-  ok(/PXX = 2, PXY = corrupt \? 6 : 2/.test(mn) && /d\.fillRect\(ox \* PXX, oy \* PXY, PXX, PXY\)/.test(mn), "(a2) T220/T221: the void line uses much taller cells (PXY 6 vs PXX 2 → ~2× line height for readability); gold stays square");
-  ok(/const blankLine = \(\) => d\.clearRect\(0, 0, disp\.width, disp\.height\)/.test(mn) && /Math\.random\(\) < 0\.2\) blankLine\(\)/.test(mn), "(a2) T220: brief WHOLE-LINE dropouts cut the line fully on/off during a burst");
-  ok(/setTimeout\(flick, 35 \+ Math\.random\(\) \* 70\)/.test(mn), "(a2) T220: the flicker is faster + jittery (random ~35–105ms ticks, not a fixed 90ms)");
-  ok(/setTimeout\(burst, 1600 \+ Math\.random\(\) \* 2600\)/.test(mn), "(a2) T220: shorter, more frequent idle between bursts; settles to the clean frame (draw(null))");
-  // T221 — void line gets wide letter-spacing + a Star-Wars perspective skew (bottom wider than top)
-  ok(/const rs = 0\.78 \+ 0\.22 \* \(\(y - yMin\) \/ span\)/.test(mn) && /\(cx \+ \(ox - cx\) \* rs\) \* PXX/.test(mn), "(a2) T221: per-row horizontal scale ramps with depth about the centre (bottom wider than top), EASED so the caps stay legible");
-  ok(/cx = w \/ 2/.test(mn), "(a2) T221: the skew is taken about the horizontal centre (cx = w/2)");
-  ok(/\.pixtitle\{[^}]*max-width:100%/.test(cssT), "(a2) T221: .pixtitle max-width:100% guarantees no clip at 360px");
+  ok(/#entry\{[^}]*padding:clamp\(40px,11vh,120px\)/.test(cssT), "(a2) T216: the title is upper-centre (space above via padding-top); actions at the bottom");
+  // T221 (owner redesign) — the VOID line is a chunky TWO-LINE pixel title filling a box, with the skew + gradient + intermittent interference
+  ok(/paintVoidThrone\(e\.querySelector\("\.subtitle"\)\)/.test(mn), "(a2) T221: the void subtitle is rendered by paintVoidThrone (the two-line pixel title), NOT paintPixelTitle");
+  ok(/const VOID_FONT = \{/.test(mn) && /function voidCols\(/.test(mn), "(a2) T221: a built-in chunky pixel FONT (VOID_FONT) — owner picked the mockup over the JetBrains-Mono raster");
+  ok(/voidCols\("THE VOID"\)/.test(mn) && /voidCols\("THRONE"\)/.test(mn), "(a2) T221: 'THE VOID THRONE' is laid out on TWO lines (fills the box + stays readable)");
+  ok(/drawLine\(L1, 16, H \/ 2 - 4, 0\.86/.test(mn) && /drawLine\(L2, H \/ 2 \+ 4, H - 16, 0\.72/.test(mn), "(a2) T221: each line skews from a narrower top to a full-width bottom (gentle Star-Wars perspective)");
+  ok(/rs = ts \+ \(1 - ts\) \* dep/.test(mn) && /left = W \* \(1 - rs\) \/ 2/.test(mn), "(a2) T221: per-row horizontal scale ramps with depth about the centre (bottom wider than top)");
+  ok(/const VOID_RAMP = \[\[212,180,255\]/.test(mn), "(a2) T221: a luminous violet→dark gradient down each line");
+  ok(/Math\.imul\(cseed \| 0, 2654435761\)/.test(mn) && /if\(Math\.random\(\) < 0\.18\) d\.clearRect/.test(mn), "(a2) T221: intermittent interference — re-rolled dropped/displaced cells + brief whole-line dropouts");
+  ok(/if\(!prefersReducedMotion\(\) && typeof requestAnimationFrame/.test(mn), "(a2) T221: the interference is skipped under reduced-motion → fully static");
+  ok(/\.voidtitle\{[^}]*width:min\(74vw,340px\)[^}]*image-rendering:pixelated/.test(cssT), "(a2) T221: .voidtitle fills a box under the wordmark (crisp, centred)");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------

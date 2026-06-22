@@ -895,41 +895,31 @@
   // text on any failure (the element keeps its text until a canvas is built).
   const BAYER4 = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
   const TITLE_GOLD = [[255,224,140],[226,168,52],[120,84,22]];   // highlight → mid → shadow (hoard gold)
-  // T210 — lightened toward the brand purple (#cda9ff/#9a5cf6) so the void line is
-  // luminous/legible (was purple→near-black, too dark): light-violet → brand-violet →
-  // mid-purple (no near-black shadow).
-  const TITLE_VOID = [[205,169,255],[154,92,246],[74,47,122]];
-  const TITLE_GOLD_GLINT = [255,248,214];                        // T210 — gold glints; the void line gets NO sparkle
-  function paintPixelTitle(el, ramp, glint, corrupt, fontOverride, upper){
+  const TITLE_GOLD_GLINT = [255,248,214];                        // T210 — gold glints; the void line gets NO sparkle (its own VOID_RAMP below)
+  function paintPixelTitle(el, ramp, glint){
     if(!el || !document.createElement) return;
     const src = (el.dataset && el.dataset.title) || el.textContent; if(!src) return;
     try{
       if(el.dataset) el.dataset.title = src;                     // remember the ORIGINAL (textContent gets replaced by the canvas)
-      const text = upper ? src.toUpperCase() : src;             // T217 — the void line is ALL CAPS
-      // T212 — raster at a HIGHER base res (cellsH 18→26) so the "i"/"l" dot+stem
-      // separate (was merging → "Goblln"/"Vold"); PX 3→2 keeps the display size.
-      // T216 — the void line uses a visibly DISTINCT (self-hosted JetBrains Mono) face.
-      const cellsH = 26, weight = 800, fontFam = fontOverride || "'Space Grotesk',system-ui,sans-serif";
+      // Raster the GOLD wordmark in Space Grotesk at cellsH 26 (the "i"/"l" dot+stem
+      // separate), upscaled PX 2, with a vertical 3-tone ramp + Bayer dither + glint.
+      const cellsH = 26, weight = 800, fontFam = "'Space Grotesk',system-ui,sans-serif";
       const off = document.createElement("canvas"); const m = off.getContext && off.getContext("2d");
       if(!m || !m.measureText || !m.getImageData) return;        // headless/no-2d → keep the CSS text
       const font = weight + " " + cellsH + "px " + fontFam;
-      // T212 tight gold; T221 — the void line gets WIDE positive letter-spacing.
-      const ls = corrupt ? "2px" : "-1.5px";
-      m.font = font; try{ m.letterSpacing = ls; }catch(e){}
-      const w = Math.max(1, Math.ceil(m.measureText(text).width) + 2), h = Math.ceil(cellsH * 1.4);
+      m.font = font; try{ m.letterSpacing = "-1.5px"; }catch(e){}
+      const w = Math.max(1, Math.ceil(m.measureText(src).width) + 2), h = Math.ceil(cellsH * 1.4);
       off.width = w; off.height = h;
-      const c = off.getContext("2d"); c.font = font; try{ c.letterSpacing = ls; }catch(e){}
+      const c = off.getContext("2d"); c.font = font; try{ c.letterSpacing = "-1.5px"; }catch(e){}
       c.textBaseline = "middle"; c.fillStyle = "#fff";
-      c.fillText(text, 1, h / 2);
+      c.fillText(src, 1, h / 2);
       const data = c.getImageData(0, 0, w, h).data;
       let yMin = h, yMax = 0;
       for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(data[(y*w+x)*4+3] > 96){ if(y<yMin)yMin=y; if(y>yMax)yMax=y; }
-      // T220 — the void line gets TALLER-THAN-WIDE cells (vertical stretch); the gold
-      // wordmark stays square. width:auto on .pixtitle keeps it fitting the splash.
-      const span = Math.max(1, yMax - yMin), PXX = 2, PXY = corrupt ? 6 : 2, cx = w / 2;   // T221 fix — void cells 3→6 (≈2× height; with .pixtitle max-width it renders the line ~2× taller, readable)
-      const disp = document.createElement("canvas"); disp.width = w * PXX; disp.height = h * PXY; disp.className = "pixtitle";
+      const span = Math.max(1, yMax - yMin), PX = 2;
+      const disp = document.createElement("canvas"); disp.width = w * PX; disp.height = h * PX; disp.className = "pixtitle";
       const d = disp.getContext("2d"); if(!d) return;
-      const draw = (glintX, cseed) => {
+      const draw = (glintX) => {
         d.clearRect(0, 0, disp.width, disp.height);
         for(let y = 0; y < h; y++) for(let x = 0; x < w; x++){
           if(data[(y*w+x)*4+3] <= 96) continue;
@@ -937,35 +927,13 @@
           v = v < 0 ? 0 : v > 1 ? 1 : v;
           let col = ramp[Math.min(ramp.length - 1, (v * ramp.length) | 0)];
           if(glintX != null && Math.abs(x - glintX) < 1.6) col = glint;
-          // T212/T214/T216 — the CORRUPTION pass on the void line: deterministic
-          // dropped + displaced cells AND ordered-Bayer transparency dither, so the
-          // lettering dissolves in patches (half-there/glitchy) — still legible. The
-          // `cseed` re-rolls the pattern each frame (T216 — ANIMATED glitch). Gold
-          // line: corrupt=false → solid.
-          let ox = x, oy = y, alpha = 1;
-          if(corrupt){
-            const hsh = ((x * 73856093) ^ (y * 19349663) ^ Math.imul(cseed | 0, 2654435761)) >>> 0, r = hsh % 100;
-            if(r < 12) continue;                                 // ~12% dropped cells (glitch holes)
-            else if(r < 28) ox += ((hsh >> 5) & 1) ? 1 : -1;     // ~16% displaced ±1 cell
-            if(((hsh >> 9) & 15) >= 11) alpha = 0.4;             // ~31% transparency-dithered (re-rolls with cseed)
-          }
-          d.fillStyle = alpha < 1 ? "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + alpha + ")"
-                                  : "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
-          if(corrupt){
-            // T221 — Star-Wars perspective skew: each row's horizontal scale ramps
-            // with depth about the centre, so the bottom is wider than the top. Cells
-            // in a row share one scale → they stay contiguous (+0.6 closes seams).
-            const rs = 0.78 + 0.22 * ((y - yMin) / span);   // T221 fix — EASE the skew (top 0.78×, not 0.6×) so the caps don't collapse into streaks
-            d.fillRect((cx + (ox - cx) * rs) * PXX, oy * PXY, PXX * rs + 0.6, PXY);
-          } else {
-            d.fillRect(ox * PXX, oy * PXY, PXX, PXY);
-          }
+          d.fillStyle = "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+          d.fillRect(x * PX, y * PX, PX, PX);
         }
       };
       draw(null);
       el.innerHTML = ""; el.appendChild(disp);
-      // throttled glint: a ~0.6s sweep every ~5s, animated only DURING the sweep (idle
-      // via setTimeout between), and only while the entry splash is showing.
+      // throttled glint: a ~0.6s sweep every ~5s, animated only DURING the sweep.
       if(glint && !prefersReducedMotion() && typeof requestAnimationFrame === "function"){
         const onEntry = () => { try{ return screens.entry && screens.entry.classList.contains("active"); }catch(e){ return false; } };
         const sweep = () => {
@@ -979,38 +947,95 @@
         };
         setTimeout(sweep, 1800 + Math.random() * 1500);
       }
-      // T217/T220 — INTERMITTENT interference (not continual). The void line sits on
-      // ONE settled frame (the cseed=0 draw above) most of the time; occasionally it
-      // "cuts in" for a short BURST then settles + idles before the next. T220 makes
-      // the burst FASTER + more RANDOM and cuts the line fully ON/OFF: most ticks
-      // re-roll the corrupted cells, but ~1-in-5 the WHOLE line drops out for a tick
-      // (a brief blackout), like a signal breaking up. Pauses off the entry splash;
-      // reduced-motion → fully static (this whole block is skipped).
-      if(corrupt && !prefersReducedMotion() && typeof requestAnimationFrame === "function"){
+    }catch(e){ /* keep the plain CSS text on any failure */ }
+  }
+  // T221 (owner redesign) — the VOID line is a chunky TWO-LINE pixel title
+  // ("THE VOID" / "THRONE") that fills a box under the wordmark, with a gentle
+  // Star-Wars skew (each line's bottom wider than its top) + a luminous purple
+  // top→dark gradient + the intermittent interference. A built-in bold pixel font
+  // (owner picked the pixel mockup directly over the JetBrains-Mono raster).
+  const VOID_FONT = {
+    T:["11111","00100","00100","00100","00100","00100","00100"],
+    H:["10001","10001","10001","11111","10001","10001","10001"],
+    E:["11111","10000","10000","11110","10000","10000","11111"],
+    V:["10001","10001","10001","10001","10001","01010","00100"],
+    O:["01110","10001","10001","10001","10001","10001","01110"],
+    I:["11111","00100","00100","00100","00100","00100","11111"],
+    D:["11110","10001","10001","10001","10001","10001","11110"],
+    R:["11110","10001","10001","11110","10100","10010","10001"],
+    N:["10001","11001","10101","10011","11001","10001","10001"],
+    " ":["00000","00000","00000","00000","00000","00000","00000"]
+  };
+  function voidCols(text){
+    const out = [];
+    for(let i = 0; i < text.length; i++){ const ch = text[i], g = VOID_FONT[ch] || VOID_FONT[" "], wide = ch === " " ? 3 : 5;
+      for(let x = 0; x < wide; x++){ const col = []; for(let y = 0; y < 7; y++) col.push(ch === " " ? 0 : +g[y][x]); out.push(col); }
+      out.push([0,0,0,0,0,0,0]); }   // 1px gap between letters
+    return out;
+  }
+  const VOID_RAMP = [[212,180,255],[152,98,242],[98,62,158]];   // luminous violet → mid → deep
+  function paintVoidThrone(el){
+    if(!el || !document.createElement) return;
+    try{
+      if(el.dataset && !el.dataset.title) el.dataset.title = el.textContent || "The Void Throne";
+      const disp = document.createElement("canvas"); disp.width = 600; disp.height = 360; disp.className = "voidtitle";
+      const d = disp.getContext && disp.getContext("2d");
+      if(!d || typeof d.getImageData !== "function") return;     // headless/no-2d → keep the CSS text
+      const W = 600, H = 360, L1 = voidCols("THE VOID"), L2 = voidCols("THRONE");
+      const ramp = t => { t = t < 0 ? 0 : t > 1 ? 1 : t; return VOID_RAMP[Math.min(2, (t * 3) | 0)]; };
+      // one text line, stretched across the box width with a per-row skew (top scaled
+      // to `ts`, bottom to full width) + a top→dark gradient.
+      const drawLine = (cols, y0, y1, ts, cseed) => {
+        const n = cols.length, bandH = (y1 - y0) / 7;
+        for(let sy = 0; sy < 7; sy++){
+          const dep = sy / 6, rs = ts + (1 - ts) * dep, oy = y0 + sy * bandH;
+          const rw = W * rs, left = W * (1 - rs) / 2, cw = rw / n, col = ramp(dep);
+          for(let sx = 0; sx < n; sx++){
+            if(!cols[sx][sy]) continue;
+            let ox = sx, alpha = 1;
+            if(cseed != null){   // intermittent interference: dropped / displaced / dithered cells
+              const hsh = ((sx * 73856093) ^ ((sy + (y0 | 0)) * 19349663) ^ Math.imul(cseed | 0, 2654435761)) >>> 0, r = hsh % 100;
+              if(r < 9) continue;
+              else if(r < 22) ox += ((hsh >> 5) & 1) ? 1 : -1;
+              if(((hsh >> 9) & 15) >= 11) alpha = 0.45;
+            }
+            d.fillStyle = alpha < 1 ? "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + alpha + ")" : "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+            d.fillRect(left + ox * cw, oy, cw + 0.8, bandH + 0.8);   // +0.8 closes sub-pixel seams
+          }
+        }
+      };
+      const draw = (cseed) => {
+        d.clearRect(0, 0, W, H);
+        drawLine(L1, 16, H / 2 - 4, 0.86, cseed);     // THE VOID — gentle skew (top 0.86×)
+        drawLine(L2, H / 2 + 4, H - 16, 0.72, cseed); // THRONE — slightly wider base
+      };
+      draw(null);
+      el.innerHTML = ""; el.appendChild(disp);
+      // intermittent interference: settled = the clean two-line title; reduced-motion → static.
+      if(!prefersReducedMotion() && typeof requestAnimationFrame === "function"){
         const onEntry = () => { try{ return screens.entry && screens.entry.classList.contains("active"); }catch(e){ return false; } };
         const clk = () => (performance && performance.now) ? performance.now() : Date.now();
-        const blankLine = () => d.clearRect(0, 0, disp.width, disp.height);   // T220 — full dropout
         let cseed = 1;
         const burst = () => {
           if(!onEntry()){ setTimeout(burst, 1200); return; }
-          const dur = 350 + Math.random() * 750, t0 = clk();   // active interference: ~0.35–1.1s
+          const dur = 350 + Math.random() * 750, t0 = clk();
           (function flick(){
-            if(Math.random() < 0.2) blankLine();                                       // ~20% whole-line dropout (cut OFF)
-            else { cseed = (Math.imul(cseed, 1103515245) + 12345) >>> 0; draw(null, cseed); }   // else re-roll the cells
-            if(clk() - t0 >= dur){ draw(null); setTimeout(burst, 1600 + Math.random() * 2600); return; }   // settle → idle ~1.6–4.2s
-            setTimeout(flick, 35 + Math.random() * 70);   // ~9–28fps, JITTERY (faster + more random)
+            if(Math.random() < 0.18) d.clearRect(0, 0, W, H);   // brief whole-line dropout (cut OFF)
+            else { cseed = (Math.imul(cseed, 1103515245) + 12345) >>> 0; draw(cseed); }
+            if(clk() - t0 >= dur){ draw(null); setTimeout(burst, 1700 + Math.random() * 2600); return; }   // settle → idle
+            setTimeout(flick, 38 + Math.random() * 70);   // ~9–26fps, jittery
           })();
         };
-        setTimeout(burst, 1200 + Math.random() * 1400);
+        setTimeout(burst, 1300 + Math.random() * 1400);
       }
     }catch(e){ /* keep the plain CSS text on any failure */ }
   }
-  // Stylise the entry title pair (gold wordmark + void subtitle); re-runs once fonts
-  // load so the pixel shapes use the real display face, not a fallback.
+  // Stylise the entry title pair (gold wordmark + void two-line title); re-runs once
+  // fonts load so the gold pixel shapes use the real display face.
   function renderTitles(){
     const e = screens.entry; if(!e) return;
-    paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT, false);   // gold: Space Grotesk, clean + glint
-    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, null, true, "'JetBrains Mono',ui-monospace,monospace", true);   // void: a DISTINCT mono face, ALL CAPS, intermittent glitch (T217)
+    paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT);   // gold: Space Grotesk, clean + glint
+    paintVoidThrone(e.querySelector(".subtitle"));                              // void: chunky two-line "THE VOID / THRONE" (T221)
   }
 
   // Mint the favicon / home-screen icon from the same pixel renderer: draw the

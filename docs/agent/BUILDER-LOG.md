@@ -6063,3 +6063,21 @@ again later) — the OPPOSITE of the "don't move the URL mid-iteration" goal; on
 Note your updated T222 spec says **NO cross-game wallet** — my impl added none (only the halves.*→gg1prod.*
 migration), so it already matches. If you'd still rather I revert T222 and re-land it after the splash/audio
 settle, say so and I will. T224 (audio overhaul) is next in the queue.
+
+---
+### [A] T221 redesign — Void Throne = chunky TWO-LINE pixel title (owner picked the mockup)
+After two failed single-line attempts (the wide-spacing + skew collapsed "THE VOID THRONE" into illegible
+streaks), I sent the owner pixel-mockup renders. **Owner chose "file 1" and said "use the mockup directly,
+replace what we had before."** So the void line is now rendered to MATCH that mockup, not the JetBrains-Mono raster:
+- **New `paintVoidThrone(el)`** — a built-in chunky pixel font (`VOID_FONT`, the 9 letters of THE VOID THRONE)
+  laid out on **TWO lines** ("THE VOID" / "THRONE") that fill a box under the wordmark. Each line skews from a
+  narrower top to a full-width bottom (gentle Star-Wars perspective: L1 top 0.86×, L2 top 0.72×), with a
+  luminous violet→dark gradient (`VOID_RAMP`) down each line and the intermittent interference (re-rolled
+  dropped/displaced/dithered cells + brief whole-line dropouts; reduced-motion → fully static). Settled state =
+  the exact mockup the owner approved.
+- **`paintPixelTitle` simplified to GOLD-only** — removed the now-unused void code (corrupt pass, vertical
+  stretch, skew, ALL-CAPS, JetBrains-Mono override, burst). Removed the dead `TITLE_VOID` const.
+- **`.voidtitle` CSS** sizes the 600×360 canvas to fill a `min(74vw,340px)`-wide box (natural ~1.67:1), centred,
+  crisp. Headless-safe (paintVoidThrone early-returns without a real 2D context, so the boot tests don't spin).
+verified: pwa (a2) rewritten for the two-line title; full suite **59/59**. [A]-only (gg1/dev/main.js, styles.css,
+test/pwa.test.js). Push on its own for owner device-confirm at `…/halves/gg1/dev/`.

@@ -120,7 +120,10 @@ body{
   color:var(--amber-2,#e0a93c);margin-top:-6px;line-height:1.05;opacity:.92}   /* T217 — smaller so the wider mono ALL-CAPS "THE VOID THRONE" fits the splash width */
 /* T209 — the pixel-art title canvas (gold wordmark / void subtitle) replaces the text
    node; sized to the parent line's font-size, crisp nearest-neighbour. */
-.pixtitle{height:1.25em;width:auto;max-width:100%;image-rendering:pixelated;display:block;margin:0 auto}   /* T221 — max-width:100% guarantees no clip at 360px (the wide-spaced void line scales to fit) */
+.pixtitle{height:1.25em;width:auto;max-width:100%;image-rendering:pixelated;display:block;margin:0 auto}   /* gold wordmark — sized to the parent line's font-size */
+/* T221 — the void title is a chunky TWO-LINE pixel canvas stretched to FILL a box
+   under the wordmark (owner-chosen mockup); natural ~1.67:1 aspect, centred, crisp. */
+.voidtitle{width:min(74vw,340px);max-width:92vw;height:auto;image-rendering:pixelated;display:block;margin:10px auto 0}
 /* T214 — margin-top:auto pushes the tag + the action buttons + Sound to the BOTTOM
    of the splash, giving the big title group room up top. */
 .tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:auto;padding-top:18px;font-weight:500}
