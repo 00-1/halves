@@ -6,6 +6,31 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T205 — trim emblems to the 3 creatures + fix their sizing (fill the cell) ([B], owner-requested)
+
+Owner: *"the final 3 emblems are nice — the rest we can scrap … in the emblems screen they look
+like they need cropping."* Magnar (`hero:mo`, T194) is the launcher icon now, so the 6 abstract
+marks are gone and the 3 creatures become Collector awards (T206 [A]). In `emblems.js`:
+- **Scrapped 6, kept 3:** `IDS = ["beast","goblinking","voidbeast"]`; removed the
+  `coin`/`crowncoin`/`hoard`/`goblin`/`voidthrone`/`sigil` generators and the now-unused
+  `disc`/`stampProfile` helpers. (`creature()`/`mulberry`/`setSym` retained.)
+- **Sizing fix (the "needs cropping" tell):** `draw()` no longer maps the full 24² grid (which
+  left the creature small + off-centre with dead margin); it now fits the **subject's content
+  bounding box** — scales the lit-cell bbox to fill the available square (`cell = round(avail/
+  span)`, integer → crisp), **centred**, with a ~10% safe margin. So each creature **fills the
+  cell**, nothing clipped, no dead margin, and all 3 read the **same visual size** → they match
+  the other Collector-award icons.
+- Removed the 6 orphaned `emblem_*` goldens; the 3 kept creatures' cell goldens are unchanged
+  (`creature()` untouched).
+- 🌐 Rendered the 3 at icon size: centred, horns/eyes fully in-frame, uniform fill (`emblems-t205.png`).
+
+Verify: `node -c` clean; **emblems 34** (IDS===3, the 6 marks gone + `cells()` null, each creature
+fills ≥78% / within 12% of each other / uncropped with a margin every side, corners field/maskable);
+the 3 creature cell-goldens green. B-only (`emblems.js`, `test/emblems.test.js`, golden cleanup).
+Pairs with T206 [A] (consumes these as awards). Owner reviews.
+
+---
+
 ## T204 — BUG: purple backdrop lost on PWA app-switch → WebGL context-loss SELF-HEAL ([B], 🔴 owner-reported)
 
 Owner screenshot: backgrounding the PWA sometimes leaves a **light-grey home** (the dark-purple

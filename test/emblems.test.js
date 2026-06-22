@@ -10,10 +10,11 @@ let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 function gold(name, value){ const r = check(name, value); ok(r.match, "golden '" + name + "'" + (r.updated ? " (regenerated)" : "") + (r.match ? "" : " — " + r.hint)); }
 
-// the candidate set (the owner picks the launcher icon; the rest become unlockable)
-ok(Array.isArray(Emblems.IDS) && Emblems.IDS.length >= 5, "≥5 emblem candidates (" + Emblems.IDS.length + ": " + Emblems.IDS.join(", ") + ")");
-ok(Emblems.IDS.indexOf("coin") >= 0 && Emblems.IDS.indexOf("goblin") >= 0 && Emblems.IDS.indexOf("hoard") >= 0 && Emblems.IDS.indexOf("voidthrone") >= 0 && Emblems.IDS.indexOf("crowncoin") >= 0, "the owner's five proposals are present (coin/goblin/hoard/voidthrone/crowncoin)");
-ok(["beast", "goblinking", "voidbeast"].every(id => Emblems.IDS.indexOf(id) >= 0), "T188: ≥3 character-forward CREATURE candidates in the bestiary style (beast/goblinking/voidbeast)");
+// T205 — the set is now EXACTLY the 3 creatures (Magnar `hero:mo` is the launcher icon; the 6
+// abstract marks were scrapped → these 3 become Collector awards).
+ok(Array.isArray(Emblems.IDS) && Emblems.IDS.length === 3, "exactly 3 emblems remain (" + Emblems.IDS.join(", ") + ")");
+ok(["beast", "goblinking", "voidbeast"].every(id => Emblems.IDS.indexOf(id) >= 0), "T205: the 3 kept CREATURES are present (beast/goblinking/voidbeast)");
+ok(["coin", "crowncoin", "hoard", "goblin", "voidthrone", "sigil"].every(id => Emblems.IDS.indexOf(id) < 0 && Emblems.cells(id) === null), "T205: the 6 abstract marks are SCRAPPED (gone from IDS + cells() returns null)");
 
 // (1) each emblem builds a deterministic, non-trivial cell grid — golden-pinned.
 const BG = "#" + Emblems.BG.map(v => v.toString(16).padStart(2, "0")).join("");
@@ -40,7 +41,7 @@ function mkCanvas(W, H){
 }
 for(const sz of [48, 192, 512]){
   const c = mkCanvas(sz, sz);
-  ok(Emblems.draw(c, "coin", null) === true, "draw(coin) succeeds @ " + sz + "px");
+  ok(Emblems.draw(c, "beast", null) === true, "draw(beast) succeeds @ " + sz + "px");
   ok(c._px(0, 0) === BG && c._px(sz - 1, 0) === BG && c._px(0, sz - 1) === BG && c._px(sz - 1, sz - 1) === BG, "@ " + sz + "px: all four CORNERS are the field (maskable-safe)");
   ok(c._px(sz >> 1, sz >> 1) !== BG && c._px(sz >> 1, sz >> 1) != null, "@ " + sz + "px: the CENTRE carries the subject (gold), not the field");
 }
@@ -49,7 +50,23 @@ let allDraw = true, fieldFilled = true;
 for(const id of Emblems.IDS){ const c = mkCanvas(64, 64); if(!Emblems.draw(c, id)) allDraw = false; if(c._px(2, 2) !== BG) fieldFilled = false; }
 ok(allDraw, "every emblem draws to a canvas");
 ok(fieldFilled, "every emblem fills the violet field full-bleed (no transparent gaps → maskable)");
-ok(Emblems.draw(null, "coin") === false && Emblems.draw(mkCanvas(0, 0), "coin") === false && Emblems.draw(mkCanvas(64, 64), "nope") === false, "draw() is graceful on bad input (no canvas / 0-size / unknown id)");
+ok(Emblems.draw(null, "beast") === false && Emblems.draw(mkCanvas(0, 0), "beast") === false && Emblems.draw(mkCanvas(64, 64), "nope") === false, "draw() is graceful on bad input (no canvas / 0-size / unknown id)");
+
+// T205 — the creatures FILL the cell cleanly (no dead margin, nothing clipped) + all 3 read the
+// SAME visual size, so they match the other Collector-award icons (the owner: "they look like
+// they need cropping" — the old full-grid map left them small/off-centre).
+function subjectExtent(id, S){
+  const c = mkCanvas(S, S); Emblems.draw(c, id);
+  let minX = S, minY = S, maxX = -1, maxY = -1;
+  for(let y = 0; y < S; y++) for(let x = 0; x < S; x++){ const p = c._px(x, y); if(p && p !== BG){ if(x < minX) minX = x; if(x > maxX) maxX = x; if(y < minY) minY = y; if(y > maxY) maxY = y; } }
+  return { w: (maxX - minX + 1) / S, h: (maxY - minY + 1) / S, minX: minX, minY: minY, maxX: maxX, maxY: maxY, S: S };
+}
+const ext = Emblems.IDS.map(id => ({ id: id, e: subjectExtent(id, 96) }));
+const spanOf = e => Math.max(e.w, e.h);
+ok(ext.every(({ e }) => spanOf(e) >= 0.78 && spanOf(e) <= 1.0), "T205: each creature FILLS the cell (subject spans ≥78% — no dead margin: " + ext.map(({ id, e }) => id + " " + Math.round(spanOf(e) * 100) + "%").join(", ") + ")");
+ok(ext.every(({ e }) => e.minX >= 1 && e.minY >= 1 && e.maxX <= e.S - 2 && e.maxY <= e.S - 2), "T205: nothing is CLIPPED — a field margin remains on every side (centred, maskable)");
+const spans = ext.map(({ e }) => spanOf(e));
+ok(Math.max.apply(null, spans) - Math.min.apply(null, spans) <= 0.12, "T205: the 3 creatures read the SAME visual size (fill spans within 12%: " + spans.map(s => Math.round(s * 100) + "%").join("/") + ")");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " EMBLEM CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
