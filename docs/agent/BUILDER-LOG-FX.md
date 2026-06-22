@@ -6,6 +6,50 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T154 — key-screen VISUAL-REGRESSION gate (extends the T150 harness) ([B], proactive)
+
+The session's recurring pain: visual regressions only the owner catches (the blue
+home backdrop, the celebration `0×0`, layout clips) — the Node suite is blind to
+pixels. Generalised T150's render harness into a per-key-screen gate:
+`test/browser/visual.test.js` loads the REAL app @ 390×844 / dpr 2.75 and captures a
+ROBUST (not brittle-pixel-diff) signature per screen, committed as goldens
+(`UPDATE_GOLDEN=1` re-blesses intentional changes).
+
+### What it captures (robust by construction)
+- **Hue-CLASS grid** per screen (4×8 regions): the full-page screenshot is round-
+  tripped through the browser's own decoder (→ `drawImage` downscale → `getImageData`,
+  no hand-rolled PNG parser, no WebGL read-back caveat) and each cell is classified
+  to a colour FAMILY (`purple`/`blue`/`warm`/…) — a category, so render noise can't
+  flake it, but a purple→blue drift flips cells.
+- **Element presence + 5%-bucketed bbox** of each screen's critical controls (home:
+  `startBtn`/`modeTree`/`navRow`/`goldBar`; audio: `musicSwitch` + the 3 ranges;
+  arena: `arenaMeta`/`arenaBody`/`arenaFight`). A missing/moved control is caught.
+- **FLAGSHIP — the home backdrop hue.** Screenshots `#fxBackdrop`, averages it, and
+  asserts it classifies **`purple`** (T153's fixed brand colour: avg rgb ≈ 69,49,98 →
+  B-high, R>G). The exact regression that shipped (purple→blue) FAILS here.
+- Screens covered: **home, Audio menu, Arena** (arena via a `halves.unlocked={legacy:1}`
+  init-script). *(Results has no hash route — it's post-game — so it's out of this
+  static gate; a follow-up could drive a game to it.)*
+
+### Determinism + teeth
+- `reducedMotion:'reduce'` → FXGL renders a STILL frame; coarse hue-classes + bucketed
+  bboxes → **byte-stable** (verified over repeated runs). Each screen is loaded FRESH
+  (the T157 back-gesture history sentinels hijack in-page hash-hopping: audio→arena
+  landed on settings — a fresh load per screen avoids it).
+- **Teeth proven in-gate:** a blue backdrop (rgb 63,151,216) classifies `blue` ≠
+  `purple` (flagship would fail); and the signature compare CATCHES a single region
+  hue flip (purple→blue) and a missing critical element (layout regression).
+- Opt-in/guarded (skips clean with no browser → Node-only CI unaffected); screenshots
+  saved to `test/browser/screenshots/`.
+
+### Verify
+- `node -c` clean; 13 checks green, deterministic across runs; full Node suite + all
+  three browser gates (render/audio/visual) green. **B-owned** (`test/browser/*` +
+  `test/golden/visual_*`). *(If a headless browser ever joins CI, [A] can register
+  `test/browser/*.test.js` in `pages.yml` — until then it runs locally/on-demand.)*
+
+---
+
 ## T155 — distinct PAD/bed timbre per style (kill the shared "synth string") ([B], OWNER-PRIORITY)
 
 Owner (2026-06-22): **"every style seems to share the same synth string sound… makes

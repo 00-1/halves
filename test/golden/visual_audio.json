@@ -1,0 +1,85 @@
+{
+ "active": true,
+ "colorGrid": [
+  [
+   "blue",
+   "blue",
+   "blue",
+   "blue"
+  ],
+  [
+   "blue",
+   "blue",
+   "blue",
+   "blue"
+  ],
+  [
+   "blue",
+   "blue",
+   "blue",
+   "blue"
+  ],
+  [
+   "blue",
+   "blue",
+   "blue",
+   "blue"
+  ],
+  [
+   "blue",
+   "blue",
+   "blue",
+   "blue"
+  ],
+  [
+   "blue",
+   "blue",
+   "blue",
+   "blue"
+  ],
+  [
+   "blue",
+   "blue",
+   "blue",
+   "blue"
+  ],
+  [
+   "blue",
+   "blue",
+   "blue",
+   "blue"
+  ]
+ ],
+ "elements": {
+  "musicSwitch": {
+   "x": 2,
+   "y": 12,
+   "w": 17,
+   "h": 7
+  },
+  "musicVolRange": {
+   "x": 2,
+   "y": 3,
+   "w": 17,
+   "h": 1
+  },
+  "sfxVolRange": {
+   "x": 2,
+   "y": 6,
+   "w": 17,
+   "h": 1
+  },
+  "tempoRange": {
+   "x": 2,
+   "y": 9,
+   "w": 17,
+   "h": 1
+  },
+  "setTest": {
+   "x": 1,
+   "y": 20,
+   "w": 18,
+   "h": 1
+  }
+ }
+}

@@ -1,0 +1,85 @@
+{
+ "active": true,
+ "colorGrid": [
+  [
+   "purple",
+   "purple",
+   "purple",
+   "warm"
+  ],
+  [
+   "purple",
+   "purple",
+   "purple",
+   "purple"
+  ],
+  [
+   "purple",
+   "purple",
+   "purple",
+   "purple"
+  ],
+  [
+   "purple",
+   "purple",
+   "purple",
+   "purple"
+  ],
+  [
+   "purple",
+   "purple",
+   "purple",
+   "purple"
+  ],
+  [
+   "purple",
+   "purple",
+   "purple",
+   "purple"
+  ],
+  [
+   "warm",
+   "purple",
+   "purple",
+   "purple"
+  ],
+  [
+   "purple",
+   "purple",
+   "purple",
+   "purple"
+  ]
+ ],
+ "elements": {
+  "goldBar": {
+   "x": 6,
+   "y": 1,
+   "w": 7,
+   "h": 0
+  },
+  "modeTree": {
+   "x": 1,
+   "y": 3,
+   "w": 18,
+   "h": 11
+  },
+  "startBtn": {
+   "x": 1,
+   "y": 16,
+   "w": 5,
+   "h": 1
+  },
+  "navRow": {
+   "x": 1,
+   "y": 18,
+   "w": 18,
+   "h": 1
+  },
+  "arenaBtn": {
+   "x": 12,
+   "y": 18,
+   "w": 3,
+   "h": 1
+  }
+ }
+}

@@ -1,0 +1,79 @@
+{
+ "active": true,
+ "colorGrid": [
+  [
+   "green",
+   "green",
+   "green",
+   "green"
+  ],
+  [
+   "dark",
+   "dark",
+   "dark",
+   "dark"
+  ],
+  [
+   "green",
+   "green",
+   "dark",
+   "dark"
+  ],
+  [
+   "green",
+   "blue",
+   "blue",
+   "green"
+  ],
+  [
+   "green",
+   "green",
+   "green",
+   "green"
+  ],
+  [
+   "green",
+   "green",
+   "green",
+   "green"
+  ],
+  [
+   "dark",
+   "dark",
+   "dark",
+   "dark"
+  ],
+  [
+   "warm",
+   "warm",
+   "green",
+   "dark"
+  ]
+ ],
+ "elements": {
+  "arenaMeta": {
+   "x": 8,
+   "y": 1,
+   "w": 6,
+   "h": 0
+  },
+  "arenaBody": {
+   "x": 1,
+   "y": 2,
+   "w": 17,
+   "h": 16
+  },
+  "arenaFight": {
+   "x": 2,
+   "y": 18,
+   "w": 11,
+   "h": 1
+  },
+  "arenaBack": {
+   "x": 13,
+   "y": 18,
+   "w": 6,
+   "h": 1
+  }
+ }
+}
