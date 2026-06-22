@@ -1,16 +1,29 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T152[B]` [B] (small/fine particles + spread + off-centre emission) · live
-build **`a2f9475`**. **CI green; collision-clean** (B-owned: `fxgl.js`, `test/golden-fx.test.js`,
-`test/golden/fx_small_offcentre.json`, `BUILDER-LOG-FX.md`). The engine half of the owner's celebration
-redesign: `sizePx`/`sizeScale` (small/fine, **DPR-aware** so crisp not sub-pixel — the T138 lesson),
-`spreadMul` (<1 hugs the source), arbitrary `{x,y}` emission + `palette` — and **defaults byte-identical** so
-existing celebrations + goldens are unchanged. **🌐 BROWSER-VERIFIED** (small off-centre burst at
-`{x:0.25,y:0.30,sizePx:4,spread:0.6}`, dpr 2.75): lit centroid **cx=0.25** (exactly the emitted x → off-centre
-works), particles **small** (max lit run ~25 device px ≈ 9 css, vs the bold ~18px default), 1% coverage
-(visible/fine). Also `node -c` clean; `golden-fx` 28→35 (the new `fx_small_offcentre` golden); `fxgl.test`
-124. T152[B] → DONE. **→ A's `T152[A]` (wire per-trigger positions + rarity/context colour) is now UNBLOCKED.**
-B → STAND BY.
+**Current verdict:** `APPROVED — T102` [A] (Android PWA core — installable manifest + offline service worker)
+· live build **`ba5fd26`**. **CI green; collision-clean** ([A]-owned: `index.html`, `main.js`, `sw.js`,
+`manifest.webmanifest`, `icon.svg`, `.github/workflows/pages.yml`, `test/pwa.test.js`, `BUILDER-LOG.md`).
+A handled the **service-worker version-lock risk correctly** — the #1 SW danger: `sw.js` is **network-first
+for navigations + `build.json`** (a new deploy is always picked up online; the T54 version-check reads fresh;
+**never caches build.json**) and **cache-first only for the immutable `?v=<sha>` assets** + fonts (safe,
+fast, offline). `skipWaiting` + `clients.claim` + drops superseded caches. **Registration is guarded** (`main.js:2283`:
+only `http(s)`, `try/catch`, lazy — won't break unsupported browsers/`file://`; that guard is why a `file://`
+load won't register it). Manifest valid + **installable** (standalone, hex theme/bg, a **maskable** icon that
+exists). Verified: `node -c` clean (`sw.js`+`main.js`); `pwa.test` 21 (gates the network-first strategy +
+maskable-icon-exists + manifest fields) + registered in `pages.yml`; manifest is valid JSON; full suite + CI
+green. *(Browser SW-registration re-check skipped — needs https/localhost, and the http+chromium harness was
+flaky this session; the SW logic is verified by `pwa.test` + code read.)* A kept it to the **no-credentials
+scope** as asked (the TWA wrap / Play-Store signing is `T103`/`T72`). T102 → DONE. **→ A: `T152[A]` (the
+celebration point-emission wiring) is unblocked + owner-keen — do it next** (A skipped it via a staleness race
+while mid-T102).
+
+> **Previously approved (done):** `T152[B]` [B] (small/fine particles + spread + off-centre emission) · live
+> build **`a2f9475`**. **CI green; collision-clean** (B-owned: `fxgl.js`, `test/golden-fx.test.js`,
+> `test/golden/fx_small_offcentre.json`, `BUILDER-LOG-FX.md`). `sizePx`/`sizeScale` (small/fine, DPR-aware),
+> `spreadMul` (<1 hugs the source), `{x,y}` emission + `palette`; **defaults byte-identical**. **🌐 Browser-
+> verified** (`{x:0.25,y:0.30,sizePx:4,spread:0.6}`, dpr 2.75): lit centroid **cx=0.25** (off-centre works),
+> particles small (~25 device-px runs vs bold ~18px default). `golden-fx` 35; `fxgl.test` 124. T152[B] → DONE;
+> B → STAND BY.
 
 > **Previously approved (done):** `T124` [A] (full-size slashed fraction glyphs — legible at node size) · live
 > build **`583130c`**. **CI green; collision-clean** ([A]-owned: `glyphs.js`, `test/glyphs.test.js`,

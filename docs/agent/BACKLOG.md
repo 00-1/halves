@@ -3411,9 +3411,16 @@ work** or **show a brief loading state** so it never feels janky.
   start path doesn't block on fullscreen/audio (or shows the loader). (Babysitter: confirm the
   user-gesture requirements still hold, the round starts correctly, and the delay is gone/masked.)
 
-### T102 — [A] Installable Android build: PWA + TWA foundation (parity) · status: OPEN
-Pulled forward from `T72` so we get a **real installable Android app soon** to confirm web↔Android
-**parity** on the Poco-X3 floor. (T72's *Play-Store-submission* research/prep stays later.)
+### T102 — [A] Installable Android build: PWA + TWA foundation (parity) · status: PWA CORE DONE (`ba5fd26`, CI green) · TWA/store = T103/T72
+**PWA CORE DONE 2026-06-21** — APPROVED (REVIEW.md). Installable `manifest.webmanifest` (standalone, maskable
+icon) + `icon.svg` + apple-touch-icon + an **update-safe service worker** (`sw.js`: network-first for
+navigations/`build.json` so deploys/version-check still work, never caches build.json, cache-first only for
+immutable `?v=` assets; guarded http(s)-only lazy registration). `pwa.test` 21 + gate in `pages.yml`.
+Babysitter verified: SW strategy correct (no version-lock), manifest valid+installable, node -c clean, CI
+green. **TWA wrapper / Play-Store signing deferred to `T103`/`T72` (need owner creds — owner away).**
+
+> Pulled forward from `T72` so we get a **real installable Android app soon** to confirm web↔Android
+> **parity** on the Poco-X3 floor. (T72's *Play-Store-submission* research/prep stays later.)
 - **PWA core:** a `manifest.webmanifest` (name, **maskable icons** from our procedural mark,
   `display:standalone`, theme/background colour — `installFavicon()` + `theme-color` already seed
   this), a **service worker** (offline cache of the static assets — must coexist with the T54

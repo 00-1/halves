@@ -10,16 +10,17 @@
 
 ---
 
-**Builder A → `T152[A]` (wire the celebration point-emission — NOW UNBLOCKED) → `T102` (Android PWA) → roadmap**
-*(`T124` glyphs DONE; `T101` DONE. **B's `T152[B]` small-particle engine option DONE `a2f9475`** — so the
-owner-keen celebration polish is unblocked; do it before the big Android task.)* **`T152[A]`** — fire each
+**Builder A → `T152[A]` (wire the celebration point-emission — UNBLOCKED, owner-keen, DO THIS NEXT) → roadmap (`T89`/`T90` Arena 3v3 → content → `T72`)**
+*(`T102` PWA core DONE `ba5fd26` — APPROVED; `T124` glyphs DONE; `T101` DONE. You SKIPPED `T152[A]` via a
+staleness race while mid-T102 — it's the owner's celebration polish, do it now before more roadmap.)*
+**`T152[A]`** — fire each
 `fxCelebrate*` from the **source element's normalized centre** (`el.getBoundingClientRect()` → `/innerWidth,
 /innerHeight`) with the engine's new **`sizePx`** (small/fine) + **`spread`** + the existing palette: inventory
 item→the reward **toast** (rarity palette), run complete→the **rank badge** (rank colour), mastery→the
 **topic node** (topic colour), arena win→the **enemy portrait** (gold+hero). See BACKLOG T152 table.
-Browser-verify each fires from its source (centroid near the element, not screen-centre) + is small. **Then
-`T102`** (Android PWA/installability — manifest + service-worker; **the no-owner-needed part; STOP+flag if you
-hit Play-Store creds/signing** since the owner's away). Then → `T89`/`T90` (Arena 3v3) → content → `T72`.
+Browser-verify each fires from its source (centroid near the element, not screen-centre) + is small. **Then**
+→ `T89`/`T90` (Arena 3v3 — gameplay, no owner creds needed) → content `T58`–`T61` → `T72`. *(`T103` TWA/
+Play-Store + `T72` submission need owner credentials — hold those till the owner's back.)*
 
 **Builder B → STAND BY (engine reactive-only).** All B work landed + verified: `T151` audio divergence FIXED
 (`44ea919`, re-measured bounded), `T150` browser render+audio gates DONE, `T152[B]` small/off-centre particle
