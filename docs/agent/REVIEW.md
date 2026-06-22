@@ -1,6 +1,6 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T216 [A]` (entry: title repositioned off the top + Void Throne in a distinct
+**Current verdict:** `APPROVED — T217 [A]` (void line ALL CAPS + intermittent bursting interference; live `cc1f202`, 53/53 green). Prior: `T216 [A]` (entry: title repositioned off the top + Void Throne in a distinct
 JetBrains-Mono face with animated glitch). Live build **`2f55fad`**; suite **53/53** + `node -c` green.
 - **`T216`** (`2f55fad`, [A]) — `#entry` padding-top `clamp(40px,11vh,120px)` (title no longer pinned to the top,
   actions still bottom); the void line uses a **distinct self-hosted JetBrains-Mono** face; the corruption

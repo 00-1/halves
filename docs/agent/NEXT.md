@@ -6,15 +6,17 @@
 
 ---
 
-**Builder A → `T217` (void ALL CAPS + intermittent interference) → then `T213` Phase 2 (content quality).**
-`T216` **APPROVED** (live `2f55fad`). Owner on the void line:
-- **ALL CAPS** — render "THE VOID THRONE" (uppercase; re-check it fits the splash width — mono caps are wider).
-- **Intermittent interference (not continual)** — the glitch re-rolls every frame (~7fps) now; make it **bursts**:
-  stable/quiet most of the time, **occasionally flickering into active interference** (~0.4–1.2s) then settling —
-  like a signal cutting in and out. Idle (no re-roll) between bursts. **Reduced-motion → fully static.** Legible
-  throughout. [A]-only (`main.js`, maybe `styles.css`). *(BACKLOG T217 — quick.)*
-- **Then `T213` Phase 2** (HIGH PRIORITY content quality, batched 2a/2b/2c; Babysitter re-assesses each batch +
-  surfaces more recs, looping until clean), then **`T168`** (held on Play ID-verify).
+**Builder A → `T213` Phase 2 (content quality — HIGH PRIORITY).** `T217` (void caps + intermittent glitch)
+**APPROVED** (live `cc1f202`); the splash title work is DONE. Now the big one: fix the question/guide issues in
+`docs/agent/QUESTION-QUALITY-AUDIT.md`, in BATCHES so the Babysitter can re-assess each:
+- **2a — the 11 missing guides + `explain()` cases** (scaling/percentoff/partwhole/balance/lcmhcf/mean/timegap/
+  ratioshare/cubes/money/digitsum). Reasoning topics first. **Push this batch on its own.**
+- **2b — calibration/clarity:** split `sequences` nth-term to a locked Part-2; clarify terse notations
+  (`scaling`/`balance`/`ratioshare`/`metric` litres→L); re-tier outliers (`fractions` 1/16, `mean` 6-term,
+  `bonds2`, `rounding` 560-tie); verify the `money` decimal matcher; add `cubes`+roots.
+- **2c — de-dup pool slots + re-run the harness + add a regression gate.**
+After each batch: Babysitter re-runs the enumeration harness + sub-agent assessment, surfaces more recs → loop until
+clean. [A] (`modes.js`, `guides.js`, tests). Then **`T168`** (held on Play ID-verify).
 **Re-read this line fresh before each task + push.**
 
 **Builder B → STAND BY.** `T103` (perf pass) + `T211`/`T207` **APPROVED** (live `951e532`); queue clear. Hold until

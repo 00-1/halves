@@ -3281,7 +3281,7 @@ can stay. By subtitle I mean THE VOID THRONE."*
   behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
-### T217 — [A] **Void Throne: ALL CAPS + INTERMITTENT interference (glitch bursts on/off, not continual)** · status: OPEN · owner-reported
+### T217 — [A] **Void Throne: ALL CAPS + INTERMITTENT interference (glitch bursts on/off, not continual)** · status: DONE (`cc1f202`) · APPROVED · owner device-confirm
 **Owner (2026-06-22, on T216 `2f55fad`): "the Void Throne text — could try making it ALL CAPS. Also let's have the
 animated noise we just added come ON and OFF occasionally — rather than being continual. Like interference."**
 Refines T216's void line (`paintPixelTitle`/`renderTitles`, the JetBrains-Mono corrupted subtitle).
