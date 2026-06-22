@@ -311,6 +311,25 @@
       ],
       example: "6 → ×2 → −4 → 6 × 2 = 12, then 12 − 4 → 8."
     },
+    xtricks: {
+      intro: "Some multiplications have a shortcut that's faster than the long way.",
+      tips: [
+        "×11 (2-digit): add the two digits and drop the sum in the middle. 23 × 11 → 2_(2+3)_3 = 253.",
+        "×25 = ×100 ÷ 4. 16 × 25 → 1600 ÷ 4 = 400.",
+        "×9 = ×10 − 1 lot; ×99 = ×100 − 1 lot. 13 × 9 → 130 − 13 = 117.",
+        "×5 = ×10 ÷ 2. 46 × 5 → 460 ÷ 2 = 230."
+      ],
+      example: "24 × 25 → 2400 ÷ 4 → 600."
+    },
+    negatives: {
+      intro: "Adding and subtracting can dip below zero and come back — track the running total.",
+      tips: [
+        "Start negative? Adding climbs back up: −5 + 8 means start at −5 and count up 8 → 3.",
+        "Going below zero mid-sum is fine if you end at zero or above.",
+        "Work left to right, keeping a running total."
+      ],
+      example: "3 − 8 + 9 → 3 − 8 = −5, then −5 + 9 → 4."
+    },
     pctup: {
       intro: "A percentage INCREASE adds that slice ON — find the part, then add it to the original.",
       tips: [
@@ -566,6 +585,16 @@
       case "algebra":
         // METHOD only — feed it through the boxes, never the output.
         return "Run the number through the boxes left to right — each step's result is the next step's input.";
+      case "xtricks": { const m = p.match(/^(\d+) × (\d+)$/); if(!m) break; const b = +m[2];
+        if(b === 11) return "×11: add the two digits of " + m[1] + " and slot the sum between them (carry if it's 10+).";
+        if(b === 25) return "×25 is ×100 then ÷ 4 — put two zeros on " + m[1] + ", then quarter it.";
+        if(b === 9)  return "×9 is ×10 minus one lot — ten " + m[1] + "s, then take one " + m[1] + " away.";
+        if(b === 99) return "×99 is ×100 minus one lot — a hundred " + m[1] + "s, then take one " + m[1] + " away.";
+        if(b === 5)  return "×5 is ×10 then halve — ten " + m[1] + "s, then halve it.";
+        return "Use the shortcut for × " + b + "."; }
+      case "negatives":
+        // METHOD only — track the running total, never state it.
+        return "Work left to right, keeping a running total — it can dip below zero and climb back up.";
       case "pctup": { const m = p.match(/^(\d+) \+ (\d+)%$/); if(!m) break; const base = +m[1], pct = +m[2];
         return "Find " + pct + "% of " + base + ", then add it on to " + base + " for the new total."; }
       case "fdp": {

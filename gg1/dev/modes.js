@@ -462,6 +462,26 @@
     ["5 → ×4 → −6", 14], ["10 → −4 → ×3", 18], ["6 → ÷2 → ×5", 15], ["9 → ×2 → +4", 22], ["4 → ×5 → ÷2", 10]
   ];
 
+  // ---- T219 batch 4 (Number group) — ×-tricks + negatives-P1 -----------------
+  // `xtricks` — mental MULTIPLICATION shortcuts (×11, ×25, ×9, ×99, ×5). Each entry
+  // [a, b, A] with A = a·b; the "trick" is the method (guide/explain), the answer a
+  // clean product.
+  const XTRICKS_SRC = [
+    [23,11,253],[34,11,374],[52,11,572],[18,11,198],[45,11,495],[27,11,297],   // ×11
+    [16,25,400],[12,25,300],[24,25,600],[8,25,200],[28,25,700],                // ×25
+    [7,9,63],[13,9,117],[15,9,135],[24,9,216],                                 // ×9
+    [6,99,594],[8,99,792],[12,99,1188],                                        // ×99
+    [18,5,90],[46,5,230],[24,5,120]                                            // ×5
+  ];
+  // `negatives` (P1) — add/subtract crossing zero, ALWAYS landing on a NON-negative
+  // answer (the numpad has no minus key, so P2 — negative answers — is deferred).
+  // The curated expression string is the prompt; A ≥ 0.
+  const NEG_SRC = [
+    ["−5 + 8",3],["−3 + 10",7],["−8 + 8",0],["−6 + 15",9],["−12 + 20",8],["−4 + 9",5],["−9 + 11",2],
+    ["−7 + 17",10],["−15 + 18",3],["−10 + 16",6],["−2 + 13",11],["−14 + 14",0],["−5 + 17",12],
+    ["3 − 8 + 9",4],["5 − 12 + 10",3],["2 − 7 + 6",1],["6 − 11 + 9",4],["8 − 15 + 12",5],["4 − 10 + 14",8],["1 − 6 + 7",2],["7 − 13 + 8",2]
+  ];
+
   // ---- T59 — Wave-2 Batch A: Rounding + Larger ×/÷ (genuinely NEW topics; no
   // overlap with the T162 mock modes). Specs from docs/research-11plus.md.
   // `rounding` — round N to the nearest 10/100/1000. Each entry [N, unit, A] with
@@ -578,8 +598,10 @@
   // Roman numeral: show the numeral, answer the value. Prime: "next prime > n".
   function romanItem(e){ return { p: e[0], a: e[1] }; }
   function primeItem(e){ return { p: "next prime > " + e[0], a: e[1] }; }
-  // BODMAS / function machine: the curated expression string IS the prompt.
+  // BODMAS / function machine / negatives: the curated expression string IS the prompt.
   function exprItem(e){ return { p: e[0], a: e[1] }; }
+  // ×-tricks: "a × b" (the trick is the method); answer = the product.
+  function xtrickItem(e){ return { p: e[0] + " × " + e[1], a: e[2] }; }
   // Percent increase: "base + pct%" → the new total. F↔D↔P: three conversion shapes.
   function pctUpItem(e){ return { p: e[1] + " + " + e[0] + "%", a: e[2] }; }
   function fdpItem(e){
@@ -912,6 +934,23 @@
       glyph:'n<span class="slash">±</span>k',
       eyebrow:'in → out <b>↓</b>', expr:true, requires:"mastery:bodmas", masterSecs:9, group:"Reasoning",
       build(){ return shuffle(ALGEBRA_SRC).map(exprItem); }
+    },
+    // ---- T219 batch 4 (Number group) — ×-tricks + negatives-P1 -----------------
+    {
+      // ×-tricks — mental multiplication shortcuts. Branches off `largermd` (the
+      // bigger-×/÷ leaf); group Number.
+      id:"xtricks", name:"×-Tricks", tag:"×11 · ×25 · ×9 · ×99 · ×5.",
+      glyph:'<span class="slash">×</span>k',
+      eyebrow:'use the trick <b>↓</b>', expr:true, requires:"mastery:largermd", masterSecs:7, group:"Number",
+      build(){ return shuffle(XTRICKS_SRC).map(xtrickItem); }
+    },
+    {
+      // Negatives P1 — add/subtract across zero, non-negative answers only. Branches
+      // off `doubles` (a free Number leaf); group Number.
+      id:"negatives", name:"Negatives", tag:"Cross zero (answer ≥ 0).",
+      glyph:'<span class="slash">−</span>n',
+      eyebrow:'answer is 0 or more <b>↓</b>', expr:true, requires:"mastery:doubles", masterSecs:8, group:"Number",
+      build(){ return shuffle(NEG_SRC).map(exprItem); }
     }
   ];
 
@@ -985,7 +1024,10 @@
     fdp:          ["f12","*%"],        // ½% — fraction ↔ decimal ↔ percent
     // T219 batch 3 — Reasoning eval topics (distinct grids).
     bodmas:       ["*×","+"],          // ×+ — × before + (order of operations)
-    algebra:      ["n","*±","k"]       // n±k — a function machine transforming n
+    algebra:      ["n","*±","k"],      // n±k — a function machine transforming n
+    // T219 batch 4 — Number additions (distinct grids).
+    xtricks:      ["*×","k"],          // ×k — a multiplication trick
+    negatives:    ["*−","n"]           // −n — crossing below zero (answer ≥ 0)
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 

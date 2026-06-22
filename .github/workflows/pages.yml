@@ -86,6 +86,8 @@ jobs:
         run: node gg1/dev/test/t219-pctup-fdp.test.js
       - name: T219 batch 3 (bodmas + algebra) test (gate)
         run: node gg1/dev/test/t219-bodmas-algebra.test.js
+      - name: T219 batch 4 (xtricks + negatives) test (gate)
+        run: node gg1/dev/test/t219-xtricks-negatives.test.js
       - name: Tech-tree view test (gate)
         run: node gg1/dev/test/tech-tree.test.js
       - name: Settings + clear-data test (gate)

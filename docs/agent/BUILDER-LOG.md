@@ -6108,3 +6108,22 @@ verified: sound.test rewritten for the 0–11 scheme + no tempo slider; synth-wi
 locked multiplier; full suite **59/59**. [A]-only (gg1/dev/main.js, index.html, test/). Push for owner
 device-confirm at `…/halves/gg1/dev/`. Next: T219 remaining topics (×-tricks, Negatives-P1, Geometry group,
 Speed-Distance-Time, Median/Mode/Range, Prime-factorisation) + Collector rebalance, then T218, then T225.
+
+---
+### [A] T219 batch 4 (Number group) — ×-Tricks + Negatives-P1 (+ arena monotonicity fix)
+- **`xtricks`** — mental ×-shortcuts (×11, ×25, ×9, ×99, ×5); 21 items, answer = the product, the "trick" is
+  the method (guide/explain). Branches off `largermd`, group Number. Glyph `×k`.
+- **`negatives`** (P1) — add/subtract across zero, answers ALWAYS non-negative (no minus key, so P2 deferred);
+  21 items, the test independently evals each expression and checks ≥ 0. Branches off `doubles`, group Number.
+  Glyph `−n`.
+- **Arena monotonicity — robust fix.** Adding 2 modes grew the collectible catalogue (+98), which shifted the
+  FRAC-of-catalogue loadout boundaries the arena3 (f) invariant sweeps → 6 non-monotone "win→loss" violations at
+  frac 0.85, tiers 104–119 (the greedy best-team heuristic is non-monotone). The tier-120 calibration already
+  guarded against this; I extended the guard to the WHOLE curve: a cheap flat `fracGuard` ceiling (3 types × 2
+  fracs) caps every tier below the weakest probed frac loadout, so a partial collection that clears a tier keeps
+  clearing it as it grows. Tier 120 is still re-pinned above (the near-max wall). This auto-scales with the
+  catalogue, so future content additions won't re-break it. (enemies.js — A-owned.)
+verified: new `test/t219-xtricks-negatives.test.js` (independent eval of every item); arena3 27/27 (0 violations,
+all other invariants intact, ~3.1s, no perf regression); hero-icons catalogue 1960 → 2058; full suite **60/60**.
+[A]-only (modes.js, guides.js, enemies.js, tests, pages.yml). Remaining T219: Geometry group (Area/Volume/Angles),
+Speed-Distance-Time, Median/Mode/Range, Prime-factorisation; then the Collector rebalance LAST.
