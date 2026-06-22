@@ -4,6 +4,15 @@ Babysitter-owned. Defines how **two Builders** work the same repo without collid
 The whole design rests on **disjoint file footprints**: each Builder only ever writes
 files the other never touches, so `main` never conflicts.
 
+> ## ⚡ AUTONOMY GRANT (owner, 2026-06-22) — overrides the "never write to main" rule below
+> The owner authorised the Babysitter to **run unattended through to GG2 completion** and to **TAKE OVER
+> Builder A's work — writing directly to `main`** — **if Builder A stops responding**. Trigger: A's top task
+> stays OPEN/CHANGES with no progress push across ~2+ auto-review cycles (~30–45 min). On take-over the
+> Babysitter becomes the builder for `[A]` files: implement → full suite + `node -c` → **strict self-review vs
+> DoD** → commit → update `BUILDER-LOG.md` → resume driving. Quality bar unchanged. Escalate to the owner only
+> for true blockers, GG1 *redesign* questions, or the v1/GG2 milestone FYIs. Full standing order: `NEXT.md` top.
+> *(While A is responding, the normal partition below still holds — take-over is the fallback, not the default.)*
+
 ## Roles
 
 - **Babysitter (me).** Owns `claude/agent` (`BACKLOG.md`, `REVIEW.md`, `IDEAS.md`, this
