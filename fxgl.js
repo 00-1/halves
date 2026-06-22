@@ -347,6 +347,12 @@
   const HOARD_TIERS = 8;            // re-seed the static coin buffer only when the tier changes
   // gold highlight / mid / shadow — a lit metal ramp (the bevel reads from these).
   const GOLD_TONES = [[255, 214, 110], [212, 158, 46], [120, 84, 22]];
+  // T195 — a curated dark→light gold ramp for the hoard's halftone FILTER: a FEW posterised
+  // stops (base-dark → crest-light) shaded off the pile's base tone. The ordered Bayer dither
+  // BETWEEN these stops (the brickmap palette post-process) is what yields the many apparent
+  // gradations — exactly the scene's machinery, so the pile is dot-locked to the biome.
+  const HOARD_SHADES = [-0.62, -0.40, -0.18, 0.08, 0.36];   // shade factors, dark → light
+  function hoardRamp(base){ return HOARD_SHADES.map(k => shade(base, k)); }   // luma-ascending
 
   // gold total → hoard LEVEL (0..1): saturating, so early gold visibly shows and big
   // totals plateau gracefully (no cap blow-out). level = gold/(gold+K).
@@ -1200,15 +1206,30 @@
     if(!ctx || !ctx.fillRect || !h || h.level <= 0) return;
     const base = h.palette && h.palette.length ? parseColor(h.palette[1] || h.palette[0]) : GOLD_TONES[1];
     if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
-    const step = Math.max(2, Math.round(W / 160));   // column width for the silhouette fill
-    for(let px = 0; px < W; px += step){
-      const x = (px + step / 2) / W, mh = moundProfile(x, h.level, h.seed);
+    // T195 — the FILTER pass: render the silhouette in brickmap's halftone-dither look (NOT
+    // a smooth analog gradient). A crest-light→base-dark luminance gradient-map is posterised
+    // onto the curated gold ramp with the engine's ordered Bayer 4×4 dot pattern between
+    // stops, at a chunky pixel scale (nearest-neighbour, crisp) — so the pile reads as the
+    // same dithered/pixel halftone as the scene behind it, dot-locked to the same lattice.
+    const ramp = hoardRamp(base), rlast = ramp.length - 1, salt = (h.seed | 0) ^ 0x5a5a;
+    const cell = Math.max(2, Math.round((pxScale || 1) * 3));   // big-pixel size (the pixelation)
+    const cols = Math.ceil(W / cell);
+    for(let cx = 0; cx < cols; cx++){
+      const px = cx * cell;
+      const x = (px + cell / 2) / W, mh = moundProfile(x, h.level, h.seed);
       if(mh <= 0) continue;
       const top = Math.round((1 - mh) * H);
-      for(let y = top; y < H; y += step){
-        const depth = (y - top) / Math.max(1, H - top);     // 0 crest → 1 base (fake AO)
-        ctx.fillStyle = toHex(shade(base, 0.25 - depth * 0.6));
-        ctx.fillRect(px, y, step + 1, step + 1);
+      const denom = Math.max(1, H - top);
+      for(let cy = Math.floor(top / cell); cy * cell < H; cy++){
+        const py = cy * cell, depth = (py - top) / denom;      // 0 crest → 1 base
+        if(depth < 0) continue;
+        // gradient-map input: bright crest → dark base (fake AO), + a touch of position-hashed
+        // variation so flat depths still break into dots rather than dead bands.
+        const lum = clamp01(0.94 - 0.80 * depth + (hash01i(cx, salt) - 0.5) * 0.07);
+        let idx = rampIndex(lum, ramp.length, bayer4(cx, cy), 1);   // ordered halftone between stops
+        idx = idx < 0 ? 0 : idx > rlast ? rlast : idx;
+        ctx.fillStyle = toHex(ramp[idx]);
+        ctx.fillRect(px, py, cell + 1, cell + 1);
       }
     }
     const scale = pxScale || 1;
@@ -1654,6 +1675,7 @@
     // gold hoard (T172)
     HOARD_CAP: HOARD_CAP, HOARD_K: HOARD_K, HOARD_MAX_H: HOARD_MAX_H, HOARD_TIERS: HOARD_TIERS, GOLD_TONES: GOLD_TONES,
     hoardLevel: hoardLevel, hoardTier: hoardTier, moundProfile: moundProfile, hash01i: hash01i,
+    hoardRamp: hoardRamp, drawHoard: drawHoard, HOARD_SHADES: HOARD_SHADES,
     seedHoard: seedHoard, convergePos: convergePos, seedConverge: seedConverge,
     deriveScene: deriveScene, deriveHomeScene: deriveHomeScene, seedFromHome: seedFromHome,
     deriveArenaScene: deriveArenaScene, seedFromArena: seedFromArena, arenaIntensity: arenaIntensity, ARENA_PARTICLE_MAX: ARENA_PARTICLE_MAX, ARENA_REGIONS: ARENA_REGIONS,

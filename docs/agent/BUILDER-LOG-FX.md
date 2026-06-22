@@ -6,6 +6,35 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T195 — hoard FILTER pass: render the pile in brickmap's halftone-dither look (shading only) ([B], owner-reported)
+
+Owner on the T192 pile: *"needs a filter pass — dithering and pixelation, along the lines of
+brickmap."* The whole scene already renders with ordered-Bayer dither + palette quantise, but
+`drawHoard` was the ONE part still drawing a **smooth analog gradient** (`shade(base, 0.25 −
+depth·0.6)`) — so the pile read smooth against the dithered/halftone scene. Fixed in `fxgl.js`
+(SHADING only — the height-gradation is the separate T196):
+- **`drawHoard` silhouette** now uses the **same machinery the scene uses** (`rampIndex` +
+  `bayer4`, my exact port of brickmap `palette.wgsl`): a crest-light→base-dark **luminance/depth
+  gradient-map** posterised onto a **curated 5-stop gold ramp** (`hoardRamp`/`HOARD_SHADES`),
+  with the **ordered Bayer 4×4 dot pattern between stops** (the halftone) at a **chunky pixel
+  scale** (`cell = round(pxScale·3)`, nearest-neighbour, crisp) — NO smooth gradient. A touch of
+  position-hashed variation breaks dead-flat bands. The cell-shaded cylinder coins sit on top
+  unchanged, cohesive in the halftone field.
+- The dot lattice is a pure function of integer big-pixel coords → **screen-locked**, stable
+  across frames, dot-locked to the biome behind it. Same draw on the WebGL/WebGPU 2D overlay
+  (the device) AND the CPU still.
+- 🌐 **Browser-verified on WebGL2** (`test/browser/hoard-capture.js` → `screenshots/hoard-halftone-{webgl,crop}.png`):
+  the pile is a crisp ordered-Bayer halftone, posterised gold, dot-locked to the dithered scene.
+
+Verify: `node -c` clean; **golden-fx 70** (+6 new T195 assertions — silhouette posterised to ≤
+the 5-stop ramp, every tone drawn from the curated gold ramp, ramp luma-ascending + gold-family,
+teeth: the old smooth gradient would blow past the ramp's 5 tones); full Node suite green (fxgl
+124 / synth 177 / emblems 61); render 7 / visual 13 / audio 27 + hoard-wiring 47 green; scenes
+byte-identical when no hoard. B-only (`fxgl.js`, `test/golden-fx.test.js`, `test/browser/hoard-capture.js`).
+Owner device-confirms. **T196 next** (gradual height — ~100 levels via stable accumulation).
+
+---
+
 ## T193 — money-gain celebration: SPINNING cell-shaded cylinder coins on every backend ([B], reuses the T192 coin)
 
 The earn burst now throws **real spinning coins**, not shader-splat discs — the same

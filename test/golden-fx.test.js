@@ -285,6 +285,32 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
   ok(on.lower > on.upper, "T192: the pile is BOTTOM-anchored (more fill below the midline) — heaped from the floor");
   ok(on.upper > 800, "T192: …yet it CLIMBS HIGH — banks past the midline into the upper region (" + on.upper + " lit px), not a low bump");
 })();
+// T195 — the FILTER pass: the pile silhouette is now a POSTERISED halftone (a FEW discrete gold
+// ramp tones dithered together), NOT a smooth analog gradient (which produced dozens of distinct
+// shades). Drive drawHoard directly (coins:[] → only the silhouette) on a colour-recording ctx.
+(function(){
+  // a tiny ctx that records each fillRect's colour (path-less → drawCoin would use rects, but
+  // coins:[] means only the silhouette draws here).
+  function recCtx(){ const cols = []; let fs = "#000";
+    return { ctx: { get fillStyle(){ return fs; }, set fillStyle(v){ fs = v; }, globalAlpha: 1,
+      fillRect(){ cols.push(fs); }, clearRect(){} }, cols: cols }; }
+  const r = recCtx();
+  const h = { level: 0.8, seed: 9, coins: [] };
+  FXGL.drawHoard(r.ctx, h, 600, 1200, 2);
+  const distinct = Array.from(new Set(r.cols));
+  const ramp = FXGL.hoardRamp(FXGL.GOLD_TONES[1]).map(FXGL.toHex);
+  ok(r.cols.length > 200, "T195: the silhouette is painted in many chunky pixel-cells (" + r.cols.length + " fills)");
+  ok(distinct.length >= 3 && distinct.length <= ramp.length,
+     "T195: POSTERISED to a few discrete tones (" + distinct.length + " distinct ≤ " + ramp.length + "-stop ramp) — NOT a smooth gradient (which would yield dozens)");
+  ok(distinct.every(c => ramp.indexOf(c) >= 0),
+     "T195: every silhouette tone comes from the curated gold RAMP (gradient-map through the palette, brickmap post-process)");
+  // teeth: prove the ramp itself is luma-ASCENDING (dark base → light crest) and gold-family.
+  const rgb = FXGL.hoardRamp(FXGL.GOLD_TONES[1]);
+  let ascending = true; for(let i = 1; i < rgb.length; i++) if(FXGL.luma(rgb[i]) <= FXGL.luma(rgb[i - 1])) ascending = false;
+  ok(ascending, "T195: the gold ramp is luma-ASCENDING (base-dark → crest-light) — a real tonal gradient-map");
+  ok(rgb.every(c => c[0] >= c[2]), "T195: every ramp stop is gold-family (R ≥ B) — a warm metal palette");
+  ok(distinct.length < 24, "T195: the gate HAS TEETH — the OLD smooth gradient (≈" + Math.round(1200/2) + " depth steps × shade) would blow far past the ramp's " + ramp.length + " tones; posterisation holds it to " + distinct.length);
+})();
 // the earn burst converges toward the hoard (coins move from the earn-point downward over time)
 (function(){
   const w = 400, h = 800, dpr = 2, W = Math.round(w * dpr), H = Math.round(h * dpr);
