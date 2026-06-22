@@ -1455,7 +1455,9 @@
     // its own clock; particles carry per-particle birth so flurries coalesce.
     this.burst_ = { parts: [], active: false, startTs: 0, elapsed: 0, maxDeath: 0 };
     this._frameCb = this._frame.bind(this);
+    this._contextLost = false;
     this._init();
+    this._attachLifecycle();
   }
   Controller.prototype.particleCap = function(){
     const q = QUALITY[Math.max(0, Math.min(2, this.quality))];
@@ -1510,6 +1512,13 @@
       if(!ctx) throw new Error("no webgpu context");
       const format = (navigator.gpu.getPreferredCanvasFormat && navigator.gpu.getPreferredCanvasFormat()) || "bgra8unorm";
       ctx.configure({ device: device, format: format, alphaMode: "premultiplied" });
+      // T204 — the WebGPU DEVICE can be lost too (PWA backgrounded). Self-heal the same way: hide
+      // (dark, not white) then re-init on the next foreground. `reason:"destroyed"` = our own
+      // dispose → ignore. (No restored-event for WebGPU; the visibilitychange redraw re-acquires.)
+      if(device.lost && device.lost.then) device.lost.then(function(info){
+        if(self._contextLost || (info && info.reason === "destroyed")) return;
+        self._handleContextLost();
+      });
       self._use(new GPUBackend(device, ctx, format));
     });
   };
@@ -1585,6 +1594,55 @@
     if(this.derived && this._isStill()) this._renderOnce();   // static still
     if(this.wantStart){ this.wantStart = false; this.start(); }
     this._pump();
+  };
+  // T204 — WebGL/WebGPU context-loss SELF-HEAL. The OS frees the GL context when the PWA is
+  // backgrounded; with NO handling the lost canvas presents ~white → a light-grey home (white ×
+  // the .fx-backdrop opacity .85 over the dark body). We listen for the lost/restored events (+
+  // foreground visibility) and: on LOSS hide the canvas so the DARK brand body shows (never
+  // white) and stop the RAF; on RESTORE re-acquire the backend, re-upload + re-fit + redraw; on
+  // return-to-FOREGROUND repaint the still (covers a throttled/paused-tab blank with no real loss).
+  // The hoard pile is on a separate 2D overlay context, so it's unaffected. [B]-only, self-listening.
+  Controller.prototype._attachLifecycle = function(){
+    const cv = this.canvas, self = this;
+    this._onLost = function(e){ if(e && e.preventDefault) e.preventDefault(); self._handleContextLost(); };
+    this._onRestored = function(){ self._handleContextRestored(); };
+    this._onVisible = function(){
+      if(typeof document !== "undefined" && document.visibilityState && document.visibilityState !== "visible") return;
+      if(self._contextLost) self._handleContextRestored();   // backstop re-init (esp. WebGPU device loss — no restored event)
+      else self.redraw();
+    };
+    if(cv && cv.addEventListener){
+      cv.addEventListener("webglcontextlost", this._onLost, false);
+      cv.addEventListener("webglcontextrestored", this._onRestored, false);
+    }
+    if(typeof document !== "undefined" && document.addEventListener){
+      document.addEventListener("visibilitychange", this._onVisible, false);
+    }
+  };
+  Controller.prototype._handleContextLost = function(){
+    this._contextLost = true;
+    this.ready = false;
+    if(this.rafId){ this.caf(this.rafId); this.rafId = 0; }   // stop drawing into a dead context (no RAF leak)
+    // SAFETY NET: hide the canvas so the lost-context white never flashes — the dark brand body
+    // (#0E1116) shows through instead. Reversible (inline style) on restore.
+    if(this.canvas && this.canvas.style) this.canvas.style.visibility = "hidden";
+  };
+  Controller.prototype._handleContextRestored = function(){
+    this._contextLost = false;
+    this.backend = null;
+    this._init();   // re-acquire a fresh context + backend → _use re-fits, re-uploads (setData), redraws, pumps
+    if(this.canvas && this.canvas.style) this.canvas.style.visibility = "";   // reveal the healed canvas
+  };
+  // Repaint on return-to-foreground (or any external trigger): re-fit + redraw the still + the
+  // hoard overlay, resuming the ambient RAF if it was running. Cheap, idempotent; public so an [A]
+  // foreground hook can call it too. No-op while a context is lost (restore handles that path).
+  Controller.prototype.redraw = function(){
+    if(!this.backend || !this.ready || this._contextLost) return this;
+    this._applyResize();
+    if(this._isStill() && this.derived) this._renderOnce();
+    else this._pump();
+    this._syncOverlay();
+    return this;
   };
   Controller.prototype.setScene = function(scene){
     this.scene = scene;
@@ -1720,7 +1778,12 @@
     return this._ignite(seedConverge(opts, this.reduced, BURST_CAP));
   };
   Controller.prototype.resize = function(){ this._applyResize(); if(this.backend && this._isStill() && this.derived) this._renderOnce(); return this; };
-  Controller.prototype.dispose = function(){ this.stop(); this.burst_.active = false; if(this.rafId){ this.caf(this.rafId); this.rafId = 0; } if(this.backend) this.backend.dispose(); this.backend = null; this.ready = false; if(this._hoardCv && this._hoardCv.parentNode) this._hoardCv.parentNode.removeChild(this._hoardCv); this._hoardCv = undefined; this._hoardCtx = null; return this; };
+  Controller.prototype.dispose = function(){ this.stop(); this.burst_.active = false; if(this.rafId){ this.caf(this.rafId); this.rafId = 0; }
+    // T204: drop the context-loss / visibility listeners (no leak after dispose).
+    const cv = this.canvas;
+    if(cv && cv.removeEventListener){ if(this._onLost) cv.removeEventListener("webglcontextlost", this._onLost); if(this._onRestored) cv.removeEventListener("webglcontextrestored", this._onRestored); }
+    if(typeof document !== "undefined" && document.removeEventListener && this._onVisible) document.removeEventListener("visibilitychange", this._onVisible);
+    if(this.backend) this.backend.dispose(); this.backend = null; this.ready = false; if(this._hoardCv && this._hoardCv.parentNode) this._hoardCv.parentNode.removeChild(this._hoardCv); this._hoardCv = undefined; this._hoardCtx = null; return this; };
   Controller.prototype.isAnimating = function(){ return this._ambientLoops(); };
   Controller.prototype.isBursting = function(){ return this.burst_.active; };
   Controller.prototype.particleCount = function(){ return this.derived ? this.derived.particles.length : 0; };

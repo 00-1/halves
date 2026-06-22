@@ -6,6 +6,40 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T204 — BUG: purple backdrop lost on PWA app-switch → WebGL context-loss SELF-HEAL ([B], 🔴 owner-reported)
+
+Owner screenshot: backgrounding the PWA sometimes leaves a **light-grey home** (the dark-purple
+backdrop gone; the hoard pile still drew — it's on the separate 2D overlay). Root cause: the OS
+frees the WebGL context on app-switch and `fxgl` had **no `webglcontextlost/restored` handling** —
+a lost canvas presents ~white, and `.fx-backdrop`'s `opacity:.85` over the `#0E1116` body = light
+grey. Fixed in `fxgl.js` (self-listening, [B]-only):
+- **`_attachLifecycle`** (wired in the ctor) registers `webglcontextlost`/`webglcontextrestored`
+  on the canvas + `visibilitychange` on document (guarded for headless/no-listener envs).
+- **On LOSS** (`_handleContextLost`): `preventDefault()` (so the browser will restore), mark
+  not-ready, **cancel the RAF** (no drawing into a dead context), and **hide the canvas**
+  (`visibility:hidden`) so the **dark brand body shows — never the white/grey flash** (the safety
+  net that alone kills the jarring light state).
+- **On RESTORE** (`_handleContextRestored`): re-acquire the backend (`_init` → fresh GL context +
+  program), which re-uploads (`setData`), re-fits, redraws, and resumes the loop; reveal the canvas.
+- **On FOREGROUND** (`visibilitychange`→visible): `redraw()` (refit + repaint + overlay sync) for
+  a throttled/paused-tab blank with no real loss; and if still flagged lost, **re-init as a
+  backstop** — which also covers the **WebGPU `device.lost`** path (no restored event there; a
+  `device.lost.then` hook flags it on loss).
+- Exposed a public **`redraw()`** so an [A] foreground hook can also trigger it. `dispose` removes
+  all three listeners (no leak).
+- 🌐 **Browser-verified on WebGL2** via `WEBGL_lose_context`: before ready/visible → on
+  `loseContext()` not-ready + canvas hidden (dark, no white) → on `restoreContext()` ready/visible
+  again + scene redrawn; no JS errors.
+
+Verify: `node -c` clean; **fxgl 135** (+11 T204 assertions — listeners registered, loss→not-ready
++ hidden + RAF cancelled + preventDefault, restore→re-init + re-upload + revealed, foreground
+repaint w/o re-upload, teeth: a loss with no restore never sits white + the foreground re-init
+backstop); full Node suite green (golden-fx 100 / fx-wiring 84 / synth 177 / hoard-wiring 47);
+render/visual/audio gates green. B-only (`fxgl.js`, `test/fxgl.test.js`). Owner device-confirms
+(switch apps repeatedly).
+
+---
+
 ## T203 — coin-shower POLISH: slightly bigger + rain DOWN (more gravity, less fly-up) ([B], owner-reported)
 
 Owner on the now-approved shower: *"looks pretty good — but make them slightly bigger, and give

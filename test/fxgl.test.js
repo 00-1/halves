@@ -470,5 +470,49 @@ cp2.rec.rects.length = 0;
 const f2 = oq2.shift(); f2(1500);            // t≈0.5 — a full frame
 ok(cp2.rec.rects.length > 100, "a single mid-shower 2D frame draws 100+ live particles (" + cp2.rec.rects.length + ")");
 
+// T204 — WebGL context-loss SELF-HEAL: backgrounding the PWA frees the GL context; without
+// handling the canvas presents ~white → a light-grey home. Assert the Controller listens for
+// lost/restored (+ foreground visibility) and heals: lost → not-ready + canvas HIDDEN (dark body,
+// never white) + RAF cancelled; restored → re-init + re-upload + reveal; foreground → repaint.
+(function(){
+  function evCanvas(){ const ls = {}; return { width: 0, height: 0, clientWidth: 120, clientHeight: 200, getContext: () => null,
+    style: {}, addEventListener(t, fn){ (ls[t] = ls[t] || []).push(fn); }, removeEventListener(t, fn){ if(ls[t]) ls[t] = ls[t].filter(f => f !== fn); },
+    _emit(t, e){ (ls[t] || []).forEach(fn => fn(e || {})); }, _ls: ls }; }
+  const grec = { texImage2D: 0, drawArraysInstanced: 0, drawArrays: 0, bufferData: 0 };
+  const ggl = makeGL(grec), cv = evCanvas();
+  let qq = [], cafN = 0;
+  const savedDoc = global.document, docLs = {};
+  global.document = { visibilityState: "visible", addEventListener(t, fn){ (docLs[t] = docLs[t] || []).push(fn); }, removeEventListener(){} };
+  try{
+    const c = new FXGL.Controller(cv, { gl: ggl, raf: cb => { qq.push(cb); return qq.length; }, caf: () => { cafN++; }, width: 120, height: 200, dpr: 1, quality: 2, reducedMotion: false });
+    c.setScene({ grid: grid, seed: 4, particles: { kind: "snow", count: 32 } });
+    c.start();
+    ok((cv._ls.webglcontextlost || []).length === 1 && (cv._ls.webglcontextrestored || []).length === 1, "T204: the Controller registers webglcontextlost + restored listeners on the canvas");
+    // LOSS
+    let prevented = false;
+    cv._emit("webglcontextlost", { preventDefault(){ prevented = true; } });
+    ok(prevented, "T204: webglcontextlost is preventDefault'd (so the browser will fire a restore)");
+    ok(!c.isReady(), "T204: a lost context marks the Controller NOT ready");
+    ok(cv.style.visibility === "hidden", "T204: the canvas is HIDDEN on loss → the dark brand body shows, never the lost-context white/grey");
+    ok(cafN > 0, "T204: the RAF is cancelled on loss (no leak drawing into a dead context)");
+    // RESTORE
+    const upBefore = grec.texImage2D;
+    cv._emit("webglcontextrestored", {});
+    ok(c.isReady() && c.backendName() === "webgl2", "T204: webglcontextrestored RE-INITS the backend (ready again)");
+    ok(cv.style.visibility === "", "T204: the canvas is revealed again on restore");
+    ok(grec.texImage2D > upBefore, "T204: the scene is RE-UPLOADED on restore (textures re-pushed) → the backdrop redraws (not a blank)");
+    // FOREGROUND repaint without a context loss (throttled/paused tab) → repaint, NOT a re-upload
+    const upBefore2 = grec.texImage2D;
+    (docLs.visibilitychange || []).forEach(fn => fn({}));
+    ok(c.isReady() && grec.texImage2D === upBefore2, "T204: a plain foreground visibility event repaints WITHOUT re-uploading (no context loss → just refit/redraw)");
+    // teeth: the safety net is real — emit loss WITHOUT restore and confirm it never sits white
+    cv._emit("webglcontextlost", { preventDefault(){} });
+    ok(cv.style.visibility === "hidden" && !c.isReady(), "T204: the gate HAS TEETH — a loss with no restore leaves the canvas HIDDEN (dark), never a white flash");
+    // and the foreground backstop re-inits a still-lost context (covers WebGPU device loss too)
+    (docLs.visibilitychange || []).forEach(fn => fn({}));
+    ok(c.isReady() && cv.style.visibility === "", "T204: returning to FOREGROUND while lost self-heals (re-init backstop — also the WebGPU device-loss path)");
+  } finally { global.document = savedDoc; }
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FXGL CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
