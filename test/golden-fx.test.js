@@ -485,6 +485,33 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
        "T193 re-open: burst({look:'coin'}) keeps the coins in burst_.parts but routes ONLY confetti to the GL splat → coins composite as cylinders on the overlay (the real money-gain fix)");
   } finally { global.document = savedDoc; }
 })();
+// T203 — coin-shower POLISH: the money-gain coins are slightly bigger + rain DOWN (more gravity,
+// minimal upward launch); the generic confetti burst is unchanged.
+(function(){
+  const coins = FXGL.seedBurst({ look: "coin", count: 80, seed: 3 }, false, FXGL.BURST_CAP);
+  const conf = FXGL.seedBurst({ count: 80, seed: 3 }, false, FXGL.BURST_CAP);
+  const mean = (a, f) => a.reduce((s, p) => s + f(p), 0) / a.length;
+  // bigger
+  ok(mean(coins, p => p.size) > mean(conf, p => p.size) * 1.4,
+     "T203: the coins are BIGGER than the confetti (mean size " + mean(coins, p => p.size).toFixed(1) + " vs " + mean(conf, p => p.size).toFixed(1) + ")");
+  // less fly-up: coin launch velocity is far less upward (vy less negative) than the confetti fountain
+  ok(mean(coins, p => p.vy) > mean(conf, p => p.vy) + 0.15,
+     "T203: the coins launch with much LESS upward kick (mean vy " + mean(coins, p => p.vy).toFixed(2) + " ≫ confetti " + mean(conf, p => p.vy).toFixed(2) + " — they rain down, not fountain up)");
+  const sink = coins.filter(p => FXGL.burstPos(p, p.life * 0.9, p.grav, FXGL.BURST_DRAG).y > p.y0 + 0.02).length;
+  ok(sink > coins.length * 0.8,
+     "T203: by late in their life MOST coins have sunk BELOW the launch point (" + sink + "/" + coins.length + " — gravity wins, they rain down)");
+  // more gravity, plumbed per-coin (NOT the global shader uniform)
+  ok(coins.every(p => p.grav > FXGL.BURST_GRAVITY) && conf.every(p => p.grav == null),
+     "T203: coins carry a coin-specific gravity > BURST_GRAVITY (" + coins[0].grav.toFixed(2) + " > " + FXGL.BURST_GRAVITY + "); confetti uses the global default");
+  // the coin gravity actually makes it fall faster (drawCoinParticle uses p.grav via burstPos)
+  const p = coins[0], tMid = 0.5;
+  const yCoin = FXGL.burstPos(p, tMid, p.grav, FXGL.BURST_DRAG).y;
+  const yDefault = FXGL.burstPos(p, tMid, FXGL.BURST_GRAVITY, FXGL.BURST_DRAG).y;
+  ok(yCoin > yDefault, "T203: the coin-specific gravity makes it FALL FASTER (y " + yCoin.toFixed(3) + " > default-gravity " + yDefault.toFixed(3) + " at t=" + tMid + ")");
+  // teeth: the generic confetti is UNCHANGED — same fountain launch + small size as before the polish.
+  ok(mean(conf, p => p.vy) < -0.15 && conf.every(p => p.size <= 7),
+     "T203: the gate HAS TEETH — the generic confetti still fountains UP (mean vy " + mean(conf, p => p.vy).toFixed(2) + " < 0) at its small size (unchanged)");
+})();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FX-GOLDEN CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

@@ -252,9 +252,10 @@
     const sprd = spreadMul(opts);                            // T152: tighten/widen the spray
     const sMax = (reduced ? 0.22 : 0.85) * sprd;             // peak outward speed (screen-frac/s)
     const up = reduced ? 0.10 : 0.42;       // upward kick (confetti arc)
+    const coinUp = reduced ? 0.04 : 0.10;   // T203: coins get only a GENTLE pop (rain down, not fountain up)
     const lMax = reduced ? 0.7 : 1.4;       // longest life (s)
     const spin = reduced ? 1.5 : 9;         // rotation rate spread
-    const sz = coin ? sizeRange(opts, reduced ? 5 : 6, reduced ? 8 : 12)   // coins read a touch bigger
+    const sz = coin ? sizeRange(opts, reduced ? 6 : 7, reduced ? 10 : 15)   // T203: coins ~+20% bigger
                     : sizeRange(opts, 2, reduced ? 4 : 7);                  // T152: small/fine confetti
     const out = new Array(n);
     for(let i = 0; i < n; i++){
@@ -263,7 +264,10 @@
       const p = {
         x0: x0, y0: y0,
         vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd - lerp(up * 0.4, up, rng()),  // bias upward
+        // T203: coins suppress the vertical launch (×0.3) + only a gentle pop → gravity dominates,
+        // they RAIN DOWN. Confetti keeps its upward fountain bias (one rng draw either way).
+        vy: coin ? (Math.sin(ang) * spd * 0.3 - lerp(0, coinUp, rng()))
+                 : (Math.sin(ang) * spd - lerp(up * 0.4, up, rng())),
         size: lerp(sz[0], sz[1], rng()),
         r: col[0], g: col[1], b: col[2],
         life: lerp(0.6, lMax, rng()),
@@ -274,6 +278,7 @@
       // and its goldens — are byte-identical when look!=="coin").
       if(coin){
         p.look = 1;
+        p.grav = BURST_GRAVITY * 1.9;          // T203: coin-specific extra gravity (NOT the global shader uniform)
         p.rot = rng() * TAU;
         p.spin = (reduced ? 0.6 : 1) * lerp(6, 15, rng()) * (rng() < 0.5 ? -1 : 1);   // tumble as it flies
         p.wob = lerp(7, 16, rng()); p.phase = rng() * TAU;                            // face↔edge tip rate + phase
@@ -1323,7 +1328,7 @@
   // tips face↔edge over its life, so it reads as a real spinning cylinder coin (not a disc).
   // Shared by the CPU still AND the GL/GPU 2D overlay so coins spin on every backend.
   function drawCoinParticle(ctx, p, t, W, H, scale){
-    const bp = (p.tx != null) ? convergePos(p, t) : burstPos(p, t, BURST_GRAVITY, BURST_DRAG);
+    const bp = (p.tx != null) ? convergePos(p, t) : burstPos(p, t, p.grav != null ? p.grav : BURST_GRAVITY, BURST_DRAG);   // T203: coin-specific gravity
     if(!bp.alive || bp.alpha <= 0.01) return;
     const lt = t - (p.birth || 0);
     const px = Math.max(2, Math.round(p.size * (scale || 1)));

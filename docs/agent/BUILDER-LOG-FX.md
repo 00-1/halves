@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T203 — coin-shower POLISH: slightly bigger + rain DOWN (more gravity, less fly-up) ([B], owner-reported)
+
+Owner on the now-approved shower: *"looks pretty good — but make them slightly bigger, and give
+them more gravity, more falling down, less flying up."* Tuned the **money-gain coin shower** (the
+`look:"coin"` branch of `seedBurst`) only — the generic confetti is untouched. In `fxgl.js`:
+- **Less fly-up:** the coin launch vertical velocity is suppressed (`sin(ang)·spd·0.3`) with only a
+  **gentle pop** (`coinUp` 0.10 vs the confetti 0.42 fountain) → gravity dominates, they rain down.
+- **More gravity (NOT global):** `BURST_GRAVITY` is a shared shader uniform, so instead each coin
+  carries `p.grav = BURST_GRAVITY·1.9`, plumbed through **`drawCoinParticle`'s `burstPos`** — the
+  path ALL coins render through on every backend (overlay + CPU still). The shader splat (confetti
+  only) is untouched. **[B]-only**, no shader change.
+- **Slightly bigger:** the coin `sizeRange` bumped ~+20% (6→7 / 12→15).
+- 🌐 **Browser-verified on WebGL2**: fired from y=0.30, the bigger coins spread and drop below the
+  launch point within ~170ms — raining down, not fountaining up (`shower-t203-webgl.png`).
+
+Verify: `node -c` clean; **golden-fx 100** (+6 T203 assertions — coins bigger than confetti,
+much less upward launch, 80/80 sink below the launch point under their gravity, `p.grav >
+BURST_GRAVITY` while confetti has none, the coin gravity falls faster via `burstPos`, teeth: the
+confetti still fountains up at its small size); full Node suite green (fxgl 124 / fx-wiring 84 /
+hoard-wiring 47); amount-scaling (T173) preserved. B-only (`fxgl.js`, `test/golden-fx.test.js`).
+Owner device-confirms.
+
+---
+
 ## T200 — coin COLOUR by height: dark gold low, light gold high (with a mix at each level) ([B], owner-reported)
 
 Owner: *"too much of a mix of dark/light coins — lower down should be more dark, higher up more
