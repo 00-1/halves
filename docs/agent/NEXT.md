@@ -6,34 +6,24 @@
 
 ---
 
-**Builder A → `T220` FIRST (quick splash tweak), THEN back to `T213` Phase 2.** `T217` (void caps + intermittent
-glitch) **APPROVED** (live `cc1f202`). Owner sent ONE more void-line iteration → **`T220`: stretch "THE VOID THRONE"
-VERTICALLY (taller-than-wide cells, void line only — gold unchanged) + make the glitch flicker FASTER + MORE RANDOMLY,
-cutting fully on/off (add brief whole-line dropouts on top of the cell re-roll), reduced-motion → fully static.** Quick
-`main.js` change — push on its own for owner device-confirm. *(BACKLOG T220.)* THEN the big one: fix the question/guide issues in
-`docs/agent/QUESTION-QUALITY-AUDIT.md`, in BATCHES so the Babysitter can re-assess each:
-- **2a — the 11 missing guides + `explain()` cases** (scaling/percentoff/partwhole/balance/lcmhcf/mean/timegap/
-  ratioshare/cubes/money/digitsum). Reasoning topics first. **Push this batch on its own.**
-- **2b — calibration/clarity:** split `sequences` nth-term to a locked Part-2; clarify terse notations
-  (`scaling`/`balance`/`ratioshare`/`metric` litres→L); re-tier outliers (`fractions` 1/16, `mean` 6-term,
-  `bonds2`, `rounding` 560-tie); verify the `money` decimal matcher; add `cubes`+roots.
-- **2c — de-dup pool slots + re-run the harness + add a regression gate.**
-**ROUND 2 (Babysitter re-assessed 2a+2b-1 — calibration clean, 9/11 guides solid):** TWO guide fixes back to you:
-  - **🔴 `digitsum` guide + `explain()` — HIGH correctness bug:** the "remainder ÷9 by digital root" tip returns 9
-    for multiples of 9, but the true remainder is 0 (live Qs: `remainder 567/7263/999 ÷ 9 = 0`). Add "if you reach
-    9, the remainder is 0."
-  - **`partwhole` guide (LOW):** generalise the reverse-% tip beyond the 10% case (cover 20/25/50%).
-  Then continue **2b-part-2/2c**: `fractions` 1/16 → Part-2, `rounding` 560 tie, `sequences` nth-term split,
-  `cubes`+roots, de-dup + harness gate. (Detail: `QUESTION-QUALITY-AUDIT.md` round 2.)
-After each batch: Babysitter re-assesses → loop until clean. [A] (`modes.js`, `guides.js`, tests).
-- **Then `T219` (BIG — now 15 new topics, owner: build NOW not v1.1)** — PART 1 the original 7 (BODMAS, ×-tricks,
-  Primes, Roman→number, Negatives P1 only, Algebra/function-machines, Roots) + **PART 2 the 8 coverage-pass additions
-  (`COVERAGE-PASS.md` §A, owner "don't drop"): Area&Perimeter, Volume, Angles (NEW Geometry group), Speed-Distance-
-  Time, Median/Mode/Range, F↔D↔P conversions, Percentage-increase, Prime-factorisation/factors&multiples.** Each a
-  full P1/P2 generator + guide + explain + the assessment loop; **build+push in BATCHES by group** so the Babysitter
-  re-assesses each. Negatives P2 deferred (needs minus input). *(BACKLOG T219; Tier-B nice-to-haves parked.)*
-- **Then `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view; persists). A
-  core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests). Then **`T168`** (held on Play ID-verify).
+**Builder A → CONTINUE `T219` in batches.** ✅ `T213` content loop **CONVERGED — DONE** (`efb1abf`), ✅ `T220` void
+stretch+flicker **DONE** (pending owner device-confirm), ✅ `T219` **batch 1 (Roman + Primes) APPROVED**. **`Roots` is
+already done** (folded into `cubes`→"Cubes & Roots"). **Next: keep building `T219` group-by-group, pushing each batch
+on its own for re-assessment.** Remaining topics: Part-1 **BODMAS, ×-tricks, Negatives-P1, Algebra/function-machines**;
+Part-2 **Area&Perimeter, Volume, Angles (new Geometry group), Speed-Distance-Time, Median/Mode/Range, F↔D↔P,
+Percentage-increase, Prime-factorisation/factors&multiples**; then the **Collector-ladder rebalance LAST**. Each topic:
+full curated pool (~21, calibrated), guide + `explain()`, chain-gating, the enumeration-harness + assessment loop.
+*(BACKLOG T219.)*
+
+**→ DO `T221` FIRST (owner splash tweak, just in), THEN the next T219 batch.** `T221`: void line gets **wide
+POSITIVE letter-spacing** (gold stays tight) + a **Star-Wars perspective skew — bottom wider than top** (per-row
+horizontal scale ramped by depth, about the centre); keep legible + centred + no clip at 360px; T217/T220
+caps/stretch/flicker still apply. Push on its own for owner device-confirm. *(BACKLOG T221.)* Owner is iterating on the
+splash live, so these tweaks jump ahead of the next T219 batch when they land.
+- **After `T219` → `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view;
+  persists). A core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests). Then
+  **`T168`** (held on Play ID-verify).
+- **Post-T219-landing:** re-run the **T213 deep quality loop** over the full expanded topic set (owner-requested).
 **Re-read this line fresh before each task + push.**
 
 **Builder B → STAND BY.** `T103` (perf pass) + `T211`/`T207` **APPROVED** (live `951e532`); queue clear. Hold until

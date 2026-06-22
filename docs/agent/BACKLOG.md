@@ -3151,7 +3151,11 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
-### T219 — [A] **Build the PLANNED-BUT-UNBUILT topics** (BODMAS, Negatives, Roman, ×-tricks, Primes, Algebra, Roots + the 8 coverage-pass additions) · status: OPEN · owner-requested
+### T219 — [A] **Build the PLANNED-BUT-UNBUILT topics** (BODMAS, Negatives, Roman, ×-tricks, Primes, Algebra, Roots + the 8 coverage-pass additions) · status: IN PROGRESS (batch 1 `efb1abf` APPROVED — Roman + Primes) · owner-requested
+**PROGRESS:** ✅ **batch 1 (`efb1abf`): `roman` + `primes`** (group Number) — APPROVED. ✅ **`Roots` already delivered**
+via T213's `cubes`→"Cubes & Roots" (√/∛) — strike from the list below. **Remaining:** Part-1 BODMAS, ×-tricks,
+Negatives-P1, Algebra/function-machines; all 8 Part-2 coverage additions; then the Collector-ladder rebalance LAST.
+Build + push each batch (by group) on its own for the Babysitter's re-assessment.
 **Owner (2026-06-22): "we want all those… are there more planned but not built topics? seems like we should build
 them unless there's a good reason not to."** → then ran the DEEP coverage pass (`COVERAGE-PASS.md`) → owner: **"no
 we'll do it now. can't launch until Google approve me anyway"** + (on the 8 found gaps, re: dropping
@@ -3241,7 +3245,7 @@ ready → Plants badge).
   **[A]-only** (`main.js`, `index.html`, `styles.css`, tests). *(Queue: after T213; a nice pre-launch retention
   touch. Also note in GG2-MILESTONES as a CORE feature.)*
 
-### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (iterative: assess ↔ fix until perfect) · status: PHASE 1 DONE · PHASE 2 FIXES → [A] HIGH-PRIORITY (after T216) · PHASE 3 re-assess loop (Babysitter) · owner: "as perfect as we can get it"
+### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (iterative: assess ↔ fix until perfect) · status: DONE (`efb1abf`) · APPROVED — loop CONVERGED (round 1 + round 2 all resolved; regression gate added) · owner: "as perfect as we can get it" · *(post-T219-landing: re-run this loop over the expanded set)*
 **Owner (2026-06-22): "queue up a quality pass for the questions and guides/questions text — a DEEP pass where
 every question and piece of text gets looked over by an AI agent and assessed on various criteria to make sure
 everything is as high quality as possible."** Scope: the **~30 topic generators** (`modes.js`: halves, times,
@@ -3371,7 +3375,27 @@ can stay. By subtitle I mean THE VOID THRONE."*
   behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
-### T220 — [A] **Void Throne: stretch the text VERTICALLY + faster, more random on/off flicker** · status: OPEN · owner-requested
+### T221 — [A] **Void Throne: wide LETTER-SPACING + Star-Wars perspective skew (bottom wider)** · status: OPEN · owner-requested
+**Owner (2026-06-22, on `6a5524a`): "let's add some letter spacing to the Void Throne text, give it plenty of space
+between letters. Can we also skew it so the bottom is wider, Star Wars style."** Continues the void-line styling
+(`paintPixelTitle`/`renderTitles` in `main.js`). GOLD "Goblin Gold" line UNCHANGED — void line only.
+- **Wide letter-spacing (void line only):** today both lines rasterise at `letterSpacing = "-1.5px"` (tight). Give
+  the VOID line **generous POSITIVE tracking** — plenty of air between letters (try ~`+3…6px` at the 26px raster
+  cell-height; tune to taste). Keep the gold line tight as-is. Re-verify the void line still fits the splash width
+  (it's already vertically stretched + all-caps from T220/T217 — wider tracking + caps may need a slightly smaller
+  cell or it could overflow on a narrow phone; **must not clip at 360px wide**).
+- **Star-Wars perspective skew (bottom wider than top):** render the void line as a **trapezoid** — narrower at the
+  top, **wider at the bottom**, like the Star Wars opening crawl receding away. Since the line draws cell-by-cell
+  (`PXX`/`PXY` in the `draw()` loop), apply a **per-row horizontal scale about the horizontal centre** that grows
+  with depth: top rows scaled in (~0.8–0.85×), bottom rows scaled out (~1.1–1.2×) — a smooth ramp by
+  `(y - yMin)/span`. (Optionally a touch of vertical foreshortening, but width is the ask.) Keep it **legible** and
+  **centred**; the glitch/flicker (T220) and the corruption dither still apply on top.
+- **DoD:** the void line has **clearly wider letter-spacing** AND a **bottom-wider trapezoidal (Star-Wars) skew**;
+  gold line unchanged; still legible + centred + no clip at 360px; glitch/stretch/caps from T217/T220 still work;
+  reduced-motion still static; `node -c` clean; entry tests green; **owner device-confirms**. **[A]-only** (`main.js`,
+  maybe `styles.css`). *(Quick visual iteration — before the next T219 batch.)*
+
+### T220 — [A] **Void Throne: stretch the text VERTICALLY + faster, more random on/off flicker** · status: DONE (`6a5524a`) · APPROVED — pending owner device-confirm · owner-requested
 **Owner (2026-06-22, screenshot on `cc1f202`): "maybe let's stretch the Void Throne text vertically, and make the
 animation more rapidly/randomly flickering on and off."** Further refines the void subtitle (`paintPixelTitle`/
 `renderTitles` in `main.js` — the JetBrains-Mono ALL-CAPS corrupted line from T217). The GOLD "Goblin Gold" line is

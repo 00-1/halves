@@ -1,6 +1,46 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `T213 Phase 2a + 2b-1 APPROVED` (1e6ab1f, 5eac801; 54/54 + node -c green) **+ Phase-3 round 2
+**Current verdict:** `APPROVED — T213 (content loop CONVERGED) · T220 · T219 batch 1` — live `efb1abf`; **56/56
+tests + `node -c` clean** (independently verified at a detached worktree). Three things landed together:
+
+- **🟢 `T213` — DONE (the content quality loop has CONVERGED).** Every round-1 + round-2 item is resolved and
+  verified by re-enumerating the affected pools:
+  - **`digitsum` HIGH bug FIXED** (both the guide tip AND `explain()`): now "…keep adding to a single digit — that's
+    the remainder; **but if you reach 9 the number divides exactly, so the remainder is 0.**" ✓ (the ×9 live Qs
+    `567/7263/999 ÷ 9 = 0` are now taught correctly.)
+  - **`partwhole` guide** generalised: "50% → ×2, 25% → ×4, 20% → ×5, 10% → ×10." ✓ (was 10%-only.)
+  - **`sequences` nth-term SPLIT** into a locked Part-2 **`sequences2`** ("Evaluate the nth-term rule", gated) — base
+    `sequences` is now next-term-only; verified no nth-term leaks into P1. nth-term answers recomputed (`6n−2 t7=40`,
+    `5n+1 t8=41` …) all correct. ✓
+  - **`fractions` eighths/16ths SPLIT** into locked Part-2 **`fractions2`** (incl. `1/16=0.0625`); base `fractions`
+    has no /8 or /16 left. ✓
+  - **`rounding` 560-tie REMOVED** → `638→600` (non-tie). ✓  **`cubes`→"Cubes & Roots"**: +√/∛ (√225=15, ∛1000=10,
+    ∛64=4 …), pool 9→24, all recomputed correct. ✓
+  - **De-dup:** `placevalue` `3.5×100` dropped from P1 (kept in P2). ✓
+  - **Regression GATE added** (`test/question-integrity.test.js`): asserts (a) every answer non-negative + terminating
+    + numpad-clean, (b) no identical prompt with two differing answers, (c) no duplicate slot within a topic. Passes.
+    ✓ — this locks the question bank against future regressions.
+- **🟢 `T220` — DONE (pending owner device-confirm).** Void line now uses **taller-than-wide cells** (`PXX=2,
+  PXY=3`; gold stays `2×2` square) → "THE VOID THRONE" is vertically stretched; the glitch flickers **faster + more
+  random** (`~35–105ms`/frame ≈ 9–28fps jittery, was fixed ~11fps) with a **~20% whole-line dropout** (full
+  `clearRect` → cuts fully OFF) and shorter idle gaps (1.6–4.2s). Reduced-motion → whole block skipped (static). Gold
+  line unchanged.
+- **🟢 `T219` batch 1 — APPROVED (T219 continues).** `roman` + `primes` (group Number, chained: roman `requires
+  mastery:rounding`, primes `requires mastery:digitsum`). Enumerated both pools (21 each), **every answer recomputed
+  by hand** — Roman (`CMXC=990`, `MCMLXXXIV=1984`, `CD=400` …) and Primes ("next prime > N": `50→53`, `24→29`,
+  `48→53` …) all correct, unambiguous, numpad-safe. **Both have a full guide + tailored `explain()`** (the T213 bar).
+  Built as single gated topics (not P1/P2 sub-modes) — accepted: pools are curated + chained deep, and splitting all
+  15 would balloon the menu to ~30 modes. **NB: `Roots` is already delivered** (folded into `cubes`→"Cubes & Roots"
+  in T213) — strike it from the remaining T219 list.
+
+**→ A: CONTINUE `T219` in batches by group** (push each batch on its own for re-assessment). Remaining: Part-1
+BODMAS, ×-tricks, Negatives-P1, Algebra/function-machines; Part-2 Area&Perimeter, Volume, Angles (new Geometry
+group), Speed-Distance-Time, Median/Mode/Range, F↔D↔P, Percentage-increase, Prime-factorisation/factors&multiples;
+then the Collector-ladder rebalance LAST. **B: STAND BY.**
+
+---
+
+**Prior verdict:** `T213 Phase 2a + 2b-1 APPROVED` (1e6ab1f, 5eac801; 54/54 + node -c green) **+ Phase-3 round 2
 re-assessed:** calibration clean (bonds2/metric/mean verified), 9/11 new guides solid; **2 fixes back to A — 🔴
 `digitsum` guide HIGH bug (remainder-by-digital-root gives 9 not 0 for ×9; live Qs hit it) + `partwhole` LOW**.
 A continues the T213 loop. *(See QUESTION-QUALITY-AUDIT.md round 2.)* Prior: `T217 [A]` (void line ALL CAPS + intermittent bursting interference; live `cc1f202`, 53/53 green). Prior: `T216 [A]` (entry: title repositioned off the top + Void Throne in a distinct
