@@ -1,8 +1,28 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T181 [B] · T183 [B] · T179 [A]` (emblems, brighter lofi, the Codex) + the
-`T173` follow-ups. Live build **`5633895`**; full suite + `node -c` green. **⚠ `T182` (hoard-visibility) is STILL
-PENDING — A skipped it; the pile is still invisible at real gold. It's A's DO-FIRST.**
+**Current verdict:** `APPROVED — T184 [A] · T182 [A] · T186 [A]` + the Codex **Emblems** wiring (T179 remnant).
+Live build **`8cbfa68`** (all deployed); full suite **52/52** + `node -c` green; arena gates green.
+- **`T184`** (`d47685d`, [A]) — DEV MODE from the menu: **tap the build pill 7×** (1.5 s window) toggles a
+  persisted `halves.dev` flag (`?dev` kept as fallback); a **Developer** section in Setup (hidden by default)
+  houses the **gold-setter** (real `saveGold()` 0/1K/…/1T), the **reveal-all** view-only toggle, and the FX/hoard
+  testers. Off by default — normal users never see it. `dev-reveal` test 31 green. **Remove for publish (T168).**
+- **`T182`** (`d47685d`, [A]) — hoard **log curve**: `hoardLevel = clamp(log10(1+gold)/log10(1e12),0,1)` →
+  visible across K/M/B/T (1K≈25%, 1M≈50%, 1B≈75%, 1T≈full), replacing the old power curve that read 0.17% at real
+  gold. `hoard-wiring` test 47 green. *(Curve only — the pile **still doesn't draw** on the owner's device; that's
+  a separate engine bug, **T185 [B]**, root-caused below.)*
+- **`T186`** (`8cbfa68`, [A]) — region bosses now **vary by region**: `TYPES[floor((n-1)/REGION_SIZE) % 3]` →
+  Brawn/Arcane/Cunning cycle across the 10 bosses (no longer all Cunning/green); Void Sovereign stays adaptive.
+  `arena`/`arena3` green.
+- **Codex EMBLEMS wiring** (`317b086`, [A]) — B's `emblems.js` candidates now render as a Codex **Emblems**
+  section, unlocking by conquest (emblem *i* once *i* bosses are felled; dev reveal-all shows all). `codex` test
+  green. *(This was the outstanding T179 remnant.)*
+**Verified:** worktree at `8cbfa68`; `node -c` clean on every changed `.js`; **52/52** suite + arena/codex/fxgl/
+gold gates green; deploy confirmed (pages.yml run for `8cbfa68` = success). **→ A: `T187` (Codex items clickable →
+detail popup, owner-requested) → then icon-direction (owner reviewing).  → B: `T185` 🔴 (hoard pile not drawing —
+ROOT-CAUSED: only `CPUBackend` draws it; WebGL2/WebGPU don't).**
+
+> **Prior verdict:** `APPROVED — T181 [B] · T183 [B] · T179 [A]` (emblems, brighter lofi, the Codex) + the
+`T173` follow-ups. Live build **`5633895`**; full suite + `node -c` green.
 - **`T181`** (`8f077cb`, [B]) — `emblems.js`: all candidates (`coin`/`crowncoin`/`hoard`/`goblin`/`voidthrone` +
   a bonus `sigil`), beveled coin with a goblin-profile stamp + glint, gold-on-purple, maskable-safe; `emblems.test`
   45 green. Ready for the owner to review + pick the launcher icon.

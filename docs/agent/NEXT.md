@@ -10,31 +10,31 @@
 
 ---
 
-**Builder A → `T184` + `T182` 🔴 BOTH DO-FIRST (dev mode in the menu + visible pile) → wire Codex Emblems**
-The owner is **blocked from testing** — can't enable dev tools without editing URLs, and can't see the pile.
-- **🔴 `T184` — DEV MODE from the MENU (no URLs):** enable via **tapping the build pill ~7×** → persisted
-  `halves.dev` flag → a **"Developer" section in Setup** with ALL dev tools: the **gold-setter buttons** (set real
-  gold: 0/1K/1M/1Bn/1T…, refresh pill+pile+milestones), the **reveal-all-collections** toggle (heroes/inventory/
-  Codex), and the **FX/hoard testers**. (Keep `?dev` as a fallback.) Off by default; remove for publish (T168).
-  Absorbs T180. [A]-only. *(BACKLOG T184.)*
-- **🔴 `T182` — make the pile VISIBLE:** `hoardLevel(gold) = clamp(log10(1+gold)/log10(GOLD_FULL_MAG),0,1)`,
-  `GOLD_FULL_MAG`≈1e12–1e15 (1K≈25%, 1M≈50%, 1Bn≈75%, 1T≈full). The log curve makes the pile show at any wealth
-  (currently power-curve → 0.17% at real gold = invisible). [A]-only. *(BACKLOG T182.)*
-- **Then `T186` (BUG, owner):** all region bosses render green — every boss tier (12,24,…) lands on the same type
-  because `REGION_SIZE`12 is divisible by 3. Vary boss types by region (`enemies.js`, `TYPES[region%3]`) → distinct
-  colours + matchups; keep the Void Sovereign adaptive. [A]-only. *(BACKLOG T186.)*
-- **Then wire the Codex EMBLEMS section** (B's `emblems.js` candidates; rest unlockable via milestones) — the
-  owner's icon-review surface. *(`T168` Play-Store held for ID-verify.)*
+**Builder A → `T187` (Codex items CLICKABLE → detail popup, owner-requested).** Your `T184`/`T182`/`T186` +
+the Codex Emblems wiring are all **APPROVED** (live `8cbfa68`). Next:
+- **`T187` — Codex cells open a DETAIL POPUP** like the inventory items. Today tapping a Codex cell does nothing:
+  the `#invList` handler matches `.inv-cell` (incl. `.codex-cell`) then `C.byId(cell.dataset.id)` — but Codex
+  cells have **no `data-id`** (they carry `data-codex`/`data-n`/`data-type`/`data-region`/`data-seed`/`data-emblem`),
+  so it `return`s. Add a Codex branch → reuse the `openModal`/`#unlockModal` chrome to show the **enlarged art** (re-
+  draw via Monsters/Scenery/EventArt/Emblems off the cell's `data-*`) + the **name** + a **category / where-found**
+  line (Beast·Realm·Type / Boss·Realm / Realm / Event / Emblem). Owned → full detail; locked → the `"???"` tease.
+  [A]-only (`main.js`, maybe `index.html`/`styles.css`, tests). *(BACKLOG T187.)*
+- **Then HOLD for the icon direction.** The owner is reviewing whether the app icon should come from the abstract
+  **Emblems** or be derived from the **bestiary/boss/hero** art they prefer — Babysitter will file the chosen
+  direction. Don't pre-build. *(`T168` Play-Store held for ID-verify.)*
 **Re-read this line fresh before each task + push.**
 
-**Builder B → `T185` 🔴 BUG (the gold hoard pile is INVISIBLE — no mound even at 1T gold).** Off standby. The
-data is correct (`scene.hoard` = level 1.0 is fed to the engine — confirmed), but **no mound draws.** Investigate
-the RENDER: **(A) most likely OCCLUSION** — the mound anchors at the bottom 34% of the backdrop, which is
-`z-index:-1` **behind the opaque home UI** (topic card + Start/Practice/Guide + nav) → hidden; **(B)** confirm the
-hoard layer draws on the device's actual backend (WebGL2/WebGPU vs Canvas2D-still fallback). Browser-verify the
-mound at level 1.0 (use the dev gold-setter → home). **The placement likely needs an owner call** (the bottom is
-opaque UI) — Babysitter is surfacing options. B-owned (`fxgl.js`); a home-layout move is an [A] companion I'll
-split out. *(BACKLOG T185.)*
+**Builder B → `T185` 🔴 BUG (the gold hoard pile DOESN'T DRAW on the device).** ✅ **ROOT CAUSE FOUND
+(Babysitter-verified in `fxgl.js`):** the hoard renders **only on `CPUBackend`** (`_still` → `_hoard`, :1241/:1247).
+**`GLBackend` (WebGL2) and `GPUBackend` (WebGPU) never draw it** — `renderFrame` is only scene+ambient+burst, and
+`setData` **ignores `derived.hoard`**. The owner's Android-Chrome PWA runs WebGL2/WebGPU → the mound is never
+drawn (matches the owner: *"not displaying at all… if anything it's behind the purple backdrop"* — NOT occlusion).
+**Fix (recommend the 2D overlay):** make the hoard render on **all** backends — preferably a backend-agnostic
+**Canvas2D hoard-overlay** layered over the GL/GPU scene canvas (transparent, `pointer-events:none`, z above the
+backdrop / below the buttons), reusing the existing `_hoard` + `drawCoin` 2D code; the Controller owns/sizes/
+redraws it on `setData`. DoD: pile visible **on the WebGL2/WebGPU backends** (not just CPU); scenes byte-identical
+when `scene.hoard` absent; `fxgl`/`fx-wiring`/`hoard-wiring` green. B-owned (`fxgl.js`, `index.html`, tests).
+*(BACKLOG T185.)*
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

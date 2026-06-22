@@ -2936,27 +2936,36 @@ build.**
   + reduced-motion); **B-owned doc only** (no engine change yet); `node -c` clean if any code/test touched.
   **The Babysitter surfaces the recommended technique to the owner for a thumbs-up before T172 builds it.**
 
-### T185 — [B] **BUG (live):** the gold hoard pile is INVISIBLE (no mound even at hoard level 1.0 / 1T gold) · status: OPEN · 🔴 DO-FIRST
-**Owner (2026-06-22, screenshot): 1.00T gold, build `d47685d`, but NO pile on the home screen.** The data is
-CORRECT — `homeFxState` feeds `hoard: hoardLevel(loadGold())` (=1.0 at 1T, log curve T182), and `deriveHomeScene`
-sets `scene.hoard = {level:1.0,…}` (confirmed in `fxgl.js`). So the engine GETS a full hoard but draws **no
-visible mound.** Investigate the RENDER:
-- **Hypothesis A (most likely): OCCLUSION.** The mound draws at the **bottom** of the backdrop (`HOARD_MAX_H =
-  0.34` of height, anchored low), but the home backdrop is `z-index:-1` **behind the opaque bottom UI** (the
-  current-topic card + Start/Practice/Guide buttons + the Best/Items/Heroes/Arena/Setup nav row). A mound in the
-  bottom ~34% is entirely **hidden behind those opaque elements**. → The pile needs to render where the backdrop
-  is actually VISIBLE (the upper/mid area is only semi-covered by the topic tree), or the placement rethought.
-  **This likely needs an owner call on WHERE the pile should sit** (the owner's vision was "piles up in the
-  background, bottom" — but the bottom is opaque UI). Babysitter will surface placement options.
-- **Hypothesis B: backend/render gap.** Confirm the hoard layer is actually drawn on the owner's device's
-  **backend** (WebGPU/WebGL2 vs the Canvas2D-still / CPU fallback) — the T172 hoard render may only exist in one
-  path. Browser-verify the mound + surface coins draw at level 1.0.
-- **DoD:** the gold pile is **visibly rendered** on the home screen at a meaningful gold level (not occluded, not
-  backend-gated); browser-verified (the harness; or via the dev gold-setter → home); **B-owned (`fxgl.js` +
-  tests)** for the render — if the fix needs the pile moved out from behind the UI, that placement/layout is an
-  **[A]** companion (home layout) I'll split out. Pairs with the owner's placement decision.
+### T185 — [B] **BUG (live):** the gold hoard pile is INVISIBLE — ROOT CAUSE FOUND: only the CPU backend draws it · status: OPEN · 🔴 DO-FIRST
+**Owner (2026-06-22, screenshot): 1.00T gold, build `d47685d`, but NO pile on home.** Then (2026-06-22,
+clarifying): *"the gold pile should appear over the purple backdrop, but behind the buttons. the buttons only
+partially occlude the pile — you'd still see it fine through the gaps. that's really not the problem. it's just
+not displaying at all. if it's behind anything it's the purple backdrop."* → **NOT occlusion.** The data is
+CORRECT (`homeFxState` → `hoard: hoardLevel(loadGold())` =1.0 at 1T; `deriveHomeScene` sets `scene.hoard`).
 
-### T186 — [A] **BUG (live):** all region BOSSES render the same colour (green) — Codex + Arena · status: OPEN · owner-flagged
+**✅ ROOT CAUSE (Babysitter-verified in `fxgl.js`):** the hoard is **only rendered on `CPUBackend`** —
+`CPUBackend._still` calls `this._hoard(d.hoard)` (fxgl.js:1241, with `_hoard` at :1247). **Neither `GLBackend`
+(WebGL2) nor `GPUBackend` (WebGPU) draws the hoard:** `GLBackend.renderFrame` (:991) runs only pass1 scene +
+pass2 ambient particles + pass3 burst, and `GLBackend.setData` (:945) uploads image/ramp/particles and **ignores
+`derived.hoard` entirely** (same for `GPUBackend`). The owner's Android-Chrome PWA runs **WebGL2/WebGPU**, not the
+Canvas2D-still fallback → the mound + surface coins are **never drawn** (the purple quantised scene paints over
+nothing). This is exactly "not displaying at all… if anything it's behind the purple backdrop."
+- **Fix (B's call; recommend the 2D-overlay):** make the hoard render on **all** backends, not just CPU. Options:
+  - **(Recommended) a backend-agnostic 2D hoard overlay** — composite the hoard via a separate `Canvas2D` layer
+    stacked directly **over** the WebGL/WebGPU scene canvas (same rect, transparent, pointer-events:none),
+    reusing the existing `_hoard` + `drawCoin` 2D code verbatim. Lowest-risk, reuses the beveled-coin look, works
+    identically on every backend, and sits cleanly between the purple backdrop (the GL canvas) and the home UI
+    (just set its z-index above the backdrop, below the buttons — matching the owner's "over the backdrop, behind
+    the buttons"). The Controller owns/sizes/redraws it on `setData`.
+  - *(Alt)* bake the mound silhouette into `derived.image` before upload + emit the surface coins as a coin-`kind`
+    in the instanced particle buffer (more shader work, per-backend).
+- **DoD:** the gold pile renders **visibly on the home screen over the purple backdrop on the WebGL2/WebGPU
+  backends** (the owner's real device — not just the CPU fallback), at a meaningful gold level; browser-verified
+  (or via the dev gold-setter → home); the existing scenes stay byte-identical when `scene.hoard` is absent;
+  `node -c` clean; `fxgl`/`fx-wiring`/`hoard-wiring` tests green (+ a check the hoard draws on the GL path).
+  **B-owned (`fxgl.js`, `index.html` if a 2D overlay canvas is added, tests).**
+
+### T186 — [A] **BUG (live):** all region BOSSES render the same colour (green) — Codex + Arena · status: DONE (`8cbfa68`) · APPROVED
 **Owner (2026-06-22, Codex screenshot): "the bosses are all green — why?"** **Root cause:** boss tiers are 12,
 24, …, 120 (every `REGION_SIZE`th), and the enemy **type** cycles `TYPES[(n-1)%3]` (Brawn/Arcane/Cunning →
 red/purple/green). Since **`REGION_SIZE = 12` is divisible by 3**, every boss tier lands on the **same** index
@@ -2973,7 +2982,27 @@ differs — its type is overridden to match the player's champion). It's both a 
   `node -c` clean; `arena`/`arena3` tests still green (+ a check that boss types aren't all identical); **[A]-only**
   (`enemies.js`, tests).
 
-### T184 — [A] **DEV MODE in the config — enabled from the MENU, no URLs** (houses all dev tools) · status: OPEN · 🔴 DO-FIRST (owner is blocked from testing)
+### T187 — [A] **Codex items are CLICKABLE → a detail popup** (like the other inventory items) · status: OPEN · owner-requested
+**Owner (2026-06-22): "the codex items should be clickable like the other inventory items, for a detail popup."**
+Today, tapping a Codex cell does **nothing**: the `#invList` click handler (`main.js` ~:2418) does
+`cell.closest(".inv-cell")` (which *also* matches `.codex-cell`) then `C.byId(cell.dataset.id)` — but Codex cells
+carry **no `data-id`** (they have `data-codex`/`data-n`/`data-type`/`data-region`/`data-seed`/`data-emblem` from
+`codexCell`, :1244), so `byId` returns null and the handler `return`s. Wire a Codex branch that opens a **detail
+popup** mirroring the existing inventory `openModal` pattern (:1012) — the same modal chrome (`#unlockModal`).
+- **Detail content:** the generative art **enlarged** (re-draw the same Monsters/Scenery/EventArt/Emblems art the
+  cell uses — read the cell's `data-*` to pick the draw call, big canvas), the **name** (the real flavour name for
+  owned; `"???"` for locked), and a **"where found" / category line** — e.g. *Beast · {Realm} · {Type}*,
+  *Boss · {Realm}*, *Realm · {name}*, *Event*, *Emblem · app-icon candidate*. Owned → full detail; **locked → the
+  tease** (`"???"` + "Encounter this to add it to your Codex" — matching the inventory locked path).
+- **Reuse, don't fork:** prefer extending `openModal`/`#unlockModal` (or a thin Codex-specific variant) so the
+  modal open/close/scrim/`fxCelebrate` behaviour, and the tap-outside-to-close, all match the inventory popup the
+  owner referenced. Keep the four-section Codex render (T179) intact.
+- **DoD:** tapping any Codex cell (Beasts/Bosses/Realms/Events/Emblems, owned **and** locked) opens a detail popup
+  with the enlarged art + name + category/where-found; locked cells tease; close works (button + tap-outside); no
+  regression to the existing inventory-item popups; `node -c` clean; `codex` test green (+ a check the Codex click
+  path resolves a cell to its art/label). **[A]-only** (`main.js`, maybe `index.html`/`styles.css`, tests).
+
+### T184 — [A] **DEV MODE in the config — enabled from the MENU, no URLs** (houses all dev tools) · status: DONE (`d47685d`) · APPROVED
 **Owner (2026-06-22): "I see the Codex but no way to turn everything on. I don't want to edit URLs — make sure I
 can do all the dev-mode stuff in the config now. We'll disable dev mode later."** Replace the `?dev` URL gate with
 an **in-app DEV-MODE flag** enabled from the UI:
@@ -2991,7 +3020,7 @@ an **in-app DEV-MODE flag** enabled from the UI:
   **[A]-only** (`main.js`, `index.html`, tests). *(Absorbs **T180**'s reveal-all + houses **T182**'s gold-setter.)*
   **Verify:** owner enables dev from the menu, sets gold to 1Bn, reveals all collections — no URL touched.
 
-### T182 — [A] **Hoard FIX:** make the pile VISIBLE (log-of-magnitude curve); the gold-setter lives in the T184 Dev panel · status: OPEN · 🔴 DO-FIRST (the owner can't see the hoard at all)
+### T182 — [A] **Hoard FIX:** make the pile VISIBLE (log-of-magnitude curve); the gold-setter lives in the T184 Dev panel · status: DONE (`d47685d`) · APPROVED — curve only; the pile-not-drawing render bug is T185 [B]
 **Owner (2026-06-22): "I haven't seen any pile. I wasn't able to simulate piles from the [graphics] menu — maybe
 they're displayed invisibly behind the menu. I should be able to set the number of coins globally from this menu
 to see what happens to the pile."** **Root cause = mis-calibration + wrong place:** `GOLD_FULL = 1e10` with the
