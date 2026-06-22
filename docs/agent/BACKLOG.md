@@ -2812,6 +2812,24 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
+### T176 — [A] **BUG (live):** black bar in the notch/cutout area on PWA (purple backdrop doesn't reach the top) · status: OPEN · 🔴 DO-FIRST
+**Owner (2026-06-22): "black bar at the top of the screen in PWA, whereas in Firefox the purple background goes
+all the way to the top. This is the phone's notch area."** **Root cause:** the viewport meta (`index.html:7`) is
+`width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no` — **missing `viewport-fit=cover`.**
+Without it, an installed/standalone PWA won't paint into the display **cutout (notch)** area, so that strip shows
+the dark **`theme-color` `#0E1116`** (= the black bar). A browser tab has no cutout to fill → Firefox looks fine.
+- **Fix:** add **`viewport-fit=cover`** to the viewport meta so content extends edge-to-edge into the cutout; the
+  full-bleed **`.fx-backdrop`** (already `position:fixed; inset:0; 100vw/100dvh`) + body `--bg` then fill the notch
+  with the **purple backdrop**. The interactive UI **stays inset-aware** — body padding + `.app` height already use
+  `env(safe-area-inset-*)` (T112), and those insets become *non-zero* once `viewport-fit=cover` is set, so verify
+  the home/game layout still lays out correctly under real insets (the `home-layout` invariant must hold; the Skip
+  key etc. must not clip). Optionally revisit `theme-color` (the purple reads better than near-black behind the
+  cutout, but the backdrop bleeding is the real fix).
+- **DoD:** with `viewport-fit=cover`, the purple backdrop reaches the very top (no black notch bar) in
+  standalone/PWA; the UI respects the safe-area insets (nothing clipped under the notch); `home-layout` invariants
+  intact; `node -c` clean; **[A]-only** (`index.html`, `styles.css` if needed, tests). **Verify:** owner confirms
+  on the PWA (notch fills purple); browser-tab unaffected.
+
 ### T175 — [B] **BUG (live, recurring):** the FOGHORN is back — music BUILDS UP to a sustained drone over time · status: OPEN · 🔴 DO-FIRST (ahead of the hoard T172)
 **Owner (2026-06-22, latest build `7df7699`): "got foghorn on latest build. Music started nice then BUILT UP to
 foghorn."** The "**built up**" is the key tell: a **gradual divergence** — the output grows **unboundedly over

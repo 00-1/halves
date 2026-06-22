@@ -16,20 +16,30 @@
    **bevel** (rim highlight + inner radial gradient + a small specular glint; 3 gold tones highlight/mid/shadow)
    and **per-particle rotation + a vertical squash (ellipse)** so coins lie at **varied angles** and catch light
    differently. Individual coins are discernible within the mass.
-3. **EARN → coins fly into the hoard.** On banking gold, a burst fires **from the earn-point**, the coins **arc
-   toward the hoard region and settle**, and the mound ticks up. (Extends T152 point-emission with a NEW
-   directed/attractor motion: emit → converge on a target → land, vs today's disperse-and-fade.)
+3. **EARN → coins burst from the earn-point (NO settling required — owner, 2026-06-22).** On banking gold, a
+   burst of **spinning coins** flies out from the earn-point. **It does NOT need to converge/settle onto the
+   pile** — the owner: *"new coins don't need to physically settle on the pile — we're usually not on the home
+   screen when we earn, and the coins flying out already evoke landing in the hoard."* So the earn-burst is a
+   **standalone spinning-coin burst** (fired wherever earning happens — drills/Arena), and the persistent mound
+   simply reflects the new **total** the next time the player is on the home screen. **No attractor/target motion
+   needed** (simplifies the engine — drop the converge requirement).
 
 ## Engine work [B] (`fxgl.js`) — the new capabilities
-- **(a) Beveled-coin splat:** enhance the disc-mask fragment → a coin (rim highlight + inner gradient + specular
-  glint), driven by a gold palette. A `look:"coin"` (or a flag) on the scene/particles so it's opt-in (the
-  existing soft-dot look stays the default for other scenes).
-- **(b) Per-particle rotation + aspect (squash)** as instance attributes → varied coin angles. (Per-particle
-  phase already exists; add rotation + aspect.)
+- **(a) Beveled-coin splat — must really READ AS A COIN (owner emphasis):** enhance the disc-mask fragment → a
+  struck coin (rim highlight + inner radial gradient + specular glint, 3 gold tones). **Not "just particles."**
+  A `look:"coin"` flag on the scene/particles so it's opt-in (the existing soft-dot look stays default elsewhere).
+- **(b) Per-coin rotation + aspect/squash → varied angles, AND animated SPIN (owner):** static rotation+squash
+  for the hoard's settled coins (varied angles); **for the EARN-burst coins, an animated SPIN** — the coin
+  rotates over its lifetime (at least *some* of them), so flying coins tumble/glint like real coins, not flat
+  dots. (Per-particle phase exists; add a rotation attr + a spin-rate; spin animates in-shader from the static
+  buffer like the existing wind-sway.)
 - **(c) Hoard scene mode:** a settled-at-the-bottom mound layout (not the wind-swayed field) whose **coverage +
-  density + height** are a function of a `hoard` amount (0..1, the saturated gold level). Re-seed the static
-  buffer only when the level **tier** changes (cheap; not per-frame).
-- **(d) Attractor/converge burst:** a burst variant that emits from `{x,y}` and **moves toward a target region**
+  density + height** are a function of a `hoard` amount (0..1, the saturated gold level — see Calibration). Re-seed
+  the static buffer only when the level **tier** changes (cheap; not per-frame).
+- **(d) Spinning-coin burst (NO attractor):** the earn-burst = the `look:"coin"` splat with **animated spin**,
+  fired from `{x,y}`, flying out + tumbling + fading (extends T152 point-emission with the coin look + spin).
+  **No target/converge motion** — dropped per the owner (the coins needn't land on the pile).
+- ~~(was: attractor/converge burst)~~ — a burst variant that emits from `{x,y}` and **moves toward a target region**
   (the hoard) then settles, instead of dispersing. (Pairs with the persistent hoard re-seeding slightly larger.)
 - **Constraints:** respect `PARTICLE_CAP` (512) + the degrade ladder (low/med/high) — the mound grows by
   coverage/height/density under the cap, via a **saturating gold→level curve** (e.g. `level = 1 - 1/(1+gold/K)`
@@ -50,6 +60,28 @@
 - Mound shape/position (full-width shallow drift vs a centered heap), how "tall" it's allowed to get, glint
   rate, coin size range, the earn-point source, and the saturating curve's "feel" (how fast early gold shows vs
   the plateau). I'll browser-verify it renders + is bounded; the owner tunes the feel.
+
+## FILL-RATE CALIBRATION (owner asked: what gold = a full pile? ~a few months of play)
+**The economy (from `main.js`):** gold comes from `questionGold` (~2–6 × combo × **mult** per correct Q),
+`roundBonusGold` ((score + rank) × **mult**), and Arena `tierGold` (11→130 × **mult**). The driver is
+**`goldMult = 1 + items·0.05 + mastered·0.5 + heroes·0.5 + tiers·1`** — which climbs from **~1 (new)** to **~145
+(everything collected: ~27 masteries, ~12 heroes, 120 Arena tiers, 100+ items)**. So earning is **super-linear**:
+hundreds/day early, tens-of-thousands/day once progressed (Arena tiers alone add +120 to the mult and pay
+`130 × mult`). *(Screenshot reference: a fresh player showed 1.23K gold at 1 Momentum.)*
+- **Estimate for "a few months" of regular play** (progresses well — most topics mastered, many Arena regions
+  cleared): cumulative gold realistically reaches **several hundred thousand to low millions.**
+- **Proposed targets (TUNABLE — the owner tunes the feel on the live build):**
+  - **Pile visibly *present* early:** a few K gold → a small but real mound (a new player sees it start).
+  - **~Half-full ≈ ~50K gold** (a few weeks of steady play).
+  - **"Full" pile ≈ ~500K gold** (a committed few-months player) — past which the *mound silhouette* keeps
+    creeping (Layer A), but the surface-coin count has plateaued (cap-safe).
+- **Curve:** expose a single **`GOLD_FULL` constant (≈500K)** + a **sub-linear shape** so early gold shows without
+  the curve saturating too fast — e.g. `level = clamp((gold/GOLD_FULL)^0.4, 0, 1)` (gives ~9% at 1.2K, ~40% at
+  50K, 100% at 500K) **or** the saturating `1−1/(1+gold/K)` with `K≈55K`. Quantise into ~6–8 tiers; re-seed only
+  on tier change. **`GOLD_FULL` is the one knob the owner dials.**
+- **Want a precise number?** I can run a quick **Node economy simulation** (rounds/day × accuracy → questionGold +
+  roundBonus + Arena wins, with `goldMult` growing as collection fills) to estimate gold-after-N-days under a few
+  play-frequency assumptions, and set `GOLD_FULL` from real curves rather than a guess. Say the word.
 
 ## Core principle (owner, confirmed): IMPRESSION, not simulation
 **The hoard is NOT thousands of physics particles** — it must just give the **overall impression of amassed
