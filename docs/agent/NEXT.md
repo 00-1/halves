@@ -6,7 +6,21 @@
 
 ---
 
-**Builder A → `T206` (Collector awards rejig).** `T201`/`T202`/`T198` all **APPROVED** (live `b4eead7`).
+**Builder A → `T208` (entry fixes) → `T209` (gold title) → `T206` (collector rejig).** `T201`/`T202`/`T198`
+**APPROVED** (live `b4eead7`). *(If you're mid-`T206`, finish + push it, then do `T208`.)* **Note:** `T206` is last
+because it **depends on B's `T205`** (the resized creature art for the award icons) — do the independent entry work
+(`T208`/`T209`) first while B finishes `T205`.
+- **`T208` — kill the `x/2` flash + restore the subtitle (quick, owner-bothered).** `index.html` hard-codes
+  `<div class="mark">x/2</div>` (paints instantly) and `renderBrand()` only swaps in Magnar after JS → a flash.
+  **Empty the static `.mark`** (reserve its height to avoid a jump); keep `paintGlyph(halves)` as the no-flash
+  fallback only. **Restore the subtitle:** `.tag` ("Fast mental-maths drills") is still in `#entry` markup but not
+  showing → it's hidden/pushed-off (likely a layout change from the Magnar canvas) — find it + make it render.
+  [A]-only (`index.html`, `main.js`, `styles.css`). *(BACKLOG T208.)*
+- **`T209` — stylise the "Goblin Gold" TITLE: pixel-gold (built from the hoard) + occasional glints** (owner). Only
+  the title wordmark; subtitle/buttons/everything else **stay clean/readable**. Render the title as a **pixelated
+  gold-textured wordmark** filled with the hoard's `GOLD_TONES`/T195 gold-ramp+dither, with **occasional throttled
+  glints** (matching the coin shine T207; reduced-motion off). [A]-only (`main.js`/`index.html`/`styles.css`).
+  *(BACKLOG T209 — after T208.)*
 - **`T206` — recalibrate Collector awards + absorb the 3 creatures → 15 total.** The collect-N ladder is today
   **12 tiers 25→10,000**, but the catalogue is ~1,900 so **2,500/5,000/7,500/10,000 are unreachable.** Drop those,
   **compute the live `CATALOG.length`** and set the final tier ≈ that (~1,900 per the owner). **Absorb B's 3 creature

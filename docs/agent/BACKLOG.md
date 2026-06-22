@@ -3190,6 +3190,41 @@ match the size of the existing ones visually, cos in the emblems screen they loo
   same visual size as the other collectible icons**; `emblems.test` updated + green; `node -c` clean. **[B]-only**
   (`emblems.js`, `test/emblems.test.js`). *(Pairs with T206 [A], which consumes these as awards.)*
 
+### T208 — [A] **Entry fixes: kill the `x/2` flash + restore the missing subtitle** · status: OPEN · owner-reported
+**Owner (2026-06-22): "I see Magnar now, that's good. There's still a flash of x/2 though, which I don't want.
+Also we're missing the subtitle under Goblin Gold."**
+- **No `x/2` flash:** `index.html` hard-codes `<div class="mark">x<span class="slash">/</span>2</div>` (CSS text,
+  paints instantly), and `renderBrand()` only swaps in the **Magnar** canvas *after* JS runs → a visible flash of
+  x/2 on every load. **Empty the static `.mark`** (`<div class="mark"></div>`) — or hide it until painted — so
+  nothing shows before Magnar. Keep the `paintGlyph(halves)` fallback for the no-generator case (it can stay the
+  fallback content but must NOT flash on the normal path). Reserve the mark's height in CSS so there's no layout
+  jump while Magnar paints.
+- **Restore the subtitle:** the `.tag` ("Fast mental-maths drills") is **still in the `#entry` markup** but the
+  owner reports it's not showing under "Goblin Gold" → it's **hidden or pushed off**, not deleted. Investigate
+  (likely a layout/height change from the Magnar `.mark` canvas, or a CSS regression) and **ensure the subtitle
+  renders under the title** on the entry/splash.
+- **DoD:** on load the splash shows **Magnar (no x/2 flash)** + "Goblin Gold" + the **subtitle visible** beneath it;
+  no layout jump; `node -c` clean; entry/icon tests green; **owner device-confirms**. **[A]-only** (`index.html`,
+  `main.js`, `styles.css`).
+
+### T209 — [A] **Stylise the "Goblin Gold" title — pixel-gold, built from the hoard, with occasional glints** · status: OPEN · owner-requested
+**Owner (2026-06-22): "the title text, at least Goblin Gold, could be more stylised and pixelated — everything
+else can remain clean/readable. Maybe the title should be built out of the gold in our stacks, including
+animated/occasional glinting."** Only the **title wordmark** changes; the subtitle, buttons, and all other text
+**stay clean/readable** (the current `--display` font).
+- **Build:** render the **"Goblin Gold" title** as a **pixelated, gold-textured wordmark** — filled with the
+  **hoard's gold tones** (the `GOLD_TONES` / the T195 brickmap gold ramp + ordered-dither, so it reads as "built
+  out of the coins"), nearest-neighbour/crisp. Likely a **canvas-rendered pixel title** (a pixel font / blocky
+  glyphs filled with the gold-coin material) rather than the clean web font.
+- **Animated glints:** **occasional glints sweep/sparkle across the title** (matching the coin shine, T207) — a
+  bright highlight that flashes now and then, throttled + cheap (reuse the coin-glint approach; respect
+  reduced-motion → no glint animation). Don't make it busy — *occasional*.
+- **DoD:** the "Goblin Gold" title reads as **stylised pixel-gold (built from the hoard) with occasional glints**;
+  the subtitle + every other entry element stay clean/readable (unchanged font); legible at the splash size; no
+  perf cost beyond a cheap throttled glint (reduced-motion safe); `node -c` clean; tests green; **owner device-
+  confirms**. **[A]-only** (`main.js`, `index.html`, `styles.css`; may share the gold-ramp/glint helper with
+  `fxgl`/T207). *(After T208's entry fixes.)*
+
 ### T206 — [A] **Collector awards: recalibrate to the real catalogue + absorb the 3 creature awards → 15 total** · status: OPEN · owner-requested
 **Owner (2026-06-22): "move those last three emblems to collector awards, so we have 15 in total. And rejig the
 collector awards to match our actual item count — I don't think it'll increase much now we're nearing the end. The
