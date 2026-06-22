@@ -5410,3 +5410,33 @@ enemies.js, the new gate + pages.yml, hero-icons counter, research doc).
 notes: per NEXT.md the next [A] task is **T173** (hoard WIRING — gold→homeFxState via GOLD_FULL≈1e10, the
 amount-scaled spinning-coin earn-burst, Graphics-menu tier testers, `?dev` gold-setter), which unblocks once
 **B's T172 engine** lands. Optional non-gating follow-up: `explain()` branches for the remaining T162 modes.
+
+---
+### [A] T173 — GOLD HOARD wiring (over B's T172 fxgl engine)
+what: wired B's T172 gold-hoard engine into the live app (main.js + the Graphics menu). Four pieces:
+1. **Visual hoard level → homeFxState.** New `GOLD_FULL = 1e10` (the owner's one dial, per the NEXT pointer)
+   + `hoardLevel(gold) = clamp((gold/GOLD_FULL)^0.4, 0, 1)` — a SUB-LINEAR saturating curve so a little gold
+   shows a small pile early and it plateaus gracefully (a small mound at 1M ≈2.5%, partway at 1B ≈40%, full at
+   10B). `homeFxState` now returns `hoard: hoardLevel(loadGold())`, so the backdrop renders a gold coin mound at
+   the bottom (gold-on-purple, T153-compliant). The engine re-seeds the mound only on a tier change (cheap); the
+   pile reflects the new total whenever the home screen is shown (no per-frame work, no extra re-render needed —
+   the owner is usually off-home while earning).
+2. **Amount-scaled spinning-coin earn burst.** New `fxEarnBurst(srcEl, amount)` fires B's `earnBurst` (beveled
+   spinning coins flying from the earn-point toward the hoard at bottom-centre, tx/ty 0.5/0.93). `earnBurstSpec`
+   maps the gain → coin count via a LOG curve, CLAMPED to 6..88 (the T178 economy spans ~10→billions — you can't
+   spawn a billion coins); PAST the cap it's **juice not count** — 4 discrete tiers escalate the spread + a
+   brighter gold palette. Fired from `showGold` (the common earn-display path → covers practice + Arena).
+3. **Graphics-menu hoard tester** (`#hoardTest`): Low/Half/Full preview the mound fill on the backdrop +
+   "Earn coins" fires the coin shower — so the owner can eyeball the look without grinding.
+4. **`?gold=<n>` dev setter** (parseFloat → 1e9 etc.) seeds the lifetime total to preview the pile at any wealth.
+how I verified: **NEW `test/hoard-wiring.test.js` (32 checks, gated)** — static wiring (GOLD_FULL/hoardLevel/
+homeFxState hoard/showGold earn-burst/?gold/the tester in #graphics) + the pure curves on `window.Gold`
+(hoardLevel monotone, 0→1 clamped, sub-linear; earnBurstSpec log-scaled + capped ≤88 + tiered juice + safe
+floor) + a booted stub-FXGL run (the tester records setHomeState hoard + earnBurst {x,y,count,tx}). `fxEarnBurst`
+guards on the engine hook so it's a no-op without T172 (fx-wiring's 84 checks still green). **Full suite 49/49.**
+Exposed `GOLD_FULL`/`hoardLevel`/`earnBurstSpec` on `window.Gold`. [A]-only (main.js, index.html, the new gate +
+pages.yml). enemies.js/fxgl.js untouched.
+notes: the earn burst uses B's `earnBurst` (converge-to-hoard) — the only coin-look+spin burst the engine
+exposes; it reads as "coins flying into the pile" (the owner's original vision). LEGIBILITY + the exact mound
+feel (height, glint, the GOLD_FULL dial) are live-verify items for the owner. This completes the [A] queue
+(T178 bump → T60/T61 → T173); next [A] work awaits the babysitter's pointer.

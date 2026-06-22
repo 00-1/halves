@@ -124,6 +124,23 @@
     const base = 1 + items * 0.05 + mastered * 0.5 + heroes * 0.5 + tiers * 1;
     return base * hoardMult(col);
   }
+  // T173 — the VISUAL hoard level (0..1) that drives the home-backdrop coin mound
+  // (B's T172 engine). A SUB-LINEAR curve over lifetime gold so a little gold shows
+  // a small pile early and it plateaus gracefully — the displayed NUMBER keeps
+  // exploding past it (the T178 absurd-wealth comedy), while the PILE is the ambient
+  // impression and caps. `GOLD_FULL` is the single knob the owner dials on the live
+  // build (pointer: ≈1e10 — full pile after the long-haul billions).
+  const GOLD_FULL = 1e10;
+  function hoardLevel(gold){ gold = Math.max(0, gold || 0); return Math.max(0, Math.min(1, Math.pow(gold / GOLD_FULL, 0.4))); }
+  // T173 — ?dev gold-setter: `?gold=<n>` seeds the lifetime gold total so the owner
+  // can preview the hoard mound at ANY wealth on the live build (parseFloat accepts
+  // 1e9 etc.). No param → untouched. A dev affordance, harmless in production.
+  (function devGoldParam(){
+    try{
+      const m = /[?&]gold=([0-9.eE+]+)/.exec((window.location && window.location.search) || "");
+      if(m){ const n = parseFloat(m[1]); if(isFinite(n) && n >= 0) saveGold(n); }
+    }catch(e){}
+  })();
   // Add gold, persist, and grant any newly-crossed wealth milestones (into col).
   function earnGold(amount, col){
     amount = Math.max(0, Math.round(amount));
@@ -236,7 +253,12 @@
     const streak = loadMomentum().count | 0;
     // Always supply the fixed purple palette so fxgl's cool no-event dawn ramp
     // never kicks in — the home stays purple in every state (no event, rare, epic).
-    return { event: { palette: HOME_PALETTE }, progress: progress, streak: streak };
+    // T173 — the gold HOARD rides the same backdrop: a settled coin mound at the
+    // bottom whose size tracks lifetime gold via the saturating hoardLevel() curve
+    // (gold-on-purple). The engine re-seeds the mound only on a tier change, so this
+    // is cheap; the pile reflects the new total whenever the home screen is shown.
+    return { event: { palette: HOME_PALETTE }, progress: progress, streak: streak,
+             hoard: hoardLevel(loadGold()) };
   }
   // LIVE Arena state for the backdrop (T108) — the region/tier the player is ON
   // (sense of place), intensifying toward the region boss. All from the real
@@ -323,6 +345,38 @@
     const c = elCentre(srcEl);
     fxBigBurst({ x: c.x, y: c.y, count: 700, seed: ((tierN | 0) + 1) * 0x85ebca6b >>> 0,
       palette: ["#f5b544", "#ffd98a", "#ffffff", "#78dcff"], sizePx: FX_SMALL + 1, spread: 1.4 });
+  }
+  // T173 — the amount-scaled spinning-COIN earn burst (B's T172 earnBurst): a flurry
+  // of beveled coins flies from the earn-point toward the hoard at the bottom. With
+  // the T178 economy a gain spans ~10 → billions, so map gain → coin count via a LOG
+  // curve, clamped (you can't spawn a billion coins); PAST the count cap we add JUICE
+  // not count — wider spread + a brighter gold palette + a discrete tier — so a huge
+  // boss payout FEELS enormous. reduced-motion is handled inside the engine.
+  const COIN_MIN = 6, COIN_CAP = 88;
+  // Brighter gold pools for the upper haul tiers (small→huge): more highlight tones.
+  const COIN_PALS = [
+    ["#d49e2e", "#ffd66e"],
+    ["#e7b13e", "#ffd66e", "#fff0c0"],
+    ["#f5b544", "#ffd98a", "#fff0c0"],
+    ["#ffd98a", "#fff0c0", "#ffffff"]
+  ];
+  // Pure: gain → { count (log, capped), tier (0..3), spread } — Node-testable.
+  function earnBurstSpec(amount){
+    amount = Math.max(0, +amount || 0);
+    const mag = Math.log10(1 + amount);                                  // 10→1.04, 1e3→3, 1e6→6, 1e9→9
+    const count = Math.max(COIN_MIN, Math.min(COIN_CAP, Math.round(COIN_MIN + 9 * mag)));
+    const tier = Math.max(0, Math.min(3, Math.floor(mag / 2.5)));        // 4 readable juice tiers
+    return { count: count, tier: tier, spread: 0.7 + tier * 0.3, palette: COIN_PALS[tier] };
+  }
+  function fxEarnBurst(srcEl, amount){
+    if(!fxBurst || !(amount > 0)) return;
+    if(typeof fxBurst.earnBurst !== "function") return;                  // engine without the T172 hook → no-op
+    try{ if(fxBurst.resize) fxBurst.resize(); }catch(e){}
+    const c = elCentre(srcEl), spec = earnBurstSpec(amount);
+    const seed = ((Math.round(Math.min(amount, 1e15)) >>> 0) * 0x9e3779b1 >>> 0) || 1;
+    // tx/ty = the hoard's resting spot (bottom-centre); coins fly down into the pile.
+    try{ fxBurst.earnBurst({ x: c.x, y: c.y, tx: 0.5, ty: 0.93, count: spec.count, seed: seed,
+      spread: spec.spread, palette: spec.palette }); }catch(e){}
   }
 
   // ---- Synth wiring (T122) — the generative MUSIC engine ------------------
@@ -2045,6 +2099,8 @@
   }
   function showGold(el, before, after, earned){
     if(!el) return;
+    // T173 — coins burst from the gold readout toward the hoard, scaled by the gain.
+    if(earned > 0) fxEarnBurst(el, earned);
     el.innerHTML = '<span class="gold-n">'+ic("coin")+' ' + esc(fmtGold(before)) + '</span>' +
       (earned > 0 ? ' <span class="gold-plus">+' + esc(fmtGold(earned)) + '</span>' : '') +
       ' <span class="gold-lbl">' + esc(GOLD_LABEL) + '</span>';
@@ -2469,7 +2525,37 @@
       const kind = btn.dataset.fx; if(!kind) return;
       fireCelebrationTest(kind);
     });
+    const hoardGrp = $("hoardTest");
+    if(hoardGrp) hoardGrp.addEventListener("click", e => {
+      const btn = e.target.closest && e.target.closest(".mus-btn"); if(!btn) return;
+      const v = btn.dataset.hoard; if(v == null) return;
+      fireHoardTest(v);
+    });
   })();
+  // T173 — the Graphics-menu hoard tester: preview the coin mound at a fill level
+  // (reveals the backdrop with a forced hoard level so the owner can eyeball the
+  // pile growth) and the amount-scaled coin earn-burst. The next screen change
+  // re-derives the real backdrop, so this leaves no stale state.
+  function fireHoardTest(v){
+    ensureAudioReady();
+    if(!fxBg) setupFx();
+    fxResizeAll();
+    const val = $("setHoardVal");
+    if(v === "earn"){
+      fxEarnBurst($("hoardTestLabel"), 250000);                 // a big-ish haul → a lavish coin shower
+      if(val) val.textContent = "coins fired";
+      return;
+    }
+    const level = Math.max(0, Math.min(1, parseFloat(v) || 0));
+    fxShowBackdrop(true);
+    try{
+      if(fxBg){ fxBg.setHomeState({ event: { palette: HOME_PALETTE }, progress: 0.5, streak: 0, hoard: level });
+        fxBg.start(); if(fxBg.resize) fxBg.resize(); }
+    }catch(e){}
+    // also fly a few coins in, so the preview reads as "filling"
+    fxEarnBurst($("hoardTestLabel"), Math.round(100 * Math.pow(10, level * 4)));
+    if(val) val.textContent = Math.round(level * 100) + "% pile";
+  }
   function fireCelebrationTest(kind){
     ensureAudioReady();                  // T143(4) — unlock audio WITHOUT restarting the music
     if(!fxBurst) setupFx();
@@ -2684,6 +2770,7 @@
   window.Gold = { label: GOLD_LABEL, fmtGold: fmtGold, mult: goldMult,
     questionGold: questionGold, roundBonus: roundBonusGold, tierGold: tierGold,
     hoardMult: hoardMult, bossesDefeated: bossesDefeated, HOARD_G: HOARD_G,   // T178 — the exponential mid/late ramp
+    GOLD_FULL: GOLD_FULL, hoardLevel: hoardLevel, earnBurstSpec: earnBurstSpec, // T173 — the visual hoard curve + earn-burst scaling
     load: loadGold, evaluate: (total, has) => C.evaluateGold(total, has) };
   // Momentum module API (pure reducer + helpers, also used by the Node tests).
   window.Momentum = { label: MOMENTUM_LABEL, MAX: MOMENTUM_MAX, reduce: reduceMomentum,
