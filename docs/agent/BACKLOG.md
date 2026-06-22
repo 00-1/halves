@@ -3151,7 +3151,7 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
-### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (AI-agent assessment → fixes) · status: OPEN · owner-requested (queued)
+### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (AI-agent assessment → fixes) · status: PHASE 1 DONE (audit: docs/agent/QUESTION-QUALITY-AUDIT.md) · PHASE 2 (fixes) → [A], OPEN
 **Owner (2026-06-22): "queue up a quality pass for the questions and guides/questions text — a DEEP pass where
 every question and piece of text gets looked over by an AI agent and assessed on various criteria to make sure
 everything is as high quality as possible."** Scope: the **~30 topic generators** (`modes.js`: halves, times,
@@ -3178,6 +3178,14 @@ copy). Reference `docs/research-11plus.md` + `docs/CONTENT-EXTENSION.md` + the o
 - **Phase 2 — FIXES ([A]):** fix **every** flagged issue in `modes.js` (generators) + `guides.js` + static text;
   re-run the assessment harness to confirm clean; extend `perf.test.js`-style gates where a range/correctness check
   can be automated (so regressions are caught).
+- **✅ PHASE 1 DONE (Babysitter, 5 sub-agents):** enumerated all 622 questions (30 topics) + reviewed all guides/
+  static text → **`docs/agent/QUESTION-QUALITY-AUDIT.md`**. **Headline: NO correctness bugs** (all 622 answers
+  verified correct/numpad-clean). Real findings = clarity/calibration/coverage. **Biggest gap: 11 of 30 topics
+  have NO guide.** Full prioritised fix list in the audit.
+- **PHASE 2 — FIXES [A] (per the audit's prioritised list):** write the 11 missing guides + `explain()` cases;
+  split `sequences` nth-term to a locked Part-2; clarify terse notations (`scaling`/`balance`/`ratioshare`/
+  `metric` litres→L); re-tier outliers (`fractions` 1/16, `mean` 6-term, `bonds2`, `rounding` 560-tie); verify
+  the `money` decimal matcher; add `cubes`+roots; de-dup pool slots; re-run the harness + add a regression gate.
 - **DoD:** every topic's generated questions pass the criteria (correct, in-range, numpad-safe, calibrated, no
   degenerate items); all guides/static text reviewed + fixed (correct/clear/typo-free); the audit doc records what
   was assessed + changed; new/extended automated checks for the catchable criteria; all gates green; `node -c`
