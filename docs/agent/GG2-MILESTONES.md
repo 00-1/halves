@@ -1,7 +1,8 @@
 # GG2 MILESTONES — "Goblin Gold" #2 · Verbal Reasoning · plant/nature (living roadmap)
 
 > Build roadmap for **GG2 (Verbal Reasoning)** — plant/nature aesthetic, the **Plants & Beasts**
-> cultivate/pacify metagame, gold carried over. Created 2026-06-22. **All POST-GG1-LAUNCH** — nothing
+> cultivate/pacify metagame. (Gold is its OWN per-game concept — a fresh GG2 player starts at 0; gold does
+> NOT carry from GG1.) Created 2026-06-22. **All POST-GG1-LAUNCH** — nothing
 > here diverts the current GG1 launch. Companion to `FRANCHISE-DESIGN.md` (the locked decisions).
 > Milestones are roughly dependency-ordered; many can overlap. Not yet builder-assigned.
 
@@ -133,9 +134,9 @@ Below: the gaps found + the milestones added/amended to close them. (Hosting det
 1. **🔴 Repo/hosting structure was missing entirely.** GG2 can't be "built on the same GHP" until the
    folder split + per-app SW-cache namespacing + localStorage namespacing exist. → **folded into P0 as
    P0.3/P0.4/P0.5** (below). This is prerequisite, not late.
-2. **🔴 The "gold carries across every game" mechanic had no plumbing.** FRANCHISE-DESIGN locks it but no
-   milestone built it. Because localStorage is origin-shared, it needs a deliberate **shared franchise
-   wallet** namespace. → **P0.4**.
+2. **Gold does NOT carry between games (owner-clarified) — so there's NOTHING to plumb.** Each game is an
+   isolated session; a new GG2 player starts at **0 gold**. No shared wallet, no import. P0.4 is therefore
+   just per-app namespacing (simpler than first thought).
 3. **🔴 GG1 save migration through the core refactor / URL move** was unspecified — players must not lose
    gold/collection when GG1 moves under `gg1/prod/` and `halves.*`→`gg1.*`. → **P0.5**.
 4. **🟠 Inter-game linking / cross-promotion + the parental gate** (owner discussed earlier: linking to
@@ -153,13 +154,11 @@ Below: the gaps found + the milestones added/amended to close them. (Hosting det
 ### Added to P0 (engine foundation now also = franchise foundation)
 - **P0.3 — Multi-app GHP restructure.** The `gg1/{v1,dev,prod}` + `gg2/dev` folder layout; root
   `index.html` → franchise landing/redirect; the dev→prod promote step. *(FRANCHISE-HOSTING.md.)*
-- **P0.4 — Per-app namespacing + gold carry-over by IMPORT** (owner chose ISOLATED saves). SW cache names
-  prefix-scoped (no cross-eviction); per-game localStorage prefix (`gg1prod.*`, `gg2.*`, …), nothing
-  shared-mutable. "Gold carries across every game" = a **one-time import at GG2 first-run** (read GG1 prod's
-  `gg1prod.gold`, seed GG2's hoard, then it grows on its own) — NOT a live shared wallet, so dev can't
-  pollute prod. *(FRANCHISE-HOSTING.md — switch to a shared wallet only if the owner wants one live number.)*
-- **P0.5 — GG1 save migration.** One-time `halves.*` → `gg1.*` (+ gold → the franchise wallet) so no live
-  player loses progress on the move; GG1 keeps running unchanged.
+- **P0.4 — Per-app namespacing (saves fully ISOLATED, no cross-game state).** SW cache names prefix-scoped
+  (no cross-eviction); per-scope localStorage prefix (`gg1prod.*`, `gg2dev.*`, …), nothing shared. **Gold is
+  per-game and starts at 0 for each new player — no wallet, no carry-over, no import** (owner-clarified).
+- **P0.5 — GG1 save migration.** One-time `halves.*` → `gg1prod.*` (+ `gg1dev.*`) so no live player loses
+  progress on the move; GG1 keeps running unchanged.
 - **P0.6 — Core versioning.** CORE is a pinned, separately-versioned unit; GG1 re-pins only deliberately
   with its full suite green — so building GG2 on CORE can't regress GG1.
 

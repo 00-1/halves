@@ -37,12 +37,14 @@ problems), NOT by exam prestige:
 - **GG2 metagame = "Plants & Beasts" (§6a) — owner's strongest idea, provisionally assigned** ("unless a
   stronger idea comes"). It pairs perfectly with the nature aesthetic (grow crops → pacify nature beasts).
   This **supersedes** the earlier deduce/decode candidate for VR.
-- **GOLD carries across EVERY game, but BUYS NOTHING (owner, 2026-06-22).** "Goblin Gold" is the brand + the
-  signature **meta-joke**: gold just **goes UP** (the absurd-wealth comedy + the hoard pile) — it is **NOT a
-  spendable currency**, in any game. Every game still *earns* gold from drilling (the vanity/score that
-  ramps to billions for laughs), but the per-game **metagame economy is SEPARATE** — e.g. in GG2 seeds come
-  from **drilling drops** and plots unlock from **progression**, NOT bought with gold. So §6's metagames run
-  *alongside* the ever-climbing gold hoard, not off it.
+- **GOLD is in EVERY game as a CONCEPT, but BUYS NOTHING and does NOT carry between games (owner, 2026-06-22,
+  clarified).** "Goblin Gold" is the brand + the signature **meta-joke**: gold just **goes UP** (the
+  absurd-wealth comedy + the hoard pile) — it is **NOT a spendable currency**, in any game. **Each game is a
+  totally isolated, fresh session — every new player starts from 0 gold; gold does NOT transfer between games**
+  (the earlier "carries across" phrasing was a misread of "gold exists in all games" — corrected). Every game
+  *earns* its own gold from drilling (the vanity/score that ramps to billions for laughs), and the per-game
+  **metagame economy is SEPARATE** — e.g. in GG2 seeds come from **drilling drops** and plots unlock from
+  **progression**, NOT bought with gold. So §6's metagames run *alongside* that game's own ever-climbing hoard.
 - VR and NVR stay **separate games** (not combined) — completely different content + input systems.
 - GG3/GG4 are **not pre-committed** — decide based on how GG1 + GG2 land. (Four games is a large
   undertaking; build to demand.)

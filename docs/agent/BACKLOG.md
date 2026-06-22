@@ -3272,8 +3272,8 @@ per-file path edits; the real work is the landing page + namespacing + migration
   k!==CACHE`); give each app a unique cache prefix (`gg1-dev-…`, `gg1-prod-…`, `gg2-dev-…`) so variants don't
   cross-evict each other's offline caches.
 - **🔴 localStorage namespacing — ISOLATED (Decision 2):** each scope its OWN prefix (`gg1dev.*`, `gg1prod.*`,
-  `gg1v1.*`, `gg2dev.*`); nothing shared-mutable. Gold carry-over is deferred to GG2 first-run **import** (P0.4),
-  NOT a shared wallet — so dev gold-setting can't touch a prod save.
+  `gg1v1.*`, `gg2dev.*`); nothing shared. **Gold is per-game and does NOT carry across games** (owner-clarified —
+  a new player starts at 0): no wallet, no import, no cross-app key. Dev gold-setting stays isolated to `gg1dev.*`.
 - **🔴 GG1 migration:** one-time copy of the existing root `halves.*` save → the new **`gg1prod.*`** (and
   `gg1dev.*`) prefix if those keys are empty, so the current live player keeps gold/collection/progress after the
   move. *(Root `halves.*` becomes the legacy source; the landing/redirect means the old root no longer runs the

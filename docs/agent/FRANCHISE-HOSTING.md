@@ -49,23 +49,21 @@ partitioned by ORIGIN, not by path** — all four+ variants share one bucket on 
    that start with *this app's* prefix and aren't the current CACHE (`k.startsWith(MY_PREFIX) && k !== CACHE`).
    Then apps never touch each other's caches. *(One small `sw.js` change, carried into CORE.)*
 
-2. **localStorage save collision + the gold-carryover mechanic.** All save keys are `halves.*` and
-   localStorage is **origin-wide**, so without namespacing GG1-dev/prod/v1 and GG2 all read/write the SAME
-   save. Two things to decide + plumb:
-   - **Per-game namespace:** GG2 must use its own prefix (e.g. `gg2.*`) so it never clobbers GG1's
-     `halves.*`/`gg1.*`. Within GG1, **dev should be ISOLATED** from prod/v1 (so experimentation/dev-mode
-     gold-setting can't corrupt a real player's prod save) — i.e. dev uses a `gg1dev.*` prefix. Prod + the
-     frozen v1 can share `gg1.*` (same game, same save) or be split — Decision 2.
-   - **The franchise wallet (gold carries across every game — `FRANCHISE-DESIGN.md`).** Gold is the ONE
-     value that must persist ACROSS games. Put it in a deliberate **shared franchise namespace**
-     (e.g. `gg.wallet.gold`) that every GG game reads/writes, separate from each game's private save. This
-     is the concrete plumbing behind "gold carries over" — it only works *because* the games share an
-     origin (a real reason to keep them all on `00-1.github.io`). **This belongs in the P0 core refactor.**
+2. **localStorage save collision.** All save keys are `halves.*` and localStorage is **origin-wide**, so
+   without namespacing GG1-dev/prod/v1 and GG2 all read/write the SAME save. **Saves are fully ISOLATED per
+   scope** (Decision 2) — each gets its own prefix and nothing is shared:
+   - **Per-scope namespace:** `gg1dev.*`, `gg1prod.*`, `gg1v1.*`, `gg2dev.*` — independent. Dev experiments /
+     dev-mode gold-setting can never touch a real prod save; the frozen v1 stays pristine; GG2 can't clobber
+     GG1.
+   - **NO cross-game gold transfer (owner-clarified).** Gold is a per-game CONCEPT (the meta-joke — it just
+     goes up, buys nothing) but **does NOT carry between games**: every game is a fresh session, **a new
+     player starts at 0 gold**. There is **no shared wallet, no import** — gold lives entirely inside each
+     game's own isolated save. *(This simplifies hosting: no cross-app shared key at all.)*
    - **GG1 migration:** the existing live save is `halves.*` at the root URL. When GG1 moves to
      `/halves/gg1/prod/`, the player's progress is in the SAME origin's localStorage, so it's still
-     readable — but the prefix may change (`halves.*` → `gg1.*`). Add a **one-time migration** (read legacy
-     `halves.*`, copy to the new prefix if the new keys are empty) so no one loses gold/collection. *(The
-     gold specifically should migrate into the franchise wallet.)*
+     readable — but the prefix changes (`halves.*` → `gg1prod.*`). Add a **one-time migration** (read legacy
+     `halves.*`, copy to `gg1prod.*` — and `gg1dev.*` — if those keys are empty) so the current player keeps
+     gold/collection/progress on the move.
 
 ## The dev → prod promote flow (manual gate)
 - **dev** = continuous Builder pushes (today's behaviour, just relocated under `gg1/dev/`).
@@ -84,7 +82,7 @@ partitioned by ORIGIN, not by path** — all four+ variants share one bucket on 
 - Sequels get their own tags later (`gg2-v1`, …).
 
 ## What this means for `GG2-MILESTONES.md` / P0
-The hosting split + per-app cache namespacing + the localStorage/franchise-wallet namespacing + GG1 save
+The hosting split + per-app cache namespacing + per-scope (isolated) localStorage namespacing + GG1 save
 migration are **prerequisite engine work** — they belong in **P0** (the core/pack refactor), not late. See
 the completeness-pass additions appended to `GG2-MILESTONES.md`.
 
@@ -104,25 +102,8 @@ the completeness-pass additions appended to `GG2-MILESTONES.md`.
    splash, the rest of T219) lands in the new `gg1/dev/` location. *(The `gg1/v1/` snapshot still waits for
    the tag — T223 — but the folder STRUCTURE + dev/prod/gg2-dev + landing move now.)*
 
-### Reconciling isolation with "gold carries across every game"
-Full per-folder isolation means there is **no live shared wallet** — which is good (no dev→prod bleed). The
-locked franchise rule "gold carries across every game" is then implemented as a **one-time IMPORT at the new
-game's first run**, NOT a continuously-shared key: when **GG2** first launches it reads **GG1 prod's** stored
-gold (`gg1prod.gold`, same origin) and seeds GG2's starting hoard, which then keeps going up on its own. This
-preserves the meta-joke (your hoard follows you in and keeps growing) while keeping each game's save isolated.
-*(If you actually want ONE live ever-growing number shared across all games simultaneously, that's the shared-
-wallet model instead — say so and I'll switch P0.4; the import model is the default under "isolated.")*
-*(P0.4 in GG2-MILESTONES updated to the import model.)*
-
----
-
-## (superseded — original open questions, now resolved above)
-## DECISIONS for the owner (I have recommendations; say the word and I queue it)
-1. **Root `index.html` (`/halves/`):** (a) **redirect** straight to `gg1/prod/` [simplest], or (b) a tiny
-   **franchise landing/hub** listing the GG games (sets up cross-promo + the parental gate discussed for
-   inter-game links). **Rec: (a) redirect now**, upgrade to (b) when GG2 is real.
-2. **GG1 dev vs prod vs v1 saves:** **Rec: dev isolated (`gg1dev.*`); prod + v1 share `gg1.*`**; gold for
-   all of them lives in the shared `gg.wallet.gold`. (Keeps dev experiments off real saves; prod/v1 are the
-   same game so sharing a save is fine.)
-3. **When to do the restructure:** **Rec: at the `gg1-v1` cut** (after current GG1 work lands) — one clean
-   move, dev URL changes once, then GG2-dev is created in the same pass.
+### Gold does NOT carry between games (owner-clarified)
+Gold is present in every game only as a **concept** (the brand meta-joke — it just goes up, buys nothing).
+Each game is a **totally isolated, fresh session**: **a new player starts at 0 gold**, and gold never
+transfers between games. So there is **no shared wallet and no import** — gold lives entirely inside each
+game's own isolated save (Decision 2). Hosting stays maximally simple: no cross-app shared state of any kind.
