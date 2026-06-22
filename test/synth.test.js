@@ -112,12 +112,25 @@ ok(pluckFilt && pluckFilt.frequency._calls.some(x => x[0] === "lin"), "the filte
 // =====================================================================
 // 4) Patch distinctness — instruments really differ (not one osc reskinned)
 // =====================================================================
-const names = ["pad", "pluck", "bass", "bell", "lead", "wub"];
+const names = Object.keys(Synth.PATCHES);   // every patch, incl. the T155 pad-class beds
 const sigs = names.map(n => Synth.patchSignature(Synth.PATCHES[n]));
-ok(new Set(sigs).size === names.length, "all 6 patches have distinct signatures (" + new Set(sigs).size + "/" + names.length + ")");
+ok(new Set(sigs).size === names.length, "all " + names.length + " patches have distinct signatures (" + new Set(sigs).size + "/" + names.length + ")");
 // concretely: their built graphs differ in node makeup
 const makeup = names.map(n => { const r = graphOf(n); return JSON.stringify(r.types); });
 ok(new Set(makeup).size >= 4, "patches build materially different node graphs (" + new Set(makeup).size + " distinct shapes)");
+// T155 — the PAD-class beds are genuinely distinct instruments (the owner's "every
+// style shares the same synth string" fix): ≥5 pads, each a DIFFERENT signature, and
+// they span ≥3 waveforms + ≥2 filter types (a real spectral spread, not a cutoff tweak).
+// (Their audible spectral distinctness is proven in test/browser/audio.test.js.)
+const pads = names.filter(n => n === "pad" || n.indexOf("pad") === 0);
+ok(pads.length >= 5, "there are ≥5 distinct PAD-class beds (" + pads.join(", ") + ")");
+ok(new Set(pads.map(n => Synth.patchSignature(Synth.PATCHES[n]))).size === pads.length, "every pad-class bed has a DISTINCT patch signature (no two beds are the same instrument)");
+ok(new Set(pads.map(n => Synth.PATCHES[n].wave || Synth.PATCHES[n].engine)).size >= 3, "the pad beds span ≥3 waveforms/engines (saw/triangle/square/fm — not the same osc)");
+ok(new Set(pads.map(n => (Synth.PATCHES[n].filter || {}).type || "none")).size >= 2, "the pad beds span ≥2 filter characters (lowpass bed vs bandpass organ)");
+// every one of the 12 styles names a real pad patch, and the palette uses ≥4 distinct beds (variety)
+const stylePads = Synth.STYLE_IDS.map(id => Synth.CONTEXTS[id].patches.pad);
+ok(stylePads.every(p => !!Synth.PATCHES[p]), "every style's pad maps to a real patch");
+ok(new Set(stylePads).size >= 4, "the 12 styles use ≥4 DISTINCT pad beds (" + new Set(stylePads).size + " — kills the shared-bed samey-ness)");
 
 // =====================================================================
 // 5) Drum kit — noise-based percussion, distinct per piece

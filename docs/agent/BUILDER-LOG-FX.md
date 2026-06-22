@@ -6,6 +6,45 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T155 — distinct PAD/bed timbre per style (kill the shared "synth string") ([B], OWNER-PRIORITY)
+
+Owner (2026-06-22): **"every style seems to share the same synth string sound… makes
+them feel a little samey."** Root cause: all 12 contexts set `pad: "pad"` — the
+identical detuned-**sawtooth** unison bed. The leads/bass already varied; the **pad —
+the most continuously-audible voice — was the same saw everywhere.**
+
+### 4 new PAD-class beds (`PATCHES`) — genuinely different SPECTRA, not cutoff tweaks
+Built on the existing engines (no new engine needed):
+| pad | engine/wave + filter | character |
+|---|---|---|
+| `pad` (kept) | unison **saw** + lowpass 1100 | warm analog bed |
+| `padglass` | unison **triangle** + soft lowpass 2000, very slow swell | airy/glassy choir |
+| `padep` | **fm** (ratio 1, index 110) + mellow lowpass, sustained | electric-piano / Rhodes |
+| `padpwm` | unison **square** + brighter lowpass 2800, snappy | retro/chip hollow bed |
+| `padorgan` | unison **square** through a **bandpass** (cut 760, Q7), stabby | hollow organ stab |
+
+**Per-style mapping** (5 distinct beds across the 12): saw → arena/synthwave/bigroom ·
+glass → menu/ambient/tropical · ep → lofi/dnb · pwm → chiptune/boss8bit · organ →
+dubstep/techno.
+
+### Proven SPECTRALLY distinct (the output-feature rule — golden pins names, not timbre)
+Measured each pad's **spectral centroid** via real `OfflineAudioContext` + an FFT (new
+section in `test/browser/audio.test.js`): `padep 189 · padglass 457 · padorgan 1054 ·
+pad 1436 · padpwm 1897` Hz — a **1708 Hz** spread, min adjacent gap **268 Hz** (≥150
+floor) → audibly different beds, not one reskinned oscillator. (`padorgan` was tuned —
+bandpass Q 3→7, env→0.15 — to separate it from `pad`; was 71 Hz apart, now 382.)
+
+### Verify
+- `node -c` clean. **`golden-synth` UNCHANGED** (its scores pin role+midi *events*, not
+  patch names — so the timbre swap correctly causes **no** score churn; the DoD's
+  "re-bless" wasn't needed). `synth.test` now asserts ≥5 distinct pad beds, all with
+  distinct signatures, spanning ≥3 waveforms + ≥2 filter types, and that the 12 styles
+  use ≥4 distinct beds. Full Node suite + both browser gates green.
+- 🔊 **Babysitter:** independently measure the per-style pad spectra (centroids above).
+  Final "less samey?" is the owner's ear. **B-owned only** (`synth.js` + its tests).
+
+---
+
 ## T152 — celebration particles: small/fine size + spread + off-centre emission ([B] engine side)
 
 Owner: **"very small particle sizes, emanating from the point of interest (e.g. where

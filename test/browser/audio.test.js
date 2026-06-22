@@ -84,6 +84,51 @@ function skip(why){ console.log("\nSKIP (real-audio gate not run): " + why + "\n
     ok(result.divergeAt09 > PEAK_MAX,
        "the gate HAS TEETH: the pre-fix unclamped decay 0.9 DIVERGES in real Web Audio (peak " + result.divergeAt09 + " ≫ " + PEAK_MAX + ")");
 
+    // ---- T155: the PAD-class beds are SPECTRALLY distinct (real audio) ----------
+    // The owner heard "every style shares the same synth string": all 12 contexts used
+    // the SAME sawtooth pad. The golden pins patch NAMES, not timbre — so prove the beds
+    // actually SOUND different: render each pad via OfflineAudioContext and measure its
+    // spectral centroid (FFT). They must spread across a wide range, every pair clearly
+    // separated — not a cutoff tweak on one oscillator.
+    const spec = await page.evaluate(async () => {
+      const SR = 44100, OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, S = window.Synth;
+      if(!OAC) return { unsupported: true };
+      function fft(re, im){ const n = re.length;
+        for(let i = 1, j = 0; i < n; i++){ let bit = n >> 1; for(; j & bit; bit >>= 1) j ^= bit; j ^= bit; if(i < j){ const tr = re[i]; re[i] = re[j]; re[j] = tr; const ti = im[i]; im[i] = im[j]; im[j] = ti; } }
+        for(let len = 2; len <= n; len <<= 1){ const ang = -2 * Math.PI / len, wr = Math.cos(ang), wi = Math.sin(ang);
+          for(let i = 0; i < n; i += len){ let cr = 1, ci = 0;
+            for(let k = 0; k < len / 2; k++){ const ur = re[i + k], ui = im[i + k];
+              const vr = re[i + k + len / 2] * cr - im[i + k + len / 2] * ci, vi = re[i + k + len / 2] * ci + im[i + k + len / 2] * cr;
+              re[i + k] = ur + vr; im[i + k] = ui + vi; re[i + k + len / 2] = ur - vr; im[i + k + len / 2] = ui - vi;
+              const ncr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = ncr; } } } }
+      async function centroid(pad){
+        const ctx = new OAC(1, Math.round(SR * 0.7), SR);
+        const dest = ctx.createGain(); dest.connect(ctx.destination);
+        S.renderVoice(ctx, dest, S.PATCHES[pad], S.hz(50), 0, 0.6);   // a sustained ~147 Hz bed note
+        const buf = (await ctx.startRendering()).getChannelData(0);
+        const N = 8192, start = Math.round(SR * 0.35);   // steady-state window (past the attack)
+        const re = new Float64Array(N), im = new Float64Array(N);
+        for(let i = 0; i < N; i++){ const w = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (N - 1)); re[i] = (buf[start + i] || 0) * w; }
+        fft(re, im);
+        let num = 0, den = 0; for(let k = 1; k < N / 2; k++){ const mag = Math.hypot(re[k], im[k]); num += k * SR / N * mag; den += mag; }
+        return den > 0 ? Math.round(num / den) : 0;
+      }
+      const pads = Object.keys(S.PATCHES).filter(n => n.indexOf("pad") === 0);
+      const c = {}; for(const p of pads) c[p] = await centroid(p);
+      return { centroids: c };
+    });
+    if(spec.unsupported){ /* covered by the reverb skip above */ }
+    else {
+      const cs = Object.entries(spec.centroids).sort((a, b) => a[1] - b[1]);
+      const vals = cs.map(e => e[1]);
+      let minGap = Infinity; for(let i = 1; i < vals.length; i++) minGap = Math.min(minGap, vals[i] - vals[i - 1]);
+      const range = vals[vals.length - 1] - vals[0];
+      ok(cs.length >= 5, "all " + cs.length + " pad beds rendered a real-audio spectrum");
+      ok(new Set(vals).size === vals.length, "every pad bed has a DISTINCT spectral centroid (" + cs.map(e => e[0] + "=" + e[1]).join("  ") + ")");
+      ok(minGap >= 150, "adjacent pad beds are clearly separated (min centroid gap " + minGap + " Hz ≥ 150 — audibly different, not a cutoff tweak)");
+      ok(range >= 1000, "the pad beds span a WIDE timbral range (" + range + " Hz from darkest to brightest)");
+    }
+
     await browser.close();
   } catch(e){
     fails++; console.log("  FAIL: harness error — " + (e && e.stack || e));

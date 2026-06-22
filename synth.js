@@ -73,6 +73,23 @@
     // lush detuned pad — slow soft attack, gentle lowpass (calm contexts)
     pad:   { engine:"unison", wave:"sawtooth", voices:3, detune:12, gain:0.20, bus:"music", pan:0,
              amp:{ a:0.6, d:0.4, s:0.8, r:1.2 }, filter:{ type:"lowpass", cut:1100, env:1.4, q:2 } },
+    // T155 — distinct PAD-class BEDS (the sustained harmonic bed is the most
+    // continuously-audible voice; a different bed timbre per style is what kills the
+    // "every style shares the same synth string"). Each is a genuinely different
+    // SPECTRUM (waveform + filter type/feel), not a cutoff tweak — proven spectrally
+    // distinct in test/browser/audio.test.js (OfflineAudioContext centroid spread).
+    // airy/glassy choir: triangle (few, weak harmonics) + soft lowpass, very slow swell
+    padglass: { engine:"unison", wave:"triangle", voices:3, detune:7, gain:0.20, bus:"music", pan:0,
+             amp:{ a:0.9, d:0.6, s:0.85, r:1.8 }, filter:{ type:"lowpass", cut:2000, env:0.5, q:1 } },
+    // electric-piano / Rhodes bed: FM (low index) sustained + mellow lowpass — bell-ish swell to a sustain
+    padep: { engine:"fm", ratio:1, index:110, gain:0.20, bus:"music", pan:0,
+             amp:{ a:0.05, d:0.5, s:0.6, r:0.5 }, filter:{ type:"lowpass", cut:1500, env:0.8, q:1 } },
+    // retro PWM-ish square bed: bright, hollow (odd harmonics), snappier attack
+    padpwm: { engine:"unison", wave:"square", voices:3, detune:9, gain:0.16, bus:"music", pan:0,
+             amp:{ a:0.15, d:0.3, s:0.7, r:0.5 }, filter:{ type:"lowpass", cut:2800, env:1.0, q:2 } },
+    // hollow organ stab bed: square through a BANDPASS (formant-ish, peaked) — fast/stabby
+    padorgan: { engine:"unison", wave:"square", voices:2, detune:5, gain:0.18, bus:"music", pan:0,
+             amp:{ a:0.01, d:0.1, s:0.8, r:0.25 }, filter:{ type:"bandpass", cut:760, env:0.15, q:7 } },
     // bright plucked transient — sharp attack, filter snaps open then closes
     pluck: { engine:"mono",   wave:"triangle", gain:0.28, bus:"music",
              amp:{ a:0.002, d:0.18, s:0.0, r:0.12 }, filter:{ type:"lowpass", cut:2600, env:3.0, q:6 } },
@@ -461,19 +478,19 @@
   // the win sting (fired via sting("victory")).
   const CONTEXTS = {
     // — kept —
-    menu:      { label: "Neon Lobby",        tempo: 96,  mode: "ionian",     root: 60, progression: [0, 3, 4, 0], density: 0.34, reverb: 0.26, kickK: 4, hatK: 6,  snareK: 2, leadK: 6,  leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "bell" } },
+    menu:      { label: "Neon Lobby",        tempo: 96,  mode: "ionian",     root: 60, progression: [0, 3, 4, 0], density: 0.34, reverb: 0.26, kickK: 4, hatK: 6,  snareK: 2, leadK: 6,  leadOct: 2, patches: { pad: "padglass", bass: "bass", lead: "bell" } },
     arena:     { label: "Phrygian Onslaught", tempo: 124, mode: "phrygian",  root: 45, progression: [0, 5, 6, 4], density: 0.62, reverb: 0.16, kickK: 6, hatK: 12, snareK: 2, leadK: 9,  leadOct: 1, patches: { pad: "pad", bass: "wub",  lead: "lead" } },
     // — 10 new —
-    lofi:      { label: "Lo-Fi Study",       tempo: 76,  mode: "dorian",     root: 50, progression: [0, 5, 3, 4], density: 0.24, reverb: 0.42, kickK: 1, hatK: 3,  snareK: 0, leadK: 4,  leadOct: 1, swing: 0.2,  patches: { pad: "pad", bass: "bass", lead: "pluck" } },
-    ambient:   { label: "Ambient Drift",     tempo: 60,  mode: "lydian",     root: 55, progression: [0, 3, 0, 4], density: 0.14, reverb: 0.55, kickK: 0, hatK: 0, snareK: 0, leadK: 3, leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "bell" } },
-    chiptune:  { label: "Chiptune Rush",     tempo: 150, mode: "pentatonic", root: 60, progression: [0, 4, 5, 3], density: 0.60, reverb: 0.04, kickK: 4, hatK: 8,  snareK: 2, leadK: 11, leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "chip" } },
+    lofi:      { label: "Lo-Fi Study",       tempo: 76,  mode: "dorian",     root: 50, progression: [0, 5, 3, 4], density: 0.24, reverb: 0.42, kickK: 1, hatK: 3,  snareK: 0, leadK: 4,  leadOct: 1, swing: 0.2,  patches: { pad: "padep", bass: "bass", lead: "pluck" } },
+    ambient:   { label: "Ambient Drift",     tempo: 60,  mode: "lydian",     root: 55, progression: [0, 3, 0, 4], density: 0.14, reverb: 0.55, kickK: 0, hatK: 0, snareK: 0, leadK: 3, leadOct: 1, patches: { pad: "padglass", bass: "bass", lead: "bell" } },
+    chiptune:  { label: "Chiptune Rush",     tempo: 150, mode: "pentatonic", root: 60, progression: [0, 4, 5, 3], density: 0.60, reverb: 0.04, kickK: 4, hatK: 8,  snareK: 2, leadK: 11, leadOct: 2, patches: { pad: "padpwm", bass: "bass", lead: "chip" } },
     synthwave: { label: "Synthwave Cruise",  tempo: 112, mode: "aeolian",    root: 50, progression: [0, 5, 3, 4], density: 0.42, reverb: 0.34, kickK: 4, hatK: 8,  snareK: 4, leadK: 7,  leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "lead" } },
-    dubstep:   { label: "Dubstep Victory",   tempo: 140, mode: "pentminor",  root: 36, progression: [0, 0, 5, 3], density: 0.40, reverb: 0.14, kickK: 4, hatK: 6,  snareK: 2, leadK: 6,  leadOct: 1, wobble: 2,  victory: true, patches: { pad: "pad", bass: "wub", lead: "lead" } },
-    dnb:       { label: "Liquid DnB",        tempo: 174, mode: "aeolian",    root: 43, progression: [0, 5, 3, 4], density: 0.44, reverb: 0.30, kickK: 4, hatK: 10, snareK: 6, leadK: 8,  leadOct: 1, wobble: 1,  patches: { pad: "pad", bass: "wub", lead: "lead" } },
+    dubstep:   { label: "Dubstep Victory",   tempo: 140, mode: "pentminor",  root: 36, progression: [0, 0, 5, 3], density: 0.40, reverb: 0.14, kickK: 4, hatK: 6,  snareK: 2, leadK: 6,  leadOct: 1, wobble: 2,  victory: true, patches: { pad: "padorgan", bass: "wub", lead: "lead" } },
+    dnb:       { label: "Liquid DnB",        tempo: 174, mode: "aeolian",    root: 43, progression: [0, 5, 3, 4], density: 0.44, reverb: 0.30, kickK: 4, hatK: 10, snareK: 6, leadK: 8,  leadOct: 1, wobble: 1,  patches: { pad: "padep", bass: "wub", lead: "lead" } },
     bigroom:   { label: "Festival",          tempo: 128, mode: "lydian",     root: 57, progression: [0, 3, 4, 5], density: 0.56, reverb: 0.26, kickK: 4, hatK: 10, snareK: 4, leadK: 8,  leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "lead" } },
-    boss8bit:  { label: "8-Bit Boss March",  tempo: 140, mode: "phrygian",   root: 48, progression: [0, 1, 0, 5], density: 0.50, reverb: 0.10, kickK: 4, hatK: 6,  snareK: 4, leadK: 9,  leadOct: 1, patches: { pad: "pad", bass: "bass", lead: "chip" } },
-    tropical:  { label: "Tropical Pluck",    tempo: 104, mode: "mixolydian", root: 57, progression: [0, 4, 5, 2], density: 0.40, reverb: 0.30, kickK: 3, hatK: 8,  snareK: 2, leadK: 7,  leadOct: 2, swing: 0.16, patches: { pad: "pad", bass: "bass", lead: "bell" } },
-    techno:    { label: "Hypno Techno",      tempo: 126, mode: "aeolian",    root: 45, progression: [0, 0, 5, 5], density: 0.34, reverb: 0.28, kickK: 4, hatK: 8,  snareK: 0, leadK: 5,  leadOct: 1, wobble: 0.5, patches: { pad: "pad", bass: "wub", lead: "lead" } }
+    boss8bit:  { label: "8-Bit Boss March",  tempo: 140, mode: "phrygian",   root: 48, progression: [0, 1, 0, 5], density: 0.50, reverb: 0.10, kickK: 4, hatK: 6,  snareK: 4, leadK: 9,  leadOct: 1, patches: { pad: "padpwm", bass: "bass", lead: "chip" } },
+    tropical:  { label: "Tropical Pluck",    tempo: 104, mode: "mixolydian", root: 57, progression: [0, 4, 5, 2], density: 0.40, reverb: 0.30, kickK: 3, hatK: 8,  snareK: 2, leadK: 7,  leadOct: 2, swing: 0.16, patches: { pad: "padglass", bass: "bass", lead: "bell" } },
+    techno:    { label: "Hypno Techno",      tempo: 126, mode: "aeolian",    root: 45, progression: [0, 0, 5, 5], density: 0.34, reverb: 0.28, kickK: 4, hatK: 8,  snareK: 0, leadK: 5,  leadOct: 1, wobble: 0.5, patches: { pad: "padorgan", bass: "wub", lead: "lead" } }
   };
   // The 12 canonical styles (the launcher set + the distinctness gate).
   const STYLE_IDS = ["menu", "arena", "lofi", "ambient", "chiptune", "synthwave", "dubstep", "dnb", "bigroom", "boss8bit", "tropical", "techno"];
