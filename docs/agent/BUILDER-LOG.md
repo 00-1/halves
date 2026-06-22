@@ -6081,3 +6081,10 @@ replace what we had before."** So the void line is now rendered to MATCH that mo
   crisp. Headless-safe (paintVoidThrone early-returns without a real 2D context, so the boot tests don't spin).
 verified: pwa (a2) rewritten for the two-line title; full suite **59/59**. [A]-only (gg1/dev/main.js, styles.css,
 test/pwa.test.js). Push on its own for owner device-confirm at `…/halves/gg1/dev/`.
+
+---
+### [A] T221 — drop the void title to screen centre (owner final tweak)
+Owner confirmed the two-line look reads well; last ask = move it DOWN toward the centre. `.subtitle` margin-top
+`-6px` → `clamp(44px,14vh,130px)` — the `.tag` stays bottom-pinned (margin-top:auto), so the void block drops
+into the gap toward the screen centre. Suite 59/59. [A]-only (gg1/dev/styles.css). T221 DONE pending the owner's
+final device-confirm.

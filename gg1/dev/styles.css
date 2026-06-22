@@ -117,7 +117,7 @@ body{
    subtitle between the wordmark and the maths tag. Plain gold/amber for now —
    T209 stylises it (pixel-gold name / dithered-purple void line). */
 .subtitle{font-family:var(--display);font-weight:600;font-size:clamp(30px,9.8vw,46px);letter-spacing:.02em;
-  color:var(--amber-2,#e0a93c);margin-top:-6px;line-height:1.05;opacity:.92}   /* T217 — smaller so the wider mono ALL-CAPS "THE VOID THRONE" fits the splash width */
+  color:var(--amber-2,#e0a93c);margin-top:clamp(44px,14vh,130px);line-height:1.05;opacity:.92}   /* T221 — drop the void title down toward the screen centre (owner) */
 /* T209 — the pixel-art title canvas (gold wordmark / void subtitle) replaces the text
    node; sized to the parent line's font-size, crisp nearest-neighbour. */
 .pixtitle{height:1.25em;width:auto;max-width:100%;image-rendering:pixelated;display:block;margin:0 auto}   /* gold wordmark — sized to the parent line's font-size */
