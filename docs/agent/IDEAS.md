@@ -95,6 +95,20 @@ drills, calibration bands, and content must stay **general to the exam cohort** 
 Luke-specific** (no personal data, no per-child tuning baked in; keep progress device-local as today). Build
 the curriculum to serve *any* kid sitting this exam; Luke is how we know what matters, not who it's only for.
 
+## I10 — "Goblin Gold" as a TRIO franchise (owner, 2026-06-22) — PARKED ("once this one is done")
+**Owner's future vision:** expand to **three games under the shared "Goblin Gold" brand**, one per 11+ subject:
+- **Goblin Gold: Sums & Sorcery** — maths *(the current game)*
+- **Goblin Gold: Wits & Sorcery** — verbal + non-verbal reasoning (IQ-style)
+- **Goblin Gold: Words & Sorcery** — English
+**Why it works:** "Goblin Gold" + the RPG world (goblins, gold, heroes, Arena, ranks Adept→Archmage→Runelord, the
+maths-as-magic voice) is **subject-agnostic**, so it carries to any subject. The subtitle is the subject badge,
+"& Sorcery" the franchise glue. **Strategic dividend: the SHELL is reusable** — FX engine, audio, the goblin
+world, heroes/Arena/progression/the gold hoard are all subject-independent; only the **question bank** changes
+(and content is already modular fixed question-sets). Games 2–3 ≈ swap the drills + reskin a few topic glyphs,
+not a rebuild. **Reinforces: keep content cleanly separated from the engine/metagame** (we already do). **NOT a
+task** — finish game 1 first. When the owner says go, this promotes to a "franchise-ready" refactor pass (ensure
+the question-bank is a clean swappable layer) + the two new content packs.
+
 ## I1 — Events — ✅ PROMOTED to BACKLOG (Phase 6.5, T78–T81) on 2026-06-21
 
 > **No longer a parked idea.** The owner brought Events forward ("I decided I like it a
