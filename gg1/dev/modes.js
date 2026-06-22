@@ -602,6 +602,33 @@
   function exprItem(e){ return { p: e[0], a: e[1] }; }
   // ×-tricks: "a × b" (the trick is the method); answer = the product.
   function xtrickItem(e){ return { p: e[0] + " × " + e[1], a: e[2] }; }
+  // T219 batch 5 (Geometry) — area/perimeter, volume, angles.
+  const AREA_SRC = [
+    ["ar",6,4,24],["ar",7,5,35],["ar",9,3,27],["ar",8,8,64],["ar",12,5,60],["ar",10,7,70],["ar",11,4,44],   // rectangle area
+    ["pr",6,4,20],["pr",7,5,24],["pr",9,3,24],["pr",10,6,32],["pr",12,8,40],["pr",5,5,20],["pr",11,4,30],     // rectangle perimeter
+    ["at",8,5,20],["at",6,4,12],["at",10,3,15],["at",7,4,14],["at",12,5,30],["at",9,6,27],["at",4,4,8]         // triangle area (½·b·h)
+  ];
+  function areaItem(e){
+    if(e[0] === "ar") return { p: "area " + e[1] + "×" + e[2], a: e[3] };
+    if(e[0] === "pr") return { p: "perim " + e[1] + "×" + e[2], a: e[3] };
+    return { p: "△ " + e[1] + "×" + e[2], a: e[3] };
+  }
+  const VOLUME_SRC = [
+    [2,3,4,24],[3,3,3,27],[5,2,4,40],[6,2,3,36],[4,4,2,32],[5,5,2,50],[10,2,2,40],
+    [2,2,2,8],[3,4,5,60],[6,3,2,36],[4,3,3,36],[7,2,3,42],[8,2,2,32],[5,4,3,60],
+    [2,5,6,60],[3,3,4,36],[10,3,2,60],[4,5,5,100],[6,4,2,48],[2,2,5,20],[3,5,4,60]
+  ];
+  function volItem(e){ return { p: "vol " + e[0] + "×" + e[1] + "×" + e[2], a: e[3] }; }
+  const ANGLES_SRC = [
+    ["L",110,70],["L",45,135],["L",125,55],["L",90,90],["L",155,25],["L",72,108],["L",30,150],     // on a line (180)
+    ["P",250,110],["P",200,160],["P",300,60],["P",145,215],["P",90,270],["P",215,145],["P",260,100], // round a point (360)
+    ["T",60,70,50],["T",90,45,45],["T",50,50,80],["T",100,40,40],["T",35,85,60],["T",75,75,30],["T",110,30,40] // triangle (180)
+  ];
+  function angleItem(e){
+    if(e[0] === "L") return { p: "line " + e[1] + " + ?", a: e[2] };
+    if(e[0] === "P") return { p: "point " + e[1] + " + ?", a: e[2] };
+    return { p: "△ " + e[1] + ", " + e[2] + " → ?", a: e[3] };
+  }
   // Percent increase: "base + pct%" → the new total. F↔D↔P: three conversion shapes.
   function pctUpItem(e){ return { p: e[1] + " + " + e[0] + "%", a: e[2] }; }
   function fdpItem(e){
@@ -951,11 +978,36 @@
       glyph:'<span class="slash">−</span>n',
       eyebrow:'answer is 0 or more <b>↓</b>', expr:true, requires:"mastery:doubles", masterSecs:8, group:"Number",
       build(){ return shuffle(NEG_SRC).map(exprItem); }
+    },
+    // ---- T219 batch 5 (NEW Geometry group) — area/perim, volume, angles --------
+    {
+      // Area & Perimeter — rectangle area/perimeter + triangle area (dims in the
+      // prompt). Opens the Geometry chain off `metric` (measurement → geometry).
+      id:"area", name:"Area & Perimeter", tag:"Rectangles & triangles.",
+      glyph:'a<span class="slash">×</span>b',
+      eyebrow:'work it out <b>↓</b>', expr:true, requires:"mastery:metric", masterSecs:9, group:"Geometry",
+      build(){ return shuffle(AREA_SRC).map(areaItem); }
+    },
+    {
+      // Volume — cuboid l×w×h. Branches off `area` (the Geometry chain stays linear:
+      // metric → area → volume → angles, within the 4-abreast limit).
+      id:"volume", name:"Volume", tag:"Cuboids: l×w×h.",
+      glyph:'<span class="slash">×</span>³',
+      eyebrow:'volume <b>↓</b>', expr:true, requires:"mastery:area", masterSecs:8, group:"Geometry",
+      build(){ return shuffle(VOLUME_SRC).map(volItem); }
+    },
+    {
+      // Angles — the missing angle on a line (180), round a point (360), in a
+      // triangle (180). Branches off `volume` (Geometry chain).
+      id:"angles", name:"Angles", tag:"Find the missing angle.",
+      glyph:'n<span class="slash">−</span>k',
+      eyebrow:'missing angle <b>↓</b>', expr:false, requires:"mastery:volume", masterSecs:8, group:"Geometry",
+      build(){ return shuffle(ANGLES_SRC).map(angleItem); }
     }
   ];
 
   // Mode-picker section order. Empty sections are skipped by the picker.
-  const MODE_GROUPS = ["Core", "Number", "Fractions & %", "Measures", "Reasoning"];
+  const MODE_GROUPS = ["Core", "Number", "Fractions & %", "Measures", "Geometry", "Reasoning"];   // T219 — new Geometry group
 
   // Thematic chiptune style per topic — an explicit `music` field on each mode
   // (index into Sound.STYLES 0..14; see T17/T71). Every topic maps to a DISTINCT
@@ -1027,7 +1079,11 @@
     algebra:      ["n","*±","k"],      // n±k — a function machine transforming n
     // T219 batch 4 — Number additions (distinct grids).
     xtricks:      ["*×","k"],          // ×k — a multiplication trick
-    negatives:    ["*−","n"]           // −n — crossing below zero (answer ≥ 0)
+    negatives:    ["*−","n"],          // −n — crossing below zero (answer ≥ 0)
+    // T219 batch 5 — Geometry group (distinct grids).
+    area:         ["k","*×","b"],      // k×b — a rectangle's two sides
+    volume:       ["b","*×","x"],      // b×x — three dimensions multiplied
+    angles:       ["n","*−","b"]       // n−b — the angle left over (to 180 / 360)
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 

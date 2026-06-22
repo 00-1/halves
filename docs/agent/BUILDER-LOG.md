@@ -6127,3 +6127,19 @@ verified: new `test/t219-xtricks-negatives.test.js` (independent eval of every i
 all other invariants intact, ~3.1s, no perf regression); hero-icons catalogue 1960 → 2058; full suite **60/60**.
 [A]-only (modes.js, guides.js, enemies.js, tests, pages.yml). Remaining T219: Geometry group (Area/Volume/Angles),
 Speed-Distance-Time, Median/Mode/Range, Prime-factorisation; then the Collector rebalance LAST.
+
+---
+### [A] T219 batch 5 (NEW Geometry group) — Area & Perimeter + Volume + Angles
+Introduces the **Geometry** MODE_GROUP (added to MODE_GROUPS; the picker + tech-tree handle it — tech-tree 36/36).
+- **`area`** — rectangle area (l×w), rectangle perimeter (2(l+w)), triangle area (½·b·h); 21 items, dims in the
+  prompt. Opens the Geometry chain off `metric` (measurement → geometry). Glyph `k×b`.
+- **`volume`** — cuboid l×w×h; 21 items. Branches off `area`. Glyph `×³`.
+- **`angles`** — the missing angle on a line (180), round a point (360), in a triangle (180); 21 items.
+  Branches off `volume`. Glyph `n−k`. The explain echoes only the fixed total (180/360, never an answer), not
+  the given angle (which can equal the answer, e.g. line 90 → 90) — so it stays answer-free.
+- Geometry chain metric→area→volume→angles sits at the 4-abreast tree limit (home-layout green). Each is a
+  single-child branch with guide + answer-free explain + an independent-formula test.
+verified: new `test/t219-geometry.test.js`; arena3 STILL 27/27 (the T219-batch-4 fracGuard held through the +147
+catalogue growth — 0 violations, exactly as designed to be robust); hero-icons catalogue 2058 → 2205; glyphs +
+integrity + tech-tree green; full suite **61/61**. [A]-only (modes.js, guides.js, tests, pages.yml). Remaining
+T219: Speed-Distance-Time, Median/Mode/Range, Prime-factorisation; then the Collector rebalance LAST.

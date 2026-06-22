@@ -330,6 +330,33 @@
       ],
       example: "3 − 8 + 9 → 3 − 8 = −5, then −5 + 9 → 4."
     },
+    area: {
+      intro: "Area is the space inside a shape; perimeter is the distance all the way round.",
+      tips: [
+        "Rectangle area = length × width. 6 × 4 = 24.",
+        "Rectangle perimeter = 2 × (length + width). 6 × 4 → 2 × 10 = 20.",
+        "Triangle area = ½ × base × height. 8 and 5 → 40 ÷ 2 = 20."
+      ],
+      example: "area 7×5 → 7 × 5 → 35 (square units)."
+    },
+    volume: {
+      intro: "The volume of a cuboid is how much space it fills — multiply its three sides.",
+      tips: [
+        "Volume = length × width × height. 2 × 3 × 4 = 24.",
+        "Multiply two sides first, then the third. 2 × 3 = 6, then × 4 = 24.",
+        "A cube is all three the same: 3 × 3 × 3 = 27."
+      ],
+      example: "vol 5×4×3 → 5 × 4 = 20, then × 3 → 60."
+    },
+    angles: {
+      intro: "Angles in a set position add up to a fixed total — subtract what you know to find the rest.",
+      tips: [
+        "On a straight line the angles make 180°. 110 → 180 − 110 = 70.",
+        "Round a point they make 360°. 250 → 360 − 250 = 110.",
+        "In a triangle the three angles make 180°. 60 + 70 → 180 − 130 = 50."
+      ],
+      example: "△ 60, 70 → 180 − 60 − 70 → 50."
+    },
     pctup: {
       intro: "A percentage INCREASE adds that slice ON — find the part, then add it to the original.",
       tips: [
@@ -595,6 +622,23 @@
       case "negatives":
         // METHOD only — track the running total, never state it.
         return "Work left to right, keeping a running total — it can dip below zero and climb back up.";
+      case "area": {
+        const ma = p.match(/^area (\d+)×(\d+)$/);
+        if(ma) return "Rectangle area = length × width — multiply " + ma[1] + " by " + ma[2] + ".";
+        const mp = p.match(/^perim (\d+)×(\d+)$/);
+        if(mp) return "Perimeter = twice (length + width) — add " + mp[1] + " and " + mp[2] + ", then double.";
+        const mt = p.match(/^△ (\d+)×(\d+)$/);
+        if(mt) return "Triangle area = half of base × height — multiply " + mt[1] + " by " + mt[2] + ", then halve.";
+        break; }
+      case "volume": { const m = p.match(/^vol (\d+)×(\d+)×(\d+)$/); if(!m) break;
+        return "Volume = the three sides multiplied — " + m[1] + " × " + m[2] + ", then × " + m[3] + "."; }
+      case "angles": {
+        // METHOD only — echo the fixed total (180/360, never an answer), not the
+        // given angle (which can equal the answer, e.g. line 90 → 90).
+        if(/^line /.test(p)) return "Angles on a straight line make 180° — take the angle you're given away from 180.";
+        if(/^point /.test(p)) return "Angles round a point make 360° — take the angle you're given away from 360.";
+        if(/^△ /.test(p)) return "A triangle's three angles make 180° — take the two given angles away from 180.";
+        break; }
       case "pctup": { const m = p.match(/^(\d+) \+ (\d+)%$/); if(!m) break; const base = +m[1], pct = +m[2];
         return "Find " + pct + "% of " + base + ", then add it on to " + base + " for the new total."; }
       case "fdp": {
