@@ -9,12 +9,20 @@
  *     a STALE index.html (old `?v=` refs → old JS) even online. `no-store` defeats
  *     that shadow; the cache is the OFFLINE fallback. `build.json` is never cached
  *     (the T54/T161 version check reads fresh).
+ *   - the `manifest.webmanifest` + the icon files (`icon-512.png`/`icon-192.png`/
+ *     `icon.svg`) → NETWORK-FIRST too (T201). These are UNVERSIONED bare URLs (no
+ *     `?v=`), so cache-first would freeze the very first install identity FOREVER —
+ *     the owner saw an installed app still named "Halves" with the old `x/2` icon,
+ *     not "Goblin Gold"/Magnar. Network-first (cache = offline fallback) lets a deploy
+ *     propagate the name + icon to the Install dialog on the next visit.
  *   - everything else — the immutable `?v=<sha>` app assets + the cross-origin web
  *     fonts → CACHE-FIRST (fast + offline; a new deploy = new `?v=` URL = cache miss
  *     = fresh fetch). This is correct precisely because those URLs are versioned.
  * No-build: this file is served as-is and registered by main.js.
  */
-const CACHE = "halves-static-v3";   // T158: bump so activate purges any index.html cached under the prior policy
+const CACHE = "halves-static-v4";   // T201: bump so activate purges manifest/icons frozen under the old cache-first policy
+// Unversioned install-identity files that MUST stay fresh (T201) — the manifest + icons.
+const FRESH_RE = /(^|\/)(manifest\.webmanifest|icon\.svg|icon-\d+\.png)$/;
 
 self.addEventListener("install", () => { self.skipWaiting(); });
 
@@ -32,11 +40,13 @@ self.addEventListener("fetch", (e) => {
   let url; try{ url = new URL(req.url); }catch(_){ return; }
   const isNav = req.mode === "navigate";
   const isBuild = url.pathname.replace(/\/+$/, "").endsWith("/build.json") || url.pathname.endsWith("build.json");
+  const isFresh = FRESH_RE.test(url.pathname);   // T201 — manifest + icons must stay fresh (install identity)
 
-  if(isNav || isBuild){
-    // NETWORK-FIRST + no-store: always pull the freshest index.html/build.json
-    // (bypass the HTTP cache so a stale document can't shadow a deploy). The cache
-    // is the offline net; build.json is never cached (the version check reads fresh).
+  if(isNav || isBuild || isFresh){
+    // NETWORK-FIRST + no-store: always pull the freshest index.html/build.json +
+    // manifest/icons (bypass the HTTP cache so a stale document/manifest can't shadow
+    // a deploy). The cache is the offline net; build.json is never cached (the version
+    // check reads fresh); the manifest + icons ARE cached as the offline fallback.
     e.respondWith((async () => {
       try{
         const res = await fetch(req, { cache: "no-store" });

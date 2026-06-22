@@ -5630,3 +5630,20 @@ right spot**; and `installFavicon`/`paintAppIcon` draw the same `hero:mo` Brawn 
 notes: this unblocks the ICON half of `T168`; the Play `.aab` reuses `icon-512.png`. The rest of `T168`
 (Designed-for-Families / Teacher-Approved / closed-testing) stays HELD on the owner's Google Play ID verification.
 Owner confirms by (re)installing the PWA → the launcher icon is Magnar.
+
+---
+### [A] T201 🔴 (launch blocker) — stale manifest/icon cache froze the install identity
+The owner's installed app still showed the OLD name "Halves" + the `x/2` icon, not "Goblin Gold"/Magnar. Root
+cause: `index.html` links `manifest.webmanifest` (and the icon `src`s) as UNVERSIONED bare URLs, but `sw.js` was
+cache-first for everything except nav + `build.json` — safe only for the `?v=`-versioned JS/CSS. So the manifest
++ icons were served from the FIRST-ever cache forever → a frozen install identity that no deploy could change.
+fix (`sw.js`): a `FRESH_RE` matches `manifest.webmanifest` / `icon-512.png` / `icon-192.png` / `icon.svg`; an
+`isFresh` flag joins the `isNav || isBuild` branch so those files are **NETWORK-FIRST** (`cache:"no-store"`, with
+the cache kept only as the offline fallback). Bumped **`CACHE` v3 → v4** so `activate` purges the frozen
+manifest/icons for existing users on their next visit. After a normal revisit the Install dialog reads the fresh
+manifest → **Goblin Gold + Magnar**, and future deploys propagate the identity.
+verified: `pwa.test` 33→36 — `FRESH_RE` matches the manifest+icons, `isFresh` joins the network-first branch,
+`CACHE` is v4; the booted SW-dispatch sim still proves nav/build network-first + `?v=` assets cache-first + fonts
+cache-first + build.json never cached, and `activate` now purges BOTH the superseded v2 AND v3 caches. **Full
+suite 53/53.** [A]-only (`sw.js`, `test/pwa.test.js`). Pushed FIRST per the 🔴; T202 (entry mark) + T198 (fill
+curve) follow.
