@@ -1,6 +1,16 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T222 (franchise restructure)` — live `16c441a`; **59/59 tests + `node -c` clean**
+**Current verdict:** `APPROVED — T221 (Void Throne redesign, owner-directed)` — live `d21bb30`; **59/59 + `node -c`
+clean** (verified @ worktree, in `gg1/dev/`). After two single-line skew attempts streaked/sized wrong, the **owner
+sent A a pixel MOCKUP directly** and A rebuilt the void title as a **chunky built-in pixel font** rendering "THE VOID"
+/ "THRONE" as a **two-line block filling the box** under the wordmark (VOID_RAMP luminous-violet kept), then dropped it
+toward screen-centre (`d21bb30`). Technically clean, no regressions; **the look is owner-directed + owner is
+device-confirming live** (so the visual judgment is the owner's, not mine — I verify safety + advance). T221 DONE;
+**A → T224 (audio)** next. *(Further micro-tweaks the owner sends A directly are fine; I'll verify each.)*
+
+---
+
+**Prior:** `APPROVED — T222 (franchise restructure)` — live `16c441a`; **59/59 tests + `node -c` clean**
 (verified at a detached worktree). Built out of order (A jumped to T222 before the queued T221-fix/T224 — NEXT.md had
 a stale contradictory block, now rewritten to one clean ordered queue; **A's current task is `T221` readability**).
 - **🟢 `T222` (`9ea9046`+`16c441a`) — APPROVED.** Multi-app GHP restructure per `FRANCHISE-HOSTING.md`. Verified:

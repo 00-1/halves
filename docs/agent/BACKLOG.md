@@ -3479,7 +3479,7 @@ can stay. By subtitle I mean THE VOID THRONE."*
   behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
-### T221 — [A] **Void Throne: wide LETTER-SPACING + Star-Wars perspective skew (bottom wider)** · status: CHANGES (`e879629` made it UNREADABLE — fix: ~2× height) · owner-requested
+### T221 — [A] **Void Throne styling** (ended as: chunky TWO-LINE pixel title filling a box, owner's mockup) · status: DONE (`d21bb30`) · APPROVED — owner-directed redesign, owner device-confirming · owner-requested
 **ROUND A (done, `36ef632`): "~2× height + eased skew"** → now READABLE but the builder read "2×" too literally — the
 void line is still small. **🔴 ROUND B — owner CLARIFIED with a drawn target box (screenshot on `36ef632`): "it's not
 understanding about the text. I want it STRETCHED TO FILL THIS BOX — while keeping the skewed bottom."**
