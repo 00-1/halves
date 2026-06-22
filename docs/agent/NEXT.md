@@ -10,42 +10,29 @@
 
 ---
 
-**Builder A → `T161` 🔴 ABSOLUTE-DO-FIRST (build marker = running code) → `T158` (SW no-store nav) → `T159` (foghorn on resume) → `T160` (Arena death VFX + slower playout) → `T156` → `T157` → content → `T72`**
-**RE-READ FRESH — order corrected (my earlier T158 diagnosis was WRONG and is rescoped).** Arena 3v3
-(`T89`/`T90`) is **DONE+APPROVED** (`9197265`/`dffa345`, owner "looks good") — but you keep building **out of
-NEXT order**; re-read this line before every task.
-**🔴 `T161` is ABSOLUTE — do ONLY this, push, first.** Owner root-cause: *"they show the same build number… the
-build number should be an absolute marker of what you're looking at, but it isn't — that's caused a lot of
-problems."* Confirmed: `main.js:2445-2448` sets the pill + `bootSha` from a **fresh `fetch(build.json)`** —
-decoupled from the running code — so stale clients show the latest sha and the **update-check compares
-fresh-vs-fresh and never fires.** **Fix:** read the RUNNING version from **`main.js`'s OWN `?v=<sha>`** (the
-T107/cachebust query on `document.currentScript.src`); show THAT in the pill; compare it to the fresh
-`build.json` sha → differ ⇒ `showUpdate()`. No `?v=` ⇒ "local build". Extend `version.test`. [A]-only
-(`main.js`, `test/version.test.js`). *(NOTE: T107 `scripts/cachebust.js` already appends `?v=` to every deployed
-script — deployed assets ARE versioned; the bug is purely the marker reading build.json not the bundle.)*
-**Then `T158`** (rescoped): the deployed assets are already versioned+immutable, so cache-first on them is
-CORRECT — the real staleness risk is the **nav document**: the SW's network-first `fetch(req)` (sw.js:36) hits
-the **HTTP cache** → a stale `index.html` (old `?v=` refs) can shadow a deploy. Fix: fetch nav + `build.json`
-with **`cache:"no-store"`** (offline fallback intact); bump `CACHE` v1→v2; `pwa.test` asserts no-store nav +
-bump. [A]-only. *(BACKLOG T158.)*
-**Then `T159`** 🔴 (now reproducible — owner: "foghorn came back on PWA when switching between apps"): the
-AudioContext resumes badly after app-switch/`visibilitychange` → stuck drone. Audit the resume path
-(`audioUnlock`/`warmAudio`/`musicForScreen`, sound.js suspend/resume); on resume **panic/all-notes-off + clean
-re-sync** (no surviving voice/reverb tail); idempotent start; guard on `ctx.state==="running"`. [A] wiring; an
-engine `panic()` in `synth.js` is a [B] follow-up I'll split out if needed. *(BACKLOG T159.)*
-**Then `T160`** (Arena, owner): on a FOE KO in the T90 playout (`applyEvent`, main.js:1468, `ev.tSide===1`)
-fire `fxBigBurst` at `elCentre(cellEl[k])` — small/tight (`sizePx:FX_SMALL`, `spread≈0.7`), foe-**type** palette
-+ impact white, count ~140-220; slow the pace line (main.js:1474) budget 2600→~3800-4200, floor 90→~130, ceil
-360→~480; keep Skip + reduced-motion; add an `arena3`/`fx-wiring` gate (foe-KO ⇒ localised burst at the cell).
-[A]-only. *(BACKLOG T160.)*
-**Then** `T156` (hide `#entryFs`/`#fsToggle` when installed; manifest `display:"fullscreen"`; keep T112
-safe-area) → `T157` (Android back → screen-stack nav) → **`T162`** (✅ owner-blessed: build the **11 mock-driven
-drill modes** in 3 tiered pushes P1→P2→P3 — `scaling`/`percentoff`/`partwhole` first; spec in
-`docs/agent/T162-calibration.md`; each mode = fixed `{p,a}` set + a Node logic gate) → content `T58`–`T61`.
-*(`T103`/`T72` Play-Store need owner creds — hold.)*
+**Builder A → `T162` (build the 11 mock-driven drill modes — TIER P1 FIRST) → content `T59`–`T61` → `T72` (held)**
+**You're well ahead — nice work.** PUSHED & gate-green, **pending Babysitter review** (don't redo): `T161`
+(`555464f`), `T156` (`eaf40bd`), `T157` (`1a3e3fb`), `T158` rescoped no-store (`41bd1d8`; the earlier
+`e454208` network-first is superseded), `T159` (`aa583b8`), `T160` (`1c949e0`), `T58` (`c89eebc`). **Don't
+rebuild any of those.**
+**NEXT REAL WORK → `T162` (owner-blessed, build ALL 11 drill modes, in 3 tiered pushes — do TIER P1 first and
+push before P2):**
+- **Tier P1 (push 1): `scaling`, `percentoff`, `partwhole`.** Full item sets + calibrated ranges + `masterSecs`
+  + unlock slots are in **`docs/agent/T162-calibration.md`** — read it. Each mode = a fixed `*_SRC` array →
+  `build()` mapping to `{p,a}` (match the existing mode shape), numpad-enterable/numeric/non-negative answers,
+  a sensible `unlockedBy`/`requires` mastery gate, new **"Reasoning"** picker group for the multi-step ones,
+  and **a Node logic gate per mode** registered in `pages.yml`.
+- **Then Tier P2** (`ratioshare`, `timegap`, `lcmhcf`, `mean`) → **Tier P3** (`cubes`, `money`, `digitsum`,
+  doubles/halves range check). One push per tier so the Babysitter reviews incrementally + the owner feels P1
+  early. *(BACKLOG T162 + `docs/agent/T162-calibration.md`.)*
+- **Then** content `T59`–`T61`. *(`T103`/`T72` Play-Store need owner creds — hold.)*
+**Re-read this line fresh before each task + before each push** (you've repeatedly built out of order — a fresh
+owner `BUG`/DO-FIRST can land here and overrides T162).
 
 **Builder B → `T155` (distinct PAD/bed timbre per style — OWNER feedback) → then `T154` (visual-regression gate).**
-Off standby. **`T155` FIRST** — owner: *"every style seems to share the same synth string sound… vary a lot
+**⚠ YOU APPEAR IDLE — your last push is still `T151` (`44ea919`); `T155` has been queued for a while and not
+picked up. START `T155` NOW** (real, owner-requested engine work is waiting). **`T155` FIRST** — owner: *"every
+style seems to share the same synth string sound… vary a lot
 more… makes them feel a little samey."* **Root cause: all 12 contexts use `pad: "pad"`** (synth.js:464-476) —
 the **identical** detuned-**sawtooth** unison bed. Leads/bass already vary; the **pad bed is the same saw in
 every style** = the shared "synth string." **Add ≥4–5 distinct PAD-class patches** (glassy sine/tri, FM electric-
