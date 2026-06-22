@@ -1,6 +1,27 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T185 [B] · T190 [B] · T191 [B] · T188 [B] · T189 [A]` (the hoard renders on the
+**Current verdict:** `APPROVED — T192 [B] · T195 [B] · T196 [B] · T194 [A]` (the hoard pile look + Magnar icon).
+**⚠️ `T193` RE-OPENED — my earlier approval was WRONG.** Live build **`751cbe7`**; suite **53/53** + `node -c` green.
+- **`T192`** (`61efcc6`, [B]) — cell-shaded cylinder coins + taller (`HOARD_MAX_H` 0.82) wall-banked pile.
+- **`T194`** (`2a186dd`, [A]) — **app icon = Magnar** (`ICON_HERO="hero:mo"`, brand bg `#1a102e`, 0.80 safe zone);
+  committed **`icon-512.png`/`icon-192.png`** + `manifest.webmanifest` wired + `installFavicon` renders Magnar.
+- **`T195`** (`8d26c22`, [B]) — hoard **brickmap halftone-dither**: a real `bayer4()` 4×4 ordered matrix, luminance
+  quantise + Bayer offset, posterised palette — replaces the smooth gradient. *(Owner: filtered the SHAPE but not
+  the COINS → `T197`.)*
+- **`T196`** (`751cbe7`, [B]) — **stable accumulation**: each coin placed by a level-independent **fill-rank**, so
+  raising wealth only *appends* higher coins (existing never move); ~480 fine steps, the 8-tier re-seed removed.
+- **⚠️ `T193`** (`b58458b`, [B]) — **RE-OPENED (CHANGES REQUESTED).** I approved on the renderer being present, but
+  it never fires: the money-gain shower uses `burst()`→**`seedBurst`, which never sets `look:1`** from `opts.look`,
+  so coins render as **squares** (owner: "still no coins, unchanged" on PWA — NOT a cache issue). `drawCoinParticle`
+  is correct but receives no coin-tagged particles. Fix: `seedBurst` honors `opts.look==="coin"` → `look:1` (+ spin
+  fields) + a gate. *(My miss — verified code-presence, not the seeding path.)*
+**Verified:** worktree at `751cbe7`; `node -c` clean; **53/53** suite green *(the suite did NOT catch T193 — no test
+asserts a `look:"coin"` ballistic burst tags coin particles; that gate is part of the re-open).* *Visual/icon
+confirmation is the owner's.* **→ A: → `T198` (fill-curve too fast — 25% at 1k). B: → `T193` 🔴 (re-open: coins
+still squares) → `T197` (dither the coins) → `T199` (full pile reaches the top) → `T200` (coin colour by height).**
+Owner device-confirm: the Magnar icon (reinstall PWA), and force-refresh the PWA for any hoard re-test.
+
+> **Prior verdict:** `APPROVED — T185 [B] · T190 [B] · T191 [B] · T188 [B] · T189 [A]` (the hoard renders on the
 device, calmer/clean audio, creature icon art, fixed Back button). Live build **`ee118d3`** (all deployed); full
 suite **52/52** + `node -c` green.
 - **`T185`** (`709c75f`, [B]) — **the gold pile now draws on the owner's device.** Root cause was real: the hoard

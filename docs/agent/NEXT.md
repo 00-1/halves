@@ -1,53 +1,42 @@
 # NEXT — canonical task pointers (Builders read THIS first, fresh, every task)
 
-> This file is the single source of truth for "what do I build right now."
-> **Re-fetch `origin/claude/agent` and re-read this file IMMEDIATELY before
-> starting each task, and again right before you push.** The task named here for
-> you **overrides anything you had in mind** — including lower-numbered or
-> earlier-queued work. A **`BUILD ONLY`** or **`BUG`** line is absolute: do that
-> one task and nothing else until it's pushed. Rationale/details live in
-> `REVIEW.md`; this file is just the pointer.
+> Single source of truth for "what do I build right now." **Re-fetch
+> `origin/claude/agent` and re-read this IMMEDIATELY before each task and before you
+> push.** Rationale/details live in `REVIEW.md` / `BACKLOG.md`.
 
 ---
 
-**Builder A → `T194` (the app ICON = Magnar).** Off standby — the owner picked the icon: **Magnar, hero id `mo`**
-(a Brawn hero; his art is `C.drawIcon("hero:mo", HERO_PAL.Brawn, "familiar")` in `collectibles.js`). Today the icon
-is a placeholder `x/2` mark. Compose Magnar as a **maskable** icon (his portrait in the ~80% safe zone on a
-full-bleed brand background, crisp nearest-neighbour scale), **render static `icon-512.png`/`icon-192.png` offline
-and commit them** (the installed-PWA/Android icon is fetched from the manifest — a runtime data-URL isn't enough),
-point `manifest.webmanifest` at them, and update **`installFavicon()`** to draw `hero:mo` so the browser favicon
-matches. Icon tests green; owner confirms by (re)installing the PWA. [A]-only (`manifest.webmanifest`, `index.html`,
-`main.js`, committed PNGs, tests). *(BACKLOG T194 — unblocks the icon half of `T168`; the Play `.aab` reuses the
-512.)* The rest of **`T168`** stays **HELD** on the owner's Google Play ID verification.
+**Builder A → `T198` (hoard fills too fast — recalibrate the wealth→pile curve).** `T194` (Magnar icon) + earlier A
+work **APPROVED** (live `751cbe7`). Owner: the pile maps wealth→fill too eagerly — `hoardLevel =
+log10(1+gold)/log10(1e12)` gives **25% at 1k, 40% at 60k (one day)**, no headroom for the T178 billions/trillions
+ramp. Recalibrate with a **floor-offset log**: `clamp((log10(1+gold)−log10(GOLD_EMPTY))/(log10(GOLD_FULL)−
+log10(GOLD_EMPTY)),0,1)`, `GOLD_EMPTY`≈100–1k, `GOLD_FULL`≈1e15 → target **1k≈5%, 60k≈15–20%, 1M≈30%, 1Bn≈55%,
+1T≈75%, 1e15 full** (tune vs `economy-sim.js`; keep a small visible starter pile). **Visual only — NOT the gold
+counter/economy.** `gold`/`hoard-wiring` green. [A]-only (`main.js`, `GOLD-HOARD-DESIGN.md`). *(BACKLOG T198.)*
+Then **`T168`** stays HELD on the owner's Play ID verification.
 **Re-read this line fresh before each task + push.**
 
-**Builder B → `T195` (pile dither/pixelate + gradation) → then `T193` (coin-cylinder gain burst).** `T192` (cylinder
-coins + taller wall-banked pile) is **APPROVED** (live `61efcc6`); owner "looks a bit better" + gave a refinement.
-*(If you're already mid-`T193`, finish + push it, then do `T195`.)*
-- **`T195` — FILTER/look only (the `brickmap` halftone-dither).** Reference: **`00-1/brickmap`** (public — you have
-  access; fxgl originated as inspiration from it) — its **palette post-process**: luminance gradient-map → curated
-  palette, **Ordered Bayer 4×4** dither that **posterises to a few levels with a visible dot pattern (halftone)**,
-  crisp/nearest-neighbour, tunable pixel scale. Root cause: the rest of fxgl already does this, but `drawHoard` is
-  the **one part still drawing a smooth analog gradient** (`shade(base,0.25-depth*0.6)`) — render the pile with the
-  **brickmap halftone-dither** instead, reusing the engine's screen-locked threshold so it's dot-locked to the
-  biome. **SHADING only.** [B]-only (`fxgl.js`, tests). *(BACKLOG T195; consult brickmap's dither shader.)*
-- **`T196` — pile rises GRADUALLY (~100 height levels, not 8).** *Separate from T195* (owner: don't conflate). The
-  pile re-seeds at **`HOARD_TIERS=8`** so it jumps in 8 big steps. Make the visible pile grow in ~100 fine steps so
-  it **rises gradually** with wealth. **Watch the trap:** bumping tiers to 100 reshuffles the seeded coins 100× (they
-  teleport) — prefer **stable accumulation** (fixed base seed; grow coverage/height with `level`; coins stay put,
-  pile builds upward). DoD: small earn → small rise, no teleporting, no big jumps. [B]-only (`fxgl.js`, tests).
-  *(BACKLOG T196 — independent of T195; either order.)*
-- **`T193` — the SAME spinning cylinder coins in the money-GAIN celebration.** On the owner's GL/GPU backend the
-  burst goes through the **shader splat (disc mask)** which **ignores the coin look** → "just particles." Render
-  coin-look gain particles as **spinning T192 cylinders on the 2D layer** (like the T185 overlay), not the shader
-  splat; keep the T173 amount-scaling. [B]-only (`fxgl.js`, tests). *(BACKLOG T193 — uses T192's coin primitive.)*
+**Builder B → `T193` 🔴 (RE-OPENED bug) → `T197` → `T199` → `T200`.** `T192`/`T195`/`T196` APPROVED (live `751cbe7`).
+- **🔴 `T193` — money-gain burst STILL shows no coins (squares), owner on PWA.** REAL bug, not cache: the shower
+  uses `fxBurst.burst({look:"coin"})` → `Controller.burst()` → **`seedBurst`, which never sets `look` on its
+  particles** (fxgl.js ~:256), so `p.look===1` is always false → squares. (Only `seedConverge` sets `look:1`; the
+  outward money-gain uses the ballistic `burst()`.) `drawCoinParticle`/overlay/inline are all correct — they just
+  never receive a coin-tagged particle. **FIX:** `seedBurst` honors `opts.look==="coin"` → `look:1` (+ the spin
+  fields `aspect`/`glint`, `vrot` exists) so coins render on CPU inline AND GL/GPU overlay; keep it OUTWARD (T173).
+  **Add the missing gate** (a `look:"coin"` ballistic burst must tag `look===1` particles). [B]-only (`fxgl.js`, tests).
+- **`T197` — the COINS need the dither/pixelation too** (T195 filtered the SHAPE, not the coins). Put the coins
+  through the same brickmap halftone-dither (recommend one pixelate + Bayer post-process over the whole hoard 2D
+  overlay; or quantise each coin's tones via T195's gold-ramp+`bayer4`). **NO colour shift** (owner dropped it).
+- **`T199` — a full pile must reach the TOP of the screen** (`HOARD_MAX_H` 0.82 → ~0.95–1.0; level 1.0 fills it —
+  after T198 that's peak wealth, 1T reads ~75% tall).
+- **`T200` — coin COLOUR by height:** dark coins lower, light coins higher (bias each coin's gold tone by its
+  fill-rank `q`; keep a mix at every level; deterministic/stable with T196). Not a hard split, a gradient.
+- All [B]-only (`fxgl.js`, tests). *(BACKLOG T193/T197/T199/T200.)*
 **Re-read this line fresh before each task + push.**
 
 ---
 
-**State:** the four owner-reported items (invisible pile, dark/stressful lofi, crackle/pop, back-button drift) are
-all fixed + deployed, plus the beasts/heroes icon candidates are in. Awaiting **owner device-confirmation** of the
-audio + the now-visible hoard, and the **owner's launcher-icon pick** (Codex ▸ Emblems, dev reveal-all). The
-critical path to launch is now mostly **external** (ID verification) + the icon pick.
+**Owner device-confirm:** the Magnar app icon (reinstall the PWA to see the launcher icon). **Force-refresh the PWA**
+before re-testing any hoard change (the service worker caches). Lofi (T190) already confirmed ✓.
 
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

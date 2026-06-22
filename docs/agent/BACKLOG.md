@@ -3088,7 +3088,7 @@ holding its **Back** button (`sumBack`, `menuBtn`, `invBack`, `practiceBack`, `a
   back row is the pinned bottom action row on the converted screens). **[A]-only** (`index.html`, `styles.css`,
   `main.js` if needed, tests).
 
-### T194 — [A] **App ICON = Magnar (hero `mo`)** — render his art into maskable icon assets + wire the manifest · status: OPEN · owner-decided
+### T194 — [A] **App ICON = Magnar (hero `mo`)** — render his art into maskable icon assets + wire the manifest · status: DONE (`2a186dd`) · APPROVED · owner confirm (reinstall PWA)
 **Owner (2026-06-22): "let's try Magnar (hero) for the icon."** Magnar = hero id **`mo`** (a Brawn hero; name in
 `collectibles.js` `HERO_NAMES`). His art is the generative "creature-blob portrait" drawn by
 `C.drawIcon(cv, "hero:mo", HERO_PAL.Brawn, "familiar")` (collectibles.js `heroSprite`). Today the icon is a
@@ -3110,6 +3110,77 @@ minted by `installFavicon()` (main.js:834, currently draws the `x/2` glyph at 64
   points at the new assets); `node -c` clean; **owner confirms** by (re)installing the PWA / viewing the icon.
   **[A]-only** (`manifest.webmanifest`, `index.html`, `main.js` `installFavicon`, the committed PNG assets, tests).
   *(Unblocks the icon half of T168; the Play-Store `.aab` icon reuses the same 512 asset.)*
+
+### T199 — [B] **A full pile should reach the TOP of the screen** (1T still leaves a gap) · status: OPEN · owner-reported
+**Owner (2026-06-22): "1T still doesn't fill the screen — although it's better than what we had before."** T192
+raised **`HOARD_MAX_H` 0.34 → 0.82**, so a level-1.0 pile climbs ~82% and stops short of the ceiling.
+- **Fix (`fxgl.js`):** raise the cap so a **maxed pile genuinely reaches the top** — `HOARD_MAX_H` ~**0.82 → ~0.95–1.0**
+  (the wall-banked sides can touch the top; the centre can dip lower). **Interaction with T198:** after T198 recurves
+  the fill, **level 1.0 = the TOP of the economy** (`GOLD_FULL`≈1e15), not 1T — so "fills the screen" happens at peak
+  absurd-wealth, and 1T (≈75% level) reads tall-but-not-full. That's intended; just make sure level 1.0 *can* fill
+  the screen. Keep it behind the UI (partial occlusion is fine).
+- **DoD:** a level-1.0 hoard reaches ~the top of the screen (no dead gap at the ceiling); mid values scale
+  proportionally; works on the GL/GPU 2D overlay AND CPU still; `golden-fx`/`fxgl`/`hoard-wiring` green (note golden
+  changes); `node -c` clean; **owner device-confirms**. **[B]-only** (`fxgl.js`, tests). *(Pairs with T198's curve.)*
+
+### T200 — [B] **Coin COLOUR by height — dark coins lower, light coins higher** (gradient, with a mix at each level) · status: OPEN · owner-reported
+**Owner (2026-06-22): "too much of a mix of dark and light coloured coins — maybe the lower down the stack, the
+more dark coins there should be, and higher up the more light coloured (with some of each still mixed in at either
+level)."** Currently each coin's gold tone is picked ~uniformly at random → a flat salt-and-pepper mix top-to-bottom.
+- **Fix (`fxgl.js`, `seedHoard` coin tone):** bias each coin's gold tone by its **height / fill-rank `q`** (T196):
+  **low in the pile → weighted toward DARK gold tones; high → weighted toward LIGHT/bright gold** — a vertical
+  **gradient of the tone *distribution***, NOT a hard split. Keep **some of each tone at every level** (sample from
+  a height-shifted distribution / weighted random, so there's variation, just biased). Reads as a pile that's
+  shadowed/deep at the base and catches the light at the crest. Use the existing `GOLD_TONES`/T195 gold ramp.
+- **DoD:** coins trend **dark→light from base→crest** with a natural mix retained at each level (no hard banding,
+  no uniform salt-and-pepper); deterministic from the seed (stable with T196 accumulation — a coin's tone mustn't
+  flicker as the pile grows); works on the GL/GPU overlay AND CPU still; `golden-fx`/`fxgl`/`hoard-wiring` green
+  (note goldens); `node -c` clean; **owner device-confirms**. **[B]-only** (`fxgl.js`, tests).
+
+### T198 — [A] **Hoard fills too fast — recalibrate the wealth→pile curve for the real economy** · status: OPEN · owner-reported
+**Owner (2026-06-22): "the coins accumulate too fast. At 1k there's already a lot, but it's actually easy to get
+like 60k in one day."** The pile maps wealth → fill far too eagerly at the low end.
+- **Root cause (`main.js`, [A]):** `hoardLevel(gold) = log10(1+gold) / log10(GOLD_FULL_MAG)` with **`GOLD_FULL_MAG =
+  1e12`** → **1k = 25% full, 60k (one day!) = 40%**, 1M = 50%. A player blows past "a lot" on day one, and there's
+  no headroom for the **T178 absurd-wealth ramp** (g=2.5 → billions/trillions+ late game). The pure log gives a big
+  chunk at low magnitudes because `log10(1000)=3` is already a quarter of `log10(1e12)`.
+- **Fix:** recalibrate so **early wealth = a small pile** and the visual range **spans the real economy into the
+  absurd late game.** Use a **floor-offset log**: `hoardLevel = clamp((log10(1+gold) − log10(GOLD_EMPTY)) /
+  (log10(GOLD_FULL) − log10(GOLD_EMPTY)), 0, 1)`, with **`GOLD_EMPTY` ≈ 100–1k** (below it the pile is ~empty) and
+  **`GOLD_FULL` ≈ 1e15** (quadrillion — past where the T178 ramp peaks). Target feel (tune + owner-confirm):
+  **1k ≈ small/sparse starter (~5%), 60k ≈ modest (~15–20%), 1M ≈ ~30%, 1Bn ≈ ~55%, 1T ≈ ~75%, 1e15 = full.**
+  Cross-check against `docs/agent/economy-sim.js` (regular player ≈150B by day ~120) so the bulk of the visual
+  growth lands across the mid/late game, not day one.
+- **Purely VISUAL** — this changes only the pile size mapping, **NOT** the gold counter, earnings, or economy. Keep
+  a small visible starter pile (don't make new players see literally nothing). Update `docs/agent/GOLD-HOARD-DESIGN.md`
+  if the constants move.
+- **DoD:** at 1k the pile is **small/sparse** (not ~25%); a day's ~60k reads modest; the pile keeps visibly growing
+  through millions→billions→trillions (headroom for the absurd ramp); the gold counter/economy unchanged; `node -c`
+  clean; `gold`/`hoard-wiring` tests green (+ a check the curve gives small fill at 1k, full near `GOLD_FULL`);
+  **owner device-confirms** the slower fill. **[A]-only** (`main.js`; `GOLD-HOARD-DESIGN.md` doc). *(Pairs with the
+  [B] render work T195/T196/T197 — this is the curve, those are the look.)*
+
+### T197 — [B] **The COINS also need the dither/pixelation** (T195 filtered the pile shape but not the coins) · status: OPEN · owner-reported
+**Owner (2026-06-22, on the T195 build): "it's ok but could still be better. Looks like the shape got a filter but
+not the coins themselves. Let's pixelate the coins too. The coins themselves need some dithering/pixelation."**
+**(Owner DROPPED the colour lightening/yellowing idea — "the colour is ok, ignore that" — so NO colour shift.)**
+- **Root cause:** T195's halftone filter runs on the **silhouette only** — `drawHoard` quantises the mound
+  cell-by-cell via `rampIndex(lum, …, bayer4(cx,cy), 1)` (the brickmap gold-ramp + ordered dither). But the
+  **cylinder coins** (`drawCoin`, and the gain-burst `drawCoinParticle`) are drawn **afterwards as smooth canvas
+  ellipse/rect fills that bypass the ramp + Bayer** — so the coins read smooth/un-pixelated against the dithered
+  pile.
+- **Fix (`fxgl.js`, B's call — recommend the whole-layer post-process):** put the coins through the **same brickmap
+  halftone-dither + pixelation** as the pile so they're cohesive. Either **(recommended)** run **one pixelate +
+  ordered-Bayer-quantise post-process over the ENTIRE hoard 2D overlay** (silhouette + coins + the T193 gain-burst
+  coins) so everything shares the identical dot lattice / pixel grid — "a filter over the whole thing" (mind the
+  read-back perf; throttle to the still/!reduced path); **or** build each coin's flat tones from the **same
+  posterised gold ramp + `bayer4`** at the same cell/pixel scale (pixel-snapped, nearest-neighbour). Reuse T195's
+  `bayer4`/`rampIndex`/gold-ramp machinery — don't invent a second filter.
+- **DoD:** the **coins are dithered + pixelated** in the same brickmap look as the pile (no smooth ellipse fills
+  standing out), cohesive on the **WebGL/WebGPU 2D overlay** (owner's device) AND CPU still; the T193 gain-burst
+  coins get the same treatment; **NO colour/brightness shift** (owner dropped it); scenes byte-identical when no
+  hoard; `golden-fx`/`fxgl`/`hoard-wiring` green (update goldens, note it); `node -c` clean; no perf regression
+  (respect caps / still-frame throttle); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests).
 
 ### T192 — [B] **Hoard visual overhaul — cell-shaded CYLINDER coins + a taller, wall-banked pile** · status: DONE (`61efcc6`) · APPROVED · ✅ owner "looks a bit better" (refinement → T195)
 **Owner (2026-06-22, screenshot of the now-visible 1T hoard): three things.** (1) *"it doesn't stack to the ceiling
@@ -3136,7 +3207,7 @@ where the surface and edge have different colours."*
   CPU still; existing non-hoard scenes byte-identical; `golden-fx`/`fxgl`/`hoard-wiring` green (update goldens, note
   it); `node -c` clean; **owner device-confirms** the new look. **[B]-only** (`fxgl.js`, tests).
 
-### T195 — [B] **Hoard FILTER pass — render the pile in the `brickmap` halftone-dither look** (visual only) · status: OPEN · owner-reported (follow-up to T192)
+### T195 — [B] **Hoard FILTER pass — render the pile in the `brickmap` halftone-dither look** (visual only) · status: DONE (`8d26c22`) · APPROVED · owner device-confirm
 **Owner (2026-06-22, on T192 `61efcc6`): "I think what it needs is a filter pass — dithering and pixelation —
 along the lines of filters in brickmap."** **NOTE (owner clarification):** this is **ONE of two separate things** —
 T195 is the **visual effect/filter** (how the pile is *shaded/rendered*); the **pile-height gradation** (more
@@ -3163,7 +3234,7 @@ levels so it rises gradually) is a **separate** concern → **T196**. Don't conf
   **owner device-confirms**. **[B]-only** (`fxgl.js`, tests). *(B: consult brickmap's palette/dither shader directly
   for the exact threshold/matrix. This is the SHADING only — the height-level gradation is T196.)*
 
-### T196 — [B] **Hoard pile rises GRADUALLY — ~100 height levels, not 8 big jumps** (separate from the T195 filter) · status: OPEN · owner-reported
+### T196 — [B] **Hoard pile rises GRADUALLY — ~100 height levels, not 8 big jumps** (separate from the T195 filter) · status: DONE (`751cbe7`) · APPROVED · owner device-confirm
 **Owner (2026-06-22): "a separate thing is having more gradations of pile HEIGHT levels — i.e. not just 8, maybe
 like 100. The user should see it gradually rise as their wealth increases, not big jumps."** Distinct from T195's
 filter — this is about how finely the pile's **size tracks wealth**.
@@ -3184,7 +3255,26 @@ filter — this is about how finely the pile's **size tracks wealth**.
   `hoard-wiring` green (note any golden changes); `node -c` clean; **owner device-confirms** the gradual rise.
   **[B]-only** (`fxgl.js`, tests). *(Independent of T195's shading; can land in either order.)*
 
-### T193 — [B] **Money-gain celebration = the same spinning cell-shaded CYLINDER coins** (not square/disc particles) · status: OPEN · owner-reported
+### T193 — [B] **Money-gain celebration = the same spinning cell-shaded CYLINDER coins** (not square/disc particles) · status: ⚠️ RE-OPENED — CHANGES REQUESTED (`b58458b` incomplete; owner: still no coins)
+**🔴 RE-OPENED (2026-06-22):** owner on PWA reports the menu money-gain burst "still has no coins, it's unchanged."
+**Babysitter root-caused a REAL GAP (the earlier approval was wrong — renderer wired, seeding not):** the
+money-gain shower fires `fxBurst.burst({look:"coin"})` (main.js `fxEarnBurst`:414) → `Controller.burst()` →
+**`seedBurst()`**, and **`seedBurst` creates particles with NO `look` field** (fxgl.js ~:256 — it never reads
+`opts.look`). So `p.look === 1` is always false → the coins render as **squares**, on every backend (NOT a cache
+issue; `fxBurst` is the `backend:"2d"` CPU controller and its inline path is keyed on `look===1` too). Only the
+*converge* path (`earnBurst`/`seedConverge`, :470) sets `look:1` — but the outward money-gain uses the *ballistic*
+`burst()`. T193's `drawCoinParticle` + overlay/inline routing are all correct; they just **never receive a coin**.
+- **FIX:** make **`seedBurst` honor `opts.look`** — when `opts.look === "coin"`, set **`look: 1`** on each particle
+  (plus the per-coin spin fields `drawCoinParticle` needs: `aspect`, `glint`, the existing `vrot`). Then the
+  outward shower renders as spinning cylinder coins on CPU (inline) AND GL/GPU (overlay filter). Keep it OUTWARD
+  (T173 — earn coins fly out, don't converge to the hoard). **Add a gate** that a `look:"coin"` ballistic burst
+  actually tags `look===1` particles (the missing test that let this through).
+- **DoD (re-test):** triggering the money-gain burst — **from the dev/graphics menu tester AND a real earn** —
+  shows **spinning cylinder coins** (not squares) on the owner's PWA/GL-GPU device; `golden-fx`/`fx-wiring` green
+  **+ the new look-tag gate**; `node -c` clean; **owner device-confirms** (force-refresh the PWA first to clear the
+  cached build). **[B]-only** (`fxgl.js`, tests).
+
+> _(original T193 spec — `b58458b` built the renderer but not the seeding tag; superseded by the re-open above)_
 **Owner (2026-06-22): "I'd like to see the same rotating cell-shaded cylinders in the money-gain celebrations.
 Since it's just particles at the moment, which don't register as coins at all."** Root cause: on the owner's
 **WebGL/WebGPU** device the burst renders through the **shader splat (disc mask)**, which **ignores the coin
