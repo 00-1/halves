@@ -113,12 +113,14 @@ topics with no guide.)*
 **M5 + M6** (inventory + beasts) feed **M7** (metagame). **M9/M10** (branding/shell) alongside. **M11**
 (QA/launch) last. *(P0 + M1 + M4 are the long poles — research-heavy.)*
 
-## Still to decide (open)
-- GG2 **subtitle** + brand creature.
-- **How many types** in the matchup triangle (GG1 uses 3).
-- Grow-time curve + plot count (M7 balance).
-- Whether the hoard visual stays as the wealth display or is reflavoured.
-- Final topic count for VR (target ~GG1's 30).
+## Creative calls — DEFAULTS chosen, iterate with owner AFTER the run (not blocking)
+*(owner: "do GG2 to the best of your ability; iterate creative afterwards" — proceed with these defaults,
+log each in `GG2-CREATIVE-LOG.md`.)*
+- GG2 **subtitle** + brand creature → pick the strongest plant/nature option during M9; log it.
+- **Matchup triangle types** → default **3** (as GG1), unless M6 design clearly wants more.
+- Grow-time curve + plot count → set by the M7 **balance sim** (no kid ever stuck waiting).
+- Hoard visual → default **keep the GG1 hoard mechanic**, reskinned to the plant/nature palette.
+- Final VR topic count → target **~30** (GG1 parity).
 
 *Living doc — refine as P0 lands and decisions are made. Babysitter-owned. Cross-ref: FRANCHISE-DESIGN.md.*
 
@@ -172,10 +174,14 @@ Below: the gaps found + the milestones added/amended to close them. (Hosting det
 - **Each milestone is DONE only when:** its deliverable exists + builds + `node -c` clean + its tests green
   + (content milestones) the enumeration-harness + assessment loop is clean. Write the milestone's DoD line
   before starting it.
-- **Decision-points that need the OWNER (don't guess — ask, then proceed):** the GG2 subtitle + brand
-  creature (M9); #types in the matchup triangle (M6); grow-time curve + plot count (M7 balance); whether
-  the hoard visual is reflavoured (M4); final VR topic count (M2); the `FRANCHISE-HOSTING.md` Decisions
-  1–3. Batch these early so the run isn't blocked mid-way.
+- **Creative calls — PROCEED with sensible defaults; do NOT block on the owner (owner, 2026-06-22: "just do
+  GG2 to the best of your ability and we'll iterate creative work afterwards").** Pick the strongest option
+  and build it; record every such call in a running **`GG2-CREATIVE-LOG.md`** (the decision + the default
+  chosen + why) so the owner can review and iterate AFTER the run, not during. Applies to: the GG2 subtitle
+  + brand creature (M9); #types in the matchup triangle (M6 — default 3, as GG1); grow-time curve + plot
+  count (M7 balance — tune via the sim); whether the hoard visual is reflavoured (M4 — default: keep the GG1
+  hoard mechanic, plant/nature palette); final VR topic count (M2 — target ~GG1's 30). The
+  `FRANCHISE-HOSTING.md` Decisions are already resolved. **The run does not stall for creative input.**
 - **Babysitter cadence carries over:** Builders push in batches; the Babysitter independently verifies +
   re-assesses each (same 3-agent protocol). The post-build deep quality pass (T213-style) runs per content
   milestone.
