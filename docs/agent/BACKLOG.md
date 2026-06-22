@@ -2948,11 +2948,15 @@ from the menu shows nothing.
   `level = clamp( log10(1+gold) / log10(GOLD_FULL_MAG), 0, 1 )`, **`GOLD_FULL_MAG` ≈ 1e12–1e15** (tunable; 1e12 →
   1K≈25%, 1M≈50%, 1B≈75%, 1T=full; 1e15 reserves full for "Cosmic Fortune"). Replaces the power curve in
   `hoardLevel()`. *(This is the key fix — the pile becomes visible at any wealth.)*
-- **(2) A live MENU gold-setter + pile PREVIEW** (the owner's ask): in the Graphics menu (`?dev`-gated), a control
-  to **set the gold total** (a slider across magnitudes 1K→1e15, or value buttons) **with a LIVE pile-preview
-  canvas right there** rendering the hoard at that level — so the owner can dial wealth and watch the pile grow
-  **without leaving the menu**. (Supersedes the always-on `?gold=` URL param — keep `?gold=` too but `?dev`-gate
-  it.) The preview reuses the hoard scene render at the chosen level.
+- **(2) A DEV gold-setter that ACTUALLY CHANGES the real gold counter** (owner, clarified 2026-06-22 — *"I want to
+  actually change how much gold I have from the menu… pick illustrative examples… set 1M, 1Bn gold, and actually
+  change my Goblin Gold counter"*). **NOT a sandboxed preview** — real **`saveGold(value)`** buttons in the
+  Graphics menu (`?dev`-gated) for illustrative magnitudes: **`0` (reset) · `1K` · `100K` · `1M` · `100M` · `1Bn`
+  · `1T`** (the owner named 1M & 1Bn). Each sets the **real lifetime gold total** + **refreshes everything** (the
+  gold pill, the home hoard pile, the wealth milestones) so the owner picks a value → goes to home → sees the pile
+  at that wealth + the big-number display + any milestones. (Supersedes the always-on `?gold=` URL param — keep it
+  but `?dev`-gate it.) **DEV-only — `?dev`-gated + on the T168 publish checklist** (must be inert/absent in
+  production; it edits the save).
 - **(3) Earn-burst flies OUTWARD, not converging to the hoard** (the prior T173 follow-up — fold in): drop the
   `tx:0.5,ty:0.93` converge; coins burst out from the earn-point + fade.
 - **(4) Minor (owner OK for now):** the earn-burst coins render as **squares, not the beveled coins** — check the

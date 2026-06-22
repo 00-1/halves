@@ -15,8 +15,10 @@
 gold (~1.23K) the pile is **~0.17% = invisible**; and the pile renders on HOME, not in the graphics menu. Fix:
 1. **Recalibrate to a LOG-OF-MAGNITUDE curve** — `level = clamp(log10(1+gold)/log10(GOLD_FULL_MAG),0,1)`,
    `GOLD_FULL_MAG`≈1e12–1e15 → 1K≈25%, 1M≈50%, 1B≈75%, 1T≈full. Pile visible from the start, grows across K→M→B→T.
-2. **A `?dev` Graphics-menu gold-setter + LIVE pile PREVIEW canvas** — dial gold (slider/values) and watch the
-   pile grow without leaving the menu (the owner's ask). `?dev`-gate the existing `?gold=` too.
+2. **A `?dev` Graphics-menu gold-setter that ACTUALLY sets the real gold counter** (owner: *"actually change my
+   Goblin Gold counter"*) — real `saveGold()` buttons for `0/1K/100K/1M/100M/1Bn/1T`; each refreshes the pill +
+   home pile + milestones (pick a value → go home → see the pile). NOT a sandboxed preview. `?dev`-gated + on the
+   publish checklist (it edits the save).
 3. **Earn-burst flies OUTWARD** (drop the `tx/ty` converge — the prior follow-up, folded in).
 4. Minor (owner OK): burst coins are squares not beveled — pass/apply `look:"coin"`.
 [A]-only. *(BACKLOG T182.)*
