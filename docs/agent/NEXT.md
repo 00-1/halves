@@ -6,14 +6,21 @@
 
 ---
 
-**Builder A → `T198` (hoard fills too fast — recalibrate the wealth→pile curve).** `T194` (Magnar icon) + earlier A
-work **APPROVED** (live `751cbe7`). Owner: the pile maps wealth→fill too eagerly — `hoardLevel =
-log10(1+gold)/log10(1e12)` gives **25% at 1k, 40% at 60k (one day)**, no headroom for the T178 billions/trillions
-ramp. Recalibrate with a **floor-offset log**: `clamp((log10(1+gold)−log10(GOLD_EMPTY))/(log10(GOLD_FULL)−
-log10(GOLD_EMPTY)),0,1)`, `GOLD_EMPTY`≈100–1k, `GOLD_FULL`≈1e15 → target **1k≈5%, 60k≈15–20%, 1M≈30%, 1Bn≈55%,
-1T≈75%, 1e15 full** (tune vs `economy-sim.js`; keep a small visible starter pile). **Visual only — NOT the gold
-counter/economy.** `gold`/`hoard-wiring` green. [A]-only (`main.js`, `GOLD-HOARD-DESIGN.md`). *(BACKLOG T198.)*
-Then **`T168`** stays HELD on the owner's Play ID verification.
+**Builder A → `T201` 🔴 (stale manifest/icon cache) → then `T198` (fill curve).** `T194` + earlier A work APPROVED
+(live `751cbe7`).
+- **🔴 `T201` — install shows the OLD name "Halves" + `x/2` icon, NOT "Goblin Gold"/Magnar** (owner screenshots).
+  Root cause: `index.html` links `manifest.webmanifest` as a **bare URL** (no `?v=`) and the icon `src`s are bare,
+  but `sw.js` is **cache-first for everything except nav + `build.json`** (safe only for the `?v=`-versioned JS/CSS).
+  So the manifest + icons are served from the **first-ever cache forever** → frozen install identity. **Fix:** serve
+  `manifest.webmanifest` + the icon files **NETWORK-FIRST** (add them to the nav/`build.json` branch in `sw.js`), and
+  **bump `CACHE` v3→v4** so existing users get purged on next visit. DoD: after a normal revisit the Install dialog
+  shows **Goblin Gold + Magnar**, and future deploys propagate. [A]-only (`sw.js`, `index.html`). **Launch blocker.**
+  *(BACKLOG T201.)*
+- **`T198` — hoard fills too fast.** `hoardLevel = log10(1+gold)/log10(1e12)` → 25% at 1k, 40% at 60k. Recurve with a
+  **floor-offset log**: `clamp((log10(1+gold)−log10(GOLD_EMPTY))/(log10(GOLD_FULL)−log10(GOLD_EMPTY)),0,1)`,
+  `GOLD_EMPTY`≈100–1k, `GOLD_FULL`≈1e15 → **1k≈5%, 60k≈15–20%, 1M≈30%, 1Bn≈55%, 1T≈75%, 1e15 full** (tune vs
+  `economy-sim.js`; small visible starter pile). **Visual only.** [A]-only (`main.js`, `GOLD-HOARD-DESIGN.md`).
+  *(BACKLOG T198.)* Then **`T168`** stays HELD on the owner's Play ID verification.
 **Re-read this line fresh before each task + push.**
 
 **Builder B → `T193` 🔴 (RE-OPENED bug) → `T197` → `T199` → `T200`.** `T192`/`T195`/`T196` APPROVED (live `751cbe7`).

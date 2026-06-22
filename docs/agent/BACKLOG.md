@@ -3111,6 +3111,31 @@ minted by `installFavicon()` (main.js:834, currently draws the `x/2` glyph at 64
   **[A]-only** (`manifest.webmanifest`, `index.html`, `main.js` `installFavicon`, the committed PNG assets, tests).
   *(Unblocks the icon half of T168; the Play-Store `.aab` icon reuses the same 512 asset.)*
 
+### T201 — [A] **Stale manifest/icon cache — install shows the OLD name + icon** (SW caches them forever) · status: OPEN · 🔴 owner-reported (launch-correctness)
+**Owner (2026-06-22, two PWA screenshots): the Chrome "Install app" dialog shows the OLD name "Halves — mental
+math drills" and the OLD `x/2` icon — NOT "Goblin Gold" / Magnar**, even though the live `manifest.webmanifest`
+already says `name:"Goblin Gold"` and points at `icon-512.png`/`icon-192.png` (Magnar, T194).
+- **✅ ROOT CAUSE (Babysitter-verified):** `index.html` links the manifest as a **bare URL** —
+  `<link rel="manifest" href="manifest.webmanifest">` (no `?v=`), and the icon `src`s in the manifest are bare too
+  (`icon.svg`/`icon-192.png`/`icon-512.png`). `sw.js`'s fetch handler is **cache-first for everything except
+  navigations + `build.json`** — which is "safe" *only because the JS/CSS assets carry `?v=<sha>`* (new deploy →
+  new URL → cache miss → fresh). The **manifest + icons have NO `?v=`**, so their URL never changes → the SW serves
+  the **first-ever cached copy forever**, across every deploy. So the install identity (name + icon) is frozen at
+  whatever a user first cached — here the pre-rename "Halves" + `x/2`.
+- **Fix (`sw.js`, maybe `index.html`):** serve the **manifest + icons NETWORK-FIRST** (like nav/`build.json`) so the
+  install identity is always fresh — add `manifest.webmanifest` and the icon files (`icon.svg`, `icon-192.png`,
+  `icon-512.png`, any maskable PNGs) to the network-first branch (cache as the offline fallback only). **AND bump
+  `CACHE` `halves-static-v3` → `v4`** so existing users (incl. the owner) get the stale manifest/icons **purged on
+  next visit** (the `activate` handler already deletes non-current caches). *(Alt: version the manifest/icon URLs
+  with `?v=<sha>` like the other assets — but network-first is simpler for these few small, must-be-fresh files.)*
+- **DoD:** after deploy + a normal revisit (no manual clear), the PWA **Install** dialog shows **"Goblin Gold" + the
+  Magnar icon**; the manifest/icons update on future deploys without users clearing data; offline still works (cached
+  fallback); the T54/T161 update flow + nav network-first still hold; `node -c`/relevant tests green; **owner
+  device-confirms** the install identity. **[A]-only** (`sw.js`, `index.html`/`manifest` if needed). **🔴 Important
+  pre-launch** — wrong app name/icon on install is a launch blocker. *(Owner's immediate workaround: Chrome → tap the
+  page-info icon left of the URL → Site settings → **Clear & reset** → revisit; or uninstall the PWA then clear site
+  data. A plain refresh won't fix it — the SW serves the manifest from cache.)*
+
 ### T199 — [B] **A full pile should reach the TOP of the screen** (1T still leaves a gap) · status: OPEN · owner-reported
 **Owner (2026-06-22): "1T still doesn't fill the screen — although it's better than what we had before."** T192
 raised **`HOARD_MAX_H` 0.34 → 0.82**, so a level-1.0 pile climbs ~82% and stops short of the ceiling.

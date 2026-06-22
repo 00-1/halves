@@ -17,7 +17,7 @@
   fields) + a gate. *(My miss — verified code-presence, not the seeding path.)*
 **Verified:** worktree at `751cbe7`; `node -c` clean; **53/53** suite green *(the suite did NOT catch T193 — no test
 asserts a `look:"coin"` ballistic burst tags coin particles; that gate is part of the re-open).* *Visual/icon
-confirmation is the owner's.* **→ A: → `T198` (fill-curve too fast — 25% at 1k). B: → `T193` 🔴 (re-open: coins
+confirmation is the owner's.* **→ A: → `T201` 🔴 (stale manifest/icon cache → install shows old Halves name + x/2 icon; SW serves them cache-first under bare URLs) → `T198` (fill-curve too fast). B: → `T193` 🔴 (re-open: coins
 still squares) → `T197` (dither the coins) → `T199` (full pile reaches the top) → `T200` (coin colour by height).**
 Owner device-confirm: the Magnar icon (reinstall PWA), and force-refresh the PWA for any hoard re-test.
 
