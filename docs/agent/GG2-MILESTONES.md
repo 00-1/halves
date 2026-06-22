@@ -70,8 +70,8 @@ topics with no guide.)*
 - **Plots:** limited planting slots (resource choice). **Plant → wall-clock grow (2–10h by rarity) →
   harvest.** **Feed crops to beasts → pacify one at a time** up the realm ladder; **type matchup** sets
   pacification level. The "feeding" interaction replaces GG1's battle playout.
-- **Gold integration:** gold carries over (earned by drilling) — likely **funds seeds / unlocks plots**
-  (FRANCHISE-DESIGN §2; exact role TBD).
+- **Gold:** carries over but **buys nothing** — it just **goes UP** (the absurd-wealth meta-joke + hoard, same as
+  GG1). Seeds come from **drilling drops**; plots unlock from **progression** — NOT bought with gold.
 - **Balance pass:** a sim (like GG1's `economy-sim.js`) for grow-times, plot count, seed drop rates,
   pacification math, gold sinks — so progression feels right and a kid is never *stuck* waiting (can
   always drill for more).
@@ -112,7 +112,6 @@ topics with no guide.)*
 
 ## Still to decide (open)
 - GG2 **subtitle** + brand creature.
-- Gold's exact **role in the farm** (buy seeds? unlock plots? both?).
 - **How many types** in the matchup triangle (GG1 uses 3).
 - Grow-time curve + plot count (M7 balance).
 - Whether the hoard visual stays as the wealth display or is reflavoured.
