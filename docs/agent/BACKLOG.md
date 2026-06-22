@@ -3211,6 +3211,27 @@ can stay. By subtitle I mean THE VOID THRONE."*
   the maths tag, in that order; no layout jump; `node -c` clean; entry/icon tests green; **owner device-confirms**.
   **[A]-only** (`index.html`, `main.js`, `styles.css`).
 
+### T211 — [B] **BUG: the gold hoard shows behind EVERY screen** (should be home-only) · status: OPEN · 🔴 owner-reported (live)
+**Owner (2026-06-22): "we have gold stacks behind every screen, but I only want it on the main screen."**
+- **✅ ROOT CAUSE (Babysitter-verified):** the hoard renders on a **separate overlay canvas** (`.fxgl-hoard`,
+  `_hoardCv`, T185) inserted as a sibling of `#fxBackdrop`. Its className is built by **stripping `hidden`**
+  (`fxgl.js:1686` — `.replace(/\bhidden\b/g,"")`, "never display:none" so it stays drawable). But `main.js`'s
+  `fxShowBackdrop(false)` (called on every screen that isn't `start`/`arena`, `main.js:310`) only toggles `hidden`
+  on **`#fxBackdrop`** — **not the overlay.** So the backdrop hides but the overlay **keeps the last-drawn home
+  hoard and stays visible** on Inventory/Heroes/Setup/etc. (Arena is fine: its scene has no hoard, so `_syncOverlay`
+  clears the overlay.)
+- **Fix (`fxgl.js` — overlay follows the backdrop):** the hoard overlay must be **hidden/cleared whenever the
+  backdrop scene isn't shown** — i.e. only visible on the home backdrop (with a hoard). Recommended: on the
+  Controller's **`stop()`** (and/or when the host canvas gains `hidden`), **`visibility:hidden` + clear** the
+  overlay; on `start()`/the home `setData` with `scene.hoard`, show it again. (Keep `visibility`, NOT `display:none`,
+  so it stays drawable — the T133/T185 reason it strips `hidden`.) *(Alt one-liner if B prefers it as CSS: a sibling
+  rule `.fx-backdrop.hidden ~ .fxgl-hoard{visibility:hidden}` — but keep the fix in fxgl so the overlay owns its own
+  visibility.)*
+- **DoD:** the gold hoard shows **only on the home/main screen** (and the home gain-coins) — **not** behind
+  Inventory/Heroes/Arena/Setup/etc.; returning home re-shows it correctly; no flicker; existing backdrop/burst
+  behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
+  stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
+
 ### T210 — [A] **Title refinements: 3× bigger, lighten the Void Throne, drop its sparkle** · status: OPEN · owner-reported
 **Owner (2026-06-22, on T209 `632804d`): "title text looks good, but let's 3× the size of both. Void Throne needs
 lightening. Void Throne doesn't need the same sparkle."** Refines T209's `paintPixelTitle`/`renderTitles` (main.js).

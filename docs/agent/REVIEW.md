@@ -15,8 +15,7 @@ awards rejig (15), coin shine, entry fixes, stylised title block). Live build **
 - **`T209`** (`632804d`, [A]) — `paintPixelTitle`: pixel-gold "Goblin Gold" (gold ramp + Bayer-4 dither) + dithered
   void "The Void Throne", each with a throttled glint sweep. **Owner refinements → `T210`** (3× bigger, lighten the
   void, drop the void's sparkle).
-**Verified:** worktree at `632804d`; `node -c` clean; **53/53** green. **→ A: → `T210` (title refinements). B:
-STAND BY** (T207 owner device-confirm pending). Owner device-confirm: coin shine (pile sparkles + shower glints),
+**Verified:** worktree at `632804d`; `node -c` clean; **53/53** green. **→ A: → `T210` (title refinements). B: → `T211` 🔴 (gold hoard shows behind every screen — overlay doesn't hide with the backdrop). Owner device-confirm: coin shine (pile sparkles + shower glints),
 the 15-award Collector tab, and the title (feeding T210).
 
 > **Prior verdict:** `APPROVED — T201 [A] · T202 [A] · T198 [A] · T204 [B]` (cache fix, Magnar splash, fill curve,

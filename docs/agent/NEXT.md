@@ -17,8 +17,15 @@ need the same sparkle."* Refine `paintPixelTitle`/`renderTitles` (main.js):
 - [A]-only (`main.js`, `styles.css`/`index.html`). *(BACKLOG T210.)* Then **`T168`** stays HELD on Play ID verify.
 **Re-read this line fresh before each task + push.**
 
-**Builder B → STAND BY.** `T205` (emblems trimmed) + `T207` (coin shine) **APPROVED** (live `632804d`); queue clear.
-Hold until the Babysitter points you at a task (likely owner feedback on the coin shine / a follow-up).
+**Builder B → `T211` 🔴 (BUG: gold hoard shows behind EVERY screen — should be home-only).** Off standby. Root
+cause: the hoard renders on a **separate overlay canvas** (`.fxgl-hoard`, T185) that **strips the `hidden` class**
+(never `display:none`), but `main.js`'s `fxShowBackdrop(false)` (on every non-home/arena screen) only hides
+**`#fxBackdrop`**, not the overlay → the overlay keeps the last home hoard and shows on Inventory/Heroes/Setup/etc.
+**Fix (`fxgl.js`):** the overlay must **follow the backdrop** — on `stop()` (or when the host canvas is hidden),
+**`visibility:hidden` + clear** the overlay; re-show on the home `start()`/`setData` with `scene.hoard`. Keep
+`visibility` (not `display:none`, so it stays drawable). DoD: hoard shows **only on home**, not other screens;
+returns correctly. [B]-only (`fxgl.js`, tests; tiny CSS only if B picks the `.fx-backdrop.hidden ~ .fxgl-hoard`
+route). *(BACKLOG T211.)*
 **Re-read this line fresh before each task + push.**
 
 ---
