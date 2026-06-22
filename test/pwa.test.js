@@ -48,7 +48,12 @@ if(mani){
   ok(/TITLE_GOLD\s*=\s*\[\[255/.test(mn) && /TITLE_VOID\s*=/.test(mn), "(a2) T209: a GOLD ramp (Goblin Gold) + a VOID ramp (The Void Throne)");
   ok(/paintPixelTitle\(e\.querySelector\("\.brand"\), TITLE_GOLD/.test(mn) && /paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID/.test(mn), "(a2) T209: the wordmark is gold, the subtitle is void");
   ok(/glint && !prefersReducedMotion\(\)/.test(mn), "(a2) T209: the glint sweep is throttled + skipped under reduced-motion");
-  ok(/\.pixtitle\{[^}]*image-rendering:pixelated/.test(read("styles.css")), "(a2) T209: the pixel-title canvas renders crisp (image-rendering:pixelated)");
+  const cssT = read("styles.css");
+  ok(/\.pixtitle\{[^}]*image-rendering:pixelated/.test(cssT), "(a2) T209: the pixel-title canvas renders crisp (image-rendering:pixelated)");
+  // T210 — refinements: ~3× bigger, lightened void ramp, no void glint
+  ok(/\.brand\{[^}]*font-size:clamp\(60px/.test(cssT) && /\.subtitle\{[^}]*font-size:clamp\(42px/.test(cssT), "(a2) T210: both titles are ~3× bigger");
+  ok(/TITLE_VOID = \[\[205,169,255\]/.test(mn), "(a2) T210: the Void Throne ramp is lightened toward the brand purple (luminous)");
+  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null\)/.test(mn), "(a2) T210: the Void Throne has NO glint (gold keeps its sparkle)");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------

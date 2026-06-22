@@ -72,7 +72,7 @@ body{
 
 /* ---------- ENTRY ---------- */
 #entry{justify-content:center;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:20px 8px}
-.entry-actions{display:flex;flex-direction:column;align-items:center;margin-top:30px}
+.entry-actions{display:flex;flex-direction:column;align-items:center;margin-top:20px}
 .entry-actions .btn{margin-top:0}
 .entry-actions .linkbtn{margin-top:14px}
 #soundBtn{margin-top:28px}
@@ -105,13 +105,15 @@ body{
 .t-glyph canvas{height:24px;width:auto;image-rendering:pixelated;display:block}
 /* T171 — the product wordmark "Goblin Gold" under the x/2 topic mark (the mark
    stays the Halves drill icon; the product is Goblin Gold). Gold to match the name. */
-.brand{font-family:var(--display);font-weight:700;font-size:clamp(22px,7vw,32px);letter-spacing:.01em;
-  color:var(--amber);margin-top:14px;line-height:1}
+/* T210 — ~3× bigger (the pixel-title canvas is sized at 1.25em, so tripling the
+   line font-size triples the chunky-pixel title, crisp via image-rendering:pixelated). */
+.brand{font-family:var(--display);font-weight:700;font-size:clamp(60px,20vw,92px);letter-spacing:.01em;
+  color:var(--amber);margin-top:10px;line-height:1}
 /* T208 — the full title is "Goblin Gold: The Void Throne"; the void line is the
    subtitle between the wordmark and the maths tag. Plain gold/amber for now —
    T209 stylises it (pixel-gold name / dithered-purple void line). */
-.subtitle{font-family:var(--display);font-weight:600;font-size:clamp(15px,5vw,22px);letter-spacing:.04em;
-  color:var(--amber-2,#e0a93c);margin-top:6px;line-height:1.05;opacity:.92}
+.subtitle{font-family:var(--display);font-weight:600;font-size:clamp(42px,14vw,64px);letter-spacing:.02em;
+  color:var(--amber-2,#e0a93c);margin-top:4px;line-height:1.05;opacity:.92}
 /* T209 — the pixel-art title canvas (gold wordmark / void subtitle) replaces the text
    node; sized to the parent line's font-size, crisp nearest-neighbour. */
 .pixtitle{height:1.25em;width:auto;image-rendering:pixelated;display:block;margin:0 auto}

@@ -854,8 +854,11 @@
   // text on any failure (the element keeps its text until a canvas is built).
   const BAYER4 = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
   const TITLE_GOLD = [[255,224,140],[226,168,52],[120,84,22]];   // highlight → mid → shadow (hoard gold)
-  const TITLE_VOID = [[170,108,250],[74,44,128],[18,11,30]];     // violet → deep → near-black
-  const TITLE_GOLD_GLINT = [255,248,214], TITLE_VOID_GLINT = [206,170,255];
+  // T210 — lightened toward the brand purple (#cda9ff/#9a5cf6) so the void line is
+  // luminous/legible (was purple→near-black, too dark): light-violet → brand-violet →
+  // mid-purple (no near-black shadow).
+  const TITLE_VOID = [[205,169,255],[154,92,246],[74,47,122]];
+  const TITLE_GOLD_GLINT = [255,248,214];                        // T210 — gold glints; the void line gets NO sparkle
   function paintPixelTitle(el, ramp, glint){
     if(!el || !document.createElement) return;
     const text = (el.dataset && el.dataset.title) || el.textContent; if(!text) return;
@@ -912,7 +915,7 @@
   function renderTitles(){
     const e = screens.entry; if(!e) return;
     paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT);
-    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, TITLE_VOID_GLINT);
+    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, null);   // T210 — no sparkle on the Void Throne
   }
 
   // Mint the favicon / home-screen icon from the same pixel renderer: draw the

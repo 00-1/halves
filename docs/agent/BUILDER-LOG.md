@@ -5724,3 +5724,18 @@ subtitle void, the glint is throttled + reduced-motion-gated, and `.pixtitle` is
 tests (fx-wiring/install-display/home-layout) stay green (the renderer no-ops without a real 2D context). **Full
 suite 53/53.** Owner verifies the look on the live splash.
 notes: this completes the T208→T209→T206 entry/collector batch. T168 stays HELD on the owner's Play ID verification.
+
+---
+### [A] T210 — title refinements (owner feedback on the stylised splash)
+Owner: "looks good, but 3× the size of both; the Void Throne needs lightening; doesn't need the same sparkle."
+- **3× bigger** — `.brand` font-size clamp(22→**60**px,7→20vw,32→**92**px) and `.subtitle` clamp(15→**42**px,5→14vw,
+  22→**64**px). The pixel-title canvas is sized at 1.25em, so tripling the line font-size triples the chunky-pixel
+  title (still crisp via image-rendering:pixelated). Tightened the splash gaps (`.brand`/`.subtitle` margins,
+  `.entry-actions` 30→20px) so Magnar + the bigger titles + tag + buttons still fit (#entry also has overflow-y:auto).
+- **Lightened the Void Throne** — `TITLE_VOID` re-weighted to the brand purple: light-violet `#cda9ff` → brand
+  `#9a5cf6` → mid-purple `#4a2f7a` (was violet→near-black). Luminous + legible, still dithered/void.
+- **No sparkle on the Void Throne** — `renderTitles` passes `null` glint for the subtitle (dropped
+  `TITLE_VOID_GLINT`); the **gold glint on "Goblin Gold" stays**.
+verified: `pwa.test` 42→45 (both titles ~3×, the void ramp lightened to `#cda9ff`, the subtitle glint is null).
+Full suite 53/53. [A]-only (main.js, styles.css). Owner verifies the live splash. Then T168 stays HELD on Play
+ID verification.
