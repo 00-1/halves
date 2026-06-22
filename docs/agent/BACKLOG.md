@@ -3151,6 +3151,35 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
+### T219 — [A] **Build the PLANNED-BUT-UNBUILT topics** (BODMAS, Negatives, Roman, ×-tricks, Primes, Algebra + Roots) · status: OPEN · owner-requested
+**Owner (2026-06-22): "we want all those… are there more planned but not built topics? seems like we should build
+them unless there's a good reason not to."** Babysitter compared the `research-11plus.md` plan (25 topics + the
+priority table) against the 30 built topics. **Gaps to build, each as a full topic (P1 + locked P2 + guide +
+`explain()` + the T213 assessment loop):**
+- **BODMAS** (plan 24): P1 `2+3×4=14` (two ops, precedence) → P2 brackets/÷ `2×(3+4)=14`. Numpad-safe.
+- **Multiply tricks** (plan 22): P1 ×11 of 2-digit (`23×11=253`) → P2 ×25/×9/×99. Numpad-safe.
+- **Primes** (plan 21, the missing half of "Factors & primes"; `lcmhcf` did HCF/LCM): P1 smallest prime factor /
+  next prime → P2 as the doc. Numpad-safe.
+- **Roman numerals** (plan 25): P1 Roman→number ≤100 (`XLVII=47`) → P2 →1000/years. Roman→number is numpad-safe;
+  **number→Roman would need letter input — keep it Roman→number for now.**
+- **Negatives** (plan 23): **P1 ONLY for now** — "difference across zero" with a **positive** answer (`−6→2 = 8`),
+  numpad-safe. **DEFER P2** (range ±50 → negative answers) until there's a minus-key/sign input (the franchise
+  pluggable-input work) — flag, don't ship negative-answer questions on the numpad.
+- **Algebra / function machines** (owner add, NOT in the original plan): a dedicated topic — **function machines**
+  (in→rule→out, + reverse), **substitution** (`if n=4, 3n+2 = ?`), **simple equations** (`x+7=12`). Numpad-safe
+  (answers are numbers). The atoms exist (`balance`, `sequences`) but no explicit algebra topic — this adds it.
+- **Roots** (plan 20, the missing half of "Cubes & roots") — already in the T213 list; fold here or there: `√≤225`,
+  `∛≤1000`. Numpad-safe.
+- *(Minor/optional: Time **unit-convert** `3h→180min` — only elapsed/`timegap` built. F↔%-to-% framing — already
+  effectively covered by `fractions` decimal form; skip.)*
+- **Each topic:** wire into the topic chain (`requires`/`unlockedBy`), a calibrated curated pool (~21, matching the
+  research ranges), a guide + `explain()`, the music/glyph hooks, and run the **enumeration-harness + assessment
+  loop** (correct, numpad-safe, no degenerate items) before it's done.
+- **DoD:** the 6 new topics (+ Roots) live, calibrated, each with a guide; Negatives P2 explicitly deferred (noted);
+  assessment-clean; all gates green; `node -c` clean; **owner spot-confirms**. **[A]** (`modes.js`, `guides.js`,
+  music/glyph maps, tests). **NB (launch timing):** sizeable add — owner's call whether GG1 ships with these or
+  ships at 30 + adds them as a v1.1 content update. *(Queue after the T213 polish loop converges.)*
+
 ### T218 — [A] **Notification BADGES on nav menu items (new / "there's something here")** · status: OPEN · owner-requested
 **Owner (2026-06-22): "we're missing alert bubbles on menu items where there's something new. GG1 should have it —
 new hero or new inventory item = alert. Maybe there's others. (GG2 will need it for when crops are ready.)"**

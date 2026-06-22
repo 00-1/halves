@@ -23,6 +23,9 @@
   Then continue **2b-part-2/2c**: `fractions` 1/16 → Part-2, `rounding` 560 tie, `sequences` nth-term split,
   `cubes`+roots, de-dup + harness gate. (Detail: `QUESTION-QUALITY-AUDIT.md` round 2.)
 After each batch: Babysitter re-assesses → loop until clean. [A] (`modes.js`, `guides.js`, tests).
+- **Then `T219`** — build the PLANNED-BUT-UNBUILT topics (BODMAS, ×-tricks, Primes, Roman→number, Negatives P1 only,
+  Algebra/function-machines, + Roots): each a full P1/P2 generator + guide + explain + the assessment loop; Negatives
+  P2 deferred (needs minus input). Sizeable content add. *(BACKLOG T219.)*
 - **Then `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view; persists). A
   core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests). Then **`T168`** (held on Play ID-verify).
 **Re-read this line fresh before each task + push.**
