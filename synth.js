@@ -404,7 +404,7 @@
   // schedules precise times against ctx.currentTime, drops missed steps on a stall
   // (anti-burst), idles on stop. Drives ALL voices — never a timer per part.
   const TICK_MS = 25, LOOKAHEAD = 0.1, MAX_STEPS_PER_TICK = 8;
-  const M = { timer:null, spec:null, want:null, step:0, next:0, rnd:null, phrase:0, st:{ deg:0 }, intensity:0, active:[] };
+  const M = { timer:null, spec:null, want:null, step:0, next:0, rnd:null, phrase:0, st:{ deg:0 }, intensity:0, active:[], contextName:null };
   function reseedMusic(){ M.rnd = mulberry32(phraseSeed(M.spec.seed | 0, M.phrase)); }
   // Render a scheduled music voice on the music bus, registering its amp param so an
   // immediate swap can release it (drums are short → not tracked).
@@ -428,7 +428,8 @@
     for(const v of M.active){ try{ if(v.g.cancelAndHoldAtTime) v.g.cancelAndHoldAtTime(now); else v.g.cancelScheduledValues(now); v.g.setTargetAtTime(0.0001, now, 0.025); }catch(e){} }   // ~75ms release
     M.active = [];
     if(E.music){ const g = E.music.gain; try{ g.cancelScheduledValues(now); g.setValueAtTime(1, now); g.setTargetAtTime(0.0001, now, 0.015); g.setTargetAtTime(1, now + 0.06, 0.03); }catch(e){} }   // brief bed dip→in
-    if(E.reverb && E.reverb.output){ const r = E.reverb.output.gain; try{ r.cancelScheduledValues(now); r.setValueAtTime(1, now); r.setTargetAtTime(0.0001, now, 0.02); r.setTargetAtTime(1, now + 0.13, 0.06); }catch(e){} }   // kill the carry-over tail
+    if(E.reverb && E.reverb.output){ const r = E.reverb.output.gain; try{ r.cancelScheduledValues(now); r.setValueAtTime(1, now); r.setTargetAtTime(0.0001, now, 0.02); r.setTargetAtTime(1, now + 0.13, 0.06); }catch(e){} }   // dip the wet output…
+    if(E.reverb && E.reverb.flush) E.reverb.flush(now, 0.13);   // T165: …AND drain the FDN so no tail bleeds past the swap (the dip alone left ~37% of the tail when it recovered)
   }
   function musicTick(){
     if(!E.ctx) return;
@@ -501,9 +502,15 @@
   CONTEXTS.event = CONTEXTS.bigroom;
   function setContext(name, opts){
     const c = CONTEXTS[name]; if(!c) return api;
+    // T165 — IDEMPOTENT: already playing this exact context → no-op. A redundant
+    // setContext(current) used to re-release + re-seed the SAME track (and re-trigger
+    // the swap transient / tail), so a stream of same-context calls read as the music
+    // "not fully switching". Defence-in-depth with T164 (A stops the needless calls).
+    if(name === M.contextName && M.timer) return api;
     setReverb(c.reverb);
     if(E.reverb && E.reverb.setDecay) E.reverb.setDecay(c.reverbDecay == null ? FDN_DECAY_DEFAULT : c.reverbDecay);   // per-style tail length
     setMusic(Object.assign({ seed: hashStr(name) }, c));
+    M.contextName = name;
     if(opts && opts.now) swapNow();
     return api;
   }
@@ -612,11 +619,20 @@
       if(ctx.createStereoPanner){ const p = ctx.createStereoPanner(); p.pan.value = (i % 2 === 0) ? -0.6 : 0.6; damps[i].connect(p); p.connect(output); }
       else damps[i].connect(output);
     }
+    let curDecay = decay;   // T165: tracked so flush() can RESTORE the live feedback gain
     return { input: input, output: output, delays: delays, damps: damps, fb: fb,
              dampHz: damp, dampQ: FDN_DAMP_Q, decay: decay,   // T151: introspection for the divergence gate
+             curDecay: function(){ return curDecay; },
              setDamp: function(f){ for(const d of damps) try{ d.frequency.value = f; }catch(e){} },
              // T139: a longer/shorter tail per style — rescale the feedback gains (stays < 1 = stable).
-             setDecay: function(dec){ const d = Math.max(0, Math.min(FDN_DECAY_MAX, dec)); for(const f of fb) try{ f.g.gain.value = f.coef * d; }catch(e){} } };
+             setDecay: function(dec){ const d = Math.max(0, Math.min(FDN_DECAY_MAX, dec)); curDecay = d; for(const f of fb) try{ f.g.gain.value = f.coef * d; }catch(e){} },
+             // T165 — FLUSH the tail on a context switch: kill the feedback for `dur`
+             // so the delay lines DRAIN in one pass (no old-track carry-over / no tail
+             // building into the foghorn), then restore the live decay on empty lines.
+             flush: function(t, dur){
+               const start = (t == null) ? ctx.currentTime : t, back = start + (dur == null ? 0.13 : dur);
+               for(const f of fb) try{ f.g.gain.cancelScheduledValues(start); f.g.gain.setValueAtTime(0, start); f.g.gain.setValueAtTime(f.coef * curDecay, back); }catch(e){}
+             } };
   }
 
   // ---- engine state + graph --------------------------------------------------
@@ -724,7 +740,7 @@
     // runtime API
     mount: mount, play: play, drum: drum, setReverb: setReverb, setReverbDecay: setReverbDecay, duck: duck,
     setMusic: setMusic, setContext: setContext, swapNow: swapNow, sting: sting, start: start, stop: stop, musicPlaying: musicPlaying, intensity: intensity,
-    musicState: function(){ return { spec: M.spec, want: M.want, step: M.step, phrase: M.phrase, playing: !!M.timer, activeVoices: M.active.length }; },   // introspection (tests / the [A] wire)
+    musicState: function(){ return { spec: M.spec, want: M.want, step: M.step, phrase: M.phrase, playing: !!M.timer, activeVoices: M.active.length, context: M.contextName }; },   // introspection (tests / the [A] wire)
     setMuted: setMuted, isMuted: isMuted, capabilities: capabilities, dispose: dispose,
     output: function(){ return E.master; },     // the [A] wire can re-route this into Sound's master
     // budget/data

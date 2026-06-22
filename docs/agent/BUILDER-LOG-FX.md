@@ -6,6 +6,37 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T165 — a context SWITCH fully stops the previous generator (no tail / no foghorn) ([B], 🔴 pairs with T164)
+
+Owner (recurring): the switcher "doesn't fully switch — elements of the previous music
+continue," and the foghorn returns on switches. Two `synth.js` fixes:
+
+### (1) A real FDN reverb FLUSH on switch (was: only a gain dip)
+`releaseMusic` (T134) dipped `reverb.output.gain` to ~0 for 0.13 s — but with decay
+0.78 the FDN **delay lines still held ~37% of the tail** when the output recovered →
+the old track bled through and the runaway-ish tail fed the sustained low drone (the
+foghorn). Added `reverb.flush(t, dur)`: it drives the **feedback gains to 0** for the
+window so the delay lines **DRAIN in one pass**, then restores the *live* decay on the
+(now empty) lines. `releaseMusic` calls it alongside the output dip. **Real-audio
+proof** (OfflineAudioContext, impulse in): post-flush tail energy **0** vs un-flushed
+0.0238 — the tail is gone, no carry-over past a swap.
+
+### (2) Idempotent `setContext`
+`setContext(current)` while playing is now a **no-op** (tracked via `M.contextName`,
+exposed on `musicState().context`). A redundant same-context call used to re-release +
+re-seed the SAME track and re-fire the swap transient/tail — which read as "not fully
+switching." Defence-in-depth with T164 ([A] stops the needless calls). A *real* switch
+still releases the old voices, flushes, and re-aligns to a downbeat (T132/T134 intact).
+
+### Verify
+- `node -c` clean; `synth.test` **174** (idempotent no-op fires no flush; a real switch
+  drives feedback→0 + releases voices; `flush()` restores the live decay, not a
+  constant); `golden-synth` + `synth-wiring` green; real-audio gate **20** (flush drains
+  the tail). **B-owned (`synth.js` + tests) only.** Babysitter measures the switch
+  transient via OfflineAudioContext; owner's ear is the final word.
+
+---
+
 ## T163 — firm up the brittle `visual_arena` golden ([B], follow-up to T154)
 
 T154's `visual_arena` golden captured a per-cell hue grid, but the Arena's content is

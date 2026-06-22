@@ -129,6 +129,32 @@ function skip(why){ console.log("\nSKIP (real-audio gate not run): " + why + "\n
       ok(range >= 1000, "the pad beds span a WIDE timbral range (" + range + " Hz from darkest to brightest)");
     }
 
+    // ---- T165: a context-switch FLUSH actually DRAINS the reverb tail (real audio) --
+    // The switch must not let the old track's tail bleed through (the "doesn't fully
+    // switch" / foghorn). Render the engine's own reverb fed one impulse, with vs
+    // without a mid-tail flush(), and compare the LATER tail energy: the flush must
+    // collapse it (the FDN delay lines drain), proving no carry-over past a swap.
+    const fl = await page.evaluate(async () => {
+      const SR = 44100, OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, S = window.Synth;
+      if(!OAC) return { unsupported: true };
+      async function tailAfter(doFlush){
+        const ctx = new OAC(1, Math.round(SR * 1.2), SR);
+        const rv = S.makeReverb(ctx, { decay: 0.78 });
+        const buf = ctx.createBuffer(1, 1, SR); buf.getChannelData(0)[0] = 1;
+        const src = ctx.createBufferSource(); src.buffer = buf; src.connect(rv.input); src.start(0);
+        rv.output.connect(ctx.destination);
+        if(doFlush) rv.flush(0.2, 0.13);     // flush 0.2 s in (as a switch would)
+        const d = (await ctx.startRendering()).getChannelData(0);
+        let e = 0; for(let i = Math.round(SR * 0.45); i < d.length; i++) e += d[i] * d[i];   // energy AFTER the flush window
+        return e;
+      }
+      return { withFlush: await tailAfter(true), noFlush: await tailAfter(false) };
+    });
+    if(!fl.unsupported){
+      ok(fl.noFlush > 0, "the un-flushed reverb has a real tail (baseline energy " + fl.noFlush.toExponential(2) + ")");
+      ok(fl.withFlush < fl.noFlush * 0.05, "T165: flush() DRAINS the FDN tail — post-flush energy " + fl.withFlush.toExponential(2) + " ≪ 5% of the un-flushed " + fl.noFlush.toExponential(2) + " (no carry-over past a switch)");
+    }
+
     await browser.close();
   } catch(e){
     fails++; console.log("  FAIL: harness error — " + (e && e.stack || e));

@@ -465,6 +465,33 @@ function schedRun(){
   ok(h.S.musicState().activeVoices === va, "the default phrase-boundary swap does NOT release voices early (ring intact)");
   h.restore();
 })();
+// (T165) a SWITCH fully stops the previous generator: idempotent setContext + a real
+// FDN FLUSH (no tail/foghorn carry-over). The owner's "doesn't fully switch" + foghorn.
+(function(){
+  const h = schedRun();
+  h.S.setContext("menu", { now: true }); h.S.start(); h.run(8);
+  ok(h.S.musicState().context === "menu", "musicState().context tracks the active context");
+  const fb = h.S.buses().reverb.fb[0].g.gain;   // a feedback gain — flush() schedules it to 0 then back
+  const fbBefore = fb._calls.length, stepBefore = h.S.musicState().step;
+  h.S.setContext("menu", { now: true });        // SAME context → must be a NO-OP
+  ok(fb._calls.length === fbBefore, "setContext(current) is a NO-OP: no reverb flush re-fires (no re-triggered tail/foghorn)");
+  ok(h.S.musicState().step >= stepBefore && h.S.musicState().context === "menu", "setContext(current) does NOT restart the generator");
+  h.run(2);
+  h.S.setContext("arena", { now: true });        // a REAL switch
+  const drained = fb._calls.filter(c => c[0] === "set" && c[1] === 0).length;
+  ok(fb._calls.length > fbBefore && drained >= 1, "a real switch FLUSHES the FDN: feedback driven to 0 → the delay lines DRAIN (no carry-over tail)");
+  ok(h.S.musicState().activeVoices === 0 && h.S.musicState().context === "arena", "…and the old voices are released + the context updates (clean switch)");
+  h.restore();
+})();
+// the reverb exposes flush(); it restores the LIVE decay (not a hardcoded value)
+(function(){
+  const rv = Synth.makeReverb(StubCtx(freshRecord()), { decay: 0.7 });
+  ok(typeof rv.flush === "function" && typeof rv.curDecay === "function", "the reverb exposes flush() + curDecay() (T165)");
+  rv.setDecay(0.5); rv.flush(10, 0.1);
+  const restored = rv.fb[0].g.gain._calls.filter(c => c[0] === "set");
+  ok(restored.some(c => c[1] === 0) && restored.some(c => Math.abs(c[1] - rv.fb[0].coef * 0.5) < 1e-9),
+     "flush() drains to 0 then RESTORES the current decay (0.5), not the initial 0.7");
+})();
 // (b) the 12 styles differ across MULTIPLE audible levers, not just mode
 const STY = Synth.STYLE_IDS.map(n => Synth.CONTEXTS[n]);
 ok(Synth.STYLE_IDS.length === 12, "the palette has 12 styles");
