@@ -134,7 +134,13 @@
     const owned = {};
     DRILL_IDS.forEach(id => owned[id] = true);
     for(let n = 1; n <= TIER_COUNT; n++){
-      const type = TYPES[(n - 1) % TYPES.length];
+      // T186 — region BOSSES (every REGION_SIZEth tier) used to land on a single type:
+      // (n-1)%3 with REGION_SIZE 12 (a multiple of 3) is always 2 (Cunning → all green).
+      // Vary the boss type by REGION so each boss reads as a distinct colour + matchup;
+      // the final boss (Void Sovereign) is re-typed adaptively by calibrateFinal below.
+      const isBoss = n % REGION_SIZE === 0;
+      const type = isBoss ? TYPES[Math.floor((n - 1) / REGION_SIZE) % TYPES.length]
+                          : TYPES[(n - 1) % TYPES.length];
       types.push(type);
       ramps.push(DEF_BASE * Math.pow(DEF_GROWTH, n - 1));
       caps.push(bestAdvRating(type, owned) * ADV_MULT);

@@ -5552,3 +5552,18 @@ in CI; `cache-bust` 49 (emblems.js versioned). **Full suite 52/52.** [A]-only wi
 Codex/cache-bust gates + pages.yml). `emblems.js` itself is B-owned (untouched).
 notes: this clears the [A] queue (the 🔴 T184+T182 pair, then the Codex Emblems wiring). Awaiting the next
 pointer from the babysitter.
+
+---
+### [A] T186 (owner BUG) — region bosses all rendered green (same type)
+what: every region boss (tiers 12,24,…,120) was the SAME type → all the same colour (Cunning = green). Root
+cause: the per-tier type cycle `TYPES[(n-1) % 3]` with `REGION_SIZE = 12` (a multiple of 3) — every boss tier
+`n = 12k` gives `(12k-1) % 3 = 2` = Cunning. Fix (`enemies.js`): boss tiers now take `TYPES[region % 3]` (region
+= ⌊(n-1)/REGION_SIZE⌋), so the 10 bosses cycle Brawn → Arcane → Cunning by region — distinct colours AND
+matchups. Non-boss tiers keep their existing cycle. The **Void Sovereign** (final boss, tier 120) stays
+ADAPTIVE: `calibrateFinal` re-types it to whatever the completionist champion beats (it overrides the region
+type, as before) — verified it lands on Arcane, not the region-9 default.
+how I verified: the boss type-array now reads Brawn/Arcane/Cunning across regions (was all Cunning).
+`monster-variation` 9→11 (a T186 guard: the 10 bosses span all 3 types + consecutive bosses differ). Crucially
+the type change feeds the matchup/foe calibration, so I re-proved the Arena invariants: **`arena3` all 27 green**
+(monotone curve, no tier gated behind its own loot, tier-120 near-full-only — the calibration auto-absorbed the
+new boss types), `arena` 44, `wayfinding` 13. **Full suite 52/52.** [A]-only (`enemies.js`, the gate).

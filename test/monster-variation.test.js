@@ -37,6 +37,15 @@ for(let region=0; region<10; region++){
 }
 ok(bossDiff === 10, "every region's boss differs from its grunt (≥0.2) — " + bossDiff + "/10");
 ok(bossBigger >= 8, "bosses render bigger than grunts in most regions (" + bossBigger + "/10)");
+// T186 — region bosses must NOT all share one type (REGION_SIZE 12 is a multiple of
+// 3, so the plain (n-1)%3 cycle put every boss on Cunning → all green). Boss types
+// now vary by region; expect all three types represented across the 10 bosses.
+(function(){
+  const bossTypes = []; for(let r = 0; r < 10; r++) bossTypes.push(E.byTier((r+1)*12).type);
+  const distinct = new Set(bossTypes);
+  ok(distinct.size >= 3, "(T186) region bosses span all 3 types (not all one colour) — " + [...distinct].join("/"));
+  ok(bossTypes[0] !== bossTypes[1] || bossTypes[1] !== bossTypes[2], "(T186) consecutive region bosses differ in type (distinct colours/matchups)");
+})();
 
 // ---- regions differ from one another (sample the same in-region position) ----
 const perRegion = []; for(let r=0;r<10;r++) perRegion.push(grid(r*12 + 4));
