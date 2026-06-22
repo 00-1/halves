@@ -37,6 +37,11 @@ problems), NOT by exam prestige:
 - **GG2 metagame = "Plants & Beasts" (§6a) — owner's strongest idea, provisionally assigned** ("unless a
   stronger idea comes"). It pairs perfectly with the nature aesthetic (grow crops → pacify nature beasts).
   This **supersedes** the earlier deduce/decode candidate for VR.
+- **GOLD carries across EVERY game (owner, 2026-06-22).** "Goblin Gold" is the brand AND the universal
+  currency — **every game still earns gold** (from drilling), not GG1-specific. Each game = **gold + its own
+  metagame layer on top** (in GG1 the metagame *is* the hoard/Arena; in GG2 gold persists *alongside* Plants &
+  Beasts — e.g. gold could fund seeds / unlock plots; exact role = open). The hoard/wealth fantasy is shared
+  brand. So §6's per-game "metagames" are layers ON TOP of gold, not replacements.
 - VR and NVR stay **separate games** (not combined) — completely different content + input systems.
 - GG3/GG4 are **not pre-committed** — decide based on how GG1 + GG2 land. (Four games is a large
   undertaking; build to demand.)
