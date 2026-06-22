@@ -20,7 +20,20 @@
  *     = fresh fetch). This is correct precisely because those URLs are versioned.
  * No-build: this file is served as-is and registered by main.js.
  */
-const CACHE = "halves-static-v4";   // T201: bump so activate purges manifest/icons frozen under the old cache-first policy
+// T222 — derive a per-app SCOPE from the SW's own path so each GitHub-Pages app
+// (gg1/dev, gg1/prod, gg2/dev …) uses a NAMESPACED cache and only ever evicts its
+// OWN superseded caches — never a sibling app's (Cache Storage is origin-wide, so the
+// old "delete every other cache" on activate would wipe other apps' offline caches).
+const SCOPE = (function(){
+  try{ const p = self.location.pathname;
+    if(p.indexOf("/gg1/dev/")  >= 0) return "gg1-dev";
+    if(p.indexOf("/gg1/prod/") >= 0) return "gg1-prod";
+    if(p.indexOf("/gg1/v1/")   >= 0) return "gg1-v1";
+    if(p.indexOf("/gg2/dev/")  >= 0) return "gg2-dev";
+  }catch(e){}
+  return "halves";   // root / legacy / test → the original cache name (unchanged)
+})();
+const CACHE = SCOPE + "-static-v4";   // T201: bump so activate purges manifest/icons frozen under the old cache-first policy
 // Unversioned install-identity files that MUST stay fresh (T201) — the manifest + icons.
 const FRESH_RE = /(^|\/)(manifest\.webmanifest|icon\.svg|icon-\d+\.png)$/;
 
@@ -29,7 +42,7 @@ self.addEventListener("install", () => { self.skipWaiting(); });
 self.addEventListener("activate", (e) => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));   // drop superseded caches
+    await Promise.all(keys.filter(k => k.indexOf(SCOPE + "-") === 0 && k !== CACHE).map(k => caches.delete(k)));   // T222 — drop only THIS app's superseded caches
     await self.clients.claim();
   })());
 });

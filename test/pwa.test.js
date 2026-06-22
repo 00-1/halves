@@ -106,7 +106,7 @@ ok(/self\.skipWaiting\(\)/.test(sw) && /clients\.claim\(\)/.test(sw), "(c) the S
 // FIRST, else cache-first freezes the first install's name/icon forever ("Halves"/x2).
 ok(/FRESH_RE\s*=\s*\/.*manifest\\\.webmanifest[\s\S]*icon-\\d\+\\\.png/.test(sw), "(c) T201: sw.js matches manifest.webmanifest + icon files as freshness-critical");
 ok(/const isFresh = FRESH_RE\.test/.test(sw) && /if\(isNav \|\| isBuild \|\| isFresh\)/.test(sw), "(c) T201: the manifest + icons are routed NETWORK-FIRST (isFresh joins the nav/build branch)");
-ok(/halves-static-v4/.test(sw), "(c) T201: CACHE bumped to v4 so existing installs purge the frozen manifest/icons on next visit");
+ok(/const CACHE = SCOPE \+ "-static-v4"/.test(sw) && /return "halves";/.test(sw), "(c) T201/T222: CACHE is scope-namespaced (<scope>-static-v4), defaulting to halves-static-v4 at root");
 
 // ---- (d) no-build: the SW/manifest/icon aren't versioned, and other gates hold
 const { bust } = require("../scripts/cachebust.js");
@@ -167,7 +167,7 @@ ok(!/manifest\.webmanifest\?v=/.test(built) && !/sw\.js\?v=/.test(built) && !/ic
   const rFont = await dispatch(fontUrl);
   ok(rFont && rFont._tag === "FONTCACHE" && netHits.length === beforeFont, "(e) cross-origin fonts stay CACHE-FIRST (offline-fast)");
   // the CACHE name is bumped + activate purges the prior cache
-  ok(/const CACHE = "halves-static-v4"/.test(sw), "(e) T201: CACHE bumped to v4 (so activate drops the manifest/icons frozen under the prior cache-first policy)");
+  ok(/const CACHE = SCOPE \+ "-static-v4"/.test(sw) && /k\.indexOf\(SCOPE \+ "-"\) === 0 && k !== CACHE/.test(sw), "(e) T201/T222: CACHE is scope-namespaced + activate purges only THIS scope's superseded caches (no cross-app eviction)");
   let waited; listeners.activate({ waitUntil(p){ waited = p; } }); await waited;
   ok(deleted.indexOf("halves-static-v2") >= 0 && deleted.indexOf("halves-static-v3") >= 0, "(e) activate purges the superseded caches (incl. the v3 with frozen manifest/icons)");
 

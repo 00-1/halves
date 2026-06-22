@@ -9,6 +9,47 @@
 (function(){
   "use strict";
 
+  // ---- T222 — per-app storage scope (one origin, many GitHub-Pages apps) ----
+  // Cache Storage + localStorage are partitioned by ORIGIN, not path, so every app
+  // under 00-1.github.io shares one bucket. Derive a per-folder SCOPE from the path
+  // and rewrite this app's legacy `halves.*` keys to `<scope>.*`, so gg1/dev,
+  // gg1/prod, gg2/dev … never read or clobber each other's saves. At the root
+  // (legacy) the scope stays "halves" → byte-for-byte the old behaviour.
+  const REAL_LS = (function(){ try{ return window.localStorage; }catch(e){ return null; } })();
+  const SCOPE = (function(){
+    try{ const p = location.pathname;
+      if(p.indexOf("/gg1/dev/")  >= 0) return "gg1dev";
+      if(p.indexOf("/gg1/prod/") >= 0) return "gg1prod";
+      if(p.indexOf("/gg1/v1/")   >= 0) return "gg1v1";
+      if(p.indexOf("/gg2/dev/")  >= 0) return "gg2dev";
+    }catch(e){}
+    return "halves";   // root / unknown → the original prefix (no migration, no change)
+  })();
+  const PFX = SCOPE + ".";
+  const resc = k => (typeof k === "string" && k.indexOf("halves.") === 0) ? PFX + k.slice(7) : k;
+  // One-time migration: when PROD first runs, seed it from the legacy root save
+  // (`halves.*`, same origin) so the live player keeps their gold/collection. Dev is
+  // intentionally NOT seeded (isolated clean-room per FRANCHISE-HOSTING.md).
+  if(SCOPE === "gg1prod" && REAL_LS){
+    try{
+      if(REAL_LS.getItem("gg1prod.gold") == null && REAL_LS.getItem("halves.gold") != null){
+        const legacy = [];
+        for(let i = 0; i < REAL_LS.length; i++){ const k = REAL_LS.key(i); if(k && k.indexOf("halves.") === 0) legacy.push(k); }
+        legacy.forEach(k => { try{ REAL_LS.setItem("gg1prod" + k.slice(6), REAL_LS.getItem(k)); }catch(e){} });
+      }
+    }catch(e){}
+  }
+  // Scoped localStorage shadow: every `halves.*` key inside this file is rewritten to
+  // `<scope>.*`; other keys pass through. Enumeration (length/key) reflects the real
+  // store so the clear-data sweep (which now filters by PFX) finds this scope's keys.
+  const localStorage = {
+    getItem: k => REAL_LS ? REAL_LS.getItem(resc(k)) : null,
+    setItem: (k, v) => { if(REAL_LS) try{ REAL_LS.setItem(resc(k), v); }catch(e){} },
+    removeItem: k => { if(REAL_LS) try{ REAL_LS.removeItem(resc(k)); }catch(e){} },
+    get length(){ try{ return REAL_LS ? REAL_LS.length : 0; }catch(e){ return 0; } },
+    key: i => { try{ return REAL_LS ? REAL_LS.key(i) : null; }catch(e){ return null; } }
+  };
+
   const MODES = window.MODES;
   const GROUPS = window.MODE_GROUPS || ["Core"];
   const byId  = id => MODES.find(m => m.id === id);
@@ -2964,7 +3005,7 @@
     try{
       const keys = [];
       if(typeof localStorage.length === "number" && typeof localStorage.key === "function"){
-        for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k && k.indexOf("halves.") === 0) keys.push(k); }
+        for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k && k.indexOf(PFX) === 0) keys.push(k); }   // T222 — this scope's keys (PFX = "halves." at root)
       }
       KNOWN_KEYS.forEach(k => { if(keys.indexOf(k) < 0) keys.push(k); });
       MODES.forEach(m => keys.push(boardKey(m.id)));   // per-mode best-time boards
