@@ -60,6 +60,12 @@ positive distances, times as elapsed minutes, so no minus/colon keys).
   - **Reverse part → whole (`partwhole`):** unit fractions ½ ¼ ⅓ ⅕ ⅛ and %s
     {10, 20, 25, 50}; whole ≤ 200, integer. Prompt `a/b of ? = g` or `p% of ? = g`.
     *masterSecs ≈ 8.*
+  - **Complete-the-sum (`balance`):** evaluate one side then *inverse* the other
+    to find the missing balance — `a ⊕ b = c ⊖ ?`. LHS within tables (×) or
+    ≤ 100 (+/−); **Part-1 answers POSITIVE-ONLY** (the numpad has no minus key:
+    keys are 0–9, `.`, backspace, skip — see `index.html:111-122`). The
+    negative-stretch (e.g. `37×4 = 100−?` → −48) is a follow-up if the numpad
+    grows a `−` key. *masterSecs ≈ 9.*
 
 ## Design principles (pass 2 — apps & pedagogy)
 

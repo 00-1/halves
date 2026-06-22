@@ -4947,3 +4947,33 @@ notes: **babysitter sample-verify** — the three modes are owner-facing once `m
   gate), 21-item sets, numpad-clean. **Open follow-ups for T162 P2/P3** (next pushes): `ratioshare`, `timegap`,
   `lcmhcf`, `mean` (P2) → `cubes`, `money`, `digitsum`, doubles/halves range (P3). And `guides.js` `explain()`
   branches for the new P1 modes are a sensible follow-up (low risk; not gating).
+
+---
+
+## Builder A — T162 P1 (addendum): `balance` mode added
+commit: (this commit, alongside the P1 push) — [A], content. The pointer changed (`a36dbf2`: 11→12 modes,
+`1720f5d`: add `balance`) WHILE I was about to push P1 — the Babysitter added `balance` from the SEP Mock 7
+*Verbal* report's maths section (Q29–Q35; Luke 4/7 wrong on "Complete the Sum"). It joins the same P1 push.
+changed:
+  - **`modes.js`** — new mode `balance` (Reasoning, `requires:"mastery:addsub2"`, masterSecs 9). Form
+    `a ⊕ b = c ⊖ ?`. 21 items, each `[a, lop, b, c, rop, A]` with `lop ∈ {+,−,×}`, `rop ∈ {+,−}`, and the
+    answer recovers the missing balance via the inverse: `A = (a lop b) − c` (rop=+) or `A = c − (a lop b)`
+    (rop=−). LHS within tables (×) / ≤100 (+/−). Includes the four mock items as-is (`34+17=90−?`,
+    `93−18=51+?`, `13×9=17+?`, `65×3=500−?`) + a representative spread (× 13 · + 4 · − 4).
+  - **Open sub-question answered (from the calibration doc):** the **numpad has no minus key** (`index.html`:
+    keys are `0`-`9`, `.`, backspace, skip — `data-k` enumeration), so P1 ships **POSITIVE-ONLY**. The
+    negative-stretch (`37×4 = 100−?` → −48; `8×6 = −12+?` → 60 with a negative LHS) is a follow-up if the
+    numpad ever grows a `−` key.
+  - Glyph tokens: `balance: ["k","*±"]` — "k±" (unknown ±). Pairwise distinct from the 18 existing.
+  - **`docs/research-11plus.md`** — appended the `balance` calibration with the numpad-as-source-of-truth note.
+  - **`test/hero-icons.test.js`** — catalogue counter re-bumped `993 → 1042` (now 4 new modes × 49 collectibles
+    each).
+  - **`test/t162-p1-modes.test.js`** — extended with `balance` coverage (61 checks total): every answer
+    matches the **inverse** of the LHS under the right side's operator; **every answer is non-negative**
+    (numpad-truthful); LHS sits in the calibrated band (× within tables-ish, +/− ≤100); op-mix exercises both
+    the ×-fact gap (Luke's Q35 slip atom) AND ± fluency; sites in the linear tree (no parent collision).
+how I verified: **all 37 suites green** including the extended P1 gate; `node -c` clean. [A]-only files (no
+  index.html change — the numpad's lack of `−` is the source of truth and the calibration honoured it). The
+  picker shows `balance` only once `mastery:addsub2` lands, so the live unlock chain is unchanged.
+notes: T162 P1 now ships **all 4** P1 modes (`scaling`, `percentoff`, `partwhole`, `balance`) in one push,
+  matching the new pointer. Next: T162 P2 (`ratioshare`, `timegap`, `lcmhcf`, `mean`).

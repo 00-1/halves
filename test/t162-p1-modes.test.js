@@ -26,7 +26,7 @@ function isCleanNumber(a){ return typeof a === "number" && isFinite(a) && a >= 0
 function distinctPrompts(qs){ return new Set(qs.map(q => q.p)).size === qs.length; }
 
 // ---- (1) all three modes exist + are wired into the tree correctly ----------
-["scaling", "percentoff", "partwhole"].forEach(id => {
+["scaling", "percentoff", "partwhole", "balance"].forEach(id => {
   const m = byId(id);
   ok(!!m, "(1) mode `" + id + "` exists");
   if(!m) return;
@@ -43,7 +43,7 @@ function distinctPrompts(qs){ return new Set(qs.map(q => q.p)).size === qs.lengt
 });
 
 // ---- (2) every mode produces ~21 unique, well-formed items ------------------
-["scaling", "percentoff", "partwhole"].forEach(id => {
+["scaling", "percentoff", "partwhole", "balance"].forEach(id => {
   const m = byId(id); if(!m) return;
   const qs = m.build();
   ok(qs.length === 21, "(2) `" + id + "` builds 21 items (got " + qs.length + ")");
@@ -100,6 +100,36 @@ function distinctPrompts(qs){ return new Set(qs.map(q => q.p)).size === qs.lengt
   ok(formulaOk === qs.length, "(5) partwhole: every answer = given·den/num (fraction) OR given·100/pct (percent) — math matches the prompt (" + formulaOk + "/" + qs.length + ")");
   ok(frac >= 6 && pct >= 6, "(5) partwhole: prompt mix exercises BOTH fraction and percent forms (frac=" + frac + ", pct=" + pct + ")");
   ok(qs.every(q => q.a > 0 && q.a <= 200), "(5) partwhole: every whole answer is in the calibrated range (0, 200]");
+})();
+
+// ---- (5b) balance: every answer matches the inverse-of-the-LHS math + numpad ----
+(function checkBalance(){
+  const m = byId("balance"); if(!m) return;
+  const qs = m.build();
+  // every prompt is "a lop b = c rop ?" with answer derived from the inverse
+  let formulaOk = 0, positiveOk = 0, opMix = { "+":0, "−":0, "×":0 };
+  qs.forEach(q => {
+    const mm = /^(\d+)\s*([+−×])\s*(\d+)\s*=\s*(\d+)\s*([+−])\s*\?$/.exec(q.p);
+    if(!mm) return;
+    const a = +mm[1], lop = mm[2], b = +mm[3], c = +mm[4], rop = mm[5];
+    const lhs = lop === "+" ? a + b : lop === "−" ? a - b : a * b;
+    const expect = rop === "+" ? lhs - c : c - lhs;     // inverse-find the missing □
+    if(Math.abs(q.a - expect) < 1e-9) formulaOk++;
+    if(q.a >= 0) positiveOk++;                          // T162 P1: positive-only (no minus key)
+    opMix[lop]++;
+  });
+  ok(formulaOk === qs.length, "(5b) balance: every answer = (a lop b) ⊖ c with the documented inverse (" + formulaOk + "/" + qs.length + ")");
+  ok(positiveOk === qs.length, "(5b) balance: every answer is NON-NEGATIVE — numpad has no minus key (" + positiveOk + "/" + qs.length + ")");
+  ok(opMix["×"] >= 6 && (opMix["+"] + opMix["−"]) >= 6, "(5b) balance: the LHS exercises BOTH the times-fact gap AND ± fluency (× " + opMix["×"] + " · + " + opMix["+"] + " · − " + opMix["−"] + ")");
+  // sanity: the LHS stays within tables (×) / ≤100 (+/−) per the calibration
+  let lhsOk = 0;
+  qs.forEach(q => {
+    const mm = /^(\d+)\s*([+−×])\s*(\d+)/.exec(q.p);
+    if(!mm) return;
+    const a = +mm[1], lop = mm[2], b = +mm[3];
+    if(lop === "×" ? (a <= 65 && b <= 12) : (a <= 100 && b <= 100)) lhsOk++;
+  });
+  ok(lhsOk === qs.length, "(5b) balance: the LHS sits in the calibrated band (× within tables-ish, +/− within 100)");
 })();
 
 // ---- (6) the new modes don't collide with the live tree's single-child model -

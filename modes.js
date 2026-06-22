@@ -184,6 +184,35 @@
     ["p",50,12,24],["p",25,15,60],["p",20,14,70],["p",10,15,150],
     ["p",50,25,50],["p",25,9,36],["p",20,12,60]
   ];
+  // 4. `balance` — "Complete the Sum": evaluate one side then INVERSE-find the
+  //    missing number on the other side ("a ⊕ b = c ⊖ ?"). Each entry
+  //    [a, lop, b, c, rop, A] with lop ∈ {"+","−","×"}, rop ∈ {"+","−"} and
+  //    A = (a lop b) − c when rop="+", else c − (a lop b). The numpad has no
+  //    minus key, so P1 ships POSITIVE-ONLY (the calibration doc's negative
+  //    stretch — e.g. `37×4 = 100−?` → −48 — is a follow-up; not in this set).
+  const BALANCE_P1_SRC = [
+    [34, "+", 17, 90, "−", 39],
+    [93, "−", 18, 51, "+", 24],
+    [13, "×", 9, 17, "+", 100],
+    [65, "×", 3, 500, "−", 305],
+    [7, "×", 7, 60, "−", 11],
+    [45, "+", 28, 100, "−", 27],
+    [9, "×", 6, 12, "+", 42],
+    [6, "×", 8, 200, "−", 152],
+    [27, "+", 36, 100, "−", 37],
+    [48, "+", 25, 50, "+", 23],
+    [8, "×", 7, 80, "−", 24],
+    [6, "×", 9, 24, "+", 30],
+    [7, "×", 6, 50, "−", 8],
+    [11, "×", 8, 100, "−", 12],
+    [12, "×", 9, 100, "+", 8],
+    [4, "×", 11, 50, "−", 6],
+    [74, "−", 29, 30, "+", 15],
+    [82, "−", 47, 50, "−", 15],
+    [60, "−", 27, 20, "+", 13],
+    [12, "×", 6, 100, "−", 28],
+    [7, "×", 8, 30, "+", 26]
+  ];
 
   // The proper minus sign (matches the "×" used by Times), for ± prompts.
   const MINUS = "−";
@@ -218,6 +247,8 @@
     if(e[0] === "f") return { p: e[1] + "/" + e[2] + " of ? = " + e[3], a: e[4] };
     return { p: e[1] + "% of ? = " + e[2], a: e[3] };
   }
+  // Balance: "a lop b = c rop ?" — the inverse hunts for the missing balance.
+  function balanceItem(e){ return { p: e[0] + " " + e[1] + " " + e[2] + " = " + e[3] + " " + e[4] + " ?", a: e[5] }; }
 
   // Listed in importance / unlock order: Halves → Times → Doubles →
   // Add&Subtract → Number Bonds → Place Value → Fractions of → Percentages of →
@@ -342,6 +373,15 @@
       glyph:'?<span class="slash">/</span>n',
       eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:fractionsof2", masterSecs:8, group:"Fractions & %",
       build(){ return shuffle(PARTWHOLE_P1_SRC).map(partWholeItem); }
+    },
+    {
+      // Balance ("Complete the Sum") — chains off addsub2 (the calibration's
+      // sensible predecessor), so the existing single-child branchOf stays linear:
+      // addsub → addsub2 → balance. Group "Reasoning" for the picker.
+      id:"balance", name:"Balance", tag:"Complete the sum.",
+      glyph:'k<span class="slash">±</span>',
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:addsub2", masterSecs:9, group:"Reasoning",
+      build(){ return shuffle(BALANCE_P1_SRC).map(balanceItem); }
     }
   ];
 
@@ -387,7 +427,8 @@
     // ±, /, %). Each grid must be distinct from the 15 existing topic glyphs.
     scaling:      ["a","*×","n"],      // a×n — scale by an unknown factor (proportion)
     percentoff:   ["%","*−"],          // %− — percent decrease
-    partwhole:    ["%","*/","n"]       // %/n — reverse: given a part %, find the whole
+    partwhole:    ["%","*/","n"],      // %/n — reverse: given a part %, find the whole
+    balance:      ["k","*±"]           // k± — "the missing balance" (unknown k, plus-or-minus)
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 
