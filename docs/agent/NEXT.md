@@ -15,8 +15,14 @@
   (`scaling`/`balance`/`ratioshare`/`metric` litres→L); re-tier outliers (`fractions` 1/16, `mean` 6-term,
   `bonds2`, `rounding` 560-tie); verify the `money` decimal matcher; add `cubes`+roots.
 - **2c — de-dup pool slots + re-run the harness + add a regression gate.**
-After each batch: Babysitter re-runs the enumeration harness + sub-agent assessment, surfaces more recs → loop until
-clean. [A] (`modes.js`, `guides.js`, tests).
+**ROUND 2 (Babysitter re-assessed 2a+2b-1 — calibration clean, 9/11 guides solid):** TWO guide fixes back to you:
+  - **🔴 `digitsum` guide + `explain()` — HIGH correctness bug:** the "remainder ÷9 by digital root" tip returns 9
+    for multiples of 9, but the true remainder is 0 (live Qs: `remainder 567/7263/999 ÷ 9 = 0`). Add "if you reach
+    9, the remainder is 0."
+  - **`partwhole` guide (LOW):** generalise the reverse-% tip beyond the 10% case (cover 20/25/50%).
+  Then continue **2b-part-2/2c**: `fractions` 1/16 → Part-2, `rounding` 560 tie, `sequences` nth-term split,
+  `cubes`+roots, de-dup + harness gate. (Detail: `QUESTION-QUALITY-AUDIT.md` round 2.)
+After each batch: Babysitter re-assesses → loop until clean. [A] (`modes.js`, `guides.js`, tests).
 - **Then `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view; persists). A
   core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests). Then **`T168`** (held on Play ID-verify).
 **Re-read this line fresh before each task + push.**

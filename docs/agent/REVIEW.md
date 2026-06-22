@@ -1,6 +1,9 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T217 [A]` (void line ALL CAPS + intermittent bursting interference; live `cc1f202`, 53/53 green). Prior: `T216 [A]` (entry: title repositioned off the top + Void Throne in a distinct
+**Current verdict:** `T213 Phase 2a + 2b-1 APPROVED` (1e6ab1f, 5eac801; 54/54 + node -c green) **+ Phase-3 round 2
+re-assessed:** calibration clean (bonds2/metric/mean verified), 9/11 new guides solid; **2 fixes back to A — 🔴
+`digitsum` guide HIGH bug (remainder-by-digital-root gives 9 not 0 for ×9; live Qs hit it) + `partwhole` LOW**.
+A continues the T213 loop. *(See QUESTION-QUALITY-AUDIT.md round 2.)* Prior: `T217 [A]` (void line ALL CAPS + intermittent bursting interference; live `cc1f202`, 53/53 green). Prior: `T216 [A]` (entry: title repositioned off the top + Void Throne in a distinct
 JetBrains-Mono face with animated glitch). Live build **`2f55fad`**; suite **53/53** + `node -c` green.
 - **`T216`** (`2f55fad`, [A]) — `#entry` padding-top `clamp(40px,11vh,120px)` (title no longer pinned to the top,
   actions still bottom); the void line uses a **distinct self-hosted JetBrains-Mono** face; the corruption

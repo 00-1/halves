@@ -100,3 +100,31 @@ consistency. Every arithmetic/unit/fraction/% result was independently recompute
 
 *Assessment by Babysitter via 5 sub-agents (read-only). Fixes = [A]. Full per-topic detail above; the
 enumeration harness is reproducible (load `modes.js` with a `window` global, call each `build()` ~400×).*
+
+---
+
+## ROUND 2 — Phase-3 re-assessment (Babysitter, 2026-06-22)
+After A's **Phase 2a** (11 new guides) + **2b-part-1** (non-structural calibration). Re-ran the enumeration
+harness (diff vs round 1) + a sub-agent assessment of the 11 new guides.
+
+**Calibration (2b-1) — verified clean, no regressions:**
+- `bonds2` to-1000 now uses **non-round** targets (680/430/185 → 320/570/815) — real step-up ✓.
+- `metric` litres now **`mL`/`L`** (was bare `ml`/`l` → read as "1") ✓.
+- `mean` 6-term outlier (`31,44,28,52,39,?`) → **4-term** (`12,20,16,? is 18`) ✓.
+- Harness: 30 topics, 622 Qs, **no ambiguous / build-error / negative / NaN** ✓.
+
+**Guides — 9/11 solid** (scaling, percentoff, balance, lcmhcf, mean, timegap, ratioshare, cubes, money):
+correct methods, arithmetic recomputed + matches the questions, age-appropriate. **2 need fixing → back to A:**
+- **🔴 HIGH `digitsum` guide + `explain()`:** the "remainder ÷ 9 by digital root" tip ("keep adding digits to one
+  digit = the remainder") is **WRONG for multiples of 9** — it returns 9, but the true remainder is **0**. Live
+  questions hit this: `remainder 567 ÷ 9`, `7263 ÷ 9`, `999 ÷ 9` all `= 0`. A child following the guide answers 9
+  and is marked wrong. **Fix:** add "if you reach 9, the remainder is 0 (it divides exactly)" — to the guide AND
+  the `explain()` hint.
+- **LOW `partwhole` guide:** the reverse-% tip only shows the 10% case (×10); generalise it (e.g. "find 1%, then
+  ×100", or "if 25% is the part, ×4") so 20/25/50% reverses are covered. (The `explain()` already does this.)
+
+**Still PENDING from round 1 (not in these batches — for 2b-part-2 / 2c):**
+- `fractions` `1/16 = 0.0625` (re-tier to Part-2 — structural); `rounding` `560 to nearest 100` tie (fix or swap);
+  `sequences` nth-term → locked Part-2 (structural); `cubes` + roots (add content); de-dup pool slots + harness gate.
+
+**→ Round-2 actions for A:** fix `digitsum` (HIGH) + `partwhole` (LOW) guides, then continue 2b-part-2 / 2c.
