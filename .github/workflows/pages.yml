@@ -94,6 +94,8 @@ jobs:
         run: node test/pwa.test.js
       - name: Install-display (fullscreen affordances) test (gate)
         run: node test/install-display.test.js
+      - name: Back-button navigation test (gate)
+        run: node test/back-nav.test.js
       - name: FXGL golden-render test (gate)
         run: node test/golden-fx.test.js
       - name: Synth golden-score test (gate)

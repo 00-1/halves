@@ -410,6 +410,7 @@
     screens[name].classList.add("active");
     fxSetScreen(name);     // T110/T112: full-bleed backdrop — home scene on #start, Arena scene on #arena, idle elsewhere
     musicForScreen(name);  // T122: Synth music — solve (calm) in-game, arena on the Arena, menu elsewhere
+    pushBackSentinel(name);  // T157: keep a history sentinel on top so the Android back gesture is trapped (navigates our screens, not out of the app)
   }
   function fmt(t){ return t.toFixed(1); }
   function numStr(n){ return String(n); }
@@ -2048,6 +2049,61 @@
   }
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
+
+  // ---- T157: Android system-back navigates our screen stack -----------------
+  // A standalone PWA / TWA otherwise EXITS the app on the back gesture (our nav is
+  // screen-state, not deep web history). We trap back with a history sentinel kept
+  // on top of the stack (pushed after every screen via show()); a popstate handler
+  // walks to the screen's PARENT (Arena/menus → home, sub-menus → parent), and only
+  // at home does back confirm-then-exit. Inert where there's no History API
+  // (try/catch + a feature flag) so browser-tab + headless play are unaffected.
+  const BACK_PARENT = {
+    game:"start", results:"start", practice:"start", summary:"start",
+    inventory:"start", heroes:"start", arena:"start", settings:"start",
+    heroDetail:"heroes", audio:"settings", graphics:"settings"
+  };
+  // hash for each routed screen (so back keeps the URL in sync); others use show()
+  const BACK_HASH = { start:"#/", inventory:"#/inventory", heroes:"#/heroes", arena:"#/arena",
+    settings:"#/settings", audio:"#/audio", graphics:"#/graphics", summary:"#/best-times" };
+  let backInstalled = false, backExitArmed = false;
+  function pushBackSentinel(name){
+    if(!backInstalled || name === "entry") return;          // entry/splash is the root
+    try{ history.pushState({ hb: 1 }, ""); }catch(e){}
+  }
+  function navToScreen(name){
+    if(name === "start"){ navStart(); }
+    else if(BACK_HASH[name]){ if(location.hash === BACK_HASH[name]) applyRoute(); else location.hash = BACK_HASH[name]; }
+    else { show(name); }
+  }
+  // The system back was pressed. Returns "nav" (navigated → show() re-armed the
+  // sentinel), "stay" (home, first press → confirm + caller re-arms), or "exit".
+  function onBackPressed(){
+    const parent = BACK_PARENT[curScreen];
+    if(parent){ backExitArmed = false; navToScreen(parent); return "nav"; }
+    if(!backExitArmed){ backExitArmed = true; backExitHint(); setTimeout(() => { backExitArmed = false; }, 2000); return "stay"; }
+    return "exit";
+  }
+  function backExitHint(){
+    try{
+      const host = $("toasts"); if(!host) return;
+      const t = document.createElement("div");
+      t.className = "toast"; t.innerHTML = '<div class="t-txt"><span class="t-name">Press back again to exit</span></div>';
+      host.appendChild(t);
+      setTimeout(() => { try{ t.remove(); }catch(e){} }, 2000);
+    }catch(e){}
+  }
+  (function setupBackNav(){
+    if(typeof history === "undefined" || !history.pushState || !window.addEventListener) return;
+    try{
+      backInstalled = true;
+      history.pushState({ hb: 1 }, "");                     // initial sentinel to absorb the first back
+      window.addEventListener("popstate", () => {
+        const r = onBackPressed();
+        if(r === "stay"){ try{ history.pushState({ hb: 1 }, ""); }catch(e){} }   // re-trap so the app stays open for the confirm
+        // "nav": show() already pushed a fresh sentinel · "exit": leave history alone
+      });
+    }catch(e){ backInstalled = false; }
+  })();
 
   $("startBtn").addEventListener("click", start);
   $("menuBtn").addEventListener("click", navStart);

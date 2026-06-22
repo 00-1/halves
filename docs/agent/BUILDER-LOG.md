@@ -4768,3 +4768,30 @@ notes: highest-value fix — once live, two clients on different code show DIFFE
   actually fires when stale, so every subsequent live review is trustworthy. Next per `NEXT.md`: **`T158`
   (rescoped: no-store nav)** → `T159` (foghorn on resume) → `T160` (Arena death VFX) → then my pending
   `T156`/`T157`.
+
+---
+
+## Builder A — T157: Android back-gesture navigates our screen stack (no mid-game exit)
+commit: (this commit) — [A], OWNER-track (Play-Store). The classic TWA surprise: our nav is JS screen-state,
+so the system back gesture found no web-history to pop and EXITED the app (quitting mid-Arena/mid-round).
+changed (`main.js` only):
+  - A **history sentinel** is kept on top of the stack — `show()` calls `pushBackSentinel(name)` after every
+    screen (except the entry/splash root), and `setupBackNav` pushes an initial one. So the system back ALWAYS
+    lands on a sentinel (same URL → no stray hashchange), and a single **`popstate`** handler walks the screen
+    to its **parent** via `BACK_PARENT` (game/results/practice/arena/inventory/heroes/settings/summary → home;
+    heroDetail → heroes; audio/graphics → settings), routing through the existing nav (hash for routed screens,
+    `show()` for transient ones) so renders/music/fx stay correct. Each back-nav re-arms a fresh sentinel.
+  - **Home/root:** back is **confirm-then-exit** — the first press shows a "Press back again to exit" hint and
+    re-arms the sentinel (stays in-app); a second press does NOT re-arm, releasing the trap so the app exits.
+  - **Inert without a History API** (`typeof history`/`history.pushState`/`window.addEventListener` guards +
+    try/catch) → browser-tab and headless play are unaffected; no listeners added per navigation.
+how I verified: new **`back-nav.test.js` (13 checks, gated in `pages.yml`)** boots `main.js` with a History API
+  + a hash-setter that fires `hashchange` (like a browser) and simulates `popstate`: back from the **Arena →
+  home**, from **Audio → Settings**; at **home** the first back stays in-app + shows the confirm hint + re-arms
+  a sentinel, the second back does NOT re-arm (trap releases → exit allowed); the parent-map covers the
+  transient **game/results/practice → home** (no mid-round exit); and it boots/navigates fine with **no History
+  API** (feature inert). `node -c` clean; **full suite green** (perf gate: no listener/RAF leak — back-nav adds
+  none in headless). [A]-only.
+notes: **owner device-verify** — on the installed PWA, the system back should step Arena/menus → home and only
+  exit (after a confirm) from home, never quitting mid-game. Next per `NEXT.md`: **`T159`** (cold-start audio
+  hardening) → `T89`/`T90` (done) → content.
