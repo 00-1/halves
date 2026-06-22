@@ -1,7 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T212 [A]` (title polish #2: "i" fix via raster res 18→26 + PX 3→2; void corruption
-~7% dropped/displaced cells; letterSpacing −1.5px; 0.9×). Live build **`ce69b69`**; suite **53/53** + `node -c`
+**Current verdict:** `APPROVED — T214 [A] · T103 [B]` (title polish #3: tighter + glitchier void + actions to the
+bottom; low-end-Android perf pass). Live build **`951e532`**; suite **53/53** + `node -c` green.
+- **`T214`** (`951e532`, [A]) — tighter title↔subtitle, transparency-dithered void corruption, **action block moved
+  to the bottom** (`margin-top:auto`). Owner: actions "moved nicely" but the **title jumped to the top** + wants
+  the **void font different + animated** → **`T216`**.
+- **`T103`** (`c14a876`, [B]) — perf pass DONE: hot-path table from live `fxgl`; **fixed** the over-budget
+  coin-shower (was re-rasterising the static pile ~16–22k `fillRect`/frame → now a **cached offscreen pile** +
+  **60 Hz overlay cap** + cache freed when idle); audited `_pileGlint` (already coin-only + ~5 Hz → within budget,
+  kept); reduced-motion gates + context/listener count verified; **`docs/PERF-RESEARCH-2.md`** with an **owner
+  on-device measurement plan**. Solid. *(Owner: run the on-device plan on your lowest-end phone.)*
+**Verified:** worktree at `951e532`; `node -c` clean; **53/53** green. **→ A: → `T216` (reposition the title +
+new/animated void font). B: STAND BY** (perf on-device plan pending owner; `T213` Phase-2 content fixes queued for
+A). Owner device-confirm: perf (the on-device plan), and the title position/void (feeding T216).
+
+> **Prior verdict:** `APPROVED — T212 [A]` (title polish #2). Live build **`ce69b69`**; **53/53** + `node -c` green.
 green. Owner: "good" → more title tweaks → **`T214`** (tighter title↔subtitle gap; further-corrupted void with
 **transparency dithering**). **→ A: → `T214` (title polish #3). B: → `T103` (perf pass, in progress).**
 

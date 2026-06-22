@@ -3274,7 +3274,32 @@ can stay. By subtitle I mean THE VOID THRONE."*
   behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
-### T214 — [A] **Title polish #3: tighter title↔subtitle gap + further-corrupted Void Throne (transparency dithering)** · status: OPEN · owner-reported
+### T216 — [A] **Entry: reposition the title (not at the very top) + Void Throne a NEW font + ANIMATED glitches** · status: OPEN · owner-reported
+**Owner (2026-06-22, screenshot on `951e532`): "button etc moved down nicely, but the title ALSO jumped up — I
+don't want it right at the top, better where it was. Still not quite happy with the Void Throne — I think it needs
+a new font or something. Maybe animated glitches."**
+- **Reposition the title (don't pin it to the top):** T214 set `#entry{justify-content:flex-start}` + the
+  tag/actions to `margin-top:auto`, so the **title jumped to the very top** with a big empty gap below. The owner
+  wants the title back **roughly where it was — upper-centre, with breathing space ABOVE it** — while the actions
+  STAY at the bottom (that part's good). Add space above the title (a flex spacer / top margin, ≈upper-third) so it
+  sits balanced, not jammed at the top. Tune so the title group reads centred-ish in the upper area, actions at the
+  bottom. *(styles.css `#entry`.)*
+- **Void Throne — a NEW/distinct font:** the current void line is the same **Space Grotesk** as the gold title,
+  just corrupted — the owner wants it to look genuinely **different**. Use a **distinct typeface** for the void
+  line (a more decorative / condensed / gothic / monospace display face — must be a reliably-loaded web or system
+  font; verify it actually loads, else the rasterised pixels look identical to gold). It should read as its own
+  "void/corrupted" lettering, not gold-with-holes.
+- **ANIMATED glitches:** make the corruption **animate** — the dropped/displaced/alpha-dithered cells **shift/
+  flicker over time** (a periodic glitch re-roll), not the current STATIC corruption. Throttled + cheap (a low-rate
+  re-render of the void line, like the gold glint sweep but re-corrupting); **reduced-motion → static** (no glitch
+  animation). Keep it legible ("The Void Throne" still readable between glitches).
+- **DoD:** the title sits **upper-centre with space above** (not at the very top), actions still at the bottom; the
+  Void Throne uses a **visibly different font** and its glitches **animate** (flicker/shift, throttled,
+  reduced-motion-safe) while staying legible; gold "Goblin Gold" unchanged; no layout overflow; `node -c` clean;
+  entry tests green; **owner device-confirms**. **[A]-only** (`main.js`, `styles.css`, maybe an `@font-face`/font
+  link in `index.html`).
+
+### T214 — [A] **Title polish #3: tighter title↔subtitle gap + further-corrupted Void Throne (transparency dithering)** · status: DONE (`951e532`) · APPROVED · ✅ owner (actions moved nicely; title-position + void → T216)
 **Owner (2026-06-22, on T212 `ce69b69`): "less spacing between the title and subtitle; the Void Throne further
 corrupted; maybe use transparency dithering."** Refines T212's `paintPixelTitle`/`renderTitles` + the entry CSS.
 - **Tighter title↔subtitle gap:** reduce the **vertical space between "Goblin Gold" (`.brand`) and "The Void
@@ -4817,7 +4842,7 @@ green. **TWA wrapper / Play-Store signing deferred to `T103`/`T72` (need owner c
   TWA/assetlinks steps are real, and nothing about the web build regressed. **Owner** confirms it
   installs + runs at parity on the Poco X3.)
 
-### T103 — [B] **Low-end-Android PERF pass — measure + fix the render hot paths** (REQUIRED, owner: "it's not optional") · status: OPEN · owner-mandated
+### T103 — [B] **Low-end-Android PERF pass — measure + fix the render hot paths** (REQUIRED, owner: "it's not optional") · status: DONE (`c14a876`) · APPROVED · perf doc PERF-RESEARCH-2.md; owner on-device plan pending
 **Owner (2026-06-22): the perf pass "is not optional."** A focused **measure-and-fix** pass for low-end Android
 (Adreno-618 / Poco-X3 class), now that the home screen carries continuous animation: the **T207 pile sparkle**
 (redraws the full ~480-coin pile at ~5 Hz), the hoard **2D overlay** compositing, the **coin shower** (per-frame
