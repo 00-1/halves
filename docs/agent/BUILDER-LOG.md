@@ -5585,3 +5585,24 @@ popup showing "???" (not the real name). Refactored the per-canvas draw into `dr
 grid render and the detail). **Full suite 52/52.** [A]-only (main.js, styles.css, the gate).
 notes: per the pointer, next is to HOLD for the owner's icon direction (Emblems vs bestiary/boss/hero-derived) —
 the Babysitter will file the chosen direction; not pre-building.
+
+---
+### [A] T189 (owner BUG) — pin the Back button to one fixed location
+The Back button moved around between menu screens — horizontally (2-button rows like Arena put Back on the
+RIGHT; single-button screens elsewhere) and vertically (the action row followed variable content on screens
+that weren't bottom-pinned). Fix (placement only, styling unchanged):
+- **Vertical:** `.screen .res-actions{margin-top:auto; flex:0 0 auto; width:100%; max-width:380px; align-self:
+  center}` — `margin-top:auto` pins the row to the BOTTOM of every subscreen flex column (past the `flex:1`
+  scrolling bodies of inventory/heroes/arena/practice and the short content of summary/results/heroDetail
+  alike); the centred 380 band lines Back up with the content column. Scoped to `.screen` so the reset MODAL's
+  action row is untouched.
+- **Horizontal:** every subscreen Back button now carries a shared **`.back-btn`** class, and
+  `.screen .res-actions .back-btn{order:-1; margin-right:auto}` floats it to the far bottom-LEFT regardless of
+  DOM order (Arena lists Fight first), pushing the primary action (Fight) to the right. One fixed corner on
+  every menu screen.
+how I verified: `back-nav` 22→35 — every subscreen Back (sumBack/menuBtn/invBack/practiceBack/arenaBack/
+heroesBack/hdBack/settingsBack/audioBack/graphicsBack) carries `.back-btn`; the bottom-pin + bottom-left CSS is
+present; and the pin is `.screen`-scoped (modals keep their spacing). `home-layout`/`settings-reset`/`inventory`/
+`hero-detail`/`wayfinding`/`ui-restyle` all still green. **Full suite 52/52.** [A]-only (index.html, styles.css,
+the gate). *(A fixed top-left chevron was the alt; I went with the recommended bottom-left to keep the existing
+button styling — flag for the owner if they'd prefer the chevron.)*

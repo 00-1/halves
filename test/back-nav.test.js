@@ -20,6 +20,19 @@ function read(f){ return fs.readFileSync(path.join(__dirname, "..", f), "utf8");
 let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
+// ---- T189: the Back button is pinned to ONE fixed location (bottom-LEFT) on every
+// subscreen — never shifting horizontally (2-button rows) or vertically (content). ----
+(function backLocation(){
+  const html = read("index.html"), css = read("styles.css");
+  ["sumBack","menuBtn","invBack","practiceBack","arenaBack","heroesBack","hdBack","settingsBack","audioBack","graphicsBack"]
+    .forEach(id => ok(new RegExp('class="btn[^"]*back-btn[^"]*" id="' + id + '"').test(html), "(T189) #" + id + " carries the shared .back-btn class"));
+  ok(/\.screen \.res-actions\{[^}]*margin-top:auto/.test(css) && /\.screen \.res-actions\{[^}]*flex:0 0 auto/.test(css),
+     "(T189) .screen .res-actions is bottom-pinned (margin-top:auto, flex:0 0 auto)");
+  ok(/\.screen \.res-actions \.back-btn\{[^}]*order:-1[^}]*margin-right:auto/.test(css),
+     "(T189) .back-btn is forced bottom-LEFT (order:-1 + margin-right:auto)");
+  ok(!/(^|\})\.res-actions\{[^}]*margin-top:auto/.test(css), "(T189) the unscoped .res-actions (modals) keeps its own spacing — the pin is .screen-scoped");
+})();
+
 function boot(withHistory){
   let els = {}, store = {}, winH = {}, docH = {};
   function mkEl(id){ return { id, _html:"", _text:"", _h:{}, dataset:{}, style:{}, disabled:false,

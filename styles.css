@@ -479,6 +479,16 @@ body{
 .slow-item .t{color:var(--amber);font-weight:700;font-variant-numeric:tabular-nums}
 .res-actions{display:flex;gap:12px;margin-top:26px}
 .res-actions .btn{margin-top:0;padding:16px 32px;font-size:16px}
+/* T189 — pin the action row to the bottom of every SUBSCREEN (not modals) so the Back
+   button sits at a FIXED vertical spot: margin-top:auto pushes it past the flex:1
+   scrolling body (inventory/heroes/arena/practice) and short content (summary/results/
+   heroDetail) alike; flex:0 0 auto stops it shrinking; the centred 380 band aligns it
+   with the content column. */
+.screen .res-actions{margin-top:auto;flex:0 0 auto;width:100%;max-width:380px;align-self:center}
+/* …and Back is ALWAYS the bottom-LEFT corner: order:-1 floats it first regardless of
+   DOM position (Arena lists Fight first), margin-right:auto pushes any primary action
+   (Fight/Save) to the right. One fixed location across every menu screen. */
+.screen .res-actions .back-btn{order:-1;margin-right:auto}
 
 /* ---------- LINK ROW ---------- */
 .linkrow{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 18px;margin-top:14px;align-items:center}
