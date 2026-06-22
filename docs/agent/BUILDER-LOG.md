@@ -5804,3 +5804,24 @@ verified: `pwa.test` +5 (the `upper`/`toUpperCase` flag, the uppercase void call
 reduced-motion assertion to the gate itself. Headless boot stays green (paintPixelTitle early-returns without a
 real 2D ctx, so no burst ever starts). Full suite 53/53. [A]-only (main.js, styles.css). Owner verifies the live
 splash. Then queued: T213 Phase-2 content fixes; T168 held on Play ID-verify.
+
+---
+### [A] T213 Phase 2a — content quality: the 11 missing topic guides + explain() cases
+Per `QUESTION-QUALITY-AUDIT.md` (Phase-2 fix list #1, HIGH — "biggest single gap: 11 of 30 topics have NO
+static guide"). Batch 2a closes that gap; the MED/LOW items (sequences split, terse-notation cues, calibration
+outliers, money matcher, cubes roots, de-dup) follow in 2b/2c once the Babysitter re-assesses.
+- **11 new `GUIDES` entries** (guides.js) — `scaling`, `percentoff`, `partwhole`, `balance`, `lcmhcf`, `mean`,
+  `timegap`, `ratioshare`, `cubes`, `money`, `digitsum`. Each is the house format `{intro, 2–4 tips, example}`,
+  British, Year-5/6, mathematically correct, the reasoning topics (balance/scaling/partwhole/mean/ratioshare)
+  leading with the method a learner most needs. Worked examples match the live prompt shapes exactly.
+- **11 new `explain()` cases** — tailored, number-specific "how to approach THIS one" lines for the Practice
+  aside, parsed from each topic's real prompt format. METHOD-ONLY: they describe the steps and stop before the
+  result. Three needed answer-safe phrasing where a prompt number coincides with the answer (`partwhole` 50%→50,
+  `mean` reverse mean==missing, `timegap` 11:48→48): those drop the colliding digits rather than echo them.
+  No topic now falls through to the generic "Picture the method…" FALLBACK.
+- **New gate `test/guides-coverage.test.js`** (wired into `pages.yml`): enumerates EVERY topic, builds its full
+  pool, and asserts (a) a well-formed guide for all 30, (b) a tailored non-FALLBACK explain() for every question,
+  (c) explain() never surfaces the answer as a NEW number token. 15 checks.
+verified: `guides-coverage` 15/15, `hints` 13/13 (the strict answer-token gate stays green), `guide-action`
+14/14, `practice` green. Full suite **54/54** (was 53 — +1 new gate). [A]-only (guides.js, test/, pages.yml).
+Then queued: T213 Phase 2b (sequences split + notation/calibration fixes); T168 held on Play ID-verify.

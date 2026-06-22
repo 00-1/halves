@@ -183,6 +183,105 @@
         "For the rule 'Mn + A', M is the step and A shifts it; the kth term is M×k + A."
       ],
       example: "Next in 2, 5, 8, 11 → step is 3 → 11 + 3 = 14."
+    },
+    scaling: {
+      intro: "Scaling keeps two amounts in proportion — find what one unit is worth, then scale up.",
+      tips: [
+        "Find ONE unit first: if 4 cost 200, one costs 200 ÷ 4 = 50.",
+        "Then multiply by how many you need. 6 of them → 6 × 50 = 300.",
+        "It's multiplying, never adding — '4→6' means ×1.5, not '+2'."
+      ],
+      example: "5→75, 8→? → one is 75 ÷ 5 = 15, so 8 × 15 → 120."
+    },
+    percentoff: {
+      intro: "A percentage OFF means take that slice away — you're left with the rest.",
+      tips: [
+        "Find the percentage, then subtract it from the whole.",
+        "Or find the part that's LEFT: 20% off leaves 80%.",
+        "Build the percentage from 10%: 30% is three lots of a tenth."
+      ],
+      example: "20% off 50 → 10% is 5, so 20% is 10 → 50 − 10 → 40."
+    },
+    partwhole: {
+      intro: "You're given a PART and must find the whole it came from — work backwards.",
+      tips: [
+        "A unit fraction reverses by multiplying: if ⅕ of it is 6, the whole is 6 × 5.",
+        "A percentage reverses too: if 10% is 9, the whole is 9 × 10.",
+        "Check it makes sense — the whole must be BIGGER than the part."
+      ],
+      example: "¼ of ? = 7 → one quarter is 7, so four quarters → 7 × 4 → 28."
+    },
+    balance: {
+      intro: "Both sides must be EQUAL — work out the side you can, then find the number that balances it.",
+      tips: [
+        "Solve the side with no gap first to get its total.",
+        "Then ask: what makes the other side match that total?",
+        "If the missing number is being taken away, it's the difference."
+      ],
+      example: "34 + 17 = 90 − ? → left is 51, so 90 − ? = 51 → ? is 90 − 51 → 39."
+    },
+    lcmhcf: {
+      intro: "LCM is the lowest number both go INTO; HCF is the biggest number that goes into BOTH.",
+      tips: [
+        "LCM (lowest common multiple): count up in the bigger number until the smaller one also fits.",
+        "HCF (highest common factor): find the biggest number that divides both exactly.",
+        "Sanity check: the LCM is never below the bigger number; the HCF never above the smaller one."
+      ],
+      example: "LCM 4,6 → multiples of 6: 6, 12 — and 12 divides by 4 too → 12."
+    },
+    mean: {
+      intro: "The mean (average) shares the total out equally — add them up, then divide by how many.",
+      tips: [
+        "Forward: add all the values, then divide by how many there are.",
+        "Reverse: the total is the mean × how many values — then take away the ones you already have.",
+        "Quick check: the mean always sits between the smallest and largest value."
+      ],
+      example: "mean of 4, 8, 6 → total 18, three values → 18 ÷ 3 → 6."
+    },
+    timegap: {
+      intro: "Count the minutes between two clock times — bridge through the whole hour.",
+      tips: [
+        "Count up to the next o'clock first, then add the rest of the way.",
+        "Each whole hour you cross is 60 minutes.",
+        "09:50 → 11:15: to 10:00 is 10, then on to 11:15 is 75 → 85 min."
+      ],
+      example: "13:25 → 14:10 → to 14:00 is 35 min, then 10 more → 45 min."
+    },
+    ratioshare: {
+      intro: "Sharing in a ratio splits an amount into equal parts, then hands out the right number of parts.",
+      tips: [
+        "Add the ratio numbers for the total parts: 2:3 is 5 parts.",
+        "Divide the amount by the total parts to find ONE part.",
+        "Multiply one part by the share asked for (the bigger or smaller side)."
+      ],
+      example: "20 in 2:3 → bigger → 5 parts, 20 ÷ 5 = 4 each, bigger is 3 → 3 × 4 → 12."
+    },
+    cubes: {
+      intro: "Cubing means multiplying a number by itself three times.",
+      tips: [
+        "n³ means n × n × n. Work in steps: 4³ = 4 × 4 = 16, then × 4 = 64.",
+        "Learn the small ones: 2³ = 8, 3³ = 27, 5³ = 125, 10³ = 1000.",
+        "It is NOT n × 3 — that's the commonest slip."
+      ],
+      example: "3³ → 3 × 3 = 9, then × 3 → 27."
+    },
+    money: {
+      intro: "Everyday money sums — totals for several items, or the change from a note.",
+      tips: [
+        "For a total, multiply the price by how many. 4 × £1.25 = £5.00.",
+        "For change, subtract the spend from the note. £10 − £8.10 = £1.90.",
+        "£4 is the same as £4.00, and £1.90 the same as £1.9 — trailing zeros don't change the value."
+      ],
+      example: "3 × £2.40 → 3 × £2 = £6, 3 × 40p = £1.20 → £7.20."
+    },
+    digitsum: {
+      intro: "Adding a number's digits powers the ÷3 and ÷9 tricks — and the leftover gives the remainder.",
+      tips: [
+        "Add the digits one at a time: 7263 → 7 + 2 + 6 + 3.",
+        "If the digit sum divides by 9 (or 3), so does the whole number.",
+        "For the remainder ÷ 9, keep adding the digits until one digit is left — that's the remainder."
+      ],
+      example: "digit sum of 384 → 3 + 8 + 4 → 15."
     }
   };
 
@@ -329,7 +428,60 @@
             ", then carry that same step on past the last term, " + nums[nums.length - 1] + "."; }
         const nth = p.match(/^(\d+)n\s*([+−]\s*\d+)?,\s*term\s*(\d+)$/);
         if(nth){ const M = +nth[1], k = +nth[3];
-          return "Work out " + M + " × " + k + (nth[2] ? ", then " + (nth[2][0] === "+" ? "add " : "subtract ") + nth[2].replace(/[+−]\s*/, "") : "") + "."; }
+          return "Evaluate the rule: work out " + M + " × " + k + (nth[2] ? ", then " + (nth[2][0] === "+" ? "add " : "subtract ") + nth[2].replace(/[+−]\s*/, "") : "") + "."; }
+        break; }
+      case "scaling": { const m = p.match(/^(\d+)→(\d+),\s*(\d+)→\?$/); if(!m) break;
+        const n = +m[1], x = +m[2], M = +m[3];
+        // METHOD only — point at the unit rate, never the scaled result.
+        return "Find what one is worth (" + x + " ÷ " + n + "), then multiply by " + M + " — keep it in proportion, don't just add the gap."; }
+      case "percentoff": { const m = p.match(/^(\d+)%\s*off\s*(\d+)$/); if(!m) break;
+        const pct = +m[1], base = +m[2];
+        return "Find " + pct + "% of " + base + ", then take it away from " + base + " — what's left is the answer."; }
+      case "partwhole": {
+        const mf = p.match(/^(\d+)\/(\d+)\s*of\s*\?\s*=\s*(\d+)$/);
+        if(mf){ const d = +mf[2], given = +mf[3];
+          return "One " + (ORD[d] || d + "th") + " of the whole is " + given + ", so the whole is " + given + " × " + d + "."; }
+        const mp = p.match(/^(\d+)%\s*of\s*\?\s*=\s*(\d+)$/);
+        if(mp){ const given = +mp[2];
+          return "That percentage of the whole is " + given + " — find 1% (divide " + given + " by the percentage shown), then × 100 for the whole."; }
+        break; }
+      case "balance": { const m = p.match(/^(\d+)\s*([+−×])\s*(\d+)\s*=\s*(\d+)\s*([+−])\s*\?$/); if(!m) break;
+        const a = +m[1], lop = m[2], b = +m[3], c = +m[4], rop = m[5];
+        // METHOD only — names the moves, never the balancing number.
+        return "Work out " + a + " " + lop + " " + b + " first, then find the number that makes " + c + " " + rop + " ? equal to it."; }
+      case "lcmhcf": { const m = p.match(/^(LCM|HCF)\s*(\d+),(\d+)$/); if(!m) break;
+        const kind = m[1], a = +m[2], b = +m[3], big = Math.max(a, b), small = Math.min(a, b);
+        return kind === "LCM"
+          ? "Count up in multiples of " + big + " until you reach one that " + small + " also divides into."
+          : "Find the largest number that divides both " + a + " and " + b + " exactly."; }
+      case "mean": {
+        const mf = p.match(/^mean of ([\d,]+)$/);
+        if(mf){ const vals = mf[1].split(",").filter(s => s !== "");
+          return "Add all " + vals.length + " values together, then divide by " + vals.length + "."; }
+        const mr = p.match(/^mean of ([\d,]+),\?\s*is\s*(\d+)$/);
+        if(mr){ const knowns = mr[1].split(",").filter(s => s !== ""), total = knowns.length + 1;
+          return "Multiply the mean by " + total + " values for the total, then subtract the " + knowns.length + " you're given to find the missing one."; }
+        break; }
+      case "timegap": { const m = p.match(/^(\d{2}):(\d{2})\s*→\s*(\d{2}):(\d{2})$/); if(!m) break;
+        // METHOD only — never the minute count (and never echo the clock digits,
+        // which can themselves equal the gap, e.g. 11:48 → answer 48).
+        return "Count up from the first time to the next o'clock, then add the whole hours and the spare minutes to reach the second time."; }
+      case "ratioshare": { const m = p.match(/^(\d+)\s*in\s*([\d:]+)\s*→\s*(bigger|smaller|biggest)$/); if(!m) break;
+        const t = +m[1], parts = m[2].split(":").map(Number), total = parts.reduce((s, n) => s + n, 0);
+        return "Add the ratio (" + parts.join(" + ") + " = " + total + " parts), divide " + t + " by " + total + " for one part, then take the " + m[3] + " share's worth."; }
+      case "cubes": { const m = p.match(/^(\d+)³$/); if(!m) break; const n = +m[1];
+        return "Cube it: multiply " + n + " by itself, then by " + n + " again — three " + n + "s (not " + n + " × 3)."; }
+      case "money": {
+        const mm = p.match(/^(\d+)\s*×\s*£([\d.]+)$/);
+        if(mm) return "Multiply £" + mm[2] + " by " + mm[1] + " — the pence scale up just like the pounds.";
+        const mc = p.match(/^change from £(\d+) of £([\d.]+)$/);
+        if(mc) return "Count up from £" + mc[2] + " to £" + mc[1] + ", or subtract — that's the change.";
+        break; }
+      case "digitsum": {
+        const ms = p.match(/^digit sum of (\d+)$/);
+        if(ms) return "Add the digits of " + ms[1] + " one at a time.";
+        const mr = p.match(/^remainder (\d+) ÷ 9$/);
+        if(mr) return "Add the digits of " + mr[1] + ", and keep adding until one digit is left — that's the remainder.";
         break; }
     }
     return FALLBACK;
