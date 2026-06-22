@@ -108,12 +108,24 @@ Confirm the existing sets reach **2-digit** (e.g. double 39 = 78, half 78 = 39) 
 - **Build order if the owner wants a subset first:** P1 (`scaling`, `percentoff`, `partwhole`) → P2
   (`timegap`, `lcmhcf`, `ratioshare`, `mean`) → P3 (`cubes`, `money`, range check).
 
-## Open question for the owner (one real decision)
-- **Divisibility rules (Q11)** don't fit a numeric numpad cleanly (the natural answer is yes/no or "which one").
-  Options: (a) drill the *mechanic* numerically as **"digit sum of N"** (underpins ÷3 and ÷9) and/or
-  **"remainder of N ÷ 9"**; (b) add a small **true/false or pick-one** answer type to the engine (a bigger
-  change); (c) skip it. **Recommend (a)** — a `digitsum` mode is numpad-clean and trains the actual rule —
-  unless you want the engine to gain a non-numpad question type. *(Everything else above is numpad-native.)*
+### 11. `digitsum` — Digit sum (the ÷3 / ÷9 rule mechanic)  ·  group "Core" · unlock after `lcmhcf`
+**OWNER-BLESSED (2026-06-22)** as the numpad-clean way to drill the divisibility gap. **Atom:** sum the digits
+of N — the actual mechanic behind the ÷3 and ÷9 tests. **Mock:** Q11 (which is ÷ by 9 — 70%-easy lost).
+**Calibration:** N is 3–4 digits; answer is the digit sum (a small integer, numpad-clean). A back-half variant
+asks **"remainder of N ÷ 9"** (= digit-sum mod 9) to connect the sum to divisibility.
+- `digit sum of 7263` (18) · `digit sum of 7267` (22) · `digit sum of 4581` (18) · `digit sum of 936` (18)
+- `digit sum of 5012` (8) · `remainder 7263 ÷ 9` (0) · `remainder 7267 ÷ 9` (4) · `remainder 845 ÷ 9` (8)
+**masterSecs ≈ 6.** `expr:false`, eyebrow "digit sum" / "remainder ÷ 9".
+
+---
+
+## ✅ OWNER SIGN-OFF (2026-06-22)
+- **Scope: BUILD ALL** — P1 (`scaling`, `percentoff`, `partwhole`) + P2 (`ratioshare`, `timegap`, `lcmhcf`,
+  `mean`) + P3 (`cubes`, `money`, doubles/halves range check) + **`digitsum`** (the blessed divisibility answer).
+  **11 modes total.**
+- **Divisibility → `digitsum`** (option a) — no new engine answer type.
+- **Suggested delivery: in TIERS** (P1 → P2 → P3), one push per tier, so the Babysitter reviews incrementally
+  and the owner can feel P1 early — not one giant push. Each mode ships with its Node logic gate.
 
 ---
 *Maintained by the Babysitter. On owner sign-off, this promotes into `BACKLOG T162` build steps + the

@@ -39,8 +39,10 @@ fire `fxBigBurst` at `elCentre(cellEl[k])` — small/tight (`sizePx:FX_SMALL`, `
 360→~480; keep Skip + reduced-motion; add an `arena3`/`fx-wiring` gate (foe-KO ⇒ localised burst at the cell).
 [A]-only. *(BACKLOG T160.)*
 **Then** `T156` (hide `#entryFs`/`#fsToggle` when installed; manifest `display:"fullscreen"`; keep T112
-safe-area) → `T157` (Android back → screen-stack nav) → content `T58`–`T61`. *(`T103`/`T72` Play-Store need
-owner creds — hold.)*
+safe-area) → `T157` (Android back → screen-stack nav) → **`T162`** (✅ owner-blessed: build the **11 mock-driven
+drill modes** in 3 tiered pushes P1→P2→P3 — `scaling`/`percentoff`/`partwhole` first; spec in
+`docs/agent/T162-calibration.md`; each mode = fixed `{p,a}` set + a Node logic gate) → content `T58`–`T61`.
+*(`T103`/`T72` Play-Store need owner creds — hold.)*
 
 **Builder B → `T155` (distinct PAD/bed timbre per style — OWNER feedback) → then `T154` (visual-regression gate).**
 Off standby. **`T155` FIRST** — owner: *"every style seems to share the same synth string sound… vary a lot

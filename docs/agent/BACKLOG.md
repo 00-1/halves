@@ -2721,7 +2721,7 @@ fresh install.
   split it into a [B] line if the audit lands there. *(If the audit finds nothing actionable + it never recurs,
   close as NOT-REPRODUCIBLE with the hardening guards kept.)*
 
-### T162 — [A] Mock-exam-driven drill gaps: research/calibration pass → new building-block modes · status: OPEN · content (owner data) · sequence after the trust/audio fixes
+### T162 — [A] Mock-exam-driven drill gaps: 11 new building-block modes · status: OPEN · ✅ OWNER-BLESSED (build all, in tiers) · content · after the trust/audio fixes
 **Owner (2026-06-22) supplied a REAL mock** (target student Luke, SEP 11+ Mock 7 / BWS — scored 11/27). Frame:
 **"we're not trying to reproduce 11+ style questions, just drill the building blocks needed to answer these
 quickly."** Full per-question decomposition + the analysis live in **IDEAS I9**. **Findings:** one-step
@@ -2729,20 +2729,23 @@ quickly."** Full per-question decomposition + the analysis live in **IDEAS I9**.
 the misses cluster into **(A) complement / "the rest" / % decrease, (B) proportion / unit-rate / scaling,
 (C) ratio sharing, (D) un-drilled procedures: divisibility rules, time intervals, LCM/factors, averages** —
 and many wrongs are **near-misses** (fluency under time, not pure concept).
-- **Step 1 — research/calibration pass (doc first, for owner thumbs-up):** propose the new/extended modes with
-  **calibrated value ranges** (answers numeric, non-negative, numpad-enterable within the length guard, within
-  `docs/research-11plus.md` bands), each tied to the mock evidence. Prioritized set (from IDEAS I9):
-  **P1** Proportion/Unit-rate ("Scaling"); **P1** Complement/decrease + reverse (extend `percentages`/`fractionsof`
-  with "reduced by" / "the rest" / part→whole); **P2** Ratio sharing; **P2** quick-win procedure modes
-  (Divisibility rules, Time intervals, Factors/Multiples/LCM-HCF, Averages); **P3** Cubes (extend `squares`),
-  Money twist on add/subtract, confirm doubles/halves reach 2-digit.
-- **Step 2 — build the generators** the owner blesses (new `modes.js` entries + any UI), each with a **Node logic
-  gate** (answers numeric/non-negative/in-range, numpad-length OK) like the existing mode tests.
-- **DoD:** the calibration doc/section + owner-blessed mode list, then the built generators with passing logic
-  gates; no regressions to existing modes; `node -c` clean; **[A]-only** (`modes.js`, `docs/research-11plus.md`,
-  mode tests). **Babysitter surfaces the proposed mode list + ranges to the owner before building** (he may
-  reprioritize). **Sequence:** this is important content but NOT a live bug — it lands **after** the trust/audio
-  fixes (T161/T158/T159) and the owner's Arena VFX (T160); slot around the existing content wave (T58–T61).
+- **✅ Step 1 DONE — calibration pass blessed.** Full spec (calibrated ~21-item sets, mock evidence, ranges,
+  `masterSecs`, unlock slots) in **`docs/agent/T162-calibration.md`**. **Owner (2026-06-22): build ALL 11 modes**,
+  with **`digitsum`** as the divisibility answer (no new engine answer type), **delivered in TIERS**.
+- **Step 2 — BUILD (the 11 modes, in 3 tiered pushes — re-read the calibration doc for each set's items/ranges):**
+  - **Tier P1** (push 1): `scaling` (unit-rate), `percentoff` (% decrease / the-rest), `partwhole` (reverse part→whole).
+  - **Tier P2** (push 2): `ratioshare`, `timegap` (answer in minutes), `lcmhcf`, `mean` (+ reverse).
+  - **Tier P3** (push 3): `cubes` (mirror `squares`), `money` (£ totals + change, 2dp), `digitsum` (+ remainder ÷9),
+    and the **doubles/halves range check** (reach 2-digit; extend SRC only if needed).
+- **Each mode:** a fixed `*_SRC` array → `build()` mapping to `{p,a}` (match the existing mode shape); numeric,
+  non-negative, numpad-enterable answers within the length guard; sensible `unlockedBy`/`requires` mastery gate;
+  new **"Reasoning"** picker group for `scaling`/`ratioshare`/`timegap`/`mean`. A **Node logic gate per mode**
+  (answers numeric/in-range/numpad-length-OK, like the existing mode tests) + register it in `pages.yml`.
+- **DoD (per tier):** the tier's modes built with passing logic gates; no regressions to existing modes/unlock
+  chain; `node -c` clean; `docs/research-11plus.md` calibration table updated for the new modes; **[A]-only**
+  (`modes.js`, `index.html` if a group/label is needed, `docs/research-11plus.md`, new mode tests, `pages.yml`).
+  **Sequence:** content, NOT a live bug — lands **after** the trust/audio fixes (T161/T158/T159) + the Arena VFX
+  (T160). Babysitter reviews each tier push (Node gates + a sample of items in-range); owner feels P1 early.
 
 
 **Owner (2026-06-22): "while they show the same build number — so we have cache problems. The build number
