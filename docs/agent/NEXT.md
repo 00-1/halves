@@ -15,11 +15,17 @@ Percentage-increase, Prime-factorisation/factors&multiples**; then the **Collect
 full curated pool (~21, calibrated), guide + `explain()`, chain-gating, the enumeration-harness + assessment loop.
 *(BACKLOG T219.)*
 
-**→ DO `T221` FIRST (owner splash tweak, just in), THEN the next T219 batch.** `T221`: void line gets **wide
-POSITIVE letter-spacing** (gold stays tight) + a **Star-Wars perspective skew — bottom wider than top** (per-row
-horizontal scale ramped by depth, about the centre); keep legible + centred + no clip at 360px; T217/T220
-caps/stretch/flicker still apply. Push on its own for owner device-confirm. *(BACKLOG T221.)* Owner is iterating on the
-splash live, so these tweaks jump ahead of the next T219 batch when they land.
+**→ DO `T222` FIRST — the GHP multi-app RESTRUCTURE (owner: "move all now").** READ `FRANCHISE-HOSTING.md` first.
+Move the live app into **`gg1/dev/`**, create **`gg1/prod/`** (promoted copy, TWA target) + **`gg2/dev/`**; root
+`index.html` = a **franchise landing** that scans **`apps.json`** + reads each app's `manifest.webmanifest` to list
+links. **ISOLATED saves** per scope (`gg1dev.*`/`gg1prod.*`/`gg2dev.*`); **`sw.js` cache cleanup → prefix-scoped**
+(no cross-eviction); **one-time `halves.*`→`gg1prod.*` migration** so the live save survives. `gg1/v1/` waits for the
+tag (T223). **On handoff, tell the owner the NEW dev URL `…/halves/gg1/dev/`.** *(BACKLOG T222.)*
+
+**→ THEN `T221` (splash tweak, in the new `gg1/dev/`):** void line gets **wide POSITIVE letter-spacing** (gold stays
+tight) + a **Star-Wars perspective skew — bottom wider than top** (per-row horizontal scale ramped by depth, about
+the centre); keep legible + centred + no clip at 360px; T217/T220 caps/stretch/flicker still apply. Push on its own
+for owner device-confirm. *(BACKLOG T221.)*
 - **After `T219` → `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view;
   persists). A core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests). Then
   **`T168`** (held on Play ID-verify).

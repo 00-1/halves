@@ -3254,30 +3254,39 @@ tree into `gg1/v1/` as the never-touched frozen snapshot.
   frozen build and is excluded from further edits; recorded in REVIEW.md. **[A]/owner** (tag = a pointer, not a
   Babysitter write to main). *(Gate: ONLY when the Babysitter marks GG1 v1 content+polish all-approved.)*
 
-### T222 — [A] **Multi-app GHP restructure** (gg1/{v1,dev,prod} + gg2/dev; per-app SW/save namespacing; franchise wallet; GG1 migration) · status: BLOCKED (do at the `gg1-v1` cut) · owner-requested
+### T222 — [A] **Multi-app GHP restructure** (gg1/{v1,dev,prod} + gg2/dev; landing page; per-app SW/save namespacing; GG1 migration) · status: OPEN · DO NOW (owner: "move all now") · owner-requested
 **Owner: "add GHP folders so GG sequels live on the same site — GG1 v1 (tagged), a live dev folder, and a prod
-folder we promote to (Play Store points here); plus a GG2 dev folder."** Full plan + the two origin-shared gotchas in
+folder we promote to (Play Store points here); plus a GG2 dev folder. Root landing page with links to current
+folders (scan a manifest file). Saves isolated. Move all now."** Full plan + the two origin-shared gotchas in
 **`docs/agent/FRANCHISE-HOSTING.md`** — READ IT FIRST. The app is already relative-path scoped, so files move with NO
-per-file path edits; the real work is the namespacing + migration + promote flow.
+per-file path edits; the real work is the landing page + namespacing + migration + promote flow.
 - **Layout:** move the live app into **`gg1/dev/`**; create **`gg1/prod/`** (promoted copy — the TWA target) +
-  **`gg1/v1/`** (the T223 frozen snapshot) + **`gg2/dev/`** (empty/template for the GG2 run). Root `index.html` →
-  **franchise landing/redirect** (owner Decision 1 — default: redirect to `gg1/prod/`).
+  **`gg2/dev/`** (empty/template for the GG2 run). **`gg1/v1/` is created later** (T223, at the tag) — leave it out
+  now or stub it. **Tell the owner the NEW dev URL** (`…/halves/gg1/dev/`) on handoff.
+- **🟢 Root LANDING PAGE (Decision 1):** root `index.html` = a **franchise landing** that **fetches `apps.json`**
+  (a registry `[{path,name,tag}]`) and renders a link/card per app, reading each folder's own `manifest.webmanifest`
+  for **name / icon / theme_color**. Adding an app later = one line in `apps.json`. Static, on-brand, no build step.
+  Seed `apps.json` with GG1 prod (+ dev). *(This also seeds the future cross-promo hub / parental gate, M12.)*
 - **🔴 SW cache namespacing (`sw.js`):** replace the origin-global `activate` cleanup
   (`keys.filter(k=>k!==CACHE).delete`) with a **prefix-scoped** one (delete only `k.startsWith(MY_PREFIX) &&
   k!==CACHE`); give each app a unique cache prefix (`gg1-dev-…`, `gg1-prod-…`, `gg2-dev-…`) so variants don't
-  cross-evict.
-- **🔴 localStorage namespacing + FRANCHISE WALLET:** per-game key prefix (GG1 `gg1.*`, GG1-dev isolated `gg1dev.*`
-  per Decision 2; GG2 `gg2.*`); **gold → a shared `gg.wallet.gold`** read/written by every GG game (= the
-  carry-over mechanic).
-- **🔴 GG1 migration:** one-time `halves.*` → `gg1.*` (+ gold → the wallet) if the new keys are empty, so no live
-  player loses progress on the URL/prefix move.
+  cross-evict each other's offline caches.
+- **🔴 localStorage namespacing — ISOLATED (Decision 2):** each scope its OWN prefix (`gg1dev.*`, `gg1prod.*`,
+  `gg1v1.*`, `gg2dev.*`); nothing shared-mutable. Gold carry-over is deferred to GG2 first-run **import** (P0.4),
+  NOT a shared wallet — so dev gold-setting can't touch a prod save.
+- **🔴 GG1 migration:** one-time copy of the existing root `halves.*` save → the new **`gg1prod.*`** (and
+  `gg1dev.*`) prefix if those keys are empty, so the current live player keeps gold/collection/progress after the
+  move. *(Root `halves.*` becomes the legacy source; the landing/redirect means the old root no longer runs the
+  game.)*
 - **Promote flow:** a dumb **dev→prod sync** (copy `gg1/dev/*`→`gg1/prod/*` + stamp `prod/build.json`), run only on
-  owner approval.
-- **DoD:** all four scopes serve + install independently (no SW cross-eviction, no save collision); gold persists
-  across scopes via the wallet; an existing GG1 save survives the move (migration verified); dev→prod promote works;
-  root redirects/lands per Decision 1; `node -c` + tests green; **owner confirms on device** (install prod, check
-  identity + saved progress). **[A]** (`sw.js`, save layer in `main.js`, new folders, a promote script). *(Gate: at
-  the `gg1-v1` cut — it moves the dev URL, so NOT mid-flight. Decisions 1–3 in FRANCHISE-HOSTING.md needed first.)*
+  owner approval. (Provide as a script or a documented Builder step.)
+- **DoD:** `gg1/dev`, `gg1/prod`, `gg2/dev` all serve + install independently (no SW cross-eviction, no save
+  collision — each scope isolated); the root landing lists apps from `apps.json` with correct names/icons; an
+  existing GG1 save survives the move (migration verified at `gg1/prod/` and isolated from dev); dev→prod promote
+  works; `node -c` + tests green; **owner confirms on device** (open landing → open prod → identity + saved
+  progress intact; dev is a separate sandbox). **[A]** (root `index.html` + `apps.json`, `sw.js`, save layer in
+  `main.js`, new folders, a promote script, tests). *(DO NOW — owner "move all now"; A finishes any in-flight push
+  first, then this before more T219 topics, so the rest of GG1 builds in the new location.)*
 
 ### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (iterative: assess ↔ fix until perfect) · status: DONE (`efb1abf`) · APPROVED — loop CONVERGED (round 1 + round 2 all resolved; regression gate added) · owner: "as perfect as we can get it" · *(post-T219-landing: re-run this loop over the expanded set)*
 **Owner (2026-06-22): "queue up a quality pass for the questions and guides/questions text — a DEEP pass where

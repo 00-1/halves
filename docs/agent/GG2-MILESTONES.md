@@ -153,8 +153,11 @@ Below: the gaps found + the milestones added/amended to close them. (Hosting det
 ### Added to P0 (engine foundation now also = franchise foundation)
 - **P0.3 — Multi-app GHP restructure.** The `gg1/{v1,dev,prod}` + `gg2/dev` folder layout; root
   `index.html` → franchise landing/redirect; the dev→prod promote step. *(FRANCHISE-HOSTING.md.)*
-- **P0.4 — Per-app namespacing + the FRANCHISE WALLET.** SW cache names prefix-scoped (no cross-eviction);
-  per-game localStorage prefix; **`gg.wallet.gold` shared across all GG games** = the carry-over mechanic.
+- **P0.4 — Per-app namespacing + gold carry-over by IMPORT** (owner chose ISOLATED saves). SW cache names
+  prefix-scoped (no cross-eviction); per-game localStorage prefix (`gg1prod.*`, `gg2.*`, …), nothing
+  shared-mutable. "Gold carries across every game" = a **one-time import at GG2 first-run** (read GG1 prod's
+  `gg1prod.gold`, seed GG2's hoard, then it grows on its own) — NOT a live shared wallet, so dev can't
+  pollute prod. *(FRANCHISE-HOSTING.md — switch to a shared wallet only if the owner wants one live number.)*
 - **P0.5 — GG1 save migration.** One-time `halves.*` → `gg1.*` (+ gold → the franchise wallet) so no live
   player loses progress on the move; GG1 keeps running unchanged.
 - **P0.6 — Core versioning.** CORE is a pinned, separately-versioned unit; GG1 re-pins only deliberately

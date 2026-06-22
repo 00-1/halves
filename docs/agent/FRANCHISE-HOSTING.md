@@ -22,7 +22,8 @@
 ## Target layout (recommended)
 ```
 halves/  (repo root = GH Pages site root, https://00-1.github.io/halves/)
-├── index.html                 → FRANCHISE LANDING (redirect or tiny hub; see Decision 1)
+├── index.html                 → FRANCHISE LANDING — scans apps.json, links to each app (Decision 1)
+├── apps.json                  → registry of deployed apps [{path,name,tag}] the landing reads
 ├── gg1/
 │   ├── v1/      ← frozen snapshot of the gg1-v1 tag (never touched again)
 │   ├── dev/     ← the live build (what we push to continuously, as now)
@@ -89,6 +90,33 @@ the completeness-pass additions appended to `GG2-MILESTONES.md`.
 
 ---
 
+## DECISIONS — RESOLVED by owner (2026-06-22)
+1. **Root `index.html` = a FRANCHISE LANDING PAGE** (not a redirect). It **scans a manifest file** to
+   discover the deployed apps and renders links to whatever folders currently exist. → spec a root
+   **`apps.json`** registry: `[{ "path":"gg1/prod/", "name":"Goblin Gold", "tag":"…" }, …]`; the landing
+   fetches it and, for each entry, reads that folder's own **`manifest.webmanifest`** for the display
+   **name / icon / theme_color** (so a card = the app's real identity, and adding an app = one line in
+   `apps.json`). Static, no build step.
+2. **Saves = ISOLATED per folder.** Each scope gets its own localStorage prefix — `gg1dev.*`, `gg1prod.*`,
+   `gg1v1.*`, `gg2dev.*` — nothing shared-mutable, so dev experiments / dev-mode gold-setting can never
+   touch a real prod save, and the frozen v1 stays pristine.
+3. **Move NOW** (not deferred to the `gg1-v1` cut). Restructure first, then the remaining GG1 work (T221
+   splash, the rest of T219) lands in the new `gg1/dev/` location. *(The `gg1/v1/` snapshot still waits for
+   the tag — T223 — but the folder STRUCTURE + dev/prod/gg2-dev + landing move now.)*
+
+### Reconciling isolation with "gold carries across every game"
+Full per-folder isolation means there is **no live shared wallet** — which is good (no dev→prod bleed). The
+locked franchise rule "gold carries across every game" is then implemented as a **one-time IMPORT at the new
+game's first run**, NOT a continuously-shared key: when **GG2** first launches it reads **GG1 prod's** stored
+gold (`gg1prod.gold`, same origin) and seeds GG2's starting hoard, which then keeps going up on its own. This
+preserves the meta-joke (your hoard follows you in and keeps growing) while keeping each game's save isolated.
+*(If you actually want ONE live ever-growing number shared across all games simultaneously, that's the shared-
+wallet model instead — say so and I'll switch P0.4; the import model is the default under "isolated.")*
+*(P0.4 in GG2-MILESTONES updated to the import model.)*
+
+---
+
+## (superseded — original open questions, now resolved above)
 ## DECISIONS for the owner (I have recommendations; say the word and I queue it)
 1. **Root `index.html` (`/halves/`):** (a) **redirect** straight to `gg1/prod/` [simplest], or (b) a tiny
    **franchise landing/hub** listing the GG games (sets up cross-promo + the parental gate discussed for
