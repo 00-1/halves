@@ -32,6 +32,8 @@ jobs:
         run: node test/contrast.test.js
       - name: Inventory layout test (gate)
         run: node test/inventory.test.js
+      - name: Codex bestiary tab (T179) test (gate)
+        run: node test/codex.test.js
       - name: Arena stat-check test (gate)
         run: node test/arena.test.js
       - name: Practice hints test (gate)

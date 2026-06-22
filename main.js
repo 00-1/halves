@@ -1109,7 +1109,8 @@
     { id:"topics", label:"Topics" },
     { id:"awards", label:"Awards" },
     { id:"events", label:"Events" },
-    { id:"loot",   label:"Loot" }
+    { id:"loot",   label:"Loot" },
+    { id:"codex",  label:"Codex" }
   ];
   let invTab = "topics";
   // drill-earned cats — Events (daily-event rewards) + Loot (Arena) have their own tabs
@@ -1206,6 +1207,92 @@
     return strip + invTabHtml("Events", got + "/" + ordered.length, [{ label:"Daily Events", items:ordered }], col);
   }
 
+  // ---- Codex (T179) — a bestiary tab: every Beast (region×type), region Boss,
+  // Realm and daily Event the player has ENCOUNTERED, reusing B's Monsters/Scenery/
+  // EventArt generators. Undiscovered entries show as a dark SILHOUETTE (CSS-filtered
+  // off the real sprite) named "???" — the classic "keep playing to reveal it" tease.
+  const CODEX_TYPES = ["Brawn", "Cunning", "Arcane"];
+  // One Codex cell: always carries the canvas (drawn for owned AND locked; CSS
+  // silhouettes the locked). `data` describes what to draw; `enc` = encountered.
+  function codexCell(name, enc, w, h, data){
+    const attrs = Object.keys(data).map(k => ' data-' + k + '="' + esc(String(data[k])) + '"').join("");
+    return '<div class="inv-cell codex-cell ' + (enc ? "owned" : "locked") + '"' + attrs + '>' +
+      '<canvas class="pix" width="' + w + '" height="' + h + '"></canvas>' +
+      '<span class="inv-name">' + esc(enc ? name : "???") + '</span></div>';
+  }
+  function codexGroup(title, cells, got, total){
+    if(!cells.length) return "";
+    return '<div class="inv-cat"><h4>' + esc(title) + ' <span>' + got + '/' + total + '</span></h4>' +
+      '<div class="inv-grid codex-grid">' + cells.join("") + '</div></div>';
+  }
+  // Build the four Codex sections from the LIVE Arena ladder + event roster. An entry
+  // is "encountered" once the player has REACHED it (the next-unbeaten tier has
+  // advanced to/past it), or — for events — once any of its rewards is owned.
+  function invCodexHtml(col){
+    const E = window.Enemies, Ev = window.Events;
+    const RS = (E && E.REGION_SIZE) || 12, TC = (E && E.TIER_COUNT) || 120, regions = Math.floor(TC / RS);
+    const reached = (E && E.currentTier) ? E.currentTier(col).n : 1;   // highest tier faced
+    const rLabel = r => (E && E.regionLabel) ? E.regionLabel(r) : ("Region " + (r + 1));
+    // Beasts — region × type, drawn from the first non-boss tier of that type in the
+    // region (so the sprite matches what the player actually meets there).
+    const beasts = []; let bGot = 0;
+    for(let r = 0; r < regions; r++) for(const t of CODEX_TYPES){
+      let rep = -1; for(let n = r * RS + 1; n <= r * RS + RS - 1; n++){ const ti = E && E.byTier(n); if(ti && ti.type === t){ rep = n; break; } }
+      if(rep < 0) continue;
+      const enc = reached >= rep; if(enc) bGot++;
+      beasts.push(codexCell(rLabel(r) + " · " + t, enc, 48, 48, { codex:"beast", n:rep, type:t }));
+    }
+    // Bosses — the region boss at every RSth tier (Monsters draws the crown).
+    const bosses = []; let boGot = 0;
+    for(let r = 0; r < regions; r++){ const n = (r + 1) * RS, ti = E && E.byTier(n);
+      const enc = reached >= n; if(enc) boGot++;
+      bosses.push(codexCell((ti && ti.name) || ("Boss " + (r + 1)), enc, 48, 48, { codex:"boss", n:n, type:(ti && ti.type) || "Brawn" }));
+    }
+    // Realms — the 10 region backdrops, full-lit (no battle scrim) in the gallery.
+    const realms = []; let rGot = 0;
+    for(let r = 0; r < regions; r++){ const enc = reached >= r * RS + 1; if(enc) rGot++;
+      realms.push(codexCell(rLabel(r), enc, 72, 28, { codex:"realm", region:r })); }
+    // Events — the daily-event roster; encountered once any reward tier is owned.
+    const events = []; let eGot = 0;
+    const roster = (Ev && Ev.roster) ? Ev.roster() : [];
+    roster.forEach(ev => {
+      const enc = Object.keys(col).some(k => k.indexOf("event:" + ev.id) === 0); if(enc) eGot++;
+      events.push(codexCell(ev.name, enc, 48, 32, { codex:"event", seed:ev.artSeed }));
+    });
+    const totGot = bGot + boGot + rGot + eGot, totAll = beasts.length + bosses.length + realms.length + events.length;
+    const bars = [["Beasts", bGot, beasts.length], ["Bosses", boGot, bosses.length],
+                  ["Realms", rGot, realms.length], ["Events", eGot, events.length]]
+      .map(s => invBarRow(s[0], s[1], s[2])).join("");
+    const block = '<div class="inv-cat"><h4>Codex <span>' + totGot + '/' + totAll + ' discovered</span></h4>' +
+      '<div class="topic-prog">' + bars + '</div></div>';
+    return block +
+      codexGroup("Beasts", beasts, bGot, beasts.length) +
+      codexGroup("Bosses", bosses, boGot, bosses.length) +
+      codexGroup("Realms", realms, rGot, realms.length) +
+      codexGroup("Events", events, eGot, events.length);
+  }
+  // Paint a COLS×ROWS hex-colour grid into a canvas, full-bleed (no scrim) — the
+  // Codex realm thumbnails (Scenery.buildGrid) shown "full-lit".
+  function paintCodexGrid(cv, grid){
+    const cx = cv.getContext ? cv.getContext("2d") : null; if(!cx || !grid || !grid.length) return;
+    const rows = grid.length, cols = grid[0].length, sx = cv.width / cols, sy = cv.height / rows;
+    if(cx.imageSmoothingEnabled != null) cx.imageSmoothingEnabled = false;
+    for(let y = 0; y < rows; y++) for(let x = 0; x < cols; x++){
+      cx.fillStyle = grid[y][x];
+      cx.fillRect(Math.floor(x * sx), Math.floor(y * sy), Math.ceil(sx), Math.ceil(sy));
+    }
+  }
+  function drawCodexCanvases(){
+    const M = window.Monsters, S = window.Scenery, EA = window.EventArt;
+    $("invList").querySelectorAll(".codex-cell canvas").forEach(cv => {
+      const d = cv.parentElement.dataset;
+      try{
+        if((d.codex === "beast" || d.codex === "boss") && M) M.draw(cv, { n:+d.n, name:"", type:d.type });
+        else if(d.codex === "realm" && S && S.buildGrid) paintCodexGrid(cv, S.buildGrid(+d.region));
+        else if(d.codex === "event" && EA) EA.draw(cv, +d.seed);
+      }catch(e){}
+    });
+  }
   function drawInvCanvases(){
     $("invList").querySelectorAll(".inv-cell.owned canvas").forEach(cv => {
       const it = C.byId(cv.parentElement.dataset.id);
@@ -1223,8 +1310,9 @@
     $("invList").innerHTML = invTab === "loot"   ? invLootHtml(col)
                            : invTab === "awards" ? invAwardsHtml(col)
                            : invTab === "events" ? invEventsHtml(col)
+                           : invTab === "codex"  ? invCodexHtml(col)
                            :                       invTopicsHtml(col);
-    drawInvCanvases();
+    if(invTab === "codex") drawCodexCanvases(); else drawInvCanvases();
     $("invList").scrollTop = 0;
     updateInvTop();
   }

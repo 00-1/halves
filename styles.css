@@ -552,6 +552,15 @@ canvas.pix{image-rendering:pixelated}
 .inv-cell.owned.r-rare{border-color:#3f97d8}
 .inv-cell.owned.r-epic{border-color:#9a5cf6}
 .inv-cell.owned.r-legendary{border-color:#f0ad3c;box-shadow:0 0 10px rgba(240,173,60,.35)}
+/* ---------- CODEX (T179) — the bestiary tab ---------- */
+/* wider canvases (realms/events) need their own intrinsic size, not the 44px square */
+.codex-cell canvas{width:auto;height:auto;max-width:100%}
+.codex-cell.owned{border-color:#3a4450}
+/* undiscovered entries: the real sprite, darkened to a SILHOUETTE (shape teased,
+   detail hidden) — the classic bestiary "keep playing to reveal it" look */
+.codex-cell.locked{cursor:default;opacity:.92}
+.codex-cell.locked canvas{filter:brightness(.16) saturate(.45) contrast(1.05)}
+.codex-cell.locked .inv-name{color:var(--line)}
 
 /* ---------- HEROES ---------- */
 #heroes{align-items:center;padding:20px 10px}

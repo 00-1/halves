@@ -5460,3 +5460,30 @@ feel (height, glint, the GOLD_FULL dial) are live-verify items for the owner. Th
 verified: `hoard-wiring.test` 32→38 (asserts the outward burst carries {x,y,count} with NO tx/ty, and a
 behavioural ?dev gate: `?dev&gold` sets, bare `?gold` stays 0). fx-wiring's 84 still green. **Full suite 49/49.**
 [A]-only (main.js + the gate). Next: T179 (Codex/bestiary) → T180 (?dev reveal-all).
+
+---
+### [A] T179 — the CODEX (bestiary tab on Inventory)
+what: added a 5th Inventory tab **"Codex"** — a discovered-as-you-play bestiary that reuses B's existing art
+generators (no new art):
+- **Beasts** (region × type = 30): each drawn from the first non-boss tier of that type in the region via
+  `Monsters.draw`, so the sprite matches what the player meets there.
+- **Bosses** (10): the region boss at every 12th tier (Monsters draws the crown); named from `byTier(n).name`.
+- **Realms** (10): the region backdrops via `Scenery.buildGrid`, painted **full-lit** (a custom `paintCodexGrid`
+  with no battle scrim — the gallery shows them vivid, unlike the dimmed Arena backdrop).
+- **Events** (14): the daily-event roster emblems via `EventArt.draw(artSeed)`.
+ENCOUNTER-unlocked: an entry is discovered once the player has REACHED it (`Enemies.currentTier(col).n` ≥ the
+entry's tier; realm/region by its first tier; boss by its boss tier) — events once any reward tier is owned.
+Undiscovered entries render the REAL sprite **CSS-silhouetted** (`.codex-cell.locked canvas{filter:brightness(.16)
+saturate(.45)}`) and named **"???"** — the classic "keep playing to reveal it" tease (shape hinted, detail hidden).
+Mirrors the existing inventory tab pattern (a top progress-bar block per section + tile grids); lazy-rendered
+like Loot (the 64 canvases only build when the Codex tab opens); the generic tab handler + lazy router needed
+only a 2-line route addition. Codex cells safely no-op in the existing inv-cell tap handler (no `data-id`).
+how I verified: **NEW `test/codex.test.js` (19 checks, gated)** — static wiring (tab registered, router, the
+Monsters/Scenery/EventArt dispatch, the silhouette CSS) + a booted DOM-shim run with the generators stubbed to
+record draws: asserts the four sections + exact cardinality (30/10/10/14), encounter-GATING (seed beaten tiers
+1–11 → currentTier 12: region-0 realm/beasts + the tier-12 boss DISCOVERED, region-1 realm/boss still
+silhouettes), locked entries named "???", the one owned event discovered, and that every cell drew via the
+right generator. `inventory.test` still green (24). **Full suite 50/50.** [A]-only (main.js, index.html via the
+existing #invTabs/#invList, styles.css, the new gate + pages.yml). Generators (B-owned) untouched — read-only.
+notes: next [A] is **T180** (`?dev` reveal-all — heroes/inventory/Codex view-only override for art review),
+which joins the `?dev`-gated gold-setter from the T173 follow-up in one dev panel.
