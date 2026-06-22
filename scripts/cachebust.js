@@ -14,10 +14,12 @@
  * unaffected. Cooperates with the T54 version-check: the refreshed page references
  * the new `?v=<sha>` URLs, so the manual-refresh reload lands on fresh assets.
  *
- * External refs (the Google Fonts <link>, anything with a scheme or an existing
- * query) are left untouched. Re-running is idempotent (already-versioned refs are
- * skipped). Run as CLI it also VERIFIES the result — no bare local asset ref may
- * survive — so the deploy step is itself a gate on the built file.
+ * External refs (anything with a scheme or an existing query) are left untouched.
+ * T169 — also versions SELF-HOSTED font url()s inside CSS (`url(fonts/x.woff2)` →
+ * `url(fonts/x.woff2?v=…)`), so the self-hosted fonts cache-bust like every other
+ * asset (run this on styles.css too at deploy). Re-running is idempotent (already-
+ * versioned refs are skipped). Run as CLI it also VERIFIES the result — no bare
+ * local asset ref may survive — so the deploy step is itself a gate on the file.
  *
  * Usage: node scripts/cachebust.js <version> [file=index.html]
  */
@@ -28,22 +30,29 @@ const fs = require("fs");
 // no "?" (skips already-versioned) and no ":" (skips http(s):// and data:),
 // so only bare local asset refs are rewritten.
 const ASSET_RE = /(\s(?:href|src)=")([^"?:]+\.(?:css|js))(")/g;
+// T169 — a CSS `url(local-font.woff2)` ref: no quote/paren, no "?" (skips
+// already-versioned), no ":" (skips data:/http(s):) → only bare local font refs.
+const FONT_RE = /(url\()([^"'?:)]+\.(?:woff2|woff|ttf))(\))/g;
 
-// Pure: append ?v=<version> to every bare local css/js ref in `html`.
-function bust(html, version){
-  return html.replace(ASSET_RE, (m, pre, file, post) => pre + file + "?v=" + version + post);
+// Pure: append ?v=<version> to every bare local css/js/font ref in `text`.
+function bust(text, version){
+  return text
+    .replace(ASSET_RE, (m, pre, file, post) => pre + file + "?v=" + version + post)
+    .replace(FONT_RE,  (m, pre, file, post) => pre + file + "?v=" + version + post);
 }
 
-// The set of bare local css/js refs still present (used to verify completeness).
-function bareRefs(html){
+// The set of bare local css/js/font refs still present (verifies completeness).
+function bareRefs(text){
   const out = [];
   let m;
-  const re = new RegExp(ASSET_RE.source, "g");
-  while((m = re.exec(html))) out.push(m[2]);
+  const reA = new RegExp(ASSET_RE.source, "g");
+  while((m = reA.exec(text))) out.push(m[2]);
+  const reF = new RegExp(FONT_RE.source, "g");
+  while((m = reF.exec(text))) out.push(m[2]);
   return out;
 }
 
-module.exports = { bust, bareRefs, ASSET_RE };
+module.exports = { bust, bareRefs, ASSET_RE, FONT_RE };
 
 if(require.main === module){
   const version = process.argv[2];

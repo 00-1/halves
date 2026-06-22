@@ -98,6 +98,8 @@ jobs:
         run: node test/synth-wiring.test.js
       - name: Asset cache-busting test (gate)
         run: node test/cache-bust.test.js
+      - name: Self-hosted fonts (T169) test (gate)
+        run: node test/fonts.test.js
       - name: FXGL engine test (gate)
         run: node test/fxgl.test.js
       - name: FX wiring test (gate)
@@ -119,8 +121,10 @@ jobs:
           printf '{"sha":"%s","shortSha":"%s","time":"%s"}\n' \
             "$GITHUB_SHA" "${GITHUB_SHA:0:7}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > build.json
           cat build.json
-      - name: Cache-bust asset URLs (append ?v=<shortSha> to the deployed index.html)
-        run: node scripts/cachebust.js "${GITHUB_SHA:0:7}"
+      - name: Cache-bust asset URLs (append ?v=<shortSha> to index.html + the self-hosted font url()s in styles.css)
+        run: |
+          node scripts/cachebust.js "${GITHUB_SHA:0:7}" index.html
+          node scripts/cachebust.js "${GITHUB_SHA:0:7}" styles.css
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:

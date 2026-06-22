@@ -5193,3 +5193,36 @@ how I verified: **`home-layout.test` 26→31** with a new **T170 block**:
 notes: **owner/babysitter browser-verify** — the topic tree's 4-up rows (e.g. Add&Subtract → II → Balance →
   Mean) should now fit the column with no left/right clipping, glyph + count legible. Next per `NEXT.md`:
   **`T169`** (self-host the web fonts) → content `T59`–`T61`.
+
+---
+
+## Builder A — T169: self-host the web fonts (drop the Google Fonts CDN)
+commit: (this commit) — [A], owner-requested ("let's bake the fonts in"). The app's ONLY third-party request
+was the Google Fonts CDN (`fonts.googleapis.com`/`fonts.gstatic.com`) — a child's device IP went to Google.
+Now self-hosted → **zero third-party requests** (kids-privacy / Data-Safety "no data shared" is airtight) +
+fonts work fully offline (no FOUT waiting on a CDN).
+changed ([A]-only):
+  - **Downloaded the latin-subset woff2** for both families. Both are **variable fonts**, so Google's css2 API
+    serves ONE woff2 per family covering every weight — `fonts/space-grotesk.woff2` (22 KB) and
+    `fonts/jetbrains-mono.woff2` (31 KB). (latin only — a UK maths app needs no cyrillic/greek subsets.)
+  - **`index.html`** — removed the 3 Google `<link>`s (2 preconnect + the css2 stylesheet); a comment notes
+    the fonts are self-hosted via styles.css.
+  - **`styles.css`** — two `@font-face` rules (one per family) with the variable-font weight RANGE
+    (`Space Grotesk 300 700`, `JetBrains Mono 100 800`) covering every weight in use (SG 400/500/700,
+    JBM 400/700/800), `format('woff2')`, `font-display:swap`. The `--display`/`--mono` vars are unchanged.
+  - **`scripts/cachebust.js`** — added a `FONT_RE` so it also versions CSS `url(local.woff2)` refs
+    (`?v=<sha>`), and `bareRefs` now reports bare font refs too. `pages.yml` runs cachebust on **styles.css**
+    as well as index.html, so the self-hosted fonts cache-bust exactly like every other asset (consistent with
+    T158's immutable-`?v=`-URL model). **No `sw.js` change needed** — same-origin woff2 already fall into the
+    SW's cache-first branch (T158), so they're SW-cached + offline-capable.
+how I verified: new **`fonts.test.js` (23 checks, gated)** — NO fonts.g* refs survive in index.html OR
+  styles.css (the privacy win); both families self-host a local `fonts/*.woff2` with `format('woff2')` +
+  `font-display:swap` + a weight range covering 400–700 / 400–800; the **two woff2 files exist + have the
+  `wOF2` magic** + are substantial (not error pages); cachebust appends `?v=` to the font url()s and leaves
+  **no bare font ref** (idempotent). `cache-bust.test` updated: the stale "Google Fonts link untouched"
+  assertions → a synthetic external-ref-skip test + a "self-hosted font url()s ARE versioned" check.
+  **Full suite green**; `node -c` clean. [A]-only (`index.html`, `styles.css`, `scripts/cachebust.js`,
+  `.github/workflows/pages.yml`, `fonts/*.woff2`, `test/fonts.test.js`, `test/cache-bust.test.js`).
+notes: **owner/babysitter verify** — on load there should be **no network request to fonts.g\***; the type
+  renders identically (same families/weights, now from local woff2) + works offline. Next per `NEXT.md`:
+  content `T59`–`T61` (the Wave-2 batches the T58 blueprint maps).

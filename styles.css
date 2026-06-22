@@ -1,3 +1,23 @@
+/* T169 — SELF-HOSTED fonts (was Google Fonts CDN). Both families ship as a single
+   VARIABLE-font woff2 each (latin subset), so one @font-face per family covers
+   every weight we use (Space Grotesk 400/500/700, JetBrains Mono 400/700/800) via
+   the `wght` axis. `font-display:swap` keeps text visible while the (local, fast)
+   font loads. The woff2 are same-origin → cached by the service worker (offline);
+   the deploy-time cachebust appends `?v=<sha>` to these url()s too. */
+@font-face{
+  font-family:'Space Grotesk';
+  font-style:normal;
+  font-weight:300 700;
+  font-display:swap;
+  src:url(fonts/space-grotesk.woff2) format('woff2');
+}
+@font-face{
+  font-family:'JetBrains Mono';
+  font-style:normal;
+  font-weight:100 800;
+  font-display:swap;
+  src:url(fonts/jetbrains-mono.woff2) format('woff2');
+}
 :root{
   --bg:#0E1116;
   --surface:#171B22;

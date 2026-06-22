@@ -33,10 +33,16 @@ const versioned = built.match(/(?:href|src)="[^"]+\.(?:css|js)\?v=([^"]+)"/g) ||
 ok(versioned.length === EXPECTED.length && versioned.every(s => s.indexOf("?v=" + SHA) >= 0),
    "all " + versioned.length + " versioned refs carry the one current sha (no mismatch)");
 
-// ---- external + non-asset refs are left alone -------------------------------
-ok(/href="https:\/\/fonts\.googleapis\.com\/css2\?[^"]*"/.test(built) && !/fonts\.googleapis\.com[^"]*&v=|css2\?[^"]*\?v=/.test(built),
-   "the external Google Fonts <link> is untouched (scheme + existing query skipped)");
-ok(/<link rel="preconnect"[^>]*>/.test(built), "preconnect links (no css/js path) are untouched");
+// ---- external + non-asset refs are left alone (bust is pure → test synthetically)
+const sample = '<link rel="stylesheet" href="https://cdn.example/x.css"> <script src="data:text/javascript,1"></script> <a href="page.html">';
+const sb = bust(sample, SHA);
+ok(/href="https:\/\/cdn\.example\/x\.css">/.test(sb), "an external (scheme'd) .css ref is left untouched");
+ok(/src="data:text\/javascript,1"/.test(sb), "a data: URI is left untouched");
+ok(/href="page\.html">/.test(sb), "a non-asset (.html) ref is left untouched");
+// ---- T169: the SELF-HOSTED font url()s in styles.css ARE versioned ----------
+const cssBuilt = bust(read("styles.css"), SHA);
+ok(/url\(fonts\/[^)]+\.woff2\?v=/.test(cssBuilt), "T169: cachebust versions the self-hosted font url()s in styles.css");
+ok(!bareRefs(cssBuilt).some(r => /\.woff2$/.test(r)), "T169: no bare font ref survives in the built styles.css");
 
 // ---- idempotent: re-running never double-appends ----------------------------
 ok(bust(built, SHA) === built, "re-running the bust is idempotent (already-versioned refs skipped)");
