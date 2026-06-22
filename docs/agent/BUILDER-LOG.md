@@ -5124,3 +5124,38 @@ how I verified: **all 38 suites green** including the new P2 gate; `node -c mode
   `guides.js` `explain()` branches for the new modes are a sensible follow-up but not gating).
 notes: T162 P3 ships next — `cubes`, `money`, `digitsum`, doubles/halves range check. Then content T59–T61
   (held earlier when T162 jumped the queue).
+
+---
+
+## Builder A — T162 P3: cubes, money, digitsum + doubles/halves range check (T162 COMPLETE)
+commit: (this commit) — [A], content (Phase 7 / T162 Tier P3 per `docs/agent/T162-calibration.md`). The
+THIRD and final tiered push. Closes the full owner-blessed 12-mode set (4 P1 + 4 P2 + 3 P3 + the range check).
+changed:
+  - **`modes.js`** ([A]-owned):
+    - **`cubes`** (Core, `requires:"mastery:squares"`, masterSecs 4, `expr:false`) — mirrors `squares`:
+      `n³` for n ∈ 2..10 (a deliberately small 9-item set per the calibration's "small fixed set + mixed
+      review"; answers ≤ 1000).
+    - **`money`** (Core, `requires:"mastery:bonds2"`, masterSecs 9) — 21 items, `n × £x.xx` (11 totals) or
+      `change from £F of £O` (10 change). Answers in £ to 2dp (numpad accepts decimals, cf. `fractions`).
+      Chained off `bonds2` (decimal bonds-to-1 is the £-totals/change foundation; the spec's "after addsub2"
+      is met via the spine route addsub→bonds→bonds2, since addsub2's single child is already `balance`).
+    - **`digitsum`** (Core, `requires:"mastery:lcmhcf"`, masterSecs 6, `expr:false`) — 21 items, `digit sum
+      of N` (12) or `remainder N ÷ 9` (9, = digitSum mod 9). The owner-blessed numpad-clean way to drill the
+      ÷3/÷9 divisibility gap (mock Q11) without a new engine answer type.
+    - **Doubles/Halves range check** — extended `DOUBLES_SRC` with `39` (→78) and `HALVES_SRC` with `78`
+      (→39), so the sets reach the 2-digit ×2±1 atom (mock Q5: 4,9,19,39 is ×2+1). No new mode.
+    - **Glyph tokens** (distinct from the 23 existing): `cubes:["x","*s3"]`, `money:["a","*×","k"]`,
+      `digitsum:["*+","9"]`.
+  - **`docs/research-11plus.md`** — appended the P3 modes' calibrated ranges + the range-check note.
+  - **`test/hero-icons.test.js`** — catalogue counter `1238 → 1365` (cubes +25, money +49, digitsum +49,
+    + the 2 new beat/spark each for the halves/doubles range-check questions = +4).
+  - **NEW `test/t162-p3-modes.test.js` (50 checks, gated)** — per-mode logic gate: wiring; well-formed
+    items (cubes is allowed its small set); **the math of every prompt matches the formula** (cubes `n³`;
+    money `n·price` / `£F−£O` with ≤2dp + never-negative change; digitsum sum-of-digits AND `N mod 9 ==
+    digitSum(N) mod 9` — the divisibility identity proven, not just asserted); the **range check** confirms
+    double 39 = 78 and half 78 = 39; the single-child tree model holds.
+how I verified: **all 39 suites green** including the new P3 gate; `node -c modes.js` clean. [A]-only files.
+notes: **T162 is DONE** — 26 total modes (15 original + 11 new mock-driven). Next per `NEXT.md`: content
+  `T59`–`T61` (the Wave-2 batches the T58 blueprint maps), then `T72` (held for owner creds). A sensible
+  cross-cutting follow-up: `guides.js` `Guides.explain()` branches for all 11 new T162 modes (method-only
+  hints) — flagged in each tier's handoff; not gating, but it'd round out the new topics.

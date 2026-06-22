@@ -45,9 +45,12 @@
   // 12), money & percentages (50, 100, 200, 1000, 500, 250), angles
   // (360, 180), a gross (144), bytes (16, 64), plus odd values for the
   // ".5" practice (9, 15, 45, 7, 25, 5, 3).
-  const HALVES_SRC   = [30,60,90,24,12,50,100,200,20,40,80,1000,500,250,360,180,144,16,64,9,15,45,7,25,5,3];
+  // 78 added (T162 P3 range check) — half=39 covers the BWS Mock 7 Q5 atom
+  // (the 4,9,19,39 sequence is ×2+1; needs fluency at odd 2-digit halves/doubles).
+  const HALVES_SRC   = [30,60,90,24,12,50,100,200,20,40,80,1000,500,250,360,180,144,16,64,9,15,45,7,25,5,3,78];
   // Numbers whose doubles come up constantly (recipes, prices, money chains).
-  const DOUBLES_SRC  = [6,7,8,9,12,15,16,18,25,35,45,50,60,75,120,125,250,11,13,14,17];
+  // 39 added (T162 P3 range check) — double=78 covers the BWS Mock 7 Q5 atom.
+  const DOUBLES_SRC  = [6,7,8,9,12,15,16,18,25,35,45,50,60,75,120,125,250,11,13,14,17,39];
   // The multiplication facts actually worth memorising: the tricky 6/7/8/9
   // core, plus a few 12s (dozens, feet & inches). Trivial x1/x2/x5/x10 rows
   // are left out — doubling already has its own mode.
@@ -322,6 +325,67 @@
     ["r", [31,44,28,52,39], 37, 28]
   ];
 
+  // ---- T162 Tier P3 — extensions to existing modes (cheap, high-leverage) ----
+  // 9. `cubes` — n³ for small n. Calibration: n ∈ 2..6 plus 10 (answers ≤216,
+  //    or 1000). Extended to n ∈ 2..10 (max 1000) so a fluent player has more
+  //    items per round; the spec called for a "small fixed set + mixed review".
+  const CUBES_P3_SRC = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+  // 10. `money` — n items at £x.xx and change from £10/£20. Tagged entries:
+  //       ["m", n, price, A]  → "n × £price"            (A = n·price, 2dp)
+  //       ["c", from, of,  A] → "change from £F of £O"  (A = F − O,    2dp)
+  //     Answers stored as numeric literals (numpad allows decimals, cf. fractions).
+  const MONEY_P3_SRC = [
+    ["m", 4, 1.25, 5.00],
+    ["m", 6, 1.35, 8.10],
+    ["m", 3, 2.40, 7.20],
+    ["m", 5, 0.80, 4.00],
+    ["m", 7, 1.50, 10.50],
+    ["m", 4, 2.25, 9.00],
+    ["m", 5, 1.20, 6.00],
+    ["m", 3, 3.30, 9.90],
+    ["m", 8, 0.95, 7.60],
+    ["m", 6, 0.65, 3.90],
+    ["m", 4, 1.75, 7.00],
+    ["c", 10, 8.10, 1.90],
+    ["c", 10, 6.55, 3.45],
+    ["c", 20, 13.40, 6.60],
+    ["c", 10, 4.25, 5.75],
+    ["c", 20, 7.85, 12.15],
+    ["c", 10, 2.99, 7.01],
+    ["c", 10, 9.45, 0.55],
+    ["c", 20, 15.20, 4.80],
+    ["c", 20, 11.10, 8.90],
+    ["c", 10, 7.35, 2.65]
+  ];
+  // 11. `digitsum` — sum the digits of N (the ÷3/÷9 divisibility mechanic), and
+  //     the connected "remainder N ÷ 9" (= digitSum mod 9). Tagged entries:
+  //       ["s", N, A]  → "digit sum of N"      (A = sum of N's digits)
+  //       ["r", N, A]  → "remainder N ÷ 9"     (A = N mod 9, integer 0..8)
+  //     N is 3–4 digits; answer is a small integer (numpad-clean).
+  const DIGITSUM_P3_SRC = [
+    ["s", 7263, 18],
+    ["s", 7267, 22],
+    ["s", 4581, 18],
+    ["s", 936, 18],
+    ["s", 5012, 8],
+    ["s", 384, 15],
+    ["s", 1729, 19],
+    ["s", 4827, 21],
+    ["s", 6519, 21],
+    ["s", 3082, 13],
+    ["s", 9999, 36],
+    ["s", 5050, 10],
+    ["r", 7263, 0],
+    ["r", 7267, 4],
+    ["r", 845, 8],
+    ["r", 1234, 1],
+    ["r", 567, 0],
+    ["r", 999, 0],
+    ["r", 4321, 1],
+    ["r", 2046, 3],
+    ["r", 8642, 2]
+  ];
+
   // The proper minus sign (matches the "×" used by Times), for ± prompts.
   const MINUS = "−";
   // Map a fixed Add/Subtract entry [a, b, sub] to a { p, a } question.
@@ -372,6 +436,19 @@
   function meanItem(e){
     if(e[0] === "f") return { p: "mean of " + e[1].join(","), a: e[2] };
     return { p: "mean of " + e[1].join(",") + ",? is " + e[2], a: e[3] };
+  }
+  // T162 P3 item builders.
+  // Money: "n × £p" (multiplication) or "change from £F of £O" (subtraction).
+  // toFixed(2) keeps the £-prompt to 2dp; the answer is the literal numeric
+  // value (numpad accepts decimals — same pattern as fractions / percentages2).
+  function moneyItem(e){
+    if(e[0] === "m") return { p: e[1] + " × £" + e[2].toFixed(2), a: e[3] };
+    return { p: "change from £" + e[1] + " of £" + e[2].toFixed(2), a: e[3] };
+  }
+  // Digit sum: "digit sum of N" or "remainder N ÷ 9" (= digitSum mod 9).
+  function digitsumItem(e){
+    if(e[0] === "s") return { p: "digit sum of " + e[1], a: e[2] };
+    return { p: "remainder " + e[1] + " ÷ 9", a: e[2] };
   }
 
   // Listed in importance / unlock order: Halves → Times → Doubles →
@@ -539,6 +616,34 @@
       glyph:'a<span class="slash">÷</span>b',
       eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:scaling", masterSecs:10, group:"Reasoning",
       build(){ return shuffle(RATIOSHARE_P2_SRC).map(ratioShareItem); }
+    },
+    // ---- T162 P3 — extensions to existing modes ----------------------------
+    {
+      // Cubes mirrors squares: squares is the spine leaf with no existing child,
+      // so cubes slots cleanly as its P2 (depth 2): squares → cubes.
+      id:"cubes", name:"Cubes", tag:"Cube it.",
+      glyph:'x<span class="slash">³</span>',
+      eyebrow:'cube of <b>↓</b>', expr:false, requires:"mastery:squares", masterSecs:4, group:"Core",
+      build(){ return shuffle(CUBES_P3_SRC).map(n => ({ p:n+"³", a:n*n*n })); }
+    },
+    {
+      // Money per spec is "after addsub2", but the addsub branch already chains
+      // addsub2 → balance → mean (single-child tree). Chained off bonds2 instead
+      // — the closest sensible leaf: bonds2 covers decimal bonds-to-1 (£0.40 +
+      // £0.60 = £1.00), the foundation for £-totals + change. Calibration's
+      // "+/− fluency required" is met via the spine route addsub→bonds→bonds2.
+      id:"money", name:"Money", tag:"£ totals & change.",
+      glyph:'a<span class="slash">×</span>k',
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:bonds2", masterSecs:9, group:"Core",
+      build(){ return shuffle(MONEY_P3_SRC).map(moneyItem); }
+    },
+    {
+      // Digit sum chains off lcmhcf (the spec's sensible predecessor — both live
+      // in the divisibility / factor family). lcmhcf has no existing child → fits.
+      id:"digitsum", name:"Digit Sum", tag:"Sum the digits · ÷9 mechanic.",
+      glyph:'<span class="slash">+</span>9',
+      eyebrow:'solve <b>↓</b>', expr:false, requires:"mastery:lcmhcf", masterSecs:6, group:"Core",
+      build(){ return shuffle(DIGITSUM_P3_SRC).map(digitsumItem); }
     }
   ];
 
@@ -590,7 +695,11 @@
     lcmhcf:       ["n","*÷","k"],      // n÷k — common-factor / multiple feel
     mean:         ["*+","÷","n"],      // sum-then-divide-by-n — the mean atom
     timegap:      ["n","*−","k"],      // n−k — interval (positive minutes between)
-    ratioshare:   ["a","*÷","b"]       // a÷b — divide an amount by the parts (ratio share)
+    ratioshare:   ["a","*÷","b"],      // a÷b — divide an amount by the parts (ratio share)
+    // T162 P3 — 3 more accented marks (cubes mirrors squares with ³ superscript).
+    cubes:        ["x","*s3"],         // x³ — cube (mirrors squares' x² but ³ ≠ ²)
+    money:        ["a","*×","k"],      // a×k — items × cost (cost is an unknown k)
+    digitsum:     ["*+","9"]           // +9 — sum-of-digits → ÷9 divisibility mechanic
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 

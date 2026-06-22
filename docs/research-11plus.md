@@ -79,6 +79,18 @@ positive distances, times as elapsed minutes, so no minus/colon keys).
   - **Mean (`mean`):** 3–5 values ≤ 60, integer mean (forward half); the
     back half is the **reverse** (missing value given the mean — the inverse
     move `balance` drilled in P1, hence the unlock gate). *masterSecs ≈ 9.*
+- **T162 P3 — extensions to existing modes** *(2026-06-22)*:
+  - **Cubes (`cubes`):** n³ for n ∈ 2..10 (answers ≤ 1000); mirrors `squares`.
+    A deliberately small fixed set. *masterSecs ≈ 4.*
+  - **Money (`money`):** n items at £x.xx (×, 2dp) and change from £10/£20.
+    Answers in £ to 2dp (the numpad accepts decimals, cf. `fractions`). Change
+    is never negative. *masterSecs ≈ 9.*
+  - **Digit sum (`digitsum`):** sum the digits of a 3–4-digit N (the ÷3/÷9
+    mechanic), plus the connected **remainder N ÷ 9** (= digit-sum mod 9). All
+    answers small integers (numpad-clean — the owner-blessed way to drill
+    divisibility without a new engine answer type). *masterSecs ≈ 6.*
+  - **Doubles/Halves range check:** the sets now reach the 2-digit ×2±1 atom
+    (double 39 = 78, half 78 = 39) — the mock Q5 (4,9,19,39 is ×2+1) support.
 
 ## Design principles (pass 2 — apps & pedagogy)
 
