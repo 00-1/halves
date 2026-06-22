@@ -713,7 +713,8 @@
     }
   }
 
-  // The entry/splash brand mark is the fixed Halves "x/2"; paint it once.
+  // The entry/splash mark is the fixed "x/2" Halves-topic glyph (the product is
+  // "Goblin Gold" — see the .brand wordmark; the topic mark stays x/2). Paint once.
   function renderBrand(){
     const el = screens.entry && screens.entry.querySelector(".mark");
     paintGlyph(el, byId("halves"), 10);

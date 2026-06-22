@@ -25,6 +25,20 @@ if(mani){
   ok(icons.length >= 1 && icons.every(i => i.src && i.type), "(a) manifest declares icon(s) with src + type");
   ok(icons.some(i => /\bmaskable\b/.test(i.purpose || "")), "(a) at least one MASKABLE icon (survives Android adaptive-icon crops)");
   ok(icons.every(i => fs.existsSync(path.join(__dirname, "..", i.src))), "(a) every manifest icon file actually exists");
+  // T171 — the PRODUCT is renamed to "Goblin Gold" (the maths TOPIC "Halves" stays).
+  ok(mani.name === "Goblin Gold" && mani.short_name === "Goblin Gold", "(a) T171: the product name + short_name are 'Goblin Gold'");
+}
+// ---- (a2) T171: product rename reaches the title + the in-app entry wordmark --
+{
+  const idx = read("index.html");
+  ok(/<title>[^<]*Goblin Gold[^<]*<\/title>/.test(idx) && !/<title>[^<]*Halves[^<]*<\/title>/.test(idx), "(a2) T171: <title> reads 'Goblin Gold', not 'Halves'");
+  ok(/<div class="brand">Goblin Gold<\/div>/.test(idx), "(a2) T171: the entry splash shows the 'Goblin Gold' product wordmark");
+  ok(/content="[^"]*Goblin Gold/.test(idx), "(a2) T171: the meta description leads with 'Goblin Gold'");
+  // the maths TOPIC "Halves" (the x/2 drill) is UNCHANGED — only the product renamed.
+  const sandbox = {}; global.window = sandbox; new Function(read("modes.js"))(); delete global.window;
+  const halves = sandbox.MODES.find(m => m.id === "halves");
+  ok(halves && halves.name === "Halves", "(a2) T171: the 'Halves' maths TOPIC is preserved (mode id=halves name='Halves')");
+  ok(/<div class="mark">x<span class="slash">\/<\/span>2<\/div>/.test(idx), "(a2) T171: the x/2 topic mark stays on the splash (the drill identity is kept)");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------

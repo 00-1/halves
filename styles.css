@@ -102,7 +102,11 @@ body{
 .mark canvas{height:clamp(54px,18vw,92px);width:auto;image-rendering:pixelated;display:block}
 .g-glyph canvas{height:22px;width:auto;image-rendering:pixelated;vertical-align:-4px;display:inline-block}
 .t-glyph canvas{height:24px;width:auto;image-rendering:pixelated;display:block}
-.tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:16px;font-weight:500}
+/* T171 — the product wordmark "Goblin Gold" under the x/2 topic mark (the mark
+   stays the Halves drill icon; the product is Goblin Gold). Gold to match the name. */
+.brand{font-family:var(--display);font-weight:700;font-size:clamp(22px,7vw,32px);letter-spacing:.01em;
+  color:var(--amber);margin-top:14px;line-height:1}
+.tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px;font-weight:500}
 /* T81/T91 — COMPACT home-screen event banner: a short, bounded strip so it stays
    prominent but never dominates the one-screen #start layout. Small emblem ·
    tag+name+countdown · an inline Play CTA. The full blurb lives on the play screen. */

@@ -5226,3 +5226,27 @@ how I verified: new **`fonts.test.js` (23 checks, gated)** — NO fonts.g* refs 
 notes: **owner/babysitter verify** — on load there should be **no network request to fonts.g\***; the type
   renders identically (same families/weights, now from local woff2) + works offline. Next per `NEXT.md`:
   content `T59`–`T61` (the Wave-2 batches the T58 blueprint maps).
+
+---
+
+## Builder A — T171: rename the PRODUCT to "Goblin Gold" (keep the "Halves" topic)
+commit: (this commit) — [A], owner-chosen brand (the in-game currency — intentional cohesion). Renames the
+PRODUCT/brand only; the maths TOPIC "Halves" (the x/2 drill) is untouched.
+changed ([A]-only):
+  - **`manifest.webmanifest`** — `name` + `short_name` → **"Goblin Gold"**; `description` rewritten
+    (Goblin-Gold-led, covers the grown topic set + the gold/loot/Arena hook).
+  - **`index.html`** — `<title>` → "Goblin Gold — mental maths"; meta description updated; the entry splash
+    gains a **`.brand` "Goblin Gold" product wordmark** UNDER the existing x/2 mark (the x/2 stays as the
+    Halves-topic icon — the drill identity is kept; the product reads Goblin Gold).
+  - **`styles.css`** — `.brand` wordmark style (display font, gold/`--amber`, sits between the mark + tag).
+  - **`icon.svg`** — `aria-label` → "Goblin Gold".
+  - **`main.js`** — the `renderBrand` comment clarified (the x/2 mark is the TOPIC glyph; the product is
+    Goblin Gold). No behaviour change.
+how I verified: **`pwa.test` (27→33)** with a T171 block — manifest `name`/`short_name` === "Goblin Gold";
+  `<title>` reads "Goblin Gold" not "Halves"; the entry shows the `.brand` "Goblin Gold" wordmark; the meta
+  description leads with Goblin Gold; AND the **maths TOPIC is preserved** (mode `id=halves` still
+  `name:"Halves"`, and the x/2 mark stays on the splash). `node -c` clean; **full suite green**. [A]-only
+  (`manifest.webmanifest`, `index.html`, `styles.css`, `icon.svg`, `main.js`, `test/pwa.test.js`).
+notes: the Play-STORE listing subtitle "Goblin Gold: The Void Throne" is owner-locked but lives in the T168
+  listing fields (with you + the babysitter), not the manifest short_name. Next per `NEXT.md`: content
+  `T59`–`T61`, then `T173` (gold-hoard wiring, once B's `T172` engine lands).

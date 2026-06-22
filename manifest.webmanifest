@@ -1,7 +1,7 @@
 {
-  "name": "Halves — mental math drills",
-  "short_name": "Halves",
-  "description": "Fast mental-math drills: halves, doubles, times tables, squares and fraction-to-decimal conversions.",
+  "name": "Goblin Gold",
+  "short_name": "Goblin Gold",
+  "description": "Goblin Gold — fast mental-maths drills: halves, doubles, times tables, squares, fractions, percentages and more. Earn gold, collect loot, climb the Arena.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
