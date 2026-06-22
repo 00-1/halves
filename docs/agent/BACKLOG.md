@@ -2936,6 +2936,43 @@ build.**
   + reduced-motion); **B-owned doc only** (no engine change yet); `node -c` clean if any code/test touched.
   **The Babysitter surfaces the recommended technique to the owner for a thumbs-up before T172 builds it.**
 
+### T185 — [B] **BUG (live):** the gold hoard pile is INVISIBLE (no mound even at hoard level 1.0 / 1T gold) · status: OPEN · 🔴 DO-FIRST
+**Owner (2026-06-22, screenshot): 1.00T gold, build `d47685d`, but NO pile on the home screen.** The data is
+CORRECT — `homeFxState` feeds `hoard: hoardLevel(loadGold())` (=1.0 at 1T, log curve T182), and `deriveHomeScene`
+sets `scene.hoard = {level:1.0,…}` (confirmed in `fxgl.js`). So the engine GETS a full hoard but draws **no
+visible mound.** Investigate the RENDER:
+- **Hypothesis A (most likely): OCCLUSION.** The mound draws at the **bottom** of the backdrop (`HOARD_MAX_H =
+  0.34` of height, anchored low), but the home backdrop is `z-index:-1` **behind the opaque bottom UI** (the
+  current-topic card + Start/Practice/Guide buttons + the Best/Items/Heroes/Arena/Setup nav row). A mound in the
+  bottom ~34% is entirely **hidden behind those opaque elements**. → The pile needs to render where the backdrop
+  is actually VISIBLE (the upper/mid area is only semi-covered by the topic tree), or the placement rethought.
+  **This likely needs an owner call on WHERE the pile should sit** (the owner's vision was "piles up in the
+  background, bottom" — but the bottom is opaque UI). Babysitter will surface placement options.
+- **Hypothesis B: backend/render gap.** Confirm the hoard layer is actually drawn on the owner's device's
+  **backend** (WebGPU/WebGL2 vs the Canvas2D-still / CPU fallback) — the T172 hoard render may only exist in one
+  path. Browser-verify the mound + surface coins draw at level 1.0.
+- **DoD:** the gold pile is **visibly rendered** on the home screen at a meaningful gold level (not occluded, not
+  backend-gated); browser-verified (the harness; or via the dev gold-setter → home); **B-owned (`fxgl.js` +
+  tests)** for the render — if the fix needs the pile moved out from behind the UI, that placement/layout is an
+  **[A]** companion (home layout) I'll split out. Pairs with the owner's placement decision.
+
+### T186 — [A] **BUG (live):** all region BOSSES render the same colour (green) — Codex + Arena · status: OPEN · owner-flagged
+**Owner (2026-06-22, Codex screenshot): "the bosses are all green — why?"** **Root cause:** boss tiers are 12,
+24, …, 120 (every `REGION_SIZE`th), and the enemy **type** cycles `TYPES[(n-1)%3]` (Brawn/Arcane/Cunning →
+red/purple/green). Since **`REGION_SIZE = 12` is divisible by 3**, every boss tier lands on the **same** index
+`(12k-1)%3 = 2` = **Cunning = green**. So all 10 region bosses are the same type+colour (only the Void Sovereign
+differs — its type is overridden to match the player's champion). It's both a **visual** monotony AND a
+**gameplay** one (the same hero type always has the advantage vs every boss).
+- **Fix (`enemies.js`):** give the region bosses **VARIED types by region** — e.g. boss type = `TYPES[region % 3]`
+  (or a deliberate per-region assignment) so they cycle red/purple/green across the 10 regions → visually +
+  mechanically distinct (different heroes are advantageous vs different bosses — better design). **Keep the final
+  boss (Void Sovereign) adaptive** override. Make sure `Monsters.draw` then renders them in their varied colours
+  (it keys off type) — both in the **Codex** and the **Arena**.
+- **DoD:** the 10 region bosses span the 3 types/colours (not all green); the Arena matchup variety follows; the
+  team-sim/`FOE_BUDGET` invariants still hold (varying a boss's type changes which hero beats it, not the budget);
+  `node -c` clean; `arena`/`arena3` tests still green (+ a check that boss types aren't all identical); **[A]-only**
+  (`enemies.js`, tests).
+
 ### T184 — [A] **DEV MODE in the config — enabled from the MENU, no URLs** (houses all dev tools) · status: OPEN · 🔴 DO-FIRST (owner is blocked from testing)
 **Owner (2026-06-22): "I see the Codex but no way to turn everything on. I don't want to edit URLs — make sure I
 can do all the dev-mode stuff in the config now. We'll disable dev mode later."** Replace the `?dev` URL gate with
