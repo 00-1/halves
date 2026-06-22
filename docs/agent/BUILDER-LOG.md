@@ -5946,3 +5946,24 @@ Owner's one-more void-line iteration (push on its own for device-confirm). Build
 verified: pwa (a2) updated (PXX/PXY stretch, blankLine dropout, the faster jittery flick + shorter idle; T212
 raster assertion tracks PXX). Full suite **55/55**. [A]-only (main.js, test/pwa.test.js). Owner device-confirms
 the live splash; then back to T213 Phase 2 (already COMPLETE — awaiting re-assessment) → T219.
+
+---
+### [A] T219 batch 1 (Number group) — Roman Numerals + Primes
+First T219 batch (15-topic build, pushed in groups for re-assessment). Establishes the full new-topic pattern:
+generator + renderer + mode def + glyphTokens + guide + tailored explain + tree wiring + an independent-check
+test + CI gate + catalogue counter.
+- **`roman`** — read a Roman numeral as a number (IV→4 … MMXXIV→2024). 21 items spanning the subtractive forms
+  (IV/IX/XL/XC/CD/CM) and 2–4-symbol stacks; answers positive integers. Branches off `rounding` (a free
+  number-sense leaf), group Number. Glyph `X`. The test re-derives every value with an INDEPENDENT Roman parser
+  (not the stored literal).
+- **`primes`** — the next prime above N (recall the small-prime run). 21 items, answers prime ≤ 61. Branches off
+  `digitsum` (divisibility → primality, the factor family), group Number. Glyph `1·n` (a prime's only factors).
+  The test re-derives every answer with an independent primality/next-prime check; the explain is answer-free
+  (avoids naming 3/5/7 so it never leaks when the next prime IS 3/5/7).
+- Both are single-child branches (the branchOf invariant holds — verified). Guides + answer-free explains;
+  no FALLBACK.
+verified: new `test/t219-roman-primes.test.js` (28 checks, wired into pages.yml); hero-icons catalogue
+1666 → 1764 (+2 modes × 49 per-mode/per-question collectibles); glyphs distinct across all 34 modes; full suite
+**56/56**. [A]-only (modes.js, guides.js, tests, pages.yml). Next T219 batches (per group): the rest of PART 1
+(BODMAS, ×-tricks, Roman done? no — Negatives-P1, Algebra/function-machines) + PART 2 (Geometry group, etc.).
+Pausing for the Babysitter to re-assess this batch's pattern + tree placement before scaling.

@@ -403,6 +403,23 @@
     ["r", 8642, 2]
   ];
 
+  // ---- T219 batch 1 (Number group) — two planned-but-unbuilt recall topics ----
+  // `roman` — read a Roman numeral as a number. Each entry [numeral, value]; the
+  // set spans the subtractive forms (IV/IX/XL/XC/CD/CM) and 2–4 symbol stacks up
+  // to MMXXIV. Answers are positive integers (numpad-clean).
+  const ROMAN_SRC = [
+    ["IV",4],["IX",9],["XIV",14],["XIX",19],["XXXVII",37],["XL",40],["XLII",42],
+    ["LIX",59],["LXVII",67],["LXXXVIII",88],["XC",90],["XCIX",99],["CXXIV",124],
+    ["CCXLVI",246],["CD",400],["CDLV",455],["DCCLXXXIX",789],["CM",900],["CMXC",990],
+    ["MCMLXXXIV",1984],["MMXXIV",2024]
+  ];
+  // `primes` — the next prime ABOVE N (recall the small-prime sequence). Each entry
+  // [n, A] with A the least prime > n. Answers are primes ≤ 61 (numpad-clean).
+  const PRIMES_SRC = [
+    [2,3],[4,5],[6,7],[8,11],[10,11],[12,13],[14,17],[16,17],[18,19],[20,23],
+    [22,23],[24,29],[26,29],[30,31],[32,37],[36,37],[40,41],[44,47],[48,53],[50,53],[60,61]
+  ];
+
   // ---- T59 — Wave-2 Batch A: Rounding + Larger ×/÷ (genuinely NEW topics; no
   // overlap with the T162 mock modes). Specs from docs/research-11plus.md.
   // `rounding` — round N to the nearest 10/100/1000. Each entry [N, unit, A] with
@@ -516,6 +533,9 @@
     if(e[0] === "m") return { p: e[1] + " × £" + e[2].toFixed(2), a: e[3] };
     return { p: "change from £" + e[1] + " of £" + e[2].toFixed(2), a: e[3] };
   }
+  // Roman numeral: show the numeral, answer the value. Prime: "next prime > n".
+  function romanItem(e){ return { p: e[0], a: e[1] }; }
+  function primeItem(e){ return { p: "next prime > " + e[0], a: e[1] }; }
   // Cubes & roots: "n³" (cube), or "∛cube" / "√sq" (the inverse roots).
   function cubeRootItem(e){
     if(e[0] === "c") return { p: e[1] + "³", a: e[1] * e[1] * e[1] };
@@ -788,6 +808,23 @@
       glyph:'<span class="slash">+</span>9',
       eyebrow:'solve <b>↓</b>', expr:false, requires:"mastery:lcmhcf", masterSecs:6, group:"Core",
       build(){ return shuffle(DIGITSUM_P3_SRC).map(digitsumItem); }
+    },
+    // ---- T219 batch 1 (Number group) — Roman numerals + Primes -----------------
+    {
+      // Roman → number. Branches off `rounding` (a free number-sense leaf); both are
+      // "read/representation of numbers" topics. Group Number.
+      id:"roman", name:"Roman Numerals", tag:"Read the numeral.",
+      glyph:'<span class="slash">X</span>',
+      eyebrow:'as a number <b>↓</b>', expr:false, requires:"mastery:rounding", masterSecs:6, group:"Number",
+      build(){ return shuffle(ROMAN_SRC).map(romanItem); }
+    },
+    {
+      // Primes — the next prime above N. Branches off `digitsum` (divisibility →
+      // primality, both the factor/divisor family). Group Number.
+      id:"primes", name:"Primes", tag:"Find the next prime.",
+      glyph:'1<span class="slash">·</span>n',
+      eyebrow:'next prime <b>↓</b>', expr:false, requires:"mastery:digitsum", masterSecs:7, group:"Number",
+      build(){ return shuffle(PRIMES_SRC).map(primeItem); }
     }
   ];
 
@@ -852,7 +889,10 @@
     metric:       ["a","*/","k"],      // a/k — a quantity rescaled per unit (conversion)
     sequences:    ["n","*+","k"],      // n+k — continue the linear pattern (common step)
     // T213 2b — nth-term Part-2 (distinct grid from `sequences`' n+k).
-    sequences2:   ["n","*×","k"]       // n×k — evaluate the rule Mn ± A at term k
+    sequences2:   ["n","*×","k"],      // n×k — evaluate the rule Mn ± A at term k
+    // T219 batch 1 — Number recall topics (supported chars; distinct grids).
+    roman:        ["*x"],              // X — the iconic Roman numeral (accented)
+    primes:       ["*1","n"]           // 1·n — a prime's only factors are 1 and itself
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 

@@ -80,6 +80,8 @@ jobs:
         run: node test/guides-coverage.test.js
       - name: Question-integrity test (gate)
         run: node test/question-integrity.test.js
+      - name: T219 batch 1 (roman + primes) test (gate)
+        run: node test/t219-roman-primes.test.js
       - name: Tech-tree view test (gate)
         run: node test/tech-tree.test.js
       - name: Settings + clear-data test (gate)

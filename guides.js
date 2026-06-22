@@ -293,6 +293,26 @@
       ],
       example: "3 × £2.40 → 3 × £2 = £6, 3 × 40p = £1.20 → £7.20."
     },
+    roman: {
+      intro: "Roman numerals build a number from letter-symbols, mostly adding left to right.",
+      tips: [
+        "The symbols: I=1, V=5, X=10, L=50, C=100, D=500, M=1000.",
+        "Add left to right: LXVII = 50 + 10 + 5 + 1 + 1 = 67.",
+        "A SMALLER symbol before a larger one SUBTRACTS: IV = 5 − 1 = 4, XC = 100 − 10 = 90.",
+        "Read it in chunks: MCMLXXXIV = M + CM + LXXX + IV = 1000 + 900 + 80 + 4."
+      ],
+      example: "XLII → XL is 40, II is 2 → 42."
+    },
+    primes: {
+      intro: "A prime has exactly two factors — 1 and itself; the 'next prime' is the first one above the number.",
+      tips: [
+        "Learn the run: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47…",
+        "After 2, every prime is ODD — step up through the odd numbers.",
+        "Skip anything in the 3, 5 or 7 times-tables (those have extra factors).",
+        "2 is the only even prime; 1 is NOT prime."
+      ],
+      example: "Next prime above 24 → 25 (=5²) and 27 (=3×9) are out → 29."
+    },
     digitsum: {
       intro: "Adding a number's digits powers the ÷3 and ÷9 tricks — and the leftover gives the remainder.",
       tips: [
@@ -504,6 +524,11 @@
         const mc = p.match(/^change from £(\d+) of £([\d.]+)$/);
         if(mc) return "Count up from £" + mc[2] + " to £" + mc[1] + ", or subtract — that's the change.";
         break; }
+      case "roman":
+        // METHOD only — the same rule reads every numeral; never the value.
+        return "Add the symbols left to right (I=1, V=5, X=10, L=50, C=100, D=500, M=1000); a smaller one before a larger one subtracts.";
+      case "primes": { const m = p.match(/next prime > (\d+)/); if(!m) break; const n = +m[1];
+        return "Step up from " + n + " and test each: skip the even ones, then the first with no factors apart from 1 and itself is prime."; }
       case "digitsum": {
         const ms = p.match(/^digit sum of (\d+)$/);
         if(ms) return "Add the digits of " + ms[1] + " one at a time.";
