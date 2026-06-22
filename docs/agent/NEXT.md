@@ -10,18 +10,20 @@
 
 ---
 
-**Builder A → `T187` (Codex items CLICKABLE → detail popup, owner-requested).** Your `T184`/`T182`/`T186` +
-the Codex Emblems wiring are all **APPROVED** (live `8cbfa68`). Next:
-- **`T187` — Codex cells open a DETAIL POPUP** like the inventory items. Today tapping a Codex cell does nothing:
-  the `#invList` handler matches `.inv-cell` (incl. `.codex-cell`) then `C.byId(cell.dataset.id)` — but Codex
-  cells have **no `data-id`** (they carry `data-codex`/`data-n`/`data-type`/`data-region`/`data-seed`/`data-emblem`),
-  so it `return`s. Add a Codex branch → reuse the `openModal`/`#unlockModal` chrome to show the **enlarged art** (re-
-  draw via Monsters/Scenery/EventArt/Emblems off the cell's `data-*`) + the **name** + a **category / where-found**
-  line (Beast·Realm·Type / Boss·Realm / Realm / Event / Emblem). Owned → full detail; locked → the `"???"` tease.
-  [A]-only (`main.js`, maybe `index.html`/`styles.css`, tests). *(BACKLOG T187.)*
-- **Then HOLD for the icon direction.** The owner is reviewing whether the app icon should come from the abstract
-  **Emblems** or be derived from the **bestiary/boss/hero** art they prefer — Babysitter will file the chosen
-  direction. Don't pre-build. *(`T168` Play-Store held for ID-verify.)*
+**Builder A → `T189` (FIXED Back-button location across menu screens, owner-reported).** Your `T187` (Codex
+detail popup) is **APPROVED** (live `39459e7`). Next:
+- **`T189` — the Back button MOVES around; pin it to one fixed location.** Every subscreen's `.res-actions` bottom
+  flex row (`styles.css:480`) holds its Back button, but it shifts **horizontally** (2-button rows like Arena put
+  Back on the right; single-button screens on the left) and **vertically** (the row follows variable content on
+  the screens that aren't bottom-pinned). Fix: **(vertical)** make every subscreen a `flex` column with a
+  scrollable `.scroll-body` over a `flex:0 0 auto` action row pinned to the bottom safe-area (extend the
+  `#settings`/`#audio` pattern to Inventory/Heroes/Arena/Practice/Hoard/etc.); **(horizontal)** Back **always in
+  the same corner** — recommend **bottom-LEFT** (primary action e.g. Fight/Save on the right; reorder Arena so Back
+  is first). Placement only, keep the styling. (A fixed top-left chevron is an acceptable alt **if** consistent on
+  EVERY subscreen — flag for the owner.) `back-nav` green. [A]-only (`index.html`, `styles.css`, maybe `main.js`).
+  *(BACKLOG T189.)*
+- **Then HOLD for the icon pick.** Once B's `T188` candidates land, the owner picks the launcher icon → Babysitter
+  files the wire-up. Don't pre-build. *(`T168` Play-Store held for ID-verify.)*
 **Re-read this line fresh before each task + push.**
 
 **Builder B → `T185` 🔴 BUG (the gold hoard pile DOESN'T DRAW on the device).** ✅ **ROOT CAUSE FOUND
@@ -35,6 +37,11 @@ backdrop / below the buttons), reusing the existing `_hoard` + `drawCoin` 2D cod
 redraws it on `setData`. DoD: pile visible **on the WebGL2/WebGPU backends** (not just CPU); scenes byte-identical
 when `scene.hoard` absent; `fxgl`/`fx-wiring`/`hoard-wiring` green. B-owned (`fxgl.js`, `index.html`, tests).
 *(BACKLOG T185.)*
+- **Then `T190` — Lo-Fi Study STILL feels dark + stressful** (owner re-raised). T183 only nudged pitch/reverb and
+  **left the mode MINOR** (`dorian`) — that's the actual "dark." Make it genuinely calm + bright: move to a
+  **major-family mode** (Ionian/Lydian/Mixolydian), a **home-resolving progression** (don't end on 4/5), and
+  **soften the busy lead**; keep it slow/sparse + still distinct from ambient/tropical. Update the golden-synth +
+  distinctness goldens. [B]-only (`synth.js`, goldens). *(BACKLOG T190.)*
 - **Then `T188` — MORE icon candidates, in the BEASTS/HEROES style.** The owner reviewed the live emblems: they're
   fine but **heroes/beasts/bosses are the preferred icon direction.** Add ≈3–5 **character-forward** candidates to
   `emblems.js` (so they show in Codex ▸ Emblems) in the `monsters.js` generative LOOK — a 16×16 role-grid pixel

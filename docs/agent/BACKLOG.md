@@ -2982,7 +2982,7 @@ differs — its type is overridden to match the player's champion). It's both a 
   `node -c` clean; `arena`/`arena3` tests still green (+ a check that boss types aren't all identical); **[A]-only**
   (`enemies.js`, tests).
 
-### T187 — [A] **Codex items are CLICKABLE → a detail popup** (like the other inventory items) · status: OPEN · owner-requested
+### T187 — [A] **Codex items are CLICKABLE → a detail popup** (like the other inventory items) · status: DONE (`39459e7`) · APPROVED
 **Owner (2026-06-22): "the codex items should be clickable like the other inventory items, for a detail popup."**
 Today, tapping a Codex cell does **nothing**: the `#invList` click handler (`main.js` ~:2418) does
 `cell.closest(".inv-cell")` (which *also* matches `.codex-cell`) then `C.byId(cell.dataset.id)` — but Codex cells
@@ -3001,6 +3001,27 @@ popup** mirroring the existing inventory `openModal` pattern (:1012) — the sam
   with the enlarged art + name + category/where-found; locked cells tease; close works (button + tap-outside); no
   regression to the existing inventory-item popups; `node -c` clean; `codex` test green (+ a check the Codex click
   path resolves a cell to its art/label). **[A]-only** (`main.js`, maybe `index.html`/`styles.css`, tests).
+
+### T190 — [B] **Lo-Fi Study STILL feels dark + stressful** — the T183 tweak wasn't enough (go to a BRIGHT/major mode) · status: OPEN · owner-reported
+**Owner (2026-06-22, on live build): "did we do the research and fix for lofi study? still feels dark and a little
+stressful to me."** T183 (`5633895`) *did* land — but it only nudged **pitch + reverb** (root +5, lead octave +1,
+reverb 0.42→0.32) and **left the tonality MINOR**, which is the actual source of "dark." Current `lofi`
+(`synth.js:485`): `mode: "dorian"` (a **minor** mode → dark/melancholic), `progression: [0,5,3,4]` (resolves on
+the **4 / subdominant**, never home → the looping "unease/stress"), `tempo: 78`, `density: 0.24`, `leadOct: 2`.
+- **Fix (research-led, B's call):** make it genuinely **calm + bright** for studying. Prime levers, in order:
+  - **Mode → brighter/major:** move off `dorian` (minor) to a **major-family** mode — **Ionian (major)** for warm
+    + safe, or **Lydian** for dreamy-bright, or **Mixolydian** for warm-major. This is the single biggest "dark"
+    lever. *(Study/focus-music research: consonant, major-leaning, low-information, predictable.)*
+  - **Progression → resolves HOME:** end the loop on the **tonic** (e.g. `I–V–vi–IV` or `I–vi–IV–V` resolving to 0,
+    or a gentle `ii–V–I`) so it doesn't sit on unresolved tension. Avoid ending on degree 4/5.
+  - **Soften the lead:** it's the most "present"/stressful element — drop its busyness (lower `leadK`/`density`) or
+    a warmer/softer patch + gentler octave; keep pads warm and round. Keep the tempo slow (≈72–80), sparse.
+  - Keep it **distinct** from `ambient`/`tropical` (the distinctness gate) — lofi should still read as lo-fi (swing,
+    a touch of grit), just **not minor/tense.**
+- **DoD:** `lofi` reads **bright, warm, calm, unstressful** (major/bright mode, home-resolving progression, softer
+  lead); still passes the **golden-synth** + **distinctness** gates (update the goldens — note the change); the
+  `solve` alias (`CONTEXTS.solve = CONTEXTS.lofi`) inherits it; `node -c` clean; owner device-confirms it's no
+  longer dark/stressful. **[B]-only** (`synth.js`, golden tests). Follow-up to T183; ref `RESEARCH`/study-music note.
 
 ### T188 — [B] **More icon candidates — in the BEASTS/HEROES generative style** (into `emblems.js` / Codex Emblems) · status: OPEN · owner-requested
 **Owner (2026-06-22, after reviewing the live emblems): "now I see the emblems. they could be useful for
@@ -3023,6 +3044,32 @@ vertically-symmetric blob, horns/antennae, bold per-type palette) and/or the **h
   safe-zone respected), legible small + large; `emblems.test` extended + green (new ids covered, draw is
   non-empty/deterministic, BG full-bleed); `node -c` clean; the Codex Emblems count reflects the additions.
   **[B]-only** (`emblems.js`, `test/emblems.test.js`). *(Builds on T181; after the T185 hoard-render bug.)*
+
+### T189 — [A] **Fixed BACK-button location across every menu screen** (it currently moves around) · status: OPEN · owner-reported
+**Owner (2026-06-22): "back button moves around on different menu pages. establish a fixed back button location."**
+Every subscreen has a bottom `.res-actions` flex row (`styles.css:480` — `display:flex; gap:12px; margin-top:26px`)
+holding its **Back** button (`sumBack`, `menuBtn`, `invBack`, `practiceBack`, `arenaBack`, `heroesBack`, `hdBack`,
+`settingsBack`, `audioBack`, `graphicsBack`). It moves for **two** reasons:
+- **Horizontal:** rows with a 2nd button place Back inconsistently — e.g. Arena is `arenaFight` **then** `arenaBack`
+  (Back lands on the **right**), while single-button screens put Back on the **left**.
+- **Vertical:** `.res-actions` follows variable-height content, so on the screens that aren't bottom-pinned it sits
+  at a different height per page (only `#settings`/`#audio` are pinned via `flex:0 0 auto` over a `.scroll-body`).
+- **Fix (`index.html`/`styles.css`, maybe `main.js`):** give Back **one fixed location on every subscreen.**
+  - **Vertical:** pin the action row to the **bottom** (safe-area) on **all** subscreens — make each menu screen the
+    same `flex` column with a scrollable body above a `flex:0 0 auto` action row (extend the `#settings`/`#audio`
+    pattern to Inventory/Heroes/Arena/Practice/Hoard/etc.) so Back is always at the same height.
+  - **Horizontal:** Back **always in the same corner** — recommend **bottom-LEFT** for Back, with any primary
+    action (Fight/Start/Save) on the **right** (cancel-left / confirm-right convention). Reorder Arena's row so
+    Back is first/left and Fight is right; do the same anywhere Back isn't already in that corner.
+  - Keep the existing pixel/ghost-button styling; this is **placement only**, not a restyle. (If A judges a fixed
+    **top-left back chevron** reads better than a bottom row, that's an acceptable alternative — but it must then
+    be consistent on EVERY subscreen; flag it for the owner to eyeball on the next build.)
+- **DoD:** on every menu subscreen the Back button renders in the **same on-screen location** (same corner, same
+  height), regardless of content length or how many other buttons the row has; no Back can be scrolled off /
+  pushed off the bottom (the `.scroll-body` invariant holds); reachable with the keypad/safe-area insets honoured;
+  no regression to the action buttons' wiring; `node -c` clean; `back-nav` test still green (+ a check that the
+  back row is the pinned bottom action row on the converted screens). **[A]-only** (`index.html`, `styles.css`,
+  `main.js` if needed, tests).
 
 ### T184 — [A] **DEV MODE in the config — enabled from the MENU, no URLs** (houses all dev tools) · status: DONE (`d47685d`) · APPROVED
 **Owner (2026-06-22): "I see the Codex but no way to turn everything on. I don't want to edit URLs — make sure I

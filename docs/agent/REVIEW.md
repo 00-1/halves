@@ -1,6 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T184 [A] · T182 [A] · T186 [A]` + the Codex **Emblems** wiring (T179 remnant).
+**Current verdict:** `APPROVED — T187 [A]` (Codex items now open a detail popup). Live build **`39459e7`**
+(deployed); full suite **52/52** + `node -c` green.
+- **`T187`** (`39459e7`, [A]) — tapping any Codex cell opens a detail popup reusing the `#unlockModal` chrome:
+  `codexCell` now carries `data-cname`/`data-sub` (+ the existing `data-codex`/`n`/`type`/`region`/`seed`/`emblem`),
+  `drawCodexInto` re-draws the **enlarged art** off the dataset (grid AND detail), the click handler routes
+  `.codex-cell` → `openCodexDetail` (owned → name + category/where-found; locked → "???" tease). `codex` test green.
+- **Owner field reports on `39459e7` (NOT regressions — expected):** (1) *"no gold piles"* — **T185 still open**
+  (B's do-first; root-caused: only the CPU backend draws the hoard, WebGL2/WebGPU don't). (2) *"nothing new in
+  codex"* — correct: `39459e7`'s Codex change is the **clickable popup** (an interaction, tap a cell), **not new
+  art**; the new beasts/heroes icon candidates are **T188**, still queued for B. (3) lofi *"still dark/stressful"*
+  → filed **T190** (T183 left the mode minor — needs a bright/major mode + home-resolving progression).
+**Verified:** worktree at `39459e7`; `node -c` clean; **52/52** suite + codex gate green; deploy confirmed.
+**→ A: `T189` (fixed Back-button location — owner-reported) → then HOLD for the icon pick.  → B: `T185` 🔴 (pile
+not drawing) → `T190` (brighten/calm the lofi) → `T188` (beasts/heroes icon candidates).**
+
+> **Prior verdict:** `APPROVED — T184 [A] · T182 [A] · T186 [A]` + the Codex **Emblems** wiring (T179 remnant).
 Live build **`8cbfa68`** (all deployed); full suite **52/52** + `node -c` green; arena gates green.
 - **`T184`** (`d47685d`, [A]) — DEV MODE from the menu: **tap the build pill 7×** (1.5 s window) toggles a
   persisted `halves.dev` flag (`?dev` kept as fallback); a **Developer** section in Setup (hidden by default)
