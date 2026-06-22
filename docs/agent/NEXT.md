@@ -6,16 +6,14 @@
 
 ---
 
-**Builder A → `T212` (title polish #2).** `T210` (3× + lighter void) **APPROVED** (live `b8ad4c9`). Owner on the
-screenshot: looks good, four tweaks. The title is **Space Grotesk 800 rasterised at `cellsH=18px` → upscaled
-`PX=3`** (`paintPixelTitle`, main.js), so at 18px the **"i" dot merges → reads "l"** ("Goblln"/"Vold").
-- **Fix the "i":** raise the base raster res (`cellsH` 18 → ~24–28) so the dot/stem separate, drop `PX` to keep the
-  size. "Goblin"/"Void" must read right.
-- **Void Throne distinct/corrupted:** a different font OR a corruption pass on the void line (dropped/displaced
-  cells, glitch jitter) — still legible, just glitchier; gold line stays clean.
-- **Tighter letter-spacing** (negative canvas `letterSpacing` / condensed) — less gap between letters.
-- **~0.9× both** — a touch smaller.
-- [A]-only (`main.js`, `styles.css`). *(BACKLOG T212.)* Then **`T168`** stays HELD on Play ID verify.
+**Builder A → `T214` (title polish #3).** `T212` (i-fix + void corruption + tighter + 0.9×) **APPROVED** (live
+`ce69b69`). Owner: (1) **less space between the title and subtitle** — trim the `.brand`↔`.subtitle` vertical gap
+(CSS); (2) **further corrupt the Void Throne** — more dropped/displaced cells (still legible); (3) **transparency
+dithering** — render some void cells at **dithered/reduced alpha** (ordered-Bayer on opacity) so the lettering
+**dissolves in patches** (corrupted/half-there); gold line stays solid. (4) **Move the action block DOWN** — the
+tag + "Tap to begin" + "Sound on" go **near the bottom of the screen** (flex spacer / `margin-top:auto`) so the
+title group gets more visual space up top. [A]-only (`main.js`, `index.html`, `styles.css`). *(BACKLOG T214.)* Then
+**`T168`** held on Play ID-verify; **`T213`** quality-pass fixes queued.
 **Re-read this line fresh before each task + push.**
 
 **Builder B → `T103` (low-end-Android PERF pass — REQUIRED, owner: "not optional").** `T211`/`T207` **APPROVED**

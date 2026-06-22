@@ -3266,7 +3266,30 @@ can stay. By subtitle I mean THE VOID THRONE."*
   behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
-### T212 — [A] **Title polish #2: fix the "i" (reads as "l"), corrupt/distinct Void Throne font, tighter spacing, 0.9×** · status: OPEN · owner-reported
+### T214 — [A] **Title polish #3: tighter title↔subtitle gap + further-corrupted Void Throne (transparency dithering)** · status: OPEN · owner-reported
+**Owner (2026-06-22, on T212 `ce69b69`): "less spacing between the title and subtitle; the Void Throne further
+corrupted; maybe use transparency dithering."** Refines T212's `paintPixelTitle`/`renderTitles` + the entry CSS.
+- **Tighter title↔subtitle gap:** reduce the **vertical space between "Goblin Gold" (`.brand`) and "The Void
+  Throne" (`.subtitle`)** — trim the inter-line margin (the `.pixtitle`/`.brand`/`.subtitle` box spacing in
+  `styles.css`; a negative/small margin) so the two lines sit closer as one block. Don't crowd the maths tag below.
+- **Further corrupt the Void Throne:** increase the glitch intensity beyond T212's ~7% dropped cells — more
+  dropped/displaced cells and/or stronger displacement, while keeping it **legible** ("The Void Throne" still reads).
+- **Transparency dithering:** add **alpha/transparency dithering** to the void corruption — render some void cells
+  at **reduced/dithered alpha** (ordered-Bayer alpha pattern, like the brickmap dither but on opacity) so the
+  lettering **dissolves/fades** in patches — a corrupted, half-there look. (The disp canvas already has alpha;
+  vary per-cell `globalAlpha`/`fillStyle` rgba by a Bayer threshold + the corruption seed.) Gold line stays solid.
+- **Move the action block DOWN (owner, screenshot):** the **tag ("Fast mental-maths drills") + "Tap to begin"
+  button + "Sound on"** should move **way down, near the bottom of the screen**, so the **title block (Magnar +
+  Goblin Gold + The Void Throne) gets more visual space** up top. Restructure `#entry` (a flex column): the title
+  group sits in the upper/centre area, the **action group pushed to the bottom** (e.g. `margin-top:auto` on an
+  actions wrapper / a flex spacer between the title group and the actions). Keep it tidy at all heights (safe-area).
+- **DoD:** the title block reads tighter (less title↔subtitle gap) **and has more breathing room** (the tag +
+  Tap-to-begin + Sound sit near the BOTTOM, not crowding the title); "The Void Throne" looks **more corrupted with
+  dithered transparency** (dissolving patches) yet still legible; gold "Goblin Gold" unchanged (solid, clean); no
+  overflow at any height; `node -c` clean; entry tests green; **owner device-confirms**. **[A]-only** (`main.js`,
+  `index.html`, `styles.css`).
+
+### T212 — [A] **Title polish #2: fix the "i" (reads as "l"), corrupt/distinct Void Throne font, tighter spacing, 0.9×** · status: DONE (`ce69b69`) · APPROVED · ✅ owner (good; more → T214)
 **Owner (2026-06-22, screenshot on `b8ad4c9`): "this looks pretty good, perhaps improved a little. (1) the dots of
 the 'i' are not separated so they read as 'l' ('Goblln', 'Vold'). (2) I wonder if Void Throne can be a different
 font, or somehow look more corrupted. (3) less spacing between [the letters]. (4) both can shrink a touch, ~0.9×."**

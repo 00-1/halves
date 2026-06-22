@@ -1,6 +1,11 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T210 [A] · T211 [B]` (title 3× + lighter void; hoard overlay now home-only). Live
+**Current verdict:** `APPROVED — T212 [A]` (title polish #2: "i" fix via raster res 18→26 + PX 3→2; void corruption
+~7% dropped/displaced cells; letterSpacing −1.5px; 0.9×). Live build **`ce69b69`**; suite **53/53** + `node -c`
+green. Owner: "good" → more title tweaks → **`T214`** (tighter title↔subtitle gap; further-corrupted void with
+**transparency dithering**). **→ A: → `T214` (title polish #3). B: → `T103` (perf pass, in progress).**
+
+> **Prior verdict:** `APPROVED — T210 [A] · T211 [B]` (title 3× + lighter void; hoard overlay now home-only). Live
 build **`b8ad4c9`**; suite **53/53** + `node -c` green.
 - **`T210`** (`c6e9f68`, [A]) — titles 3× bigger, Void Throne lightened, void glint dropped (gold glint kept).
   Owner: "looks good" → more polish → **`T212`** (the "i" reads as "l"; corrupt/distinct void font; tighter spacing;
