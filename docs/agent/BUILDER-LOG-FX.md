@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T190 — Lo-Fi still dark/stressful: IMPLEMENT the research (major + resolve home) ([B], owner-reported)
+
+Owner rejected the T183 "blind nudge" (it only lifted pitch/reverb, **left the mode minor**).
+Implemented the Babysitter's cited research (`docs/agent/research-study-music.md`) into
+`CONTEXTS.lofi` — the highest-impact levers:
+- **Mode `dorian` → `mixolydian`** (major-family → lower-cortisol "happy/predictable", with
+  the b7 keeping lo-fi soul; dorian/minor *was* the "dark" — the single biggest lever).
+- **Progression `[0,5,3,4]` → `[0,5,3,0]`** (I–vi–IV–**I**) — now **resolves HOME** each loop
+  instead of sitting on the subdominant (dissonance/non-resolution ≡ tension ≡ stress).
+- **Lead `pluck` → new `croon`** — a soft, low-passed murmur (slow attack 0.045, cut 1.4 kHz,
+  no resonance, light sustain) instead of the bright resonant ping (a sharp lead is an
+  "orienting trigger" = stress). It murmurs, doesn't ping.
+- Kept tempo 78, sparse density 0.24, root 55, reverb 0.32, the `padep` Rhodes bed + swing —
+  still recognisably lo-fi, just warm/calm not minor/tense. `solve` (the in-game drill bed)
+  inherits it.
+
+Verify: `node -c` clean; **distinctness holds** (12 mutually distinct, ≥5 modes — dorian
+retired, mixolydian shared with tropical but the scores differ, ≥10 tempos); **12 patches
+all distinct** (croon added); `golden-synth` re-blessed (only `synth_score_lofi`); T175
+stability holds (real-audio gate green). Full Node suite + all 3 browser gates green.
+B-owned (`synth.js` + tests). Owner device-confirms it's no longer dark/stressful.
+
+---
+
 ## T185 — the gold hoard was INVISIBLE on-device: only the CPU backend drew it ([B], 🔴 DO-FIRST)
 
 Owner: 1T gold, no pile on home. Babysitter-verified root cause: T172 rendered the hoard

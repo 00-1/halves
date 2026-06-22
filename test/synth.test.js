@@ -401,9 +401,9 @@ function schedRun(){
   const h = schedRun();
   h.S.setContext("solve"); h.S.start(); h.run(5);
   const ms = h.S.musicState();
-  ok(ms.spec.mode === "dorian" && (ms.step % (16 * ms.spec.harmony.length)) !== 0, "solve context playing mid-phrase");
+  ok(ms.spec.mode === "mixolydian" && (ms.step % (16 * ms.spec.harmony.length)) !== 0, "solve context playing mid-phrase");
   h.S.setContext("arena");
-  ok(h.S.musicState().spec.mode === "dorian", "default setContext does NOT swap mid-phrase (≤1-phrase lag preserved)");
+  ok(h.S.musicState().spec.mode === "mixolydian", "default setContext does NOT swap mid-phrase (≤1-phrase lag preserved)");
   h.run(100);   // cross the phrase boundary
   ok(h.S.musicState().spec.mode === "phrygian", "default setContext adopts at the next phrase boundary (unchanged behaviour)");
   h.restore();
@@ -412,7 +412,7 @@ function schedRun(){
 (function(){
   const h = schedRun();
   h.S.setContext("solve"); h.S.start(); h.run(5);
-  ok(h.S.musicState().spec.mode === "dorian", "solve playing mid-phrase (before the instant switch)");
+  ok(h.S.musicState().spec.mode === "mixolydian", "solve playing mid-phrase (before the instant switch)");
   h.S.setContext("arena", { now: true });
   const st = h.S.musicState();
   ok(st.spec.mode === "phrygian" && st.spec.tempo === 124 && st.step === 0,

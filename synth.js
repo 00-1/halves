@@ -93,6 +93,11 @@
     // bright plucked transient — sharp attack, filter snaps open then closes
     pluck: { engine:"mono",   wave:"triangle", gain:0.28, bus:"music",
              amp:{ a:0.002, d:0.18, s:0.0, r:0.12 }, filter:{ type:"lowpass", cut:2600, env:3.0, q:6 } },
+    // T190 — a soft, low-passed CROON for low-stress study music: gentle attack, rolled-off
+    // highs (~1.4 kHz, no resonance), light sustain → it MURMURS, never pings (a sharp/bright
+    // lead is an "orienting trigger" = stress). Used by `lofi` (the in-game drill bed).
+    croon: { engine:"mono",   wave:"triangle", gain:0.22, bus:"music",
+             amp:{ a:0.045, d:0.22, s:0.4, r:0.28 }, filter:{ type:"lowpass", cut:1400, env:0.6, q:1 } },
     // round sub/bass — low cutoff, follows the root
     bass:  { engine:"mono",   wave:"sawtooth", gain:0.38, bus:"music",
              amp:{ a:0.004, d:0.2, s:0.7, r:0.1 }, filter:{ type:"lowpass", cut:520, env:1.0, q:1 } },
@@ -482,7 +487,7 @@
     menu:      { label: "Neon Lobby",        tempo: 96,  mode: "ionian",     root: 60, progression: [0, 3, 4, 0], density: 0.34, reverb: 0.26, kickK: 4, hatK: 6,  snareK: 2, leadK: 6,  leadOct: 2, patches: { pad: "padglass", bass: "bass", lead: "bell" } },
     arena:     { label: "Phrygian Onslaught", tempo: 124, mode: "phrygian",  root: 45, progression: [0, 5, 6, 4], density: 0.62, reverb: 0.16, kickK: 6, hatK: 12, snareK: 2, leadK: 9,  leadOct: 1, patches: { pad: "pad", bass: "wub",  lead: "lead" } },
     // — 10 new —
-    lofi:      { label: "Lo-Fi Study",       tempo: 78,  mode: "dorian",     root: 55, progression: [0, 5, 3, 4], density: 0.24, reverb: 0.32, kickK: 1, hatK: 3,  snareK: 0, leadK: 4,  leadOct: 2, swing: 0.2,  patches: { pad: "padep", bass: "bass", lead: "pluck" } },
+    lofi:      { label: "Lo-Fi Study",       tempo: 78,  mode: "mixolydian", root: 55, progression: [0, 5, 3, 0], density: 0.24, reverb: 0.32, kickK: 1, hatK: 3,  snareK: 0, leadK: 4,  leadOct: 2, swing: 0.2,  patches: { pad: "padep", bass: "bass", lead: "croon" } },
     ambient:   { label: "Ambient Drift",     tempo: 60,  mode: "lydian",     root: 55, progression: [0, 3, 0, 4], density: 0.14, reverb: 0.55, kickK: 0, hatK: 0, snareK: 0, leadK: 3, leadOct: 1, patches: { pad: "padglass", bass: "bass", lead: "bell" } },
     chiptune:  { label: "Chiptune Rush",     tempo: 150, mode: "pentatonic", root: 60, progression: [0, 4, 5, 3], density: 0.60, reverb: 0.04, kickK: 4, hatK: 8,  snareK: 2, leadK: 11, leadOct: 2, patches: { pad: "padpwm", bass: "bass", lead: "chip" } },
     synthwave: { label: "Synthwave Cruise",  tempo: 112, mode: "aeolian",    root: 50, progression: [0, 5, 3, 4], density: 0.42, reverb: 0.34, kickK: 4, hatK: 8,  snareK: 4, leadK: 7,  leadOct: 2, patches: { pad: "pad", bass: "bass", lead: "lead" } },
