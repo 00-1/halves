@@ -19,8 +19,8 @@ function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } els
 const main = read("main.js"), html = read("index.html"), wf = read(".github/workflows/pages.yml");
 
 // ---- (1) static wiring -------------------------------------------------------
-ok(/const GOLD_FULL = 1e10/.test(main), "(1) GOLD_FULL constant (the owner's one dial, ≈1e10)");
-ok(/function hoardLevel\(gold\)\{[\s\S]{0,140}Math\.pow\(gold \/ GOLD_FULL, 0\.4\)/.test(main), "(1) hoardLevel() is a sub-linear (^0.4) saturating curve over gold");
+ok(/const GOLD_FULL_MAG = 1e12/.test(main), "(1) GOLD_FULL_MAG constant (the owner's one dial, ≈1e12)");
+ok(/function hoardLevel\(gold\)\{[\s\S]{0,160}Math\.log10\(1 \+ gold\) \/ HOARD_DENOM/.test(main), "(1) T182: hoardLevel() is a LOG-of-magnitude curve (visible from the start)");
 // homeFxState carries the hoard level (alongside the fixed-purple T153 contract)
 ok(/hoard:\s*hoardLevel\(loadGold\(\)\)/.test(main.slice(main.indexOf("function homeFxState"), main.indexOf("function arenaFxState"))), "(1) homeFxState feeds hoard: hoardLevel(loadGold()) into the backdrop");
 // the earn burst fires from the gold readout, scaled by the gain
@@ -34,8 +34,12 @@ ok(/function showGold\([\s\S]{0,260}fxEarnBurst\(el, earned\)/.test(main), "(1) 
   ok(!/tx:/.test(body) && !/ty:/.test(body), "(1) the earn burst no longer converges to the hoard (no tx/ty target)"); })();
 // T173 follow-up #2: the dev gold-setter is GATED behind ?dev
 ok(/gold=\(\[0-9\.eE\+\]\+\)/.test(main) && /parseFloat\(m\[1\]\)/.test(main), "(1) a ?gold=<n> dev setter seeds the gold total (parseFloat → 1e9 etc.)");
-(function(){ const body = main.slice(main.indexOf("function devGoldParam"), main.indexOf("function devGoldParam") + 400);
-  ok(/\[\?&\]dev/.test(body) && /return;/.test(body), "(1) the dev gold-setter is GATED behind ?dev (inert without it)"); })();
+ok(/let devMode =[\s\S]{0,160}urlHasDev\(\)[\s\S]{0,80}halves\.dev/.test(main), "(1) T184: devMode = ?dev OR the persisted halves.dev flag");
+(function(){ const body = main.slice(main.indexOf("function devGoldParam"), main.indexOf("function devGoldParam") + 300);
+  ok(/if\(!devMode\) return;/.test(body), "(1) the URL gold-setter is GATED behind dev mode (inert without it)"); })();
+// T182 — the Graphics-menu gold-setter really SETS the counter + is dev-gated
+ok(/function setDevGold\(v\)\{[\s\S]{0,120}if\(!devMode\) return;[\s\S]{0,260}saveGold\(amount\)/.test(main), "(1) T182: setDevGold() is dev-gated and calls the real saveGold()");
+ok(/dg\.classList\.toggle\("hidden", !devMode\)/.test(main), "(1) T182: the gold-setter row is hidden unless dev mode");
 // the Graphics-menu hoard tester
 ok(/id="hoardTest"/.test(html) && /aria-labelledby="hoardTestLabel"/.test(html), "(1) a labelled hoard-tester group lives in the Graphics menu");
 ["0.2","0.5","1","earn"].forEach(v => ok(new RegExp('data-hoard="' + v.replace(".", "\\.") + '"').test(html), "(1) the hoard tester offers the '" + v + "' preview"));
@@ -86,12 +90,16 @@ store["halves.gold"] = String(5e9);
 new Function(read("main.js"))();
 const G = global.window.Gold;
 ok(!!G && typeof G.hoardLevel === "function", "(2) window.Gold exposes hoardLevel + earnBurstSpec");
-ok(G.GOLD_FULL === 1e10, "(2) GOLD_FULL is the documented dial (1e10)");
-ok(G.hoardLevel(0) === 0 && G.hoardLevel(G.GOLD_FULL) === 1 && G.hoardLevel(1e20) === 1, "(2) hoardLevel: 0 at no gold, 1 at GOLD_FULL, clamped past it");
+ok(G.GOLD_FULL_MAG === 1e12, "(2) GOLD_FULL_MAG is the documented dial (1e12)");
+ok(G.hoardLevel(0) === 0 && G.hoardLevel(G.GOLD_FULL_MAG) === 1 && G.hoardLevel(1e20) === 1, "(2) hoardLevel: 0 at no gold, 1 at GOLD_FULL_MAG, clamped past it");
+// T182 — the pile is VISIBLE from the very start: a real first-day ~1.2K player shows a mound
+ok(G.hoardLevel(1230) > 0.2, "(2) T182: at a realistic first-day ~1.2K gold the pile is clearly visible (" + G.hoardLevel(1230).toFixed(3) + ", was ~0.002 on the broken power curve)");
 // monotone non-decreasing across the wealth range
 (function(){ const xs = [0, 1e3, 1e6, 1e8, 1e9, 1e10, 1e12], ys = xs.map(G.hoardLevel); let mono = true; for(let i=1;i<ys.length;i++) if(ys[i] < ys[i-1]) mono = false;
   ok(mono, "(2) hoardLevel is monotone non-decreasing over gold");
-  ok(ys[2] < 0.1 && ys[4] > 0.2 && ys[4] < 0.8, "(2) the curve is sub-linear — a small pile at 1M (" + ys[2].toFixed(3) + "), partway at 1B (" + ys[4].toFixed(3) + ")"); })();
+  // log-of-magnitude: ~25% at 1K, ~50% at 1M, ~75% at 1B — grows across the magnitudes
+  ok(Math.abs(G.hoardLevel(1e3) - 0.25) < 0.03 && Math.abs(G.hoardLevel(1e6) - 0.50) < 0.03 && Math.abs(G.hoardLevel(1e9) - 0.75) < 0.03,
+     "(2) T182: the pile climbs the magnitudes — 1K≈25% (" + G.hoardLevel(1e3).toFixed(2) + "), 1M≈50% (" + G.hoardLevel(1e6).toFixed(2) + "), 1B≈75% (" + G.hoardLevel(1e9).toFixed(2) + ")"); })();
 // earnBurstSpec: log-scaled, capped, tiered
 (function(){ const s5 = G.earnBurstSpec(5), s1e6 = G.earnBurstSpec(1e6), s1e12 = G.earnBurstSpec(1e12);
   ok(s5.count >= 6 && s5.count <= 88 && s1e6.count > s5.count, "(2) earn-burst count rises with the gain (" + s5.count + " → " + s1e6.count + ")");
@@ -130,6 +138,27 @@ ok(G.hoardLevel(G.load()) > 0.2 && G.hoardLevel(G.load()) < 1, "(3) at 5B gold t
   ok(bootWithSearch("?dev&gold=4242") === 4242, "(4) ?dev&gold=<n> seeds the gold total when ?dev is present");
   ok(bootWithSearch("?gold=9999") === 0, "(4) ?gold WITHOUT ?dev is inert (gated) — gold stays 0");
   ok(bootWithSearch("") === 0, "(4) no query string → the dev setter is a no-op");
+})();
+
+// ---- (5) T182: the Graphics-menu gold-setter REALLY sets the counter ----------
+function fireGold(v){ (els.devGold._h.click || []).forEach(f => f({ target:{ closest:s => (s === ".mus-btn" ? { dataset:{ gold: v } } : null) } })); }
+(function(){
+  store = {}; global.window.location.search = "?dev"; global.window.location.hash = ""; els = {};
+  new Function(read("main.js"))();
+  ok(els.devGold && els.devGold._h.click, "(5) the dev gold-setter group is wired");
+  fireGold("1000000");
+  ok(global.window.Gold.load() === 1e6, "(5) ?dev: tapping 1M REALLY sets the Goblin Gold counter to 1,000,000 (" + global.window.Gold.load() + ")");
+  fireGold("1000000000000");
+  ok(global.window.Gold.load() === 1e12, "(5) ?dev: tapping 1T sets the counter to a trillion (the absurd-wealth preview)");
+  fireGold("0");
+  ok(global.window.Gold.load() === 0, "(5) ?dev: tapping 0 resets the counter");
+})();
+(function(){
+  store = {}; global.window.location.search = ""; global.window.location.hash = ""; els = {};
+  new Function(read("main.js"))();
+  const before = global.window.Gold.load();
+  fireGold("1000000");
+  ok(global.window.Gold.load() === before, "(5) WITHOUT ?dev the gold-setter is inert — the save is never touched (publish-safe)");
 })();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " HOARD-WIRING CHECKS PASSED" : fails + "/" + checks + " FAILED"));

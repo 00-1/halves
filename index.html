@@ -210,7 +210,7 @@
     <div class="res-label">Settings</div>
     <div class="settings-body scroll-body">
       <button class="set-row" id="openAudio"><span>Audio</span><span class="set-val"><span class="px-ic soundOn"></span> Open</span></button>
-      <button class="set-row" id="openGraphics"><span>Graphics</span><span class="set-val"><span class="px-ic sparkles"></span> Open</span></button>
+      <button class="set-row hidden" id="openGraphics"><span>Developer</span><span class="set-val"><span class="px-ic sparkles"></span> Open</span></button>
       <button class="set-row" id="fsToggle"><span>Fullscreen</span><span class="set-val"><span class="px-ic fullscreen"></span> <span id="fsToggleVal">Enter</span></span></button>
       <div class="set-danger">
         <h4>Danger zone</h4>
@@ -271,7 +271,7 @@
   <!-- GRAPHICS — visual tests (T147): the celebration tester is a VISUAL test, not
        audio, so it lives in its own Setup sub-menu (room for future FX toggles). -->
   <section id="graphics" class="screen">
-    <div class="res-label">Graphics</div>
+    <div class="res-label">Developer</div>
     <div class="settings-body scroll-body">
       <div class="set-row set-music">
         <label id="fxTestLabel"><span>Test celebration</span><span class="set-val" id="setFxVal">Tap to fire</span></label>
@@ -289,6 +289,24 @@
           <button type="button" class="mus-btn" data-hoard="0.5">Half</button>
           <button type="button" class="mus-btn" data-hoard="1">Full</button>
           <button type="button" class="mus-btn" data-hoard="earn">Earn coins</button>
+        </div>
+      </div>
+      <div class="set-row hidden" id="devRevealRow">
+        <label id="devRevealLabel"><span>Reveal all collections</span><span class="set-val" id="setDevRevealVal">off</span></label>
+        <div class="music-switch" role="group" aria-labelledby="devRevealLabel">
+          <button type="button" class="mus-btn" id="devRevealBtn">Off</button>
+        </div>
+      </div>
+      <div class="set-row set-music hidden" id="devGoldRow">
+        <label id="devGoldLabel"><span>Set Goblin Gold</span><span class="set-val" id="setDevGoldVal">tap a value</span></label>
+        <div class="music-switch" id="devGold" role="group" aria-labelledby="devGoldLabel">
+          <button type="button" class="mus-btn" data-gold="0">0</button>
+          <button type="button" class="mus-btn" data-gold="1000">1K</button>
+          <button type="button" class="mus-btn" data-gold="100000">100K</button>
+          <button type="button" class="mus-btn" data-gold="1000000">1M</button>
+          <button type="button" class="mus-btn" data-gold="100000000">100M</button>
+          <button type="button" class="mus-btn" data-gold="1000000000">1Bn</button>
+          <button type="button" class="mus-btn" data-gold="1000000000000">1T</button>
         </div>
       </div>
     </div>

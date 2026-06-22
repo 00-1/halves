@@ -124,24 +124,47 @@
     const base = 1 + items * 0.05 + mastered * 0.5 + heroes * 0.5 + tiers * 1;
     return base * hoardMult(col);
   }
-  // T173 — the VISUAL hoard level (0..1) that drives the home-backdrop coin mound
-  // (B's T172 engine). A SUB-LINEAR curve over lifetime gold so a little gold shows
-  // a small pile early and it plateaus gracefully — the displayed NUMBER keeps
-  // exploding past it (the T178 absurd-wealth comedy), while the PILE is the ambient
-  // impression and caps. `GOLD_FULL` is the single knob the owner dials on the live
-  // build (pointer: ≈1e10 — full pile after the long-haul billions).
-  const GOLD_FULL = 1e10;
-  function hoardLevel(gold){ gold = Math.max(0, gold || 0); return Math.max(0, Math.min(1, Math.pow(gold / GOLD_FULL, 0.4))); }
-  // T173 — dev gold-setter, GATED behind `?dev`: `?dev&gold=<n>` seeds the lifetime
-  // gold total so the owner can preview the hoard mound at ANY wealth on the live
-  // build (parseFloat accepts 1e9 etc.). Without `?dev` it is completely inert, so it
-  // ships harmlessly to production (the T168 pre-publish checklist). Joins T180's
-  // `?dev` reveal-all panel.
+  // T173/T182 — the VISUAL hoard level (0..1) that drives the home-backdrop coin
+  // mound (B's T172 engine). A LOG-OF-MAGNITUDE curve over lifetime gold: the pile is
+  // VISIBLE from the very start (a first-day ~1K player already shows a real mound)
+  // and grows steadily across the orders of magnitude K→M→B→T as the displayed NUMBER
+  // explodes (the T178 absurd-wealth comedy). `GOLD_FULL_MAG` (the gold that fills the
+  // pile) is the single knob the owner dials. At 1e12: 1K≈25%, 1M≈50%, 1B≈75%, 1T≈100%.
+  //   (T182 fix: the old `(gold/1e10)^0.4` power curve read ~0.17% at real ~1.2K gold —
+  //    the owner couldn't see the pile at all. A log-of-magnitude curve fixes that.)
+  const GOLD_FULL_MAG = 1e12;
+  const HOARD_DENOM = Math.log10(GOLD_FULL_MAG);
+  function hoardLevel(gold){ gold = Math.max(0, gold || 0); return Math.max(0, Math.min(1, Math.log10(1 + gold) / HOARD_DENOM)); }
+  // T184 — DEVELOPER MODE (gated, off by default, inert in production). Enabled from
+  // the MENU (tap the build pill ~7×, below) → persisted `halves.dev`; `?dev` in the
+  // URL is kept as a fallback. It surfaces a "Developer" section in Setup with all the
+  // dev tools (the gold-setter, the reveal-all toggle, the FX/hoard testers). The
+  // reveal-all toggle (`halves.devReveal`) is a VIEW-ONLY override that shows every
+  // collection (heroes / inventory / Codex) as unlocked for art review — it NEVER
+  // persists (the real save is untouched). Remove for publish (T168).
+  function urlHasDev(){ try{ return /[?&]dev(?:[=&]|$)/.test((window.location && window.location.search) || ""); }catch(e){ return false; } }
+  let devMode = (function(){ try{ return urlHasDev() || localStorage.getItem("halves.dev") === "1"; }catch(e){ return false; } })();
+  let devReveal = (function(){ try{ return localStorage.getItem("halves.devReveal") === "1"; }catch(e){ return false; } })();
+  let memDevCol = null;
+  function devFullCol(){
+    if(memDevCol) return memDevCol;
+    const o = {};
+    C.CATALOG.forEach(it => o[it.id] = { ts: 1 });
+    const TC = (window.Enemies && window.Enemies.TIER_COUNT) || 120;
+    for(let n = 1; n <= TC; n++) o["tier:" + n] = { ts: 1 };
+    MODES.forEach(m => o["mastery:" + m.id] = { ts: 1 });
+    const Ev = window.Events;
+    if(Ev && Ev.roster) Ev.roster().forEach(e => ["", ":well", ":ace"].forEach(suf => o["event:" + e.id + suf] = { ts: 1 }));
+    memDevCol = o; return o;
+  }
+  // The collection a RENDER should show: the real one, or — when dev reveal-all is on
+  // — everything (view-only; never written back).
+  function viewCol(){ return (devMode && devReveal) ? devFullCol() : loadCollected(); }
+  // `?dev&gold=<n>` also seeds the gold total from the URL (a quick wealth preview).
   (function devGoldParam(){
     try{
-      const q = (window.location && window.location.search) || "";
-      if(!/[?&]dev(?:[=&]|$)/.test(q)) return;        // dev tools require ?dev
-      const m = /[?&]gold=([0-9.eE+]+)/.exec(q);
+      if(!devMode) return;
+      const m = /[?&]gold=([0-9.eE+]+)/.exec((window.location && window.location.search) || "");
       if(m){ const n = parseFloat(m[1]); if(isFinite(n) && n >= 0) saveGold(n); }
     }catch(e){}
   })();
@@ -386,8 +409,10 @@
     try{ if(fxBurst.resize) fxBurst.resize(); }catch(e){}
     const c = elCentre(srcEl), spec = earnBurstSpec(amount);
     const seed = ((Math.round(Math.min(amount, 1e15)) >>> 0) * 0x9e3779b1 >>> 0) || 1;
+    // T182(4) — forward `look:"coin"` so the burst renders BEVELED coins the moment
+    // B's seedBurst honours it (today it's ignored → gold squares, which the owner OK'd).
     try{ fxBurst.burst({ x: c.x, y: c.y, count: spec.count, seed: seed,
-      spread: spec.spread, sizePx: spec.sizePx, palette: spec.palette }); }catch(e){}
+      spread: spec.spread, sizePx: spec.sizePx, palette: spec.palette, look: "coin" }); }catch(e){}
   }
 
   // ---- Synth wiring (T122) — the generative MUSIC engine ------------------
@@ -583,7 +608,9 @@
     if(profileHasProgress()){ const l = { legacy:1 }; saveUnlocked(l); return l; }  // legacy → stamp + all open
     return {};   // genuinely fresh → gated, NOT persisted yet (so it can still migrate to legacy if progress appears)
   })();
-  function isFeatureUnlocked(id){ return !!(unlocked.legacy || unlocked[id]); }
+  // Dev mode (T184) opens every gated screen too, so the owner can reach Inventory /
+  // Heroes / Arena on a fresh profile for art review — view-only, never persisted.
+  function isFeatureUnlocked(id){ return !!(devMode || unlocked.legacy || unlocked[id]); }
   function unlockFeature(id){ if(isFeatureUnlocked(id)) return false; unlocked[id] = 1; saveUnlocked(unlocked); return true; }
   function needsIntro(){ return !unlocked.legacy && !unlocked.introDone; }   // fresh profile still owes the intro
 
@@ -1306,7 +1333,7 @@
   // Lazy render: only the ACTIVE tab's tiles go into the DOM (the 250 Loot tiles
   // cost nothing until the Loot tab is opened).
   function renderInvTab(){
-    const col = loadCollected();
+    const col = viewCol();
     $("invList").innerHTML = invTab === "loot"   ? invLootHtml(col)
                            : invTab === "awards" ? invAwardsHtml(col)
                            : invTab === "events" ? invEventsHtml(col)
@@ -1322,7 +1349,7 @@
     btn.classList.toggle("show", $("invList").scrollTop > 200);
   }
   function renderInventory(){
-    const col = loadCollected();
+    const col = viewCol();
     $("invMeta").textContent = C.CATALOG.filter(it => col[it.id]).length + " / " + C.CATALOG.length;
     invTab = "topics";          // default to the first tab on each open
     renderInvTabs();
@@ -1361,7 +1388,7 @@
   const STAT_ABBR = { power:"PWR", guard:"GRD", speed:"SPD", focus:"FOC" };
   function renderHeroDetail(id){
     const Hs = window.Heroes; if(!Hs) return false;
-    const h = Hs.byId(id), col = loadCollected();
+    const h = Hs.byId(id), col = viewCol();
     if(!h || !Hs.isHeroUnlocked(h, col)) return false;   // only unlocked heroes have a detail
     const st = Hs.effectiveStats(h, col), rating = Math.round(Hs.rating(h, col));
     const all = C.CATALOG.filter(it => it.boost && it.boost.hero === h.id);
@@ -1381,7 +1408,7 @@
   }
   function renderHeroes(){
     const Hs = window.Heroes; if(!Hs){ $("heroList").innerHTML = ""; return; }
-    const col = loadCollected();
+    const col = viewCol();
     const unlocked = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col)).length;
     $("heroMeta").textContent = unlocked + " / " + Hs.HEROES.length;
     $("heroList").innerHTML = ["Brawn","Arcane","Cunning"].map(tp => {
@@ -2579,7 +2606,50 @@
   { const oa = $("openAudio"); if(oa) oa.addEventListener("click", () => { location.hash = "#/audio"; }); }
   { const ab = $("audioBack"); if(ab) ab.addEventListener("click", () => { location.hash = "#/settings"; }); }
   // T147 — the celebration tester is a VISUAL test, so it lives in its own Graphics menu.
-  function renderGraphics(){ const v = $("setFxVal"); if(v) v.textContent = "Tap to fire"; }
+  // The "Developer" screen (T184) — the FX/hoard testers (always) + the dev-only
+  // gold-setter + reveal-all toggle (shown only in dev mode; the Setup link to here
+  // is itself dev-gated, so non-dev users never see these).
+  function renderGraphics(){ const v = $("setFxVal"); if(v) v.textContent = "Tap to fire";
+    const dg = $("devGoldRow"); if(dg) dg.classList.toggle("hidden", !devMode);
+    const rr = $("devRevealRow"); if(rr) rr.classList.toggle("hidden", !devMode);
+    syncDevRevealBtn(); }
+  function syncDevRevealBtn(){ const b = $("devRevealBtn"); if(b) b.textContent = devReveal ? "On" : "Off"; const v = $("setDevRevealVal"); if(v) v.textContent = devReveal ? "revealing all" : "off"; }
+  // A minimal self-contained toast (the dev affordances don't go through the unlock queue).
+  function devToast(msg){
+    try{
+      const host = $("toasts"); if(!host) return;
+      const t = document.createElement("div"); t.className = "toast coach";
+      t.innerHTML = '<span class="t-glyph">'+ic("sparkles")+'</span><div class="t-txt"><span class="t-tag">Developer</span><span class="t-name">'+esc(msg)+'</span></div>';
+      host.appendChild(t); if(typeof requestAnimationFrame === "function") requestAnimationFrame(() => t.classList.add("show")); else t.classList.add("show");
+      setTimeout(() => { try{ t.classList.remove("show"); setTimeout(() => t.remove(), 400); }catch(e){} }, 2200);
+    }catch(e){}
+  }
+  // The reveal-all toggle (view-only; persisted so it survives a reload, but the real
+  // collection is never written).
+  function toggleDevReveal(){
+    if(!devMode) return;
+    devReveal = !devReveal;
+    try{ localStorage.setItem("halves.devReveal", devReveal ? "1" : "0"); }catch(e){}
+    syncDevRevealBtn();
+    try{ applyGates(); }catch(e){}   // reveal/hide the gated nav as the view changes
+    try{ applyRoute(); }catch(e){}   // re-render the current screen with the new view
+    devToast(devReveal ? "Revealing all collections" : "Reveal-all off");
+  }
+  // Enable/disable developer mode (persisted). Surfaces/hides the Setup "Developer"
+  // link + opens the gated screens for review; leaving it also clears reveal-all.
+  function setDevMode(on){
+    devMode = !!on;
+    try{ localStorage.setItem("halves.dev", devMode ? "1" : "0"); }catch(e){}
+    if(!devMode && devReveal){ devReveal = false; try{ localStorage.setItem("halves.devReveal", "0"); }catch(e){} }
+    syncDevUi();
+    devToast(devMode ? "Developer mode ON — see Setup ▸ Developer" : "Developer mode OFF");
+  }
+  function syncDevUi(){
+    const link = $("openGraphics"); if(link) link.classList.toggle("hidden", !devMode);
+    syncDevRevealBtn();
+    try{ applyGates(); }catch(e){}
+    try{ applyRoute(); }catch(e){}
+  }
   { const og = $("openGraphics"); if(og) og.addEventListener("click", () => { location.hash = "#/graphics"; }); }
   { const gb = $("graphicsBack"); if(gb) gb.addEventListener("click", () => { location.hash = "#/settings"; }); }
   { const ss = $("setSound"); if(ss) ss.addEventListener("click", toggleSound); }
@@ -2630,7 +2700,30 @@
       const v = btn.dataset.hoard; if(v == null) return;
       fireHoardTest(v);
     });
+    const devGoldGrp = $("devGold");
+    if(devGoldGrp) devGoldGrp.addEventListener("click", e => {
+      const btn = e.target.closest && e.target.closest(".mus-btn"); if(!btn || btn.dataset.gold == null) return;
+      setDevGold(btn.dataset.gold);
+    });
+    const revealBtn = $("devRevealBtn");
+    if(revealBtn) revealBtn.addEventListener("click", toggleDevReveal);
   })();
+  // T182 — the `?dev` Graphics-menu gold-setter: REALLY set the Goblin Gold counter
+  // (not a sandboxed preview), so the owner picks a value, goes home, and sees the
+  // pile + the pill + any newly-crossed wealth milestones at that wealth. ?dev-gated
+  // (the row is hidden otherwise) + on the publish checklist (it edits the save).
+  function setDevGold(v){
+    if(!devMode) return;                                    // dev-gated (defence in depth, not just the hidden row)
+    const amount = Math.max(0, +v || 0);
+    saveGold(amount);                                       // SET (not add) the real counter
+    const col = loadCollected();                            // grant any newly-crossed wealth milestones
+    const wealth = C.evaluateGold(amount, id => !!col[id]);
+    if(wealth && wealth.length){ wealth.forEach(it => col[it.id] = { ts: Date.now() }); saveCollected(col); }
+    renderGold();                                           // refresh the home gold pill
+    // the home PILE re-derives from loadGold() on the next home entry (fxSetScreen
+    // → homeFxState), so "set a value → go home → see the pile" just works.
+    const val = $("setDevGoldVal"); if(val) val.textContent = fmtGold(amount) + " set";
+  }
   // T173 — the Graphics-menu hoard tester: preview the coin mound at a fill level
   // (reveals the backdrop with a forced hoard level so the owner can eyeball the
   // pile growth) and the amount-scaled coin earn-burst. The next screen change
@@ -2810,6 +2903,20 @@
     const ago = buildInfo && buildInfo.time ? relAgo(Date.parse(buildInfo.time)) : "";
     el.innerHTML = 'build <b>'+esc(RUNNING_V)+'</b>' + (ago ? ' · '+ago : '');   // the RUNNING sha (truthful per client)
   }
+  // T184 — enable Developer mode from the MENU (no URL editing): tap the build pill
+  // ~7× quickly. Toggles the persisted `halves.dev` flag → the Setup ▸ Developer
+  // section + the dev tools. (`?dev` stays a fallback.)
+  (function devTapEnabler(){
+    const el = $("buildInfo"); if(!el || !el.addEventListener) return;
+    let taps = 0, last = 0;
+    el.addEventListener("click", () => {
+      const now = (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+      if(now - last > 1500) taps = 0;
+      last = now;
+      if(++taps >= 7){ taps = 0; setDevMode(!devMode); }
+    });
+  })();
+  syncDevUi();   // reflect the persisted dev flag at boot (reveal the Setup link if on)
   // T102 — register the PWA service worker (offline + installable). Guarded + lazy
   // (after load, never blocking boot); the SW is network-first for build.json/nav so
   // it never breaks the T54 update flow below. No-op where unsupported / on file://.
@@ -2869,7 +2976,7 @@
   window.Gold = { label: GOLD_LABEL, fmtGold: fmtGold, mult: goldMult,
     questionGold: questionGold, roundBonus: roundBonusGold, tierGold: tierGold,
     hoardMult: hoardMult, bossesDefeated: bossesDefeated, HOARD_G: HOARD_G,   // T178 — the exponential mid/late ramp
-    GOLD_FULL: GOLD_FULL, hoardLevel: hoardLevel, earnBurstSpec: earnBurstSpec, // T173 — the visual hoard curve + earn-burst scaling
+    GOLD_FULL_MAG: GOLD_FULL_MAG, hoardLevel: hoardLevel, earnBurstSpec: earnBurstSpec, // T173/T182 — the visual hoard curve + earn-burst scaling
     load: loadGold, evaluate: (total, has) => C.evaluateGold(total, has) };
   // Momentum module API (pure reducer + helpers, also used by the Node tests).
   window.Momentum = { label: MOMENTUM_LABEL, MAX: MOMENTUM_MAX, reduce: reduceMomentum,

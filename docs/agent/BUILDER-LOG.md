@@ -5487,3 +5487,52 @@ right generator. `inventory.test` still green (24). **Full suite 50/50.** [A]-on
 existing #invTabs/#invList, styles.css, the new gate + pages.yml). Generators (B-owned) untouched — read-only.
 notes: next [A] is **T180** (`?dev` reveal-all — heroes/inventory/Codex view-only override for art review),
 which joins the `?dev`-gated gold-setter from the T173 follow-up in one dev panel.
+
+---
+### [A] T182 🔴 — HOARD FIX: make the pile visible (+ a real dev gold-setter)
+The owner couldn't see the hoard at all. Root cause: my T173 `GOLD_FULL=1e10` power curve `(gold/1e10)^0.4`
+read **~0.17%** at a realistic first-day ~1.2K gold → an invisible mound. Fixes:
+1. **LOG-OF-MAGNITUDE curve** (`main.js`): `hoardLevel = clamp(log10(1+gold)/log10(GOLD_FULL_MAG), 0, 1)` with
+   `GOLD_FULL_MAG = 1e12`. The pile is now **visible from the very start** (~26% at 1.2K) and climbs the orders
+   of magnitude: **1K≈25%, 1M≈50%, 1B≈75%, 1T≈full** — tracking the K→M→B→T number explosion. `GOLD_FULL_MAG`
+   is the owner's one dial (renamed from `GOLD_FULL`; `window.Gold` export updated).
+2. **A `?dev` Graphics-menu gold-setter that REALLY sets the counter** (owner: *"actually change my Goblin Gold
+   counter"*): a `#devGold` button row (0 / 1K / 100K / 1M / 100M / 1Bn / 1T) → `setDevGold(v)` calls the real
+   `saveGold(v)` (SET, not add), grants any newly-crossed wealth milestones (`evaluateGold` → `saveCollected`),
+   and refreshes the gold pill; the home **pile** re-derives on the next home entry (pick → go home → see it).
+   `?dev`-gated TWICE (the row is `hidden` unless `?dev`, AND `setDevGold` early-returns without `DEV`) + on the
+   publish checklist (it edits the save). Consolidated the dev tooling behind a single `const DEV` flag (the URL
+   `?dev&gold=` setter now shares it).
+3. **Earn-burst flies OUTWARD** — already shipped (the T173 follow-up, `95dc896`); folded in here as confirmed.
+4. **`look:"coin"`** (minor, owner OK): `fxEarnBurst` now forward-passes `look:"coin"` so the burst renders
+   beveled coins the moment B's `seedBurst` honours it (today it's ignored → gold squares, as the owner accepted).
+verified: `hoard-wiring.test` 38→47 — the new log curve (1K≈25/1M≈50/1B≈75%, visible at 1.2K), `GOLD_FULL_MAG`,
+and the gold-setter (?dev: tapping 1M/1T/0 REALLY sets the counter; without ?dev it's inert + the save untouched).
+**Full suite green.** [A]-only (`main.js`, `index.html`, the extended gate). Pushed FIRST per the 🔴, then
+resuming the queued T180 (`?dev` reveal-all) which I'd finished just before this jumped in.
+
+---
+### [A] T184 🔴 — Developer mode FROM THE MENU (absorbs T180 reveal-all)
+The owner was blocked from testing — couldn't enable dev tools without editing URLs. Now dev mode is enabled
+from the menu, no URLs:
+- **Build-pill 7-tap enabler:** tapping `#buildInfo` ~7× quickly toggles a **persisted `halves.dev`** flag
+  (`setDevMode` → localStorage) and toasts the state. `?dev` is kept as a fallback (`devMode = urlHasDev() ||
+  halves.dev`).
+- **A "Developer" section in Setup:** the former Graphics sub-menu is now the dev hub (label + the Setup link
+  relabelled "Developer" and **hidden unless dev mode** via `syncDevUi` → `applyGates` reveals the gated nav
+  too). It hosts ALL the dev tools: the **gold-setter buttons** (T182 — real `saveGold`), the **FX/hoard
+  testers** (already there; element ids unchanged so the T147 gate still holds), and the new **reveal-all
+  toggle**.
+- **Reveal-all toggle (`halves.devReveal`, absorbs T180):** a VIEW-ONLY override — `viewCol()` returns a
+  synthetic fully-collected object (every id + tier:1..120 + masteries + events) **only when `devMode &&
+  devReveal`**, fed into the four render paths (`renderInventory` / `renderInvTab` → all tabs incl. the Codex /
+  `renderHeroes` / `renderHeroDetail`). It NEVER persists — the real save is untouched. `isFeatureUnlocked`
+  short-circuits true under dev mode so the gated screens are reachable for review.
+how I verified: rewrote **`test/dev-reveal.test.js` → the T184 gate (31 checks)**: menu-dev (`halves.dev`) +
+reveal → ALL revealed (1913/1913, 12/12 heroes, Codex no "???") with NO URL; dev-on-reveal-off shows the REAL
+collection yet opens the screens; the **7-tap build-pill enabler** flips/persists `halves.dev` (and reveals the
+Setup link); the reveal toggle persists `halves.devReveal`; `?dev` still works as a fallback; and the reveal is
+view-only (the collection is never written). `hoard-wiring` updated to the new `devMode` naming (47).
+**Full suite 52/52.** [A]-only (main.js, index.html, the two gates + pages.yml).
+notes: T182 (the log-of-magnitude hoard curve + the gold-setter mechanism) ships in the same push — both were
+the 🔴 do-first pair. Next: wire the Codex **Emblems** section (B's `T181` `emblems.js`).
