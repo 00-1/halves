@@ -10,21 +10,21 @@
 
 ---
 
-**Builder A → `T177` + `T176` 🔴 BUG-DO-FIRST (PWA fullscreen-lost + notch) → `T171` (rename) → content `T59`–`T61` → `T173` (hoard wiring, after B's `T172`)**
-- **🔴 `T177` (live):** PWA **loses fullscreen on minimise** + **no button to get it back** (T156 removed it; T167's `requestFullscreen` drops on background & needs a gesture). Fix: **re-enter FS on the first tap after resume** (arm a one-shot on `visibilitychange`→visible) + **restore a manual FS toggle in the installed PWA's Setup** (walk back T156). TWA native-immersive is the real fix (packaging). [A]-only. *(BACKLOG T177.)*
-- **🔴 `T176` FIRST (live):** PWA shows a **black bar in the notch** (purple backdrop doesn't reach the top);
-  Firefox is fine. Root: viewport meta (`index.html:7`) **lacks `viewport-fit=cover`** → standalone PWA won't
-  paint into the cutout → dark `theme-color` shows. **Fix:** add `viewport-fit=cover`; the full-bleed `.fx-backdrop`
-  (inset:0) + body bg then fill the notch purple; UI stays inset-aware (safe-area insets become non-zero — verify
-  `home-layout` holds, nothing clips). [A]-only. *(BACKLOG T176.)*
-- **Then `T171`** (rename product → "Goblin Gold", keep "Halves" topic) → content `T59`–`T61`.
-- **`T178`** (economy, owner): ramp **mid/late** gold **exponentially** (Arena-boss multiplier) so wealth reaches
-  **millions→billions/trillions** — the goblin-hoard comedy (infra already supports it: `fmtGold`→10⁴⁵, milestones→1e15;
-  only the linear `goldMult` is the bottleneck). Early game unchanged. Feeds the hoard `GOLD_FULL`. [A]-only. *(BACKLOG T178.)*
-- **`T173`** (hoard WIRING) waits on B's `T172`. Spec: feed gold→`homeFxState` via a **tunable `GOLD_FULL`≈1e6**
-  (the "Gold Hoard" milestone) sub-linear curve — **NUMBER decoupled from PILE** (number→B/T via T178, pile caps);
-  the **earn-burst is a standalone spinning-coin burst from the earn-point — NO settling** (owner). *(`T168` Play-Store held for verify;
-  `T103`/`T72` need creds.)*
+**Builder A → `T178` (economy: ramp mid/late gold → absurd wealth) → content `T60`/`T61` → `T173` (hoard wiring, after B's `T172`)**
+**Big batch DONE+APPROVED — nice work:** `T177` fullscreen-restore (`90422c5`), `T176` notch (`ff20cae`), `T171`
+Goblin Gold rename (`1a4bcf5`), `T59` content (`1ba6f62`). The live PWA bugs are cleared.
+- **NEXT REAL WORK → `T178` (unblocked, [A]-only, fully specced):** add an **exponential mid/late wealth ramp** so
+  gold reaches **millions→billions/trillions** (the goblin-hoard comedy). Mechanism: a **"Hoard Multiplier" =
+  `g^(Arena bosses defeated)`** multiplied onto the existing additive `goldMult` — early game unchanged (no bosses
+  → ×1), late game explodes. **✅ Economy sim done (`docs/agent/economy-sim.js`): use `g`≈2.0–2.2** (regular player
+  → millions in weeks, billions ~2 months; full table in `GOLD-HOARD-DESIGN.md`). Gold is decoupled from Arena
+  difficulty (`tierGold` payoff vs foe `def`) → no balance impact. `fmtGold` already formats to 10⁴⁵ + milestones
+  to 1e15 (add a B/T/Qa formatting test). Keep early-game earning identical; update the `Gold` unit tests.
+  [A]-only (`main.js`, gold tests). *(BACKLOG T178.)*
+- **Then** content `T60`/`T61` (continue the Wave-2 batches after `T59`).
+- **`T173`** (hoard WIRING — feeds off `T178`'s gold + B's `T172` engine; includes the amount-scaled spinning-coin
+  earn-burst, the Graphics-menu tier testers, and the `?dev` gold-setter) **stays blocked on B's `T172`**, which is
+  itself behind the **foghorn fix (`T175`)**. So: `T178` → content → (hoard when B's engine lands).
 **Re-read this line fresh before each task + push.**
 
 **Builder B → `T175` 🔴 BUG-DO-FIRST (the FOGHORN is back — music BUILDS UP to a drone over time).**

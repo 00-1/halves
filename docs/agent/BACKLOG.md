@@ -2844,7 +2844,7 @@ Goblin King/Warren are the first foes). The comedy = an adventurer amassing an a
   (regular player → millions in weeks, **billions by ~2 months**, trillions long-term; full table in
   `GOLD-HOARD-DESIGN.md`). The boss multiplier is a single tunable constant; the owner dials the final feel.
 
-### T177 — [A] **BUG (live):** PWA loses fullscreen on minimize + no way back (T156 removed the button) · status: OPEN · 🔴 DO-FIRST
+### T177 — [A] **BUG (live):** PWA loses fullscreen on minimize + no way back (T156 removed the button) · status: DONE (`90422c5`) · APPROVED· 🔴 DO-FIRST
 **Owner (2026-06-22): "the PWA loses fullscreen every time I minimise it, and the fullscreen button is gone from
 the config menu now."** **Root cause:** T167's `requestFullscreen()` (the JS Fullscreen API) is **dropped by
 Android whenever the app is backgrounded/minimised** — and it **cannot be re-entered without a user gesture** — so
@@ -2866,7 +2866,7 @@ way back. The owner is stuck windowed.
   intact; **[A]-only** (`main.js`, `index.html` if needed, tests). **Verify:** owner confirms on the PWA
   (minimise → return → tap → fullscreen; and the manual button is back).
 
-### T176 — [A] **BUG (live):** black bar in the notch/cutout area on PWA (purple backdrop doesn't reach the top) · status: OPEN · 🔴 DO-FIRST
+### T176 — [A] **BUG (live):** black bar in the notch/cutout area on PWA (purple backdrop doesn't reach the top) · status: DONE (`ff20cae`) · APPROVED· 🔴 DO-FIRST
 **Owner (2026-06-22): "black bar at the top of the screen in PWA, whereas in Firefox the purple background goes
 all the way to the top. This is the phone's notch area."** **Root cause:** the viewport meta (`index.html:7`) is
 `width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no` — **missing `viewport-fit=cover`.**
@@ -2971,7 +2971,7 @@ compliant (gold-on-purple).
   clean; `$("id")`/home-layout invariants hold; **[A]-only** (`main.js`, `index.html` for the test buttons, tests).
   Browser-verify; owner signs off the feel + confirms the tiers are smooth on his device.
 
-### T171 — [A] Rename the PRODUCT to "Goblin Gold" (keep the "Halves" topic) · status: OPEN · owner-chosen brand
+### T171 — [A] Rename the PRODUCT to "Goblin Gold" (keep the "Halves" topic) · status: DONE (`1a4bcf5`) · APPROVED· owner-chosen brand
 **Owner chose the app name: "Goblin Gold"** (the in-game currency — intentional cohesion). Rename the **product/
 brand**, NOT the maths topic: `manifest.webmanifest` `name`/`short_name` → **"Goblin Gold"** (short_name kept
 short for the home-screen label); `index.html` `<title>` → "Goblin Gold"; any in-app product-name branding
@@ -4380,7 +4380,7 @@ depth — NOT to force a uniform 3-wide tree (T106 handles varying depth).
   (Babysitter checks the coupling description matches `enemies.js`/`collectibles.js` and
   that the checklist is complete.)
 
-### T59 — Wave-2 topics, Batch A: Rounding + Larger ×/÷ (with new content) · status: OPEN
+### T59 — Wave-2 topics, Batch A: Rounding + Larger ×/÷ (with new content) · status: DONE (`1ba6f62`) · APPROVED
 Add two topics **following T58**, with genuinely new content. Specs/calibration come
 from `docs/research-11plus.md` (these are already researched). Topics: **Rounding** (to
 10/100/1000 and decimal places) and **Larger ×/÷** (2-digit × 1-digit, ÷ with

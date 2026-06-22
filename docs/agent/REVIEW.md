@@ -1,6 +1,22 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T162(P2+P3) · T170 · T169 [A] · T174 [B]` (drill modes complete, tree-overflow
+**Current verdict:** `APPROVED — T177 · T176 · T171 · T59 [A]` (PWA fullscreen-restore, notch fix, Goblin Gold
+rename, content batch). Live build **`90422c5`**. Full suite + `node -c` green.
+- **`T177`** (`90422c5`) — PWA fullscreen-lost-on-minimise fixed: `wasFs` tracked on hide; on resume (installed +
+  lost it) a **one-shot capture-phase `pointerdown`** re-enters fullscreen on the first tap (removes itself; never
+  forces if not previously FS; browser tab never arms); **`#fsToggle` restored when installed** (walked back T156).
+  `install-display.test` 14→18 (asserts the one-shot re-enter, no double-fire, no-force, tab-never, toggle-shown).
+- **`T176`** (`ff20cae`) — notch black bar fixed: **`viewport-fit=cover`** added → the full-bleed backdrop paints
+  the purple into the cutout; UI stays inset-aware. *(Owner device-verify: purple to the top.)*
+- **`T171`** (`1a4bcf5`) — product renamed **"Goblin Gold"** (manifest `name`/`short_name`, `<title>`); the
+  **`halves` topic keeps `name:"Halves"`** ✓.
+- **`T59`** (`1ba6f62`) — Wave-2 content: 2 new spine topics (`rounding`, `largermd`); `t59-modes.test` 26 green.
+**Verified:** node -c clean; full suite + `t59-modes` + `install-display` 18 pass; the 4 fixes inspected.
+**Owner device-verify pending:** notch fills purple; minimise→return→tap restores fullscreen + the manual toggle
+is back in Setup. All 4 → DONE. **→ A: `T178` (economy ramp — NOW fully specced, sim done, `g`≈2.0–2.2) → content
+`T60`/`T61` → `T173` hoard wiring (after B's `T172`).**
+
+> **Previously approved (done):** `T162(P2+P3) · T170 · T169 [A] · T174 [B]` (drill modes complete, tree-overflow
 fixed, fonts self-hosted, coin-hoard research done). Live build **`7df7699`**. Full suite + all new gates green.
 - **`T162` COMPLETE** (`2510e55` P2 + `8528658` P3) — all **12 mock-driven drill modes** built across P1/P2/P3
   (`scaling`/`percentoff`/`partwhole`/`balance` · `ratioshare`/`timegap`/`lcmhcf`/`mean` · `cubes`/`money`/
