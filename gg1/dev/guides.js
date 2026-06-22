@@ -357,6 +357,24 @@
       ],
       example: "△ 60, 70 → 180 − 60 − 70 → 50."
     },
+    mmr: {
+      intro: "Three more 'averages': the median (middle), the mode (most common) and the range (the spread).",
+      tips: [
+        "Median: put the numbers in order, then take the middle one.",
+        "Mode: the value that appears most often.",
+        "Range: the biggest minus the smallest."
+      ],
+      example: "median of 3, 7, 5 → in order 3, 5, 7 → the middle is 5."
+    },
+    sdt: {
+      intro: "Speed, distance and time link up: distance = speed × time. Rearrange for the one you need.",
+      tips: [
+        "Distance = speed × time. 60 km/h for 2 h → 120 km.",
+        "Speed = distance ÷ time. 120 km in 2 h → 60 km/h.",
+        "Time = distance ÷ speed. 120 km at 60 km/h → 2 h."
+      ],
+      example: "speed: 150 km in 3 h → 150 ÷ 3 → 50 km/h."
+    },
     pctup: {
       intro: "A percentage INCREASE adds that slice ON — find the part, then add it to the original.",
       tips: [
@@ -632,6 +650,20 @@
         break; }
       case "volume": { const m = p.match(/^vol (\d+)×(\d+)×(\d+)$/); if(!m) break;
         return "Volume = the three sides multiplied — " + m[1] + " × " + m[2] + ", then × " + m[3] + "."; }
+      case "mmr": {
+        // METHOD only — describe how to find it, never the value.
+        if(/^median /.test(p)) return "Put the numbers in order, then take the one in the middle.";
+        if(/^mode /.test(p)) return "Find the value that appears most often in the list.";
+        if(/^range /.test(p)) return "Take the smallest number away from the largest.";
+        break; }
+      case "sdt": {
+        const md = p.match(/^dist: (\d+)km\/h × (\d+)h$/);
+        if(md) return "Distance = speed × time — multiply " + md[1] + " by " + md[2] + ".";
+        const ms = p.match(/^speed: (\d+)km in (\d+)h$/);
+        if(ms) return "Speed = distance ÷ time — divide " + ms[1] + " by " + ms[2] + ".";
+        const mt = p.match(/^time: (\d+)km at (\d+)km\/h$/);
+        if(mt) return "Time = distance ÷ speed — divide " + mt[1] + " by " + mt[2] + ".";
+        break; }
       case "angles": {
         // METHOD only — echo the fixed total (180/360, never an answer), not the
         // given angle (which can equal the answer, e.g. line 90 → 90).

@@ -6143,3 +6143,16 @@ verified: new `test/t219-geometry.test.js`; arena3 STILL 27/27 (the T219-batch-4
 catalogue growth — 0 violations, exactly as designed to be robust); hero-icons catalogue 2058 → 2205; glyphs +
 integrity + tech-tree green; full suite **61/61**. [A]-only (modes.js, guides.js, tests, pages.yml). Remaining
 T219: Speed-Distance-Time, Median/Mode/Range, Prime-factorisation; then the Collector rebalance LAST.
+
+---
+### [A] T219 batch 6 — Median·Mode·Range (Reasoning) + Speed·Distance·Time (Measures)
+- **`mmr`** — the other averages: median (ordered middle), mode (most frequent), range (max − min); 21 items,
+  the test re-derives each independently. Branches off `timegap` (the free Reasoning leaf with room); group
+  Reasoning. Glyph `a−b`. Explains are method-only (no numbers echoed → no leak).
+- **`sdt`** — speed/distance/time: D = S×T and its rearrangements (S=D÷T, T=D÷S), clean integer answers; 21
+  items. Branches off `money` (the closest free applied-number leaf with room: bonds→bonds2→money→sdt, at the
+  4-abreast limit); group Measures. Glyph `a÷n`.
+verified: new `test/t219-mmr-sdt.test.js`; arena3 still 0 monotonicity violations (fracGuard robust through
+catalogue 2205 → 2303); glyphs + integrity + home-layout green; full suite **62/62**. [A]-only (modes.js,
+guides.js, tests, pages.yml). **T219 content nearly done** — only Prime-factorisation left, then the Collector
+rebalance LAST. Then T218 (nav badges), T225 (final quality pass).

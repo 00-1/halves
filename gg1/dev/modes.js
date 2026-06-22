@@ -629,6 +629,23 @@
     if(e[0] === "P") return { p: "point " + e[1] + " + ?", a: e[2] };
     return { p: "△ " + e[1] + ", " + e[2] + " → ?", a: e[3] };
   }
+  // T219 batch 6 — median/mode/range (the other averages) + speed-distance-time.
+  const MMR_SRC = [
+    ["med",[3,7,5],5],["med",[8,2,6,4,10],6],["med",[12,9,15],12],["med",[5,1,9,3,7],5],["med",[20,14,18],18],["med",[6,2,4,8,10],6],["med",[11,7,9,13,5],9],
+    ["mod",[4,7,4,2,9],4],["mod",[3,3,8,5,3],3],["mod",[6,1,6,9,6],6],["mod",[2,5,5,8,1],5],["mod",[7,7,2,4,9],7],["mod",[10,3,10,1,10],10],["mod",[8,8,4,4,8],8],
+    ["rng",[3,9,5,7],6],["rng",[12,4,8,20],16],["rng",[15,6,11,9],9],["rng",[2,18,10,5],16],["rng",[7,7,7,12],5],["rng",[14,3,9,21],18],["rng",[5,8,2,6],6]
+  ];
+  function mmrItem(e){ const label = e[0] === "med" ? "median" : e[0] === "mod" ? "mode" : "range"; return { p: label + " of " + e[1].join(","), a: e[2] }; }
+  const SDT_SRC = [
+    ["d",60,2,120],["d",50,3,150],["d",40,4,160],["d",70,2,140],["d",30,5,150],["d",80,3,240],["d",45,2,90],   // distance = speed × time
+    ["s",120,2,60],["s",150,3,50],["s",200,4,50],["s",180,3,60],["s",90,2,45],["s",240,4,60],["s",160,2,80],     // speed = distance ÷ time
+    ["t",120,40,3],["t",150,50,3],["t",200,50,4],["t",100,25,4],["t",180,60,3],["t",90,45,2],["t",240,80,3]       // time = distance ÷ speed
+  ];
+  function sdtItem(e){
+    if(e[0] === "d") return { p: "dist: " + e[1] + "km/h × " + e[2] + "h", a: e[3] };
+    if(e[0] === "s") return { p: "speed: " + e[1] + "km in " + e[2] + "h", a: e[3] };
+    return { p: "time: " + e[1] + "km at " + e[2] + "km/h", a: e[3] };
+  }
   // Percent increase: "base + pct%" → the new total. F↔D↔P: three conversion shapes.
   function pctUpItem(e){ return { p: e[1] + " + " + e[0] + "%", a: e[2] }; }
   function fdpItem(e){
@@ -1003,6 +1020,23 @@
       glyph:'n<span class="slash">−</span>k',
       eyebrow:'missing angle <b>↓</b>', expr:false, requires:"mastery:volume", masterSecs:8, group:"Geometry",
       build(){ return shuffle(ANGLES_SRC).map(angleItem); }
+    },
+    // ---- T219 batch 6 — Median/Mode/Range (Reasoning) + Speed-Distance-Time -----
+    {
+      // Median/Mode/Range — the other averages. Branches off `timegap` (the free
+      // Reasoning leaf with room); group Reasoning.
+      id:"mmr", name:"Median · Mode · Range", tag:"The other averages.",
+      glyph:'a<span class="slash">−</span>b',
+      eyebrow:'find it <b>↓</b>', expr:false, requires:"mastery:timegap", masterSecs:8, group:"Reasoning",
+      build(){ return shuffle(MMR_SRC).map(mmrItem); }
+    },
+    {
+      // Speed-Distance-Time — D = S × T and its rearrangements. Branches off `money`
+      // (the closest free applied-number leaf with room); group Measures.
+      id:"sdt", name:"Speed · Distance · Time", tag:"D = S × T.",
+      glyph:'a<span class="slash">÷</span>n',
+      eyebrow:'solve <b>↓</b>', expr:false, requires:"mastery:money", masterSecs:9, group:"Measures",
+      build(){ return shuffle(SDT_SRC).map(sdtItem); }
     }
   ];
 
@@ -1083,7 +1117,10 @@
     // T219 batch 5 — Geometry group (distinct grids).
     area:         ["k","*×","b"],      // k×b — a rectangle's two sides
     volume:       ["b","*×","x"],      // b×x — three dimensions multiplied
-    angles:       ["n","*−","b"]       // n−b — the angle left over (to 180 / 360)
+    angles:       ["n","*−","b"],      // n−b — the angle left over (to 180 / 360)
+    // T219 batch 6 — averages + speed.
+    mmr:          ["a","*−","b"],      // a−b — the range (max − min) stands in for the trio
+    sdt:          ["a","*÷","n"]       // a÷n — distance ÷ time (speed)
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 
