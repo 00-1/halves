@@ -4739,3 +4739,32 @@ how I verified: new **`install-display.test.js` (11 checks, gated in `pages.yml`
 notes: **owner/babysitter verify** — on the installed PWA the fullscreen buttons should be gone (locked
   fullscreen, status bar hidden); in a browser tab they remain. Next per `NEXT.md`: **`T157`** (Android
   back-button → navigate the screen stack, don't exit mid-game).
+
+---
+
+## Builder A — T161 🔴 the build marker now reflects the RUNNING code (cache-trust fix)
+commit: (this commit) — [A], DO-FIRST/ABSOLUTE. Owner: "they show the same build number… the build number
+should be an absolute marker of what you're looking at, but it isn't — that's caused a lot of problems."
+root cause (confirmed): `main.js` set the pill + `bootSha` from a **fresh `fetch(build.json)`** — decoupled
+from the executing code. So every client showed build.json's LATEST sha (even when running an old cached
+bundle → two clients on different code showed the SAME number), and the update-check compared the fresh
+build.json sha against `bootSha` (itself from the same fresh fetch) → **fresh-vs-fresh, always equal, NEVER
+fired.** The marker AND the staleness detector were both blind to what's actually running.
+fix ([A]-only, `main.js`):
+  - Capture **`RUNNING_V`** = main.js's OWN `?v=<sha>` (the T107 cachebust query on `document.currentScript.src`,
+    fallback `querySelector('script[src*="main.js"]')`). That's the sha of the code actually executing.
+  - **The pill shows `RUNNING_V`** (truthful per-client; a stale cached bundle shows its OWN old sha). No `?v=`
+    (local/dev) → "local build".
+  - **The update-check compares `RUNNING_V` vs the FRESH `build.json` shortSha** → differ ⇒ running stale ⇒
+    `showUpdate()` (reload lands on fresh `?v=` assets). build.json now supplies only the LATEST sha + the "ago"
+    time, never the running identity. (Deployed assets are already `?v=`-versioned by T107 — this was purely the
+    marker reading the wrong source.)
+how I verified: **`version.test` 9→13** (rewritten) — boots `main.js` with a `document.currentScript?v=` + a
+  controllable build.json: the pill shows the RUNNING sha (not build.json's); running==latest ⇒ no bar;
+  running≠latest ⇒ the Update bar fires (the safety net that was silently broken) AND the pill KEEPS the running
+  sha after fetching a newer build.json; refresh reloads only on click; a no-`?v=` boot reads "local build" +
+  the poll is a no-op. `node -c` clean; **full suite green**. [A]-only (`main.js`, `test/version.test.js`).
+notes: highest-value fix — once live, two clients on different code show DIFFERENT numbers and "update available"
+  actually fires when stale, so every subsequent live review is trustworthy. Next per `NEXT.md`: **`T158`
+  (rescoped: no-store nav)** → `T159` (foghorn on resume) → `T160` (Arena death VFX) → then my pending
+  `T156`/`T157`.

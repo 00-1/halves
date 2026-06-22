@@ -2427,13 +2427,25 @@
     if(s < 86400)return Math.floor(s/3600)+"h ago";
     return Math.floor(s/86400)+"d ago";
   }
+  // T161 — the build pill is an ABSOLUTE marker of the RUNNING code: read the
+  // executing bundle's OWN version from main.js's `?v=<sha>` (injected by the T107
+  // cachebust), NOT from build.json (which is the LATEST-deployed sha, decoupled
+  // from what's actually running). So a stale cached client shows its OWN old sha,
+  // and the update-check can compare running-vs-latest and actually fire.
+  const RUNNING_V = (function(){
+    try{
+      let src = (document.currentScript && document.currentScript.src) || "";
+      if(!src && document.querySelector){ const s = document.querySelector('script[src*="main.js"]'); src = (s && s.src) || ""; }
+      const m = /[?&]v=([^&]+)/.exec(src || "");
+      return m ? decodeURIComponent(m[1]) : null;
+    }catch(e){ return null; }
+  })();
   let buildInfo = null;
   function renderBuild(){
-    const el = $("buildInfo");
-    if(!buildInfo){ el.textContent = "local build"; return; }
-    const sha = buildInfo.shortSha || (buildInfo.sha || "").slice(0,7) || "—";
-    const ago = relAgo(Date.parse(buildInfo.time));
-    el.innerHTML = 'build <b>'+esc(sha)+'</b>' + (ago ? ' · '+ago : '');
+    const el = $("buildInfo"); if(!el) return;
+    if(!RUNNING_V){ el.textContent = "local build"; return; }      // no ?v= → dev/local
+    const ago = buildInfo && buildInfo.time ? relAgo(Date.parse(buildInfo.time)) : "";
+    el.innerHTML = 'build <b>'+esc(RUNNING_V)+'</b>' + (ago ? ' · '+ago : '');   // the RUNNING sha (truthful per client)
   }
   // T102 — register the PWA service worker (offline + installable). Guarded + lazy
   // (after load, never blocking boot); the SW is network-first for build.json/nav so
@@ -2443,30 +2455,35 @@
     if(typeof window !== "undefined" && window.addEventListener) window.addEventListener("load", reg); else reg();
   }
 
-  // Version check (T54): remember the sha booted with; poll build.json for a newer
-  // deploy and offer a manual refresh. No-op on a local build / offline; never
-  // auto-reloads, never steals focus, polls on an interval (not a tight loop).
-  let bootSha = null, updateShown = false, updateDismissed = false;
+  // Version check (T54 + T161): the RUNNING version is RUNNING_V (above). Poll
+  // build.json for the LATEST-deployed sha; if it differs from RUNNING_V we are on
+  // STALE code → offer a manual refresh (the reload lands on fresh ?v= assets).
+  // build.json supplies the LATEST sha + the "ago" time only — never the running
+  // identity. No-op on a local build / offline; never auto-reloads or steals focus.
+  let updateShown = false, updateDismissed = false;
   function showUpdate(){
     if(updateShown || updateDismissed) return;
     updateShown = true;
     const bar = $("updateBar"); if(bar) bar.classList.remove("hidden");
   }
   function checkForUpdate(){
-    if(!bootSha) return;                          // local build / not booted → no-op
+    if(!RUNNING_V) return;                        // local build / no marker → no-op
     fetch("build.json", { cache:"no-store" })
       .then(r => r.ok ? r.json() : null)
-      .then(j => { if(j && j.sha && j.sha !== bootSha) showUpdate(); })
+      .then(j => {
+        if(!j) return;
+        buildInfo = j; renderBuild();             // refresh the "ago"
+        const latest = j.shortSha || (j.sha || "").slice(0, 7);
+        if(latest && latest !== RUNNING_V) showUpdate();   // running ≠ latest ⇒ stale ⇒ surface refresh
+      })
       .catch(() => {});                           // offline/404 → silently ignore
   }
-  fetch("build.json", { cache:"no-store" })
-    .then(r => r.ok ? r.json() : null)
-    .then(j => { buildInfo = j; if(j && j.sha) bootSha = j.sha; renderBuild(); })
-    .catch(() => renderBuild());
+  renderBuild();                        // show the RUNNING version at once (before any fetch)
+  checkForUpdate();                     // initial: pull build.json for the "ago" + the staleness check
   setInterval(renderBuild, 30000);      // keep the "ago" fresh
   setInterval(checkForUpdate, 180000);  // poll for a newer deploy (every 3 min)
   // expose the version-check internals for the Node test
-  window.Updater = { check: checkForUpdate, bootSha: () => bootSha, shown: () => updateShown, setBoot: s => { bootSha = s; } };
+  window.Updater = { check: checkForUpdate, running: () => RUNNING_V, bootSha: () => RUNNING_V, shown: () => updateShown };
 
   // ---- init ---------------------------------------------------------------
   if(window.Icons && window.Icons.installCSS) window.Icons.installCSS();   // T117: register the house pixel-icon masks
