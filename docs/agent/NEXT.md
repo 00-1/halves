@@ -10,12 +10,12 @@
 
 ---
 
-**Builder A → `T162` (build the 11 mock-driven drill modes — TIER P1 FIRST) → content `T59`–`T61` → `T72` (held)**
+**Builder A → `T162` (build the 12 mock-driven drill modes — TIER P1 FIRST) → content `T59`–`T61` → `T72` (held)**
 **You're well ahead — nice work.** PUSHED & gate-green, **pending Babysitter review** (don't redo): `T161`
 (`555464f`), `T156` (`eaf40bd`), `T157` (`1a3e3fb`), `T158` rescoped no-store (`41bd1d8`; the earlier
 `e454208` network-first is superseded), `T159` (`aa583b8`), `T160` (`1c949e0`), `T58` (`c89eebc`). **Don't
 rebuild any of those.**
-**NEXT REAL WORK → `T162` (owner-blessed, build ALL 11 drill modes, in 3 tiered pushes — do TIER P1 first and
+**NEXT REAL WORK → `T162` (owner-blessed, build ALL 12 drill modes, in 3 tiered pushes — do TIER P1 first and
 push before P2):**
 - **Tier P1 (push 1): `scaling`, `percentoff`, `partwhole`, `balance`** (the last = "Complete the Sum", from the Verbal report's maths section)**.** Full item sets + calibrated ranges + `masterSecs`
   + unlock slots are in **`docs/agent/T162-calibration.md`** — read it. Each mode = a fixed `*_SRC` array →
