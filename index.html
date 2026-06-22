@@ -31,8 +31,11 @@
 
   <!-- ENTRY / TAP TO BEGIN (provides the fullscreen + audio user gesture) -->
   <section id="entry" class="screen active">
-    <div class="mark">x<span class="slash">/</span>2</div>
+    <!-- T208 — the mark is painted (Magnar) by renderBrand(); kept EMPTY in static
+         HTML (height reserved in CSS) so the old hard-coded x/2 never flashes. -->
+    <div class="mark"></div>
     <div class="brand">Goblin Gold</div>
+    <div class="subtitle">The Void Throne</div>
     <div class="tag">Fast mental-maths drills</div>
     <div class="entry-actions">
       <button class="btn" id="entryFs">Play in fullscreen</button>

@@ -96,7 +96,8 @@ body{
 .mark{font-family:var(--mono);font-weight:800;letter-spacing:-.04em;line-height:.9;
   font-size:clamp(56px,20vw,100px);
   background:linear-gradient(180deg,var(--text),var(--muted));-webkit-background-clip:text;background-clip:text;color:transparent;
-  display:flex;align-items:baseline;gap:.04em;justify-content:center}
+  display:flex;align-items:center;gap:.04em;justify-content:center;
+  min-height:clamp(54px,18vw,92px)}   /* T208 — reserve the painted-mark height so the empty static mark never jumps */
 .mark .slash{color:var(--amber);-webkit-text-fill-color:var(--amber);font-weight:400;transform:translateY(-.02em)}
 /* T56 — procedural pixel-font glyph (canvas) replaces the typographic mark. */
 .mark canvas{height:clamp(54px,18vw,92px);width:auto;image-rendering:pixelated;display:block}
@@ -106,6 +107,11 @@ body{
    stays the Halves drill icon; the product is Goblin Gold). Gold to match the name. */
 .brand{font-family:var(--display);font-weight:700;font-size:clamp(22px,7vw,32px);letter-spacing:.01em;
   color:var(--amber);margin-top:14px;line-height:1}
+/* T208 — the full title is "Goblin Gold: The Void Throne"; the void line is the
+   subtitle between the wordmark and the maths tag. Plain gold/amber for now —
+   T209 stylises it (pixel-gold name / dithered-purple void line). */
+.subtitle{font-family:var(--display);font-weight:600;font-size:clamp(15px,5vw,22px);letter-spacing:.04em;
+  color:var(--amber-2,#e0a93c);margin-top:6px;line-height:1.05;opacity:.92}
 .tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px;font-weight:500}
 /* T81/T91 — COMPACT home-screen event banner: a short, bounded strip so it stays
    prominent but never dominates the one-screen #start layout. Small emblem ·

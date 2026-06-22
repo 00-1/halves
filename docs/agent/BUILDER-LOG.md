@@ -5694,3 +5694,15 @@ emblems; the 3 emblems are boss(meta)-gated + granted by `evaluateMeta` on their
 routing + the removed Codex section are pinned. `codex.test` 28→27 (Emblems section gone → 4 sections).
 `hero-icons` catalogue counter 1563→**1566** (+3 emblems). **Full suite 53/53.** [A]-only (collectibles.js,
 main.js, the gates). Then T168 stays HELD on the owner's Play ID verification.
+
+---
+### [A] T208 — kill the x/2 splash flash + add "The Void Throne" subtitle
+what: `index.html` hard-coded `<div class="mark">x/2</div>`, which paints instantly and then `renderBrand()`
+swaps in Magnar after JS — a visible flash. **Emptied the static `.mark`** (`<div class="mark"></div>`) and
+reserved its height in CSS (`min-height:clamp(54px,18vw,92px)`) so there's no layout jump while renderBrand
+paints Magnar (paintGlyph(halves) stays the no-flash fallback). **Added the "The Void Throne" subtitle** (the
+full title is *Goblin Gold: The Void Throne*) as a gold/amber line between the wordmark and the maths tag —
+stack is now Magnar → Goblin Gold → The Void Throne → Fast mental-maths drills. Plain amber for now (T209
+stylises it). [A]-only (index.html, styles.css).
+verified: `pwa.test` 35→37 (the mark is empty — no hard-coded x/2 — and the subtitle is present). icon-app's
+renderBrand→Magnar check still green. Full suite 53/53.

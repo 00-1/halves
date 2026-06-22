@@ -38,7 +38,10 @@ if(mani){
   const sandbox = {}; global.window = sandbox; new Function(read("modes.js"))(); delete global.window;
   const halves = sandbox.MODES.find(m => m.id === "halves");
   ok(halves && halves.name === "Halves", "(a2) T171: the 'Halves' maths TOPIC is preserved (mode id=halves name='Halves')");
-  ok(/<div class="mark">x<span class="slash">\/<\/span>2<\/div>/.test(idx), "(a2) T171: the x/2 topic mark stays on the splash (the drill identity is kept)");
+  // T208 — the static mark is EMPTY (renderBrand paints Magnar; no hard-coded x/2 flash)
+  ok(/<div class="mark"><\/div>/.test(idx) && !/<div class="mark">x<span/.test(idx), "(a2) T208: the splash mark is empty (painted by renderBrand; the old x/2 flash is gone)");
+  // T208 — the full title is "Goblin Gold: The Void Throne" — the void line is the subtitle
+  ok(/<div class="subtitle">The Void Throne<\/div>/.test(idx), "(a2) T208: 'The Void Throne' subtitle sits below the Goblin Gold wordmark");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------
