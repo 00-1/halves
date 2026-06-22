@@ -2812,6 +2812,45 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
+### T174 — [B] RESEARCH/ART pass: representing an accumulating COIN HOARD (impression, not physics) · status: OPEN · research-first (gold-hoard feature)
+**Owner wants a Smaug/Scrooge gold hoard that piles up organically on the home screen** with **individual coins
+visible** ("circles at different angles, with the bevel"), fed by **coins that fly in from the earn-point** — but
+**"not literally thousands of particles with physics, just the overall impression of amassed coins"** + *"do a
+search pass on art style of representing a mass like this (e.g. it's done with leaves and other piled items)."*
+Full vision/spec in **`docs/agent/GOLD-HOARD-DESIGN.md`**. **This task = the RESEARCH pass that precedes the
+build.**
+- **Survey** how stylized **accumulating masses of small items** are rendered WITHOUT per-item physics: shaped
+  **silhouette/heightfield + surface-scatter** (poisson/blue-noise placement) + dither/palette shading + lit
+  **bevels**; "render only the surface you'd see, imply the bulk." Reference real examples (leaf piles, Spyro gem
+  hoards, DuckTales money bin, Clash gold storages, snow/gravel drifts) and **borrow applicable `brickmap` dither/
+  scatter recipes** (B has brickmap access; ORCHESTRATION §brickmap — port techniques, not the engine).
+- **Output:** a short doc + a **recommended technique** for the coin hoard — how the mound **silhouette grows on a
+  saturating curve** (gold→level, plateaus gracefully under the 512 `PARTICLE_CAP`), how many **surface coins** to
+  scatter + their **bevel/angle** treatment, and the **reduced-motion still**. Note the wins/limits honestly.
+- **DoD:** the research doc + recommended technique (engine-mappable into `fxgl.js`, fits the cap + degrade ladder
+  + reduced-motion); **B-owned doc only** (no engine change yet); `node -c` clean if any code/test touched.
+  **The Babysitter surfaces the recommended technique to the owner for a thumbs-up before T172 builds it.**
+
+### T172 — [B] Gold-hoard ENGINE: beveled-coin splat + hoard scene mode + attractor burst (`fxgl.js`) · status: OPEN · after T174 + owner-bless
+Build the **owner-blessed** technique from T174 into `fxgl.js` (spec in `GOLD-HOARD-DESIGN.md` §engine): (a)
+**beveled-coin splat** (enhance the disc-mask fragment — rim highlight + inner gradient + specular glint, gold
+palette; opt-in `look:"coin"`), (b) **per-particle rotation + aspect/squash** (coins at varied angles), (c) a
+**hoard scene mode** (settled silhouette + surface scatter driven by a saturating `hoard` level; re-seed only on
+tier change), (d) an **attractor/converge burst** (emit from `{x,y}` → move to a target region → settle, vs
+today's disperse). Respect `PARTICLE_CAP` (512) + degrade ladder; **prefers-reduced-motion → static pile**;
+DPR-crisp. **DoD:** headless tests on the pure math (coin instance attrs, saturating curve, converge path) like
+the other `fxgl` tests; defaults for existing scenes byte-identical (opt-in); `golden-fx` updated as needed;
+**B-owned (`fxgl.js` + tests) only.** Babysitter browser-verifies it renders + is bounded; owner tunes the feel.
+
+### T173 — [A] Gold-hoard WIRING: feed gold→hoard + fire the earn-burst from the earn-point (`main.js`) · status: OPEN · after T172
+Wire B's gold-hoard engine into the home backdrop (spec in `GOLD-HOARD-DESIGN.md` §wiring): add the **hoard level**
+to `homeFxState` (a saturating curve over `loadGold()`), pass it into the home scene so the mound renders + grows;
+on `addGold(...)` fire the **attractor burst from the earn-point** (gold pill / answer point / reward toast — pick
+what reads best) into the hoard, then the persistent mound reflects the new total. **Keep it behind the UI + verify
+text legibility** over it (home a11y/contrast); **reduced-motion → static**; stays **T153 fixed-purple** compliant
+(gold-on-purple). **DoD:** the hoard grows with gold + earn-coins fly into it; legibility intact; `node -c` clean;
+`$("id")`/home-layout invariants hold; **[A]-only** (`main.js`, tests). Browser-verify; owner signs off the feel.
+
 ### T171 — [A] Rename the PRODUCT to "Goblin Gold" (keep the "Halves" topic) · status: OPEN · owner-chosen brand
 **Owner chose the app name: "Goblin Gold"** (the in-game currency — intentional cohesion). Rename the **product/
 brand**, NOT the maths topic: `manifest.webmanifest` `name`/`short_name` → **"Goblin Gold"** (short_name kept

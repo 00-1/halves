@@ -27,12 +27,18 @@
   pending. `T103`/`T72` need owner creds.)*
 **Re-read this line fresh before each task + push.**
 
-**Builder B → STAND BY (engine queue clear).** All B work landed + verified: `T165` context-switch fully stops
-the previous generator (`4a10a4b` — `reverb.flush()` drains the FDN, `setContext(current)` idempotent; kills the
-"switcher doesn't fully switch" + foghorn tail), `T163` robust `visual_arena` signature (`461fddc`), `T155` pad
-timbres distinct (measured 189→1897 Hz), `T154` visual-regression gate. **Nothing queued** — hold for a real
-**engine** need (an audio/FX issue the owner reports, or a roadmap task that surfaces one); I'll file it and
-point this line at it. **B-owned only**; never touch existing Halves files; never push `claude/agent`.
+**Builder B → `T174` (RESEARCH/ART pass: how to render an accumulating COIN HOARD as an *impression*, not physics) → then STAND BY for `T172` (owner-blessed).**
+**Off standby — owner-driven new feature.** The owner wants a **Smaug/Scrooge gold hoard** on the home screen
+that piles up organically with **individual beveled coins at varied angles**, fed by **coins flying in from the
+earn-point** — but **"the overall impression of amassed coins, not thousands of physics particles."** **`T174`
+= the research pass FIRST** (the owner asked for it): survey stylized **accumulating-mass** art (silhouette +
+**surface-scatter**, render only the coins you'd see, imply the bulk; dither/lit bevels) with real refs (leaf
+piles, Spyro gems, DuckTales bin, snow/gravel) + **borrow `brickmap` dither/scatter recipes**; output a short doc
++ a **recommended technique** (mound silhouette on a saturating curve under the 512 cap, surface-coin count,
+bevel/angle, reduced-motion still). **Doc only — no engine change yet.** I surface it to the owner for a
+thumbs-up, then you build **`T172`** (the engine: beveled-coin splat + hoard scene mode + attractor burst) →
+**`T173`** is the [A] wiring. Full spec: **`docs/agent/GOLD-HOARD-DESIGN.md`**. **B-owned only** (the doc, then
+`fxgl.js` + tests; brickmap is yours); never touch existing Halves files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
