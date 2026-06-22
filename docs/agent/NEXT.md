@@ -22,10 +22,11 @@
   track `curMusicKey = context+":"+seed`; if unchanged + already playing, **return** (no setContext/swapNow/
   start). Keep `musicPreview` + per-topic `lofi` seed switching. Node test asserts skip-when-same / fire-when-
   changed. [A]-only. Pairs with B's `T165`. *(BACKLOG T164.)*
-- **Then `T167`:** the installed PWA still shows Android bars (`display:"fullscreen"` alone isn't enough; no
-  auto-fullscreen without a gesture). **Make the "Tap to begin" tap also call `fsEnter()`/`requestFullscreen()`**
-  (keep the entry screen — it serves the audio gesture too; don't re-add a separate FS button). [A]-only.
-  *(BACKLOG T167.)*
+- **Then `T167` (launch/fullscreen THREE WAYS — owner-spec):** a `launchMode()` helper → **(1) browser tab:** keep
+  the 2-way choice (`#entryFs` fullscreen + `#entryPlay` windowed, the original); **(2) installed PWA:** single
+  "Tap to begin" that does audio-unlock **+ `requestFullscreen()`** (gesture-required; no windowed option);
+  **(3) TWA "final app"** (`document.referrer` `android-app://`): **NO entry screen — drop straight into main,
+  native immersive fullscreen, unlock audio on first in-app tap.** [A]-only. *(BACKLOG T167.)*
 - **Then resume `T162`:** Tier P2 (`ratioshare`, `timegap`, `lcmhcf`, `mean`) → Tier P3 (`cubes`, `money`,
   `digitsum`, doubles/halves range check), one push per tier (spec in `docs/agent/T162-calibration.md`) → content
   `T59`–`T61`. *(`T103`/`T72` Play-Store need owner creds — hold.)*

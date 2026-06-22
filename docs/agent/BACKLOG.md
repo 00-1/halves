@@ -2745,26 +2745,30 @@ reads correct in isolation; the bug is the sentinel ↔ hash ↔ popstate intera
   (not home) and the full chain; `node -c` clean; browser-tab + headless unaffected; **[A]-only** (`main.js`,
   a nav test). **Verify in a real browser** (the harness; or owner confirms on PWA).
 
-### T167 — [A] PWA: enter true fullscreen via the "Tap to begin" gesture (Android bars still show) · status: OPEN · owner-requested
-**Owner (2026-06-22): the installed PWA's fullscreen LAUNCH button is gone (good) "but it's actually now not in
-fullscreen — I see the Android bars top and bottom. Can we go straight into fullscreen without a button press,
-or do we still need that like web? If we still need it, put it back on the 'Tap to begin' button."** **Answer:
-we still need a user gesture** — browsers (incl. installed PWAs on Android) only honour `requestFullscreen()`
-**from a user gesture**; the manifest `display:"fullscreen"` (T156) hides the status bar on *some* Android/Chrome
-builds but evidently not the owner's (both bars show), and there is **no way to auto-fullscreen on load without a
-tap**. So **keep the entry screen** (it also serves the required AUDIO unlock gesture) and **make the "Tap to
-begin" tap ALSO call `requestFullscreen()`** when installed/standalone (and harmlessly in a browser tab too).
-- **Fix:** in the entry "Tap to begin" handler, after the audio unlock, call the existing `fsEnter()`/
-  `requestFullscreen()` helper (vendor-prefixed, try/catch). Keep it a no-op where unsupported. Don't re-add a
-  separate fullscreen button. (The `isInstalledDisplay()` from T156 can decide whether to attempt it, but
-  attempting in a tab is fine too.)
-- **Note for later (TWA / Play-Store build):** a TWA wrapper CAN launch **immersive/edge-to-edge natively** with
-  NO gesture and NO entry screen — so the owner's "skip the entrypoint, drop straight into fullscreen" is
-  achievable in the **packaged** app (configure immersive mode in the TWA), just not in a raw installed PWA.
-  Capture this for the T72/T103 packaging track; for now the gesture path is correct.
-- **DoD:** tapping "Tap to begin" enters fullscreen (where the API allows) in addition to unlocking audio; no
-  separate fullscreen button reappears; browser-tab behaviour fine; `node -c` clean; **[A]-only** (`main.js`,
-  maybe `index.html` copy). **Verify:** owner confirms the installed PWA goes fullscreen after the tap.
+### T167 — [A] Launch/fullscreen behaviour, THREE WAYS by runtime context (browser / PWA / packaged app) · status: OPEN · owner-spec
+**Owner (2026-06-22) locked the design — fullscreen depends on WHERE it runs:**
+1. **Browser tab → a CHOICE** (the original behaviour): keep BOTH entry options — **"Play in fullscreen"**
+   (`#entryFs` → `requestFullscreen()` + audio unlock) AND a plain **non-fullscreen "Tap to begin"** (`#entryPlay`
+   → audio unlock only, windowed). *(This is what we had; T156 already leaves both buttons in a browser tab —
+   just confirm the windowed option still works and the FS one still enters fullscreen.)*
+2. **Installed PWA → ONE choice: fullscreen** ("it's an app, that's expected"). Show the entry with a **single**
+   "Tap to begin" (T156 already hides `#entryFs` when installed) and make that tap **unlock audio + call
+   `requestFullscreen()`** (gesture-required — there is NO auto-fullscreen-on-load for a raw PWA; the manifest
+   `display:"fullscreen"` alone didn't hide the owner's Android bars). No windowed option here.
+3. **Packaged "final app" (TWA) → NO launch screen: dropped straight into the app, fullscreen.** A TWA launches
+   **native immersive/edge-to-edge** (no gesture needed for fullscreen), so **skip the entry screen entirely**
+   and show the main screen immediately. Web Audio still needs a gesture, so **unlock audio on the first in-app
+   interaction** (first answer/nav tap) rather than an entry tap — acceptable (music starts a beat later).
+- **Context detection:** `display-mode: browser` (matchMedia) → case 1; standalone/fullscreen display-mode AND
+  **not** a TWA → case 2; **TWA** → case 3 via `document.referrer.startsWith("android-app://")` (the standard TWA
+  signal; can be implemented now and simply won't trigger until the app is packaged). Centralise as a small
+  `launchMode()` helper returning `"browser" | "pwa" | "app"`.
+- **DoD:** all three branches behave as above — browser keeps the 2-way choice; installed PWA = single
+  tap→fullscreen+audio; TWA(referrer) = no entry screen, straight into main, audio on first interaction; no
+  stray fullscreen button reappears; `node -c` clean; a Node test asserts `launchMode()` mapping + that the entry
+  is skipped in `"app"` mode; **[A]-only** (`main.js`, `index.html`). **Verify:** owner confirms browser (both
+  options), installed PWA (single tap → fullscreen). The TWA branch is confirmed once the app is packaged
+  (T72/T103) — note the immersive-config requirement there too.
 
 ### T164 — [A] Audio: only switch music when the TRACK actually changes (no restart between same-music screens) · status: OPEN · 🔴 owner-flagged (also the likely foghorn root)
 **Owner (2026-06-22): "we need to make sure it only switches when the track actually changes. E.g. moving
