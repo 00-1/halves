@@ -6,55 +6,32 @@
 
 ---
 
-**Builder A → CONTINUE `T219` in batches.** ✅ `T213` content loop **CONVERGED — DONE** (`efb1abf`), ✅ `T220` void
-stretch+flicker **DONE** (pending owner device-confirm), ✅ `T219` **batch 1 (Roman + Primes) APPROVED**. **`Roots` is
-already done** (folded into `cubes`→"Cubes & Roots"). **Next: keep building `T219` group-by-group, pushing each batch
-on its own for re-assessment.** Remaining topics: Part-1 **BODMAS, ×-tricks, Negatives-P1, Algebra/function-machines**;
-Part-2 **Area&Perimeter, Volume, Angles (new Geometry group), Speed-Distance-Time, Median/Mode/Range, F↔D↔P,
-Percentage-increase, Prime-factorisation/factors&multiples**; then the **Collector-ladder rebalance LAST**. Each topic:
-full curated pool (~21, calibrated), guide + `explain()`, chain-gating, the enumeration-harness + assessment loop.
-*(BACKLOG T219.)*
+## Builder A — work the TOP ⏳ item ONLY. Do not skip or reorder. Push it alone → wait for review → next.
 
-**→ 1. FIX `T221` FIRST — the Void Throne is UNREADABLE (owner is live on it).** `e879629`'s wide-spacing + skew
-collapsed "THE VOID THRONE" into illegible streaks. **Owner: "~2× height to be readable (stretch)"** — roughly
-DOUBLE the void-line height (`PXY 3→6` and/or a taller source raster). If still not legible, EASE the skew's
-top-compression (`rs = 0.78 + 0.22·d`, not `0.6 + 0.4·d`). Keep wide spacing + caps/flicker, centred, no clip at
-360px. Headline DoD = **it READS.** Push on its own for owner device-confirm. *(BACKLOG T221 reopened.)*
+**▶ CURRENT TASK = `T221` (Void Throne readability).** Everything below is the full ordered queue with live status.
 
-**→ 2. THEN `T224` — AUDIO settings overhaul.** REMOVE the Music-tempo slider (lock tempo to 1.0×); normalise BOTH
-volume sliders to ONE shared **0–11** integer scale (drop the `×`; today music maxes 0.10× / SFX 1.00× — mismatched);
-new fresh-install **defaults at the MIDPOINT** = the screenshot levels (music ≈0.10× gain, SFX ≈0.50× gain), 11≈2×
-louder, 0=silent; migrate existing prefs to a valid level; keep live-preview + persistence + the style picker. Push on
-its own for owner device-confirm. *(BACKLOG T224.)*
+- ✅ **DONE/approved:** T213, T220, T219 batch 1–3 (Roman, Primes, %-Increase, F·D·P, BODMAS, Function-Machines;
+  Roots via Cubes).
+- ✅ **T222 — restructure: PUSHED (`16c441a`), in Babysitter review.** App now lives in `gg1/dev/`; new dev URL is
+  **`https://00-1.github.io/halves/gg1/dev/`**. (Don't redo it.)
+- ⏳ **`T221` ← DO THIS NOW.** The Void Throne is **UNREADABLE** (the skew collapsed it to streaks). **Fix: ~2× the
+  void-line HEIGHT** (`PXY 3→6`, ideally a taller source raster too). If still not legible, EASE the skew
+  (`rs = 0.78 + 0.22·d`, not `0.6 + 0.4·d`). Keep the wide letter-spacing + caps + flicker; centred; no clip at
+  360px. **DoD = it READS.** *(BACKLOG T221 — reopened. Owner is waiting on this.)*
+- ⏳ **`T224`** — AUDIO overhaul: REMOVE the tempo slider (lock tempo 1.0×); both volume sliders → ONE shared **0–11**
+  integer scale (drop the `×`); fresh-install **defaults at the MIDPOINT** (music ≈0.10× gain, SFX ≈0.50× gain), 11≈2×
+  louder, 0=silent; migrate existing prefs safely; keep live-preview + persistence + style picker. *(BACKLOG T224.)*
+- ⏳ **`T219` remaining topics** — Part-1 **×-tricks, Negatives-P1**; Part-2 **Area&Perimeter, Volume, Angles (new
+  Geometry group), Speed-Distance-Time, Median/Mode/Range, Prime-factorisation**; then the **Collector-ladder
+  rebalance LAST**. Batch by group; push each batch alone. Each topic: curated pool (~21, calibrated), guide +
+  `explain()`, chain-gating. *(BACKLOG T219.)*
+- ⏳ **`T218`** — nav notification BADGES (new loot → Items, new hero → Heroes; clears on view; persists). *(BACKLOG T218.)*
+- ⏳ **`T225`** — the FINAL quality pass (TERMINAL v1 gate): **Babysitter-run** (agent assesses every question + text,
+  Babysitter double-checks); **A only fixes** what comes back. *(BACKLOG T225.)*
 
-**→ 3. THEN `T222` — the GHP multi-app RESTRUCTURE (owner: "move all now" — was SKIPPED last round, still TODO).**
-*(Sequenced AFTER the quick splash/audio tweaks ON PURPOSE: the restructure MOVES the dev URL, so it shouldn't land
-while the owner is actively device-testing visual/audio tweaks on the current URL. Do it once the live-iteration
-settles — but it IS still owed; don't drop it.)*
-READ `FRANCHISE-HOSTING.md` first. Move the live app into **`gg1/dev/`**, create **`gg1/prod/`** (promoted copy, TWA
-target) + **`gg2/dev/`**; root `index.html` = a **franchise landing** that scans **`apps.json`** + reads each app's
-`manifest.webmanifest` to list links. **ISOLATED saves** per scope (`gg1dev.*`/`gg1prod.*`/`gg2dev.*`); **NO
-cross-game gold** (per-game, starts at 0 — no wallet); **`sw.js` cache cleanup → prefix-scoped** (no cross-eviction);
-**one-time `halves.*`→`gg1prod.*` migration** so the live save survives. `gg1/v1/` waits for the tag (T223). **On
-handoff, tell the owner the NEW dev URL `…/halves/gg1/dev/`.** *(BACKLOG T222.)*
-
-**→ 4. THEN continue `T219`** (batched by group — push each on its own for re-assessment).
-  ✅ DONE: Roman, Primes, Percent-Increase, F·D·P, BODMAS, Function-Machines (+ Roots via cubes).
-  **REMAINING:** Part-1 **×-tricks, Negatives-P1**; Part-2 **Area&Perimeter, Volume, Angles (new Geometry group),
-  Speed-Distance-Time, Median/Mode/Range, Prime-factorisation/factors&multiples**; then the **Collector-ladder
-  rebalance LAST**. *(BACKLOG T219.)*
-- **5. THEN `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view;
-  persists). A core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests).
-- **6. THEN `T225` — the FINAL deep quality pass (TERMINAL v1 GATE).** Agent assesses EVERY question + EVERY
-  doc/text string → **Babysitter double-checks** every finding → [A] fixes → loop until clean. Only when clean does
-  the **Babysitter sign off GG1 v1**. *(BACKLOG T225.)*
-
-**v1 SIGN-OFF → TAG → GG2 (Babysitter-owned, no owner action — owner delegated the call):** once T225 is clean the
-Babysitter records "v1 SIGNED OFF", cuts + pushes **`gg1-v1`** + a GitHub Release (`T223`), confirms `gg1/v1/` is
-populated, then **immediately kicks off GG2 P0** (`GG2-MILESTONES.md` → `GG2-P0-EXTRACTION.md` + `GG2-P0-INPUT.md`).
-*(`T168` Play-Store productionisation is NOT a v1-tag blocker — held on the owner's Google ID-verify, runs in
-parallel/after.)*
-**Re-read this line fresh before each task + push.**
+**After the queue clears → v1 sign-off is Babysitter-owned (owner delegated):** Babysitter records "v1 SIGNED OFF",
+cuts + pushes **`gg1-v1`** + a GitHub Release (`T223`), A populates `gg1/v1/`, then **GG2 P0 kicks off**
+(`GG2-MILESTONES.md` → `GG2-P0-EXTRACTION.md` + `GG2-P0-INPUT.md`). *(T168 Play-Store is NOT a v1 blocker.)*
 
 **Builder B → STAND BY.** `T103` (perf pass) + `T211`/`T207` **APPROVED** (live `951e532`); queue clear. Hold until
 the Babysitter points you at a task. *(Open thread: the perf **on-device measurement plan** in `PERF-RESEARCH-2.md`
