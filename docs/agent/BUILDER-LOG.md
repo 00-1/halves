@@ -5440,3 +5440,23 @@ notes: the earn burst uses B's `earnBurst` (converge-to-hoard) — the only coin
 exposes; it reads as "coins flying into the pile" (the owner's original vision). LEGIBILITY + the exact mound
 feel (height, glint, the GOLD_FULL dial) are live-verify items for the owner. This completes the [A] queue
 (T178 bump → T60/T61 → T173); next [A] work awaits the babysitter's pointer.
+
+---
+### [A] T173 follow-ups (2 small fixes per the babysitter's review)
+1. **Earn-burst → standalone OUTWARD (dropped the converge).** The earn-burst used B's `earnBurst`
+   (`seedConverge`) flying coins DOWN to the hoard at `tx:0.5,ty:0.93` — but the owner dropped converge/settle
+   ("the coins flying *out* already evoke it; we're off the home screen when we earn"), and it fires on the
+   results screen where a dive-to-the-bottom-pile read wrong. Switched `fxEarnBurst` to the ballistic `burst()`
+   (coins explode OUT from the earn-point + fade), still gold-toned + amount-scaled (count log-capped 6..88;
+   past the cap → juice: wider spread + bigger + brighter palette). **No tx/ty target.**
+   - *Engine note for B (not blocking):* the beveled-coin LOOK (`look:1`, the rim/inner-gradient/glint in
+     `drawCoin`) is currently only set by the converge/hoard seeders (`seedConverge`/`seedHoard`); the ballistic
+     `seedBurst` particles render as gold squares. So the outward earn-burst is gold sparks, not beveled coins.
+     If the owner wants beveled coins flying outward, it's a ~1-line B tweak: set `look:1` (and honor `opts.look`)
+     in `seedBurst` — the renderer already draws `look===1` as a coin regardless of converge vs ballistic motion.
+2. **Dev gold-setter GATED behind `?dev`.** `?gold=<n>` was always-active; now `devGoldParam` returns early
+   unless `?dev` is present (`/[?&]dev(?:[=&]|$)/`), so it ships inert to production (T168 pre-publish checklist).
+   `?dev&gold=1e9` seeds the total; `?gold=...` alone is a no-op. (Joins T180's `?dev` reveal-all panel.)
+verified: `hoard-wiring.test` 32→38 (asserts the outward burst carries {x,y,count} with NO tx/ty, and a
+behavioural ?dev gate: `?dev&gold` sets, bare `?gold` stays 0). fx-wiring's 84 still green. **Full suite 49/49.**
+[A]-only (main.js + the gate). Next: T179 (Codex/bestiary) → T180 (?dev reveal-all).

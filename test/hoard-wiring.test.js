@@ -25,11 +25,17 @@ ok(/function hoardLevel\(gold\)\{[\s\S]{0,140}Math\.pow\(gold \/ GOLD_FULL, 0\.4
 ok(/hoard:\s*hoardLevel\(loadGold\(\)\)/.test(main.slice(main.indexOf("function homeFxState"), main.indexOf("function arenaFxState"))), "(1) homeFxState feeds hoard: hoardLevel(loadGold()) into the backdrop");
 // the earn burst fires from the gold readout, scaled by the gain
 ok(/function fxEarnBurst\(srcEl, amount\)/.test(main), "(1) a fxEarnBurst(srcEl, amount) helper exists");
-ok(/typeof fxBurst\.earnBurst !== "function"/.test(main), "(1) fxEarnBurst guards on B's earnBurst hook (no-op if absent)");
+ok(/typeof fxBurst\.burst !== "function"/.test(main), "(1) fxEarnBurst guards on B's burst hook (no-op if absent)");
 ok(/function showGold\([\s\S]{0,260}fxEarnBurst\(el, earned\)/.test(main), "(1) showGold fires the coin earn-burst from the gold readout when earned > 0");
-ok(/earnBurst\(\{[^}]*tx:\s*0\.5[^}]*ty:\s*0\.93/.test(main), "(1) the earn burst flies toward the hoard's bottom-centre resting spot");
-// ?gold dev setter
+// T173 follow-up #1: a STANDALONE outward burst (no converge to the pile) — the
+// earn-burst fires fxBurst.burst() and carries NO tx/ty target.
+(function(){ const body = main.slice(main.indexOf("function fxEarnBurst"), main.indexOf("function fxEarnBurst") + 600);
+  ok(/fxBurst\.burst\(\{/.test(body), "(1) the earn burst uses the ballistic burst() (flies OUT + fades)");
+  ok(!/tx:/.test(body) && !/ty:/.test(body), "(1) the earn burst no longer converges to the hoard (no tx/ty target)"); })();
+// T173 follow-up #2: the dev gold-setter is GATED behind ?dev
 ok(/gold=\(\[0-9\.eE\+\]\+\)/.test(main) && /parseFloat\(m\[1\]\)/.test(main), "(1) a ?gold=<n> dev setter seeds the gold total (parseFloat → 1e9 etc.)");
+(function(){ const body = main.slice(main.indexOf("function devGoldParam"), main.indexOf("function devGoldParam") + 400);
+  ok(/\[\?&\]dev/.test(body) && /return;/.test(body), "(1) the dev gold-setter is GATED behind ?dev (inert without it)"); })();
 // the Graphics-menu hoard tester
 ok(/id="hoardTest"/.test(html) && /aria-labelledby="hoardTestLabel"/.test(html), "(1) a labelled hoard-tester group lives in the Graphics menu");
 ["0.2","0.5","1","earn"].forEach(v => ok(new RegExp('data-hoard="' + v.replace(".", "\\.") + '"').test(html), "(1) the hoard tester offers the '" + v + "' preview"));
@@ -70,7 +76,7 @@ const rec = { homeStates: [], earns: [] };
 function Ctl(){ const c = { ready:true, _w:412, _h:915,
   setHomeState(s){ rec.homeStates.push(s); return c; }, setArenaState(){ return c; }, setScene(){ return c; },
   start(){ return c; }, stop(){ return c; }, resize(){ return c; },
-  burst(){ return c; }, celebrate(){ return c; }, earnBurst(o){ rec.earns.push(o); return c; },
+  burst(o){ rec.earns.push(o); return c; }, celebrate(o){ rec.earns.push(o); return c; }, earnBurst(o){ rec.earns.push(o); return c; },
   isAnimating(){ return false; }, isBursting(){ return false; }, dispose(){ return c; }, dimensions(){ return { w:412, h:915 }; }, isReady(){ return true; } };
   return c; }
 global.window.FXGL = { Controller: function(){ return Ctl(); }, capabilities(){ return { webgl2:true, webgpu:false, reducedMotion:false }; } };
@@ -106,9 +112,24 @@ ok(G.hoardLevel(G.load()) > 0.2 && G.hoardLevel(G.load()) < 1, "(3) at 5B gold t
   const homeForFull = rec.homeStates[rec.homeStates.length - 1];
   ok(homeForFull && homeForFull.hoard === 1, "(3) the 'Full' tester previews a level-1 mound on the backdrop");
   fire("earn");
-  ok(rec.earns.length > before, "(3) the tester fires the coin earn-burst (recorded earnBurst calls)");
+  ok(rec.earns.length > before, "(3) the tester fires the coin earn-burst (recorded burst calls)");
   const e = rec.earns[rec.earns.length - 1];
-  ok(e && typeof e.x === "number" && typeof e.y === "number" && e.count > 0 && e.tx === 0.5, "(3) the earn burst carries {x,y,count} and a hoard target (tx 0.5)");
+  ok(e && typeof e.x === "number" && typeof e.y === "number" && e.count > 0, "(3) the earn burst carries {x,y,count} from the earn-point");
+  ok(e && e.tx == null && e.ty == null, "(3) the earn burst is STANDALONE outward — no converge target (tx/ty dropped)");
+})();
+
+// ---- (4) the ?dev gate on the gold-setter (behavioural) ----------------------
+(function(){
+  function bootWithSearch(search){
+    store = {};                                   // fresh — no seeded gold
+    global.window.location.search = search; global.window.location.hash = "";
+    els = {};
+    new Function(read("main.js"))();
+    return global.window.Gold.load();
+  }
+  ok(bootWithSearch("?dev&gold=4242") === 4242, "(4) ?dev&gold=<n> seeds the gold total when ?dev is present");
+  ok(bootWithSearch("?gold=9999") === 0, "(4) ?gold WITHOUT ?dev is inert (gated) — gold stays 0");
+  ok(bootWithSearch("") === 0, "(4) no query string → the dev setter is a no-op");
 })();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " HOARD-WIRING CHECKS PASSED" : fails + "/" + checks + " FAILED"));

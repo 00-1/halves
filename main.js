@@ -132,12 +132,16 @@
   // build (pointer: ≈1e10 — full pile after the long-haul billions).
   const GOLD_FULL = 1e10;
   function hoardLevel(gold){ gold = Math.max(0, gold || 0); return Math.max(0, Math.min(1, Math.pow(gold / GOLD_FULL, 0.4))); }
-  // T173 — ?dev gold-setter: `?gold=<n>` seeds the lifetime gold total so the owner
-  // can preview the hoard mound at ANY wealth on the live build (parseFloat accepts
-  // 1e9 etc.). No param → untouched. A dev affordance, harmless in production.
+  // T173 — dev gold-setter, GATED behind `?dev`: `?dev&gold=<n>` seeds the lifetime
+  // gold total so the owner can preview the hoard mound at ANY wealth on the live
+  // build (parseFloat accepts 1e9 etc.). Without `?dev` it is completely inert, so it
+  // ships harmlessly to production (the T168 pre-publish checklist). Joins T180's
+  // `?dev` reveal-all panel.
   (function devGoldParam(){
     try{
-      const m = /[?&]gold=([0-9.eE+]+)/.exec((window.location && window.location.search) || "");
+      const q = (window.location && window.location.search) || "";
+      if(!/[?&]dev(?:[=&]|$)/.test(q)) return;        // dev tools require ?dev
+      const m = /[?&]gold=([0-9.eE+]+)/.exec(q);
       if(m){ const n = parseFloat(m[1]); if(isFinite(n) && n >= 0) saveGold(n); }
     }catch(e){}
   })();
@@ -360,23 +364,30 @@
     ["#f5b544", "#ffd98a", "#fff0c0"],
     ["#ffd98a", "#fff0c0", "#ffffff"]
   ];
-  // Pure: gain → { count (log, capped), tier (0..3), spread } — Node-testable.
+  // Pure: gain → { count (log, capped), tier (0..3), spread, sizePx } — Node-testable.
   function earnBurstSpec(amount){
     amount = Math.max(0, +amount || 0);
     const mag = Math.log10(1 + amount);                                  // 10→1.04, 1e3→3, 1e6→6, 1e9→9
     const count = Math.max(COIN_MIN, Math.min(COIN_CAP, Math.round(COIN_MIN + 9 * mag)));
     const tier = Math.max(0, Math.min(3, Math.floor(mag / 2.5)));        // 4 readable juice tiers
-    return { count: count, tier: tier, spread: 0.7 + tier * 0.3, palette: COIN_PALS[tier] };
+    // Past the count cap it's JUICE not count: a bigger haul flings coins WIDER, a
+    // touch BIGGER, in a brighter gold palette.
+    return { count: count, tier: tier, spread: 0.9 + tier * 0.4, sizePx: 5 + tier * 1.5, palette: COIN_PALS[tier] };
   }
+  // T173 (follow-up): a STANDALONE outward coin burst — coins explode FROM the
+  // earn-point and fade, NOT converging onto the home pile. The owner dropped the
+  // converge/settle ("the coins flying out already evoke landing in the hoard, and
+  // we're off the home screen when we earn"); this fires on the results screen, so a
+  // directed-to-the-bottom-pile motion read wrong. Uses the ballistic burst() (flies
+  // out + fades), gold-toned, amount-scaled. reduced-motion handled in the engine.
   function fxEarnBurst(srcEl, amount){
     if(!fxBurst || !(amount > 0)) return;
-    if(typeof fxBurst.earnBurst !== "function") return;                  // engine without the T172 hook → no-op
+    if(typeof fxBurst.burst !== "function") return;                      // engine without the burst hook → no-op
     try{ if(fxBurst.resize) fxBurst.resize(); }catch(e){}
     const c = elCentre(srcEl), spec = earnBurstSpec(amount);
     const seed = ((Math.round(Math.min(amount, 1e15)) >>> 0) * 0x9e3779b1 >>> 0) || 1;
-    // tx/ty = the hoard's resting spot (bottom-centre); coins fly down into the pile.
-    try{ fxBurst.earnBurst({ x: c.x, y: c.y, tx: 0.5, ty: 0.93, count: spec.count, seed: seed,
-      spread: spec.spread, palette: spec.palette }); }catch(e){}
+    try{ fxBurst.burst({ x: c.x, y: c.y, count: spec.count, seed: seed,
+      spread: spec.spread, sizePx: spec.sizePx, palette: spec.palette }); }catch(e){}
   }
 
   // ---- Synth wiring (T122) — the generative MUSIC engine ------------------
