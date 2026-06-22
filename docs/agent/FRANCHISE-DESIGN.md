@@ -98,6 +98,31 @@ ideas only* — the owner will decide:
 Unifying pattern (if adopted): **hoard → deduce → craft → build** — same loop, four fantasies. All must
 stay *simple* (fill a board / spellbook / structure — not a deep sim). **STATUS: open — owner deciding.**
 
+### 6a. CANDIDATE (owner's, 2026-06-22) — "Plants & Beasts" (CULTIVATE / PACIFY)
+A fleshed-out, owner-originated metagame option (not yet assigned to a game). It's an **Arena-adjacent
+reskin with a fresh farming layer** — the owner: *"almost the same arena challenge, but a different
+flavour."*
+- **Collectibles = SEEDS / tubers** (instead of loot). You **plant** them; after a **growth duration**
+  you **harvest the crop/fruit**.
+- **Crops are TYPED + spec'd** (like items have rarity/boost): a crop's type + spec determine its effect.
+- **Beasts** (replacing arena enemies) are organised into **REALMS** — the **same region/ladder structure
+  as GG1's Arena.** Beasts have **TYPES.**
+- **Pacify, don't fight:** you **feed crops to beasts** to **pacify them one at a time** up the realm
+  ladder. **Type matchup** (crop type vs beast type) sets the pacification level — directly reuses GG1's
+  rock-paper-scissors hero/enemy triangle. The "feeding/pacifying" replaces the battle playout.
+- **Why it's strong:** (1) reuses a LOT of the engine — realm/ladder structure, the type-matchup, the
+  collection system — so it's *cheap on the core* (good for the engine thesis); (2) the **plant→grow→
+  harvest** loop is a genuinely new layer + a natural **retention hook** (a reason to come back); (3)
+  **"pacify by nurturing" is a lovely gentler reframe** of the combat ladder (good tone for a kids' app).
+- **KEY DESIGN QUESTION (flag for the owner):** what drives **growth duration** — **wall-clock time** (come
+  back in N minutes) or **questions-drilled** (crops advance as you practise, or a hybrid)? For a *learning*
+  app, **growth-by-drilling (or hybrid)** is probably better: it keeps practice central, rewards study
+  rather than waiting, and avoids the pay-to-skip / idle-frustration trap of pure timers. Recommend
+  drilling-driven growth with maybe a short wall-clock floor.
+- **Subject fit:** mechanically subject-agnostic; thematically nature/growth. Could slot into any sequel —
+  owner to assign (it doesn't have an obvious lock to VR/English/NVR). **STATUS: candidate, owner deciding
+  which game.**
+
 ## 7. Per-game asset re-roll (each game)
 The brand "Goblin Gold" stays; each game re-rolls: **subtitle** (Void Throne → per-game), **icon**,
 **palette/theme**, **collectible items**, **backdrops/biomes**, **music style**, and the **brand creature**
