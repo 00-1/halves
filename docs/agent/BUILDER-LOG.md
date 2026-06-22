@@ -4870,3 +4870,32 @@ how I verified: new **`arena-playout-fx.test.js` (6 checks, gated)** drives a RE
 notes: **owner/babysitter browser-verify** — watch a fight: each foe that drops should pop a small coloured
   impact at its portrait, at a calmer tempo. This clears the jumped-queue batch (T161→T158→T159→T160) + the
   Play-Store pair (T156/T157). Next per `NEXT.md`: content `T58`–`T61` → `T72`.
+
+---
+
+## Builder A — T58: unified content-extension blueprint (docs/CONTENT-EXTENSION.md)
+commit: (this commit) — [A], doc-only (no behaviour change). The canonical guide T59–T61 build from:
+how to add/restructure topics without breaking the coupled systems, with NEW content not dilution.
+written (NEW `docs/CONTENT-EXTENSION.md`), accurate to the LIVE code (verified via a code recon pass):
+  - **The coupling map** — a topic auto-generates **7+2N collectibles** (`MODES.forEach` in `collectibles.js`:
+    init·flawless·4 speed·mastery·2N per-question), each carrying a deterministic **boost** (`itemBoost` →
+    hero+stat+amount) → raises hero ratings → feeds the Arena. Documents the **T88 team-sim `FOE_BUDGET`
+    auto-calibration** (`calibrateTeamCurve` in `enemies.js`: forward advProd pass → suffix-min envelope →
+    `min(LG ramp, capEnv·CAPF)` → early-floor + final-tier binary-search pins) and marks the old
+    `statBattle`/def-formula text as **legacy/superseded**.
+  - **What auto-scales** (Arena difficulty, collector ladder, icon/name rendering) vs **what needs intentional
+    NEW content** (≥1 new icon category + new name-bank entries + guide + method-only `explain()` branch + glyph
+    tokens) — the anti-dilution rule.
+  - **The add-a-topic checklist** (ordered, copy-pasteable) + **the doc/text cascade** (when a skill moves:
+    mode.tag, guide, `Guides.explain()` branch, glyph tokens — re-run `hints.test`) + **the invariants to
+    re-verify** (the §7 gate table: arena3 lattice, arena, hints, icon-variation, glyphs, contrast, perf).
+  - **The existing-topic restructuring** designed WITH the new topics (owner): P1-too-hard rebalances (Place
+    Value / Fractions→dec / Squares / Times on-ramp), Part-3 deepenings (Fractions-of reverse, %-inc/dec,
+    Add&Sub decimal/4-digit), bounded topics (Halves/Doubles/Bonds), and the overlap resolutions
+    (Add&Sub↔Money, Place-Value↔Larger×/÷, Times↔Larger×/÷).
+  - **The FINAL topic map + build order** (re-batches `T59`=Rounding+Larger×/÷, `T60`=Money/Time/Metric,
+    `T61`=Ratio/Mean/Sequences; ranges per `research-11plus.md`) and the **120-tier decision**.
+how I verified: no code touched (`node -c` clean; full suite unaffected — the doc is not a gated artifact); the
+  coupling description was cross-checked against `collectibles.js`/`enemies.js`/`guides.js`/`modes.js` (file:line
+  recon). [A]-only (new doc). Next per `NEXT.md`: `T59` (Wave-2 Batch A) builds from this — but re-read NEXT
+  first (owner flags keep jumping the queue).
