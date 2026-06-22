@@ -16,8 +16,8 @@ Goblin Gold rename (`1a4bcf5`), `T59` content (`1ba6f62`). The live PWA bugs are
 - **NEXT REAL WORK → `T178` (unblocked, [A]-only, fully specced):** add an **exponential mid/late wealth ramp** so
   gold reaches **millions→billions/trillions** (the goblin-hoard comedy). Mechanism: a **"Hoard Multiplier" =
   `g^(Arena bosses defeated)`** multiplied onto the existing additive `goldMult` — early game unchanged (no bosses
-  → ×1), late game explodes. **✅ Economy sim done (`docs/agent/economy-sim.js`): use `g`≈2.0–2.2** (regular player
-  → millions in weeks, billions ~2 months; full table in `GOLD-HOARD-DESIGN.md`). Gold is decoupled from Arena
+  → ×1), late game explodes. **OWNER-CHOSEN `g` = 2.5** (sim: `docs/agent/economy-sim.js`; ×9537 at full clear → billions ~2 months, ~150B ~4 months,
+  trillions ~6 — max comedy). Pair with `GOLD_FULL`≈1e10 (tunable). Gold is decoupled from Arena
   difficulty (`tierGold` payoff vs foe `def`) → no balance impact. `fmtGold` already formats to 10⁴⁵ + milestones
   to 1e15 (add a B/T/Qa formatting test). Keep early-game earning identical; update the `Gold` unit tests.
   [A]-only (`main.js`, gold tests). *(BACKLOG T178.)*

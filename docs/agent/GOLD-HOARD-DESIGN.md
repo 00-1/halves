@@ -104,8 +104,7 @@ hundreds/day early, tens-of-thousands/day once progressed (Arena tiers alone add
 
   **Reading:** every setting hits **millions within the first month** and **billions within ~2–3 months** — the
   comedy lands. **Trillions** come for the long-haul (post-completion earning is ~linear at a huge daily rate, so
-  T arrives over ~6–9 months; the milestones ladder to **1e15** gives the chase). **Recommended `g` ≈ 2.0–2.2**
-  (regular player: millions in weeks, billions by ~2 months, trillions long-term). *(Assumptions — rounds/day,
+  T arrives over ~6–9 months; the milestones ladder to **1e15** gives the chase). **OWNER-CHOSEN `g` = 2.5** (the aggressive end → billions ~2 months, ~150B ~4 months, trillions ~6; max comedy). *(Assumptions — rounds/day,
   accuracy, progression ramp — are explicit constants in the sim; tune on the live build.)*
 - **GOLD_FULL (the VISUAL pile) — REVISED to ≈ `1e9` (1 billion), not 1M.** Reason: the owner wants the pile to
   **build up over the whole journey** ("as you amass more and more"), and the sim shows 1M is reached in ~week 1

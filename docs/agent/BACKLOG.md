@@ -2840,9 +2840,10 @@ Goblin King/Warren are the first foes). The comedy = an adventurer amassing an a
   formatting); the wealth milestones become reachable in sane time; Arena difficulty/`FOE_BUDGET` invariants
   unaffected; `Gold` unit tests updated (`questionGold`/`roundBonusGold`/`tierGold`/the new factor); `node -c`
   clean; **[A]-only** (`main.js`, gold tests). **Sequence:** feeds the hoard `GOLD_FULL` (T173) — do before/with
-  T173; behind the live bugs. **✅ ECONOMY SIM RUN** (`docs/agent/economy-sim.js`): **recommended `g` ≈ 2.0–2.2**
-  (regular player → millions in weeks, **billions by ~2 months**, trillions long-term; full table in
-  `GOLD-HOARD-DESIGN.md`). The boss multiplier is a single tunable constant; the owner dials the final feel.
+  T173; behind the live bugs. **✅ ECONOMY SIM RUN** (`docs/agent/economy-sim.js`): ****OWNER-CHOSEN `g` = 2.5**
+  (×9537 at full clear → regular player ~billions by ~2 months, ~150B by ~4 months, trillions by ~6 — max comedy;
+  sim table in `GOLD-HOARD-DESIGN.md`). With g=2.5 the pile fills a touch faster, so pair with **`GOLD_FULL`≈1e10**
+  (tunable) to keep it growing over the journey.
 
 ### T177 — [A] **BUG (live):** PWA loses fullscreen on minimize + no way back (T156 removed the button) · status: DONE (`90422c5`) · APPROVED· 🔴 DO-FIRST
 **Owner (2026-06-22): "the PWA loses fullscreen every time I minimise it, and the fullscreen button is gone from
