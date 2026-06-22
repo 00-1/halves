@@ -31,8 +31,9 @@ confirm.* **`T192`** (`61efcc6`, [B]) APPROVED — cylinder coins (flat top-face
 `rot` spin) + a taller (`HOARD_MAX_H` 0.34→0.82) fuller (`HOARD_CAP`→480) wall-banked `moundProfile`; gates green;
 owner "looks a bit better" → refinement filed **T195** (the pile uses a smooth analog gradient while the rest of
 the scene is ordered-Bayer dithered — bring it into the dithered/pixelated look + many fine gradation steps).
-**→ A: → `T194` (app ICON = Magnar/hero `mo`). B: → `T195` (pile dither/pixelate + gradation) → `T193` (gain-burst
-cylinder coins). Earlier B note: `T192` (hoard look overhaul:
+**→ A: → `T194` (app ICON = Magnar/hero `mo`). B: → `T195` (pile FILTER — brickmap halftone-dither, SHADING only) +
+`T196` (pile rises GRADUALLY — ~100 height levels not 8, via stable accumulation) → `T193` (gain-burst cylinder
+coins). Owner split T195/T196 apart: filter ≠ height-gradation. Earlier B note: `T192` (hoard look overhaul:
 cell-shaded cylinder coins + taller wall-banked pile) → `T193` (the same spinning cylinder coins in the gain
 burst). Owner saw the now-visible hoard (T185 ✓) and gave art direction via screenshot.**
 

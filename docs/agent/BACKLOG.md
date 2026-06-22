@@ -3136,10 +3136,11 @@ where the surface and edge have different colours."*
   CPU still; existing non-hoard scenes byte-identical; `golden-fx`/`fxgl`/`hoard-wiring` green (update goldens, note
   it); `node -c` clean; **owner device-confirms** the new look. **[B]-only** (`fxgl.js`, tests).
 
-### T195 — [B] **Hoard FILTER pass — dither + pixelate the pile to match the scene, + many fine gradation steps** · status: OPEN · owner-reported (follow-up to T192)
-**Owner (2026-06-22, on T192 `61efcc6`): "looks a bit better. I think what it needs is a filter pass — dithering
-and pixelation — e.g. along the lines of filters in brickmap. Also I think we need a lot of steps of gradation to
-the pile, not just (for example) 5 big steps — not sure exactly how it's done currently."**
+### T195 — [B] **Hoard FILTER pass — render the pile in the `brickmap` halftone-dither look** (visual only) · status: OPEN · owner-reported (follow-up to T192)
+**Owner (2026-06-22, on T192 `61efcc6`): "I think what it needs is a filter pass — dithering and pixelation —
+along the lines of filters in brickmap."** **NOTE (owner clarification):** this is **ONE of two separate things** —
+T195 is the **visual effect/filter** (how the pile is *shaded/rendered*); the **pile-height gradation** (more
+levels so it rises gradually) is a **separate** concern → **T196**. Don't conflate them.
 - **REFERENCE — `brickmap` (`00-1/brickmap`, PUBLIC; B has access — fxgl originated as inspiration from it).** Use
   brickmap's **palette post-process** as the authoritative look (B knows it firsthand): a **luminance gradient-map**
   through a curated palette + **Ordered (Bayer 4×4) dithering** that **posterises shading into a FEW levels with a
@@ -3155,18 +3156,33 @@ the pile, not just (for example) 5 big steps — not sure exactly how it's done 
   **pixel scale** (nearest-neighbour, crisp). **Reuse the existing fxgl/brickmap dither machinery + screen-locked
   threshold** (don't invent a new one) so the pile is dot-locked to the biome behind it. (The flat cell-shaded
   cylinders can stay; make sure they sit cohesively in the halftone field.)
-- **Lots of gradation steps:** the **halftone dither between the posterised gold levels** is what *creates* the
-  impression of many gradation steps (vs the current ~5 flat-looking bands) — that's the brickmap trick. Also raise
-  **`HOARD_TIERS`** (currently **8** — coin-buffer re-seed granularity) to ~**24–32** so the pile/coins grow in
-  **many fine increments** with wealth, not coarse jumps. *(NB: the dev gold-setter's ~5 buttons are just test
-  points — the real `hoardLevel` curve is continuous; the visible "big steps" are the smooth-gradient banding + the
-  coarse tier count, which this fixes.)*
 - **DoD:** the pile renders in the **brickmap palette post-process look** (luminance→gold-ramp gradient-map,
   posterised + ordered-Bayer **halftone** dot pattern, pixel-scaled/crisp — NO smooth analog gradient), dot-locked
-  to and cohesive with the biome on the **WebGL/WebGPU 2D overlay** (owner's device) AND CPU still; the halftone +
-  finer `HOARD_TIERS` give the many fine gradation steps; scenes byte-identical when no hoard; `golden-fx`/`fxgl`/
-  `hoard-wiring` green (update goldens, note it); `node -c` clean; **owner device-confirms**. **[B]-only**
-  (`fxgl.js`, tests). *(B: consult brickmap's palette/dither shader directly for the exact threshold/matrix.)*
+  to and cohesive with the biome on the **WebGL/WebGPU 2D overlay** (owner's device) AND CPU still; scenes
+  byte-identical when no hoard; `golden-fx`/`fxgl`/`hoard-wiring` green (update goldens, note it); `node -c` clean;
+  **owner device-confirms**. **[B]-only** (`fxgl.js`, tests). *(B: consult brickmap's palette/dither shader directly
+  for the exact threshold/matrix. This is the SHADING only — the height-level gradation is T196.)*
+
+### T196 — [B] **Hoard pile rises GRADUALLY — ~100 height levels, not 8 big jumps** (separate from the T195 filter) · status: OPEN · owner-reported
+**Owner (2026-06-22): "a separate thing is having more gradations of pile HEIGHT levels — i.e. not just 8, maybe
+like 100. The user should see it gradually rise as their wealth increases, not big jumps."** Distinct from T195's
+filter — this is about how finely the pile's **size tracks wealth**.
+- **Root cause:** the pile re-seeds/quantises at **`HOARD_TIERS = 8`** — `deriveHomeScene` does `tier =
+  hoardTier(lvl)` (8 steps) and keys the coin-buffer seed off it, so across a whole wealth band the pile shows the
+  **same** state, then jumps at the next tier → the "big jumps." (The `moundProfile` HEIGHT is continuous in `lvl`,
+  but the **coin field only re-scatters at 8 tiers**, which is the visible pile.)
+- **Fix (`fxgl.js`):** make the visible pile grow in **~100 fine steps (≈continuous)** so it **rises gradually**
+  with wealth. Raise the level→pile granularity to ~100. **Watch the re-seed trap:** simply bumping `HOARD_TIERS`
+  to 100 makes the seeded coin scatter **reshuffle ~100×** (coins teleport on every small earn). Prefer a **STABLE
+  ACCUMULATION** model instead — keep the coin field stable (fixed base seed) and **grow its extent/coverage/height
+  with `level`** so existing coins stay put and the pile **builds upward** as wealth rises (new coins appear on top;
+  nothing jumps). B's call on the exact approach, but the result must be: small wealth increase → small visible
+  rise, **no teleporting coins, no big steps.**
+- **DoD:** as gold increases, the pile **rises smoothly/gradually** (~100 perceptible levels, not ~8 jumps); coins
+  **don't reshuffle/teleport** between small earns (stable accumulation); the full wealth range still maps across
+  the pile (T182 curve + T192 `HOARD_MAX_H`); works on the GL/GPU 2D overlay AND CPU still; `golden-fx`/`fxgl`/
+  `hoard-wiring` green (note any golden changes); `node -c` clean; **owner device-confirms** the gradual rise.
+  **[B]-only** (`fxgl.js`, tests). *(Independent of T195's shading; can land in either order.)*
 
 ### T193 — [B] **Money-gain celebration = the same spinning cell-shaded CYLINDER coins** (not square/disc particles) · status: OPEN · owner-reported
 **Owner (2026-06-22): "I'd like to see the same rotating cell-shaded cylinders in the money-gain celebrations.

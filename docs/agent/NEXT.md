@@ -24,16 +24,19 @@ matches. Icon tests green; owner confirms by (re)installing the PWA. [A]-only (`
 **Builder B → `T195` (pile dither/pixelate + gradation) → then `T193` (coin-cylinder gain burst).** `T192` (cylinder
 coins + taller wall-banked pile) is **APPROVED** (live `61efcc6`); owner "looks a bit better" + gave a refinement.
 *(If you're already mid-`T193`, finish + push it, then do `T195`.)*
-- **`T195` — FILTER pass + fine gradation, in the `brickmap` look.** Reference: **`00-1/brickmap`** (public — you
-  have access; fxgl originated as inspiration from it) — its **palette post-process**: luminance gradient-map →
-  curated palette, **Ordered Bayer 4×4** dither that **posterises to a few levels with a visible dot pattern
-  (halftone)**, crisp/nearest-neighbour, tunable pixel scale. Root cause: the rest of fxgl already does this, but
-  `drawHoard` is the **one part still drawing a smooth analog gradient** (`shade(base,0.25-depth*0.6)`) — so the
-  pile reads smooth against the dithered scene. Render the pile with the **brickmap halftone-dither** instead (gold
-  ramp gradient-map, posterised + Bayer dot pattern, pixel-scaled), reusing the engine's screen-locked threshold so
-  it's dot-locked to the biome. The halftone between posterised levels = the "many gradation steps"; also raise
-  **`HOARD_TIERS`** 8 → ~24–32 for fine pile growth. GL/GPU 2D overlay. [B]-only (`fxgl.js`, tests). *(BACKLOG T195;
-  consult brickmap's dither shader for the exact matrix/threshold.)*
+- **`T195` — FILTER/look only (the `brickmap` halftone-dither).** Reference: **`00-1/brickmap`** (public — you have
+  access; fxgl originated as inspiration from it) — its **palette post-process**: luminance gradient-map → curated
+  palette, **Ordered Bayer 4×4** dither that **posterises to a few levels with a visible dot pattern (halftone)**,
+  crisp/nearest-neighbour, tunable pixel scale. Root cause: the rest of fxgl already does this, but `drawHoard` is
+  the **one part still drawing a smooth analog gradient** (`shade(base,0.25-depth*0.6)`) — render the pile with the
+  **brickmap halftone-dither** instead, reusing the engine's screen-locked threshold so it's dot-locked to the
+  biome. **SHADING only.** [B]-only (`fxgl.js`, tests). *(BACKLOG T195; consult brickmap's dither shader.)*
+- **`T196` — pile rises GRADUALLY (~100 height levels, not 8).** *Separate from T195* (owner: don't conflate). The
+  pile re-seeds at **`HOARD_TIERS=8`** so it jumps in 8 big steps. Make the visible pile grow in ~100 fine steps so
+  it **rises gradually** with wealth. **Watch the trap:** bumping tiers to 100 reshuffles the seeded coins 100× (they
+  teleport) — prefer **stable accumulation** (fixed base seed; grow coverage/height with `level`; coins stay put,
+  pile builds upward). DoD: small earn → small rise, no teleporting, no big jumps. [B]-only (`fxgl.js`, tests).
+  *(BACKLOG T196 — independent of T195; either order.)*
 - **`T193` — the SAME spinning cylinder coins in the money-GAIN celebration.** On the owner's GL/GPU backend the
   burst goes through the **shader splat (disc mask)** which **ignores the coin look** → "just particles." Render
   coin-look gain particles as **spinning T192 cylinders on the 2D layer** (like the T185 overlay), not the shader
