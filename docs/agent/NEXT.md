@@ -29,25 +29,18 @@ push before P2):**
 **Re-read this line fresh before each task + before each push** (you've repeatedly built out of order — a fresh
 owner `BUG`/DO-FIRST can land here and overrides T162).
 
-**Builder B → `T155` (distinct PAD/bed timbre per style — OWNER feedback) → then `T154` (visual-regression gate).**
-**⚠ YOU APPEAR IDLE — your last push is still `T151` (`44ea919`); `T155` has been queued for a while and not
-picked up. START `T155` NOW** (real, owner-requested engine work is waiting). **`T155` FIRST** — owner: *"every
-style seems to share the same synth string sound… vary a lot
-more… makes them feel a little samey."* **Root cause: all 12 contexts use `pad: "pad"`** (synth.js:464-476) —
-the **identical** detuned-**sawtooth** unison bed. Leads/bass already vary; the **pad bed is the same saw in
-every style** = the shared "synth string." **Add ≥4–5 distinct PAD-class patches** (glassy sine/tri, FM electric-
-piano, PWM square, hollow organ — all doable with existing `unison`/`fm`/`mono` engines; `PeriodicWave` additive
-is optional) and **assign a context-appropriate pad per style** so the harmonic bed is distinct (mapping in
-BACKLOG T155). Vary attack/release too (stabby organ vs slow choir swell vs plucky EP). **Re-bless `golden-synth`**
-(`UPDATE_GOLDEN=1` — patch names change intentionally; the **distinctness** assertion must still hold). **Output-
-feature rule: the golden pins patch NAMES, not timbre — so verify the beds actually SOUND different** (render each
-pad via `OfflineAudioContext`, show spectral centroid/harmonics genuinely differ). I'll independently measure the
-per-style pad spectra before DONE. **B-owned (`synth.js` + its tests) only.** **Then `T154`** — the key-screen
-VISUAL-REGRESSION gate (extend the T150 harness: render home/Audio-menu/Arena/Results @ dpr 2.75, robust per-
-region colour/layout signatures incl. the **home-backdrop hue**, fail on regression; skip clean with no browser;
-**baseline the home backdrop as PURPLE only AFTER A's `T153` lands** — leave the home-hue baseline TODO till then
-so you don't bake in the blue; I'll bless it post-T153). See **BACKLOG T154/T155**. **B-owned only** (`synth.js`,
-`test/*`, `test/browser/*`); never touch existing Halves files; never push `claude/agent`.
+**Builder B → `T163` (firm up + re-bless the brittle `visual_arena` golden) → then STAND BY for an engine need.**
+**`T155` DONE+APPROVED (`493d875`)** — independently MEASURED: pad-bed spectral centroids spread **189→1897 Hz**,
+every bed distinct (min gap 268 Hz). The owner's "every style shares the same synth string" is objectively fixed.
+**`T154` DONE+APPROVED (`2b8f1e0`)** — the visual-regression gate works: the **flagship home-backdrop-PURPLE**
+check passes (rgb 75,52,108) and it has teeth (a purple→blue flip FAILS).
+**`T163` (small, B-owned):** the harness recovered and `visual.test` now reports **1/13 FAIL — the `visual_arena`
+golden mismatches** (the Arena evolved: 3v3 + death-VFX after the baseline). It is **NOT a CI gate** (not in
+`pages.yml`), so it is **not deploy-blocking** — but the arena signature is **too brittle** vs T154's own "robust
+signature, not a brittle pixel diff" intent. Make the arena region signature **robust to the Arena's dynamic
+content** (enemy team / gold / VFX vary frame-to-frame), then **re-bless** the golden. B-owned (`test/browser/*`,
+`test/golden/*`). Then **STAND BY** — hold for a real engine need (I'll file it). Never touch existing Halves
+files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

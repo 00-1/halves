@@ -2721,6 +2721,15 @@ fresh install.
   split it into a [B] line if the audit lands there. *(If the audit finds nothing actionable + it never recurs,
   close as NOT-REPRODUCIBLE with the hardening guards kept.)*
 
+### T163 — [B] Firm up + re-bless the brittle `visual_arena` golden · status: OPEN · small (B follow-up to T154)
+The harness recovered; `test/browser/visual.test.js` now reports **1/13 FAIL — `visual_arena` golden mismatch**
+(the Arena gained 3v3 + death-VFX after the baseline was captured). NOT a CI gate (absent from `pages.yml`) so
+NOT deploy-blocking — but it violates T154's own "robust signature, not a brittle pixel diff" principle. **Make
+the arena region signature robust to the Arena's DYNAMIC content** (enemy team, gold, transient VFX vary), then
+**re-bless** the golden (`UPDATE_*`). The flagship home-backdrop-hue check (the one that matters) already passes.
+**DoD:** `visual.test` green again with a stable arena signature; the gate still HAS TEETH (a real hue/layout
+flip still fails); B-owned (`test/browser/*`, `test/golden/*`); `node -c`/skip-clean intact.
+
 ### T162 — [A] Mock-exam-driven drill gaps: 12 new building-block modes · status: OPEN · ✅ OWNER-BLESSED (build all, in tiers) · content · after the trust/audio fixes
 **Owner (2026-06-22) supplied a REAL mock** (target student Luke, SEP 11+ Mock 7 / BWS — scored 11/27). Frame:
 **"we're not trying to reproduce 11+ style questions, just drill the building blocks needed to answer these
@@ -2849,7 +2858,7 @@ our screens.
   asserts the resulting screen, plus the owner confirming on his installed PWA/wrapped build. Browser-tab
   back-button behaviour stays sane (no traps, no infinite loops). `node -c` clean; **[A]-only**.
 
-### T155 — [B] Distinct PAD/bed timbre per style (kill the shared "synth string" sound) · status: OPEN · OWNER-PRIORITY
+### T155 — [B] Distinct PAD/bed timbre per style (kill the shared "synth string" sound) · status: DONE (`493d875`) · APPROVED· OWNER-PRIORITY
 Owner (2026-06-22): **"The music styles are now a lot better. One thing I don't quite like is that every style
 seems to share the same synth string sound — that would be great to vary a lot more. It makes them feel a little
 samey, though they're definitely more distinct than they were."** **Root cause (Babysitter, confirmed in
@@ -2885,7 +2894,7 @@ voice — is the same sawtooth in every style.** That shared saw bed is the "syn
   per-style pad spectra** (OfflineAudioContext centroid/harmonic comparison) before DONE. Audible final polish
   still falls to the owner's ear.
 
-### T154 — [B] Key-screen VISUAL-REGRESSION gate (extend the T150 browser harness) · status: OPEN · proactive (catches the owner's recurring class)
+### T154 — [B] Key-screen VISUAL-REGRESSION gate (extend the T150 browser harness) · status: DONE (`2b8f1e0`) · APPROVED· proactive (catches the owner's recurring class)
 B's engine queue is exhausted; this is the high-value structural follow-up to T150. The whole session's
 recurring pain is **visual things regressing that only the owner notices** (the blue backdrop today; the
 celebration `0×0`; layout clips). T150's `render.test.js` proved the browser can catch these — generalise it
