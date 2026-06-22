@@ -3151,6 +3151,40 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
+### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (AI-agent assessment → fixes) · status: OPEN · owner-requested (queued)
+**Owner (2026-06-22): "queue up a quality pass for the questions and guides/questions text — a DEEP pass where
+every question and piece of text gets looked over by an AI agent and assessed on various criteria to make sure
+everything is as high quality as possible."** Scope: the **~30 topic generators** (`modes.js`: halves, times,
+doubles, addsub(2), bonds(2), placevalue(2), fractionsof(2), percentages(2), fractions, squares, rounding,
+largermd, metric, sequences, scaling, percentoff, partwhole, balance, lcmhcf, mean, timegap, ratioshare, cubes,
+money, digitsum) + **all `guides.js` text** (344 lines) + other static strings (collectible names/descs, mode
+copy). Reference `docs/research-11plus.md` + `docs/CONTENT-EXTENSION.md` + the owner's real mock-exam insights.
+
+- **Phase 1 — ASSESSMENT (Babysitter-led, can run in PARALLEL now — read-only, no code change):** a Node harness
+  **enumerates/samples each generator across its full parameter range** (many variants per topic + per tier/P1/P2),
+  dumps them, and **AI-agent sub-agents assess every question** (fan-out per topic) + review every guide/string,
+  against the **criteria** below. Output: **`docs/agent/QUESTION-QUALITY-AUDIT.md`** — a per-topic findings list
+  (every issue, severity, suggested fix), plus a guides/text findings list. *(This is the "AI agent looks over
+  everything" the owner asked for; it doesn't touch A/B's current work.)*
+- **CRITERIA (each question):** (1) **Correctness** — stated answer is right, single unambiguous answer; (2)
+  **Range/sanity** — sensible numbers for the topic/tier, no inappropriate negatives/decimals, **numpad-enterable
+  within the length guard**, no absurd values; (3) **Difficulty calibration** — matches the topic's intended level,
+  P1<P2, the tier progression, and the **real 11-plus mock data** (`research-11plus.md`); (4) **Age-appropriate**
+  (10–11): vocabulary, context, number size; (5) **Clarity/phrasing/notation** — unambiguous, consistent symbols;
+  (6) **Pedagogical value** — drills a real building block, **no degenerate items** (×1, +0, trivial/duplicate),
+  good variety/distribution; (7) **Consistency** — phrasing/notation consistent across topics. **GUIDES/TEXT:**
+  method explained is **correct + clear**, age-appropriate tone, no typos, consistent with the questions, genuinely
+  helpful.
+- **Phase 2 — FIXES ([A]):** fix **every** flagged issue in `modes.js` (generators) + `guides.js` + static text;
+  re-run the assessment harness to confirm clean; extend `perf.test.js`-style gates where a range/correctness check
+  can be automated (so regressions are caught).
+- **DoD:** every topic's generated questions pass the criteria (correct, in-range, numpad-safe, calibrated, no
+  degenerate items); all guides/static text reviewed + fixed (correct/clear/typo-free); the audit doc records what
+  was assessed + changed; new/extended automated checks for the catchable criteria; all gates green; `node -c`
+  clean; **owner spot-confirms** a sample. **Assessment = Babysitter (sub-agents) → `docs/agent/`; fixes = [A]**
+  (`modes.js`, `guides.js`, tests). *(Queued — start the assessment whenever; fixes after the current visual/perf
+  loop or sooner.)*
+
 ### T207 — [B] **Coin SHINE — animated glints on the pile + the shower; clearer coin rotation** · status: DONE (`2300ac6`) · APPROVED · ✅ owner-confirmed ("seeing glints now" — subtle; can boost if asked)
 **Owner (2026-06-22): "occasional glints appearing in the pile of coins; glints on the shower of coins; ideally
 some of the showered coins would also have a rotation animation."**

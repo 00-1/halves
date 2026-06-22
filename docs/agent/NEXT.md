@@ -35,4 +35,9 @@ fixes** (throttle/shrink over-budget work; idle screens ~0 cost). Deliver `docs/
 Heroes/Setup). Already ✅: lofi, Magnar icon/splash, coin shine, install identity, app-switch backdrop, 1k pile,
 Collector tab (15). Title feedback captured → T212.
 
+**Queued (not yet assigned):** `T213` — **deep quality pass over every question + all guide/static text** (owner).
+Phase 1 = AI-agent ASSESSMENT (Babysitter sub-agents, fan-out per topic; read-only; can run in parallel NOW) →
+`docs/agent/QUESTION-QUALITY-AUDIT.md`; Phase 2 = FIXES [A] (`modes.js`/`guides.js`). Also: **T168** (Play Store,
+held on owner ID-verify), **T101** (Start-delay trim).
+
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
