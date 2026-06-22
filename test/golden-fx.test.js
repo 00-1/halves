@@ -287,6 +287,28 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
     const sB = FXGL.deriveHomeScene({ seed: 5, hoard: { level: 0.74 } }).hoard.seed;
     ok(sA === sB, "T196: the home hoard seed is STABLE across wealth (no 8-tier re-seed → no teleport between earns)");
   })();
+  // T200 — coin COLOUR by height: dark gold low (base), light gold high (crest), as a gradient of
+  // the tone DISTRIBUTION (a mix retained at every level), deterministic + stable with T196.
+  (function(){
+    const pile = FXGL.seedHoard({ level: 1, seed: 7 }, false, FXGL.HOARD_CAP);
+    const byY = pile.slice().sort((a, b) => b.y - a.y);     // base (high y) → crest (low y)
+    const k = Math.max(4, byY.length / 5 | 0);
+    const baseBand = byY.slice(0, k), crestBand = byY.slice(byY.length - k);
+    const meanL = arr => arr.reduce((s, c) => s + FXGL.luma([c.r, c.g, c.b]), 0) / arr.length;
+    ok(meanL(crestBand) > meanL(baseBand) + 0.05,
+       "T200: coins trend DARK→LIGHT base→crest (base mean luma " + meanL(baseBand).toFixed(2) + " < crest " + meanL(crestBand).toFixed(2) + ")");
+    const tones = arr => new Set(arr.map(c => c.r + "," + c.g + "," + c.b)).size;
+    ok(tones(baseBand) >= 2 && tones(crestBand) >= 2,
+       "T200: a MIX is retained at each level (base " + tones(baseBand) + " tones, crest " + tones(crestBand) + " — not a hard single-tone band)");
+    // stable with T196: a coin's tone is identical in a smaller pile (prefix) — never flickers as wealth grows.
+    const lo = FXGL.seedHoard({ level: 0.4, seed: 7 }, false, FXGL.HOARD_CAP);
+    ok(lo.every((c, i) => c.r === pile[i].r && c.g === pile[i].g && c.b === pile[i].b),
+       "T200: each coin's tone is STABLE as the pile grows (keyed off fill-rank, not the live level — no colour flicker)");
+    // teeth: the trend is a real gradient, not noise — the top decile is clearly lighter than the bottom decile.
+    const d = Math.max(2, byY.length / 10 | 0);
+    ok(meanL(byY.slice(byY.length - d)) - meanL(byY.slice(0, d)) > 0.08,
+       "T200: the gate HAS TEETH — top-decile coins are markedly lighter than bottom-decile (Δluma " + (meanL(byY.slice(byY.length - d)) - meanL(byY.slice(0, d))).toFixed(2) + ")");
+  })();
   // (4) converge path: starts at the earn-point, ends absorbed at the hoard target, in-bounds.
   const cv = FXGL.seedConverge({ x: 0.2, y: 0.2, tx: 0.5, ty: 0.9, count: 24, seed: 3 }, false, FXGL.BURST_CAP);
   const p0 = FXGL.convergePos(cv[0], 0), pe = FXGL.convergePos(cv[0], cv[0].life);

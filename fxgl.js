@@ -430,6 +430,11 @@
     const rng = makeRng(seed);
     let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor) : GOLD_TONES;
     if(!pool.length) pool = [[255, 255, 255]];
+    // T200 — tone by HEIGHT: order the pool dark→light so a coin's fill-rank `q` can pick its
+    // gold tone (low/deep → dark, high/crest → light) with a jittered spread that keeps a MIX at
+    // every level. Keyed off `q` (level-independent) → a coin's colour never flickers as the pile
+    // grows (stable with T196), and one rng draw keeps the scatter geometry byte-identical.
+    const toneRamp = pool.slice().sort((a, b) => luma(a) - luma(b)), tlast = toneRamp.length - 1;
     const out = new Array(n);
     for(let i = 0; i < n; i++){
       const q = (i + 0.5) / full;                              // this coin's fill rank (0..1), level-independent
@@ -443,7 +448,9 @@
       // coins layer down the visible face of the pile (a deeper band for a deeper rank)
       const band = 0.03 + 0.16 * h;
       const y = clamp01(surfaceY + rng() * band);
-      const col = pool[(rng() * pool.length) | 0];
+      // dark→light by rank, jittered so dark/light mix at every level (no hard band).
+      const pick = clamp01(q + (rng() - 0.5) * 0.9);
+      const col = toneRamp[Math.max(0, Math.min(tlast, Math.round(pick * tlast)))];
       out[i] = {
         x: x, y: y,
         size: lerp(reduced ? 5 : 6, reduced ? 8 : 13, rng()) * (0.85 + 0.3 * q),   // grow with the rank (stable)

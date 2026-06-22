@@ -6,6 +6,29 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T200 — coin COLOUR by height: dark gold low, light gold high (with a mix at each level) ([B], owner-reported)
+
+Owner: *"too much of a mix of dark/light coins — lower down should be more dark, higher up more
+light, with some of each still mixed in."* `seedHoard` picked each tone ~uniformly at random → a
+flat salt-and-pepper mix. Fixed in `fxgl.js`:
+- The gold pool is ordered **dark→light by luminance** (`toneRamp`), and each coin's tone is
+  picked by its **fill-rank `q`** (T196): `pick = clamp01(q + (rng()−0.5)·0.9)` → index into the
+  ramp. Low/deep coins weight DARK, high/crest coins weight LIGHT, and the ±0.45 jitter keeps a
+  **mix of both at every level** (a gradient of the *distribution*, not a hard split). Reinforces
+  the silhouette's own crest-light→base-dark shading.
+- Keyed off `q` (level-independent) and one rng draw → a coin's tone is **stable as the pile
+  grows** (no flicker; prefix-identical with T196) and the scatter geometry is byte-identical.
+- 🌐 **Browser-verified on WebGL2**: paler gold at the crests, darker specks toward the base,
+  mixed throughout (`hoard-halftone-webgl.png`).
+
+Verify: `node -c` clean; **golden-fx 94** (+4 T200 assertions — base mean-luma < crest by >0.05,
+≥2 tones in each band (mix retained), tone stable across pile growth, teeth: top-decile markedly
+lighter than bottom-decile Δluma>0.08); full Node suite green (fxgl 124 / hoard-wiring 47 /
+fx-wiring 84); `fx_hoard_scatter` golden unchanged (sample is geometry, not colour). B-only
+(`fxgl.js`, `test/golden-fx.test.js`). Owner device-confirms.
+
+---
+
 ## T199 — a maxed pile reaches the TOP of the screen (1T left a gap) ([B], owner-reported)
 
 Owner: *"1T still doesn't fill the screen — better than before though."* T192 raised `HOARD_MAX_H`

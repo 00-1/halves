@@ -41,7 +41,9 @@ const VIEWPORT = { width: 390, height: 844 }, DPR = 2.75;
       host.appendChild(cv); document.body.appendChild(host);
       const fx = new window.FXGL.Controller(cv, { preferWebGL2: true, quality: 2, dpr: window.devicePixelRatio });
       // a dithered purple biome behind + a deep gold hoard
-      fx.setScene({ grid: [[[40,22,64],[34,18,56]],[[28,15,48],[36,20,58]]], seed: 5, hoard: { level: 1.0, seed: 9 } });   // T199: a maxed pile reaches the top
+      // level 0.85 shows both the dark base + the lighter crest (T200 colour-by-height); push to
+      // 1.0 to confirm T199 (a maxed pile reaches the top).
+      fx.setScene({ grid: [[[40,22,64],[34,18,56]],[[28,15,48],[36,20,58]]], seed: 5, hoard: { level: 0.85, seed: 9 } });
       fx.start();
       return { backend: fx.backend && fx.backend.name, dims: fx.dimensions() };
     });
