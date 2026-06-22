@@ -8,10 +8,15 @@
 ---
 
 ## 1. App identity
-- **App name (public):** Halves  *(alt for search: "Halves — 11+ Mental Maths")*
+- **App name (public): Goblin Gold** ✅ (owner-chosen 2026-06-22 — checked: no exact-title app on Play, and
+  Play doesn't enforce unique display names; Education category keeps it clear of the goblin idle-tycoon cluster).
+  *(The in-game currency is also "Goblin Gold" — intentional brand cohesion. The maths TOPIC "Halves" (x/2) keeps
+  its name; only the PRODUCT is renamed — see T171.)*
 - **Developer (public):** Joshua Bradshaw / United Kingdom (Individual, non-trader → no address shown)
-- **Package / application id (PERMANENT — cannot change after first publish):** proposed **`app.halves.maths`**
-  *(reverse-DNS, neutral, doesn't expose a name; owner can swap before first upload — e.g. `io.github.<user>.halves`)*
+- **Package / application id (PERMANENT — cannot change after first publish):** proposed **`app.goblingold.maths`**
+  *(reverse-DNS, doesn't expose a name; owner can swap before first upload — e.g. `io.github.<user>.goblingold`)*
+- **TODO before lock:** optional UK IPO / EUIPO trademark glance on "Goblin Gold" (generic phrase → low risk,
+  also low ownability — fine for a free app).
 - **Category:** Education  ·  **Tags:** education, maths, kids, 11+
 - **Default language:** English (UK)
 - **Content / target age:** designed for ~9–11 (**Designed for Families** policy applies)
@@ -22,8 +27,8 @@
 **Short description (≤80 chars):**
 > Fast 11+ mental-maths drills — tables, fractions, % — as a pixel RPG. No ads.
 
-**Full description (≤4000 chars):**
-> **Halves** turns 11+ mental-maths practice into a fast, friendly pixel game. Short timed drills build the
+**Full description (≤4000 chars):**  *(brand = "Goblin Gold" throughout; the TOPIC "Halves & doubles" stays.)*
+> **Goblin Gold** turns 11+ mental-maths practice into a fast, friendly pixel game. Short timed drills build the
 > building blocks children actually need for the exam — and an RPG layer (collect, level up, battle) keeps them
 > coming back.
 >
@@ -47,9 +52,10 @@
 > Built for UK 11+ (GL-style) maths, useful for any child strengthening mental arithmetic.
 
 ## 3. Privacy policy (FULL TEXT — ready to host at /privacy.html)
-> **Halves — Privacy Policy**  ·  Last updated: <DATE on publish>
+> **Goblin Gold — Privacy Policy**  ·  Last updated: <DATE on publish>
 >
-> Halves is a free educational maths game for children. We have built it to collect **no personal data at all**.
+> Goblin Gold is a free educational maths game for children. We have built it to collect **no personal data at
+> all**. *(Remaining "Halves" product references in this policy → "Goblin Gold" at productionisation, T168.)*
 >
 > **What we collect:** Nothing. Halves does not ask for a name, email, age, or any account. We do not collect,
 > store, or transmit any personal information.

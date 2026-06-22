@@ -19,6 +19,8 @@
 - **Then `T169` (owner: "bake the fonts in"):** self-host Space Grotesk + JetBrains Mono (drop the Google Fonts
   CDN links), `@font-face` + `?v=`/SW-cache them → zero third-party requests (kids-privacy win) + offline fonts.
   [A]-only. *(BACKLOG T169.)*
+- **Then `T171` (small, owner brand):** rename the PRODUCT to **"Goblin Gold"** (manifest `name`/`short_name`,
+  `<title>`, in-app branding) — KEEP the "Halves" topic. [A]-only. *(BACKLOG T171.)*
 - **Then resume `T162`:** Tier P2 (`ratioshare`, `timegap`, `lcmhcf`, `mean`) → Tier P3 (`cubes`, `money`,
   `digitsum`, doubles/halves range check), one push per tier (spec in `docs/agent/T162-calibration.md`) → content
   `T59`–`T61`. *(`T168` Play-Store productionise is HELD until ID-verify + the app NAME is locked — rename

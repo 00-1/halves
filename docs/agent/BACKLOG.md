@@ -2812,6 +2812,18 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
+### T171 — [A] Rename the PRODUCT to "Goblin Gold" (keep the "Halves" topic) · status: OPEN · owner-chosen brand
+**Owner chose the app name: "Goblin Gold"** (the in-game currency — intentional cohesion). Rename the **product/
+brand**, NOT the maths topic: `manifest.webmanifest` `name`/`short_name` → **"Goblin Gold"** (short_name kept
+short for the home-screen label); `index.html` `<title>` → "Goblin Gold"; any in-app product-name branding
+(entry/about/header, the manifest description) → "Goblin Gold". **KEEP** the **topic "Halves" (x/2 drill)** and
+"Halves & doubles" exactly as-is — only the *app* is renamed. *(The Play STORE listing title may carry a
+SUBTITLE — "Goblin Gold: <maths subtitle>", TBD — but that's a listing field in T168, not necessarily the
+manifest short_name.)*
+- **DoD:** product reads "Goblin Gold" in manifest + `<title>` + in-app branding; the "Halves" topic name is
+  unchanged; `node -c` clean; `pwa.test` updated if it pins the manifest `name`; **[A]-only** (`manifest.webmanifest`,
+  `index.html`, `main.js` branding if any, tests). Small. Slots after `T170`/`T169`.
+
 ### T170 — [A] **BUG (live):** topic tree overflows — rows now 4 nodes abreast clip off-screen · status: OPEN · 🔴 DO-FIRST
 **Owner (2026-06-22, screenshot): "our tree is now four deep, which doesn't fit. The plan was 3, but we can do 4
 if needed — needs to fit though."** The 12 new T162 modes pushed some unlock tiers to **4 nodes in a row**, but
