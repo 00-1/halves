@@ -2812,6 +2812,28 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
+### T177 — [A] **BUG (live):** PWA loses fullscreen on minimize + no way back (T156 removed the button) · status: OPEN · 🔴 DO-FIRST
+**Owner (2026-06-22): "the PWA loses fullscreen every time I minimise it, and the fullscreen button is gone from
+the config menu now."** **Root cause:** T167's `requestFullscreen()` (the JS Fullscreen API) is **dropped by
+Android whenever the app is backgrounded/minimised** — and it **cannot be re-entered without a user gesture** — so
+on return the PWA is windowed; meanwhile **T156 hid the manual fullscreen toggle when installed**, so there's no
+way back. The owner is stuck windowed.
+- **Fix (two parts):**
+  1. **Auto re-enter fullscreen on the first gesture after resume.** On `visibilitychange`→visible (installed/
+     standalone, and we were fullscreen before), arm a **one-shot**: the **next `pointerdown`/click** calls
+     `requestFullscreen()`. The user always taps to resume play, so fullscreen restores **transparently** on that
+     first tap (satisfies the gesture requirement without a visible button).
+  2. **Restore a MANUAL fullscreen toggle in the installed PWA** — **walk back T156's full hiding**: the owner
+     wants the button back as the explicit fallback. Keep it in **Setup/config** (or a small re-enter affordance)
+     when installed; the entry-screen launch behaviour (T167) is unchanged. *(T156's instinct — "installed is
+     already fullscreen so hide it" — was wrong precisely because the PWA loses fullscreen on minimize.)*
+- **The real, robust fix is the TWA** (native **immersive-sticky** mode survives minimize without a gesture) —
+  note for the packaging track (T168/T72). For the raw PWA, (1)+(2) is the best achievable.
+- **DoD:** after minimising + returning, the first tap restores fullscreen (installed); a manual fullscreen
+  toggle is available in the installed PWA's Setup; browser-tab behaviour unchanged; `node -c` clean; `home-layout`
+  intact; **[A]-only** (`main.js`, `index.html` if needed, tests). **Verify:** owner confirms on the PWA
+  (minimise → return → tap → fullscreen; and the manual button is back).
+
 ### T176 — [A] **BUG (live):** black bar in the notch/cutout area on PWA (purple backdrop doesn't reach the top) · status: OPEN · 🔴 DO-FIRST
 **Owner (2026-06-22): "black bar at the top of the screen in PWA, whereas in Firefox the purple background goes
 all the way to the top. This is the phone's notch area."** **Root cause:** the viewport meta (`index.html:7`) is
@@ -2831,8 +2853,17 @@ the dark **`theme-color` `#0E1116`** (= the black bar). A browser tab has no cut
   on the PWA (notch fills purple); browser-tab unaffected.
 
 ### T175 — [B] **BUG (live, recurring):** the FOGHORN is back — music BUILDS UP to a sustained drone over time · status: OPEN · 🔴 DO-FIRST (ahead of the hoard T172)
-**Owner (2026-06-22, latest build `7df7699`): "got foghorn on latest build. Music started nice then BUILT UP to
-foghorn."** The "**built up**" is the key tell: a **gradual divergence** — the output grows **unboundedly over
+**🔑 SHARPENED (owner, 2026-06-22): "totally reproducible — EVERY time a new song starts (e.g. via the switcher)
+it starts nice then ramps up to foghorn/pain."** This is the key: it's **NOT context-specific** (every song) and
+it **ramps over the reverb's fill time** → the **common reverb path is accumulating too much energy from the new
+(louder, longer-sustained) T155 PADS**. Could be true divergence (decay effectively ≥1 in the live path) OR a
+**too-hot STEADY STATE** — a *stable* reverb still ramps to its steady level over its multi-second tail, and if
+the new pads feed it too much, that steady level rails the −1.5 dB limiter = the foghorn/pain. Either way: **bound
+the reverb energy under the REAL pad input.** Trivial repro for B: **start any song (or use the switcher) and
+wait ~15–30 s.** Prime suspect for the regression: **T155 pad gains / reverb sends**, and/or **T165's `flush`/
+`setDecay` leaving the FDN feedback hotter than safe** — re-verify the FDN feedback gains are `coef·curDecay` with
+`curDecay` ≤ the measured-safe cap after every switch.
+**Owner (orig, build `7df7699`): "got foghorn on latest build. Music started nice then BUILT UP to foghorn."** The "**built up**" is the key tell: a **gradual divergence** — the output grows **unboundedly over
 time** until the **−1.5 dB brickwall limiter** rails it into a sustained ceiling-level drone (= the foghorn).
 Recurs despite T151 (FDN cap) / T159 (resume) / T165 (switch flush).
 - **Why the gate MISSED it:** `test/browser/audio.test.js` renders the **reverb ALONE, with white noise, for only

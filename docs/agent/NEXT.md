@@ -10,7 +10,8 @@
 
 ---
 
-**Builder A → `T176` 🔴 BUG-DO-FIRST (PWA notch black bar) → `T171` (Goblin Gold rename) → content `T59`–`T61` → `T173` (hoard wiring, after B's `T172`)**
+**Builder A → `T177` + `T176` 🔴 BUG-DO-FIRST (PWA fullscreen-lost + notch) → `T171` (rename) → content `T59`–`T61` → `T173` (hoard wiring, after B's `T172`)**
+- **🔴 `T177` (live):** PWA **loses fullscreen on minimise** + **no button to get it back** (T156 removed it; T167's `requestFullscreen` drops on background & needs a gesture). Fix: **re-enter FS on the first tap after resume** (arm a one-shot on `visibilitychange`→visible) + **restore a manual FS toggle in the installed PWA's Setup** (walk back T156). TWA native-immersive is the real fix (packaging). [A]-only. *(BACKLOG T177.)*
 - **🔴 `T176` FIRST (live):** PWA shows a **black bar in the notch** (purple backdrop doesn't reach the top);
   Firefox is fine. Root: viewport meta (`index.html:7`) **lacks `viewport-fit=cover`** → standalone PWA won't
   paint into the cutout → dark `theme-color` shows. **Fix:** add `viewport-fit=cover`; the full-bleed `.fx-backdrop`
@@ -24,7 +25,7 @@
 **Re-read this line fresh before each task + push.**
 
 **Builder B → `T175` 🔴 BUG-DO-FIRST (the FOGHORN is back — music BUILDS UP to a drone over time).**
-Owner on the latest build (`7df7699`): *"music started nice then BUILT UP to foghorn."* = a **gradual divergence**
+**🔑 SHARPENED — owner: "totally reproducible — EVERY song (via switcher) starts nice then ramps to foghorn/pain."** NOT context-specific → the **common reverb path accumulates too much from the new T155 PADS** over the reverb fill time (true divergence OR a too-hot steady state railing the limiter). Trivial repro: start any song, wait ~15-30 s. Suspect T155 pad gains/sends + T165 `flush`/`setDecay` leaving the FDN feedback hot. Owner earlier: *"music started nice then BUILT UP to foghorn"* = a **gradual ramp**
 (output grows unboundedly until the −1.5 dB limiter rails it into a sustained drone). **Why the gate missed it:**
 `audio.test` renders the **reverb alone, noise, only 5 s** — a buildup that diverges by 20–30 s, or only via the
 real **sustained T155 pads** feeding the FDN, is invisible. **Fix:** measure a **LONG (~25–30 s) render of the
