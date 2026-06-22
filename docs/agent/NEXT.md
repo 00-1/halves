@@ -10,26 +10,34 @@
 
 ---
 
-**Builder A → `T162` (build the 12 mock-driven drill modes — TIER P1 FIRST) → content `T59`–`T61` → `T72` (held)**
-**You're well ahead — nice work.** PUSHED & gate-green, **pending Babysitter review** (don't redo): `T161`
-(`555464f`), `T156` (`eaf40bd`), `T157` (`1a3e3fb`), `T158` rescoped no-store (`41bd1d8`; the earlier
-`e454208` network-first is superseded), `T159` (`aa583b8`), `T160` (`1c949e0`), `T58` (`c89eebc`). **Don't
-rebuild any of those.**
-**NEXT REAL WORK → `T162` (owner-blessed, build ALL 12 drill modes, in 3 tiered pushes — do TIER P1 first and
-push before P2):**
-- **Tier P1 (push 1): `scaling`, `percentoff`, `partwhole`, `balance`** (the last = "Complete the Sum", from the Verbal report's maths section)**.** Full item sets + calibrated ranges + `masterSecs`
-  + unlock slots are in **`docs/agent/T162-calibration.md`** — read it. Each mode = a fixed `*_SRC` array →
-  `build()` mapping to `{p,a}` (match the existing mode shape), numpad-enterable/numeric/non-negative answers,
-  a sensible `unlockedBy`/`requires` mastery gate, new **"Reasoning"** picker group for the multi-step ones,
-  and **a Node logic gate per mode** registered in `pages.yml`.
-- **Then Tier P2** (`ratioshare`, `timegap`, `lcmhcf`, `mean`) → **Tier P3** (`cubes`, `money`, `digitsum`,
-  doubles/halves range check). One push per tier so the Babysitter reviews incrementally + the owner feels P1
-  early. *(BACKLOG T162 + `docs/agent/T162-calibration.md`.)*
-- **Then** content `T59`–`T61`. *(`T103`/`T72` Play-Store need owner creds — hold.)*
-**Re-read this line fresh before each task + before each push** (you've repeatedly built out of order — a fresh
-owner `BUG`/DO-FIRST can land here and overrides T162).
+**Builder A → `T166` 🔴 BUG-DO-FIRST (config menus exit) → `T164` (music: only switch on real change) → `T167` (PWA fullscreen on tap) → resume `T162` P2/P3 → content `T59`–`T61`**
+**3 fresh owner bugs jump ahead of `T162`** (re-read this line!). `T162` P1 (`scaling`/`percentoff`/`partwhole`/
+`balance`) is **DONE+APPROVED** (`66fcc92`+`c7e388c`) — don't rebuild; P2/P3 still to come AFTER the bugs.
+- **🔴 `T166` FIRST (live regression):** config submenus **exit the config instead of navigating** — a **T157**
+  back-nav regression (sentinel-on-every-`show()` + hash double-stacking → back over-shoots its parent). Repro in
+  a browser: Settings→Sound→back must land on **settings**, not home. Rework so forward+back are consistent (one
+  trailing sentinel, OR hash-as-source-of-truth); add a Node history/popstate test. [A]-only. *(BACKLOG T166.)*
+- **Then `T164` (owner + foghorn root):** `musicForScreen` (main.js:380) maps home/settings/audio/graphics/
+  inventory/heroes ALL to `"menu"` but **restarts the track on every screen change**. Make it **idempotent** —
+  track `curMusicKey = context+":"+seed`; if unchanged + already playing, **return** (no setContext/swapNow/
+  start). Keep `musicPreview` + per-topic `lofi` seed switching. Node test asserts skip-when-same / fire-when-
+  changed. [A]-only. Pairs with B's `T165`. *(BACKLOG T164.)*
+- **Then `T167`:** the installed PWA still shows Android bars (`display:"fullscreen"` alone isn't enough; no
+  auto-fullscreen without a gesture). **Make the "Tap to begin" tap also call `fsEnter()`/`requestFullscreen()`**
+  (keep the entry screen — it serves the audio gesture too; don't re-add a separate FS button). [A]-only.
+  *(BACKLOG T167.)*
+- **Then resume `T162`:** Tier P2 (`ratioshare`, `timegap`, `lcmhcf`, `mean`) → Tier P3 (`cubes`, `money`,
+  `digitsum`, doubles/halves range check), one push per tier (spec in `docs/agent/T162-calibration.md`) → content
+  `T59`–`T61`. *(`T103`/`T72` Play-Store need owner creds — hold.)*
+**Re-read this line fresh before each task + push.**
 
-**Builder B → `T163` (firm up + re-bless the brittle `visual_arena` golden) → then STAND BY for an engine need.**
+**Builder B → `T165` 🔴 (audio engine: a context SWITCH must fully stop the previous generator — no tail/foghorn) → `T163` (re-bless brittle `visual_arena` golden) → STAND BY.**
+**`T165` FIRST** — owner: the "switcher doesn't fully switch, elements of the previous music continue," and the
+**foghorn keeps returning on switches.** A *real* context switch (menu→lofi→arena / picker change) must release
+the previous generator's voices + **flush the FDN reverb tail** so nothing bleeds through and no runaway tail
+builds the drone. Make `setContext(current)` a **no-op** (defence with A's `T164`). Prove the post-switch output
+is **bounded** + the old context's signature doesn't persist (OfflineAudioContext); `golden-synth` stays green.
+**B-owned (`synth.js` + tests) only.** Then `T163` (visual golden re-bless), then STAND BY. *(BACKLOG T165/T163.)*
 **`T155` DONE+APPROVED (`493d875`)** — independently MEASURED: pad-bed spectral centroids spread **189→1897 Hz**,
 every bed distinct (min gap 268 Hz). The owner's "every style shares the same synth string" is objectively fixed.
 **`T154` DONE+APPROVED (`2b8f1e0`)** — the visual-regression gate works: the **flagship home-backdrop-PURPLE**

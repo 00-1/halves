@@ -87,6 +87,14 @@ reinforcing both the inverse move and the fluency of the underlying ×/+/− fac
 
 ---
 
+## I0 — Product intent (owner, 2026-06-22) — KEEP IT GENERALIZABLE
+**The owner clarified the audience:** Luke (the target student) is the **priority / first user**, **but the
+goal is a tool with real utility for OTHERS studying for the same exam** (UK 11+, GL-style). **Implication for
+all builders/design:** the diagnostic data (Luke's mocks) drives **what building blocks to drill**, but the
+drills, calibration bands, and content must stay **general to the exam cohort** — **don't hard-code anything
+Luke-specific** (no personal data, no per-child tuning baked in; keep progress device-local as today). Build
+the curriculum to serve *any* kid sitting this exam; Luke is how we know what matters, not who it's only for.
+
 ## I1 — Events — ✅ PROMOTED to BACKLOG (Phase 6.5, T78–T81) on 2026-06-21
 
 > **No longer a parked idea.** The owner brought Events forward ("I decided I like it a

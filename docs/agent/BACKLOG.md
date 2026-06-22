@@ -2721,6 +2721,87 @@ fresh install.
   split it into a [B] line if the audit lands there. *(If the audit finds nothing actionable + it never recurs,
   close as NOT-REPRODUCIBLE with the hardening guards kept.)*
 
+### T166 — [A] **BUG (live regression):** config submenus EXIT the config instead of navigating (T157 back-nav) · status: OPEN · 🔴 DO-FIRST
+**Owner (2026-06-22, on PWA): "the menus in the config are now broken — they just exit the config instead of
+going to that menu. Maybe related to the work done around supporting the back arrow? Assuming that changed
+routing."** Almost certainly a **T157** (`1a3e3fb`) regression: T157 made **every `show()` push a history
+sentinel** AND routes the config submenus through the hash (`#/audio`/`#/graphics`/`#/settings`), so a single
+forward nav now creates **TWO history entries** (the hash entry + the sentinel) and the `popstate` handler
+re-navigates by `BACK_PARENT` and **pushes more state during the popstate** — the cursor/stack gets inconsistent,
+so a back (system gesture or the in-app `audioBack`/`graphicsBack` `←`) **over-shoots its parent and exits the
+config** (audio → should go to settings, instead drops to home/out). *(The forward routing in `applyRoute`
+reads correct in isolation; the bug is the sentinel ↔ hash ↔ popstate interaction.)*
+- **Repro (builder, in a browser — harness was flaky for the Babysitter this session):** home → Settings →
+  Sound (audio) → press the in-app `←` (and the Android/system back): assert you land on **settings**, not home;
+  then settings-back → home; then home-back → confirm-exit. Currently it skips straight out.
+- **Fix direction:** the **sentinel-on-every-`show()`** + **double-stacking (hash entry + sentinel)** is the
+  smell. Rework so forward nav and back are **consistent** — e.g. keep **exactly ONE trailing sentinel** (don't
+  push one on every `show()`; manage a single sentinel and re-push exactly one after a popstate-driven nav), OR
+  drive the whole screen stack from the hash/route as the single source of truth (no separate sentinel). Ensure
+  `audio`/`graphics` back → `settings`, `settings` back → `start`, `start` back → confirm-exit, in BOTH the
+  system-back and in-app-`←` paths.
+- **DoD:** config submenus navigate correctly (forward AND back) in a browser tab AND standalone; a **Node test
+  simulating the history/popstate sequence** (mock `history` + `popstate`) asserts `settings→audio→back==settings`
+  (not home) and the full chain; `node -c` clean; browser-tab + headless unaffected; **[A]-only** (`main.js`,
+  a nav test). **Verify in a real browser** (the harness; or owner confirms on PWA).
+
+### T167 — [A] PWA: enter true fullscreen via the "Tap to begin" gesture (Android bars still show) · status: OPEN · owner-requested
+**Owner (2026-06-22): the installed PWA's fullscreen LAUNCH button is gone (good) "but it's actually now not in
+fullscreen — I see the Android bars top and bottom. Can we go straight into fullscreen without a button press,
+or do we still need that like web? If we still need it, put it back on the 'Tap to begin' button."** **Answer:
+we still need a user gesture** — browsers (incl. installed PWAs on Android) only honour `requestFullscreen()`
+**from a user gesture**; the manifest `display:"fullscreen"` (T156) hides the status bar on *some* Android/Chrome
+builds but evidently not the owner's (both bars show), and there is **no way to auto-fullscreen on load without a
+tap**. So **keep the entry screen** (it also serves the required AUDIO unlock gesture) and **make the "Tap to
+begin" tap ALSO call `requestFullscreen()`** when installed/standalone (and harmlessly in a browser tab too).
+- **Fix:** in the entry "Tap to begin" handler, after the audio unlock, call the existing `fsEnter()`/
+  `requestFullscreen()` helper (vendor-prefixed, try/catch). Keep it a no-op where unsupported. Don't re-add a
+  separate fullscreen button. (The `isInstalledDisplay()` from T156 can decide whether to attempt it, but
+  attempting in a tab is fine too.)
+- **Note for later (TWA / Play-Store build):** a TWA wrapper CAN launch **immersive/edge-to-edge natively** with
+  NO gesture and NO entry screen — so the owner's "skip the entrypoint, drop straight into fullscreen" is
+  achievable in the **packaged** app (configure immersive mode in the TWA), just not in a raw installed PWA.
+  Capture this for the T72/T103 packaging track; for now the gesture path is correct.
+- **DoD:** tapping "Tap to begin" enters fullscreen (where the API allows) in addition to unlocking audio; no
+  separate fullscreen button reappears; browser-tab behaviour fine; `node -c` clean; **[A]-only** (`main.js`,
+  maybe `index.html` copy). **Verify:** owner confirms the installed PWA goes fullscreen after the tap.
+
+### T164 — [A] Audio: only switch music when the TRACK actually changes (no restart between same-music screens) · status: OPEN · 🔴 owner-flagged (also the likely foghorn root)
+**Owner (2026-06-22): "we need to make sure it only switches when the track actually changes. E.g. moving
+between the main screen and the config menu the music restarts, but it's the same music, right?"** **Right —
+confirmed in code.** `musicForScreen` (main.js:380) maps **home/settings/audio/graphics/inventory/heroes ALL to
+the `"menu"` context**, but it **unconditionally** calls `synthSwitchContext` → `setContext`+`setMusic`+`swapNow`
++`start` on every screen change — so moving between same-music screens **rebuilds + restarts the identical
+track**. That needless restart is also the **most likely cause of the recurring foghorn on screen change** (the
+owner hit it again "moving between screens where there is a change in music" — but for menu↔menu there is NO real
+change; the code just re-triggers).
+- **Fix:** make music switching **idempotent**. Track the currently-playing music key `curMusicKey = context +
+  ":" + seed`. In `musicForScreen` compute the target `(context, seed)`; **if it equals `curMusicKey` and music
+  is already playing, RETURN — do not setContext/setMusic/swapNow/start.** Only switch on a real change. Update
+  `curMusicKey` on a successful switch; clear it when music stops. **Keep `musicPreview` (Audio-menu picker)
+  always switching**, and keep the **per-topic `lofi` seed** distinct (game topic A→B IS a real change → switch).
+- **DoD:** navigating between same-context screens (home↔settings↔audio↔inventory↔heroes) does **NOT** restart
+  the music (no audible re-trigger); a real change (menu→lofi on game start, →arena, a different solve topic, a
+  picker preview) DOES switch; a Node test asserts `musicForScreen` skips the redundant `setContext/swapNow` when
+  the key is unchanged and fires it when changed; `node -c` clean; **[A]-only** (`main.js`, a music-wiring test).
+  Pairs with **T165** (B cleans the actual switch). **Verify:** owner confirms no restart between menu screens +
+  the foghorn-on-screen-change is gone.
+
+### T165 — [B] Audio engine: a context SWITCH must fully stop the previous generator (no tail / no foghorn) · status: OPEN · 🔴 pairs with T164
+**Owner (recurring): the music "switcher doesn't fully switch — elements of the previous music continue," and
+the FOGHORN keeps returning on switches.** Even after T164 stops the *needless* switches, a **real** switch
+(menu→lofi→arena, or a picker change) must swap **cleanly**. In `synth.js`, ensure `setContext`/`setMusic`/
+`swapNow` **fully release the previous context's voices + reset/flush the FDN reverb tail** before/while the new
+generator starts — so nothing from the old track bleeds through and no runaway/overlapping tail builds into the
+sustained low drone (the foghorn). Make `setContext(name)` **idempotent** too (asked for the current context →
+no-op, defence-in-depth with T164).
+- **DoD:** on a context switch the previous generator's scheduled voices are cancelled and the reverb state is
+  flushed (no audible overlap/tail carryover); `setContext(current)` is a no-op; a headless/`OfflineAudioContext`
+  check shows the post-switch output is **bounded** (no divergence) and the old context's signature doesn't
+  persist past the swap; `golden-synth` still green; **B-owned (`synth.js` + tests) only**. I'll measure the
+  switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
+  switches).
+
 ### T163 — [B] Firm up + re-bless the brittle `visual_arena` golden · status: OPEN · small (B follow-up to T154)
 The harness recovered; `test/browser/visual.test.js` now reports **1/13 FAIL — `visual_arena` golden mismatch**
 (the Arena gained 3v3 + death-VFX after the baseline was captured). NOT a CI gate (absent from `pages.yml`) so
