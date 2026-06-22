@@ -5967,3 +5967,20 @@ verified: new `test/t219-roman-primes.test.js` (28 checks, wired into pages.yml)
 **56/56**. [A]-only (modes.js, guides.js, tests, pages.yml). Next T219 batches (per group): the rest of PART 1
 (BODMAS, ×-tricks, Roman done? no — Negatives-P1, Algebra/function-machines) + PART 2 (Geometry group, etc.).
 Pausing for the Babysitter to re-assess this batch's pattern + tree placement before scaling.
+
+---
+### [A] T221 — void line: wide letter-spacing + Star-Wars perspective skew
+Owner's next live splash iteration (push on its own for device-confirm). Void line only; gold unchanged;
+T217/T220 (caps / vertical stretch / on-off flicker) all still apply.
+- **Wide POSITIVE letter-spacing on the void line.** The raster letter-spacing is now `corrupt ? "2px" : "-1.5px"`
+  — the void caps breathe; the gold wordmark stays tight.
+- **Star-Wars perspective skew (bottom wider than top).** In the draw loop, each row's horizontal scale ramps
+  with depth about the centre: `rs = 0.6 + 0.4·((y−yMin)/span)` → top rows render at 0.6× width pulled toward
+  `cx = w/2`, bottom rows at full width. Cells in a row share one scale so they stay contiguous (+0.6 closes
+  sub-pixel seams). Applied to the void line only.
+- **No clip at 360px.** Added `.pixtitle{max-width:100%}` so the wide-spaced void canvas scales down to the
+  splash width instead of clipping; stays centred (`margin:0 auto`). Reduced-motion + legibility intact (the
+  skew/spacing are static geometry; only the flicker animates, still gated).
+verified: pwa (a2) updated (the `ls` ternary, the per-row `rs` skew about `cx`, `.pixtitle` max-width). Full suite
+**56/56**. [A]-only (main.js, styles.css, test/pwa.test.js). Owner device-confirms the live splash; then back to
+T219 batch 2.

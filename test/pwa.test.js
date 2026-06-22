@@ -55,7 +55,7 @@ if(mani){
   ok(/TITLE_VOID = \[\[205,169,255\]/.test(mn), "(a2) T210: the Void Throne ramp is lightened toward the brand purple (luminous)");
   // T212 — fix the "i" (higher raster res), corrupt the void line, tighter letters
   ok(/const cellsH = 26/.test(mn) && /span = Math\.max\(1, yMax - yMin\), PXX = 2/.test(mn), "(a2) T212/T220: raster res cellsH 18→26 (the 'i' dot/stem separate), base cell PXX=2");
-  ok(/letterSpacing = "-1\.5px"/.test(mn), "(a2) T212: tighter letter-spacing on the title raster");
+  ok(/const ls = corrupt \? "2px" : "-1\.5px"/.test(mn) && /letterSpacing = ls/.test(mn), "(a2) T212/T221: gold raster stays tight (-1.5px); the void line gets WIDE positive spacing (2px)");
   ok(/if\(corrupt\)\{[\s\S]{0,260}continue;[\s\S]{0,160}ox \+=/.test(mn), "(a2) T212: a corruption pass (dropped + displaced cells) glitches the void line");
   ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true/.test(mn), "(a2) T212: the void line is corrupted (4th arg true); gold stays clean + glinting");
   // T214 — more corruption + transparency dither + tighter gap + action block at the bottom
@@ -77,6 +77,10 @@ if(mani){
   ok(/const blankLine = \(\) => d\.clearRect\(0, 0, disp\.width, disp\.height\)/.test(mn) && /Math\.random\(\) < 0\.2\) blankLine\(\)/.test(mn), "(a2) T220: brief WHOLE-LINE dropouts cut the line fully on/off during a burst");
   ok(/setTimeout\(flick, 35 \+ Math\.random\(\) \* 70\)/.test(mn), "(a2) T220: the flicker is faster + jittery (random ~35–105ms ticks, not a fixed 90ms)");
   ok(/setTimeout\(burst, 1600 \+ Math\.random\(\) \* 2600\)/.test(mn), "(a2) T220: shorter, more frequent idle between bursts; settles to the clean frame (draw(null))");
+  // T221 — void line gets wide letter-spacing + a Star-Wars perspective skew (bottom wider than top)
+  ok(/const rs = 0\.6 \+ 0\.4 \* \(\(y - yMin\) \/ span\)/.test(mn) && /\(cx \+ \(ox - cx\) \* rs\) \* PXX/.test(mn), "(a2) T221: per-row horizontal scale ramps with depth about the centre (bottom wider than top)");
+  ok(/cx = w \/ 2/.test(mn), "(a2) T221: the skew is taken about the horizontal centre (cx = w/2)");
+  ok(/\.pixtitle\{[^}]*max-width:100%/.test(cssT), "(a2) T221: .pixtitle max-width:100% guarantees no clip at 360px");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------
