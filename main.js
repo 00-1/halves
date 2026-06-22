@@ -2137,12 +2137,24 @@
       document.mozCancelFullScreen || document.msExitFullscreen;
     if(fn){ try{ const p = fn.call(document); if(p && p.catch) p.catch(()=>{}); }catch(e){} }
   }
+  // T156 — are we running as an INSTALLED / standalone app (TWA / installed PWA)?
+  // Such a launch is already locked fullscreen with no browser chrome, so the
+  // in-app fullscreen affordances are redundant (they stay in a plain browser tab).
+  function isInstalledDisplay(){
+    try{
+      return !!((window.matchMedia &&
+        (window.matchMedia("(display-mode: standalone)").matches ||
+         window.matchMedia("(display-mode: fullscreen)").matches)) ||
+        (typeof navigator !== "undefined" && navigator.standalone === true));
+    }catch(e){ return false; }
+  }
 
   // In-menu fullscreen toggle (T18) — hidden where unsupported.
   // T146 — the fullscreen toggle now lives INSIDE Settings (the home nav button was
   // removed). Same behaviour: enter/exit fullscreen, label reflects the state.
   (function setupFullscreenBtn(){
     const btn = $("fsToggle"); if(!btn) return;
+    if(isInstalledDisplay()){ btn.classList.add("hidden"); return; }   // T156: redundant when launched standalone (already locked fullscreen)
     if(!fsSupported()){ btn.classList.add("hidden"); return; }
     const sync = () => { const lbl = $("fsToggleVal");
       if(lbl) lbl.textContent = fsActive() ? 'Exit' : 'Enter'; };
@@ -2392,7 +2404,12 @@
       const warmAudio = () => { audioUnlock(); applySoundPref(); musicForScreen(curScreen); };
       if(typeof requestAnimationFrame === "function") requestAnimationFrame(warmAudio); else setTimeout(warmAudio, 0);
     }
-    if(!fsSupported()){           // iOS Safari etc. — single "Play", no fullscreen
+    if(isInstalledDisplay()){     // T156 — installed/standalone: already locked fullscreen,
+      // so drop the "Play in fullscreen" wording; the entry just serves the audio gesture.
+      fsBtn.classList.add("hidden");
+      playBtn.className = "btn";
+      playBtn.textContent = "Tap to begin";
+    } else if(!fsSupported()){    // iOS Safari etc. — single "Play", no fullscreen
       fsBtn.classList.add("hidden");
       playBtn.className = "btn";
       playBtn.textContent = "Play";

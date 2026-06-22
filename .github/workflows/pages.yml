@@ -92,6 +92,8 @@ jobs:
         run: node test/fx-wiring.test.js
       - name: PWA (manifest + service worker) test (gate)
         run: node test/pwa.test.js
+      - name: Install-display (fullscreen affordances) test (gate)
+        run: node test/install-display.test.js
       - name: FXGL golden-render test (gate)
         run: node test/golden-fx.test.js
       - name: Synth golden-score test (gate)

@@ -4716,3 +4716,26 @@ how I verified: **`pwa.test` 21→27** — a NEW behavioural gate runs the REAL 
   flow + `build.json` no-store are intact. [A]-only (`sw.js`, `test/pwa.test.js`).
 notes: **owner verify** — re-launch the installed PWA online; the foghorn should be gone and the audio should
   match the browser tab. Next per `NEXT.md`: resume `T156`/`T157` (Play-Store-track app-feel).
+
+---
+
+## Builder A — T156: hide the fullscreen affordances when installed/standalone
+commit: (this commit) — [A], OWNER-REQUESTED, Play-Store track. Owner (testing the Android wrap): the
+fullscreen buttons are redundant once the app launches locked-fullscreen. Conditionally hide them by
+display-mode (keep them in a plain browser tab — same build).
+changed (A-owned):
+  - **`main.js`**: new **`isInstalledDisplay()`** helper — `matchMedia('(display-mode: standalone)')` ||
+    `'(display-mode: fullscreen)'` || `navigator.standalone === true` (try/catch). When installed/standalone:
+    the entry **"Play in fullscreen"** button (`#entryFs`) is hidden and `#entryPlay` becomes a plain
+    **"Tap to begin"** (the audio user-gesture is preserved — it still calls `enter(false)`); and the Settings
+    **Fullscreen** row (`#fsToggle`) is hidden. In a browser tab → unchanged (buttons show + work as today).
+  - **`manifest.webmanifest`**: `display` `"standalone"` → **`"fullscreen"`** (status bar hidden when wrapped) +
+    `display_override: ["fullscreen","standalone"]` for graceful fallback; `orientation:"portrait"` kept.
+how I verified: new **`install-display.test.js` (11 checks, gated in `pages.yml`)** boots `main.js` under BOTH
+  display-modes: installed → `#entryFs` + `#fsToggle` hidden, entry shows "Tap to begin" + stays wired;
+  browser-tab (fullscreen supported) → both still shown + wired (no regression); static: the helper checks all
+  three signals, manifest `display:"fullscreen"` + portrait. The **T112 safe-area invariant** (`home-layout`)
+  still asserts (CSS untouched). `node -c` clean; **full suite green**. [A]-only.
+notes: **owner/babysitter verify** — on the installed PWA the fullscreen buttons should be gone (locked
+  fullscreen, status bar hidden); in a browser tab they remain. Next per `NEXT.md`: **`T157`** (Android
+  back-button → navigate the screen stack, don't exit mid-game).
