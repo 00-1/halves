@@ -5567,3 +5567,21 @@ how I verified: the boss type-array now reads Brawn/Arcane/Cunning across region
 the type change feeds the matchup/foe calibration, so I re-proved the Arena invariants: **`arena3` all 27 green**
 (monotone curve, no tier gated behind its own loot, tier-120 near-full-only — the calibration auto-absorbed the
 new boss types), `arena` 44, `wayfinding` 13. **Full suite 52/52.** [A]-only (`enemies.js`, the gate).
+
+---
+### [A] T187 (owner-requested) — Codex cells open a DETAIL popup
+what: tapping a Codex cell did nothing — the `#invList` handler matched `.inv-cell` (incl. `.codex-cell`) then
+`C.byId(cell.dataset.id)`, but Codex cells carry `data-codex`/`data-n`/etc. (no `data-id`), so it returned.
+Added a Codex branch: `if(cell.classList.contains("codex-cell")) openCodexDetail(cell)`. `openCodexDetail`
+reuses the existing `#unlockModal` chrome — title = the category (Beast/Boss/Realm/Event/Emblem), an ENLARGED
+canvas re-drawn off the cell's `data-*` via a shared `drawCodexInto()` (Monsters/Scenery/EventArt/Emblems), the
+entry NAME, and a category / where-found line. Each cell now carries `data-cname` + `data-sub` (the name + the
+where-found, e.g. "Boss · Goblin Warren · Brawn") so the popup renders straight off the tapped cell. Owned →
+full detail; **locked → the "???" tease** (the art silhouetted via `.codex-detail.locked` CSS, name "???",
+"Keep playing to discover this."). Codex cells are now `cursor:pointer` (incl. locked — they open the tease).
+how I verified: `codex.test` 22→28 — cells carry `data-cname`/`data-sub`; firing the `#invList` click on an
+owned boss cell opens the popup titled "Boss" with the name + where-found line; a locked cell opens its category
+popup showing "???" (not the real name). Refactored the per-canvas draw into `drawCodexInto` (used by both the
+grid render and the detail). **Full suite 52/52.** [A]-only (main.js, styles.css, the gate).
+notes: per the pointer, next is to HOLD for the owner's icon direction (Emblems vs bestiary/boss/hero-derived) —
+the Babysitter will file the chosen direction; not pre-building.

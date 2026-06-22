@@ -558,9 +558,14 @@ canvas.pix{image-rendering:pixelated}
 .codex-cell.owned{border-color:#3a4450}
 /* undiscovered entries: the real sprite, darkened to a SILHOUETTE (shape teased,
    detail hidden) — the classic bestiary "keep playing to reveal it" look */
-.codex-cell.locked{cursor:default;opacity:.92}
+.codex-cell.locked{opacity:.92}   /* still tappable (T187) → the ??? detail tease */
 .codex-cell.locked canvas{filter:brightness(.16) saturate(.45) contrast(1.05)}
 .codex-cell.locked .inv-name{color:var(--line)}
+/* T187 — the Codex detail popup: enlarged art + name + a where-found line */
+.codex-detail canvas{image-rendering:pixelated;width:auto;height:auto;max-width:100%;margin:0 auto 6px}
+.codex-detail .u-desc{color:var(--muted);font-family:var(--mono);font-size:11px}
+.codex-detail.locked canvas{filter:brightness(.16) saturate(.45) contrast(1.05)}
+.codex-detail.locked .u-name{color:var(--line)}
 
 /* ---------- HEROES ---------- */
 #heroes{align-items:center;padding:20px 10px}

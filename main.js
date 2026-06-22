@@ -1241,8 +1241,11 @@
   const CODEX_TYPES = ["Brawn", "Cunning", "Arcane"];
   // One Codex cell: always carries the canvas (drawn for owned AND locked; CSS
   // silhouettes the locked). `data` describes what to draw; `enc` = encountered.
-  function codexCell(name, enc, w, h, data){
-    const attrs = Object.keys(data).map(k => ' data-' + k + '="' + esc(String(data[k])) + '"').join("");
+  // `name`/`sub` ride along as data-cname/data-sub so the detail popup (T187) can
+  // render the name + a category/where-found line straight off the tapped cell.
+  function codexCell(name, sub, enc, w, h, data){
+    const full = Object.assign({ cname: name, sub: sub }, data);
+    const attrs = Object.keys(full).map(k => ' data-' + k + '="' + esc(String(full[k])) + '"').join("");
     return '<div class="inv-cell codex-cell ' + (enc ? "owned" : "locked") + '"' + attrs + '>' +
       '<canvas class="pix" width="' + w + '" height="' + h + '"></canvas>' +
       '<span class="inv-name">' + esc(enc ? name : "???") + '</span></div>';
@@ -1267,24 +1270,24 @@
       let rep = -1; for(let n = r * RS + 1; n <= r * RS + RS - 1; n++){ const ti = E && E.byTier(n); if(ti && ti.type === t){ rep = n; break; } }
       if(rep < 0) continue;
       const enc = reached >= rep; if(enc) bGot++;
-      beasts.push(codexCell(rLabel(r) + " · " + t, enc, 48, 48, { codex:"beast", n:rep, type:t }));
+      beasts.push(codexCell(rLabel(r) + " · " + t, "Beast · " + t + " · " + rLabel(r), enc, 48, 48, { codex:"beast", n:rep, type:t }));
     }
     // Bosses — the region boss at every RSth tier (Monsters draws the crown).
     const bosses = []; let boGot = 0;
     for(let r = 0; r < regions; r++){ const n = (r + 1) * RS, ti = E && E.byTier(n);
       const enc = reached >= n; if(enc) boGot++;
-      bosses.push(codexCell((ti && ti.name) || ("Boss " + (r + 1)), enc, 48, 48, { codex:"boss", n:n, type:(ti && ti.type) || "Brawn" }));
+      bosses.push(codexCell((ti && ti.name) || ("Boss " + (r + 1)), "Boss · " + rLabel(r) + " · " + ((ti && ti.type) || "Brawn"), enc, 48, 48, { codex:"boss", n:n, type:(ti && ti.type) || "Brawn" }));
     }
     // Realms — the 10 region backdrops, full-lit (no battle scrim) in the gallery.
     const realms = []; let rGot = 0;
     for(let r = 0; r < regions; r++){ const enc = reached >= r * RS + 1; if(enc) rGot++;
-      realms.push(codexCell(rLabel(r), enc, 72, 28, { codex:"realm", region:r })); }
+      realms.push(codexCell(rLabel(r), "Realm · region " + (r + 1) + " of " + regions, enc, 72, 28, { codex:"realm", region:r })); }
     // Events — the daily-event roster; encountered once any reward tier is owned.
     const events = []; let eGot = 0;
     const roster = (Ev && Ev.roster) ? Ev.roster() : [];
     roster.forEach(ev => {
       const enc = Object.keys(col).some(k => k.indexOf("event:" + ev.id) === 0); if(enc) eGot++;
-      events.push(codexCell(ev.name, enc, 48, 32, { codex:"event", seed:ev.artSeed }));
+      events.push(codexCell(ev.name, "Daily event" + (ev.rarity ? " · " + ev.rarity : ""), enc, 48, 32, { codex:"event", seed:ev.artSeed }));
     });
     // Emblems (T179/T181) — B's brand / app-icon candidates; the owner's icon-review
     // surface. Earned by conquest: emblem i unlocks once i region bosses are felled
@@ -1293,7 +1296,7 @@
     const Em = window.Emblems, emIds = (Em && Em.IDS) || [];
     const felled = bossesDefeated(col);
     emIds.forEach((id, i) => { const enc = felled >= i; if(enc) emGot++;
-      emblems.push(codexCell(id.charAt(0).toUpperCase() + id.slice(1), enc, 48, 48, { codex:"emblem", emblem:id })); });
+      emblems.push(codexCell(id.charAt(0).toUpperCase() + id.slice(1), "Emblem · app-icon candidate", enc, 48, 48, { codex:"emblem", emblem:id })); });
     const totGot = bGot + boGot + rGot + eGot + emGot, totAll = beasts.length + bosses.length + realms.length + events.length + emblems.length;
     const bars = [["Beasts", bGot, beasts.length], ["Bosses", boGot, bosses.length],
                   ["Realms", rGot, realms.length], ["Events", eGot, events.length], ["Emblems", emGot, emblems.length]]
@@ -1318,17 +1321,38 @@
       cx.fillRect(Math.floor(x * sx), Math.floor(y * sy), Math.ceil(sx), Math.ceil(sy));
     }
   }
-  function drawCodexCanvases(){
+  // Draw one Codex sprite into a canvas from its `data-*` (the right generator).
+  function drawCodexInto(cv, d){
     const M = window.Monsters, S = window.Scenery, EA = window.EventArt, Em = window.Emblems;
-    $("invList").querySelectorAll(".codex-cell canvas").forEach(cv => {
-      const d = cv.parentElement.dataset;
-      try{
-        if((d.codex === "beast" || d.codex === "boss") && M) M.draw(cv, { n:+d.n, name:"", type:d.type });
-        else if(d.codex === "realm" && S && S.buildGrid) paintCodexGrid(cv, S.buildGrid(+d.region));
-        else if(d.codex === "event" && EA) EA.draw(cv, +d.seed);
-        else if(d.codex === "emblem" && Em) Em.draw(cv, d.emblem);
-      }catch(e){}
-    });
+    try{
+      if((d.codex === "beast" || d.codex === "boss") && M) M.draw(cv, { n:+d.n, name:"", type:d.type });
+      else if(d.codex === "realm" && S && S.buildGrid) paintCodexGrid(cv, S.buildGrid(+d.region));
+      else if(d.codex === "event" && EA) EA.draw(cv, +d.seed);
+      else if(d.codex === "emblem" && Em) Em.draw(cv, d.emblem);
+    }catch(e){}
+  }
+  function drawCodexCanvases(){
+    $("invList").querySelectorAll(".codex-cell canvas").forEach(cv => drawCodexInto(cv, cv.parentElement.dataset));
+  }
+  // T187 — tapping a Codex cell opens a DETAIL popup (reusing the #unlockModal chrome):
+  // the enlarged art (re-drawn off the cell's data-*), the name, and a category /
+  // where-found line. Owned → full detail; locked → the "???" tease (silhouetted art).
+  const CODEX_TITLE = { beast:"Beast", boss:"Boss", realm:"Realm", event:"Event", emblem:"Emblem" };
+  function openCodexDetail(cell){
+    const d = cell.dataset, owned = cell.classList.contains("owned");
+    $("unlockTitle").textContent = CODEX_TITLE[d.codex] || "Codex";
+    const grid = $("unlockGrid"); grid.className = "unlock-grid"; grid.innerHTML = "";
+    const wide = d.codex === "realm";
+    const w = wide ? 196 : 128, h = wide ? 76 : (d.codex === "event" ? 86 : 128);
+    const wrap = document.createElement("div");
+    wrap.className = "u-cell codex-detail" + (owned ? "" : " locked");
+    wrap.innerHTML = '<canvas class="pix" width="' + w + '" height="' + h + '"></canvas>' +
+      '<div class="u-name">' + esc(owned ? (d.cname || "") : "???") + '</div>' +
+      '<div class="u-desc">' + esc(owned ? (d.sub || "") : "Keep playing to discover this.") + '</div>';
+    grid.appendChild(wrap);
+    drawCodexInto(wrap.querySelector("canvas"), d);   // locked → the .codex-detail.locked CSS silhouettes it
+    const m = $("unlockModal"); m.classList.remove("hidden");
+    if(typeof requestAnimationFrame === "function") requestAnimationFrame(() => m.classList.add("show")); else m.classList.add("show");
   }
   function drawInvCanvases(){
     $("invList").querySelectorAll(".inv-cell.owned canvas").forEach(cv => {
@@ -2419,6 +2443,7 @@
     const play = e.target.closest(".el-play");
     if(play){ startEvent(play.dataset.event); return; }   // launch today's live event
     const cell = e.target.closest(".inv-cell"); if(!cell) return;
+    if(cell.classList.contains("codex-cell")){ openCodexDetail(cell); return; }   // T187 — Codex detail popup
     const it = C.byId(cell.dataset.id); if(!it) return;
     if(cell.classList.contains("owned")) openModal(it.cat, [it], false);
     else openModal("Locked", [{ id:"locked-mystery", name:"???", rarity:"common", desc:"Keep playing to discover this collectible." }], false);

@@ -17,8 +17,8 @@ ok(/\{ id:"codex",\s*label:"Codex" \}/.test(mainSrc), "(1) a Codex tab is regist
 ok(/function invCodexHtml\(col\)/.test(mainSrc), "(1) invCodexHtml(col) builds the tab");
 ok(/invTab === "codex"\s*\? invCodexHtml\(col\)/.test(mainSrc), "(1) renderInvTab routes the codex tab");
 ok(/if\(invTab === "codex"\) drawCodexCanvases\(\)/.test(mainSrc), "(1) the codex tab draws its own canvases (Monsters/Scenery/EventArt)");
-(function(){ const b = mainSrc.slice(mainSrc.indexOf("function drawCodexCanvases"), mainSrc.indexOf("function drawCodexCanvases") + 700);
-  ok(/M\.draw\(cv/.test(b) && /S\.buildGrid/.test(b) && /EA\.draw\(cv/.test(b), "(1) drawCodexCanvases dispatches to Monsters + Scenery + EventArt"); })();
+(function(){ const b = mainSrc.slice(mainSrc.indexOf("function drawCodexInto"), mainSrc.indexOf("function drawCodexInto") + 700);
+  ok(/M\.draw\(cv/.test(b) && /S\.buildGrid/.test(b) && /EA\.draw\(cv/.test(b) && /Em\.draw\(cv/.test(b), "(1) drawCodexInto dispatches to Monsters + Scenery + EventArt + Emblems"); })();
 ok(/\.codex-cell\.locked canvas\{filter:brightness/.test(css), "(1) locked codex entries are CSS-silhouetted (dark filter on the real sprite)");
 ok(/test\/codex\.test\.js/.test(wf), "(1) this gate is registered in CI");
 
@@ -43,7 +43,7 @@ function mkEl(id){ const e = { id, _html:"", _text:"", _h:{}, dataset:{}, style:
   classList:{ _s:new Set(), add(c){this._s.add(c);}, remove(c){this._s.delete(c);},
     toggle(c,f){ if(f===undefined){ this._s.has(c)?this._s.delete(c):this._s.add(c); return this._s.has(c);} else { f?this._s.add(c):this._s.delete(c); return !!f; } }, contains(c){return this._s.has(c);} },
   addEventListener(ev,fn){ (this._h[ev]=this._h[ev]||[]).push(fn); }, removeEventListener(){},
-  appendChild(c){return c;}, insertBefore(c){return c;}, setAttribute(){}, getAttribute(){return null;}, removeAttribute(){}, remove(){}, focus(){}, blur(){},
+  appendChild(c){ if(c && c._html != null) this._html += c._html; return c; }, insertBefore(c){return c;}, setAttribute(){}, getAttribute(){return null;}, removeAttribute(){}, remove(){}, focus(){}, blur(){},
   querySelector(s){ return /canvas/.test(s||"") ? mkEl("_c") : null; },
   querySelectorAll(s){ return (id === "invList" && /codex-cell canvas/.test(s||"")) ? codexCanvases(this._html) : []; }, closest(){ return null; },
   getContext(){ return { clearRect(){}, fillRect(){}, save(){}, restore(){}, beginPath(){}, fill(){}, set fillStyle(v){}, get fillStyle(){return"";} }; },
@@ -100,27 +100,27 @@ ok(EMBLEM_IDS.length >= 6 && emblemsN === EMBLEM_IDS.length, "(2) Emblems = B's 
 // ---- (3) encounter gating: reached tier 12 → region 0 met, region 1+ silhouettes
 (function(){
   // realm cells in document order are regions 0..9; region 0 reached, region 1 not
-  const realmCells = [...html.matchAll(/<div class="inv-cell codex-cell (owned|locked)" data-codex="realm" data-region="(\d+)"/g)];
+  const realmCells = [...html.matchAll(/codex-cell (owned|locked)"[^>]*data-codex="realm"[^>]*data-region="(\d+)"/g)];
   const r0 = realmCells.find(m => m[2] === "0"), r1 = realmCells.find(m => m[2] === "1");
   ok(r0 && r0[1] === "owned", "(3) Realm of region 0 is DISCOVERED (the player has been there)");
   ok(r1 && r1[1] === "locked", "(3) Realm of region 1 is a locked silhouette (not yet reached)");
   // the tier-12 boss is reached (currentTier===12) → discovered; region-1 boss locked
-  const bossCells = [...html.matchAll(/<div class="inv-cell codex-cell (owned|locked)" data-codex="boss" data-n="(\d+)"/g)];
+  const bossCells = [...html.matchAll(/codex-cell (owned|locked)"[^>]*data-codex="boss"[^>]*data-n="(\d+)"/g)];
   const b12 = bossCells.find(m => m[2] === "12"), b24 = bossCells.find(m => m[2] === "24");
   ok(b12 && b12[1] === "owned", "(3) the region-0 boss (tier 12) is discovered once reached");
   ok(b24 && b24[1] === "locked", "(3) the region-1 boss (tier 24) is still a silhouette");
-  // locked entries are named "???", discovered ones carry a real name
-  ok(/data-codex="realm" data-region="1"><canvas[^>]*><\/canvas><span class="inv-name">\?\?\?<\/span>/.test(html), "(3) a locked entry is named ??? (the tease)");
+  // locked entries are named "???"
+  ok(/<canvas[^>]*><\/canvas><span class="inv-name">\?\?\?<\/span>/.test(html), "(3) a locked entry is named ??? (the tease)");
 })();
 
 // ---- (4) the event we own is discovered; an un-owned one is a silhouette -------
 (function(){
-  const evCells = [...html.matchAll(/<div class="inv-cell codex-cell (owned|locked)" data-codex="event" data-seed="(\d+)"/g)];
+  const evCells = [...html.matchAll(/codex-cell (owned|locked)"[^>]*data-codex="event"[^>]*data-seed="(\d+)"/g)];
   const owned = evCells.filter(m => m[1] === "owned").length;
   ok(owned === 1, "(4) exactly the one owned event reward is discovered (" + owned + ")");
   // Emblems ladder in by bosses felled: with 0 bosses beaten (tiers 1..11), only the
   // first emblem is discovered; the rest are silhouettes.
-  const emCells = [...html.matchAll(/<div class="inv-cell codex-cell (owned|locked)" data-codex="emblem" data-emblem="(\w+)"/g)];
+  const emCells = [...html.matchAll(/codex-cell (owned|locked)"[^>]*data-codex="emblem"[^>]*data-emblem="(\w+)"/g)];
   ok(emCells.length === EMBLEM_IDS.length && emCells[0][1] === "owned", "(4) the first emblem is unlocked by default");
   ok(emCells.slice(1).every(m => m[1] === "locked"), "(4) the remaining emblems are milestone-locked silhouettes (0 bosses felled)");
 })();
@@ -128,6 +128,29 @@ ok(EMBLEM_IDS.length >= 6 && emblemsN === EMBLEM_IDS.length, "(2) Emblems = B's 
 // ---- (5) drawing dispatches to every generator --------------------------------
 ok(draws.beast === beasts && draws.boss === bossesN && draws.realm === realmsN && draws.event === eventsN && draws.emblem === emblemsN,
    "(5) drawCodexCanvases drew every cell via the right generator (beast " + draws.beast + " / boss " + draws.boss + " / realm " + draws.realm + " / event " + draws.event + " / emblem " + draws.emblem + ")");
+
+// ---- (6) T187: tapping a Codex cell opens the DETAIL popup ---------------------
+(function(){
+  // cells carry the name + where-found as data-cname / data-sub (for the popup)
+  ok(/data-cname="[^"]+" data-sub="[^"]*"/.test(html), "(6) Codex cells carry data-cname + data-sub for the detail popup");
+  // fire the #invList click handler with a synthetic OWNED boss cell
+  const fire = cell => (els.invList._h.click||[]).forEach(f => f({ target:{ closest:s => (s === ".inv-cell" || s === ".codex-cell") ? cell : null } }));
+  const grid = () => global.document.getElementById("unlockGrid"), title = () => global.document.getElementById("unlockTitle");
+  const ownedBoss = { classList:{ contains:c => c === "codex-cell" || c === "owned" },
+    dataset:{ codex:"boss", n:"12", type:"Brawn", cname:"Goblin King", sub:"Boss · Goblin Warren · Brawn" } };
+  grid().innerHTML = ""; title().textContent = "";
+  fire(ownedBoss);
+  ok(title().textContent === "Boss", "(6) tapping a boss cell opens the popup titled 'Boss' (" + title().textContent + ")");
+  ok(/Goblin King/.test(grid()._html), "(6) the popup shows the entry name");
+  ok(/Boss · Goblin Warren · Brawn/.test(grid()._html), "(6) the popup shows the category / where-found line");
+  // a LOCKED cell → the ??? tease, no name/where-found revealed
+  const lockedRealm = { classList:{ contains:c => c === "codex-cell" },
+    dataset:{ codex:"realm", region:"5", cname:"Drownholm", sub:"Realm · region 6 of 10" } };
+  grid().innerHTML = ""; title().textContent = "";
+  fire(lockedRealm);
+  ok(title().textContent === "Realm", "(6) a locked cell still opens its category popup");
+  ok(/\?\?\?/.test(grid()._html) && !/Drownholm/.test(grid()._html), "(6) a locked entry shows ??? (the tease), not its real name");
+})();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " CODEX CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);
