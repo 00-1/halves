@@ -5928,3 +5928,21 @@ the permanent gate the audit asked for.
 verified: full suite **55/55** (+1 new gate). [A]-only (modes.js, test/, pages.yml). **T213 Phase 2 COMPLETE**
 (2a guides + 2b calibration/structural + 2c de-dup/gate). Next per the pointer: T219 (planned-but-unbuilt
 topics), then T218 (nav badges); T168 held on Play ID-verify.
+
+---
+### [A] T220 — void line: vertical stretch + faster/random on-off flicker
+Owner's one-more void-line iteration (push on its own for device-confirm). Builds on T217's paintPixelTitle.
+- **Vertical stretch (void line only).** The void raster now uses taller-than-wide cells — `PXX=2, PXY=3`
+  (gold stays square at 2×2). With `.pixtitle{height:1.25em;width:auto}` the taller canvas aspect renders the
+  caps stretched vertically (and a touch narrower, which also helps "THE VOID THRONE" fit the splash). Gold
+  wordmark unchanged.
+- **Faster + more random flicker.** The burst flick interval went from a fixed 90ms to a jittery
+  `35 + random·70` (~9–28fps); bursts are a touch shorter (~0.35–1.1s) and idle less between (~1.6–4.2s) → more
+  active, less predictable.
+- **Cuts fully ON/OFF.** On top of the per-cell re-roll, ~1-in-5 flick ticks now blank the WHOLE line for a tick
+  (`blankLine()` → clearRect) — brief blackouts like a signal breaking up. Each burst settles back to the clean
+  `draw(null)` frame.
+- **Reduced-motion → fully static** (the whole burst block stays gated; only the settled frame shows).
+verified: pwa (a2) updated (PXX/PXY stretch, blankLine dropout, the faster jittery flick + shorter idle; T212
+raster assertion tracks PXX). Full suite **55/55**. [A]-only (main.js, test/pwa.test.js). Owner device-confirms
+the live splash; then back to T213 Phase 2 (already COMPLETE — awaiting re-assessment) → T219.

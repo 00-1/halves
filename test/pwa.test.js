@@ -54,7 +54,7 @@ if(mani){
   ok(/\.brand\{[^}]*font-size:clamp\(54px/.test(cssT) && /\.subtitle\{[^}]*font-size:clamp\(30px/.test(cssT), "(a2) T210/T217: the titles are big (3×), subtitle shrunk for wider mono ALL-CAPS");
   ok(/TITLE_VOID = \[\[205,169,255\]/.test(mn), "(a2) T210: the Void Throne ramp is lightened toward the brand purple (luminous)");
   // T212 — fix the "i" (higher raster res), corrupt the void line, tighter letters
-  ok(/const cellsH = 26/.test(mn) && /span = Math\.max\(1, yMax - yMin\), PX = 2/.test(mn), "(a2) T212: raster res cellsH 18→26 (the 'i' dot/stem separate), PX 3→2");
+  ok(/const cellsH = 26/.test(mn) && /span = Math\.max\(1, yMax - yMin\), PXX = 2/.test(mn), "(a2) T212/T220: raster res cellsH 18→26 (the 'i' dot/stem separate), base cell PXX=2");
   ok(/letterSpacing = "-1\.5px"/.test(mn), "(a2) T212: tighter letter-spacing on the title raster");
   ok(/if\(corrupt\)\{[\s\S]{0,260}continue;[\s\S]{0,160}ox \+=/.test(mn), "(a2) T212: a corruption pass (dropped + displaced cells) glitches the void line");
   ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true/.test(mn), "(a2) T212: the void line is corrupted (4th arg true); gold stays clean + glinting");
@@ -72,8 +72,11 @@ if(mani){
   ok(/function paintPixelTitle\(el, ramp, glint, corrupt, fontOverride, upper\)/.test(mn) && /const text = upper \? src\.toUpperCase\(\) : src/.test(mn), "(a2) T217: paintPixelTitle takes an `upper` flag → renders the void line ALL CAPS");
   ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true, "'JetBrains Mono',ui-monospace,monospace", true\)/.test(mn), "(a2) T217: the void subtitle is rendered uppercase ('THE VOID THRONE')");
   ok(/const burst = \(\) =>/.test(mn) && /function flick\(\)/.test(mn), "(a2) T217: a burst/flick scheduler replaces the continual tick (intermittent interference)");
-  ok(/setTimeout\(flick, 90\)/.test(mn), "(a2) T217: during a burst the glitch re-rolls at ~11fps (flick every 90ms)");
-  ok(/setTimeout\(burst, 2200 \+ Math\.random\(\) \* 2800\)/.test(mn), "(a2) T217: between bursts it settles + idles ~2.2–5s (no re-roll)");
+  // T220 — the void line is stretched VERTICALLY + the flicker is faster/more random, cutting fully on/off
+  ok(/PXX = 2, PXY = corrupt \? 3 : 2/.test(mn) && /d\.fillRect\(ox \* PXX, oy \* PXY, PXX, PXY\)/.test(mn), "(a2) T220: the void line uses taller-than-wide cells (PXY>PXX); gold stays square");
+  ok(/const blankLine = \(\) => d\.clearRect\(0, 0, disp\.width, disp\.height\)/.test(mn) && /Math\.random\(\) < 0\.2\) blankLine\(\)/.test(mn), "(a2) T220: brief WHOLE-LINE dropouts cut the line fully on/off during a burst");
+  ok(/setTimeout\(flick, 35 \+ Math\.random\(\) \* 70\)/.test(mn), "(a2) T220: the flicker is faster + jittery (random ~35–105ms ticks, not a fixed 90ms)");
+  ok(/setTimeout\(burst, 1600 \+ Math\.random\(\) \* 2600\)/.test(mn), "(a2) T220: shorter, more frequent idle between bursts; settles to the clean frame (draw(null))");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------

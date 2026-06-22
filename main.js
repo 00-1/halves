@@ -881,8 +881,10 @@
       const data = c.getImageData(0, 0, w, h).data;
       let yMin = h, yMax = 0;
       for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(data[(y*w+x)*4+3] > 96){ if(y<yMin)yMin=y; if(y>yMax)yMax=y; }
-      const span = Math.max(1, yMax - yMin), PX = 2;
-      const disp = document.createElement("canvas"); disp.width = w * PX; disp.height = h * PX; disp.className = "pixtitle";
+      // T220 — the void line gets TALLER-THAN-WIDE cells (vertical stretch); the gold
+      // wordmark stays square. width:auto on .pixtitle keeps it fitting the splash.
+      const span = Math.max(1, yMax - yMin), PXX = 2, PXY = corrupt ? 3 : 2;
+      const disp = document.createElement("canvas"); disp.width = w * PXX; disp.height = h * PXY; disp.className = "pixtitle";
       const d = disp.getContext("2d"); if(!d) return;
       const draw = (glintX, cseed) => {
         d.clearRect(0, 0, disp.width, disp.height);
@@ -906,7 +908,7 @@
           }
           d.fillStyle = alpha < 1 ? "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + alpha + ")"
                                   : "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
-          d.fillRect(ox * PX, oy * PX, PX, PX);
+          d.fillRect(ox * PXX, oy * PXY, PXX, PXY);
         }
       };
       draw(null);
@@ -926,27 +928,29 @@
         };
         setTimeout(sweep, 1800 + Math.random() * 1500);
       }
-      // T217 — INTERMITTENT interference (not continual). The void line sits on ONE
-      // settled frame (the cseed=0 draw above) most of the time; occasionally it
-      // "cuts in" — re-rolling the dropped/displaced/alpha cells at ~11fps for a short
-      // BURST (~0.4–1.2s) like a signal flickering — then settles back onto a fresh
-      // stable frame and idles (no re-roll) ~2.2–5s before the next burst. Pauses off
-      // the entry splash; reduced-motion → fully static (this whole block is skipped).
+      // T217/T220 — INTERMITTENT interference (not continual). The void line sits on
+      // ONE settled frame (the cseed=0 draw above) most of the time; occasionally it
+      // "cuts in" for a short BURST then settles + idles before the next. T220 makes
+      // the burst FASTER + more RANDOM and cuts the line fully ON/OFF: most ticks
+      // re-roll the corrupted cells, but ~1-in-5 the WHOLE line drops out for a tick
+      // (a brief blackout), like a signal breaking up. Pauses off the entry splash;
+      // reduced-motion → fully static (this whole block is skipped).
       if(corrupt && !prefersReducedMotion() && typeof requestAnimationFrame === "function"){
         const onEntry = () => { try{ return screens.entry && screens.entry.classList.contains("active"); }catch(e){ return false; } };
         const clk = () => (performance && performance.now) ? performance.now() : Date.now();
+        const blankLine = () => d.clearRect(0, 0, disp.width, disp.height);   // T220 — full dropout
         let cseed = 1;
         const burst = () => {
-          if(!onEntry()){ setTimeout(burst, 1500); return; }
-          const dur = 400 + Math.random() * 800, t0 = clk();   // active interference: 0.4–1.2s
+          if(!onEntry()){ setTimeout(burst, 1200); return; }
+          const dur = 350 + Math.random() * 750, t0 = clk();   // active interference: ~0.35–1.1s
           (function flick(){
-            cseed = (Math.imul(cseed, 1103515245) + 12345) >>> 0;
-            draw(null, cseed);
-            if(clk() - t0 >= dur){ setTimeout(burst, 2200 + Math.random() * 2800); return; }   // settle → idle 2.2–5s
-            setTimeout(flick, 90);   // ~11fps while cutting in
+            if(Math.random() < 0.2) blankLine();                                       // ~20% whole-line dropout (cut OFF)
+            else { cseed = (Math.imul(cseed, 1103515245) + 12345) >>> 0; draw(null, cseed); }   // else re-roll the cells
+            if(clk() - t0 >= dur){ draw(null); setTimeout(burst, 1600 + Math.random() * 2600); return; }   // settle → idle ~1.6–4.2s
+            setTimeout(flick, 35 + Math.random() * 70);   // ~9–28fps, JITTERY (faster + more random)
           })();
         };
-        setTimeout(burst, 1500 + Math.random() * 1500);
+        setTimeout(burst, 1200 + Math.random() * 1400);
       }
     }catch(e){ /* keep the plain CSS text on any failure */ }
   }
