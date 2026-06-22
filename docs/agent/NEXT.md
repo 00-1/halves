@@ -18,9 +18,12 @@
   (inset:0) + body bg then fill the notch purple; UI stays inset-aware (safe-area insets become non-zero — verify
   `home-layout` holds, nothing clips). [A]-only. *(BACKLOG T176.)*
 - **Then `T171`** (rename product → "Goblin Gold", keep "Halves" topic) → content `T59`–`T61`.
-- **`T173`** (hoard WIRING) waits on B's `T172`. Updated spec: feed gold→`homeFxState` via a **tunable
-  `GOLD_FULL`≈500K** sub-linear curve (calibration in `GOLD-HOARD-DESIGN.md`); the **earn-burst is a standalone
-  spinning-coin burst from the earn-point — NO settling on the pile** (owner). *(`T168` Play-Store held for verify;
+- **`T178`** (economy, owner): ramp **mid/late** gold **exponentially** (Arena-boss multiplier) so wealth reaches
+  **millions→billions/trillions** — the goblin-hoard comedy (infra already supports it: `fmtGold`→10⁴⁵, milestones→1e15;
+  only the linear `goldMult` is the bottleneck). Early game unchanged. Feeds the hoard `GOLD_FULL`. [A]-only. *(BACKLOG T178.)*
+- **`T173`** (hoard WIRING) waits on B's `T172`. Spec: feed gold→`homeFxState` via a **tunable `GOLD_FULL`≈1e6**
+  (the "Gold Hoard" milestone) sub-linear curve — **NUMBER decoupled from PILE** (number→B/T via T178, pile caps);
+  the **earn-burst is a standalone spinning-coin burst from the earn-point — NO settling** (owner). *(`T168` Play-Store held for verify;
   `T103`/`T72` need creds.)*
 **Re-read this line fresh before each task + push.**
 

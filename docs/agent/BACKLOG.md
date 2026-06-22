@@ -2812,6 +2812,35 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
+### T178 — [A] Economy: ramp mid/late-game wealth to ABSURD levels (millions → billions/trillions) — the goblin-hoard humour · status: OPEN · owner-feature (pairs with the hoard)
+**Owner (2026-06-22): "I'd like coins to reach higher numbers than 500K — at least millions, but billions/
+trillions would be funny too. This is part of the humour/character — building up inordinate/pointless wealth. So
+ramp up the wealth accumulation in MID/LATE game. Early accumulation is already good."** *(Cookie-Clicker /
+AdVenture-Capitalist absurd-number comedy, on-brand for a gold-hoarding goblin.)*
+- **The infra ALREADY supports it** (no new plumbing): `fmtGold` suffix ladder goes **K→M→B→T→Qa…Qad (~10⁴⁵)**;
+  the wealth **milestones already climb to 1e15** ("Coin Purse" 1K → "Gold Hoard" 1M → "Croesus" 1B → "Midas
+  Touch" 1T → "Cosmic Fortune" 1e15). **Only the EARNING RATE is the bottleneck:** `goldMult` is **additive/linear**
+  (`1 + items·0.05 + mastered·0.5 + heroes·0.5 + tiers·1`, max ~145) → you'd crawl to a few M but never reach the
+  B/T the milestones promise.
+- **Fix — add an EXPONENTIAL mid/late ramp, keep early as-is:** introduce a **multiplicative** wealth factor tied
+  to **deep Arena progress** (the late-game grind = the wealth engine). E.g. a **"Hoard Multiplier" = `g^(bosses
+  defeated)`** (10 region bosses; `g`≈2–2.5 → ×~1k–9k at full clear) **multiplied onto** the existing additive
+  `goldMult`. Net: early game unchanged (no bosses yet → ×1); mid game accelerates; late game pays **millions per
+  Arena win** → cumulative **billions/trillions**. Tune `g` so a committed few-months player lands in the **B–T**
+  range (and a completionist tips into Qa for the laugh). **Gold is decoupled from Arena difficulty** (`tierGold`
+  is the payoff; foe `def` is separate) — so ramping gold does NOT unbalance the Arena.
+- **Hoard tie-in (decouples NUMBER from PILE):** the **NUMBER** is the joke (→B/T/Qa on the gold pill); the visual
+  **PILE** "fills" at the **1M "Gold Hoard" milestone** (`GOLD_FULL`≈1e6 in `GOLD-HOARD-DESIGN.md`, not 500K) and
+  then just stays a big glinting hoard while the number explodes past it. (Optional later: a tiny comedic
+  "obscene overflow" flourish at extreme wealth.)
+- **DoD:** mid/late gold escalates exponentially (a committed player reaches **≥ millions**, deep play **B/T**);
+  early-game earning unchanged; `fmtGold` renders the big tiers correctly (it already does — add a test for B/T/Qa
+  formatting); the wealth milestones become reachable in sane time; Arena difficulty/`FOE_BUDGET` invariants
+  unaffected; `Gold` unit tests updated (`questionGold`/`roundBonusGold`/`tierGold`/the new factor); `node -c`
+  clean; **[A]-only** (`main.js`, gold tests). **Sequence:** feeds the hoard `GOLD_FULL` (T173) — do before/with
+  T173; behind the live bugs. **Babysitter can run a Node economy SIM to set `g` + `GOLD_FULL` from real
+  gold-after-N-days curves** (offered to the owner).
+
 ### T177 — [A] **BUG (live):** PWA loses fullscreen on minimize + no way back (T156 removed the button) · status: OPEN · 🔴 DO-FIRST
 **Owner (2026-06-22): "the PWA loses fullscreen every time I minimise it, and the fullscreen button is gone from
 the config menu now."** **Root cause:** T167's `requestFullscreen()` (the JS Fullscreen API) is **dropped by

@@ -70,15 +70,21 @@ hundreds/day early, tens-of-thousands/day once progressed (Arena tiers alone add
 `130 × mult`). *(Screenshot reference: a fresh player showed 1.23K gold at 1 Momentum.)*
 - **Estimate for "a few months" of regular play** (progresses well — most topics mastered, many Arena regions
   cleared): cumulative gold realistically reaches **several hundred thousand to low millions.**
-- **Proposed targets (TUNABLE — the owner tunes the feel on the live build):**
-  - **Pile visibly *present* early:** a few K gold → a small but real mound (a new player sees it start).
-  - **~Half-full ≈ ~50K gold** (a few weeks of steady play).
-  - **"Full" pile ≈ ~500K gold** (a committed few-months player) — past which the *mound silhouette* keeps
-    creeping (Layer A), but the surface-coin count has plateaued (cap-safe).
-- **Curve:** expose a single **`GOLD_FULL` constant (≈500K)** + a **sub-linear shape** so early gold shows without
-  the curve saturating too fast — e.g. `level = clamp((gold/GOLD_FULL)^0.4, 0, 1)` (gives ~9% at 1.2K, ~40% at
-  50K, 100% at 500K) **or** the saturating `1−1/(1+gold/K)` with `K≈55K`. Quantise into ~6–8 tiers; re-seed only
-  on tier change. **`GOLD_FULL` is the one knob the owner dials.**
+- **DECOUPLE the number from the pile (owner, 2026-06-22 — "I want coins to reach millions/billions/trillions;
+  it's the humour of inordinate wealth"):** the displayed **GOLD NUMBER** is the joke and climbs to **B/T/Qa**
+  (via the **T178** mid/late exponential economy ramp — `fmtGold` already formats to ~10⁴⁵). The visual **PILE is
+  the ambient impression** and **caps/plateaus** — it does NOT try to represent trillions of coins.
+- **Proposed targets (TUNABLE):**
+  - **Pile visibly *present* early:** a few K gold → a small but real mound.
+  - **~Half-full ≈ ~100K gold.**
+  - **"Full" pile ≈ ~1,000,000 gold** — tied to the existing **"Gold Hoard" milestone (1e6)**: when you've literally
+    earned "Gold Hoard," your hoard *looks* full. Past 1M the **number keeps exploding** (10M→1B→1T…) while the pile
+    just stays a big glinting hoard (Layer A may creep a hair; coin count is long-plateaued, cap-safe).
+- **Curve:** expose a single **`GOLD_FULL` constant (≈1e6)** + a **sub-linear shape** so early gold shows without
+  saturating too fast — e.g. `level = clamp((gold/GOLD_FULL)^0.4, 0, 1)` (~6% at 1.2K, ~40% at 100K, 100% at 1M)
+  **or** `1−1/(1+gold/K)` with `K≈110K`. Quantise into ~6–8 tiers; re-seed only on tier change. **`GOLD_FULL` is
+  the one knob the owner dials.** *(Optional comedic flourish at extreme wealth — e.g. the mound overflows / a few
+  coins spill — deferred.)*
 - **Want a precise number?** I can run a quick **Node economy simulation** (rounds/day × accuracy → questionGold +
   roundBonus + Arena wins, with `goldMult` growing as collection fills) to estimate gold-after-N-days under a few
   play-frequency assumptions, and set `GOLD_FULL` from real curves rather than a guess. Say the word.
