@@ -66,6 +66,19 @@ positive distances, times as elapsed minutes, so no minus/colon keys).
     keys are 0–9, `.`, backspace, skip — see `index.html:111-122`). The
     negative-stretch (e.g. `37×4 = 100−?` → −48) is a follow-up if the numpad
     grows a `−` key. *masterSecs ≈ 9.*
+- **T162 P2 — clean procedures the mock surfaced** *(2026-06-22)*:
+  - **Ratio share (`ratioshare`):** 2-part, amount ≤ 100, parts ≤ 10; a few
+    3-part stretch (180 in 2:3:7 → 105). Prompt names which share to give
+    (`bigger`/`smaller`/`biggest`) so the answer stays single-valued. *masterSecs ≈ 10.*
+  - **Time gap (`timegap`):** minutes between two **24-h-clock** times, span
+    15 min – 2 h 59 m, crosses the hour. **Answer in minutes** only (no `:` key
+    on the numpad). *masterSecs ≈ 7.* Eyebrow "minutes between".
+  - **LCM / HCF (`lcmhcf`):** inputs ≤ 30, LCM ≤ 200; prompt clearly labels
+    LCM vs HCF up front. Also underpins fraction common-denominators.
+    *masterSecs ≈ 8.*
+  - **Mean (`mean`):** 3–5 values ≤ 60, integer mean (forward half); the
+    back half is the **reverse** (missing value given the mean — the inverse
+    move `balance` drilled in P1, hence the unlock gate). *masterSecs ≈ 9.*
 
 ## Design principles (pass 2 — apps & pedagogy)
 

@@ -82,6 +82,8 @@ jobs:
         run: node test/arena-playout-fx.test.js
       - name: T162 P1 (scaling / percentoff / partwhole) modes test (gate)
         run: node test/t162-p1-modes.test.js
+      - name: T162 P2 (ratioshare / timegap / lcmhcf / mean) modes test (gate)
+        run: node test/t162-p2-modes.test.js
       - name: Home layout + tidy-nav test (gate)
         run: node test/home-layout.test.js
       - name: UI pixel-bevel restyle test (gate)

@@ -5081,3 +5081,46 @@ how I verified: **`install-display.test` 11→14** — the installed boot tap no
 notes: **owner device-verify** on the installed PWA — the bars should disappear after the first tap. For the
   T103 TWA / Play-Store build, a TWA wrapper can launch edge-to-edge immersive natively with NO entry tap
   needed (the calibration doc captures this); for the raw installed PWA, the gesture path is the API limit.
+
+---
+
+## Builder A — T162 P2: 4 more mock-driven drill modes (ratioshare, timegap, lcmhcf, mean)
+commit: (this commit) — [A], content (Phase 7 / T162 Tier P2 per `docs/agent/T162-calibration.md`). The
+second of three tiered pushes. Each mode drills a clean procedure from Luke's BWS Mock 7 diagnostic:
+ratio sharing (Q3/Q18), time intervals (Q12), LCM/HCF (Q27 — only 6% got it), and the average + reverse
+(Q2/Q20). Per the calibration's "deliver in tiers" guidance.
+changed:
+  - **`modes.js`** ([A]-owned):
+    - **`ratioshare`** (Reasoning group, `requires:"mastery:scaling"`, masterSecs 10) — 21 items, prompt
+      `T in a:b → bigger|smaller` (17 two-part) or `T in a:b:c → biggest` (4 three-part stretch). Answer is
+      the asked share. Tagged tuple (`["2"|"3", ...]`) matches the existing addsub/partwhole style.
+    - **`timegap`** (Reasoning, `requires:"mastery:placevalue2"`, masterSecs 7, `expr:false`,
+      eyebrow `"minutes between"`) — 21 items, prompt `HH:MM → HH:MM` (zero-padded 24-h clock). Answer in
+      **minutes only** — the numpad has no `:` key (eyebrow makes the unit explicit).
+    - **`lcmhcf`** (Core, `requires:"mastery:times"`, masterSecs 8) — 21 items, prompt
+      `LCM a,b` or `HCF a,b`. Inputs ≤ 30, LCM ≤ 200; 13 LCM / 8 HCF.
+    - **`mean`** (Reasoning, `requires:"mastery:balance"`, masterSecs 9) — 21 items. Tagged tuple:
+      `["f", [vals], A]` → `mean of v1,v2,…` (12 forward); `["r", [knowns], M, A]` → `mean of k1,…,? is M`
+      (9 reverse). Reverse is the inverse-finding move `balance` drilled in P1 — that's why the unlock
+      chain is `addsub → addsub2 → balance → mean` (rather than `mastery:addsub2`, which already gates
+      `balance`; the spec's intent is preserved transitively).
+    - **Glyph tokens** (pairwise distinct from the 19 existing): `lcmhcf:["n","*÷","k"]`,
+      `mean:["*+","÷","n"]`, `timegap:["n","*−","k"]`, `ratioshare:["a","*÷","b"]`.
+  - **`docs/research-11plus.md`** — appended the 4 modes' calibrated ranges in the "Calibrated value ranges"
+    section, marked T162 P2 with their masterSecs.
+  - **`test/hero-icons.test.js`** — catalogue counter `1042 → 1238` (4 new modes × 49 collectibles each = +196).
+  - **NEW `test/t162-p2-modes.test.js` (61 checks, gated in `pages.yml`)** — per-mode logic gate:
+    - Every mode exists with name/tag/build/group/masterSecs/glyphTokens; sits OFF the spine via a real
+      mastery gate.
+    - Each builds **21** unique, finite, non-negative, ≤8-char numpad answers.
+    - **The math of every prompt matches the documented formula** — for ratioshare:
+      `T · max/min(parts) / sum(parts)`; for timegap: `(h2·60 + m2) − (h1·60 + m1)` with valid 24-h clock
+      entries and gap ∈ [15, 179]; for lcmhcf: the actual `LCM(a,b) = a·b/gcd(a,b)` and `HCF = gcd(a,b)`;
+      for mean: `sum/count` (forward) AND `M·(N+1) − sum(knowns)` (reverse), with prompt mix exercising both.
+    - The single-child tree model still holds (no two modes share a `requires` parent).
+how I verified: **all 38 suites green** including the new P2 gate; `node -c modes.js` clean. [A]-only files
+  (`modes.js`, `docs/research-11plus.md`, `test/hero-icons.test.js`, `test/t162-p2-modes.test.js`,
+  `.github/workflows/pages.yml`). No edits to `index.html`/`guides.js` (per the T162 P1 precedent —
+  `guides.js` `explain()` branches for the new modes are a sensible follow-up but not gating).
+notes: T162 P3 ships next — `cubes`, `money`, `digitsum`, doubles/halves range check. Then content T59–T61
+  (held earlier when T162 jumped the queue).

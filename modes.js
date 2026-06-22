@@ -184,8 +184,8 @@
     ["p",50,12,24],["p",25,15,60],["p",20,14,70],["p",10,15,150],
     ["p",50,25,50],["p",25,9,36],["p",20,12,60]
   ];
-  // 4. `balance` — "Complete the Sum": evaluate one side then INVERSE-find the
-  //    missing number on the other side ("a ⊕ b = c ⊖ ?"). Each entry
+  // 4. `balance` (T162 P1) — "Complete the Sum": evaluate one side then INVERSE-
+  //    find the missing number on the other side ("a ⊕ b = c ⊖ ?"). Each entry
   //    [a, lop, b, c, rop, A] with lop ∈ {"+","−","×"}, rop ∈ {"+","−"} and
   //    A = (a lop b) − c when rop="+", else c − (a lop b). The numpad has no
   //    minus key, so P1 ships POSITIVE-ONLY (the calibration doc's negative
@@ -212,6 +212,114 @@
     [60, "−", 27, 20, "+", 13],
     [12, "×", 6, 100, "−", 28],
     [7, "×", 8, 30, "+", 26]
+  ];
+
+  // ---- T162 Tier P2 — 4 more mock-driven drill gaps (per the calibration doc) ----
+  // 5. `ratioshare` — Share an amount in a ratio. Tagged entries:
+  //      ["2", t, a, b, which, A]      → "t in a:b → bigger|smaller"  (which ∈ {"big","small"})
+  //      ["3", t, a, b, c, "big3", A]  → "t in a:b:c → biggest"       (3-part stretch)
+  //    A = t·(asked share)/(a+b[+c]); integer in this set.
+  const RATIOSHARE_P2_SRC = [
+    ["2", 20, 2, 3, "big", 12],
+    ["2", 45, 4, 5, "big", 25],
+    ["2", 30, 1, 5, "big", 25],
+    ["2", 28, 3, 4, "small", 12],
+    ["2", 50, 1, 4, "big", 40],
+    ["2", 36, 5, 4, "big", 20],
+    ["2", 24, 1, 2, "big", 16],
+    ["2", 30, 2, 3, "small", 12],
+    ["2", 40, 3, 5, "big", 25],
+    ["2", 60, 1, 2, "big", 40],
+    ["2", 35, 2, 5, "big", 25],
+    ["2", 42, 1, 6, "big", 36],
+    ["2", 18, 1, 2, "small", 6],
+    ["2", 48, 3, 5, "small", 18],
+    ["2", 25, 2, 3, "small", 10],
+    ["2", 56, 1, 6, "small", 8],
+    ["2", 32, 3, 5, "small", 12],
+    ["3", 180, 2, 3, 7, "big3", 105],
+    ["3", 24, 1, 2, 3, "big3", 12],
+    ["3", 60, 1, 2, 3, "big3", 30],
+    ["3", 36, 1, 3, 5, "big3", 20]
+  ];
+  // 6. `timegap` — Minutes between two 24-h clock times. Each entry
+  //    [h1, m1, h2, m2, A] with A = (h2·60 + m2) − (h1·60 + m1), integer minutes.
+  //    Spans 15 min – 2 h 59 m; the mock's 14:38→16:07 (89) is included.
+  const TIMEGAP_P2_SRC = [
+    [14, 38, 16, 7, 89],
+    [9, 50, 11, 15, 85],
+    [13, 25, 14, 10, 45],
+    [8, 40, 9, 5, 25],
+    [10, 15, 12, 0, 105],
+    [7, 55, 8, 30, 35],
+    [15, 20, 17, 5, 105],
+    [11, 48, 12, 36, 48],
+    [6, 30, 7, 15, 45],
+    [9, 25, 10, 10, 45],
+    [12, 50, 13, 35, 45],
+    [16, 5, 17, 30, 85],
+    [8, 15, 8, 45, 30],
+    [13, 10, 14, 0, 50],
+    [10, 45, 12, 30, 105],
+    [7, 20, 9, 50, 150],
+    [14, 25, 16, 40, 135],
+    [11, 0, 12, 45, 105],
+    [9, 35, 11, 20, 105],
+    [17, 50, 18, 25, 35],
+    [6, 15, 8, 5, 110]
+  ];
+  // 7. `lcmhcf` — Lowest common multiple / highest common factor of two numbers.
+  //    Each entry [kind, a, b, A] with kind ∈ {"LCM","HCF"}; inputs ≤30, LCM ≤200.
+  const LCMHCF_P2_SRC = [
+    ["LCM", 4, 6, 12],
+    ["LCM", 6, 8, 24],
+    ["LCM", 12, 18, 36],
+    ["LCM", 12, 30, 60],
+    ["LCM", 5, 7, 35],
+    ["LCM", 3, 5, 15],
+    ["LCM", 6, 9, 18],
+    ["LCM", 8, 12, 24],
+    ["LCM", 9, 12, 36],
+    ["LCM", 10, 15, 30],
+    ["LCM", 4, 14, 28],
+    ["LCM", 15, 20, 60],
+    ["LCM", 6, 10, 30],
+    ["HCF", 24, 36, 12],
+    ["HCF", 18, 24, 6],
+    ["HCF", 30, 45, 15],
+    ["HCF", 16, 24, 8],
+    ["HCF", 12, 30, 6],
+    ["HCF", 20, 30, 10],
+    ["HCF", 27, 36, 9],
+    ["HCF", 14, 21, 7]
+  ];
+  // 8. `mean` — Average (mean). Tagged entries:
+  //      ["f", [values],   A]    → "mean of v1,v2,…"      (A = sum÷count, integer)
+  //      ["r", [knowns], M, A]   → "mean of k1,…,? is M"  (A = M·(N+1) − sum(knowns))
+  //    Reverse variants form the back half (the same inverse-finding move that
+  //    `balance` drilled in P1 — that's why `mean` chains off `mastery:balance`).
+  const MEAN_P2_SRC = [
+    ["f", [4,8,6],            6],
+    ["f", [10,14,12],          12],
+    ["f", [3,7,5,9],           6],
+    ["f", [12,15,9],           12],
+    ["f", [6,8,10],            8],
+    ["f", [5,15,10],           10],
+    ["f", [4,6,8,10],          7],
+    ["f", [2,4,6],             4],
+    ["f", [9,11,13],           11],
+    ["f", [5,10,15,20,25],     15],
+    ["f", [7,7,7,7,7],         7],
+    ["f", [20,30,40],          30],
+    ["r", [5,7],          6,    6],
+    ["r", [8,10],         9,    9],
+    ["r", [10,14],        12,   12],
+    ["r", [6,8,10],       9,    12],
+    ["r", [3,5,7],        5,    5],
+    ["r", [12,15],        13,   12],
+    ["r", [4,8,12],       10,   16],
+    ["r", [25,30,35],     30,   30],
+    ["r", [31,44,28,52,39], 37, 28]
   ];
 
   // The proper minus sign (matches the "×" used by Times), for ± prompts.
@@ -249,6 +357,22 @@
   }
   // Balance: "a lop b = c rop ?" — the inverse hunts for the missing balance.
   function balanceItem(e){ return { p: e[0] + " " + e[1] + " " + e[2] + " = " + e[3] + " " + e[4] + " ?", a: e[5] }; }
+
+  // T162 P2 item builders.
+  // Ratio share: "t in a:b → bigger|smaller" or "t in a:b:c → biggest".
+  function ratioShareItem(e){
+    if(e[0] === "2") return { p: e[1] + " in " + e[2] + ":" + e[3] + " → " + (e[4] === "big" ? "bigger" : "smaller"), a: e[5] };
+    return { p: e[1] + " in " + e[2] + ":" + e[3] + ":" + e[4] + " → biggest", a: e[6] };
+  }
+  // Time gap: "HH:MM → HH:MM" — zero-pad both fields (mock format: "09:50").
+  function timegapItem(e){ const z = n => (n < 10 ? "0" : "") + n; return { p: z(e[0]) + ":" + z(e[1]) + " → " + z(e[2]) + ":" + z(e[3]), a: e[4] }; }
+  // LCM/HCF: "LCM a,b" / "HCF a,b" — kind label up front for instant routing.
+  function lcmhcfItem(e){ return { p: e[0] + " " + e[1] + "," + e[2], a: e[3] }; }
+  // Mean: "mean of v1,v2,…" (forward) or "mean of k1,…,? is M" (reverse).
+  function meanItem(e){
+    if(e[0] === "f") return { p: "mean of " + e[1].join(","), a: e[2] };
+    return { p: "mean of " + e[1].join(",") + ",? is " + e[2], a: e[3] };
+  }
 
   // Listed in importance / unlock order: Halves → Times → Doubles →
   // Add&Subtract → Number Bonds → Place Value → Fractions of → Percentages of →
@@ -382,6 +506,39 @@
       glyph:'k<span class="slash">±</span>',
       eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:addsub2", masterSecs:9, group:"Reasoning",
       build(){ return shuffle(BALANCE_P1_SRC).map(balanceItem); }
+    },
+    // ---- T162 P2 — 4 more mock-driven drill gaps ---------------------------
+    {
+      id:"lcmhcf", name:"LCM / HCF", tag:"Common multiples & factors.",
+      glyph:'n<span class="slash">÷</span>k',
+      eyebrow:'solve <b>↓</b>', expr:false, requires:"mastery:times", masterSecs:8, group:"Core",
+      build(){ return shuffle(LCMHCF_P2_SRC).map(lcmhcfItem); }
+    },
+    {
+      // mean per spec is "after addsub2 mastery" — but balance already requires
+      // mastery:addsub2 (a sibling unlock would collide with the single-child
+      // branchOf model). Chain mean off balance instead: balance's inverse-finding
+      // is exactly the move mean's reverse variants reuse, so the gate is sensible
+      // and the addsub branch stays linear: addsub → addsub2 → balance → mean.
+      id:"mean", name:"Mean", tag:"Average · forward & reverse.",
+      glyph:'<span class="slash">+</span>÷n',
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:balance", masterSecs:9, group:"Reasoning",
+      build(){ return shuffle(MEAN_P2_SRC).map(meanItem); }
+    },
+    {
+      id:"timegap", name:"Time Gap", tag:"Minutes between two times.",
+      glyph:'n<span class="slash">−</span>k',
+      eyebrow:'minutes between <b>↓</b>', expr:false, requires:"mastery:placevalue2", masterSecs:7, group:"Reasoning",
+      build(){ return shuffle(TIMEGAP_P2_SRC).map(timegapItem); }
+    },
+    {
+      // ratioshare per spec is "after scaling" — scaling has no existing children,
+      // so this fits cleanly: percentages → percentages2 → percentoff → scaling →
+      // ratioshare (the Reasoning chain off the percentages family, depth 5).
+      id:"ratioshare", name:"Ratio Share", tag:"Share an amount in a ratio.",
+      glyph:'a<span class="slash">÷</span>b',
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:scaling", masterSecs:10, group:"Reasoning",
+      build(){ return shuffle(RATIOSHARE_P2_SRC).map(ratioShareItem); }
     }
   ];
 
@@ -428,7 +585,12 @@
     scaling:      ["a","*×","n"],      // a×n — scale by an unknown factor (proportion)
     percentoff:   ["%","*−"],          // %− — percent decrease
     partwhole:    ["%","*/","n"],      // %/n — reverse: given a part %, find the whole
-    balance:      ["k","*±"]           // k± — "the missing balance" (unknown k, plus-or-minus)
+    balance:      ["k","*±"],          // k± — "the missing balance" (unknown k, plus-or-minus)
+    // T162 P2 — 4 more accented marks. Distinct bitmaps from the 19 existing.
+    lcmhcf:       ["n","*÷","k"],      // n÷k — common-factor / multiple feel
+    mean:         ["*+","÷","n"],      // sum-then-divide-by-n — the mean atom
+    timegap:      ["n","*−","k"],      // n−k — interval (positive minutes between)
+    ratioshare:   ["a","*÷","b"]       // a÷b — divide an amount by the parts (ratio share)
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 
