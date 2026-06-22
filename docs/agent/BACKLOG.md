@@ -2661,6 +2661,42 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
+### T155 — [B] Distinct PAD/bed timbre per style (kill the shared "synth string" sound) · status: OPEN · OWNER-PRIORITY
+Owner (2026-06-22): **"The music styles are now a lot better. One thing I don't quite like is that every style
+seems to share the same synth string sound — that would be great to vary a lot more. It makes them feel a little
+samey, though they're definitely more distinct than they were."** **Root cause (Babysitter, confirmed in
+`synth.js`):** all **12** contexts set **`pad: "pad"`** (synth.js:464-476) — the **identical** lush detuned-
+**sawtooth** unison pad (`PATCHES.pad`, synth.js:74). The *leads* already vary per style (bell/lead/pluck/chip)
+and the *bass* varies (bass/wub), but the **pad — the sustained harmonic BED, the most continuously-audible
+voice — is the same sawtooth in every style.** That shared saw bed is the "synth string sound." So the fix is
+**pad-timbre diversity**, not more leads.
+- **Add several genuinely-distinct PAD-class patches** to `PATCHES` (different oscillator topology / waveform /
+  filter character / envelope feel — not just a cutoff tweak). All achievable with the EXISTING engines
+  (`unison`/`fm`/`mono`/`sub`); a `PeriodicWave` additive engine is an OPTIONAL stretch for a true organ/choir.
+  Suggested set (B may refine — the goal is ≥4–5 distinct beds, characterful, not samey):
+  | new pad patch | engine / wave | character | feel (env) |
+  |---|---|---|---|
+  | `pad` (keep) | unison saw, detuned | classic warm analog bed | slow swell |
+  | `padglass` | unison **triangle/sine**, gentle detune, soft lowpass | airy, glassy, pure | very slow attack, long release |
+  | `padep` | **fm** (low ratio/index, sustained, lowpass) | electric-piano / Rhodes-ish bed | medium attack, bell-ish decay→sustain |
+  | `padpwm` | unison/mono **square** (PWM-ish via slight detune), brighter filter | retro/chip sustained bed | snappier attack |
+  | `padorgan` | detuned **squares** through a **bandpass** (hollow), or additive | hollow organ/stab bed | fast attack, stabby |
+- **Assign a context-appropriate pad to each of the 12 styles** so the harmonic bed timbre is **distinct per
+  style** (suggested mapping — B may adjust for taste): synthwave/bigroom/arena → `pad` (saw suits them);
+  ambient/tropical → `padglass`; lofi/dnb → `padep`; chiptune/boss8bit → `padpwm`; techno/dubstep → `padorgan`;
+  menu → `padpwm` or `padglass` (bright lobby). Vary attack/release too so a stabby organ bed vs a slow choir
+  swell vs a plucky EP bed *feel* different, not just spectrally.
+- **DoD:** new pad patches + per-context pad assignment; **`golden-synth` re-blessed** (`UPDATE_GOLDEN=1` — the
+  score's patch names change intentionally; the **distinctness** assertion must still hold and is now stronger);
+  patch-spec signature (`patchSig`) covers the new patches; **`node -c` clean**; **B-owned (`synth.js` + its
+  tests) only** — never touch existing Halves files; the picker/`STYLE_IDS` list is unchanged (same 12 styles,
+  new timbres). **Output-feature rule:** the golden pins patch *names*, NOT rendered timbre — so **B must
+  verify the beds actually SOUND different** (render each pad patch via `OfflineAudioContext` and show the
+  spectral content / centroid genuinely differs across the assigned pads; ideally add a headless check that the
+  pad patches are spectrally distinct, not just differently-named). **The Babysitter independently measures the
+  per-style pad spectra** (OfflineAudioContext centroid/harmonic comparison) before DONE. Audible final polish
+  still falls to the owner's ear.
+
 ### T154 — [B] Key-screen VISUAL-REGRESSION gate (extend the T150 browser harness) · status: OPEN · proactive (catches the owner's recurring class)
 B's engine queue is exhausted; this is the high-value structural follow-up to T150. The whole session's
 recurring pain is **visual things regressing that only the owner notices** (the blue backdrop today; the

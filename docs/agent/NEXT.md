@@ -24,16 +24,23 @@ rare/no-event/epic states (read the actual canvas hue, not just the option). *(B
 `T89`/`T90` (Arena 3v3 — gameplay, no owner creds needed) → content `T58`–`T61` → `T72`. *(`T103` TWA/
 Play-Store + `T72` submission need owner credentials — hold those till the owner's back.)*
 
-**Builder B → `T154` (key-screen VISUAL-REGRESSION gate — extend the T150 browser harness).** Off standby. All
-prior B work landed+verified (`T151` audio FIXED `44ea919`, `T150` render+audio gates, `T152[B]` `a2f9475`).
-**New task `T154`:** extend the T150 Playwright harness to render the key screens (home, Audio menu, Arena,
-Results) at the phone viewport @ dpr 2.75 and capture **robust per-region colour/layout signatures** — crucially
-the **home-backdrop hue** — failing the gate on a regression vs committed baselines. This is the structural guard
-so the **owner stops being the visual-regression detector** (today's blue backdrop is exactly what this would
-have caught). **Skip cleanly with no browser** (exit 0) like T150 so Node-only CI still passes. **Baseline the
-home backdrop as PURPLE only AFTER A's `T153` lands** — until then leave the home-hue baseline unblessed/TODO so
-you don't bake in the blue; I'll bless the home golden once T153 is verified. See **BACKLOG T154**. **B-owned
-only** (new files / `test/browser/*`); never touch existing Halves files; never push `claude/agent`.
+**Builder B → `T155` (distinct PAD/bed timbre per style — OWNER feedback) → then `T154` (visual-regression gate).**
+Off standby. **`T155` FIRST** — owner: *"every style seems to share the same synth string sound… vary a lot
+more… makes them feel a little samey."* **Root cause: all 12 contexts use `pad: "pad"`** (synth.js:464-476) —
+the **identical** detuned-**sawtooth** unison bed. Leads/bass already vary; the **pad bed is the same saw in
+every style** = the shared "synth string." **Add ≥4–5 distinct PAD-class patches** (glassy sine/tri, FM electric-
+piano, PWM square, hollow organ — all doable with existing `unison`/`fm`/`mono` engines; `PeriodicWave` additive
+is optional) and **assign a context-appropriate pad per style** so the harmonic bed is distinct (mapping in
+BACKLOG T155). Vary attack/release too (stabby organ vs slow choir swell vs plucky EP). **Re-bless `golden-synth`**
+(`UPDATE_GOLDEN=1` — patch names change intentionally; the **distinctness** assertion must still hold). **Output-
+feature rule: the golden pins patch NAMES, not timbre — so verify the beds actually SOUND different** (render each
+pad via `OfflineAudioContext`, show spectral centroid/harmonics genuinely differ). I'll independently measure the
+per-style pad spectra before DONE. **B-owned (`synth.js` + its tests) only.** **Then `T154`** — the key-screen
+VISUAL-REGRESSION gate (extend the T150 harness: render home/Audio-menu/Arena/Results @ dpr 2.75, robust per-
+region colour/layout signatures incl. the **home-backdrop hue**, fail on regression; skip clean with no browser;
+**baseline the home backdrop as PURPLE only AFTER A's `T153` lands** — leave the home-hue baseline TODO till then
+so you don't bake in the blue; I'll bless it post-T153). See **BACKLOG T154/T155**. **B-owned only** (`synth.js`,
+`test/*`, `test/browser/*`); never touch existing Halves files; never push `claude/agent`.
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
