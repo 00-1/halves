@@ -24,6 +24,12 @@
   A's T206). **Re-fit the 3 creature draws to fill the cell, uncropped, same visual size as the other collectible
   icons** (owner: "in the emblems screen they look like they need cropping"). Update `IDS` + `emblems.test`. [B]-only
   (`emblems.js`, tests). *(BACKLOG T205 — pairs with A's T206.)*
+- **Then `T207` — coin SHINE.** Owner: occasional **glints on the pile**, **glints on the shower coins**, clearer
+  **rotation** on flying coins. (1) `drawCoinParticle` passes `glint=0` → add an animated specular glint tied to the
+  spin/`wob` phase, varied per coin. (2) **Pile glints** — occasional sparkle on settled coins, but the pile is a
+  **static still by design**, so keep it **cheap + throttled** (~4–8 Hz, repaint only glinting coins, off under
+  reduced-motion, NO per-frame full pile redraw). (3) Rotation already exists (`p.spin`/`p.wob`) — make it read
+  clearly + varied. [B]-only (`fxgl.js`, tests). *(BACKLOG T207.)*
 **Re-read this line fresh before each task + push.**
 
 ---

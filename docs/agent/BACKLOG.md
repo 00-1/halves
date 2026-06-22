@@ -3151,6 +3151,31 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
+### T207 — [B] **Coin SHINE — animated glints on the pile + the shower; clearer coin rotation** · status: OPEN · owner-requested
+**Owner (2026-06-22): "occasional glints appearing in the pile of coins; glints on the shower of coins; ideally
+some of the showered coins would also have a rotation animation."**
+- **(1) Shower-coin glints:** `drawCoinParticle` currently passes **`glint = 0`** to `drawCoin` (no shine). Add an
+  **animated specular glint** to (some) flying coins — a bright highlight that **flashes as the coin turns** (tie it
+  to the existing spin/`wob` phase so it catches "light" when the face is toward the viewer, e.g. `glint ∝
+  max(0, cos(lt*wob + phase))`). Vary it per coin so not all flash together.
+- **(2) Pile glints (the new bit — mind perf):** make **occasional glints sparkle on the settled pile coins.** The
+  pile is a **static still by design** (`drawHoard` on the 2D overlay, redrawn on `setData`/resize; per-frame only
+  during a burst). Add a **cheap, throttled, low-rate glint pass** — a few random surface coins glint at a time,
+  cycling — WITHOUT regressing the pile into a full 60fps redraw on low-end Android. Options: a throttled glint tick
+  (e.g. ~4–8 Hz) that repaints only the glinting coins / a small region; reuse the home ambient loop's clock but
+  gate the pile-glint redraw to the throttle. **Respect reduced-motion** (no pile glints when `reduced`; CPU-still
+  backend stays static). Deterministic-ish sparkle from the coin seed + time.
+- **(3) Rotation read:** the shower coins **already tumble** (`p.spin` in-plane + `p.wob` face↔edge tip, animated in
+  `drawCoinParticle`). The owner wants it to **read clearly / with variety** — ensure the spin is visible (enough
+  `spin`/`wob` amplitude) and **varied** ("some" coins spin more, some barely), not a uniform blur. Tune, don't
+  rebuild.
+- **DoD:** flying coins **glint** as they spin (varied, not synchronized); the settled pile shows **occasional
+  sparkles** (throttled, cheap, reduced-motion-safe — NOT a per-frame full pile redraw); shower-coin rotation reads
+  clearly + varied; works on the GL/GPU 2D overlay AND degrades cleanly on CPU-still/reduced; **no perf regression**
+  (the pile glint must stay within budget — this is exactly what the upcoming perf pass T103 will check); `node -c`
+  clean; `golden-fx`/`fxgl`/`fx-wiring` green (note goldens — animated glint may need a fixed-time gate); **owner
+  device-confirms**. **[B]-only** (`fxgl.js`, tests).
+
 ### T205 — [B] **Trim emblems to the 3 creatures + fix their sizing** (scrap the other 6; they move to Collector awards) · status: OPEN · owner-requested
 **Owner (2026-06-22): "the final 3 emblems are nice — the rest I think we can scrap. … Make sure the new awards
 match the size of the existing ones visually, cos in the emblems screen they look like they need cropping."**
