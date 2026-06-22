@@ -446,8 +446,10 @@
         tx: clamp01(tx + (rng() - 0.5) * (0.10 + 0.30 * (opts.spread || 1))),   // spread across the hoard top
         ty: clamp01(ty + (rng() - 0.5) * 0.04),
         arc: lerp(0.06, reduced ? 0.12 : 0.22, rng()),         // lob height
-        size: lerp(reduced ? 4 : 5, reduced ? 7 : 10, rng()),
-        rot: rng() * TAU, aspect: lerp(0.45, 0.92, rng()),
+        size: lerp(reduced ? 5 : 6, reduced ? 8 : 12, rng()),
+        rot: rng() * TAU, aspect: lerp(0.4, 0.9, rng()),
+        spin: (reduced ? 0 : 1) * lerp(6, 15, rng()) * (rng() < 0.5 ? -1 : 1),   // T193: tumble as it flies
+        wob: lerp(7, 16, rng()), phase: rng() * TAU,                              // face↔edge tip rate + phase
         r: col[0], g: col[1], b: col[2],
         life: lerp(0.6, lMax, rng()), glint: 0, look: 1,
         birth: 0
@@ -1215,6 +1217,20 @@
       drawCoin(ctx, c.x * W, c.y * H, r, c.rot || 0, c.aspect || 1, [c.r, c.g, c.b], 0);
     }
   }
+  // T193 — draw one coin-look BURST particle (the money-gain coins) at burst-time `t`: its
+  // closed-form trajectory (converge or ballistic) + a SPIN — `rot` tumbles and `aspect`
+  // tips face↔edge over its life, so it reads as a real spinning cylinder coin (not a disc).
+  // Shared by the CPU still AND the GL/GPU 2D overlay so coins spin on every backend.
+  function drawCoinParticle(ctx, p, t, W, H, scale){
+    const bp = (p.tx != null) ? convergePos(p, t) : burstPos(p, t, BURST_GRAVITY, BURST_DRAG);
+    if(!bp.alive || bp.alpha <= 0.01) return;
+    const lt = t - (p.birth || 0);
+    const px = Math.max(2, Math.round(p.size * (scale || 1)));
+    const rot = (p.rot || 0) + (p.spin ? lt * p.spin : 0);
+    const aspect = p.spin ? (0.22 + 0.72 * Math.abs(Math.cos(lt * (p.wob || 10) + (p.phase || 0)))) : (p.aspect || 1);
+    if(ctx.globalAlpha != null) ctx.globalAlpha = bp.alpha;
+    drawCoin(ctx, bp.x * W, bp.y * H, px / 2, rot, aspect, [p.r, p.g, p.b], 0);
+  }
   function CPUBackend(ctx2d){ this.name = "cpu-still"; this.ctx = ctx2d; this.w = 1; this.h = 1; this.burst = null; this.pxScale = 1; }
   CPUBackend.prototype.setData = function(derived){ this.derived = derived; };
   CPUBackend.prototype.setBurst = function(parts){ this.burst = parts; this.burstCount = parts.length; };
@@ -1231,21 +1247,16 @@
       const W = this.w, H = this.h, t = o.burstTime || 0, scale = this.pxScale || 1;
       for(let i = 0; i < this.burst.length; i++){
         const p = this.burst[i];
-        // converge particles (T172 earn-burst) carry a target `tx`; everything else
-        // is the ballistic burst. Both are closed-form (see convergePos / burstPos).
-        const bp = (p.tx != null) ? convergePos(p, t) : burstPos(p, t, BURST_GRAVITY, BURST_DRAG);
+        if(p.look === 1){ drawCoinParticle(ctx, p, t, W, H, scale); continue; }   // T193 — a spinning cylinder coin
+        // ballistic confetti (square). converge coins are handled above.
+        const bp = burstPos(p, t, BURST_GRAVITY, BURST_DRAG);
         if(!bp.alive || bp.alpha <= 0.01) continue;
         // size up by the buffer/CSS factor so it shows at `size` SCREEN px after the
         // browser's downscale (T138); floor at 2 screen px.
         const px = Math.max(2, Math.round(p.size * scale));
         if(ctx.globalAlpha != null) ctx.globalAlpha = bp.alpha;
-        if(p.look === 1){   // T172 — a beveled COIN (rim + inner highlight + glint)
-          const glint = p.glint ? (0.35 + 0.45 * (0.5 + 0.5 * Math.sin(t * 4 + p.glint))) : 0;
-          drawCoin(ctx, bp.x * W, bp.y * H, px / 2, p.rot || 0, p.aspect || 1, [p.r, p.g, p.b], glint);
-        } else {
-          ctx.fillStyle = toHex([p.r, p.g, p.b]);
-          ctx.fillRect((bp.x * W - px / 2) | 0, (bp.y * H - px / 2) | 0, px, px);
-        }
+        ctx.fillStyle = toHex([p.r, p.g, p.b]);
+        ctx.fillRect((bp.x * W - px / 2) | 0, (bp.y * H - px / 2) | 0, px, px);
       }
       if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
     }
@@ -1363,7 +1374,7 @@
     // on a Poco-X3 → drawn but invisible). Hand the CPU 2D path this factor so it draws
     // particles at a constant, visible *screen* size regardless of device DPR.
     this.backend.pxScale = Math.max(1, dpr * q.res);
-    this._syncHoard();   // T185: re-fit + redraw the hoard overlay at the new buffer size
+    this._syncOverlay();   // T185: re-fit + redraw the hoard overlay at the new buffer size
   };
   Controller.prototype._init = function(){
     const o = this.opts;
@@ -1449,10 +1460,13 @@
       this.burst_.elapsed = (ts - this.burst_.startTs) / 1000;
     }
     this.backend.renderFrame({ sceneOn: sceneOn, sceneTime: sceneTime, burstOn: this.burst_.active, burstTime: this.burst_.elapsed });
+    // T193 — on GL/GPU, composite the spinning coin burst onto the 2D overlay each frame.
+    if(this.backend.name !== "cpu-still") this._syncOverlay(this.burst_.elapsed);
     // auto-stop the burst once its last particle has expired (no RAF leak)
     if(this.burst_.active && this.burst_.elapsed > this.burst_.maxDeath){
       this.burst_.active = false; this.burst_.startTs = 0; this.burst_.elapsed = 0; this.burst_.maxDeath = 0; this.burst_.parts = [];
       if(this.backend.setBurst) this.backend.setBurst([]);
+      if(this.backend.name !== "cpu-still") this._syncOverlay(0);   // clear the spent coins (leaving the hoard)
     }
     if(this._needsFrame()) this.rafId = this.raf(this._frameCb);   // keep the single loop alive
   };
@@ -1471,7 +1485,7 @@
     if(this.backend){
       this.backend.setData(this.derived);
       if(this._isStill()) this._renderOnce();   // reduced/no-GPU → refresh the still
-      this._syncHoard();                          // T185: draw the pile on the 2D overlay (GL/GPU backends)
+      this._syncOverlay();                          // T185: draw the pile on the 2D overlay (GL/GPU backends)
     }
     return this;
   };
@@ -1494,17 +1508,29 @@
     this._hoardCv = this._hoardCtx ? ov : null;
     return this._hoardCv;
   };
-  Controller.prototype._syncHoard = function(){
+  // T185/T193 — the 2D coin LAYER for the GL/GPU backends (the CPU still draws inline):
+  // composites the static hoard (T185) AND the active money-gain COIN burst (T193, animated
+  // spinning cylinders) on a transparent canvas over the scene — so coins are real coins on
+  // every backend, not the shader-splat discs. Redrawn on scene/resize (hoard) + per RAF
+  // frame (the flying coins). `burstTime` = the burst clock for the coin animation.
+  Controller.prototype._syncOverlay = function(burstTime){
     const be = this.backend, d = this.derived;
-    if(!be || be.name === "cpu-still") return;             // the CPU still draws the hoard inline
+    if(!be || be.name === "cpu-still") return;             // the CPU still draws both inline
     const hoard = (d && d.hoard && d.hoard.level > 0) ? d.hoard : null;
-    if(!hoard){ if(this._hoardCtx && this._hoardCv) this._hoardCtx.clearRect(0, 0, this._hoardCv.width, this._hoardCv.height); return; }
+    const coins = (this.burst_.active && this.burst_.parts.length) ? this.burst_.parts.filter(p => p.look === 1) : null;
+    if(!hoard && (!coins || !coins.length)){ if(this._hoardCtx && this._hoardCv) this._hoardCtx.clearRect(0, 0, this._hoardCv.width, this._hoardCv.height); return; }
     const ov = this._ensureHoardCanvas(); if(!ov || !this._hoardCtx) return;
-    const W = be.w | 0, H = be.h | 0;
+    const W = be.w | 0, H = be.h | 0, scale = be.pxScale || 1;
     if(ov.width !== W) ov.width = W;
     if(ov.height !== H) ov.height = H;
-    this._hoardCtx.clearRect(0, 0, W, H);
-    drawHoard(this._hoardCtx, hoard, W, H, be.pxScale || 1);
+    const ctx = this._hoardCtx;
+    ctx.clearRect(0, 0, W, H);
+    if(hoard) drawHoard(ctx, hoard, W, H, scale);
+    if(coins && coins.length){
+      const t = (burstTime == null) ? this.burst_.elapsed : burstTime;
+      for(const p of coins) drawCoinParticle(ctx, p, t, W, H, scale);
+      if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
+    }
   };
   // Semantic home backdrop (T95): derive a calm ambient scene from live home
   // state and apply it. Re-callable as state changes (progress / event / streak).
@@ -1553,7 +1579,11 @@
     if(parts.length > CELEBRATE_CAP) parts = parts.slice(parts.length - CELEBRATE_CAP);   // drop oldest
     this.burst_.parts = parts;
     this.burst_.maxDeath = Math.max(this.burst_.maxDeath, burstMaxDeath(seeded));
-    this.backend.setBurst(parts);
+    // T193 — coin-look particles render as spinning cylinders on the 2D overlay (every
+    // backend), NOT the shader splat (flat discs); the GL/GPU backend gets only the
+    // non-coin confetti. The CPU still draws everything inline (by look).
+    this.backend.setBurst(this.backend.name === "cpu-still" ? parts : parts.filter(p => p.look !== 1));
+    this._syncOverlay(this.burst_.elapsed);   // composite the coins onto the overlay now
     this._pump();
     return this;
   };

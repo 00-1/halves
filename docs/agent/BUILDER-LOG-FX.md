@@ -6,6 +6,36 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T193 — money-gain celebration: SPINNING cell-shaded cylinder coins on every backend ([B], reuses the T192 coin)
+
+The earn burst now throws **real spinning coins**, not shader-splat discs — the same
+cell-shaded cylinder primitive as the T192 hoard, so a gain visibly rains the *same gold*
+onto the *same pile*. All in `fxgl.js` + B-owned tests:
+- **`seedConverge` coins** carry `spin`, `wob`, `phase` (per-particle, seeded) so each coin
+  tumbles independently: `rot += lt·spin`, `aspect = 0.22 + 0.72·|cos(lt·wob + phase)|`
+  (face-on → edge-on → face-on as it flips). Amount-scaling (count/spread) is preserved.
+- **`drawCoinParticle`** animates one coin along its `convergePos`/`burstPos` arc with the
+  live spin, alpha-faded by the particle's life — shared by the CPU still AND the overlay.
+- **Per-particle ROUTING (the crux):** coin-look particles (`look===1`) are drawn as
+  cylinders on the backend-agnostic **2D overlay** (T185) for the WebGL/WebGPU backends and
+  inline by the CPU still; the GL/GPU **splat receives ONLY non-coin confetti**
+  (`parts.filter(p => p.look !== 1)`). Mobile refuses a 2nd GL context (T133/T138), so coins
+  *must* ride the 2D overlay to show on the device. `_syncHoard`→**`_syncOverlay(burstTime)`**
+  now composites the static hoard + the active coin burst each frame, and clears the spent
+  coins (leaving the hoard) on auto-stop.
+- 🌐 **Browser-verified on the WebGL2 backend** (headless Chromium, dpr 2.75): coins arc from
+  the earn-point, tumble, and converge onto the wall-banked hoard; overlay measured lit;
+  no JS errors. Capture: `test/browser/coinburst-capture.js` →
+  `screenshots/coinburst-webgl{,-early,-late}.png`.
+
+Verify: `node -c` clean; **golden-fx 64** (T185 overlay test moved to `_syncOverlay`; **+2
+new T193 assertions** — a no-hoard earn burst paints cylinder fills on the GL overlay, and
+the GL splat gets only `look!==1`); full Node suite green (fxgl 124 / synth 177 / emblems
+61); render 7 / visual 13 / audio 27 browser gates green. B-only (`fxgl.js`, `test/golden-fx.test.js`,
+`test/browser/coinburst-capture.js`). Owner device-confirms.
+
+---
+
 ## T192 — hoard overhaul: cell-shaded CYLINDER coins + a taller, wall-banked pile ([B], owner screenshot)
 
 Owner's 3 notes on the live 1T hoard: (1) too low — should climb much higher; (2) not a
