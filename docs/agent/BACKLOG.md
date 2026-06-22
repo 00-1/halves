@@ -2936,6 +2936,22 @@ build.**
   + reduced-motion); **B-owned doc only** (no engine change yet); `node -c` clean if any code/test touched.
   **The Babysitter surfaces the recommended technique to the owner for a thumbs-up before T172 builds it.**
 
+### T181 — [B] `emblems.js`: generative BRAND EMBLEMS (app-icon candidates + Codex "Emblems") · status: OPEN · owner-greenlit
+**Owner (2026-06-22): "do icon generation — but these should go into the Codex too; if they're good, make the
+ones not chosen for the icon UNLOCKABLE in the app."** A **new standalone B-owned module** `emblems.js`
+(`window.Emblems = { draw(canvas, id), IDS }`) that renders the brand-emblem candidates in the game's **generative
+pixel / dither style**, **gold-on-purple**, centered/maskable-safe (works as an app icon AND a Codex tile):
+- **Candidates (the proposals):** `coin` (a fat beveled gold coin with a goblin profile stamped + a glint —
+  reuses the hoard coin look), `goblin` (a cheeky pixel goblin clutching a coin), `hoard` (a small glinting
+  coin-mound), `voidthrone` (an ominous cosmic-purple throne + gold at its foot), `crowncoin` (a gold coin
+  wearing a tiny crown). Deterministic; dithered metal ramp + one specular glint; matches the engine's quantise
+  look. (≥5; B may add 1–2 it thinks are strong.)
+- **DoD:** `Emblems.draw(canvas, id)` renders each candidate crisply at icon sizes (48→512), maskable-safe
+  (centered subject, no corner-reliance); deterministic + headless-testable (a `test/emblems.test.js` golden on
+  the cell grids, like glyphs/fxgl); **B-owned (`emblems.js` + test) only**; never touch existing Halves files.
+  **The owner reviews them via the Codex "Emblems" section (T179) + the `?dev` reveal-all (T180), then picks the
+  LAUNCHER icon.** Off standby — B's next.
+
 ### T179 — [A] CODEX: a bestiary/art-gallery tab on Inventory (collect the generative art you encounter) · status: OPEN · owner-feature
 **Owner (2026-06-22): "definitely we want the bestiary — a place to collect non-inventory art as you encounter
 it (arena enemies + anything else). Maybe a tab on Inventory."** A Pokédex/bestiary collection that **showcases
@@ -2951,11 +2967,19 @@ hub). **Reuses the EXISTING art generators** (no new art) — the new work is **
     brightness option, `scenery.js` [A].)*
   - **Events** — the **14** event emblems via `eventart.js` (art only; the event REWARDS stay in the Events tab —
     show the emblem, don't duplicate the rewards).
+  - **Emblems** (owner, 2026-06-22) — the **brand-emblem candidates** from `emblems.js` (T181: coin/goblin/hoard/
+    voidthrone/crowncoin). The one chosen for the **launcher icon** is the default; **the rest are UNLOCKABLE**
+    in-app. **Unlock via thematic MILESTONES** (not encounter): e.g. `coin`→1K gold (Coin Purse), `hoard`→1M gold
+    (Gold Hoard milestone), `crowncoin`→defeat the **Goblin King** (region-1 boss), `voidthrone`→defeat the
+    **Void Sovereign** (final boss), `goblin`→a mid milestone. *(Owner tunes which→what.)* **Optional payoff:**
+    an unlocked emblem can be **selected as the IN-APP mark** (entry/home logo) — the personalization the launcher
+    icon can't do (a PWA can't swap its launcher icon; the in-app mark it can). Track as `codex:emblem:<id>` +
+    `emblem:selected`.
 - **Encounter-unlock (progressive reveal, like the collectibles "?"):** Beast = fought that region×type; Boss =
-  faced/defeated that boss; Realm = reached that region; Event = that event has been live/seen. **Locked entries =
-  silhouette / "?"**; track discoveries in the existing `col` collection store (e.g. `codex:beast:<region>:<type>`,
-  `codex:boss:<n>`, `codex:realm:<r>`, `codex:event:<id>`), set at the encounter sites (Arena fight, region
-  entry, event activation).
+  faced/defeated that boss; Realm = reached that region; Event = that event has been live/seen; **Emblem = its
+  milestone met (above)**. **Locked entries = silhouette / "?"**; track discoveries in the existing `col` store
+  (`codex:beast:<region>:<type>`, `codex:boss:<n>`, `codex:realm:<r>`, `codex:event:<id>`, `codex:emblem:<id>`),
+  set at the encounter/milestone sites (Arena fight, region entry, event activation, gold/boss milestones).
 - **Excluded** (owner steer): heroes (own catalogue), inventory items, topic glyphs (maths), UI icons.
 - **DoD:** a Codex tab on Inventory with Beasts/Bosses/Realms/Events, encounter-unlocked (locked=silhouette),
   reusing the existing generators (full/lit Realms); tapping an entry shows the art (+ its name/where-found);

@@ -27,11 +27,15 @@
 - *(`T168` Play-Store held for ID-verify.)*
 **Re-read this line fresh before each task + push.**
 
-**Builder B → STAND BY (gold-hoard engine done; Codex is [A]).** `T172` DONE+APPROVED (`7283fad` — research-
-faithful: mound silhouette + surface beveled coins, cap 340, opt-in). Nothing engine-side queued. Hold for a real
-engine need — e.g. if the owner wants the **app-icon candidates** rendered in the generative style (the Coin /
-Goblin / Hoard / Void Throne — I'll file it if he greenlights), or a Codex art tweak (e.g. a lit-`Scenery` gallery
-mode) that turns out to need the engine. I'll point this line at it. **B-owned only; never push `claude/agent`.**
+**Builder B → `T181` (`emblems.js` — generative BRAND EMBLEMS / app-icon candidates).** Off standby — owner
+greenlit icon generation, and the emblems also become a **Codex "Emblems"** section (chosen one = launcher icon;
+the rest unlockable). Build a NEW standalone module `emblems.js` (`window.Emblems = { draw(canvas,id), IDS }`)
+rendering the candidates in the generative pixel/dither style, **gold-on-purple**, maskable-safe (icon-able 48→512
+AND Codex-tile-able): `coin` (beveled goblin-stamped coin + glint — reuses the hoard coin look), `goblin` (cheeky
+goblin clutching a coin), `hoard` (glinting coin-mound), `voidthrone` (cosmic throne + gold), `crowncoin` (crowned
+coin). Deterministic + headless-testable (`test/emblems.test.js` golden on the cell grids). **B-owned only**
+(`emblems.js` + test); never touch existing Halves files; never push `claude/agent`. The owner reviews them via
+the Codex (T179) + `?dev` reveal-all (T180) and picks the launcher icon. *(BACKLOG T181.)*
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
