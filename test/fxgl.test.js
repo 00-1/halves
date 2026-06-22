@@ -514,5 +514,68 @@ ok(cp2.rec.rects.length > 100, "a single mid-shower 2D frame draws 100+ live par
   } finally { global.document = savedDoc; }
 })();
 
+// T103 — PERF pass: the render hot paths stay within budget on a weak GPU.
+(function(){
+  // (1) BURST PILE CACHE: during a shower the static pile is rasterised ONCE to an offscreen
+  //     bitmap and BLITTED each frame (one drawImage), not re-drawn (~16k fillRects) per frame.
+  const savedDoc = global.document; const made = [];
+  function recCanvas(){ const ctx = { _fills: 0, _draws: 0, globalAlpha: 1, set fillStyle(v){}, get fillStyle(){ return "#000"; },
+    fillRect(){ ctx._fills++; }, clearRect(){}, drawImage(){ ctx._draws++; }, beginPath(){}, ellipse(){}, fill(){}, save(){}, restore(){}, translate(){}, rotate(){}, scale(){} };
+    const cv = { width: 0, height: 0, className: "", style: {}, setAttribute(){}, getContext(){ return ctx; }, _ctx: ctx };
+    made.push(cv); return cv; }
+  global.document = { createElement(){ return recCanvas(); } };
+  try{
+    const cv = { width: 0, height: 0, clientWidth: 390, clientHeight: 844, className: "fx-backdrop", getContext: () => null, parentNode: { insertBefore(){} } };
+    const c = new FXGL.Controller(cv, { backend: "2d", ctx2d: { fillRect(){}, clearRect(){}, createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }), putImageData(){} }, raf: () => 1, caf: () => {}, width: 390, height: 844, dpr: 2, quality: 2, reducedMotion: false });
+    c.backend = { name: "webgl2", w: 780, h: 1688, pxScale: 2, resize(w, h){ this.w = w; this.h = h; }, setData(){}, setBurst(){} };
+    c.derived = FXGL.deriveScene({ grid: [[[20, 20, 30]]], seed: 5, hoard: { level: 0.8, seed: 9 } }, 200);
+    c.burst_ = { parts: FXGL.seedBurst({ look: "coin", count: 12, seed: 1 }, false, FXGL.BURST_CAP), active: true, startTs: 0, elapsed: 0.1, maxDeath: 5 };
+    c._syncOverlay(0.10);                       // frame 1 → builds the cache
+    const overlay = made[0]._ctx, cache = made[1] && made[1]._ctx;
+    ok(cache && cache._fills > 0, "T103: the burst pile is rasterised into an OFFSCREEN cache (" + (cache ? cache._fills : 0) + " fills) on the first frame");
+    ok(overlay._draws === 1, "T103: …and BLITTED onto the overlay (drawImage), not re-rasterised inline");
+    const fillsAfter1 = cache._fills;
+    c._syncOverlay(0.12); c._syncOverlay(0.14);  // frames 2,3 → cache HITS
+    ok(cache._fills === fillsAfter1, "T103: later burst frames REUSE the cache — the pile is NOT re-rasterised per frame (fills stayed " + cache._fills + ")");
+    ok(overlay._draws === 3, "T103: each burst frame is a single cheap BLIT (3 frames → 3 drawImage)");
+    // a wealth change invalidates the cache (re-rasterised once)
+    c.derived = FXGL.deriveScene({ grid: [[[20, 20, 30]]], seed: 5, hoard: { level: 1.0, seed: 9 } }, 200);
+    c._syncOverlay(0.16);
+    ok(cache._fills > fillsAfter1, "T103: a wealth/size change INVALIDATES the cache (re-rasterised once)");
+    // freeing the cache releases the ≈full-screen canvas
+    c._freePileCache();
+    ok(c._pileCacheCv == null, "T103: _freePileCache releases the burst cache (idle memory stays low)");
+  } finally { global.document = savedDoc; }
+
+  // (2) HIGH-REFRESH CAP: the per-frame burst OVERLAY redraw is capped to ~60 Hz (the GL scene
+  //     still renders every RAF) so a 120 Hz panel doesn't double the 2D cost.
+  (function(){
+    let draws = 0, rendered = 0, q = [];
+    const c = new FXGL.Controller({ width: 0, height: 0, clientWidth: 390, clientHeight: 844, getContext: () => null }, { gl: makeGL({}), raf: cb => { q.push(cb); return q.length; }, caf: () => {}, width: 390, height: 844, dpr: 1, quality: 2, reducedMotion: false });
+    c.backend = { name: "webgl2", w: 390, h: 844, pxScale: 1, resize(){}, setData(){}, setBurst(){}, renderFrame(){ rendered++; } };
+    c.derived = FXGL.deriveScene({ grid: [[[20, 20, 30]]], seed: 5, hoard: { level: 0.8, seed: 9 } }, 200);
+    c._syncOverlay = function(){ draws++; };   // spy
+    c.burst_ = { parts: [{ look: 1, x0: .5, y0: .5, vx: 0, vy: 0, size: 6, r: 1, g: 1, b: 1, life: 5, birth: 0 }], active: true, startTs: 1000, elapsed: 0, maxDeath: 5 };
+    c.running = false;   // isolate the burst path (no ambient)
+    c._frame(1000); c._frame(1008); c._frame(1018); c._frame(1024); c._frame(1040);   // 120 Hz-ish ticks
+    ok(rendered === 5, "T103: the GL scene renders EVERY rAF (5 frames → 5 renderFrame) — smoothness preserved");
+    ok(draws === 3, "T103: the 2D overlay redraw is CAPPED to ~60 Hz (5 high-refresh frames → " + draws + " overlay composites, not 5)");
+  })();
+
+  // (3) IDLE + REDUCED-MOTION cost ~0: a stopped (or reduced) controller schedules NO frames.
+  (function(){
+    let raf = 0;
+    const c = new FXGL.Controller({ width: 0, height: 0, clientWidth: 390, clientHeight: 844, getContext: () => null }, { gl: makeGL({}), raf: () => { raf++; return 1; }, caf: () => {}, width: 390, height: 844, dpr: 1, quality: 2, reducedMotion: false });
+    c.setScene({ grid: [[[20, 20, 30]]], seed: 5 }); c.start();
+    raf = 0; c.stop();
+    ok(!c._needsFrame(), "T103: a STOPPED controller needs no frames (idle = ~0 cost)");
+    c._pump();
+    ok(raf === 0, "T103: …and pumping a stopped controller schedules NO rAF (no idle drain)");
+    const rm = new FXGL.Controller({ width: 0, height: 0, clientWidth: 390, clientHeight: 844, getContext: () => null }, { gl: makeGL({}), raf: () => { return 1; }, caf: () => {}, width: 390, height: 844, dpr: 1, quality: 2, reducedMotion: true });
+    rm.setScene({ grid: [[[20, 20, 30]]], seed: 5, hoard: { level: 0.8, seed: 9 } }); rm.start();
+    ok(!rm._needsFrame() && !rm.isAnimating(), "T103: reduced-motion runs NO continuous loop (a single still; pile sparkle is gated off)");
+  })();
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FXGL CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

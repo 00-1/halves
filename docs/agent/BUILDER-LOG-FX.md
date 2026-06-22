@@ -6,6 +6,37 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T103 — low-end-Android PERF pass: audit + fix the render hot paths ([B], owner-mandated)
+
+Owner: the perf pass "is not optional." A measure-and-fix pass for Adreno-618/Poco-X3-class Android
+(installed PWA) now that the home backdrop animates continuously. Audited the live `fxgl.js` hot
+paths and **applied the cheap fixes**; the rest is a doc + an owner on-device plan
+(`docs/PERF-RESEARCH-2.md`). Headline finding + fixes:
+- **Burst overlay re-rasterised the STATIC pile every frame** (the worst path): `_syncOverlay`
+  called `drawHoard` (~16–22k `fillRect`) **per frame** for the whole ~1–2 s shower, ×refresh-rate.
+  Fix: a **cached offscreen pile bitmap** (`_pileBitmap`, keyed on size/scale/level/seed) rendered
+  **once** and **blitted** (`drawImage`) each burst frame — measured **~22,031 `fillRect`/frame →
+  one `drawImage`/frame** (pixel-identical output; flying coins still draw, they're the only moving
+  part). The ≈full-screen cache is **freed on burst end + dispose** (no idle memory). Capability-
+  gated → falls back to the direct draw on old engines / test stubs.
+- **High-refresh cap:** the per-frame burst **overlay** composite is capped to **~60 Hz** (the GL
+  scene still renders every RAF) so a 90/120 Hz panel doesn't double the 2D cost.
+- **Audited-good (documented, no change):** the T207 pile sparkle is already coin-only + 5 Hz
+  throttled (~12–24k `fillRect/s`, in budget); idle/off-home cost ~0 (`stop()` idles the RAF +
+  T211 hides the overlay); reduced-motion runs no loop; one app-lifetime `Controller` → no
+  per-navigation listener leak; degrade ladder (WebGPU→WebGL2→Canvas2D-still, quality tiers,
+  particle caps) intact; single GL context.
+
+Verify: `node -c` clean; **fxgl 146** (+11 T103 assertions — burst pile cached/blitted not
+re-rasterised, cache invalidates on wealth change + frees; GL renders every RAF while the overlay
+is capped to ~60 Hz; stopped + reduced-motion controllers schedule NO frames); full Node suite
+green (golden-fx 116 / fx-wiring 84 / hoard-wiring 47 / synth 177 / emblems 34); render/visual/audio
+gates green; the cached burst renders identically on WebGL2. B-led (`fxgl.js`, `docs/PERF-RESEARCH-2.md`,
+`test/fxgl.test.js`). **Owner runs the on-device plan** (jank/battery/heat); any `main.js` perf
+follow-ups the audit surfaces are split out to [A].
+
+---
+
 ## T211 — BUG: the gold hoard showed behind EVERY screen → overlay now follows the backdrop ([B], 🔴 owner-reported)
 
 Owner: *"gold stacks behind every screen, but I only want it on the main screen."* Root cause: the

@@ -1591,8 +1591,11 @@
     }
     this.backend.renderFrame({ sceneOn: sceneOn, sceneTime: sceneTime, burstOn: this.burst_.active, burstTime: this.burst_.elapsed });
     if(this.backend.name !== "cpu-still"){
-      // T193 — during a burst, composite the spinning coin shower onto the 2D overlay each frame.
-      if(this.burst_.active) this._syncOverlay(this.burst_.elapsed);
+      if(this.burst_.active){
+        // T193 — composite the spinning coin shower onto the 2D overlay. T103 PERF: CAP it to ~60 Hz
+        // (the GL scene still renders every RAF) so a 90/120 Hz panel doesn't double the 2D cost.
+        if((ts - (this._ovT || 0)) >= 15){ this._ovT = ts; this._syncOverlay(this.burst_.elapsed); }
+      }
       // T207 — otherwise, sparkle the settled pile at a low THROTTLE (~5 Hz, not per-frame).
       else if(this._ambientLoops() && (sceneTime - (this._glintT || 0)) >= 0.2){ this._glintT = sceneTime; this._pileGlint(sceneTime); }
     }
@@ -1601,6 +1604,7 @@
       this.burst_.active = false; this.burst_.startTs = 0; this.burst_.elapsed = 0; this.burst_.maxDeath = 0; this.burst_.parts = [];
       if(this.backend.setBurst) this.backend.setBurst([]);
       if(this.backend.name !== "cpu-still") this._syncOverlay(0);   // clear the spent coins (leaving the hoard)
+      this._freePileCache();   // T103 PERF: release the ≈full-screen burst cache once the shower ends
     }
     if(this._needsFrame()) this.rafId = this.raf(this._frameCb);   // keep the single loop alive
   };
@@ -1708,12 +1712,46 @@
     if(ov.height !== H) ov.height = H;
     const ctx = this._hoardCtx;
     ctx.clearRect(0, 0, W, H);
-    if(hoard) drawHoard(ctx, hoard, W, H, scale);
+    if(hoard){
+      // T103 PERF — during a burst the overlay redraws EVERY frame, but the pile (silhouette +
+      // settled coins) is static then (the sparkle pass is gated off mid-burst). Re-rasterising
+      // ~16k+ fillRects/frame on a weak GPU janks the celebration; instead cache the pile to an
+      // offscreen bitmap ONCE and BLIT it each frame (one drawImage). One-off draws (setData/
+      // resize) + capability-less test stubs fall back to a direct drawHoard.
+      const bmp = (coins && coins.length) ? this._pileBitmap(W, H, scale, hoard) : null;
+      if(bmp) ctx.drawImage(bmp, 0, 0);
+      else drawHoard(ctx, hoard, W, H, scale);
+    }
     if(coins && coins.length){
       const t = (burstTime == null) ? this.burst_.elapsed : burstTime;
       for(const p of coins) drawCoinParticle(ctx, p, t, W, H, scale);
       if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
     }
+  };
+  // T103 PERF — a cached offscreen render of the static pile (silhouette + settled coins), keyed on
+  // size/scale/level/seed so it invalidates on resize or a wealth change. Used to BLIT the pile each
+  // burst frame instead of re-rasterising it. Returns null when offscreen canvases / drawImage
+  // aren't available (test stubs / old engines) → the caller draws the pile directly.
+  Controller.prototype._pileBitmap = function(W, H, scale, hoard){
+    const ctx = this._hoardCtx;
+    if(typeof document === "undefined" || !document.createElement || !ctx || !ctx.drawImage) return null;
+    const key = W + "x" + H + ":" + scale + ":" + hoard.level + ":" + hoard.seed + ":" + (hoard.palette || "");
+    if(this._pileCacheCv && this._pileCacheKey === key) return this._pileCacheCv;
+    let cv = this._pileCacheCv;
+    if(!cv){ try{ cv = document.createElement("canvas"); }catch(e){ return null; } this._pileCacheCv = cv; }
+    cv.width = W; cv.height = H;
+    let c2 = null; try{ c2 = cv.getContext("2d"); }catch(e){ c2 = null; }
+    if(!c2){ this._pileCacheCv = null; return null; }
+    c2.clearRect(0, 0, W, H);
+    drawHoard(c2, hoard, W, H, scale);
+    this._pileCacheKey = key;
+    return cv;
+  };
+  // Free the burst pile cache (≈one full-screen canvas) when it's no longer needed — keeps idle
+  // memory low on weak devices (only allocated during a celebration).
+  Controller.prototype._freePileCache = function(){
+    if(this._pileCacheCv){ this._pileCacheCv.width = this._pileCacheCv.height = 0; }
+    this._pileCacheCv = null; this._pileCacheKey = null;
   };
   // T207 — occasional SPARKLES on the settled pile: a cheap, THROTTLED glint pass (driven at a low
   // rate from _frame, NOT 60fps). The silhouette is already painted by _syncOverlay and never
@@ -1835,6 +1873,7 @@
     const cv = this.canvas;
     if(cv && cv.removeEventListener){ if(this._onLost) cv.removeEventListener("webglcontextlost", this._onLost); if(this._onRestored) cv.removeEventListener("webglcontextrestored", this._onRestored); }
     if(typeof document !== "undefined" && document.removeEventListener && this._onVisible) document.removeEventListener("visibilitychange", this._onVisible);
+    this._freePileCache();   // T103: release the burst pile cache
     if(this.backend) this.backend.dispose(); this.backend = null; this.ready = false; if(this._hoardCv && this._hoardCv.parentNode) this._hoardCv.parentNode.removeChild(this._hoardCv); this._hoardCv = undefined; this._hoardCtx = null; return this; };
   Controller.prototype.isAnimating = function(){ return this._ambientLoops(); };
   Controller.prototype.isBursting = function(){ return this.burst_.active; };
