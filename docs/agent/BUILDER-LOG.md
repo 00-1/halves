@@ -5023,3 +5023,61 @@ notes: **owner device-verify** — on the installed PWA, Settings → Sound → 
   Settings → Graphics → ← lands on Settings; Arena → system back lands on home; home → back stays in-app
   with a confirm hint; a quick second back exits cleanly. Next per `NEXT.md`: **`T164`** (music: only switch
   on real track change) → **`T167`** (PWA fullscreen on tap) → resume T162 P2/P3.
+
+---
+
+## Builder A — T164: music switching is idempotent (no restart between same-music screens)
+commit: (this commit) — [A], owner-flagged 🔴 (also the likely foghorn root on screen change).
+owner: *"we need to make sure it only switches when the track actually changes. E.g. moving between the main
+screen and the config menu the music restarts, but it's the same music, right?"*
+root cause (confirmed in code): `musicForScreen` mapped home/settings/audio/graphics/inventory/heroes ALL to
+the `"menu"` context, but **unconditionally** called `synthSwitchContext` → `setContext`+`setMusic`+`swapNow`+
+`start` on every screen change. So every menu↔menu hop rebuilt + restarted the identical track — the audible
+restart the owner heard, and (very likely) the foghorn trigger on screen change.
+fix ([A], `main.js`):
+  - New `curMusicKey = null` tracker (module-scope).
+  - `synthSwitchContext(name, seed)` sets `curMusicKey = name + ":" + s` on a successful switch (after
+    `setMusic` + `swapNow` + `start`).
+  - `musicForScreen(name)` computes the **target** `(context, seed)` and the **target key**; if it equals
+    `curMusicKey` AND `Synth.musicPlaying()` returns true, **returns early** — no setContext/setMusic/swapNow/
+    start. Only a REAL change (menu→lofi on game start, →arena, a different solve topic, the Audio-menu
+    picker preview) fires the switch.
+  - `resyncMusic()` (T159's visibility-resume path) clears `curMusicKey = null` after `Synth.stop()`, so the
+    next entry re-keys correctly (the same-music guard doesn't block the cold-resume restart).
+  - The Audio-menu `musicPreview` path is **unchanged** — always switches (the user picked it). The Arena's
+    intensity tick is preserved on the same-music return so boss-proximity still tracks.
+how I verified: new **`music-idempotent.test.js` (15 checks, gated)** — boots `main.js` with a stub Synth +
+  a stub Sound + a query-able set of recorded `setContext`/`swapNow`/`start`/`stop` calls. Drives 5 same-music
+  screen changes via `route(#/...)` and asserts **ZERO new setContext / swapNow / start** calls (was 5+ — the
+  bug). Then drives REAL changes (menu→arena, arena→settings→arena) and asserts each one DOES fire setContext.
+  Then hide → return → asserts the resync re-keys (the cold restart works). Static design checks: the
+  `curMusicKey` tracker exists; `musicForScreen` has the early-return guard with the right form;
+  `synthSwitchContext` writes the key; the resync clears it.
+  `node -c` clean; **full suite green** (`synth-wiring` regex window widened for the larger `musicForScreen`
+  body). [A]-only.
+notes: pairs with **T165** [B] — even after T164 eliminates needless switches, a REAL switch must swap
+  cleanly (no surviving tail / no foghorn). T165 is B-owned (`synth.js`). **Owner verify:** moving between
+  home/settings/audio/inventory/heroes should NOT restart the music; menu→game (lofi) / →arena / picker
+  preview SHOULD switch; the foghorn-on-screen-change should be gone (or substantially reduced — T165
+  closes the rest).
+
+---
+
+## Builder A — T167: "Tap to begin" in the installed PWA requests fullscreen
+commit: (this commit) — [A], owner-requested. Owner (on installed PWA): *"it's actually now not in fullscreen
+— I see the Android bars top and bottom."* T156 hid the entry fullscreen BUTTON when installed; the manifest
+`display:"fullscreen"` (also T156) is unreliable across Android Chrome builds. The user-gesture-only
+`requestFullscreen()` API needs a tap to fire.
+fix ([A], `main.js`):
+  - The entry `playBtn` ("Tap to begin" when installed) click handler was `enter(false)` — audio-only. Now
+    it's `enter(isInstalledDisplay())` — so in the installed PWA the same gesture **also calls `fsEnter()`**.
+  - Browser-tab behaviour preserved: `isInstalledDisplay()` is false, so `entryPlay` stays the audio-only
+    alternative; the explicit `entryFs` button is the fullscreen-choice path.
+  - iOS Safari (no fs API): `isInstalledDisplay()` is false AND `fsSupported()` would be false anyway — the
+    fsEnter call is a no-op via its internal check.
+how I verified: **`install-display.test` 11→14** — the installed boot tap now fires `requestFullscreen()`
+  exactly once (recorded via a stub `documentElement.requestFullscreen`); the browser-tab `entryPlay` tap
+  does NOT (the entryFs explicit button still does). All gates green; `node -c` clean.
+notes: **owner device-verify** on the installed PWA — the bars should disappear after the first tap. For the
+  T103 TWA / Play-Store build, a TWA wrapper can launch edge-to-edge immersive natively with NO entry tap
+  needed (the calibration doc captures this); for the raw installed PWA, the gesture path is the API limit.

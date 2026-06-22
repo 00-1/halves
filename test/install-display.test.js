@@ -38,31 +38,47 @@ function boot(standalone){
   global.localStorage = { getItem:k => k in store ? store[k] : null, setItem:(k,v)=>{ store[k]=String(v); }, removeItem:k=>{ delete store[k]; } };
   global.window.localStorage = global.localStorage;
   // a browser-tab DOM that SUPPORTS fullscreen (so the affordances would show but for T156)
-  const docEl = mkEl("html"); docEl.requestFullscreen = () => Promise.resolve();
+  let fsCalls = 0;
+  const docEl = mkEl("html"); docEl.requestFullscreen = () => { fsCalls++; return Promise.resolve(); };
   global.navigator = { standalone:false };
   global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
     addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
     documentElement:docEl, body:mkEl("body"), fullscreenElement:null };
   global.window.navigator = global.navigator;
   ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
-  return els;
+  return { els, fsCalls: () => fsCalls };
 }
 
 // ---- (a) installed / standalone → both fullscreen affordances are HIDDEN ------
 (function installed(){
-  const els = boot(true);
+  const b = boot(true); const els = b.els;
   ok(els.entryFs.classList.contains("hidden"), "(a) installed: the entry 'Play in fullscreen' button is hidden");
   ok(els.fsToggle.classList.contains("hidden"), "(a) installed: the Settings Fullscreen toggle row is hidden");
   ok(els.entryPlay.textContent === "Tap to begin", "(a) installed: the entry still serves the audio gesture (plain 'Tap to begin')");
   ok((els.entryPlay._h.click||[]).length >= 1, "(a) installed: 'Tap to begin' is still wired (the entry gesture survives)");
+  // T167 — the installed "Tap to begin" tap must ALSO request fullscreen (the
+  // manifest display:fullscreen is unreliable on Android; the user-gesture-only
+  // requestFullscreen API needs this tap). One requestFullscreen call expected.
+  const before = b.fsCalls();
+  (els.entryPlay._h.click||[]).forEach(f=>f({}));
+  ok(b.fsCalls() === before + 1, "(a) T167: 'Tap to begin' in the installed PWA calls requestFullscreen() (was " + before + " → " + b.fsCalls() + ")");
 })();
 
 // ---- (b) browser tab (fullscreen supported) → both SHOWN (no regression) ------
 (function browserTab(){
-  const els = boot(false);
+  const b = boot(false); const els = b.els;
   ok(!els.entryFs.classList.contains("hidden"), "(b) browser tab: the 'Play in fullscreen' button still shows");
   ok(!els.fsToggle.classList.contains("hidden"), "(b) browser tab: the Settings Fullscreen toggle still shows");
   ok((els.entryFs._h.click||[]).length >= 1 && (els.fsToggle._h.click||[]).length >= 1, "(b) browser tab: both fullscreen controls are still wired");
+  // T167 — in a browser tab, the lower-profile entryPlay tap is the audio-only
+  // alternative (no fullscreen) — the two-button choice is preserved. fsEnter
+  // only fires when the user explicitly picks entryFs.
+  const beforePlay = b.fsCalls();
+  (els.entryPlay._h.click||[]).forEach(f=>f({}));
+  ok(b.fsCalls() === beforePlay, "(b) T167: browser-tab entryPlay does NOT request fullscreen (the entryFs button is the explicit FS choice)");
+  const beforeFs = b.fsCalls();
+  (els.entryFs._h.click||[]).forEach(f=>f({}));
+  ok(b.fsCalls() === beforeFs + 1, "(b) browser-tab entryFs DOES request fullscreen (explicit user choice)");
 })();
 
 // ---- (c) static: the helper + the manifest ------------------------------------

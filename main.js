@@ -316,6 +316,14 @@
   // sound.js keeps the SFX. Each screen plays a context (solve=calm · menu · arena
   // ·event); a win fires the wub; SFX duck the music. Guarded no-op if Synth absent.
   let synthWired = false, curScreen = "entry", musicPreview = null, musicGain = null;   // musicPreview: T129 switcher's picked style; musicGain: T143 music-only volume
+  // T164 — track the currently-playing music key (context + ":" + seed). When the
+  // next musicForScreen target matches this AND the engine is still playing, we
+  // SKIP the setContext/setMusic/swapNow/start round-trip — moving between same-
+  // music screens (home↔settings↔audio↔inventory↔heroes all map to "menu") no
+  // longer rebuilds the same track (the source of the needless restart + the
+  // likely foghorn root on screen change). Cleared on stop / context loss so a
+  // re-arrival re-syncs cleanly.
+  let curMusicKey = null;
   function setupSynth(){
     if(synthWired) return;
     const Sy = window.Synth, S = window.Sound;
@@ -356,6 +364,7 @@
         { tempo: Math.max(20, Math.round(c.tempo * (isFinite(t) && t > 0 ? t : 1))) }));   // T113 tempo on top
       if(Sy.swapNow) Sy.swapNow();   // T132: swap the generator NOW (≤1 step) — a screen change / style pick is instant, not at a far phrase boundary
       if(Sy.start) Sy.start();
+      curMusicKey = name + ":" + s;   // T164: remember what's playing so idempotent screen changes can skip the rebuild
       return true;
     }catch(e){ return false; }
   }
@@ -378,6 +387,18 @@
       // the calm solve style varies per topic (the seed keeps topics musically distinct).
       const seed = (context === "lofi" && typeof mode !== "undefined" && mode && typeof mode.music === "number")
         ? ((mode.music + 1) * 2654435761 >>> 0) : undefined;
+      // T164 — only switch the music when the TARGET (context + seed) actually
+      // differs from what's playing. Moving between same-music screens (home↔
+      // settings↔audio↔inventory↔heroes all map to "menu" with the same seed) is
+      // now a no-op — no needless setContext/setMusic/swapNow/start rebuild, no
+      // audible re-trigger, no foghorn opportunity. A real change (menu→lofi on
+      // game start, →arena, a different solve topic) still fires the switch.
+      const targetSeed = (seed != null) ? (seed >>> 0) : (Sy.hashStr ? Sy.hashStr(context) : 1);
+      const targetKey = context + ":" + targetSeed;
+      if(curMusicKey === targetKey && Sy.musicPlaying && Sy.musicPlaying()){
+        if(context === "arena" && Sy.intensity) Sy.intensity(arenaBossProx());   // intensity is cheap + per-frame; keep it tracking
+        return;
+      }
       synthSwitchContext(context, seed);
       if(context === "arena" && Sy.intensity) Sy.intensity(arenaBossProx());
     }catch(e){}
@@ -2285,6 +2306,7 @@
   function resyncMusic(){
     const Sy = window.Synth; if(!Sy || !synthWired) return;
     try{ if(Sy.stop) Sy.stop(); }catch(e){}
+    curMusicKey = null;   // T164: stop ⇒ no track is playing; the next start must re-key
     startMusicWhenRunning();
   }
   // The user-gesture unlock: ready the engines and START music if it isn't already
@@ -2526,7 +2548,14 @@
       playBtn.textContent = "Play";
     }
     fsBtn.addEventListener("click", () => enter(true));
-    playBtn.addEventListener("click", () => enter(false));
+    // T167 — in the installed/standalone PWA the entryFs button is hidden (T156)
+    // AND the manifest's display:fullscreen is unreliable across Android (the
+    // owner still sees the bars). Make the "Tap to begin" gesture ALSO request
+    // fullscreen so the installed app goes truly fullscreen on first tap (the
+    // browser only honours requestFullscreen from a user gesture, so this entry
+    // tap is our one chance). Browser-tab behaviour preserved — entryPlay there
+    // is still the audio-only "Play" alternative; the entryFs button does FS.
+    playBtn.addEventListener("click", () => enter(isInstalledDisplay()));
   })();
 
   // ---- build info (sha + "ago"), written at deploy time -------------------
