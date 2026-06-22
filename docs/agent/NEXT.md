@@ -10,16 +10,19 @@
 
 ---
 
-**Builder A → `T162` (resume the drill modes — TIER P2 next) → content `T59`–`T61` → `T72` (held)**
-**The 3 owner live-bugs are DONE+APPROVED** — `T166` config-nav (`0aca3ee`), `T164` music idempotency
-(`9722cb4`), `T167` launch/fullscreen (`9722cb4`). `T162` P1 also done (`66fcc92`+`c7e388c`). **Resume `T162`:**
-- **Tier P2 (push next): `ratioshare`, `timegap` (answer in minutes), `lcmhcf`, `mean` (+ reverse).**
-- **Then Tier P3: `cubes` (mirror `squares`), `money` (£ totals + change, 2dp), `digitsum` (+ remainder ÷9),
-  doubles/halves range check.** Items + ranges + `masterSecs` + unlock slots in **`docs/agent/T162-calibration.md`**.
-  Each mode = fixed `*_SRC` → `build()` `{p,a}` (numeric/non-negative/numpad), mastery-gated unlock, new
-  **"Reasoning"** picker group for the multi-step ones, **a Node logic gate per mode** in `pages.yml`. One push
-  per tier (Babysitter reviews each; owner feels them early). **Then** content `T59`–`T61`. *(`T103`/`T72`
-  Play-Store need owner creds — hold.)*
+**Builder A → `T170` 🔴 BUG-DO-FIRST (topic tree overflows) → `T169` (self-host fonts) → resume `T162` P2/P3 → content `T59`–`T61`**
+- **🔴 `T170` FIRST (live):** the 12 new T162 modes pushed some unlock tiers to **4 nodes abreast** and they
+  **clip off-screen** (owner screenshot). `.tree-row` (styles.css:116) lays fixed-width nodes at `gap:0` in a
+  `max-width:360px` `.tree`. Make nodes **fit at any count up to 4** (`flex:1 1 0; min-width:0`, scale font/
+  padding down at 4-up, cap max so sparse rows don't balloon). Keep `home-layout` invariants + add a no-overflow
+  assertion. Browser-verify no clipping. [A]-only. *(BACKLOG T170.)*
+- **Then `T169` (owner: "bake the fonts in"):** self-host Space Grotesk + JetBrains Mono (drop the Google Fonts
+  CDN links), `@font-face` + `?v=`/SW-cache them → zero third-party requests (kids-privacy win) + offline fonts.
+  [A]-only. *(BACKLOG T169.)*
+- **Then resume `T162`:** Tier P2 (`ratioshare`, `timegap`, `lcmhcf`, `mean`) → Tier P3 (`cubes`, `money`,
+  `digitsum`, doubles/halves range check), one push per tier (spec in `docs/agent/T162-calibration.md`) → content
+  `T59`–`T61`. *(`T168` Play-Store productionise is HELD until ID-verify + the app NAME is locked — rename
+  pending. `T103`/`T72` need owner creds.)*
 **Re-read this line fresh before each task + push.**
 
 **Builder B → STAND BY (engine queue clear).** All B work landed + verified: `T165` context-switch fully stops

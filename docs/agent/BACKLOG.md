@@ -2812,6 +2812,48 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
+### T170 — [A] **BUG (live):** topic tree overflows — rows now 4 nodes abreast clip off-screen · status: OPEN · 🔴 DO-FIRST
+**Owner (2026-06-22, screenshot): "our tree is now four deep, which doesn't fit. The plan was 3, but we can do 4
+if needed — needs to fit though."** The 12 new T162 modes pushed some unlock tiers to **4 nodes in a row**, but
+`.tree-row` (styles.css:116, T106 "1–3 parts abreast") lays fixed-width nodes at `gap:0` inside `.tree`
+(`max-width:360px`), so 4 nodes exceed the row width and **clip off both edges** (visible in the screenshot:
+left/right nodes cut off).
+- **Fix:** make a `.tree-row`'s nodes **fit the row width at ANY count up to 4** (the owner's allowed max) without
+  horizontal overflow — e.g. nodes `flex:1 1 0; min-width:0` so they share the width and **scale down** as the
+  count grows; a small gap; and step the node's glyph/count font + padding down at the 4-up size so it stays
+  legible (the `x/y` progress + the topic glyph must still read). 1–2-up rows shouldn't balloon — cap the node
+  max-width so a sparse row still looks like the current size.
+- **Keep the `home-layout` invariants** (the `.app`/safe-area/height assertions) — this is a shared layout
+  primitive; don't regress them; extend the gate with a "no `.tree-row` overflows its `.tree` width / ≤4 abreast
+  fit" assertion.
+- **DoD:** every tree row (1–4 nodes) fits within the tree width with **no horizontal clipping**, glyph + count
+  legible at 4-up; `home-layout` invariants intact + a new no-overflow assertion; `node -c` clean; **[A]-only**
+  (`styles.css`, maybe `main.js`/`renderTree`, `test/home-layout.test.js`). **Verify in a real browser** (the
+  harness, or owner confirms) — read that the 4-up row's nodes don't clip the `.tree` box.
+
+### T169 — [A] Self-host the web fonts (drop Google Fonts CDN) — privacy + offline · status: OPEN · owner-requested
+**Owner: "let's bake the fonts in."** `index.html` loads **Space Grotesk + JetBrains Mono from
+`fonts.googleapis.com`/`fonts.gstatic.com`** (the app's ONLY third-party request → a child's device IP goes to
+Google). **Self-host** the needed weights locally (woff2), drop the three Google `<link>`s, add `@font-face`
+rules, and let the cachebust/`?v=` + SW cache them like the other assets. Then the app makes **zero third-party
+requests** — the kids-privacy / Data-Safety "no data shared" story is airtight, and fonts also work fully offline
+(no FOUT waiting on a CDN).
+- **DoD:** no `fonts.g*` references remain; the two type families render identically self-hosted (same weights:
+  Space Grotesk 400/500/700, JetBrains Mono 400/700/800); fonts are `?v=`-busted + SW-cached; `node -c`/build
+  gate clean (cachebust verifier still passes — no bare refs); **[A]-only** (`index.html`, `styles.css`, the
+  font files, maybe `sw.js`/cachebust). **Verify:** no network request to `fonts.g*` on load.
+
+### T168 — [A] Play-Store productionisation (privacy page, assets, .aab, assetlinks) · status: OPEN · HELD until ID-verify + name decided
+Productionise the `docs/agent/PLAY-STORE-PREP.md` draft once the owner signs off the **app name** (rename pending
+— see the "Goblin…"-themed naming discussion) and ID verification clears. Scope: create **`privacy.html`** on
+Pages (from the prep §3 text), generate the **store assets** (512² icon, 1024×500 feature graphic, ≥2
+screenshots via the Playwright harness), attempt/produce the **`.aab`** (PWABuilder, or Bubblewrap in-env with
+`display:fullscreen`/immersive), and host **`/.well-known/assetlinks.json`** for the TWA. **Keep the version
+check** (a TWA loads live GH-Pages content + SW cache — updates ship via git push, no Play resubmission; the
+check is meaningful there). Listing copy / Data-Safety / content-rating answers are paste-ready in the prep doc.
+**[A]-only.** Hold until the owner is verified + the name is locked (the name feeds the listing + the permanent
+package id).
+
 ### T163 — [B] Firm up + re-bless the brittle `visual_arena` golden · status: DONE (`461fddc`) · APPROVED· small (B follow-up to T154)
 The harness recovered; `test/browser/visual.test.js` now reports **1/13 FAIL — `visual_arena` golden mismatch**
 (the Arena gained 3v3 + death-VFX after the baseline was captured). NOT a CI gate (absent from `pages.yml`) so
