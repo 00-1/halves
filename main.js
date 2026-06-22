@@ -1056,7 +1056,8 @@
         (it.boost ? '<div class="u-boost">'+esc(C.boostLabel(it.boost))+'</div>' : '')+
         '<div class="u-desc">'+esc(it.desc || it.name || "")+'</div>';
       grid.appendChild(cell);
-      C.drawIcon(cell.querySelector("canvas"), it.id, C.paletteFor(it.rarity));
+      if(it.emblem && window.Emblems) window.Emblems.draw(cell.querySelector("canvas"), it.emblem);   // T206 — emblem awards
+      else C.drawIcon(cell.querySelector("canvas"), it.id, C.paletteFor(it.rarity));
     });
     const m = $("unlockModal");
     m.classList.remove("hidden");
@@ -1320,17 +1321,11 @@
       const enc = Object.keys(col).some(k => k.indexOf("event:" + ev.id) === 0); if(enc) eGot++;
       events.push(codexCell(ev.name, "Daily event" + (ev.rarity ? " · " + ev.rarity : ""), enc, 48, 32, { codex:"event", seed:ev.artSeed }));
     });
-    // Emblems (T179/T181) — B's brand / app-icon candidates; the owner's icon-review
-    // surface. Earned by conquest: emblem i unlocks once i region bosses are felled
-    // (the first is always shown), so they ladder in via milestones.
-    const emblems = []; let emGot = 0;
-    const Em = window.Emblems, emIds = (Em && Em.IDS) || [];
-    const felled = bossesDefeated(col);
-    emIds.forEach((id, i) => { const enc = felled >= i; if(enc) emGot++;
-      emblems.push(codexCell(id.charAt(0).toUpperCase() + id.slice(1), "Emblem · app-icon candidate", enc, 48, 48, { codex:"emblem", emblem:id })); });
-    const totGot = bGot + boGot + rGot + eGot + emGot, totAll = beasts.length + bosses.length + realms.length + events.length + emblems.length;
+    // (T206 — the Emblems Codex section was removed: B's 3 creature emblems are now
+    //  Collector awards in the Inventory ▸ Awards tab, not a Codex gallery.)
+    const totGot = bGot + boGot + rGot + eGot, totAll = beasts.length + bosses.length + realms.length + events.length;
     const bars = [["Beasts", bGot, beasts.length], ["Bosses", boGot, bosses.length],
-                  ["Realms", rGot, realms.length], ["Events", eGot, events.length], ["Emblems", emGot, emblems.length]]
+                  ["Realms", rGot, realms.length], ["Events", eGot, events.length]]
       .map(s => invBarRow(s[0], s[1], s[2])).join("");
     const block = '<div class="inv-cat"><h4>Codex <span>' + totGot + '/' + totAll + ' discovered</span></h4>' +
       '<div class="topic-prog">' + bars + '</div></div>';
@@ -1338,8 +1333,7 @@
       codexGroup("Beasts", beasts, bGot, beasts.length) +
       codexGroup("Bosses", bosses, boGot, bosses.length) +
       codexGroup("Realms", realms, rGot, realms.length) +
-      codexGroup("Events", events, eGot, events.length) +
-      codexGroup("Emblems", emblems, emGot, emblems.length);
+      codexGroup("Events", events, eGot, events.length);
   }
   // Paint a COLS×ROWS hex-colour grid into a canvas, full-bleed (no scrim) — the
   // Codex realm thumbnails (Scenery.buildGrid) shown "full-lit".
@@ -1354,12 +1348,11 @@
   }
   // Draw one Codex sprite into a canvas from its `data-*` (the right generator).
   function drawCodexInto(cv, d){
-    const M = window.Monsters, S = window.Scenery, EA = window.EventArt, Em = window.Emblems;
+    const M = window.Monsters, S = window.Scenery, EA = window.EventArt;
     try{
       if((d.codex === "beast" || d.codex === "boss") && M) M.draw(cv, { n:+d.n, name:"", type:d.type });
       else if(d.codex === "realm" && S && S.buildGrid) paintCodexGrid(cv, S.buildGrid(+d.region));
       else if(d.codex === "event" && EA) EA.draw(cv, +d.seed);
-      else if(d.codex === "emblem" && Em) Em.draw(cv, d.emblem);
     }catch(e){}
   }
   function drawCodexCanvases(){
@@ -1388,7 +1381,10 @@
   function drawInvCanvases(){
     $("invList").querySelectorAll(".inv-cell.owned canvas").forEach(cv => {
       const it = C.byId(cv.parentElement.dataset.id);
-      if(it) C.drawIcon(cv, it.id, C.paletteFor(it.rarity));
+      if(!it) return;
+      // T206 — emblem Collector awards render from window.Emblems (fit-to-cell, T205)
+      if(it.emblem && window.Emblems) window.Emblems.draw(cv, it.emblem);
+      else C.drawIcon(cv, it.id, C.paletteFor(it.rarity));
     });
   }
   function renderInvTabs(){

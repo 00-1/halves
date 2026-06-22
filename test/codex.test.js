@@ -18,13 +18,15 @@ ok(/function invCodexHtml\(col\)/.test(mainSrc), "(1) invCodexHtml(col) builds t
 ok(/invTab === "codex"\s*\? invCodexHtml\(col\)/.test(mainSrc), "(1) renderInvTab routes the codex tab");
 ok(/if\(invTab === "codex"\) drawCodexCanvases\(\)/.test(mainSrc), "(1) the codex tab draws its own canvases (Monsters/Scenery/EventArt)");
 (function(){ const b = mainSrc.slice(mainSrc.indexOf("function drawCodexInto"), mainSrc.indexOf("function drawCodexInto") + 700);
-  ok(/M\.draw\(cv/.test(b) && /S\.buildGrid/.test(b) && /EA\.draw\(cv/.test(b) && /Em\.draw\(cv/.test(b), "(1) drawCodexInto dispatches to Monsters + Scenery + EventArt + Emblems"); })();
+  ok(/M\.draw\(cv/.test(b) && /S\.buildGrid/.test(b) && /EA\.draw\(cv/.test(b), "(1) drawCodexInto dispatches to Monsters + Scenery + EventArt"); })();
+// T206 — the Emblems Codex section was removed (emblems are Collector awards now)
+ok(!/codexGroup\("Emblems"/.test(mainSrc) && !/codex:"emblem"/.test(mainSrc), "(1) T206: no Codex Emblems section / emblem cells remain");
 ok(/\.codex-cell\.locked canvas\{filter:brightness/.test(css), "(1) locked codex entries are CSS-silhouetted (dark filter on the real sprite)");
 ok(/test\/codex\.test\.js/.test(wf), "(1) this gate is registered in CI");
 
 // ---- boot under a DOM shim ---------------------------------------------------
 let els, store = {}, winH;
-const draws = { beast:0, boss:0, realm:0, event:0, emblem:0 };
+const draws = { beast:0, boss:0, realm:0, event:0 };
 // parse the codex cells out of an HTML string → canvas stubs carrying the cell's dataset
 function codexCanvases(htmlStr){
   const out = [];
@@ -76,11 +78,9 @@ const W = boot();
 const E = W.Enemies, RS = E.REGION_SIZE, regions = E.TIER_COUNT / RS;
 
 // record generator draws (drawCodexCanvases reads window.* fresh)
-const EMBLEM_IDS = (W.Emblems && W.Emblems.IDS) ? W.Emblems.IDS.slice() : [];
 W.Monsters = { draw(cv){ cv.parentElement.dataset.codex === "boss" ? draws.boss++ : draws.beast++; } };
 W.Scenery  = { buildGrid(){ draws.realm++; return [["#000"]]; } };
 W.EventArt = { draw(){ draws.event++; } };
-W.Emblems  = { IDS: EMBLEM_IDS, draw(){ draws.emblem++; } };
 
 const tabEv = t => ({ target:{ closest:s => (s===".inv-tab" ? { dataset:{ tab:t } } : null) } });
 global.window.location.hash = "#/inventory"; (winH.hashchange||[]).forEach(f=>f());
@@ -88,14 +88,14 @@ global.window.location.hash = "#/inventory"; (winH.hashchange||[]).forEach(f=>f(
 const html = els.invList._html;
 
 // ---- (2) the four sections render with the right cardinality ------------------
-ok(/Beasts <span>/.test(html) && /Bosses <span>/.test(html) && /Realms <span>/.test(html) && /Events <span>/.test(html) && /Emblems <span>/.test(html), "(2) the Codex renders all five sections (Beasts/Bosses/Realms/Events/Emblems)");
+ok(/Beasts <span>/.test(html) && /Bosses <span>/.test(html) && /Realms <span>/.test(html) && /Events <span>/.test(html), "(2) the Codex renders all four sections (Beasts/Bosses/Realms/Events)");
+ok(!/Emblems <span>/.test(html), "(2) T206: the Emblems Codex section is gone");
 const count = re => (html.match(re) || []).length;
-const beasts = count(/data-codex="beast"/g), bossesN = count(/data-codex="boss"/g), realmsN = count(/data-codex="realm"/g), eventsN = count(/data-codex="event"/g), emblemsN = count(/data-codex="emblem"/g);
+const beasts = count(/data-codex="beast"/g), bossesN = count(/data-codex="boss"/g), realmsN = count(/data-codex="realm"/g), eventsN = count(/data-codex="event"/g);
 ok(beasts === regions * 3, "(2) Beasts = region × type = " + (regions*3) + " (" + beasts + ")");
 ok(bossesN === regions, "(2) Bosses = one per region = " + regions + " (" + bossesN + ")");
 ok(realmsN === regions, "(2) Realms = one per region = " + regions + " (" + realmsN + ")");
 ok(eventsN === (Ev && Ev.roster ? Ev.roster().length : 14), "(2) Events = the full roster (" + eventsN + ")");
-ok(EMBLEM_IDS.length >= 6 && emblemsN === EMBLEM_IDS.length, "(2) Emblems = B's brand candidates (" + emblemsN + " of " + EMBLEM_IDS.length + ")");
 
 // ---- (3) encounter gating: reached tier 12 → region 0 met, region 1+ silhouettes
 (function(){
@@ -118,16 +118,11 @@ ok(EMBLEM_IDS.length >= 6 && emblemsN === EMBLEM_IDS.length, "(2) Emblems = B's 
   const evCells = [...html.matchAll(/codex-cell (owned|locked)"[^>]*data-codex="event"[^>]*data-seed="(\d+)"/g)];
   const owned = evCells.filter(m => m[1] === "owned").length;
   ok(owned === 1, "(4) exactly the one owned event reward is discovered (" + owned + ")");
-  // Emblems ladder in by bosses felled: with 0 bosses beaten (tiers 1..11), only the
-  // first emblem is discovered; the rest are silhouettes.
-  const emCells = [...html.matchAll(/codex-cell (owned|locked)"[^>]*data-codex="emblem"[^>]*data-emblem="(\w+)"/g)];
-  ok(emCells.length === EMBLEM_IDS.length && emCells[0][1] === "owned", "(4) the first emblem is unlocked by default");
-  ok(emCells.slice(1).every(m => m[1] === "locked"), "(4) the remaining emblems are milestone-locked silhouettes (0 bosses felled)");
 })();
 
 // ---- (5) drawing dispatches to every generator --------------------------------
-ok(draws.beast === beasts && draws.boss === bossesN && draws.realm === realmsN && draws.event === eventsN && draws.emblem === emblemsN,
-   "(5) drawCodexCanvases drew every cell via the right generator (beast " + draws.beast + " / boss " + draws.boss + " / realm " + draws.realm + " / event " + draws.event + " / emblem " + draws.emblem + ")");
+ok(draws.beast === beasts && draws.boss === bossesN && draws.realm === realmsN && draws.event === eventsN,
+   "(5) drawCodexCanvases drew every cell via the right generator (beast " + draws.beast + " / boss " + draws.boss + " / realm " + draws.realm + " / event " + draws.event + ")");
 
 // ---- (6) T187: tapping a Codex cell opens the DETAIL popup ---------------------
 (function(){

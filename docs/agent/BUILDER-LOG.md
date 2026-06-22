@@ -5669,3 +5669,28 @@ verified: `hoard-wiring.test` updated to the new curve + targets (47 green); the
 invariants hold. Full suite 53/53.
 notes: `docs/agent/GOLD-HOARD-DESIGN.md` is babysitter-owned (agent branch) — the new curve/constants are
 recorded here for the babysitter to mirror into §calibration.
+
+---
+### [A] T206 — Collector awards rejig (recalibrate ladder + absorb the 3 creature emblems)
+what:
+- **Recalibrated the collect-N ladder to the real catalogue.** The old top tiers (2,500/5,000/7,500/10,000)
+  were UNREACHABLE (the catalogue is ~1,900). Dropped them and re-spaced the top four to reachable thresholds
+  (1,600/1,700/1,800/1,900), the last ≈ the full ~1,900-item collection (live with-loot CATALOG.length is 1,913;
+  base build-time is 1,563 since Arena loot is appended at runtime). The reachable ids (25…1500) are preserved —
+  migration-safe; the 4 dropped ids were never earnable so no saved unlock is stranded. Ladder stays 12 tiers.
+- **Absorbed B's 3 creature emblems (T205: beast/goblinking/voidbeast) as Collector awards** → Collector totals
+  **15** (12 + 3). They're `cat:"Collector"` with an `emblem` field + `meta:{tier}` and **no `n`**, so the
+  collect-count ladder never grants them; they're earned by FELLING their region boss (goblinking@12, beast@48,
+  voidbeast@120) via the existing `evaluateMeta` — continuing their Codex unlock semantics. `evaluateCollector`
+  now skips `n`-less items (guard).
+- **Rendered at the award-cell size** (B's "needs cropping" fix): `drawInvCanvases` + the detail modal route
+  items with an `emblem` field to `window.Emblems.draw(cv, it.emblem)` (fit-to-cell, T205); everything else stays
+  on `C.drawIcon`.
+- **Removed the Codex EMBLEMS section** (`invCodexHtml` + the `drawCodexInto` emblem dispatch) — emblems live in
+  Inventory ▸ Awards ▸ Collector now, not a Codex gallery.
+how I verified: **rewrote `test/collector.test.js` (24 checks)** — 15 Collector total; 12-tier ladder, no
+unreachable tiers, top 1900, migration-safe ids; `evaluateCollector` grants exactly tiers ≤ count and NEVER the
+emblems; the 3 emblems are boss(meta)-gated + granted by `evaluateMeta` on their boss tiers; the emblem-render
+routing + the removed Codex section are pinned. `codex.test` 28→27 (Emblems section gone → 4 sections).
+`hero-icons` catalogue counter 1563→**1566** (+3 emblems). **Full suite 53/53.** [A]-only (collectibles.js,
+main.js, the gates). Then T168 stays HELD on the owner's Play ID verification.

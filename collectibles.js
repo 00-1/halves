@@ -172,10 +172,11 @@
     desc:"Reach 100% on every topic." });
 
   // collector (evaluated against how much you've collected; handled separately)
-  // Collector ladder, 25 → 10,000 (T55). Existing ids collector:25/75/150 keep
-  // their rarity (migration-safe); the 150 tier is renamed off "Completionist"
-  // (it's no longer completion). New tiers (300+) are purely additive, all
-  // legendary, with headroom above the current catalogue for future items.
+  // T206 — RECALIBRATED to the real catalogue (~1,900 items incl. Arena loot). The
+  // old top tiers (2,500/5,000/7,500/10,000) were UNREACHABLE, so they're dropped and
+  // the top four re-spaced to reachable thresholds culminating ≈ the full collection.
+  // The reachable ids (25…1500) keep their rarity — migration-safe; the 4 dropped ids
+  // were never earnable, so removing them strands no saved unlock.
   const comma = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   [
     [25,   "rare",      "Curator"],
@@ -186,13 +187,26 @@
     [750,  "legendary", "Loremaster"],
     [1000, "legendary", "Vaultkeeper"],
     [1500, "legendary", "Reliquarian"],
-    [2500, "legendary", "Hoard-Lord"],
-    [5000, "legendary", "Treasure Dragon"],
-    [7500, "legendary", "Grand Conservator"],
-    [10000,"legendary", "Keeper of the Myriad"]
+    [1600, "legendary", "Hoard-Lord"],
+    [1700, "legendary", "Treasure Dragon"],
+    [1800, "legendary", "Grand Conservator"],
+    [1900, "legendary", "Keeper of the Myriad"]   // ≈ the full ~1,900-item catalogue (live with Arena loot)
   ].forEach(([n,r,nm]) =>
     add({ id:"collector:"+n, name:nm, rarity:r, cat:"Collector", modeId:null, n:n,
       desc:"Collect "+comma(n)+" items." }));
+
+  // T206 — B's 3 creature EMBLEMS (T205) absorbed as Collector awards (they used to be
+  // a Codex section). Rendered from `window.Emblems` at the award-cell size (B's
+  // cropping fix). Earned by FELLING region bosses — continuing their Codex unlock —
+  // via the existing meta:{tier} evaluator; they carry NO `n`, so the collect-count
+  // ladder never grants them. Collector now totals 12 + 3 = 15.
+  [
+    ["goblinking", "Goblin Crown",          12,  "the Goblin King"],
+    ["beast",      "Wildfang Crest",         48,  "a region beast"],
+    ["voidbeast",  "Void Sovereign Sigil",  120,  "the Void Sovereign"]
+  ].forEach(([em, nm, tier, who]) =>
+    add({ id:"collector:"+em, name:nm, rarity:"legendary", cat:"Collector", modeId:null,
+      emblem:em, meta:{ tier:tier }, desc:"Fell "+who+" (tier "+tier+")." }));
 
   // hero + arena milestones (Phase 3) — evaluated against collected state +
   // the live hero-unlock count via evaluateMeta (see main.js wiring).
@@ -279,7 +293,7 @@
   function evaluateCollector(count, has){
     const out = [];
     for(const it of CATALOG){
-      if(it.cat !== "Collector" || has(it.id)) continue;
+      if(it.cat !== "Collector" || it.n == null || has(it.id)) continue;   // emblem awards carry no `n` (meta-granted, T206)
       if(count >= it.n) out.push(it);
     }
     return sortItems(out);
