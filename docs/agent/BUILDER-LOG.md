@@ -4687,3 +4687,32 @@ how I verified: **arena.test (38→44)** — the live boot now proves the Fight 
 notes: **babysitter browser-verify** — Fight → watch HP bars drain + KOs over ~2.6s (or tap Skip) → the result
   card. Reduced-motion resolves instantly. Arena 3v3 (T88→T89→T90) is now complete. Next per `NEXT.md`:
   content `T58`–`T61` → `T72` (held for owner creds).
+
+---
+
+## Builder A — T158 🔴 BUG: service worker pinned STALE JS in the installed PWA (the "foghorn")
+commit: (this commit) — [A], DO-FIRST/ABSOLUTE. Owner: "sound is really bad in PWA — like a foghorn." This was
+a regression in MY T102 service worker.
+root cause: `index.html` loads app scripts UN-versioned (`<script src="synth.js">`, `main.js`, …), but `sw.js`'s
+fetch handler **cache-firsted every non-nav same-origin GET** — its comment wrongly assumed `?v=<sha>` immutable
+URLs. So the installed PWA froze on the first-seen copy: a **pre-T151 `synth.js`** kept running the diverging FDN
+reverb (the documented low-drone divergence) = the foghorn, and `main.js` never updated either (T152/T153 fixes
+invisible in the PWA). Browser-tab play was fine (no SW cache-first on a fresh load).
+fix ([A]-only):
+  - **`sw.js`**: navigations, `build.json`, **AND all same-origin app assets** (`.js`/`.css`/`.html`/`.json`/
+    `.svg`/manifest) are now **NETWORK-FIRST** — fresh online, cache as the OFFLINE fallback only. **Cache-first
+    is reserved for cross-origin fonts.** `build.json` still never cached (T54 version check reads fresh). Chose
+    network-first over stale-while-revalidate so the correctness fix lands on the **very next online launch**.
+  - **Bumped `CACHE` `halves-static-v1` → `v2`** — the existing `activate` handler deletes every key !== `CACHE`,
+    so the poisoned v1 cache is purged when the new SW activates. `skipWaiting`+`clients.claim` kept.
+self-heal: on the next ONLINE launch the browser byte-compares `sw.js`, sees it changed → installs → `skipWaiting`/
+  `activate` purges v1 + claims → app JS now network-first → fresh `synth.js`. Foghorn gone, no reinstall. (Belt-
+  and-braces: fully close/reopen the installed app twice.)
+how I verified: **`pwa.test` 21→27** — a NEW behavioural gate runs the REAL `sw.js` fetch handler in a fake SW
+  sandbox (fake CacheStorage + network) and proves **same-origin app JS (`synth.js`/`main.js`) is network-first**
+  — the fresh network copy WINS over a STALE cached one (the exact bug, now caught); cross-origin fonts stay
+  cache-first; `build.json` is network-first + never cached; the `CACHE` name is v2 and `activate` purges v1.
+  (This is the teeth that would have caught T102.) `node -c sw.js` clean; **full suite green**; the T54 update
+  flow + `build.json` no-store are intact. [A]-only (`sw.js`, `test/pwa.test.js`).
+notes: **owner verify** — re-launch the installed PWA online; the foghorn should be gone and the audio should
+  match the browser tab. Next per `NEXT.md`: resume `T156`/`T157` (Play-Store-track app-feel).
