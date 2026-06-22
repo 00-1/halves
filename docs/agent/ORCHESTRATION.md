@@ -93,6 +93,17 @@ committed, B-owned browser-render gate (skips cleanly with no browser so Node-on
 until then the Babysitter uses ad-hoc Playwright probes. Audible-only features still fall back to the
 owner's ear; everything visible is now ours to confirm.
 
+**⚠ Harness-availability caveat (observed 2026-06-22):** the in-env Chromium launch is **not reliable** — it
+worked earlier in the session but later began **OOM-killing on launch** (the whole shell call dies with zero
+output, sandbox on or off). When the headless browser won't launch, the Babysitter does NOT block a render/
+colour task indefinitely; it falls back to the strongest available proxy **in this priority order**: (1) a
+**boot-path gate assertion** that drives the real code path and pins the rendered-relevant value (e.g.
+`fx-wiring` asserting the home state carries the exact purple palette + reads no event) — this is much stronger
+than a source-grep; (2) the **owner's own visual confirmation** if given; (3) honest disclosure in the verdict
+that the pixel-level probe could not run + WHY. T153 was approved on (1)+(2). Re-attempt the live probe when the
+harness recovers (clearing `/tmp/playwright_chromiumdev_profile-*` + `pkill -9 -f headless_shell` sometimes
+helps; an OOM kill does not).
+
 ## brickmap
 
 Borrow **recipes, not the engine** (see BACKLOG Phase 6.12): B reads brickmap's `bm-render`

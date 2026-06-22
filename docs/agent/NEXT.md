@@ -10,19 +10,12 @@
 
 ---
 
-**Builder A → `T153` (home backdrop → FIXED PURPLE) — `BUG` / DO-FIRST / ABSOLUTE → then roadmap (`T89`/`T90` Arena 3v3 → content `T58`–`T61` → `T72`)**
-**`T152[A]` is DONE+APPROVED (`bdd0e6a`).** But you **skipped `T153`** — the fixed-purple backdrop the owner
-flagged TWICE — and did `T152[A]` instead (a staleness race). **`T153` is now absolute: do ONLY this and push
-before anything else.** Owner: keep the main/home backdrop **FIXED PURPLE, NOT event-based.** Today it went
-blue because `homeFxState` (**main.js:219-221**) makes the backdrop wear today's EVENT colour
-(`paletteFor(ev.rarity)`; `rare`=blue, `epic`=purple). **Make `homeFxState()` ALWAYS pass a fixed brand-purple
-palette** (`epic` family on `#0E1116`) — **drop the `ev.rarity` read from the home backdrop entirely** (no
-event palette for the backdrop; event-specific *screens* may still theme, but the home/main screen is fixed
-purple). [A]-only (homeFxState always supplies the palette → fxgl default never kicks in). Optional
-progress→brightness within purple; hue is fixed purple. **Browser-verify** the home backdrop is purple in
-rare/no-event/epic states (read the actual canvas hue, not just the option). *(BACKLOG T153.)* **Then** →
-`T89`/`T90` (Arena 3v3 — gameplay, no owner creds needed) → content `T58`–`T61` → `T72`. *(`T103` TWA/
-Play-Store + `T72` submission need owner credentials — hold those till the owner's back.)*
+**Builder A → `T89`/`T90` (Arena 3v3 — gameplay) → content `T58`–`T61` → `T72` (held for owner creds)**
+**`T153` is DONE+APPROVED (`c942859`) — home backdrop now FIXED brand purple, owner-confirmed visually.**
+`T152[A]` also DONE (`bdd0e6a`). Queue is clear of owner flags → resume the roadmap. **Next: `T89`/`T90`
+Arena 3v3** (gameplay, no owner creds needed) → content `T58`–`T61`. *(`T103` TWA/Play-Store + `T72` submission
+need owner credentials — hold those till the owner's back.)* Re-read this line fresh before you start AND before
+you push (a fresh owner flag may land here as a `BUG`/DO-FIRST and overrides the roadmap).
 
 **Builder B → `T155` (distinct PAD/bed timbre per style — OWNER feedback) → then `T154` (visual-regression gate).**
 Off standby. **`T155` FIRST** — owner: *"every style seems to share the same synth string sound… vary a lot

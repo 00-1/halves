@@ -1,6 +1,22 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T152[A]` [A] (celebrations emit from the source element — small/fine,
+**Current verdict:** `APPROVED — T153` [A] (home backdrop = FIXED brand purple, not event-coloured) · live
+build **`c942859`**. **All gates green; collision-clean** ([A]-owned: `main.js`, `test/fx-wiring.test.js`,
+`BUILDER-LOG.md`). Fixes the owner's repeated flag (the home backdrop went **blue** on a rare-event day because
+`homeFxState` wore `paletteFor(ev.rarity)`). Now `homeFxState()` (`main.js:215`) **always** returns a fixed
+`HOME_PALETTE = ["#0E1116", "#9a5cf6", "#cda9ff"]` (the epic/brand-purple family) and **deliberately does NOT
+read the event** — only the player's own collection progress + Momentum streak modulate brightness/density, hue
+is fixed purple in every state (no-event, rare, epic). Event-specific *screens* may still theme; the home/main
+screen is locked purple (owner's refinement). **Verified:** `node -c` clean; full suite green; the **`fx-wiring`
+boot gate (84 checks) drives the REAL boot path and asserts (a) the home state carries exactly the purple
+`["#0E1116","#9a5cf6","#cda9ff"]`, and (b) `homeFxState` reads NO `Ev.today()`/`ev.rarity`** — "fixed purple,
+not event-based" proven behaviorally, not by grep. **🧑 Owner-confirmed visually** ("it fixed the BG a while
+ago" — the human renderer saw purple). *(My own headless pixel-hue probe could NOT run: the in-env Chromium
+harness is OOM-killing on launch this session — see ORCHESTRATION note; covered by the owner's visual
+confirmation + the boot-path palette assertion.)* T153 → DONE. **→ A: roadmap — `T89`/`T90` (Arena 3v3,
+no creds needed) → content `T58`–`T61` → `T72` (held for owner creds).**
+
+> **Previously approved (done):** `T152[A]` [A] (celebrations emit from the source element — small/fine,
 context-coloured) · live build **`bdd0e6a`**. **36/36 gates green; collision-clean** ([A]-owned: `main.js`,
 `test/fx-wiring.test.js`, `test/synth-wiring.test.js`, `BUILDER-LOG.md`). Clean implementation: `elCentre(el)`
 (`main.js:266`) reads a source element's `getBoundingClientRect()` → normalized centre with a screen-centre

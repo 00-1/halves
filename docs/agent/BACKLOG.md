@@ -2721,7 +2721,7 @@ into a **per-key-screen visual-regression gate**.
   existing Halves files. *(This is the structural guard so the owner stops being the visual-regression
   detector.)*
 
-### T153 — [A] Home backdrop = FIXED brand purple (no event-based colour at all) · status: OPEN · OWNER-PRIORITY
+### T153 — [A] Home backdrop = FIXED brand purple (no event-based colour at all) · status: DONE (`c942859`) · OWNER-PRIORITY · owner-confirmed visually
 Owner (refined): **"I prefer the background just to stay purple rather than being event based. Maybe an event-
 specific screen could change like that, but let's keep the main screen fixed purple."** **Diagnosed:** the
 home backdrop "wears today's event colours" — `homeFxState()` (`main.js:221`) passes the event's
