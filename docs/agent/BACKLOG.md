@@ -2812,7 +2812,7 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
-### T178 — [A] Economy: ramp mid/late-game wealth to ABSURD levels (millions → billions/trillions) — the goblin-hoard humour · status: OPEN · owner-feature (pairs with the hoard)
+### T178 — [A] Economy: ramp mid/late-game wealth to ABSURD levels (millions → billions/trillions) — the goblin-hoard humour · status: OPEN · ⚠ CHANGES: HOARD_G is 2.1, owner chose 2.5 — bump it· owner-feature (pairs with the hoard)
 **Owner (2026-06-22): "I'd like coins to reach higher numbers than 500K — at least millions, but billions/
 trillions would be funny too. This is part of the humour/character — building up inordinate/pointless wealth. So
 ramp up the wealth accumulation in MID/LATE game. Early accumulation is already good."** *(Cookie-Clicker /
@@ -2885,7 +2885,7 @@ the dark **`theme-color` `#0E1116`** (= the black bar). A browser tab has no cut
   intact; `node -c` clean; **[A]-only** (`index.html`, `styles.css` if needed, tests). **Verify:** owner confirms
   on the PWA (notch fills purple); browser-tab unaffected.
 
-### T175 — [B] **BUG (live, recurring):** the FOGHORN is back — music BUILDS UP to a sustained drone over time · status: OPEN · 🔴 DO-FIRST (ahead of the hoard T172)
+### T175 — [B] **BUG (live, recurring):** the FOGHORN is back — music BUILDS UP to a sustained drone over time · status: DONE (`2072b22`) · APPROVED· 🔴 DO-FIRST (ahead of the hoard T172)
 **🔑 SHARPENED (owner, 2026-06-22): "totally reproducible — EVERY time a new song starts (e.g. via the switcher)
 it starts nice then ramps up to foghorn/pain."** This is the key: it's **NOT context-specific** (every song) and
 it **ramps over the reverb's fill time** → the **common reverb path is accumulating too much energy from the new

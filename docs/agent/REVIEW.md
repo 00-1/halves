@@ -1,6 +1,24 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T177 · T176 · T171 · T59 [A]` (PWA fullscreen-restore, notch fix, Goblin Gold
+**Current verdict:** `APPROVED — T175 [B]` (the recurring foghorn — KILLED) · `CHANGES — T178 [A]` (one-line: g
+2.1→2.5). Live build **`e55cf47`**; full suite + `node -c` green.
+- **`T175`** (`2072b22`, [B]) — **the recurring foghorn is fixed, and B MEASURED the exact cause** (validating the
+  "every song ramps up" diagnosis): the 0.78 FDN decay cap was **noise-safe but TONAL-marginal** — a *sustained
+  tonal* pad (T155 `padglass`, low-freq + long sustain) sits on an FDN comb peak where loop gain ≈ 1, so over the
+  multi-second reverb fill it ramps to a rail. Measured: 16 s sustained `padglass` chord → decay 0.78 **diverges
+  to 143**, ≤0.70 stays ~0.5. **Fix: cap lowered to 0.66** (subcritical for tonal input, with margin) **+ a safety
+  compressor on the reverb return** so any residual buildup decays to a ceiling instead of railing (defence in
+  depth). **Gate extended** (`audio.test` +33: a long *tonal-pad* render, not just 5 s noise) — closes the blind
+  spot that let this recur. `golden-synth` 19 green. **This should END the foghorn saga.** *(Owner: confirm on
+  device — start any song / use the switcher, wait 20–30 s, no ramp-up.)*
+- **`T178`** (`e55cf47`, [A]) — economy ramp mechanism is **correct**: `hoardMult = g^(bossesDefeated)` multiplied
+  onto the additive `goldMult`; early game (0 bosses) → ×1 (earning unchanged); decoupled from Arena difficulty.
+  `gold.test` 22 green. **BUT `HOARD_G = 2.1`, and the owner chose `2.5`** (A built against the earlier 2.0–2.2
+  rec before 2.5 was locked). **→ CHANGES: bump `HOARD_G` 2.1 → 2.5** (one line). Otherwise approved.
+**→ B: foghorn cleared → `T172` (gold-hoard ENGINE) is now UNBLOCKED + owner-greenlit. → A: bump `T178` g→2.5,
+then content `T60`/`T61`, then `T173` hoard wiring (after B's `T172`).**
+
+> **Previously approved (done):** `T177 · T176 · T171 · T59 [A]` (PWA fullscreen-restore, notch fix, Goblin Gold
 rename, content batch). Live build **`90422c5`**. Full suite + `node -c` green.
 - **`T177`** (`90422c5`) — PWA fullscreen-lost-on-minimise fixed: `wasFs` tracked on hide; on resume (installed +
   lost it) a **one-shot capture-phase `pointerdown`** re-enters fullscreen on the first tap (removes itself; never
