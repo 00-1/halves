@@ -3151,7 +3151,7 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
-### T207 — [B] **Coin SHINE — animated glints on the pile + the shower; clearer coin rotation** · status: DONE (`2300ac6`) · APPROVED · owner device-confirm
+### T207 — [B] **Coin SHINE — animated glints on the pile + the shower; clearer coin rotation** · status: DONE (`2300ac6`) · APPROVED · ✅ owner-confirmed ("seeing glints now" — subtle; can boost if asked)
 **Owner (2026-06-22): "occasional glints appearing in the pile of coins; glints on the shower of coins; ideally
 some of the showered coins would also have a rotation animation."**
 - **(1) Shower-coin glints:** `drawCoinParticle` currently passes **`glint = 0`** to `drawCoin` (no shine). Add an
