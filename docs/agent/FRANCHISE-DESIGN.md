@@ -114,11 +114,15 @@ flavour."*
   collection system — so it's *cheap on the core* (good for the engine thesis); (2) the **plant→grow→
   harvest** loop is a genuinely new layer + a natural **retention hook** (a reason to come back); (3)
   **"pacify by nurturing" is a lovely gentler reframe** of the combat ladder (good tone for a kids' app).
-- **KEY DESIGN QUESTION (flag for the owner):** what drives **growth duration** — **wall-clock time** (come
-  back in N minutes) or **questions-drilled** (crops advance as you practise, or a hybrid)? For a *learning*
-  app, **growth-by-drilling (or hybrid)** is probably better: it keeps practice central, rewards study
-  rather than waiting, and avoids the pay-to-skip / idle-frustration trap of pure timers. Recommend
-  drilling-driven growth with maybe a short wall-clock floor.
+- **GROWTH = WALL-CLOCK (owner decision, 2026-06-22):** crops ripen on **real time, 2–10 hours depending on
+  rarity** (rarer seed → longer grow). Plus **LIMITED PLANTING PLOTS** — a finite number of slots, so you
+  choose *what* to grow and *when* (light resource strategy). This is the classic Farmville/Hay-Day daily
+  loop (plant before bed/school → harvest later) → strong return cadence.
+  - *Loop integrity (Babysitter note):* keep **DRILLING the way you earn SEEDS** (answer questions → seeds),
+    so practice stays the engine and farming is the reward/retention layer on top. The earlier pay-to-skip
+    worry is **moot** under our **free / no-IAP** model — no skip-the-timer purchases exist, so the
+    wall-clock is a clean "come back" hook, not a monetisation gate. (Open detail: do unused plots / a full
+    harvest ever block progress? Keep it generous so a kid is never *stuck* waiting — they can always drill.)
 - **Subject fit:** mechanically subject-agnostic; thematically nature/growth. Could slot into any sequel —
   owner to assign (it doesn't have an obvious lock to VR/English/NVR). **STATUS: candidate, owner deciding
   which game.**
