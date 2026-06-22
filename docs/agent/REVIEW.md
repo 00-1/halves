@@ -1,8 +1,20 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T192 [B] · T195 [B] · T196 [B] · T194 [A]` (the hoard pile look + Magnar icon).
-**⚠️ `T193` RE-OPENED — my earlier approval was WRONG.** Live build **`751cbe7`**; suite **53/53** + `node -c` green.
-- **`T192`** (`61efcc6`, [B]) — cell-shaded cylinder coins + taller (`HOARD_MAX_H` 0.82) wall-banked pile.
+**Current verdict:** `APPROVED — T193 [B] (re-open fix) · T197 [B] · T199 [B] · T200 [B]` (the coin shower bug fixed
++ coins dithered + pile reaches the top + coins coloured by height). Live build **`b498216`**; suite **53/53** +
+`node -c` green. **Owner confirms the pile + shower "look pretty good now."**
+- **`T193`** (`77a1b87` fix, [B]) — RE-OPEN RESOLVED: `seedBurst`/`seedCelebrate` now tag `look:"coin"` → `look:1`
+  + spin fields, so the money-gain shower renders real spinning cylinder coins (was squares). Owner-confirmed coins
+  show now. *(The gate that was missing is in.)*
+- **`T197`** (`2c696e4`, [B]) — the cylinder coins now get the brickmap pixelate+dither too (matched the pile).
+- **`T199`** (`c9bab5d`, [B]) — a maxed pile reaches the top of the screen.
+- **`T200`** (`b498216`, [B]) — coin colour by height (dark low → light high, mixed at each level).
+**Verified:** worktree at `b498216`; `node -c` clean; **53/53** suite green. *Visuals owner-confirmed.* **→ A: →
+`T201` 🔴 (stale manifest/icon cache) → `T202` (entry mark = Magnar) → `T198` (fill curve). B: → `T203` (coin
+shower polish — slightly bigger + more gravity/rain-down).** Owner device-confirm pending: the Magnar install
+identity (after T201).
+
+> **Prior verdict:** `APPROVED — T192 [B] · T195 [B] · T196 [B] · T194 [A]` (the hoard pile look + Magnar icon).
 - **`T194`** (`2a186dd`, [A]) — **app icon = Magnar** (`ICON_HERO="hero:mo"`, brand bg `#1a102e`, 0.80 safe zone);
   committed **`icon-512.png`/`icon-192.png`** + `manifest.webmanifest` wired + `installFavicon` renders Magnar.
 - **`T195`** (`8d26c22`, [B]) — hoard **brickmap halftone-dither**: a real `bayer4()` 4×4 ordered matrix, luminance

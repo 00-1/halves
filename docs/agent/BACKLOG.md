@@ -3151,7 +3151,26 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
-### T199 — [B] **A full pile should reach the TOP of the screen** (1T still leaves a gap) · status: OPEN · owner-reported
+### T203 — [B] **Coin shower polish — slightly BIGGER coins + more GRAVITY (rain down, less fly up)** · status: OPEN · owner-reported
+**Owner (2026-06-22): "coin shower looks pretty good — but maybe make them slightly bigger, and give them a bit
+more gravity, more falling down, less flying up."** Tune the **money-gain coin shower** (the `look:"coin"` ballistic
+burst — `seedBurst`'s coin branch, fxgl.js:248/266) — NOT the generic celebration confetti.
+- **Less fly-up / more fall:** in `seedBurst`, the coin particles' launch is `vy = sin(ang)*spd − lerp(up*0.4, up,
+  rng())` (biased UPWARD). For coins, **cut the upward bias** (much smaller `up` term, e.g. ~0.0–0.2× — a gentle pop
+  at most) so gravity dominates and they **rain down** instead of fountaining up.
+- **More gravity:** the coins should fall faster. `BURST_GRAVITY` (1.2) is global (shared by celebrations + read as
+  a shader uniform), so **don't bump it globally** — give the COIN shower more effective downward pull (e.g. a
+  coin-specific gravity factor plumbed through the burst, or bias the initial `vy` downward / raise the per-coin
+  fall). Keep the celebration confetti's firework arc unchanged.
+- **Slightly bigger coins:** bump the coin shower's render size ~**+15–25%** (via the coin branch / the coin size
+  factor; if it's cleaner to nudge `earnBurstSpec.sizePx` in `main.js`, coordinate — but prefer keeping it in
+  `fxgl.js` so it's [B]-only). Don't make them huge — "slightly."
+- **DoD:** the money-gain coins are a touch **bigger** and clearly **rain DOWN** (more gravity, minimal upward
+  launch) rather than flying up; the generic celebration burst is unchanged; amount-scaling (T173) preserved; works
+  on the GL/GPU overlay AND CPU still; no perf regression; `golden-fx`/`fx-wiring` green (note goldens); `node -c`
+  clean; **owner device-confirms**. **[B]-only** (`fxgl.js`, tests). *(Polish on the now-approved T193/T197 coins.)*
+
+### T199 — [B] **A full pile should reach the TOP of the screen** (1T still leaves a gap) · status: DONE (`c9bab5d`) · APPROVED · ✅ owner
 **Owner (2026-06-22): "1T still doesn't fill the screen — although it's better than what we had before."** T192
 raised **`HOARD_MAX_H` 0.34 → 0.82**, so a level-1.0 pile climbs ~82% and stops short of the ceiling.
 - **Fix (`fxgl.js`):** raise the cap so a **maxed pile genuinely reaches the top** — `HOARD_MAX_H` ~**0.82 → ~0.95–1.0**
@@ -3163,7 +3182,7 @@ raised **`HOARD_MAX_H` 0.34 → 0.82**, so a level-1.0 pile climbs ~82% and stop
   proportionally; works on the GL/GPU 2D overlay AND CPU still; `golden-fx`/`fxgl`/`hoard-wiring` green (note golden
   changes); `node -c` clean; **owner device-confirms**. **[B]-only** (`fxgl.js`, tests). *(Pairs with T198's curve.)*
 
-### T200 — [B] **Coin COLOUR by height — dark coins lower, light coins higher** (gradient, with a mix at each level) · status: OPEN · owner-reported
+### T200 — [B] **Coin COLOUR by height — dark coins lower, light coins higher** (gradient, with a mix at each level) · status: DONE (`b498216`) · APPROVED · ✅ owner
 **Owner (2026-06-22): "too much of a mix of dark and light coloured coins — maybe the lower down the stack, the
 more dark coins there should be, and higher up the more light coloured (with some of each still mixed in at either
 level)."** Currently each coin's gold tone is picked ~uniformly at random → a flat salt-and-pepper mix top-to-bottom.
@@ -3200,7 +3219,7 @@ like 60k in one day."** The pile maps wealth → fill far too eagerly at the low
   **owner device-confirms** the slower fill. **[A]-only** (`main.js`; `GOLD-HOARD-DESIGN.md` doc). *(Pairs with the
   [B] render work T195/T196/T197 — this is the curve, those are the look.)*
 
-### T197 — [B] **The COINS also need the dither/pixelation** (T195 filtered the pile shape but not the coins) · status: OPEN · owner-reported
+### T197 — [B] **The COINS also need the dither/pixelation** (T195 filtered the pile shape but not the coins) · status: DONE (`2c696e4`) · APPROVED · ✅ owner
 **Owner (2026-06-22, on the T195 build): "it's ok but could still be better. Looks like the shape got a filter but
 not the coins themselves. Let's pixelate the coins too. The coins themselves need some dithering/pixelation."**
 **(Owner DROPPED the colour lightening/yellowing idea — "the colour is ok, ignore that" — so NO colour shift.)**
@@ -3295,7 +3314,7 @@ filter — this is about how finely the pile's **size tracks wealth**.
   `hoard-wiring` green (note any golden changes); `node -c` clean; **owner device-confirms** the gradual rise.
   **[B]-only** (`fxgl.js`, tests). *(Independent of T195's shading; can land in either order.)*
 
-### T193 — [B] **Money-gain celebration = the same spinning cell-shaded CYLINDER coins** (not square/disc particles) · status: ⚠️ RE-OPENED — CHANGES REQUESTED (`b58458b` incomplete; owner: still no coins)
+### T193 — [B] **Money-gain celebration = the same spinning cell-shaded CYLINDER coins** (not square/disc particles) · status: DONE (`77a1b87` fix) · APPROVED · ✅ owner (coins show now)
 **🔴 RE-OPENED (2026-06-22):** owner on PWA reports the menu money-gain burst "still has no coins, it's unchanged."
 **Babysitter root-caused a REAL GAP (the earlier approval was wrong — renderer wired, seeding not):** the
 money-gain shower fires `fxBurst.burst({look:"coin"})` (main.js `fxEarnBurst`:414) → `Controller.burst()` →

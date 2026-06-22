@@ -27,22 +27,12 @@
   *(BACKLOG T198.)* Then **`T168`** stays HELD on the owner's Play ID verification.
 **Re-read this line fresh before each task + push.**
 
-**Builder B → `T193` 🔴 (RE-OPENED bug) → `T197` → `T199` → `T200`.** `T192`/`T195`/`T196` APPROVED (live `751cbe7`).
-- **🔴 `T193` — money-gain burst STILL shows no coins (squares), owner on PWA.** REAL bug, not cache: the shower
-  uses `fxBurst.burst({look:"coin"})` → `Controller.burst()` → **`seedBurst`, which never sets `look` on its
-  particles** (fxgl.js ~:256), so `p.look===1` is always false → squares. (Only `seedConverge` sets `look:1`; the
-  outward money-gain uses the ballistic `burst()`.) `drawCoinParticle`/overlay/inline are all correct — they just
-  never receive a coin-tagged particle. **FIX:** `seedBurst` honors `opts.look==="coin"` → `look:1` (+ the spin
-  fields `aspect`/`glint`, `vrot` exists) so coins render on CPU inline AND GL/GPU overlay; keep it OUTWARD (T173).
-  **Add the missing gate** (a `look:"coin"` ballistic burst must tag `look===1` particles). [B]-only (`fxgl.js`, tests).
-- **`T197` — the COINS need the dither/pixelation too** (T195 filtered the SHAPE, not the coins). Put the coins
-  through the same brickmap halftone-dither (recommend one pixelate + Bayer post-process over the whole hoard 2D
-  overlay; or quantise each coin's tones via T195's gold-ramp+`bayer4`). **NO colour shift** (owner dropped it).
-- **`T199` — a full pile must reach the TOP of the screen** (`HOARD_MAX_H` 0.82 → ~0.95–1.0; level 1.0 fills it —
-  after T198 that's peak wealth, 1T reads ~75% tall).
-- **`T200` — coin COLOUR by height:** dark coins lower, light coins higher (bias each coin's gold tone by its
-  fill-rank `q`; keep a mix at every level; deterministic/stable with T196). Not a hard split, a gradient.
-- All [B]-only (`fxgl.js`, tests). *(BACKLOG T193/T197/T199/T200.)*
+**Builder B → `T203` (coin shower polish).** `T193`(fix)/`T197`/`T199`/`T200` all **APPROVED** (live `b498216`) —
+owner: pile + shower "look pretty good now." New tweak: the **money-gain coin shower** (`seedBurst` coin branch,
+fxgl.js:248/266) should have **slightly BIGGER coins (+15–25%)** and **more GRAVITY — rain DOWN, less fly up** (cut
+the upward `up` bias for coins so gravity dominates; give coins more effective fall WITHOUT bumping the global
+`BURST_GRAVITY`, which celebrations share). Leave the generic celebration confetti's arc alone. [B]-only (`fxgl.js`,
+tests). *(BACKLOG T203.)*
 **Re-read this line fresh before each task + push.**
 
 ---
