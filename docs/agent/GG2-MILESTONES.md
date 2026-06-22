@@ -12,10 +12,10 @@
 **Goal:** the core/pack split + pluggable input — GG2 is built on this, not a fork of GG1.
 - **P0.1 Core/pack refactor:** extract GG1 into CORE (shell, `fxgl`, `synth`, round loop, progression/
   mastery/streak, collection, **gold/economy**, dev mode, guide framework, settings/onboarding, update
-  flow; **the nav notification-BADGE system — "new-since-seen" — built in GG1 T218**) vs CONTENT-PACK (questions, input, answer-checker, assets, metagame). *(FRANCHISE-DESIGN §3)*
+  flow; **the nav notification-BADGE system — "new-since-seen" — built in GG1 T218**) vs CONTENT-PACK (questions, input, answer-checker, assets, metagame). **→ Full file-level plan + the PACK contract + how to carve `main.js`: `GG2-P0-EXTRACTION.md`.** *(FRANCHISE-DESIGN §3)*
 - **P0.2 Pluggable INPUT system:** input as a module — **multiple-choice (build first)**, letter-tiles/
   on-screen keys, tap-a-target, numpad. A question declares its mode; the shell renders widget +
-  checker. *(FRANCHISE-DESIGN §4 — the make-or-break investment.)*
+  checker. **→ Full interface, question shapes, build order + DoD: `GG2-P0-INPUT.md`.** *(FRANCHISE-DESIGN §4 — the make-or-break investment.)*
 - **Deliverable:** GG1 still runs unchanged on the refactored core; a thin "GG-template" a new game packs into.
 
 ## M1 — VR content research (deep)

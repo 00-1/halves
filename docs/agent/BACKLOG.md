@@ -3276,14 +3276,17 @@ ready → Plants badge).
   **[A]-only** (`main.js`, `index.html`, `styles.css`, tests). *(Queue: after T213; a nice pre-launch retention
   touch. Also note in GG2-MILESTONES as a CORE feature.)*
 
-### T223 — [A] **Tag + freeze GG1 v1** (cut `gg1-v1`, snapshot to `gg1/v1/`) · status: BLOCKED (do at "GG1 v1 done") · owner-requested
-**Owner: "create a tag for GG1 v1 once the current work is done."** When GG1 v1 is COMPLETE — current splash
-iterations (T220/T221…) + T219 (all topics + Collector rebalance) + the post-T219 deep quality pass all APPROVED —
-cut an **annotated git tag `gg1-v1`** on `main` at that commit, then (as part of T222's restructure) copy that exact
-tree into `gg1/v1/` as the never-touched frozen snapshot.
-- **DoD:** `gg1-v1` tag exists on `main` at the agreed "v1 done" commit (annotated, dated); `gg1/v1/` holds that
-  frozen build and is excluded from further edits; recorded in REVIEW.md. **[A]/owner** (tag = a pointer, not a
-  Babysitter write to main). *(Gate: ONLY when the Babysitter marks GG1 v1 content+polish all-approved.)*
+### T223 — **Tag + freeze GG1 v1** (cut `gg1-v1`, snapshot to `gg1/v1/`) · status: BLOCKED (do at "GG1 v1 done") · owner-requested
+**Owner: "create a tag for GG1 v1 once the current work is done"** + confirmed the **Babysitter cuts the tag** (owner
+doesn't have to). When GG1 v1 is COMPLETE — current splash iterations (T220/T221…) + T224 + T219 (all topics +
+Collector rebalance) + the post-T219 deep quality pass + T222 restructure all APPROVED, and the **owner gives the
+"v1 is done" go** — the **Babysitter** cuts an **annotated git tag `gg1-v1`** at that `main` commit and pushes it
+(`git push origin gg1-v1`). A tag is a non-destructive pointer to an existing commit — NOT a write to the `main`
+branch — so this is within the Babysitter's remit; no owner action needed. (Optionally also publish a **GitHub
+Release** from the tag.) The `gg1/v1/` frozen snapshot is then populated as part of **T222** ([A]).
+- **DoD:** `gg1-v1` annotated tag exists + pushed at the agreed "v1 done" commit; (optional) a GitHub Release from
+  it; `gg1/v1/` holds that frozen build, excluded from further edits; recorded in REVIEW.md. **[Babysitter cuts the
+  tag; A populates `gg1/v1/`].** *(Gate: ONLY when the Babysitter marks GG1 v1 all-approved AND the owner says go.)*
 
 ### T222 — [A] **Multi-app GHP restructure** (gg1/{v1,dev,prod} + gg2/dev; landing page; per-app SW/save namespacing; GG1 migration) · status: OPEN · DO NOW (owner: "move all now") · owner-requested
 **Owner: "add GHP folders so GG sequels live on the same site — GG1 v1 (tagged), a live dev folder, and a prod
