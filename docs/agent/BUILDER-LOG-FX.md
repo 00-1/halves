@@ -6,6 +6,37 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T174 — research/art pass: representing an accumulating COIN HOARD ([B], research-first; precedes T172)
+
+Owner wants a Smaug/Scrooge gold hoard on the home backdrop — individual beveled coins,
+fed by coins flying in from the earn-point, but **"impression, not physics."** Doc:
+**`docs/research-coin-hoard.md`** (B-owned; no engine change yet).
+
+Findings: every stylised "big pile of small things" (DuckTales money bin, Spyro gem
+hoards, Clash gold storage, leaf/snow/gravel drifts) uses ONE move — **imply the bulk
+with a shaped, lit silhouette + dither shading, and render individual items only on the
+SURFACE you'd see, scattered with per-item variation; never simulate the interior.** That
+also matches brickmap's house style, so three of its recipes port 1:1: **`hash01` seeded
+surface-scatter** (foliage `scatter()` — jitter/size/angle/thinning by salts, density on a
+slow hash), **disc-mask splat + centre-bright shading** (`splat.wgsl` → the beveled coin),
+and **Bayer dither over a gold luminance ramp** (already in `fxgl.js` → shade the mound
+body as scenery, 0 particles).
+
+**Recommended technique (for T172, owner to bless):** a three-layer composite inside the
+home backdrop — (A) a **dithered mound silhouette** drawn as scenery (heightfield profile
+× `level`, gold ramp + fake-AO dither — carries the "amassed" read at 0 particle cost);
+(B) **`hash01`-scattered beveled coins** on a thin crest-weighted band (disc + rim + inner
+gradient + specular glint, 3 gold tones, per-coin rotation + squash), count on a
+**saturating curve** `level = 1 − 1/(1+gold/K)` quantised to ~6–8 tiers (re-seed only on a
+tier change); (C) an **attractor earn-burst** (emit → converge on the hoard → settle).
+Caps: surface coins ~120/220/340 (low/med/high), all ≪ the 512 `PARTICLE_CAP`; growth is
+coverage/height-driven so it plateaus gracefully; DPR-aware; reduced-motion → a static
+pile. Wins/limits + the owner-eye open choices (mound shape/height, curve feel, earn
+source, legibility-behind-UI) documented honestly. Babysitter surfaces §3+§4 to the owner
+before T172 builds.
+
+---
+
 ## T165 — a context SWITCH fully stops the previous generator (no tail / no foghorn) ([B], 🔴 pairs with T164)
 
 Owner (recurring): the switcher "doesn't fully switch — elements of the previous music
