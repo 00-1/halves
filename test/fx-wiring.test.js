@@ -67,7 +67,15 @@ ok(/\.fx-burst\{[^}]*position:fixed/.test(css) && /\.fx-burst\{[^}]*z-index:59/.
 ok(/function homeFxState\(/.test(main), "(3) a homeFxState() builds the live backdrop state");
 ok(/loadCollected\(\)/.test(main.slice(main.indexOf("function homeFxState"))) , "(3) homeFxState reads the real collection (progress)");
 ok(/loadMomentum\(\)\.count/.test(main), "(3) homeFxState reads the real Momentum streak");
-ok(/Ev\.today\(\)/.test(main.slice(main.indexOf("function homeFxState"))), "(3) homeFxState reads today's real event");
+// T153: the home backdrop is FIXED brand purple — it must NOT wear today's event
+// colour (a rare event used to turn it blue). homeFxState always supplies a fixed
+// purple palette and deliberately does NOT read the event.
+{
+  const homeBody = main.slice(main.indexOf("function homeFxState"), main.indexOf("function arenaFxState"));
+  ok(!/Ev\.today\(\)/.test(homeBody) && !/ev\.rarity/.test(homeBody), "(3) T153: homeFxState does NOT read the event/rarity for the backdrop (hue is fixed, not event-based)");
+  ok(/event:\s*\{\s*palette:\s*HOME_PALETTE\s*\}/.test(homeBody), "(3) T153: homeFxState always supplies the fixed HOME_PALETTE (fxgl's cool no-event ramp never applies)");
+  ok(/HOME_PALETTE\s*=\s*\["#0E1116",\s*"#9a5cf6",\s*"#cda9ff"\]/.test(main), "(3) T153: HOME_PALETTE is the brand purple (epic family: base → #9a5cf6 → #cda9ff)");
+}
 // T112: a live ARENA state from the real region/tier position
 ok(/function arenaFxState\(/.test(main) && /currentTier\(loadCollected\(\)\)/.test(main) && /tierRegion\(/.test(main), "(3) arenaFxState() reads the live Arena region/tier (T108)");
 ok(/setArenaState\(arenaFxState\(\)\)/.test(main), "(3) the Arena screen drives the backdrop with the live Arena scene");
@@ -165,7 +173,10 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   const st = fx.homeStates[fx.homeStates.length - 1];
   ok(st && typeof st.progress === "number" && st.progress >= 0 && st.progress <= 1, "boot: the state carries a real progress in [0,1] (" + (st && st.progress) + ")");
   ok(st && typeof st.streak === "number", "boot: the state carries a real numeric streak");
-  ok(st && st.event && typeof st.event.seed === "number" && st.event.name, "boot: the state carries today's real event {seed,name}");
+  // T153: the backdrop is FIXED purple — the state carries the brand-purple palette
+  // and is NOT tied to today's event (no event seed/name leaking the daily colour).
+  ok(st && st.event && Array.isArray(st.event.palette) && st.event.palette[0] === "#0E1116" && st.event.palette[1] === "#9a5cf6" && st.event.palette[2] === "#cda9ff", "boot: T153 — the home state carries the FIXED brand-purple palette (#9a5cf6/#cda9ff), not the event's colour");
+  ok(st.event.seed == null && st.event.name == null, "boot: T153 — the home backdrop reads no event seed/name (it never changes with the daily event)");
   ok(st.progress > 0, "boot: progress reflects the seeded full collection (not a constant 0)");
 
   // Arena → the backdrop switches to the live ARENA scene (T108), still running

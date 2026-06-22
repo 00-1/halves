@@ -174,7 +174,6 @@
   // fired on real reward gains AND real wins. The engine owns reduced-motion + the
   // no-WebGL2 still fallback; everything here is a guarded no-op if FXGL is absent.
   // The burst controller is never given a scene, so it never loops / leaks RAF.
-  const FX_MOODS = ["motes", "embers", "snow", "stars"];   // engine particle kinds
   let fxBg = null, fxBurst = null;
   // T125 — keep BOTH controllers' drawing buffers matched to the LIVE viewport.
   // The burst overlay is built on the ENTRY screen (pre-fullscreen); without this
@@ -205,23 +204,23 @@
       ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
         .forEach(ev => document.addEventListener(ev, fxResizeAll));
   }
-  // LIVE home state for the backdrop — read from the real sources, never constants:
-  // collection progress (0–1), the daily Momentum streak, and today's event.
+  // The home backdrop is FIXED brand purple (T153) — the owner wants the main
+  // screen to stay purple, NOT wear today's event colour (a rare event used to
+  // turn it blue). The epic-rarity family on the app base: #0E1116 → body → accent.
+  const HOME_PALETTE = ["#0E1116", "#9a5cf6", "#cda9ff"];
+  // LIVE home state for the backdrop — the HUE is fixed purple; only the player's
+  // own collection progress (0–1) and daily Momentum streak modulate it (brightness/
+  // particle count). The event is deliberately NOT read here, so the home backdrop
+  // never changes with the daily event (the event banner shows its own colour).
   function homeFxState(){
     const col = loadCollected();
     const total = (C.CATALOG && C.CATALOG.length) || 1;
     let have = 0; for(const it of C.CATALOG) if(col[it.id]) have++;
     const progress = Math.max(0, Math.min(1, have / total));
     const streak = loadMomentum().count | 0;
-    const Ev = window.Events, ev = (Ev && Ev.today) ? Ev.today() : null;
-    let event = null;
-    if(ev){
-      const pal = C.paletteFor ? C.paletteFor(ev.rarity) : null;
-      event = { seed: ev.artSeed | 0, name: ev.name,
-        palette: pal ? ["#0E1116", pal.body, pal.accent] : null,    // wear today's event colours
-        mood: FX_MOODS[((ev.artSeed | 0) % FX_MOODS.length + FX_MOODS.length) % FX_MOODS.length] };
-    }
-    return { event: event, progress: progress, streak: streak };
+    // Always supply the fixed purple palette so fxgl's cool no-event dawn ramp
+    // never kicks in — the home stays purple in every state (no event, rare, epic).
+    return { event: { palette: HOME_PALETTE }, progress: progress, streak: streak };
   }
   // LIVE Arena state for the backdrop (T108) — the region/tier the player is ON
   // (sense of place), intensifying toward the region boss. All from the real

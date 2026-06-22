@@ -4598,3 +4598,29 @@ notes: **babysitter/owner browser-verify** — each celebration should now spray
   trigger (toast / rank badge / vanquished foe) wearing that thing's colour. The Settings tester (no DOM
   source) still fires from screen-centre (the fallback). Next per `NEXT.md`: **`T153`** (home backdrop →
   purple) → roadmap.
+
+---
+
+## Builder A — T153: home backdrop is FIXED brand purple (no event-based colour)
+commit: (this commit) — [A], OWNER-PRIORITY. Owner: "I prefer the background just to stay purple rather than
+being event based. Maybe an event-specific screen could change like that, but let's keep the main screen fixed
+purple." Diagnosed: `homeFxState()` made the home backdrop "wear today's event colour" — it passed
+`paletteFor(ev.rarity)` (epic=purple, **rare=blue `#3f97d8`**), so today's rare event turned the home blue.
+changed (A-owned, `main.js` only):
+  - **`homeFxState()`** now ALWAYS supplies a **fixed brand-purple palette** `HOME_PALETTE =
+    ["#0E1116","#9a5cf6","#cda9ff"]` (the epic family on the app base) and **no longer reads the event**
+    (`Ev.today()`/`ev.rarity` dropped from the backdrop entirely). Since the palette is always supplied,
+    fxgl's cool no-event dawn ramp never applies → the home stays purple in **every** state (no-event, rare,
+    epic). No `fxgl` change — [A]-only.
+  - the player's own **progress + Momentum streak** still modulate brightness/particle count (within purple);
+    only the **hue is fixed**. Removed the now-unused `FX_MOODS` constant (the event mood drove it).
+  - the **event banner still shows the event's own colour**, so no info is lost (per the owner's note an
+    event-specific *screen* could carry the event colour later — noted in BACKLOG, not built).
+how I verified: **fx-wiring.test (81→84)** — new T153 checks: `homeFxState` reads **no** event/rarity for the
+  backdrop; it always emits `event:{palette:HOME_PALETTE}`; `HOME_PALETTE` is the brand purple. The live boot
+  now asserts the derived home state carries the **fixed purple palette** (`#9a5cf6`/`#cda9ff`) with **no
+  event seed/name** (it can't change with the daily event). `node -c` clean; **full gate suite green**.
+  [A]-owned only.
+notes: **babysitter/owner browser-verify** — the home backdrop should now render **purple** across a rare-
+  event day, a no-event day, and an epic-event day (it no longer goes blue). Next per `NEXT.md`: **`T152[A]`
+  is DONE (`bdd0e6a`)** → roadmap `T89`/`T90` (Arena 3v3) → content `T58`–`T61` → `T72`.
