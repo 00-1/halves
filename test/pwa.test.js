@@ -58,6 +58,11 @@ if(mani){
   ok(/letterSpacing = "-1\.5px"/.test(mn), "(a2) T212: tighter letter-spacing on the title raster");
   ok(/if\(corrupt\)\{[\s\S]{0,260}continue;[\s\S]{0,160}ox \+=/.test(mn), "(a2) T212: a corruption pass (dropped + displaced cells) glitches the void line");
   ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true\)/.test(mn), "(a2) T212: the void line is corrupted (4th arg true); gold stays clean + glinting");
+  // T214 — more corruption + transparency dither + tighter gap + action block at the bottom
+  ok(/r < 12\) continue;/.test(mn) && /r < 28\) ox \+=/.test(mn), "(a2) T214: the void line is corrupted FURTHER (~12% dropped / ~16% displaced)");
+  ok(/BAYER4\[y & 3\]\[x & 3\] >= 11\) alpha = 0\.4/.test(mn) && /rgba\(/.test(mn), "(a2) T214: ordered-Bayer TRANSPARENCY dither dissolves void cells (alpha < 1 → rgba)");
+  ok(/\.subtitle\{[^}]*margin-top:-6px/.test(cssT), "(a2) T214: the brand↔subtitle gap is tightened");
+  ok(/\.tag\{[^}]*margin-top:auto/.test(cssT) && /#entry\{[^}]*justify-content:flex-start/.test(cssT), "(a2) T214: the tag + action block is pushed to the BOTTOM (title group gets the top space)");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------

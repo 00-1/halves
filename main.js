@@ -890,15 +890,19 @@
           v = v < 0 ? 0 : v > 1 ? 1 : v;
           let col = ramp[Math.min(ramp.length - 1, (v * ramp.length) | 0)];
           if(glintX != null && Math.abs(x - glintX) < 1.6) col = glint;
-          // T212 — a static CORRUPTION pass on the void line: deterministic dropped/
-          // displaced cells (a glitch look), still legible. Gold line: corrupt=false.
-          let ox = x, oy = y;
+          // T212/T214 — a static CORRUPTION pass on the void line: deterministic
+          // dropped + displaced cells AND ordered-Bayer transparency dither, so the
+          // lettering dissolves in patches (half-there/glitchy) — still legible. Gold
+          // line: corrupt=false → solid.
+          let ox = x, oy = y, alpha = 1;
           if(corrupt){
             const hsh = ((x * 73856093) ^ (y * 19349663)) >>> 0, r = hsh % 100;
-            if(r < 7) continue;                                  // ~7% dropped cells (glitch holes)
-            else if(r < 18) ox += ((hsh >> 5) & 1) ? 1 : -1;     // ~11% displaced ±1 cell
+            if(r < 12) continue;                                 // ~12% dropped cells (glitch holes)
+            else if(r < 28) ox += ((hsh >> 5) & 1) ? 1 : -1;     // ~16% displaced ±1 cell
+            if(BAYER4[y & 3][x & 3] >= 11) alpha = 0.4;          // ordered transparency dither (~31% half-there)
           }
-          d.fillStyle = "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+          d.fillStyle = alpha < 1 ? "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + alpha + ")"
+                                  : "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
           d.fillRect(ox * PX, oy * PX, PX, PX);
         }
       };

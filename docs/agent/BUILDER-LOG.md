@@ -5754,3 +5754,17 @@ ID verification.
 verified: `pwa.test` 45→48 (cellsH 26 / PX 2, the tighter letter-spacing, the corruption pass + void-line
 `corrupt=true`, the 0.9× sizes). Full suite 53/53. [A]-only (main.js, styles.css). Owner verifies the live
 splash. Then T168 stays HELD on Play ID verification.
+
+---
+### [A] T214 — title polish #3 (owner: tighter, glitchier void, action block at the bottom)
+- **Tighter title↔subtitle gap:** `.subtitle` margin-top 4 → **-6px** (the void line tucks under the wordmark).
+- **Further corruption** of the void line: dropped cells 7%→**12%**, displaced 11%→**16%** (still deterministic
+  hash-keyed, stable not flickering).
+- **Transparency dither:** an ordered-Bayer pass renders ~31% of void cells at **alpha 0.4** (rgba) so the
+  lettering DISSOLVES in patches (half-there/corrupted) — still legible; the gold line stays solid.
+- **Action block moved to the BOTTOM:** `#entry` is now `justify-content:flex-start` (title group up top) and
+  `.tag{margin-top:auto}` pushes the maths tag + the Play/Tap-to-begin buttons + Sound to the bottom of the
+  splash, giving the big title group the top space.
+verified: `pwa.test` 48→52 (the heavier corruption thresholds, the alpha/rgba transparency dither, the tightened
+subtitle gap, and the bottom-pushed action block). Full suite 53/53. [A]-only (main.js, styles.css). Owner
+verifies the live splash. T168 stays HELD on Play ID verification.
