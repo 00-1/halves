@@ -2936,6 +2936,46 @@ build.**
   + reduced-motion); **B-owned doc only** (no engine change yet); `node -c` clean if any code/test touched.
   **The Babysitter surfaces the recommended technique to the owner for a thumbs-up before T172 builds it.**
 
+### T182 — [A] **Hoard FIX:** make the pile VISIBLE (log-of-magnitude curve) + a live menu preview/gold-setter · status: OPEN · 🔴 DO-FIRST (the owner can't see the hoard at all)
+**Owner (2026-06-22): "I haven't seen any pile. I wasn't able to simulate piles from the [graphics] menu — maybe
+they're displayed invisibly behind the menu. I should be able to set the number of coins globally from this menu
+to see what happens to the pile."** **Root cause = mis-calibration + wrong place:** `GOLD_FULL = 1e10` with the
+**power curve** `(gold/1e10)^0.4` → at the owner's real ~1.23K gold the level is **~0.17%** (invisible); the pile
+doesn't read until ~100M+. AND the pile renders on the **home backdrop**, NOT in the graphics menu — so testing
+from the menu shows nothing.
+- **(1) Recalibrate to a LOG-OF-MAGNITUDE curve** so the pile tracks the number's *magnitude* (each ×1000) and is
+  visible from the start, growing across the whole K→M→B→T journey:
+  `level = clamp( log10(1+gold) / log10(GOLD_FULL_MAG), 0, 1 )`, **`GOLD_FULL_MAG` ≈ 1e12–1e15** (tunable; 1e12 →
+  1K≈25%, 1M≈50%, 1B≈75%, 1T=full; 1e15 reserves full for "Cosmic Fortune"). Replaces the power curve in
+  `hoardLevel()`. *(This is the key fix — the pile becomes visible at any wealth.)*
+- **(2) A live MENU gold-setter + pile PREVIEW** (the owner's ask): in the Graphics menu (`?dev`-gated), a control
+  to **set the gold total** (a slider across magnitudes 1K→1e15, or value buttons) **with a LIVE pile-preview
+  canvas right there** rendering the hoard at that level — so the owner can dial wealth and watch the pile grow
+  **without leaving the menu**. (Supersedes the always-on `?gold=` URL param — keep `?gold=` too but `?dev`-gate
+  it.) The preview reuses the hoard scene render at the chosen level.
+- **(3) Earn-burst flies OUTWARD, not converging to the hoard** (the prior T173 follow-up — fold in): drop the
+  `tx:0.5,ty:0.93` converge; coins burst out from the earn-point + fade.
+- **(4) Minor (owner OK for now):** the earn-burst coins render as **squares, not the beveled coins** — check the
+  burst passes/applies `look:"coin"` (likely a one-line wiring/engine flag); low priority since the owner's fine
+  with squares, but worth the coin look.
+- **DoD:** the hoard pile is **visible at the owner's real wealth** + grows across magnitudes (log curve); a
+  `?dev` Graphics-menu gold-setter with a **live pile preview** lets the owner dial gold and see the pile change;
+  earn-burst flies outward; `node -c` clean; **[A]-only** (`main.js`, tests). **Verify:** owner sees a pile (set
+  gold to 1M/1B in the menu → pile grows in the preview + on home).
+
+### T183 — [B] RESEARCH: study/focus-friendly music — the `lofi` context is too dark/bassy · status: OPEN · owner-feedback
+**Owner (2026-06-22): "audio switching sounds very good now. My only comment: the Lo-Fi Study sounds a bit dark/
+bassy. Can we do a research pass on what's nice to listen to while studying — or being tested, in this case?"**
+A short research pass (like the music-styles research) on **music for focus / test conditions** for ~10-year-olds:
+what's calming + non-distracting + not anxiety-inducing under timed pressure (tempo, brightness, instrumentation,
+lyric-free, dynamic range, the "lo-fi study" genre's actual qualities). Then a **recommended revision of the
+`lofi` context** (lift it out of dark/bassy → warmer/brighter/lighter) — e.g. lower the bass/pad weight, raise the
+pad register/brightness, gentler low end — with the specific `synth.js` `CONTEXTS.lofi` changes (pad patch/
+register, reverb, tempo, EQ-ish balance). **DoD:** a short research note + the concrete `lofi` revision (and any
+study-friendly tweaks to the other "calm" contexts); the per-style distinctness + the T175 stability (bounded,
+not foghorn-prone) must hold; **B-owned (`synth.js` + tests) only.** I'll re-measure stability + the owner ears it.
+After `T181` (emblems).
+
 ### T181 — [B] `emblems.js`: generative BRAND EMBLEMS (app-icon candidates + Codex "Emblems") · status: OPEN · owner-greenlit
 **Owner (2026-06-22): "do icon generation — but these should go into the Codex too; if they're good, make the
 ones not chosen for the icon UNLOCKABLE in the app."** A **new standalone B-owned module** `emblems.js`
