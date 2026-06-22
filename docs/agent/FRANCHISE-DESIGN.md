@@ -21,8 +21,8 @@ problems), NOT by exam prestige:
 
 | # | Game | Subject | Status |
 |---|------|---------|--------|
-| GG1 | *The Void Throne* | **Maths** | shipping |
-| **GG2** | (subtitle TBD) | **Verbal Reasoning** | **LOCKED as the first sequel** |
+| GG1 | *The Void Throne* | **Maths** | shipping · **VOID/gold aesthetic** · HOARD/battle metagame |
+| **GG2** | (subtitle TBD) | **Verbal Reasoning** | **LOCKED 1st sequel** · **PLANT/NATURE aesthetic** · **"Plants & Beasts" metagame (§6a, owner's strongest idea — provisional)** |
 | GG3 | (subtitle TBD) | **English** | after GG2 |
 | GG4 | (subtitle TBD) | **Non-Verbal Reasoning** | last |
 
@@ -30,6 +30,13 @@ problems), NOT by exam prestige:
   model; mostly multiple-choice + letter-tiles; lets us prove the engine cheaply before tackling
   English's hard input (spelling/grammar/comprehension) and NVR's hard *generation* (valid procedural
   shape puzzles).
+- **GG2 aesthetic = PLANT / NATURE throughout (owner, 2026-06-22)** — the counterpoint to GG1's void/gold.
+  Drives the palette, icon, subtitle, backdrops/biomes, music, and the brand creature (nature beasts). The
+  VR *content* sits inside that wrapper exactly as Maths sits inside GG1's void wrapper — content and
+  aesthetic don't need to be thematically unified; the **metagame + aesthetic** carry the flavour.
+- **GG2 metagame = "Plants & Beasts" (§6a) — owner's strongest idea, provisionally assigned** ("unless a
+  stronger idea comes"). It pairs perfectly with the nature aesthetic (grow crops → pacify nature beasts).
+  This **supersedes** the earlier deduce/decode candidate for VR.
 - VR and NVR stay **separate games** (not combined) — completely different content + input systems.
 - GG3/GG4 are **not pre-committed** — decide based on how GG1 + GG2 land. (Four games is a large
   undertaking; build to demand.)
@@ -88,8 +95,8 @@ Constraint (locked): each game keeps the **"collect items → quick, simple meta
 ideas only* — the owner will decide:
 
 - **GG1 Maths → HOARD / battle** (existing): Goblin Gold, item-boosted heroes, Arena ladder, the pile.
-- **GG2 VR → DEDUCE / decode** *(candidate)*: a codebreaker/detective; collect clues/cipher-keys/decoder
-  rings; a **case board** — pin evidence, solve cases (each case = the boss/milestone).
+- **GG2 VR → PLANTS & BEASTS (cultivate/pacify)** — **provisionally chosen** (owner: strongest idea), plant/
+  nature aesthetic. See §6a. *(Earlier deduce/decode detective idea = superseded, kept only as a fallback.)*
 - **GG3 English → CRAFT / scribe** *(candidate)*: a wordsmith restoring a library / forging a grimoire;
   collect letter-runes, inks, rare words; **forge words into spells**, fill a spellbook / restore tomes.
 - **GG4 NVR → BUILD / assemble** *(candidate)*: a shape-smith; collect tiles/gems/shards; **assemble** a
@@ -124,8 +131,8 @@ flavour."*
     wall-clock is a clean "come back" hook, not a monetisation gate. (Open detail: do unused plots / a full
     harvest ever block progress? Keep it generous so a kid is never *stuck* waiting — they can always drill.)
 - **Subject fit:** mechanically subject-agnostic; thematically nature/growth. Could slot into any sequel —
-  owner to assign (it doesn't have an obvious lock to VR/English/NVR). **STATUS: candidate, owner deciding
-  which game.**
+  owner to assign (it doesn't have an obvious lock to VR/English/NVR). **STATUS: provisionally ASSIGNED to GG2 (VR), with a PLANT/NATURE aesthetic (owner 2026-06-22) — the
+  strongest idea so far; could change only if a stronger one comes. Supersedes the deduce/decode VR candidate.**
 
 ## 7. Per-game asset re-roll (each game)
 The brand "Goblin Gold" stays; each game re-rolls: **subtitle** (Void Throne → per-game), **icon**,
