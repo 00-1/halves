@@ -13,7 +13,7 @@ function read(f){ return fs.readFileSync(path.join(__dirname, "..", f), "utf8");
 let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
-const html = read("index.html"), main = read("main.js"), ssrc = read("sound.js"), wf = read(".github/workflows/pages.yml"), css = read("styles.css");
+const html = read("index.html"), main = read("main.js"), ssrc = read("sound.js"), wf = read("../../.github/workflows/pages.yml"), css = read("styles.css");
 
 // ---- (1) mount + one shared chain ------------------------------------------
 ok(/<script src="synth\.js"><\/script>/.test(html), "(1) index.html loads synth.js");

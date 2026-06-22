@@ -10,7 +10,7 @@ function read(f){ return fs.readFileSync(path.join(__dirname, "..", f), "utf8");
 let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
-const mainSrc = read("main.js"), css = read("styles.css"), wf = read(".github/workflows/pages.yml");
+const mainSrc = read("main.js"), css = read("styles.css"), wf = read("../../.github/workflows/pages.yml");
 
 // ---- (1) static wiring -------------------------------------------------------
 ok(/\{ id:"codex",\s*label:"Codex" \}/.test(mainSrc), "(1) a Codex tab is registered in INV_TABS");

@@ -1,0 +1,4 @@
+[
+  { "path": "gg1/prod/", "name": "Goblin Gold", "tag": "prod" },
+  { "path": "gg1/dev/",  "name": "Goblin Gold", "tag": "dev" }
+]

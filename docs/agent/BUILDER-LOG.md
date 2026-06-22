@@ -6019,3 +6019,26 @@ pages.yml); hero-icons catalogue 1862 → 1960; home-layout T170 ≤4-abreast ho
 gates green across all 36 modes; full suite **58/58**. [A]-only (modes.js, guides.js, tests, pages.yml).
 Remaining T219: Part-1 ×-tricks, Negatives-P1; Part-2 Geometry group (Area/Volume/Angles), Speed-Distance-Time,
 Median/Mode/Range, Prime-factorisation; then the Collector-ladder rebalance LAST.
+
+---
+### [A] T222 — franchise GitHub-Pages restructure (multi-app, isolated saves)
+Per `FRANCHISE-HOSTING.md` (owner: "move all now"). Done in two commits: the backward-compatible scope code
+first (9ea9046), then the move.
+- **Layout.** The whole app moved into **`gg1/dev/`** (git-mv, history preserved — incl. `test/` + `scripts/`,
+  so every `__dirname/..` path still resolves). Created **`gg1/prod/`** (lean runtime copy, no test/scripts — the
+  TWA/T168 target) and a **`gg2/dev/`** placeholder. Root is now a **franchise landing** (`index.html`) that
+  fetches **`apps.json`** and, per entry, reads that app's own `manifest.webmanifest` for its name/icon/theme →
+  one card per app (adding an app = one line in apps.json). The landing also unregisters the legacy
+  root-scoped service worker so it can't shadow the new page.
+- **The two origin-share fixes** (already in 9ea9046, inert at root): `main.js` derives a per-folder SCOPE and
+  shadows `localStorage` to rewrite `halves.*`→`<scope>.*` (gg1dev/gg1prod/gg2dev…), with a one-time
+  `halves.*`→`gg1prod.*` migration on prod's first run (dev stays a clean room per spec); `sw.js` namespaces its
+  cache per scope and evicts only its OWN superseded caches (no more cross-app wipe). Clear-data now sweeps by
+  the scope prefix.
+- **CI.** `pages.yml` test gates now run from `gg1/dev/test/`; build.json is stamped into `gg1/dev/` AND
+  `gg1/prod/` (each app fetches its own `./build.json`); cache-bust runs per app on both `index.html` +
+  `styles.css`. New `franchise-landing.test.js` gate locks the layout + landing contract + the scope code.
+- The seven workflow-reading tests had their `.github/...` read redirected up to the repo root.
+**Owner: the new dev URL is `https://00-1.github.io/halves/gg1/dev/`** (the old `…/halves/` is now the franchise
+landing). `gg1/v1/` still waits for the tag (T223). verified: full suite **59/59** (+1 new gate). Then back to
+T219 (the remaining topics land in `gg1/dev/` now).

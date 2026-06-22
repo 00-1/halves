@@ -1,393 +1,96 @@
-<!DOCTYPE html>
-<!-- data-ui selects the chrome look: "pixel" = the T100 gamey pixel-bevel restyle
-     (ships on); flip to "classic" to revert to the original soft web look. -->
-<html lang="en" data-ui="pixel">
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Goblin Gold — mental maths</title>
-<meta name="description" content="Goblin Gold — fast mental-maths drills: halves, doubles, times tables, squares, fractions, percentages and more. Earn gold, collect loot, climb the Arena.">
-<!-- T169 — fonts are SELF-HOSTED (see @font-face in styles.css). No Google Fonts
-     CDN: the app makes ZERO third-party requests (kids-privacy / Data-Safety
-     "no data shared"), and the type renders fully offline. -->
-<link rel="stylesheet" href="styles.css">
-<!-- T102 — PWA: installable + offline. theme-color/apple-touch are also minted at
-     runtime by installFavicon(); the service worker is registered by the app script. -->
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0E1116">
-<link rel="apple-touch-icon" href="icon.svg">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Goblin Gold — the hoard</title>
+<meta name="description" content="The Goblin Gold games — pick a hoard to play.">
+<meta name="theme-color" content="#1a1330">
+<style>
+  :root{ --bg:#160f29; --bg2:#1f1640; --ink:#ece3ff; --muted:#a892d8; --gold:#e0a93c; --purple:#cda9ff; }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{background:radial-gradient(120% 80% at 50% -10%, #2a1c54 0%, var(--bg) 60%) fixed, var(--bg);
+    color:var(--ink); font:600 16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center; padding:clamp(28px,9vh,80px) 18px 40px; gap:8px; min-height:100vh}
+  header{text-align:center; margin-bottom:18px}
+  h1{font-size:clamp(34px,11vw,60px); margin:0; color:var(--gold); letter-spacing:.01em; text-shadow:0 2px 0 rgba(0,0,0,.35)}
+  .sub{margin:6px 0 0; color:var(--purple); font-weight:700; letter-spacing:.18em; text-transform:uppercase; font-size:13px}
+  main{width:100%; max-width:560px; display:flex; flex-direction:column; gap:14px}
+  .card{display:flex; align-items:center; gap:16px; padding:16px 18px; border-radius:18px; text-decoration:none;
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(205,169,255,.18);
+    color:var(--ink); transition:transform .12s ease, border-color .12s ease, background .12s ease}
+  .card:hover,.card:focus-visible{transform:translateY(-2px); border-color:rgba(224,169,60,.5); background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.03)); outline:none}
+  .card .ic{width:60px; height:60px; border-radius:14px; flex:0 0 auto; background:#0e0a1e; image-rendering:auto; object-fit:cover}
+  .card .body{min-width:0}
+  .card .nm{font-size:20px; font-weight:800; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .card .meta{margin:2px 0 0; color:var(--muted); font-size:13px; font-weight:700}
+  .tag{display:inline-block; margin-left:8px; padding:1px 8px; border-radius:999px; font-size:11px; letter-spacing:.06em;
+    text-transform:uppercase; background:rgba(224,169,60,.16); color:var(--gold); vertical-align:middle}
+  .tag.dev{background:rgba(205,169,255,.16); color:var(--purple)}
+  .empty{color:var(--muted); text-align:center; padding:30px}
+  footer{margin-top:26px; color:var(--muted); font-size:12px; opacity:.7}
+</style>
 </head>
 <body>
-<!-- T112: FULL-BLEED semantic backdrop (FXGL) — a fixed full-viewport layer behind
-     .app, decorative only. Driven by the home state on #start and the live Arena
-     region/tier on #arena; idle + hidden on every other screen. -->
-<canvas id="fxBackdrop" class="fx-backdrop hidden" aria-hidden="true"></canvas>
-<!-- T149 — celebration-burst overlay (FXGL/T94/T133/T136): TOP-LEVEL (body sibling of
-     .app), NOT inside any modal. It was trapped in #resetModal (.modal.hidden →
-     display:none) so the shower painted into a never-displayed 0×0 canvas — THE
-     celebration-invisible bug. Top-level + position:fixed (z59) → always rendered. -->
-<canvas id="fxBurst" class="fx-burst" aria-hidden="true"></canvas>
-<div class="app">
-
-  <!-- ENTRY / TAP TO BEGIN (provides the fullscreen + audio user gesture) -->
-  <section id="entry" class="screen active">
-    <!-- T208 — the mark is painted (Magnar) by renderBrand(); kept EMPTY in static
-         HTML (height reserved in CSS) so the old hard-coded x/2 never flashes. -->
-    <div class="mark"></div>
-    <div class="brand">Goblin Gold</div>
-    <div class="subtitle">The Void Throne</div>
-    <div class="tag">Fast mental-maths drills</div>
-    <div class="entry-actions">
-      <button class="btn" id="entryFs">Play in fullscreen</button>
-      <button class="linkbtn" id="entryPlay">Play</button>
-    </div>
-    <button class="linkbtn" id="soundBtn"><span class="px-ic soundOn"></span> Sound on</button>
-  </section>
-
-  <!-- START (T96: top-aligned, tree-only picker, compact info row, one-line nav) -->
-  <section id="start" class="screen">
-    <!-- T144 — the gold/momentum readout is a header stat bar at the very TOP
-         (keeps its T142 local pill backing so it's legible over the backdrop). -->
-    <div class="readouts">
-      <span class="goldbar" id="goldBar"></span>
-      <span class="momentumbar" id="momentumBar"></span>
-    </div>
-    <!-- compact today's-event banner, front-and-centre near the top (T91) -->
-    <div class="event-banner hidden" id="eventBanner"></div>
-    <!-- the tech tree is the only home picker now; it takes the reclaimed space.
-         T116: wrapped so the scroll-fade affordance (edge gradients + "more below"
-         cue) shows when the tree overflows. -->
-    <div class="picker-wrap" id="treeWrap">
-      <div class="tree" id="modeTree" aria-label="Topic tech tree"></div>
-      <span class="scroll-cue" aria-hidden="true">▾</span>
-    </div>
-    <!-- one compact selected-topic row: glyph · name · have/total · best (T96) -->
-    <div class="topic-info" id="topicInfo"></div>
-    <div class="start-actions">
-      <button class="btn" id="startBtn">Start</button>
-      <button class="btn alt" id="practiceBtn">Practice</button>
-      <button class="btn alt" id="guideBtn">Guide</button>
-    </div>
-    <!-- one row of bigger icon buttons; degrades as gating hides items (T86/T87) -->
-    <div class="navrow" id="navRow">
-      <button class="navbtn" id="statsBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Best</span></button>
-      <button class="navbtn" id="invBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Items</span></button>
-      <button class="navbtn" id="heroesBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Heroes</span></button>
-      <button class="navbtn" id="arenaBtn"><canvas class="pix nav-ico" width="16" height="16"></canvas><span>Arena</span></button>
-      <!-- T146 — Sound + Fullscreen moved INTO Setup (audio is its own sub-menu now;
-           fullscreen toggle lives in Settings), decluttering the home nav row. -->
-      <button class="navbtn" id="settingsBtn" aria-label="Settings"><span class="px-ic cog nav-emoji"></span><span class="nav-lbl">Setup</span></button>
-    </div>
-    <div class="build" id="buildInfo"></div>
-  </section>
-
-  <!-- SUMMARY -->
-  <section id="summary" class="screen">
-    <div class="res-label">Best times</div>
-    <div class="sum-sub">Your best in each topic — tap one to play it.</div>
-    <div class="sumlist" id="sumList"></div>
-    <div class="res-actions">
-      <button class="btn ghost back-btn" id="sumBack">Back</button>
-    </div>
-  </section>
-
-  <!-- GAME -->
-  <section id="game" class="screen">
-    <div class="topbar">
-      <span id="counter">1 / 21</span>
-      <span class="clock" id="clock">0.0s</span>
-    </div>
-    <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
-
-    <div class="stage" id="stage">
-      <div class="eyebrow" id="eyebrow">half of <b>↓</b></div>
-      <div class="promptwrap">
-        <div class="prompt" id="prompt">30</div>
-        <div class="ghosthalf" id="ghost">15</div>
-      </div>
-      <div class="answer empty" id="answer"><span class="placeholder">— —</span></div>
-    </div>
-
-    <button class="practice-hint-toggle hidden" id="practiceHintToggle">How to approach this</button>
-    <div class="practice-note hidden" id="practiceNote"></div>
-
-    <div class="pad" id="pad">
-      <div class="key" data-k="7">7</div>
-      <div class="key" data-k="8">8</div>
-      <div class="key" data-k="9">9</div>
-      <div class="key" data-k="4">4</div>
-      <div class="key" data-k="5">5</div>
-      <div class="key" data-k="6">6</div>
-      <div class="key" data-k="1">1</div>
-      <div class="key" data-k="2">2</div>
-      <div class="key" data-k="3">3</div>
-      <div class="key util" data-k=".">.</div>
-      <div class="key" data-k="0">0</div>
-      <div class="key util" data-k="back"><span class="px-ic backspace"></span></div>
-      <div class="key skip" data-k="skip" style="grid-column:1 / -1">skip</div>
-    </div>
-  </section>
-
-  <!-- RESULTS -->
-  <section id="results" class="screen">
-    <div class="res-label">Final time <span class="res-mode" id="resMode"></span></div>
-    <div class="res-time" id="resTime">—<small>s</small></div>
-    <div class="rankline" id="rankLine"></div>
-    <div class="res-row">
-      <div class="res-stat"><span class="n" id="resAcc">100%</span><span class="l">accuracy</span></div>
-      <div class="res-stat"><span class="n" id="resMiss">0</span><span class="l">skipped</span></div>
-    </div>
-    <div class="res-gold" id="resGold"></div>
-    <div class="slowest">
-      <h4>Slowest answers</h4>
-      <div id="slowList"></div>
-    </div>
-
-    <div class="res-actions">
-      <button class="btn back-btn" id="menuBtn">Back</button>
-    </div>
-  </section>
-
-  <!-- INVENTORY -->
-  <section id="inventory" class="screen">
-    <div class="res-label">Inventory <span class="inv-meta" id="invMeta"></span></div>
-    <div class="inv-tabs" id="invTabs"></div>
-    <div class="invlist" id="invList"></div>
-    <button class="jump-top" id="invTop" aria-label="Jump to top">↑ Top</button>
-    <div class="res-actions">
-      <button class="btn ghost back-btn" id="invBack">Back</button>
-    </div>
-  </section>
-
-  <!-- PRACTICE / REVIEW -->
-  <section id="practice" class="screen">
-    <div class="res-label">Practice <span class="inv-meta" id="practiceMeta"></span></div>
-    <div class="practice-sub" id="practiceTitle"></div>
-    <div class="practice-scroll" id="practiceScroll">
-      <div class="pq-grid" id="practiceGrid"></div>
-      <div class="practice-guide" id="practiceGuide"></div>
-    </div>
-    <div class="res-actions">
-      <button class="btn ghost back-btn" id="practiceBack">Back</button>
-    </div>
-  </section>
-
-  <!-- ARENA -->
-  <section id="arena" class="screen">
-    <div class="res-label">Arena <span class="inv-meta" id="arenaMeta"></span></div>
-    <div class="arena-body" id="arenaBody"></div>
-    <div class="res-actions">
-      <button class="btn" id="arenaFight" disabled>Pick a hero</button>
-      <button class="btn ghost back-btn" id="arenaBack">Back</button>
-    </div>
-  </section>
-
-  <!-- HEROES -->
-  <section id="heroes" class="screen">
-    <div class="res-label">Heroes <span class="inv-meta" id="heroMeta"></span></div>
-    <div class="herolist" id="heroList"></div>
-    <div class="res-actions">
-      <button class="btn ghost back-btn" id="heroesBack">Back</button>
-    </div>
-  </section>
-
-  <!-- HERO DETAIL -->
-  <section id="heroDetail" class="screen">
-    <div class="res-label">Hero</div>
-    <div class="hd-head" id="hdHead">
-      <div class="hd-port"><canvas class="pix" id="hdPort" width="64" height="64"></canvas></div>
-      <div class="hd-meta">
-        <div class="hd-name" id="hdName"></div>
-        <div class="hero-stats" id="hdStats"></div>
-        <div class="hd-prog" id="hdProg"></div>
-      </div>
-    </div>
-    <div class="hd-list" id="hdList"></div>
-    <div class="res-actions">
-      <button class="btn ghost back-btn" id="hdBack">Back</button>
-    </div>
-  </section>
-
-  <!-- SETTINGS (T85) -->
-  <section id="settings" class="screen">
-    <div class="res-label">Settings</div>
-    <div class="settings-body scroll-body">
-      <button class="set-row" id="openAudio"><span>Audio</span><span class="set-val"><span class="px-ic soundOn"></span> Open</span></button>
-      <button class="set-row hidden" id="openGraphics"><span>Developer</span><span class="set-val"><span class="px-ic sparkles"></span> Open</span></button>
-      <button class="set-row" id="fsToggle"><span>Fullscreen</span><span class="set-val"><span class="px-ic fullscreen"></span> <span id="fsToggleVal">Enter</span></span></button>
-      <div class="set-danger">
-        <h4>Danger zone</h4>
-        <p>Clear all data wipes every bit of progress saved on this device — heroes, items,
-          scores, events, settings — and returns the app to a fresh start. This cannot be undone.</p>
-        <button class="btn danger" id="clearDataBtn">Clear all data</button>
-      </div>
-    </div>
-    <div class="res-actions">
-      <button class="btn ghost back-btn" id="settingsBack">Back</button>
-    </div>
-  </section>
-
-  <!-- AUDIO — its own scrollable menu (T143): the Sound button opens this; the mute
-       toggle + separate Music/SFX volumes + tempo + style picker + tester all live here. -->
-  <section id="audio" class="screen">
-    <div class="res-label">Audio</div>
-    <div class="settings-body scroll-body">
-      <button class="set-row" id="setSound"><span>Sound</span><span class="set-val" id="setSoundVal">On</span></button>
-      <div class="set-row set-slider">
-        <label for="musicVolRange"><span>Music volume</span><span class="set-val" id="setMusicVolVal">—</span></label>
-        <input type="range" id="musicVolRange" min="0" max="10" step="1" value="5" aria-label="Music volume">
-      </div>
-      <div class="set-row set-slider">
-        <label for="sfxVolRange"><span>Sound FX volume</span><span class="set-val" id="setSfxVolVal">—</span></label>
-        <input type="range" id="sfxVolRange" min="0" max="100" step="5" value="60" aria-label="Sound FX volume">
-      </div>
-      <div class="set-row set-slider">
-        <label for="tempoRange"><span>Music tempo</span><span class="set-val" id="setTempoVal">—</span></label>
-        <input type="range" id="tempoRange" min="40" max="100" step="5" value="50" aria-label="Music tempo">
-      </div>
-      <div class="set-row set-music">
-        <label id="musicLabel"><span>Music style</span><span class="set-val" id="setMusicVal">Auto</span></label>
-        <!-- T140 — all 12 engine styles (B's T139 palette) to audition; each swaps
-             instantly via Synth.setContext(name,{now:true}); Dubstep fires its drop. -->
-        <div class="music-switch music-styles" id="musicSwitch" role="group" aria-labelledby="musicLabel">
-          <button type="button" class="mus-btn" data-music="menu"      aria-pressed="false">Neon Lobby</button>
-          <button type="button" class="mus-btn" data-music="lofi"      aria-pressed="false">Lo-Fi Study</button>
-          <button type="button" class="mus-btn" data-music="ambient"   aria-pressed="false">Ambient Drift</button>
-          <button type="button" class="mus-btn" data-music="chiptune"  aria-pressed="false">Chiptune Rush</button>
-          <button type="button" class="mus-btn" data-music="synthwave" aria-pressed="false">Synthwave Cruise</button>
-          <button type="button" class="mus-btn" data-music="tropical"  aria-pressed="false">Tropical Pluck</button>
-          <button type="button" class="mus-btn" data-music="bigroom"   aria-pressed="false">Festival</button>
-          <button type="button" class="mus-btn" data-music="techno"    aria-pressed="false">Hypno Techno</button>
-          <button type="button" class="mus-btn" data-music="dnb"       aria-pressed="false">Liquid DnB</button>
-          <button type="button" class="mus-btn" data-music="arena"     aria-pressed="false">Phrygian Onslaught</button>
-          <button type="button" class="mus-btn" data-music="boss8bit"  aria-pressed="false">8-Bit Boss March</button>
-          <button type="button" class="mus-btn" data-music="dubstep"   aria-pressed="false">Dubstep Victory</button>
-        </div>
-      </div>
-      <button class="set-row" id="setTest"><span>Test sound</span><span class="set-val"><span class="px-ic play"></span> Play</span></button>
-    </div>
-    <div class="res-actions">
-      <button class="btn ghost back-btn" id="audioBack">Back</button>
-    </div>
-  </section>
-
-  <!-- GRAPHICS — visual tests (T147): the celebration tester is a VISUAL test, not
-       audio, so it lives in its own Setup sub-menu (room for future FX toggles). -->
-  <section id="graphics" class="screen">
-    <div class="res-label">Developer</div>
-    <div class="settings-body scroll-body">
-      <div class="set-row set-music">
-        <label id="fxTestLabel"><span>Test celebration</span><span class="set-val" id="setFxVal">Tap to fire</span></label>
-        <div class="music-switch" id="fxTest" role="group" aria-labelledby="fxTestLabel">
-          <button type="button" class="mus-btn" data-fx="item">Item</button>
-          <button type="button" class="mus-btn" data-fx="rank">Rank up</button>
-          <button type="button" class="mus-btn" data-fx="win">Arena win</button>
-          <button type="button" class="mus-btn" data-fx="big">Big burst</button>
-        </div>
-      </div>
-      <div class="set-row set-music">
-        <label id="hoardTestLabel"><span>Test gold hoard</span><span class="set-val" id="setHoardVal">Tap to preview</span></label>
-        <div class="music-switch" id="hoardTest" role="group" aria-labelledby="hoardTestLabel">
-          <button type="button" class="mus-btn" data-hoard="0.2">Low pile</button>
-          <button type="button" class="mus-btn" data-hoard="0.5">Half</button>
-          <button type="button" class="mus-btn" data-hoard="1">Full</button>
-          <button type="button" class="mus-btn" data-hoard="earn">Earn coins</button>
-        </div>
-      </div>
-      <div class="set-row hidden" id="devRevealRow">
-        <label id="devRevealLabel"><span>Reveal all collections</span><span class="set-val" id="setDevRevealVal">off</span></label>
-        <div class="music-switch" role="group" aria-labelledby="devRevealLabel">
-          <button type="button" class="mus-btn" id="devRevealBtn">Off</button>
-        </div>
-      </div>
-      <div class="set-row set-music hidden" id="devGoldRow">
-        <label id="devGoldLabel"><span>Set Goblin Gold</span><span class="set-val" id="setDevGoldVal">tap a value</span></label>
-        <div class="music-switch" id="devGold" role="group" aria-labelledby="devGoldLabel">
-          <button type="button" class="mus-btn" data-gold="0">0</button>
-          <button type="button" class="mus-btn" data-gold="1000">1K</button>
-          <button type="button" class="mus-btn" data-gold="100000">100K</button>
-          <button type="button" class="mus-btn" data-gold="1000000">1M</button>
-          <button type="button" class="mus-btn" data-gold="100000000">100M</button>
-          <button type="button" class="mus-btn" data-gold="1000000000">1Bn</button>
-          <button type="button" class="mus-btn" data-gold="1000000000000">1T</button>
-        </div>
-      </div>
-    </div>
-    <div class="res-actions">
-      <button class="btn ghost back-btn" id="graphicsBack">Back</button>
-    </div>
-  </section>
-
-</div>
-
-<!-- celebration FX overlay (confetti/sparks) -->
-<canvas id="fxCanvas" class="fx-canvas" aria-hidden="true"></canvas>
-
-<!-- new-version notice (T54) -->
-<div id="updateBar" class="update-bar hidden" role="status">
-  <span class="ub-text">A new version is available.</span>
-  <button class="ub-refresh" id="updateRefresh">Refresh</button>
-  <button class="ub-dismiss" id="updateDismiss" aria-label="Dismiss"><span class="px-ic close"></span></button>
-</div>
-
-<!-- in-game unlock toasts -->
-<div class="toasts" id="toasts"></div>
-
-<!-- TOPIC GUIDE MODAL -->
-<div class="modal hidden" id="guideModal">
-  <div class="modal-card guide-card">
-    <div class="guide-title" id="guideTitle"></div>
-    <div class="guide-body" id="guideBody"></div>
-    <button class="btn" id="guideClose">Got it</button>
-  </div>
-</div>
-
-<!-- UNLOCK / DETAIL MODAL -->
-<div class="modal hidden" id="unlockModal">
-  <div class="modal-card">
-    <div class="modal-title" id="unlockTitle">New collectible!</div>
-    <div class="unlock-grid" id="unlockGrid"></div>
-    <button class="btn" id="unlockClose">Nice</button>
-  </div>
-</div>
-
-<!-- CLEAR-ALL-DATA CONFIRM MODAL (T85) — countdown + numpad code -->
-<div class="modal hidden" id="resetModal">
-  <div class="modal-card reset-card">
-    <div class="modal-title">Clear all data?</div>
-    <div class="reset-warn">This permanently deletes <b>ALL</b> your progress — heroes, items,
-      scores, events. It cannot be undone.</div>
-    <div class="reset-code">Type <b id="resetCode">0000</b> to confirm</div>
-    <div class="reset-entry empty" id="resetEntry"><span class="placeholder">— — — —</span></div>
-    <div class="reset-pad" id="resetPad">
-      <div class="key" data-k="1">1</div><div class="key" data-k="2">2</div><div class="key" data-k="3">3</div>
-      <div class="key" data-k="4">4</div><div class="key" data-k="5">5</div><div class="key" data-k="6">6</div>
-      <div class="key" data-k="7">7</div><div class="key" data-k="8">8</div><div class="key" data-k="9">9</div>
-      <div class="key util" data-k="back"><span class="px-ic backspace"></span></div><div class="key" data-k="0">0</div><div class="key util" data-k="clr">C</div>
-    </div>
-    <div class="res-actions">
-      <button class="btn danger" id="resetConfirm" disabled>Clear</button>
-      <button class="btn ghost" id="resetCancel">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<script src="icons.js"></script>
-<script src="glyphs.js"></script>
-<script src="modes.js"></script>
-<script src="events.js"></script>
-<script src="guides.js"></script>
-<script src="collectibles.js"></script>
-<script src="heroes.js"></script>
-<script src="enemies.js"></script>
-<script src="monsters.js"></script>
-<script src="scenery.js"></script>
-<script src="eventart.js"></script>
-<script src="emblems.js"></script>
-<script src="fx.js"></script>
-<script src="fxgl.js"></script>
-<script src="sound.js"></script>
-<script src="synth.js"></script>
-<script src="main.js"></script>
+  <header>
+    <h1>Goblin Gold</h1>
+    <p class="sub">the hoard grows</p>
+  </header>
+  <main id="apps"><p class="empty" id="loading">Summoning the hoard…</p></main>
+  <footer>One origin, every game. Your gold carries over.</footer>
+<script>
+// Franchise landing (T222): read apps.json, then each app's own manifest for its
+// real name / icon / theme — a card = the app's true identity. Static, no build.
+(function(){
+  "use strict";
+  var mount = document.getElementById("apps"), loading = document.getElementById("loading");
+  // T222 — the landing replaced the OLD root app. Unregister only the legacy
+  // root-scoped service worker (so it can't shadow this page offline); the
+  // sub-folder apps' SWs (gg1/dev, gg1/prod, …) are scoped deeper and left alone.
+  try{
+    if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+      var base = location.pathname.replace(/[^/]*$/, "");   // this landing's directory
+      navigator.serviceWorker.getRegistrations().then(function(rs){
+        rs.forEach(function(r){ try{ if(new URL(r.scope).pathname === base) r.unregister(); }catch(e){} });
+      });
+    }
+  }catch(e){}
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" })[c]; }); }
+  function pickIcon(man, base){
+    var icons = (man && man.icons) || [];
+    // prefer a mid/large raster; fall back to whatever's there
+    var best = null;
+    for(var i=0;i<icons.length;i++){ var s = icons[i] && icons[i].src; if(!s) continue;
+      if(!best) best = s;
+      if(/192|256|512/.test(icons[i].sizes || "")) { best = s; if(/512/.test(icons[i].sizes)) break; } }
+    return best ? base + best : null;
+  }
+  async function load(){
+    var apps;
+    try{ apps = await (await fetch("apps.json", { cache:"no-store" })).json(); }
+    catch(e){ loading.textContent = "Couldn't read apps.json."; return; }
+    var cards = [];
+    for(var i=0;i<apps.length;i++){
+      var a = apps[i]; if(!a || !a.path) continue;
+      var man = null;
+      try{ man = await (await fetch(a.path + "manifest.webmanifest", { cache:"no-store" })).json(); }catch(e){}
+      var name = (man && man.name) || a.name || a.path;
+      var icon = pickIcon(man, a.path);
+      var tagClass = a.tag === "dev" ? "tag dev" : "tag";
+      cards.push(
+        '<a class="card" href="' + esc(a.path) + '">' +
+          (icon ? '<img class="ic" alt="" src="' + esc(icon) + '">' : '<span class="ic"></span>') +
+          '<span class="body">' +
+            '<p class="nm">' + esc(name) + (a.tag ? ' <span class="' + tagClass + '">' + esc(a.tag) + '</span>' : '') + '</p>' +
+            '<p class="meta">' + esc(a.path) + '</p>' +
+          '</span>' +
+        '</a>');
+    }
+    mount.innerHTML = cards.length ? cards.join("") : '<p class="empty">No apps deployed yet.</p>';
+  }
+  load();
+})();
+</script>
 </body>
 </html>

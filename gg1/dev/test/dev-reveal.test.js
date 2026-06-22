@@ -11,7 +11,7 @@ function read(f){ return fs.readFileSync(path.join(__dirname, "..", f), "utf8");
 let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
-const mainSrc = read("main.js"), html = read("index.html"), wf = read(".github/workflows/pages.yml");
+const mainSrc = read("main.js"), html = read("index.html"), wf = read("../../.github/workflows/pages.yml");
 
 // ---- (1) static wiring -------------------------------------------------------
 ok(/let devMode =[\s\S]{0,180}halves\.dev/.test(mainSrc), "(1) devMode reads ?dev OR the persisted halves.dev flag");

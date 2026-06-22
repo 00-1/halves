@@ -16,7 +16,7 @@ function read(f){ return fs.readFileSync(path.join(__dirname, "..", f), "utf8");
 let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
-const main = read("main.js"), html = read("index.html"), wf = read(".github/workflows/pages.yml");
+const main = read("main.js"), html = read("index.html"), wf = read("../../.github/workflows/pages.yml");
 
 // ---- (1) static wiring -------------------------------------------------------
 ok(/const GOLD_EMPTY = 500, GOLD_FULL = 1e15/.test(main), "(1) T198: GOLD_EMPTY (floor) + GOLD_FULL (the owner's dial) constants");

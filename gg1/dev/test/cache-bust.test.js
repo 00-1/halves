@@ -48,7 +48,7 @@ ok(!bareRefs(cssBuilt).some(r => /\.woff2$/.test(r)), "T169: no bare font ref su
 ok(bust(built, SHA) === built, "re-running the bust is idempotent (already-versioned refs skipped)");
 
 // ---- it cooperates with the T54 version-check (build stamp is the source of v)
-const wf = read(".github/workflows/pages.yml");
+const wf = read("../../.github/workflows/pages.yml");
 ok(/cachebust\.js/.test(wf), "the deploy workflow runs scripts/cachebust.js");
 ok(/GITHUB_SHA:0:7/.test(wf), "CI busts with the short commit sha (the same identity build.json stamps)");
 // the rewrite runs AFTER the node gates (so they see clean refs) and BEFORE upload

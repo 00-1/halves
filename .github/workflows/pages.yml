@@ -25,132 +25,136 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Icon variation test (gate)
-        run: node test/icon-variation.test.js
+        run: node gg1/dev/test/icon-variation.test.js
       - name: Performance test (gate)
-        run: node test/perf.test.js
+        run: node gg1/dev/test/perf.test.js
       - name: Contrast test (gate)
-        run: node test/contrast.test.js
+        run: node gg1/dev/test/contrast.test.js
       - name: Inventory layout test (gate)
-        run: node test/inventory.test.js
+        run: node gg1/dev/test/inventory.test.js
       - name: Codex bestiary tab (T179) test (gate)
-        run: node test/codex.test.js
+        run: node gg1/dev/test/codex.test.js
       - name: Developer mode + reveal-all (T184) test (gate)
-        run: node test/dev-reveal.test.js
+        run: node gg1/dev/test/dev-reveal.test.js
       - name: Arena stat-check test (gate)
-        run: node test/arena.test.js
+        run: node gg1/dev/test/arena.test.js
       - name: Practice hints test (gate)
-        run: node test/hints.test.js
+        run: node gg1/dev/test/hints.test.js
       - name: Practice flow test (gate)
-        run: node test/practice.test.js
+        run: node gg1/dev/test/practice.test.js
       - name: Hero portrait test (gate)
-        run: node test/hero-icons.test.js
+        run: node gg1/dev/test/hero-icons.test.js
       - name: Nav icons + Arena portraits test (gate)
-        run: node test/nav-icons.test.js
+        run: node gg1/dev/test/nav-icons.test.js
       - name: Toast queue test (gate)
-        run: node test/toasts.test.js
+        run: node gg1/dev/test/toasts.test.js
       - name: Audio levels test (gate)
-        run: node test/sound.test.js
+        run: node gg1/dev/test/sound.test.js
       - name: Gold economy (T178 ramp) test (gate)
-        run: node test/gold.test.js
+        run: node gg1/dev/test/gold.test.js
       - name: Audio resume (foghorn) test (gate)
-        run: node test/audio-resume.test.js
+        run: node gg1/dev/test/audio-resume.test.js
       - name: Music idempotent switch (T164) test (gate)
-        run: node test/music-idempotent.test.js
+        run: node gg1/dev/test/music-idempotent.test.js
       - name: Hero detail test (gate)
-        run: node test/hero-detail.test.js
+        run: node gg1/dev/test/hero-detail.test.js
       - name: Arena wayfinding test (gate)
-        run: node test/wayfinding.test.js
+        run: node gg1/dev/test/wayfinding.test.js
       - name: Enemy sprite variation test (gate)
-        run: node test/monster-variation.test.js
+        run: node gg1/dev/test/monster-variation.test.js
       - name: Region scenery test (gate)
-        run: node test/scenery.test.js
+        run: node gg1/dev/test/scenery.test.js
       - name: Version check test (gate)
-        run: node test/version.test.js
+        run: node gg1/dev/test/version.test.js
       - name: Topic-init gate test (gate)
-        run: node test/init-gate.test.js
+        run: node gg1/dev/test/init-gate.test.js
       - name: Collector ladder test (gate)
-        run: node test/collector.test.js
+        run: node gg1/dev/test/collector.test.js
       - name: Pixel glyph font test (gate)
-        run: node test/glyphs.test.js
+        run: node gg1/dev/test/glyphs.test.js
       - name: Events scheduler test (gate)
-        run: node test/events.test.js
+        run: node gg1/dev/test/events.test.js
       - name: Guide action test (gate)
-        run: node test/guide-action.test.js
+        run: node gg1/dev/test/guide-action.test.js
       - name: Guides + explain coverage test (gate)
-        run: node test/guides-coverage.test.js
+        run: node gg1/dev/test/guides-coverage.test.js
       - name: Question-integrity test (gate)
-        run: node test/question-integrity.test.js
+        run: node gg1/dev/test/question-integrity.test.js
       - name: T219 batch 1 (roman + primes) test (gate)
-        run: node test/t219-roman-primes.test.js
+        run: node gg1/dev/test/t219-roman-primes.test.js
       - name: T219 batch 2 (pctup + fdp) test (gate)
-        run: node test/t219-pctup-fdp.test.js
+        run: node gg1/dev/test/t219-pctup-fdp.test.js
       - name: T219 batch 3 (bodmas + algebra) test (gate)
-        run: node test/t219-bodmas-algebra.test.js
+        run: node gg1/dev/test/t219-bodmas-algebra.test.js
       - name: Tech-tree view test (gate)
-        run: node test/tech-tree.test.js
+        run: node gg1/dev/test/tech-tree.test.js
       - name: Settings + clear-data test (gate)
-        run: node test/settings-reset.test.js
+        run: node gg1/dev/test/settings-reset.test.js
       - name: Onboarding gating test (gate)
-        run: node test/onboarding.test.js
+        run: node gg1/dev/test/onboarding.test.js
       - name: Arena 3v3 deterministic-sim lattice test (gate)
-        run: node test/arena3.test.js
+        run: node gg1/dev/test/arena3.test.js
       - name: Arena playout death-VFX test (gate)
-        run: node test/arena-playout-fx.test.js
+        run: node gg1/dev/test/arena-playout-fx.test.js
       - name: T162 P1 (scaling / percentoff / partwhole) modes test (gate)
-        run: node test/t162-p1-modes.test.js
+        run: node gg1/dev/test/t162-p1-modes.test.js
       - name: T162 P2 (ratioshare / timegap / lcmhcf / mean) modes test (gate)
-        run: node test/t162-p2-modes.test.js
+        run: node gg1/dev/test/t162-p2-modes.test.js
       - name: T162 P3 (cubes / money / digitsum) modes test (gate)
-        run: node test/t162-p3-modes.test.js
+        run: node gg1/dev/test/t162-p3-modes.test.js
       - name: T59 Wave-2 (rounding / larger ×÷) modes test (gate)
-        run: node test/t59-modes.test.js
+        run: node gg1/dev/test/t59-modes.test.js
       - name: T60/T61 Wave-2 (metric / sequences) modes test (gate)
-        run: node test/t60-t61-modes.test.js
+        run: node gg1/dev/test/t60-t61-modes.test.js
       - name: Home layout + tidy-nav test (gate)
-        run: node test/home-layout.test.js
+        run: node gg1/dev/test/home-layout.test.js
       - name: UI pixel-bevel restyle test (gate)
-        run: node test/ui-restyle.test.js
+        run: node gg1/dev/test/ui-restyle.test.js
       - name: Chrome pixel-icons test (gate)
-        run: node test/icons.test.js
+        run: node gg1/dev/test/icons.test.js
       - name: Synth generative-audio engine test (gate)
-        run: node test/synth.test.js
+        run: node gg1/dev/test/synth.test.js
       - name: Synth wiring test (gate)
-        run: node test/synth-wiring.test.js
+        run: node gg1/dev/test/synth-wiring.test.js
       - name: Asset cache-busting test (gate)
-        run: node test/cache-bust.test.js
+        run: node gg1/dev/test/cache-bust.test.js
       - name: Self-hosted fonts (T169) test (gate)
-        run: node test/fonts.test.js
+        run: node gg1/dev/test/fonts.test.js
       - name: FXGL engine test (gate)
-        run: node test/fxgl.test.js
+        run: node gg1/dev/test/fxgl.test.js
       - name: Brand emblems (T181) test (gate)
-        run: node test/emblems.test.js
+        run: node gg1/dev/test/emblems.test.js
       - name: FX wiring test (gate)
-        run: node test/fx-wiring.test.js
+        run: node gg1/dev/test/fx-wiring.test.js
       - name: Gold-hoard wiring (T173) test (gate)
-        run: node test/hoard-wiring.test.js
+        run: node gg1/dev/test/hoard-wiring.test.js
       - name: App icon (Magnar, T194) test (gate)
-        run: node test/icon-app.test.js
+        run: node gg1/dev/test/icon-app.test.js
       - name: PWA (manifest + service worker) test (gate)
-        run: node test/pwa.test.js
+        run: node gg1/dev/test/pwa.test.js
+      - name: Franchise GHP restructure (T222) test (gate)
+        run: node gg1/dev/test/franchise-landing.test.js
       - name: Install-display (fullscreen affordances) test (gate)
-        run: node test/install-display.test.js
+        run: node gg1/dev/test/install-display.test.js
       - name: Back-button navigation test (gate)
-        run: node test/back-nav.test.js
+        run: node gg1/dev/test/back-nav.test.js
       - name: FXGL golden-render test (gate)
-        run: node test/golden-fx.test.js
+        run: node gg1/dev/test/golden-fx.test.js
       - name: Synth golden-score test (gate)
-        run: node test/golden-synth.test.js
+        run: node gg1/dev/test/golden-synth.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Write build info
+      - name: Write build info (per app — each fetches its own ./build.json)
         run: |
-          printf '{"sha":"%s","shortSha":"%s","time":"%s"}\n' \
-            "$GITHUB_SHA" "${GITHUB_SHA:0:7}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > build.json
-          cat build.json
-      - name: Cache-bust asset URLs (append ?v=<shortSha> to index.html + the self-hosted font url()s in styles.css)
+          STAMP=$(printf '{"sha":"%s","shortSha":"%s","time":"%s"}' \
+            "$GITHUB_SHA" "${GITHUB_SHA:0:7}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)")
+          echo "$STAMP" | tee gg1/dev/build.json gg1/prod/build.json
+      - name: Cache-bust asset URLs (per app — append ?v=<shortSha> to each app's index.html + self-hosted font url()s)
         run: |
-          node scripts/cachebust.js "${GITHUB_SHA:0:7}" index.html
-          node scripts/cachebust.js "${GITHUB_SHA:0:7}" styles.css
+          for app in gg1/dev gg1/prod; do
+            node gg1/dev/scripts/cachebust.js "${GITHUB_SHA:0:7}" "$app/index.html"
+            node gg1/dev/scripts/cachebust.js "${GITHUB_SHA:0:7}" "$app/styles.css"
+          done
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:

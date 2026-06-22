@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Goblin Gold">
+  <!-- Maskable: full-bleed brand background; the x/2 mark sits inside the central
+       safe zone (~80%) so it survives circle/squircle crops. -->
+  <rect width="512" height="512" fill="#0E1116"/>
+  <text x="256" y="256" text-anchor="middle" dominant-baseline="central"
+        font-family="ui-monospace, 'JetBrains Mono', 'Courier New', monospace" font-weight="800" font-size="190" letter-spacing="-8">
+    <tspan fill="#E6E9EF">x</tspan><tspan fill="#F5B544">/</tspan><tspan fill="#E6E9EF">2</tspan>
+  </text>
+</svg>

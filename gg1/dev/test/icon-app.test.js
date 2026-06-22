@@ -17,7 +17,7 @@ function readBin(f){ return fs.readFileSync(path.join(ROOT, f)); }
 let fails = 0, checks = 0;
 function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } else console.log("  ok: " + m); }
 
-const main = read("main.js"), wf = read(".github/workflows/pages.yml");
+const main = read("main.js"), wf = read("../../.github/workflows/pages.yml");
 
 // ---- (a) manifest points at the committed maskable PNGs ----------------------
 const mani = JSON.parse(read("manifest.webmanifest"));
