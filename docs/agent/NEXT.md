@@ -17,11 +17,11 @@ because it **depends on B's `T205`** (the resized creature art for the award ico
   Void Throne"** (full title = *Goblin Gold: The Void Throne*). Add it as a subtitle line between "Goblin Gold" and
   the maths tag (smaller gold/amber series line; NOT pixel-gold — that's T209). Stack: Magnar → Goblin Gold → The
   Void Throne → Fast mental-maths drills. [A]-only (`index.html`, `main.js`, `styles.css`). *(BACKLOG T208.)*
-- **`T209` — stylise the "Goblin Gold" TITLE: pixel-gold (built from the hoard) + occasional glints** (owner). Only
-  the title wordmark; subtitle/buttons/everything else **stay clean/readable**. Render the title as a **pixelated
-  gold-textured wordmark** filled with the hoard's `GOLD_TONES`/T195 gold-ramp+dither, with **occasional throttled
-  glints** (matching the coin shine T207; reduced-motion off). [A]-only (`main.js`/`index.html`/`styles.css`).
-  *(BACKLOG T209 — after T208.)*
+- **`T209` — stylise the title BLOCK** (owner). **"Goblin Gold" → pixel-GOLD** (built from the hoard `GOLD_TONES`/
+  T195 gold-ramp+Bayer dither); **"The Void Throne" → dithered PURPLE/BLACK** (void palette `#9a5cf6`/`#1a102e`→black,
+  same Bayer dither) — a matched pair (currency gold vs endgame void). **Occasional throttled glints on both**
+  (gold on the gold line, violet on the void line; reduced-motion off). Maths tag + everything else stay clean.
+  [A]-only (`main.js`/`index.html`/`styles.css`). *(BACKLOG T209 — after T208.)*
 - **`T206` — recalibrate Collector awards + absorb the 3 creatures → 15 total.** The collect-N ladder is today
   **12 tiers 25→10,000**, but the catalogue is ~1,900 so **2,500/5,000/7,500/10,000 are unreachable.** Drop those,
   **compute the live `CATALOG.length`** and set the final tier ≈ that (~1,900 per the owner). **Absorb B's 3 creature

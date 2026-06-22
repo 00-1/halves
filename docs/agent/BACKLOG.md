@@ -3211,23 +3211,26 @@ can stay. By subtitle I mean THE VOID THRONE."*
   the maths tag, in that order; no layout jump; `node -c` clean; entry/icon tests green; **owner device-confirms**.
   **[A]-only** (`index.html`, `main.js`, `styles.css`).
 
-### T209 — [A] **Stylise the "Goblin Gold" title — pixel-gold, built from the hoard, with occasional glints** · status: OPEN · owner-requested
-**Owner (2026-06-22): "the title text, at least Goblin Gold, could be more stylised and pixelated — everything
-else can remain clean/readable. Maybe the title should be built out of the gold in our stacks, including
-animated/occasional glinting."** Only the **title wordmark** changes; the subtitle, buttons, and all other text
-**stay clean/readable** (the current `--display` font).
-- **Build:** render the **"Goblin Gold" title** as a **pixelated, gold-textured wordmark** — filled with the
-  **hoard's gold tones** (the `GOLD_TONES` / the T195 brickmap gold ramp + ordered-dither, so it reads as "built
-  out of the coins"), nearest-neighbour/crisp. Likely a **canvas-rendered pixel title** (a pixel font / blocky
-  glyphs filled with the gold-coin material) rather than the clean web font.
-- **Animated glints:** **occasional glints sweep/sparkle across the title** (matching the coin shine, T207) — a
-  bright highlight that flashes now and then, throttled + cheap (reuse the coin-glint approach; respect
-  reduced-motion → no glint animation). Don't make it busy — *occasional*.
-- **DoD:** the "Goblin Gold" title reads as **stylised pixel-gold (built from the hoard) with occasional glints**;
-  the subtitle + every other entry element stay clean/readable (unchanged font); legible at the splash size; no
-  perf cost beyond a cheap throttled glint (reduced-motion safe); `node -c` clean; tests green; **owner device-
-  confirms**. **[A]-only** (`main.js`, `index.html`, `styles.css`; may share the gold-ramp/glint helper with
-  `fxgl`/T207). *(After T208's entry fixes.)*
+### T209 — [A] **Stylise the title block — "Goblin Gold" pixel-GOLD + "The Void Throne" dithered PURPLE/BLACK; occasional glints** · status: OPEN · owner-requested
+**Owner (2026-06-22): "the title text, at least Goblin Gold, could be more stylised and pixelated… built out of the
+gold in our stacks, including animated/occasional glinting"** + **"The Void Throne could be stylised too — nice
+dithered purple/black."** Only the **two title lines** change; the **maths tag, buttons, and all other text stay
+clean/readable** (current `--display` font).
+- **"Goblin Gold" → pixel-GOLD (built from the hoard):** render as a **pixelated, gold-textured wordmark** filled
+  with the **hoard's gold tones** (`GOLD_TONES` / the T195 brickmap gold ramp + ordered Bayer dither, so it reads as
+  "built out of the coins"), nearest-neighbour/crisp — a canvas pixel title, not the clean web font.
+- **"The Void Throne" → dithered PURPLE/BLACK (built from the void):** same pixel/dither treatment but in the
+  **void palette** — deep purple→black ordered-Bayer dither (the brand void-purple `#9a5cf6`/`#1a102e` → black),
+  so the gold title + the void subtitle read as a matched pair (currency gold vs endgame void). Smaller than the
+  title, larger/bolder than the plain maths tag.
+- **Occasional glints (both):** a bright highlight that **sweeps/sparkles now and then** across the lettering
+  (matching the coin shine, T207) — throttled + cheap, **reduced-motion → no glint animation**. *Occasional*, not
+  busy. (Gold glint on the gold line; a cooler/violet sparkle on the void line.)
+- **DoD:** "Goblin Gold" reads as **pixel-gold (from the hoard)** and "The Void Throne" as **dithered purple/black
+  (from the void)**, a matched stylised pair with occasional glints; the maths tag + every other entry element stay
+  clean/readable (unchanged font); legible at splash size; cheap throttled glint only (reduced-motion safe); `node -c`
+  clean; tests green; **owner device-confirms**. **[A]-only** (`main.js`, `index.html`, `styles.css`; may share the
+  ramp/Bayer/glint helper with `fxgl`/T207). *(After T208 places the text.)*
 
 ### T206 — [A] **Collector awards: recalibrate to the real catalogue + absorb the 3 creature awards → 15 total** · status: OPEN · owner-requested
 **Owner (2026-06-22): "move those last three emblems to collector awards, so we have 15 in total. And rejig the
