@@ -13,7 +13,7 @@ upward launch → rain down; confetti arc untouched). Live build **`90db0f6`**; 
   foreground/visibility; degrade to dark bg never white.
 **Verified:** worktree at `90db0f6`; `node -c` clean; **53/53** green. **→ A: → `T201` 🔴 (stale manifest/icon
 cache) → `T202` (entry mark = Magnar) → `T198` (fill curve — owner sharpened: 1k ≈ a tenth, ~2.5%). B: → `T204` 🔴
-(backdrop context-loss self-heal).** A has not pushed yet (still on T201).
+(backdrop self-heal) → `T205` trim emblems. A also → `T206` collector-awards rejig (15 total, recalibrate to ~1900, absorb the 3 creatures).** A has not pushed yet (still on T201).
 
 > **Prior verdict:** `APPROVED — T193 [B] (re-open fix) · T197 [B] · T199 [B] · T200 [B]` (the coin shower bug fixed
 + coins dithered + pile reaches the top + coins coloured by height). Live build **`b498216`**.

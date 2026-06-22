@@ -3151,6 +3151,42 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
+### T205 — [B] **Trim emblems to the 3 creatures + fix their sizing** (scrap the other 6; they move to Collector awards) · status: OPEN · owner-requested
+**Owner (2026-06-22): "the final 3 emblems are nice — the rest I think we can scrap. … Make sure the new awards
+match the size of the existing ones visually, cos in the emblems screen they look like they need cropping."**
+- **Scrap 6, keep 3:** remove `coin`/`crowncoin`/`hoard`/`goblin`/`voidthrone`/`sigil` from `emblems.js` (the abstract
+  icon-candidates — Magnar/`hero:mo` is the chosen icon now, T194); **keep `beast`/`goblinking`/`voidbeast`** (the
+  T188 creatures). Update `IDS` + the test (it asserts the old 6 + the 3 — drop the old-6 assertions).
+- **Fix the sizing/cropping:** in the emblems screen the creatures "look like they need cropping" — the draws don't
+  fill their grid the way the other collectible icons do. Re-fit the 3 creature draws to **fill the cell cleanly at
+  the standard collectible-icon size/safe-zone** (centre + scale so nothing's clipped and there's no dead margin),
+  so when [A] renders them as Collector-award icons (T206) they **match the size of the existing award icons**.
+- **DoD:** `emblems.js` exposes only `beast`/`goblinking`/`voidbeast`, each drawing **cell-filling, uncropped,
+  same visual size as the other collectible icons**; `emblems.test` updated + green; `node -c` clean. **[B]-only**
+  (`emblems.js`, `test/emblems.test.js`). *(Pairs with T206 [A], which consumes these as awards.)*
+
+### T206 — [A] **Collector awards: recalibrate to the real catalogue + absorb the 3 creature awards → 15 total** · status: OPEN · owner-requested
+**Owner (2026-06-22): "move those last three emblems to collector awards, so we have 15 in total. And rejig the
+collector awards to match our actual item count — I don't think it'll increase much now we're nearing the end. The
+final collector award could be 1900."**
+- **Recalibrate the Collector ladder (`collectibles.js`):** today it's **12 tiers 25→10,000**, but the catalogue is
+  ~1,900 so **2,500/5,000/7,500/10,000 are unreachable.** Drop the unreachable tiers and **rescale to the actual
+  catalogue** — **compute the live `CATALOG.length`** (the true total) and set the **final tier to ≈ that (~1,900 per
+  the owner)**. Keep the existing low ids (`collector:25/75/150`) migration-safe (don't break saved unlocks).
+- **Absorb the 3 creatures → 15 total:** the **Collector** collection should total **15**: the recalibrated collect-N
+  ladder **plus the 3 creature emblems** as Collector awards (B's T205 art; e.g. the 3 top/prestige awards carry the
+  creature art). Pick a sensible 15-tier spread up to ~1,900 (denser early). Confirm the count reads "15".
+- **Render at the matching size:** render the creature award icons via `window.Emblems.draw` (post-T205 fix) at the
+  **same award-cell size as the other Collector icons** (no cropping / oversize — the owner's complaint).
+- **Remove the Codex EMBLEMS section** (`main.js` `invCodexHtml` / `codexGroup("Emblems",…)`) — the emblems are gone
+  (scrapped) or promoted to Collector awards, so the Codex no longer needs the Emblems group. Keep Beasts/Bosses/
+  Realms/Events.
+- **DoD:** Collector awards = **15**, thresholds match the real catalogue (final ≈ `CATALOG.length` ~1,900, no
+  unreachable tiers), the 3 creatures appear as Collector awards **sized like the rest** (uncropped); the Codex
+  Emblems section is gone; saved `collector:*` unlocks still resolve; `node -c` clean; `collector`/`codex`/`awards`
+  tests green (+ updated counts); **owner device-confirms**. **[A]-only** (`collectibles.js`, `main.js`, tests).
+  *(Depends on T205's trimmed/resized emblem art.)*
+
 ### T204 — [B] **BUG: purple backdrop lost on app-switch (PWA)** — WebGL context loss, no restore/redraw · status: OPEN · 🔴 owner-reported (live)
 **Owner (2026-06-22, screenshot on `90db0f6`): "sometimes when switching apps I get this (PWA) — i.e. purple bg
 lost."** The home shows a **light-grey background** instead of the dark-purple semantic backdrop (the hoard pile

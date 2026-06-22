@@ -24,7 +24,13 @@
   update: "1k pile too high — should be about a TENTH of that" → 1k ≈ ~2.5%.** Recurve with a **floor-offset log**:
   `clamp((log10(1+gold)−log10(GOLD_EMPTY))/(log10(GOLD_FULL)−log10(GOLD_EMPTY)),0,1)`, e.g. `GOLD_EMPTY=500`,
   `GOLD_FULL=1e15` → **1k≈2–3%, 60k≈17%, 1M≈27%, 1Bn≈51%, 1T≈76%, 1e15 full** (small but VISIBLE starter; tune vs
-  `economy-sim.js`). **Visual only.** [A]-only (`main.js`, `GOLD-HOARD-DESIGN.md`). *(BACKLOG T198.)* Then **`T168`** stays HELD on the owner's Play ID verification.
+  `economy-sim.js`). **Visual only.** [A]-only (`main.js`, `GOLD-HOARD-DESIGN.md`). *(BACKLOG T198.)*
+- **Then `T206` — Collector awards rejig.** Recalibrate the collect-N ladder (today 12 tiers 25→10,000; 2,500+
+  unreachable) to the **real catalogue** — compute live `CATALOG.length`, final tier ≈ that (~1,900). **Absorb B's 3
+  creature emblems (T205) as Collector awards → 15 total**, rendered at the **same award-cell size** (the "needs
+  cropping" fix). **Remove the Codex EMBLEMS section** (`invCodexHtml`). Keep saved `collector:*` migration-safe.
+  [A]-only (`collectibles.js`, `main.js`, tests). *(BACKLOG T206 — depends on T205.)*
+Then **`T168`** stays HELD on the owner's Play ID verification.
 **Re-read this line fresh before each task + push.**
 
 **Builder B → `T204` 🔴 (BUG: purple backdrop lost on PWA app-switch).** `T203` (coin shower) **APPROVED** (live
@@ -36,6 +42,10 @@ over `#0E1116`. **Fix (self-heal, [B]-only):** handle `webglcontextlost` (`preve
 white**) + `webglcontextrestored` (re-init backend, re-`setData`, re-render); also **re-render the still on
 `visibilitychange`→visible**; degrade to the dark body bg, never white. WebGPU device-loss too. [B]-only (`fxgl.js`,
 tests; tiny `main.js` foreground hook only if the Controller can't self-listen). *(BACKLOG T204.)*
+- **Then `T205` — trim emblems to the 3 creatures + fix sizing.** Owner: scrap `coin`/`crowncoin`/`hoard`/`goblin`/
+  `voidthrone`/`sigil`; keep `beast`/`goblinking`/`voidbeast` (they move to Collector awards via A's T206). **Re-fit
+  the 3 creature draws to fill the cell, uncropped, same visual size as the other collectible icons** ("they look
+  like they need cropping"). Update `IDS` + `emblems.test`. [B]-only (`emblems.js`, tests). *(BACKLOG T205.)*
 **Re-read this line fresh before each task + push.**
 
 ---
