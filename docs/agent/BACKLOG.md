@@ -3111,7 +3111,7 @@ minted by `installFavicon()` (main.js:834, currently draws the `x/2` glyph at 64
   **[A]-only** (`manifest.webmanifest`, `index.html`, `main.js` `installFavicon`, the committed PNG assets, tests).
   *(Unblocks the icon half of T168; the Play-Store `.aab` icon reuses the same 512 asset.)*
 
-### T201 — [A] **Stale manifest/icon cache — install shows the OLD name + icon** (SW caches them forever) · status: OPEN · 🔴 owner-reported (launch-correctness)
+### T201 — [A] **Stale manifest/icon cache — install shows the OLD name + icon** (SW caches them forever) · status: DONE (`52a9684`) · APPROVED · owner confirm (revisit + reinstall)
 **Owner (2026-06-22, two PWA screenshots): the Chrome "Install app" dialog shows the OLD name "Halves — mental
 math drills" and the OLD `x/2` icon — NOT "Goblin Gold" / Magnar**, even though the live `manifest.webmanifest`
 already says `name:"Goblin Gold"` and points at `icon-512.png`/`icon-192.png` (Magnar, T194).
@@ -3136,7 +3136,7 @@ already says `name:"Goblin Gold"` and points at `icon-512.png`/`icon-192.png` (M
   page-info icon left of the URL → Site settings → **Clear & reset** → revisit; or uninstall the PWA then clear site
   data. A plain refresh won't fix it — the SW serves the manifest from cache.)*
 
-### T202 — [A] **Entry/splash mark = Magnar too** (replace the `x/2` glyph) · status: OPEN · owner-requested
+### T202 — [A] **Entry/splash mark = Magnar too** (replace the `x/2` glyph) · status: DONE (`9fb4df1`) · APPROVED · owner device-confirm
 **Owner (2026-06-22): "should also put Magnar instead of x/2 on the entry screen."** The entry/splash `.mark`
 (`#entry` in `index.html`) is painted by **`renderBrand()`** (`main.js`) → `paintGlyph(el, byId("halves"), 10)`,
 which draws the **x/2 Halves-topic glyph** onto a `<canvas>` in `.mark` (CSS `.mark canvas{image-rendering:pixelated}`).
@@ -3187,7 +3187,7 @@ final collector award could be 1900."**
   tests green (+ updated counts); **owner device-confirms**. **[A]-only** (`collectibles.js`, `main.js`, tests).
   *(Depends on T205's trimmed/resized emblem art.)*
 
-### T204 — [B] **BUG: purple backdrop lost on app-switch (PWA)** — WebGL context loss, no restore/redraw · status: OPEN · 🔴 owner-reported (live)
+### T204 — [B] **BUG: purple backdrop lost on app-switch (PWA)** — WebGL context loss, no restore/redraw · status: DONE (`b4eead7`) · APPROVED · owner device-confirm
 **Owner (2026-06-22, screenshot on `90db0f6`): "sometimes when switching apps I get this (PWA) — i.e. purple bg
 lost."** The home shows a **light-grey background** instead of the dark-purple semantic backdrop (the hoard pile
 still draws — it's on the always-present 2D overlay).
@@ -3256,7 +3256,7 @@ level)."** Currently each coin's gold tone is picked ~uniformly at random → a 
   flicker as the pile grows); works on the GL/GPU overlay AND CPU still; `golden-fx`/`fxgl`/`hoard-wiring` green
   (note goldens); `node -c` clean; **owner device-confirms**. **[B]-only** (`fxgl.js`, tests).
 
-### T198 — [A] **Hoard fills too fast — recalibrate the wealth→pile curve for the real economy** · status: OPEN · owner-reported
+### T198 — [A] **Hoard fills too fast — recalibrate the wealth→pile curve for the real economy** · status: DONE (`9fb4df1`) · APPROVED · owner device-confirm
 **Owner (2026-06-22): "the coins accumulate too fast. At 1k there's already a lot, but it's actually easy to get
 like 60k in one day."** + **UPDATE: "1k pile too high still — should be about a TENTH of that height."** So 1k must
 be **~1/10 of its current height** (it's ~25% now → target **≈2.5%**). The pile maps wealth → fill far too eagerly.

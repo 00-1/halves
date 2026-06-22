@@ -1,7 +1,24 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T203 [B]` (coin shower: ~+20% bigger + coin-specific gravity ×1.9 + suppressed
-upward launch → rain down; confetti arc untouched). Live build **`90db0f6`**; suite **53/53** + `node -c` green.
+**Current verdict:** `APPROVED — T201 [A] · T202 [A] · T198 [A] · T204 [B]` (install-identity cache fix, Magnar
+splash, gentler fill curve, backdrop survives app-switch). Live build **`b4eead7`** (all deployed); suite **53/53**
++ `node -c` green. **Builder A is healthy — it cleared T201/T202/T198 in two pushes (not stuck).**
+- **`T201`** (`52a9684`, [A]) — `sw.js`: `CACHE` v3→**v4**, `FRESH_RE = /(manifest\.webmanifest|icon\.svg|icon-\d+\.png)$/`
+  served **network-first** (cached only as offline fallback) → the install name+icon unfreeze and propagate on the
+  next visit. Exactly the fix.
+- **`T202`** (`9fb4df1`, [A]) — `renderBrand()` paints **Magnar** (`C.iconColorGrid("hero:mo", HERO_PAL.Brawn)`) on
+  the entry `.mark`; halves glyph kept only as a fallback. Splash now matches the icon.
+- **`T198`** (`9fb4df1`, [A]) — floor-offset curve `GOLD_EMPTY=500, GOLD_FULL=1e15` → **1k ≈ 2.45%** (the owner's
+  "tenth" of the old ~25%), 1M≈27%, 1Bn≈51%, 1T≈76%. Visual only.
+- **`T204`** (`b4eead7`, [B]) — fxgl handles `webglcontextlost` (`preventDefault` → clear to dark) +
+  `webglcontextrestored` (re-init+redraw) + a `visibilitychange` redraw (covers WebGPU device-loss, which has no
+  restore event); listeners cleaned up on dispose. The app-switch light-grey backdrop is fixed.
+**Verified:** worktree at `b4eead7`; `node -c` clean; **53/53** green; deploy = success. **→ A: → `T206` (Collector
+awards rejig — 15 total, recalibrate to ~1,900, absorb the 3 creatures). B: → `T205` (trim emblems to the 3
+creatures + fix cropping).** Owner device-confirm: install identity (revisit → Install shows Goblin Gold + Magnar),
+the splash Magnar, the gentler 1k pile, and the app-switch backdrop.
+
+> **Prior verdict:** `APPROVED — T203 [B]` (coin shower bigger + rain down). Live build **`90db0f6`**.
 **🔴 NEW BUG filed: `T204` — purple backdrop lost on PWA app-switch (WebGL context loss, no restore).**
 - **`T203`** (`90db0f6`, [B]) — coins `sizeRange 7–15` (~+20%), `vy` suppressed ×0.3 + gentle pop, `p.grav =
   BURST_GRAVITY×1.9` (coin-only, NOT the global shader uniform — celebrations unchanged); coins render on the 2D
