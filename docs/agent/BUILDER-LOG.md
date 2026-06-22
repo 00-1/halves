@@ -5250,3 +5250,39 @@ how I verified: **`pwa.test` (27→33)** with a T171 block — manifest `name`/`
 notes: the Play-STORE listing subtitle "Goblin Gold: The Void Throne" is owner-locked but lives in the T168
   listing fields (with you + the babysitter), not the manifest short_name. Next per `NEXT.md`: content
   `T59`–`T61`, then `T173` (gold-hoard wiring, once B's `T172` engine lands).
+
+---
+
+## Builder A — T59: Wave-2 Batch A — Rounding + Larger ×/÷ (2 new spine topics)
+commit: (this commit) — [A], content (Phase 7, the T58-blueprint roadmap). Two genuinely-NEW topics that do
+NOT overlap the T162 mock modes.
+changed:
+  - **`modes.js`** — **`rounding`** (Number, `unlockedBy:squares`, masterSecs 6) — "N to nearest 10/100/1000",
+    21 curated items (the N avoid the exact half-way tie, so every answer is unambiguous + numpad-clean).
+    **`largermd`** ("Larger × / ÷", Number, `unlockedBy:rounding`, masterSecs 7) — 22 items: 2-digit × 1-digit
+    (12) + clean 2-digit ÷ 1-digit (10). Both EXTEND THE SPINE (squares → rounding → largermd) as **1-wide
+    tree rows**, so the T170 ≤4-abreast invariant is untouched. Builders + glyph tokens (supported chars,
+    pairwise-distinct).
+  - **`guides.js`** — guide entries (intro/tips/example) + **method-only `explain()` branches** for both:
+    rounding ("read the digit below the target place; 5+ rounds up") and largermd (split tens+ones ×; "how
+    many fit?" for ÷) — answer-free (the `hints.test` gate confirms no digit/word leak).
+  - **`enemies.js` — MECHANIC FIX (T88 calibration).** Adding ~100 new collectibles recalibrated `FOE_BUDGET`
+    and exposed a non-monotone cell at **tier 120 / 85%** (`arena3` (f) loadout-monotonicity): the greedy
+    best-team heuristic can pick a worse top-rated trio at a larger loadout near the boss. Per the T58
+    blueprint ("fix the mechanic, not the test"), the final-tier pin now sits ABOVE the **strongest of three
+    sub-near-full samples** (0.75/0.80/0.85) instead of just 0.85 — so EVERY ≤85% loadout loses the top tier
+    (monotone restored) while **near-full still wins**. All four Arena invariants re-proven green.
+  - **`docs/research-11plus.md`** — T59 built-note + the **T60/T61 overlap flag** (see below).
+  - **`test/hero-icons.test.js`** — catalogue counter `1365 → 1465` (2 topics × ~49 collectibles).
+  - **NEW `test/t59-modes.test.js` (26 checks, gated)** — both topics extend the spine (unlockedBy, no
+    `requires`); 20+ unique numpad-clean items; **the math matches** (rounding = round(N/unit)·unit, no
+    half-way ties; largermd = a×b / clean a÷b, 2-digit first operand, both ops exercised).
+how I verified: **all 41 suites green** — incl. `arena3` (4 invariants re-proven on the grown pool + the
+  calibration fix), `hints` (the new explain branches are answer-free), `glyphs` (new tokens distinct +
+  supported), `icon-variation`, `contrast`, `perf`. `node -c` clean. [A]-only.
+notes — **⚠ T60/T61 OVERLAP (for the babysitter to reconcile):** T162 already shipped **Money + Time(gap)**
+  (T60's Money/Time) and **Ratio(share) + Mean** (T61's Ratio/Mean), plus cubes/lcmhcf. So **T60 reduces to
+  just *Metric*** and **T61 reduces to just *Sequences*** — building them as originally specced would
+  DUPLICATE live modes. Recommend re-scoping T60→Metric-only and T61→Sequences-only (I can build those next
+  if confirmed). Next per `NEXT.md`: content continues (re-scoped T60/T61) → `T173` (hoard wiring, once B's
+  `T172` lands).

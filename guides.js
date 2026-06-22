@@ -147,6 +147,24 @@
         "n² just means n × n: 7² = 7 × 7 = 49."
       ],
       example: "8² → 8 × 8 → 64."
+    },
+    rounding: {
+      intro: "Rounding finds the nearest round number — to the nearest 10, 100 or 1000.",
+      tips: [
+        "Look only at the digit in the place JUST below the one you're rounding to.",
+        "5 or more rounds UP; 4 or less rounds DOWN. The lower places all become 0.",
+        "Nearest 100? Check the tens digit. Nearest 1000? Check the hundreds digit."
+      ],
+      example: "6832 to the nearest 100 → the tens digit is 3 (below 5) → round down → 6800."
+    },
+    largermd: {
+      intro: "Bigger multiplication and division by splitting into parts you already know.",
+      tips: [
+        "To × a 2-digit number, split it into tens and ones, multiply each, then add.",
+        "14 × 7 → (10 × 7) + (4 × 7).",
+        "To ÷, ask 'how many of the divisor fit?' — build up in easy chunks."
+      ],
+      example: "23 × 4 → (20 × 4) + (3 × 4) → 80 + 12 → 92."
     }
   };
 
@@ -264,6 +282,19 @@
         return "Scale " + nu + "/" + d + " up to tenths or hundredths, then read off the decimal."; }
       case "squares": { const m = p.match(/(\d+)/); if(!m) break; const n = +m[1];
         return "A square is the number times itself — multiply " + n + " by " + n + "."; }
+      case "rounding": { const m = p.match(/(\d+)\s*to nearest\s*(\d+)/); if(!m) break;
+        const unit = +m[2];
+        const place = unit === 10 ? "ones" : unit === 100 ? "tens" : unit === 1000 ? "hundreds" : "next-lower";
+        const kept = unit === 10 ? "tens" : unit === 100 ? "hundreds" : "thousands";
+        // METHOD only — never names the rounded result.
+        return "Look at the " + place + " digit: 5 or more rounds the " + kept +
+          " up, 4 or less leaves them — then put zeros below."; }
+      case "largermd": { const m = p.match(/(\d+)\s*([×÷x])\s*(\d+)/); if(!m) break;
+        const a = +m[1], op = m[2], b = +m[3];
+        if(op === "÷") return "How many " + b + "s fit into " + a + "? Build up in easy chunks of " + b + ".";
+        // multiply: split the 2-digit number into tens + ones
+        const tens = Math.floor(a / 10) * 10, ones = a % 10;
+        return "Split " + a + " into " + tens + " and " + ones + ", multiply each by " + b + ", then add the two parts."; }
     }
     return FALLBACK;
   }

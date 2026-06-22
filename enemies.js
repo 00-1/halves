@@ -297,8 +297,14 @@
     const edge = team => { let elo = fb[TIER_COUNT - 1] * 0.05, ehi = fb[TIER_COUNT - 1] * 30;
       for(let it = 0; it < 60; it++){ const m = (elo + ehi) / 2, t = fb.slice(); t[TIER_COUNT - 1] = m;
         if(simulateTeams(bestTeamVs(team, 3, fType), enemyTeamFromBudget(t, TIER_COUNT)).win) elo = m; else ehi = m; } return elo; };
-    const eFull = edge(nearFull), e85 = edge(subset(0.85));
-    fb[TIER_COUNT - 1] = (eFull + Math.min(e85, eFull)) / 2;   // near-full wins, ≤85% loses
+    const eFull = edge(nearFull);
+    // The greedy best-team heuristic can be slightly NON-MONOTONE near the boss (a
+    // larger loadout can pick a differently-typed top-rated trio that fares worse),
+    // so a single 85% sample can leave a smaller subset over-winning the top tier.
+    // Sample a few sub-near-full loadouts and pin ABOVE the STRONGEST of them, so
+    // EVERY ≤85% loadout loses (the curve stays monotone) while near-full still wins.
+    const eSub = Math.max(edge(subset(0.75)), edge(subset(0.80)), edge(subset(0.85)));
+    fb[TIER_COUNT - 1] = (eFull + Math.min(eSub, eFull)) / 2;   // near-full wins; ≤85% (incl. 75/80) loses
     return fb;
   })();
   // The enemy team for a tier from a foe-budget array: the tier foe + 2 weaker

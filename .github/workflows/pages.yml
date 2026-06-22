@@ -86,6 +86,8 @@ jobs:
         run: node test/t162-p2-modes.test.js
       - name: T162 P3 (cubes / money / digitsum) modes test (gate)
         run: node test/t162-p3-modes.test.js
+      - name: T59 Wave-2 (rounding / larger ×÷) modes test (gate)
+        run: node test/t59-modes.test.js
       - name: Home layout + tidy-nav test (gate)
         run: node test/home-layout.test.js
       - name: UI pixel-bevel restyle test (gate)

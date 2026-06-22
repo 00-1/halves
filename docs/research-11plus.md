@@ -92,6 +92,16 @@ positive distances, times as elapsed minutes, so no minus/colon keys).
   - **Doubles/Halves range check:** the sets now reach the 2-digit ×2±1 atom
     (double 39 = 78, half 78 = 39) — the mock Q5 (4,9,19,39 is ×2+1) support.
 
+- **T59 — Wave-2 Batch A, BUILT** *(2026-06-22)*:
+  - **Rounding (`rounding`):** round N to the nearest 10/100/1000; curated N avoid
+    the exact half-way tie so every answer is unambiguous. Method: read the digit
+    just below the target place; 5+ rounds up. *masterSecs ≈ 6.*
+  - **Larger ×/÷ (`largermd`):** 2-digit × 1-digit, and 2-digit ÷ 1-digit with
+    clean integer results. Method: split the 2-digit number into tens + ones,
+    multiply each, add. *masterSecs ≈ 7.*
+  - *(Note: the rest of the planned Wave-2 — Money, Time, Ratio, Mean — already
+    shipped via T162; T60/T61 reduce to **Metric + Sequences**.)*
+
 ## Design principles (pass 2 — apps & pedagogy)
 
 - **Accuracy before speed; keep the timed bar gentle.** Timed pressure is a known

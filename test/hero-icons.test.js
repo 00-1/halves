@@ -56,7 +56,7 @@ const BASELINE = {
 let snapFail = 0;
 Object.keys(BASELINE).forEach(id => { if(ser(C.iconRoleGrid(id, null)) !== BASELINE[id]) snapFail++; });
 ok(snapFail === 0, "item icon role grids match the embedded baseline (" + snapFail + " changed)");
-ok(C.CATALOG.length === 1365, "catalogue size as expected (" + C.CATALOG.length + ")");
+ok(C.CATALOG.length === 1465, "catalogue size as expected (" + C.CATALOG.length + ")");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " HERO-ICON CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

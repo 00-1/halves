@@ -386,6 +386,27 @@
     ["r", 8642, 2]
   ];
 
+  // ---- T59 — Wave-2 Batch A: Rounding + Larger ×/÷ (genuinely NEW topics; no
+  // overlap with the T162 mock modes). Specs from docs/research-11plus.md.
+  // `rounding` — round N to the nearest 10/100/1000. Each entry [N, unit, A] with
+  // A = Math.round(N/unit)*unit (round-half-up; the curated N avoid the .5 tie so
+  // every answer is unambiguous + numpad-clean).
+  const ROUNDING_SRC = [
+    [47, 10, 50], [83, 10, 80], [126, 10, 130], [274, 10, 270], [68, 10, 70], [351, 10, 350], [99, 10, 100],
+    [6832, 100, 6800], [241, 100, 200], [1749, 100, 1700], [383, 100, 400], [962, 100, 1000], [4520, 100, 4500],
+    [2841, 1000, 3000], [7263, 1000, 7000], [1730, 1000, 2000], [849, 1000, 1000], [6190, 1000, 6000],
+    [3472, 1000, 3000], [560, 100, 600], [88, 10, 90]
+  ];
+  // `largermd` — Larger ×/÷: 2-digit × 1-digit, and 2-digit ÷ 1-digit with clean
+  // (integer) results. Each entry [a, op, b, A] with op ∈ {"×","÷"}.
+  const LARGERMD_SRC = [
+    [14, "×", 7, 98], [23, "×", 4, 92], [18, "×", 5, 90], [16, "×", 6, 96], [27, "×", 3, 81],
+    [34, "×", 2, 68], [13, "×", 8, 104], [45, "×", 2, 90], [19, "×", 4, 76], [24, "×", 3, 72],
+    [12, "×", 9, 108], [15, "×", 7, 105],
+    [84, "÷", 6, 14], [96, "÷", 8, 12], [72, "÷", 4, 18], [91, "÷", 7, 13], [78, "÷", 6, 13],
+    [85, "÷", 5, 17], [60, "÷", 4, 15], [56, "÷", 4, 14], [92, "÷", 4, 23], [68, "÷", 4, 17]
+  ];
+
   // The proper minus sign (matches the "×" used by Times), for ± prompts.
   const MINUS = "−";
   // Map a fixed Add/Subtract entry [a, b, sub] to a { p, a } question.
@@ -450,6 +471,11 @@
     if(e[0] === "s") return { p: "digit sum of " + e[1], a: e[2] };
     return { p: "remainder " + e[1] + " ÷ 9", a: e[2] };
   }
+  // T59 item builders.
+  // Rounding: "N to nearest U" (U ∈ {10,100,1000}); answer is the stored literal.
+  function roundingItem(e){ return { p: e[0] + " to nearest " + e[1], a: e[2] }; }
+  // Larger ×/÷: "a × b" or "a ÷ b" (2-digit ×/÷ 1-digit, clean result).
+  function largerMdItem(e){ return { p: e[0] + " " + e[1] + " " + e[2], a: e[3] }; }
 
   // Listed in importance / unlock order: Halves → Times → Doubles →
   // Add&Subtract → Number Bonds → Place Value → Fractions of → Percentages of →
@@ -547,6 +573,21 @@
       glyph:'x<span class="slash">²</span>',
       eyebrow:'square of <b>↓</b>', expr:false, unlockedBy:"fractions", masterSecs:3.5, group:"Core",
       build(){ return shuffle(SQUARES_SRC).map(n => ({ p:n+"²", a:n*n })); }
+    },
+    // ---- T59 — Wave-2 Batch A: extend the SPINE (unlockedBy) with two new
+    // foundational topics. Each is a 1-wide tree row (no children yet), so the
+    // T170 ≤4-abreast invariant is unaffected.
+    {
+      id:"rounding", name:"Rounding", tag:"Nearest 10 · 100 · 1000.",
+      glyph:'<span class="slash">~</span>0',
+      eyebrow:'round <b>↓</b>', expr:true, unlockedBy:"squares", masterSecs:6, group:"Number",
+      build(){ return shuffle(ROUNDING_SRC).map(roundingItem); }
+    },
+    {
+      id:"largermd", name:"Larger × / ÷", tag:"2-digit × / ÷ 1-digit.",
+      glyph:'<span class="slash">×</span>÷',
+      eyebrow:'solve <b>↓</b>', expr:true, unlockedBy:"rounding", masterSecs:7, group:"Number",
+      build(){ return shuffle(LARGERMD_SRC).map(largerMdItem); }
     },
     // T162 P1 — mock-driven drill gaps (per docs/agent/T162-calibration.md). Each
     // sits OFF the main chain via `requires:"mastery:<predecessor>"`, so the live
@@ -702,7 +743,10 @@
     // T162 P3 — 3 more accented marks (cubes mirrors squares with ³ superscript).
     cubes:        ["x","*s3"],         // x³ — cube (mirrors squares' x² but ³ ≠ ²)
     money:        ["a","*×","k"],      // a×k — items × cost (cost is an unknown k)
-    digitsum:     ["*+","9"]           // +9 — sum-of-digits → ÷9 divisibility mechanic
+    digitsum:     ["*+","9"],          // +9 — sum-of-digits → ÷9 divisibility mechanic
+    // T59 — two new spine topics (supported chars only; pairwise-distinct grids).
+    rounding:     ["n","*0"],          // n→0 — a number rounded to a round number
+    largermd:     ["*×","*÷"]          // ×÷ both accented (distinct from placevalue ×÷)
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 
