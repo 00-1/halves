@@ -5825,3 +5825,35 @@ outliers, money matcher, cubes roots, de-dup) follow in 2b/2c once the Babysitte
 verified: `guides-coverage` 15/15, `hints` 13/13 (the strict answer-token gate stays green), `guide-action`
 14/14, `practice` green. Full suite **54/54** (was 53 — +1 new gate). [A]-only (guides.js, test/, pages.yml).
 Then queued: T213 Phase 2b (sequences split + notation/calibration fixes); T168 held on Play ID-verify.
+
+---
+### [A] T213 Phase 2b (part 1) — calibration + clarity (non-structural)
+2a (the 11 guides) is pushed and awaiting the Babysitter's re-assessment; the Babysitter is mid franchise-design
+session, so to keep momentum I took the UNAMBIGUOUS, non-structural half of 2b now and DEFERRED the
+tree-restructuring / debatable items for the gated re-assessment (see "deferred" below).
+- **`metric` litres `l`→`L`, `ml`→`mL`** — bare lowercase "l" misreads as digit "1" ("5 l in ml"). Updated the
+  pool, the topic tag, the `explain()` STEP map keys, the guide text, and the t60-t61 FACTOR map. Conversions
+  now read "5 L in mL".
+- **`bonds2` to-1000 NON-round targets** — the to-1000 half was all multiples of 50/100 (barely harder than
+  "bonds to 10 with two zeros"). Swapped three round entries for non-round ones (680→320, 430→570, 185→815) so
+  the Part-1→Part-2 step up is real. Answers stay integer + numpad-clean.
+- **`mean` 6-term reverse swap** — `mean of 31,44,28,52,39,? is 37` (6 values, all large) exceeded the doc's
+  "3–5 values ≤60" calibration + the time budget. Replaced with a 4-term reverse `mean of 12,20,16,? is 18`
+  (→24), values ≤40.
+- **Notation cues (eyebrows; no test asserts eyebrow text)** — `scaling` "same rule — in proportion ↓" (kills the
+  additive misreading of `4→6` as "+2"); `balance` "make both sides equal ↓" (the prompts look like false
+  equations); `money` "answer in £ ↓" (makes the expected £ form explicit).
+- **`money` matcher verified** — the live matcher is `parseFloat(input) === answer`, so trailing-zero keystrokes
+  already round-trip (£4.00≡4, £1.90≡1.9). Added a regression assertion in t162-p3 proving every money answer is
+  accepted in both its plain and 2-dp forms. No code change needed.
+- **`rounding` 560 — NOT actually a tie (no change).** The audit flagged "560 to nearest 100 is the exact tie",
+  but 560 mod 100 = 60 (not 50) → rounds to 600 unambiguously; the half-way value would be 550. The existing
+  t59 gate (`n % u !== u/2`) already proves the whole set is tie-free, 560 included. The generator comment is
+  accurate, so I left it untouched rather than make a spurious edit.
+DEFERRED to the gated re-assessment (structural / needs design adjudication): split `sequences` nth-term to a
+locked Part-2 (the audit itself offers "split OR signpost"); demote `fractions` 1/16 (eighths/16ths) to a locked
+Part-2 (new tree node); `cubes`+roots (changes the topic's "Cubes & roots" identity); `ratioshare` order
+normalise (flip-to-consistent vs add-big-first-variety are opposite fixes — debatable). These restructure the
+tech tree or pick between audit alternatives, so they most benefit from the Babysitter re-running the harness.
+verified: full suite **54/54** (t60-t61, t162-p2/p3, t59, hints, guides-coverage all green). [A]-only (modes.js,
+guides.js, tests). Then queued: 2b (part 2 — the deferred structural items) once the re-assessment lands; then 2c.

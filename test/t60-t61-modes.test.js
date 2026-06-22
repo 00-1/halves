@@ -50,8 +50,8 @@ function isClean(a){ return typeof a === "number" && isFinite(a) && a >= 0 && St
   const m = byId("metric"); if(!m) return;
   const qs = m.build();
   // smaller-unit conversions multiply; bigger-unit conversions divide (×/÷ 10/100/1000).
-  const FACTOR = { "km-m":1000, "m-cm":100, "cm-mm":10, "kg-g":1000, "l-ml":1000,
-                   "m-km":0.001, "cm-m":0.01, "mm-cm":0.1, "g-kg":0.001, "ml-l":0.001 };
+  const FACTOR = { "km-m":1000, "m-cm":100, "cm-mm":10, "kg-g":1000, "L-mL":1000,
+                   "m-km":0.001, "cm-m":0.01, "mm-cm":0.1, "g-kg":0.001, "mL-L":0.001 };
   let formulaOk = 0, knownUnits = 0, mul = 0, div = 0;
   qs.forEach(q => {
     const mm = /^([\d.]+) (\w+) in (\w+)$/.exec(q.p);

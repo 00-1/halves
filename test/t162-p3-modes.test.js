@@ -94,6 +94,11 @@ P3_IDS.forEach(id => {
   ok(qs.every(q => { const s = String(q.a); const d = s.indexOf("."); return d < 0 || (s.length - d - 1) <= 2; }), "(4) money: every answer is ≤ 2 decimal places (clean £.pp)");
   // a change item never goes negative (price ≤ the note)
   ok(qs.every(q => q.a >= 0), "(4) money: change is never negative (price ≤ the note)");
+  // T213 2b — the live matcher is `parseFloat(input) === answer`, so trailing-zero
+  // money keystrokes (£4.00, £1.90) must round-trip to the stored literal. Verify
+  // every money answer is accepted in BOTH its plain form and its 2-dp £ form.
+  ok(qs.every(q => parseFloat(q.a.toFixed(2)) === q.a && parseFloat(String(q.a)) === q.a),
+     "(4) money: matcher accepts trailing-zero forms — £4.00 ≡ 4 and £1.90 ≡ 1.9 (parseFloat round-trip)");
 })();
 
 // ---- (5) digitsum: digit sum + remainder ÷ 9 (the divisibility mechanic) ----

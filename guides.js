@@ -169,9 +169,9 @@
     metric: {
       intro: "Metric units step by ×10, ×100 or ×1000 — so converting is just multiplying or dividing.",
       tips: [
-        "Going to a SMALLER unit (km→m, m→cm, kg→g, l→ml)? Multiply.",
-        "Going to a BIGGER unit (m→km, cm→m, g→kg, ml→l)? Divide.",
-        "The steps: km↔m and kg↔g and l↔ml are ×1000; m↔cm is ×100; cm↔mm is ×10."
+        "Going to a SMALLER unit (km→m, m→cm, kg→g, L→mL)? Multiply.",
+        "Going to a BIGGER unit (m→km, cm→m, g→kg, mL→L)? Divide.",
+        "The steps: km↔m and kg↔g and L↔mL are ×1000; m↔cm is ×100; cm↔mm is ×10."
       ],
       example: "3 km in m → smaller unit, so × 1000 → 3000 m."
     },
@@ -413,8 +413,8 @@
         const tens = Math.floor(a / 10) * 10, ones = a % 10;
         return "Split " + a + " into " + tens + " and " + ones + ", multiply each by " + b + ", then add the two parts."; }
       case "metric": { const m = p.match(/^([\d.]+)\s+(\w+)\s+in\s+(\w+)$/); if(!m) break;
-        const STEP = { "km-m":"× 1000", "m-cm":"× 100", "cm-mm":"× 10", "kg-g":"× 1000", "l-ml":"× 1000",
-          "m-km":"÷ 1000", "cm-m":"÷ 100", "mm-cm":"÷ 10", "g-kg":"÷ 1000", "ml-l":"÷ 1000" };
+        const STEP = { "km-m":"× 1000", "m-cm":"× 100", "cm-mm":"× 10", "kg-g":"× 1000", "L-mL":"× 1000",
+          "m-km":"÷ 1000", "cm-m":"÷ 100", "mm-cm":"÷ 10", "g-kg":"÷ 1000", "mL-L":"÷ 1000" };
         const op = STEP[m[2] + "-" + m[3]]; if(!op) break;
         const dir = op[0] === "×" ? "a smaller unit, so multiply" : "a bigger unit, so divide";
         // METHOD only — names the operation, not the converted value.

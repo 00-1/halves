@@ -93,12 +93,14 @@
   // Part 1 — complements to 100: round (20/80), near-round (45/55), quarters
   // (25/75), awkward non-fives (37/63, 28/72, 49/81), and small/large partners.
   const BONDS_P1_SRC = [20,80,30,70,40,60,50,10,90,45,55,25,75,37,63,28,72,49,81,8,92];
-  // Part 2 — to 1000 (multiples of 50/100) and decimal bonds to 1. Each entry is
-  // [value, target, answer]; decimal answers are stored as literals so they are
-  // exactly numpad-matchable (never computed as target − value).
+  // Part 2 — to 1000 and decimal bonds to 1. Each entry is [value, target, answer];
+  // decimal answers are stored as literals so they are exactly numpad-matchable
+  // (never computed as target − value). T213 2b — the to-1000 half now mixes in
+  // NON-round targets (e.g. 680 + ? = 1000) so the step up from Part-1 "bonds to
+  // 10 with two zeros" is a real one, not just round multiples of 50/100.
   const BONDS_P2_SRC = [
-    [100,1000,900],[250,1000,750],[300,1000,700],[450,1000,550],[500,1000,500],
-    [600,1000,400],[650,1000,350],[750,1000,250],[800,1000,200],[900,1000,100],[950,1000,50],
+    [100,1000,900],[680,1000,320],[300,1000,700],[430,1000,570],[500,1000,500],
+    [600,1000,400],[650,1000,350],[185,1000,815],[800,1000,200],[900,1000,100],[950,1000,50],
     [0.1,1,0.9],[0.2,1,0.8],[0.3,1,0.7],[0.4,1,0.6],[0.5,1,0.5],
     [0.7,1,0.3],[0.25,1,0.75],[0.75,1,0.25],[0.05,1,0.95],[0.95,1,0.05]
   ];
@@ -322,7 +324,7 @@
     ["r", [12,15],        13,   12],
     ["r", [4,8,12],       10,   16],
     ["r", [25,30,35],     30,   30],
-    ["r", [31,44,28,52,39], 37, 28]
+    ["r", [12,20,16],     18,   24]
   ];
 
   // ---- T162 Tier P3 — extensions to existing modes (cheap, high-leverage) ----
@@ -416,7 +418,7 @@
     [40, "cm", "mm", 400], [12, "cm", "mm", 120], [250, "cm", "m", 2.5], [180, "cm", "m", 1.8],
     [4500, "m", "km", 4.5], [2000, "m", "km", 2],
     [4, "kg", "g", 4000], [2, "kg", "g", 2000], [3500, "g", "kg", 3.5], [750, "g", "kg", 0.75], [1500, "g", "kg", 1.5],
-    [3, "l", "ml", 3000], [6, "l", "ml", 6000], [2500, "ml", "l", 2.5], [400, "ml", "l", 0.4], [1250, "ml", "l", 1.25], [5, "l", "ml", 5000]
+    [3, "L", "mL", 3000], [6, "L", "mL", 6000], [2500, "mL", "L", 2.5], [400, "mL", "L", 0.4], [1250, "mL", "L", 1.25], [5, "L", "mL", 5000]
   ];
   // `sequences` — next term (term-to-term linear) OR the nth-term value. Tagged:
   //   ["next", [a,b,c,d], A]        → "a, b, c, d → next"   (A = d + common difference)
@@ -628,7 +630,7 @@
     // ≤4-abreast invariant still holds. Continue the spine squares→rounding→
     // largermd→metric→sequences.
     {
-      id:"metric", name:"Metric Units", tag:"mm · cm · m · km · g · kg · ml · l.",
+      id:"metric", name:"Metric Units", tag:"mm · cm · m · km · g · kg · mL · L.",
       glyph:'k<span class="slash">→</span>m',
       eyebrow:'convert <b>↓</b>', expr:true, unlockedBy:"largermd", masterSecs:7, group:"Measures",
       build(){ return shuffle(METRIC_SRC).map(metricItem); }
@@ -651,7 +653,7 @@
       // PICKER lists it as a Reasoning topic (group is independent of the chain).
       id:"scaling", name:"Scaling", tag:"Unit-rate proportion.",
       glyph:'a<span class="slash">→</span>b',
-      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:percentoff", masterSecs:10, group:"Reasoning",
+      eyebrow:'same rule — in proportion <b>↓</b>', expr:true, requires:"mastery:percentoff", masterSecs:10, group:"Reasoning",
       build(){ return shuffle(SCALING_P1_SRC).map(scalingItem); }
     },
     {
@@ -672,7 +674,7 @@
       // addsub → addsub2 → balance. Group "Reasoning" for the picker.
       id:"balance", name:"Balance", tag:"Complete the sum.",
       glyph:'k<span class="slash">±</span>',
-      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:addsub2", masterSecs:9, group:"Reasoning",
+      eyebrow:'make both sides equal <b>↓</b>', expr:true, requires:"mastery:addsub2", masterSecs:9, group:"Reasoning",
       build(){ return shuffle(BALANCE_P1_SRC).map(balanceItem); }
     },
     // ---- T162 P2 — 4 more mock-driven drill gaps ---------------------------
@@ -728,7 +730,7 @@
       // "+/− fluency required" is met via the spine route addsub→bonds→bonds2.
       id:"money", name:"Money", tag:"£ totals & change.",
       glyph:'a<span class="slash">×</span>k',
-      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:bonds2", masterSecs:9, group:"Core",
+      eyebrow:'answer in £ <b>↓</b>', expr:true, requires:"mastery:bonds2", masterSecs:9, group:"Core",
       build(){ return shuffle(MONEY_P3_SRC).map(moneyItem); }
     },
     {
