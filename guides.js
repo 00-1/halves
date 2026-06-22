@@ -215,7 +215,7 @@
       intro: "You're given a PART and must find the whole it came from — work backwards.",
       tips: [
         "A unit fraction reverses by multiplying: if ⅕ of it is 6, the whole is 6 × 5.",
-        "A percentage reverses too: if 10% is 9, the whole is 9 × 10.",
+        "A percentage reverses by scaling up to 100%: 50% → ×2, 25% → ×4, 20% → ×5, 10% → ×10.",
         "Check it makes sense — the whole must be BIGGER than the part."
       ],
       example: "¼ of ? = 7 → one quarter is 7, so four quarters → 7 × 4 → 28."
