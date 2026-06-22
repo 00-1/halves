@@ -139,6 +139,15 @@
       ],
       example: "2/5 → each fifth is 0.2, so two of them → 0.4."
     },
+    fractions2: {
+      intro: "The harder terminating ones — eighths and sixteenths — by repeated halving.",
+      tips: [
+        "An eighth is a half of a half of a half: 1/8 = 0.125. Count up: 3/8 = 0.375.",
+        "A sixteenth halves again: 1/16 = 0.0625 (four decimal places).",
+        "Count in the unit fraction: 5/8 is five lots of 0.125."
+      ],
+      example: "3/16 → one sixteenth is 0.0625, so three of them → 0.1875."
+    },
     squares: {
       intro: "A square is a number times itself.",
       tips: [
@@ -395,7 +404,7 @@
         if(pct === 1)  return "1% is one hundredth — find a hundredth of " + amt + ".";
         if(pct === 75) return "75% is a half plus a quarter — add half of " + amt + " and a quarter of " + amt + ".";
         return pct + "% — build it up from one tenth of " + amt + "."; }
-      case "fractions": { const m = p.match(/(\d+)\/(\d+)/); if(!m) break; const nu = +m[1], d = +m[2];
+      case "fractions": case "fractions2": { const m = p.match(/(\d+)\/(\d+)/); if(!m) break; const nu = +m[1], d = +m[2];
         const s = nu === 1 ? "" : "s";   // singular unit noun when there's just one
         if(d === 2)  return "It sits exactly halfway between 0 and 1 — write that midpoint as a decimal.";
         if(d === 10) return nu + " tenth" + s + " — read it straight off as a decimal.";

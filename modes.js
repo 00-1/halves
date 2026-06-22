@@ -67,14 +67,22 @@
   // "handy" ones (20²/25²/30²). 16²–19² trimmed as beyond GL 11+ recall (T30).
   const SQUARES_SRC  = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,25,30];
   // Common fractions and their (terminating) decimal forms.
+  // Part 1 — the Year-6 RECALL set: halves/quarters, fifths, tenths, twentieths
+  // (the last link to percentages via ×5). T213 2b — the eighths and the 4-dp
+  // sixteenth moved to a locked Part-2 `fractions2` (research-11plus.md marks ⅛/
+  // sixteenths as Part-2 stretch; 1/16 = 0.0625 exceeds base recall calibration).
   const FRACTIONS_SRC = [
     ["1/2",0.5],  ["1/4",0.25], ["3/4",0.75],
     ["1/5",0.2],  ["2/5",0.4],  ["3/5",0.6],  ["4/5",0.8],
-    ["1/8",0.125],["3/8",0.375],["5/8",0.625],["7/8",0.875],
     ["1/10",0.1], ["3/10",0.3], ["7/10",0.7], ["9/10",0.9],
-    // twentieths family — terminating, and the link to percentages (×5 = %)
-    ["1/20",0.05],["3/20",0.15],["9/20",0.45],["11/20",0.55],["17/20",0.85],
-    ["1/16",0.0625]
+    ["1/20",0.05],["3/20",0.15],["9/20",0.45],["11/20",0.55],["17/20",0.85]
+  ];
+  // Part 2 (locked) — the harder terminating fraction→decimal: eighths and
+  // sixteenths (up to 4 decimal places). All exact / numpad-clean.
+  const FRACTIONS2_SRC = [
+    ["1/8",0.125], ["3/8",0.375], ["5/8",0.625], ["7/8",0.875],
+    ["1/16",0.0625], ["3/16",0.1875], ["5/16",0.3125], ["7/16",0.4375],
+    ["9/16",0.5625], ["11/16",0.6875], ["13/16",0.8125], ["15/16",0.9375]
   ];
   // Add/Subtract fixed sets — each entry [a, b, sub]: sub=0 → "a + b", sub=1 →
   // "a − b". Part 1: 2-digit ± within 100 (non-negative), a representative spread
@@ -397,7 +405,7 @@
     [47, 10, 50], [83, 10, 80], [126, 10, 130], [274, 10, 270], [68, 10, 70], [351, 10, 350], [99, 10, 100],
     [6832, 100, 6800], [241, 100, 200], [1749, 100, 1700], [383, 100, 400], [962, 100, 1000], [4520, 100, 4500],
     [2841, 1000, 3000], [7263, 1000, 7000], [1730, 1000, 2000], [849, 1000, 1000], [6190, 1000, 6000],
-    [3472, 1000, 3000], [560, 100, 600], [88, 10, 90]
+    [3472, 1000, 3000], [638, 100, 600], [88, 10, 90]
   ];
   // `largermd` — Larger ×/÷: 2-digit × 1-digit, and 2-digit ÷ 1-digit with clean
   // (integer) results. Each entry [a, op, b, A] with op ∈ {"×","÷"}.
@@ -615,6 +623,14 @@
       build(){ return shuffle(FRACTIONS_SRC).map(([f,d]) => ({ p:f, a:d })); }
     },
     {
+      // T213 2b — eighths & sixteenths (the 4-dp stretch) as a LOCKED Part-2 off
+      // `fractions` (single-child branch; the recall set stays in Part-1).
+      id:"fractions2", name:"Fractions II", tag:"Eighths & sixteenths as decimals.",
+      glyph:'<span class="slash">⅛</span>',
+      eyebrow:'as a decimal <b>↓</b>', expr:false, requires:"mastery:fractions", masterSecs:5, group:"Fractions & %",
+      build(){ return shuffle(FRACTIONS2_SRC).map(([f,d]) => ({ p:f, a:d })); }
+    },
+    {
       id:"squares", name:"Squares", tag:"Square it.",
       glyph:'x<span class="slash">²</span>',
       eyebrow:'square of <b>↓</b>', expr:false, unlockedBy:"fractions", masterSecs:3.5, group:"Core",
@@ -799,6 +815,7 @@
     percentages:  ["*%"],
     percentages2: ["n","*%"],
     fractions:    ["*f34"],
+    fractions2:   ["*f18"],            // ⅛ — eighths/sixteenths Part-2 (distinct from ¾)
     squares:      ["x","*s2"],
     // T162 P1 — each new mode gets an accented operator marking its shape, using
     // only chars the pixel font supports (BIG: 0-9, a, b, n, k, x, ×, ÷, +, −,

@@ -5880,3 +5880,20 @@ pool hid which skill was being asked).
   (glyph distinctness holds across all 31 modes; tech-tree node/branch counts are data-driven).
 verified: full suite **54/54**. [A]-only (modes.js, guides.js, tests). Then queued: the rest of 2b
 (`fractions` 1/16 re-tier, `cubes`+roots, `ratioshare` ordering) + 2c; T168 held on Play ID-verify.
+
+---
+### [A] T213 round 2 follow-ups + 2b re-tiers — digitsum/partwhole fixes, rounding swap, fractions Part-2
+Round-2 guide fixes (pushed separately): **🔴 `digitsum`** remainder ÷9 correctness (multiples of 9 → remainder
+0, not the digital root 9; guide + answer-free explain) and **`partwhole`** reverse-% tip generalised
+(50/25/20/10%). Then the remaining 2b re-tiers:
+- **`rounding` 560 → 638** — the audit flagged "560 to nearest 100" as a tie twice; it isn't (560 mod 100 = 60 →
+  600, and the t59 gate already proves the set tie-free), but I swapped it for 638 (→600, a clean round-DOWN
+  example) to clear the repeated flag and add boundary variety.
+- **`fractions` 1/16 → locked Part-2 `fractions2`** — the eighths and the 4-dp sixteenth exceed base recall
+  calibration (research-11plus.md marks ⅛/sixteenths as Part-2 stretch). Base `fractions` now holds the Year-6
+  recall set (halves/quarters, fifths, tenths, twentieths, 16 items); new locked `fractions2` (chains off
+  `fractions`, group Fractions & %) holds eighths + sixteenths as terminating decimals (12 items, up to 4 dp).
+  Its own glyph `⅛`, guide, and reused `explain()` (the d=8/16 branches already existed). 
+verified: full suite **54/54**. hero-icons catalogue 1615 → 1636 (fractions2's per-mode collectibles).
+glyphs distinctness holds across all 32 modes; tech-tree/guides-coverage/hints green. [A]-only (modes.js,
+guides.js, tests). Remaining: `cubes`+roots, then 2c (de-dup + harness regression gate). T168 held on Play ID.
