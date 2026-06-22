@@ -403,6 +403,37 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
     ok(ov.backend.glParts && ov.backend.glParts.every(p => p.look !== 1), "T193: the GL splat receives ONLY non-coin confetti (look!==1) — coins are drawn on the overlay, not the shader");
   } finally { global.document = savedDoc; }
 })();
+// T193 (RE-OPEN) — the live money-gain shower is burst({look:"coin"})→seedBurst, which used to
+// DROP opts.look → coins rendered as SQUARES on the owner's device. Gate the seeding path itself:
+// (a) a look:"coin" BALLISTIC burst tags every particle look:1 + the spin fields drawCoinParticle
+// needs; (b) the default (no look) burst stays plain confetti (look unset); (c) the GL splat is
+// routed only the confetti, the coins go to the 2D overlay.
+(function(){
+  const coins = FXGL.seedBurst({ look: "coin", count: 40, seed: 7 }, false, FXGL.BURST_CAP);
+  const conf = FXGL.seedBurst({ count: 40, seed: 7 }, false, FXGL.BURST_CAP);
+  ok(coins.length > 0 && coins.every(p => p.look === 1), "T193 re-open: seedBurst({look:'coin'}) tags EVERY particle look:1 (the bug: opts.look was dropped → squares)");
+  ok(coins.every(p => typeof p.spin === "number" && typeof p.wob === "number" && typeof p.phase === "number" && typeof p.rot === "number"),
+     "T193 re-open: each coin carries the SPIN fields (rot/spin/wob/phase) drawCoinParticle animates — a tumbling cylinder, not a static disc");
+  ok(coins.some(p => Math.abs(p.spin) > 0.5) && new Set(coins.slice(0, 20).map(p => Math.round(p.phase * 50))).size > 8,
+     "T193 re-open: the coin spins genuinely vary (non-zero, varied phase) — they visibly rotate");
+  ok(coins.every(p => p.tx == null), "T193 re-open: a burst coin is BALLISTIC (no converge target) → drawCoinParticle flies it on burstPos");
+  ok(conf.every(p => p.look == null), "T193 re-open: the DEFAULT burst (no look) is still plain confetti (look unset) — unchanged");
+  ok(coins[0].r >= coins[0].b, "T193 re-open: coins default to the GOLD ramp (R ≥ B) when no palette given");
+  // the integration teeth: burst({look:'coin'}) on a GL backend routes coins OFF the splat.
+  const savedDoc = global.document; let made = null;
+  global.document = { createElement(){ made = { width:0, height:0, className:"", style:{}, setAttribute(){},
+    getContext(){ return { globalAlpha:1, set fillStyle(v){}, get fillStyle(){ return "#000"; }, clearRect(){}, fillRect(){},
+      beginPath(){}, ellipse(){}, fill(){}, save(){}, restore(){}, translate(){}, rotate(){}, scale(){} }; } }; return made; } };
+  try{
+    const cv = stubCanvas(390, 844); cv.className = "fx-backdrop"; cv.parentNode = { insertBefore(){} };
+    const c = new FXGL.Controller(cv, { backend: "2d", ctx2d: { fillRect(){}, clearRect(){}, createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}), putImageData(){} }, raf: () => 1, caf: () => {}, width: 390, height: 844, dpr: 2, reducedMotion: false });
+    c.backend = { name: "webgl2", w: 780, h: 1688, pxScale: 2, glParts: null, resize(w,h){ this.w=w; this.h=h; }, setData(){}, setBurst(p){ this.glParts = p; } };
+    c.derived = FXGL.deriveScene({ grid: [[[20,20,30]]], seed: 5 }, 200);
+    c.burst({ look: "coin", count: 30, seed: 7 });
+    ok(c.backend.glParts && c.backend.glParts.every(p => p.look !== 1) && c.burst_.parts.some(p => p.look === 1),
+       "T193 re-open: burst({look:'coin'}) keeps the coins in burst_.parts but routes ONLY confetti to the GL splat → coins composite as cylinders on the overlay (the real money-gain fix)");
+  } finally { global.document = savedDoc; }
+})();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FX-GOLDEN CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

@@ -6,6 +6,38 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T193 (RE-OPEN) — the money-gain burst tagged no coins → fixed `seedBurst`/`seedCelebrate` to honor `look:"coin"` ([B], CHANGES REQUESTED)
+
+Babysitter re-opened (my earlier renderer was correct but never fired): the live money-gain
+shower is **`burst({look:"coin"})` → `seedBurst`**, and `seedBurst` (and `seedCelebrate`) **never
+read `opts.look`** — so particles were never tagged `look:1`, `_ignite`'s router sent them to the
+shader splat, and they rendered as **squares** on the owner's device (owner: "still no coins,
+unchanged"). `drawCoinParticle` + the overlay routing (T193) were fine but received no coin-tagged
+particles. Fix in `fxgl.js`:
+- **`seedBurst`/`seedCelebrate` now honor `opts.look === "coin"`:** each particle gets `look:1`
+  plus the spin fields `drawCoinParticle` animates (`rot`/`spin`/`wob`/`phase`), and the colour
+  pool defaults to the **gold ramp** (`GOLD_TONES`) when no palette is given. The coin's extra
+  rng draws live **only** inside the `if(coin)` branch → the default-confetti seed sequence (and
+  `fx_burst`/`fx_celebrate` goldens) are **byte-identical**. Coins are ballistic (no converge
+  target) so `drawCoinParticle` flies them on `burstPos`.
+- The existing `_ignite` routing already keeps coins in `burst_.parts` while sending only
+  `look!==1` confetti to the GL splat, and `_syncOverlay` draws the `look===1` coins as spinning
+  cylinders on the 2D overlay — so the fix lights up on every backend incl. the device.
+- 🌐 **Browser-verified on WebGL2**: `burst({look:"coin"})` with no hoard throws spinning
+  cell-shaded cylinder coins on the overlay (`burst-coin-webgl.png`), not squares.
+
+Why the suite missed it (now gated): no test asserted the **seeding path** tagged coins.
+Added the gate — **golden-fx 82** (+7 T193-re-open assertions: `seedBurst({look:'coin'})` tags
+every particle `look:1` + carries varied spin fields + defaults to gold + stays ballistic; the
+default burst is still plain confetti (`look` unset); and `burst({look:'coin'})` on a GL backend
+routes ONLY confetti to the splat while keeping coins for the overlay). `node -c` clean; full
+Node suite green (fxgl 124 / hoard-wiring 47 / fx-wiring 84 / synth 177 / emblems 61);
+render/visual/audio gates green; confetti goldens unchanged. B-only (`fxgl.js`,
+`test/golden-fx.test.js`, `test/browser/coinburst-capture.js`). Owner device-confirms (force-
+refresh the PWA). **Next B: T197 (dither the coins) → T199 → T200.**
+
+---
+
 ## T196 — hoard rises GRADUALLY: ~100+ fine height levels via STABLE ACCUMULATION ([B], owner-reported)
 
 Owner: *"more gradations of pile HEIGHT — not just 8, maybe 100. The user should see it gradually

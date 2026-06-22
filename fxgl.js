@@ -241,19 +241,26 @@
     const scale = reduced ? 0.35 : 1;
     const n = Math.max(0, Math.min(cap | 0, Math.round(want * scale)));
     const rng = makeRng((opts.seed | 0) || 0x51ed270b);
-    let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor) : [[255, 217, 138], [255, 255, 255]];
+    // T193 (re-open) — a COIN shower: when the caller asks for `look:"coin"` (the money-gain
+    // burst), tag each particle look:1 + spin fields so the controller routes it to the 2D coin
+    // layer (drawCoinParticle → a spinning cell-shaded CYLINDER) on EVERY backend, instead of
+    // the shader splat (which renders a square). Default to the gold ramp when no palette given.
+    const coin = opts.look === "coin";
+    let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor)
+             : coin ? GOLD_TONES.slice() : [[255, 217, 138], [255, 255, 255]];
     if(!pool.length) pool = [[255, 255, 255]];
     const sprd = spreadMul(opts);                            // T152: tighten/widen the spray
     const sMax = (reduced ? 0.22 : 0.85) * sprd;             // peak outward speed (screen-frac/s)
     const up = reduced ? 0.10 : 0.42;       // upward kick (confetti arc)
     const lMax = reduced ? 0.7 : 1.4;       // longest life (s)
     const spin = reduced ? 1.5 : 9;         // rotation rate spread
-    const sz = sizeRange(opts, 2, reduced ? 4 : 7);          // T152: small/fine via sizePx/sizeScale
+    const sz = coin ? sizeRange(opts, reduced ? 5 : 6, reduced ? 8 : 12)   // coins read a touch bigger
+                    : sizeRange(opts, 2, reduced ? 4 : 7);                  // T152: small/fine confetti
     const out = new Array(n);
     for(let i = 0; i < n; i++){
       const ang = rng() * TAU, spd = lerp(0.14 * sprd, sMax, rng());
       const col = pool[(rng() * pool.length) | 0];
-      out[i] = {
+      const p = {
         x0: x0, y0: y0,
         vx: Math.cos(ang) * spd,
         vy: Math.sin(ang) * spd - lerp(up * 0.4, up, rng()),  // bias upward
@@ -263,6 +270,15 @@
         vrot: lerp(-spin, spin, rng()),
         birth: 0
       };
+      // coin extras (extra rng draws live ONLY in this branch, so the confetti seed sequence —
+      // and its goldens — are byte-identical when look!=="coin").
+      if(coin){
+        p.look = 1;
+        p.rot = rng() * TAU;
+        p.spin = (reduced ? 0.6 : 1) * lerp(6, 15, rng()) * (rng() < 0.5 ? -1 : 1);   // tumble as it flies
+        p.wob = lerp(7, 16, rng()); p.phase = rng() * TAU;                            // face↔edge tip rate + phase
+      }
+      out[i] = p;
     }
     return out;
   }
@@ -281,7 +297,11 @@
     const scale = reduced ? 0.3 : 1;
     const n = Math.max(0, Math.min(cap | 0, Math.round(want * scale)));
     const rng = makeRng((opts.seed | 0) || 0x9e3a17c5);
+    // T193 (re-open) — a coin shower variant here too (look:"coin" → gold cylinders on the 2D
+    // coin layer); the default festive confetti is unchanged.
+    const coin = opts.look === "coin";
     let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor)
+             : coin ? GOLD_TONES.slice()
              : [[255, 217, 138], [255, 255, 255], [120, 220, 255], [255, 140, 200], [180, 255, 160]];   // bright, festive
     if(!pool.length) pool = [[255, 255, 255]];
     const sprd = spreadMul(opts);                            // T152: tighten/widen the spray
@@ -289,12 +309,13 @@
     const up = reduced ? 0.3 : 0.9;         // tall fountain launch
     const lMax = reduced ? 1.0 : 2.4;       // longer-lived (a real shower)
     const spin = reduced ? 2 : 11;
-    const sz = sizeRange(opts, 6, reduced ? 8 : 18);         // T152: small/fine via sizePx/sizeScale (default bold flakes)
+    const sz = coin ? sizeRange(opts, reduced ? 6 : 8, reduced ? 9 : 16)
+                    : sizeRange(opts, 6, reduced ? 8 : 18);  // T152: small/fine via sizePx/sizeScale (default bold flakes)
     const out = new Array(n);
     for(let i = 0; i < n; i++){
       const ang = rng() * TAU, spd = lerp(0.2 * sprd, sMax, rng());
       const col = pool[(rng() * pool.length) | 0];
-      out[i] = {
+      const p = {
         x0: x0, y0: y0,
         vx: Math.cos(ang) * spd,
         vy: Math.sin(ang) * spd - lerp(up * 0.5, up, rng()),  // strong upward launch → arc + fall
@@ -304,6 +325,13 @@
         vrot: lerp(-spin, spin, rng()),
         birth: 0
       };
+      if(coin){   // extra rng draws live ONLY here → confetti goldens unchanged
+        p.look = 1;
+        p.rot = rng() * TAU;
+        p.spin = (reduced ? 0.6 : 1) * lerp(6, 15, rng()) * (rng() < 0.5 ? -1 : 1);
+        p.wob = lerp(7, 16, rng()); p.phase = rng() * TAU;
+      }
+      out[i] = p;
     }
     return out;
   }

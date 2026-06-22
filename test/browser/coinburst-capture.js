@@ -46,7 +46,10 @@ const VIEWPORT = { width: 390, height: 844 }, DPR = 2.75;
       window.__fx = fx;
       fx.setScene({ grid: [[[26,16,44]]], seed: 5, hoard: { level: 0.72, seed: 9 } });
       fx.start();
-      fx.earnBurst({ x: 0.5, y: 0.18, tx: 0.5, ty: 0.78, count: 48, amount: 250, seed: 11 });
+      // T193 (re-open) — fire the EXACT live money-gain path: burst({look:"coin"}). Before the
+      // fix this rendered squares on the GL device (seedBurst dropped opts.look); it must now
+      // throw spinning cell-shaded cylinder coins on the 2D overlay.
+      fx.burst({ look: "coin", x: 0.5, y: 0.55, count: 60, seed: 11 });
       return { backend: fx.backend && fx.backend.name, dims: fx.dimensions() };
     });
 
