@@ -6,6 +6,21 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T163 — firm up the brittle `visual_arena` golden ([B], follow-up to T154)
+
+T154's `visual_arena` golden captured a per-cell hue grid, but the Arena's content is
+**dynamic** (3v3 enemy team + death-VFX + gold vary per run / environment), so a single
+cell would flip → spurious mismatch (it violated T154's own "robust signature, not a
+brittle pixel diff" rule). Fix: a `dynamic` flag on the screen config — dynamic screens
+(Arena) now sign as **`{active, element-PRESENCE booleans}`** only (no volatile colour
+grid / bbox). Structurally stable across runs+environments, still catches "arena broke /
+key control gone". Re-blessed `visual_arena`. Colour precision stays where there's a
+fixed baseline (home flagship + home/audio grids — both byte-identical, untouched).
+Verified: `node -c` clean, deterministic over 3 runs, full suite + all 3 browser gates
+green. B-owned (`test/browser/visual.test.js`, `test/golden/visual_arena.json`).
+
+---
+
 ## T154 — key-screen VISUAL-REGRESSION gate (extends the T150 harness) ([B], proactive)
 
 The session's recurring pain: visual regressions only the owner catches (the blue

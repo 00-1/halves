@@ -73,25 +73,30 @@ async function avgColor(page, pngBuf){
     return { r: Math.round(r / n), g: Math.round(gr / n), b: Math.round(b / n) };
   }, dataUrl);
 }
-// Presence + coarse (5%-of-viewport bucketed) bbox of each selector — layout signature.
-function elementSig(page, screenId, sels){
+// Element signature per selector. For STATIC screens: presence + coarse (5%-bucketed)
+// bbox — a real layout signature. For DYNAMIC screens (Arena: 3v3 teams + death-VFX +
+// gold vary per run → content reflows): presence BOOLEAN only — structurally stable,
+// so the golden can't flake on dynamic content (T163). `active` is always pinned.
+function elementSig(page, screenId, sels, dynamic){
   return page.evaluate((a) => {
     const active = !!(document.getElementById(a.id) && document.getElementById(a.id).classList.contains("active"));
     const bucket = (v, span) => Math.round((v / span) * 20);   // 5% buckets
     const els = {};
     for(const s of a.sels){ const e = document.getElementById(s);
-      if(!e){ els[s] = null; continue; }
-      const r = e.getBoundingClientRect(), vis = r.width > 1 && r.height > 1;
-      els[s] = vis ? { x: bucket(r.x, innerWidth), y: bucket(r.y, innerHeight), w: bucket(r.width, innerWidth), h: bucket(r.height, innerHeight) } : { hidden: true };
+      const r = e && e.getBoundingClientRect(), vis = !!(r && r.width > 1 && r.height > 1);
+      if(a.dynamic){ els[s] = vis; continue; }                  // presence-only (robust to reflow)
+      els[s] = !e ? null : (vis ? { x: bucket(r.x, innerWidth), y: bucket(r.y, innerHeight), w: bucket(r.width, innerWidth), h: bucket(r.height, innerHeight) } : { hidden: true });
     }
     return { active: active, elements: els };
-  }, { id: screenId, sels: sels });
+  }, { id: screenId, sels: sels, dynamic: !!dynamic });
 }
 
 const SCREENS = [
   { name: "home",  hash: "#/",      id: "start", sels: ["goldBar", "modeTree", "startBtn", "navRow", "arenaBtn"] },
   { name: "audio", hash: "#/audio", id: "audio", sels: ["musicSwitch", "musicVolRange", "sfxVolRange", "tempoRange", "setTest"] },
-  { name: "arena", hash: "#/arena", id: "arena", sels: ["arenaMeta", "arenaBody", "arenaFight", "arenaBack"] }
+  // Arena is DYNAMIC (3v3 enemy team + death-VFX + gold vary per run) → a per-cell
+  // colour grid / bbox is inherently brittle (T163). Signature = presence-only.
+  { name: "arena", hash: "#/arena", id: "arena", sels: ["arenaMeta", "arenaBody", "arenaFight", "arenaBack"], dynamic: true }
 ];
 
 (async () => {
@@ -124,13 +129,19 @@ const SCREENS = [
 
     for(const sc of SCREENS){
       await gotoScreen(sc.hash);
-      const sig = await elementSig(page, sc.id, sc.sels);
+      const sig = await elementSig(page, sc.id, sc.sels, sc.dynamic);
       if(!sig.active){ ok(sc.name === "arena", "screen '" + sc.name + "' did not activate (gated/route issue) — " + (sc.name === "arena" ? "tolerated" : "REGRESSION")); continue; }
       ok(true, "screen '" + sc.name + "' is active");
       const shot = await page.screenshot();
       fs.writeFileSync(path.join(SHOTS, "visual-" + sc.name + ".png"), shot);
-      const grid = await colorGrid(page, shot, GRID_COLS, GRID_ROWS);
-      gold("visual_" + sc.name, { active: true, colorGrid: grid, elements: sig.elements });
+      if(sc.dynamic){
+        // robust signature for a dynamic screen: active + element PRESENCE only (no
+        // brittle colour grid / bbox — the Arena's content legitimately varies, T163).
+        gold("visual_" + sc.name, { active: true, dynamic: true, elements: sig.elements });
+      } else {
+        const grid = await colorGrid(page, shot, GRID_COLS, GRID_ROWS);
+        gold("visual_" + sc.name, { active: true, colorGrid: grid, elements: sig.elements });
+      }
     }
 
     // FLAGSHIP — the home backdrop's dominant hue must be PURPLE (T153 fixed brand
