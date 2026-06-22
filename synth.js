@@ -591,8 +591,19 @@
   //     long 0.9 tail, keeps its washy identity via its high reverb SEND 0.55 + slow
   //     60 BPM instead.) Authoritative proof: test/browser/audio.test.js renders all
   //     12 styles' REAL reverb bounded ≤ 2, and 0.9 divergent.
+  //
+  // (3) T175 — the 0.78 cap was NOISE-safe but TONAL-MARGINAL. A SUSTAINED tonal pad
+  //     (the T155 `padglass` triangle — concentrated low-freq energy + long sustain)
+  //     sits on an FDN comb resonance where the effective loop gain ≈ 1, so over the
+  //     reverb's multi-second fill it RAMPS UP to a rail = the owner's recurring
+  //     "foghorn" (music starts nice, builds to pain). The 5 s white-noise gate missed
+  //     it (broadband ≠ a sustained tone on a comb peak). Measured (16 s sustained
+  //     `padglass` chord, worst over sends 0.1–0.55): decay 0.78 → 143 (diverges), but
+  //     ≤ 0.70 stays ~0.5. Cap lowered to 0.66 (subcritical for tonal input, with
+  //     margin), PLUS a safety compressor on the reverb RETURN (buildGraph) so any
+  //     residual buildup DECAYS to a ceiling instead of railing — defence in depth.
   const FDN_DAMP_Q = -3.0103;   // dB → linear 0.7071 (Butterworth, measured passive: peak gain 1.0)
-  const FDN_DECAY_DEFAULT = 0.78, FDN_DECAY_MAX = 0.78;   // 0.78: measured-safe (0.80 marginal, ≥0.82 diverges)
+  const FDN_DECAY_DEFAULT = 0.66, FDN_DECAY_MAX = 0.66;   // T175: tonal-safe (sustained pad: ≤0.70 bounded, 0.78 → foghorn)
   function makeReverb(ctx, opts){
     opts = opts || {};
     const decay = opts.decay == null ? FDN_DECAY_DEFAULT : opts.decay;   // feedback gain (<1 → stable)
@@ -637,7 +648,7 @@
 
   // ---- engine state + graph --------------------------------------------------
   const E = { ctx:null, master:null, limiter:null, music:null, drum:null, sfx:null,
-              reverb:null, musicSend:null, drumSend:null, noiseBuf:null, muted:false, ready:false };
+              reverb:null, reverbComp:null, musicSend:null, drumSend:null, noiseBuf:null, muted:false, ready:false };
 
   function makeNoiseBuffer(ctx){
     const sr = ctx.sampleRate || 44100, len = Math.max(1, Math.floor(sr));   // 1 s, reused
@@ -660,9 +671,20 @@
     E.music = ctx.createGain(); E.music.gain.value = 1; E.music.connect(E.master);
     E.drum  = ctx.createGain(); E.drum.gain.value = 1;  E.drum.connect(E.master);
     E.sfx   = ctx.createGain(); E.sfx.gain.value = 1;   E.sfx.connect(E.master);
-    // space: one shared reverb; music + drums send into it (dry stays on master)
+    // space: one shared reverb; music + drums send into it (dry stays on master).
+    // T175 — SAFETY COMPRESSOR on the reverb RETURN: the FDN is subcritical (decay
+    // 0.66), but if any sustained tone ever rides a comb mode the wet would still
+    // swell; this caps the return so a runaway DECAYS to a ceiling, never rails the
+    // master limiter into the sustained "foghorn" drone. Threshold ~-3 dB (0.7) →
+    // it's TRANSPARENT at the normal wet level (~0.5) and only bites on a buildup.
     E.reverb = makeReverb(ctx);
-    E.reverb.output.connect(E.master);
+    if(ctx.createDynamicsCompressor){
+      E.reverbComp = ctx.createDynamicsCompressor();
+      try{ E.reverbComp.threshold.value = -3; E.reverbComp.knee.value = 0; E.reverbComp.ratio.value = 12; E.reverbComp.attack.value = 0.005; E.reverbComp.release.value = 0.12; }catch(e){}
+      E.reverb.output.connect(E.reverbComp); E.reverbComp.connect(E.master);
+    } else {
+      E.reverb.output.connect(E.master);
+    }
     E.musicSend = ctx.createGain(); E.musicSend.gain.value = 0.22; E.music.connect(E.musicSend); E.musicSend.connect(E.reverb.input);
     E.drumSend  = ctx.createGain(); E.drumSend.gain.value = 0.10;  E.drum.connect(E.drumSend);   E.drumSend.connect(E.reverb.input);
     E.noiseBuf = makeNoiseBuffer(ctx);
@@ -759,7 +781,7 @@
     CONTEXTS: CONTEXTS, STYLE_IDS: STYLE_IDS, hashStr: hashStr,
     styles: function(){ return STYLE_IDS.map(function(id){ return { id: id, label: CONTEXTS[id].label }; }); },   // launcher list (for [A]/T140)
     // introspection (tests / the [A] wire)
-    buses: function(){ return { master: E.master, limiter: E.limiter, music: E.music, drum: E.drum, sfx: E.sfx, reverb: E.reverb, musicSend: E.musicSend, drumSend: E.drumSend }; },
+    buses: function(){ return { master: E.master, limiter: E.limiter, music: E.music, drum: E.drum, sfx: E.sfx, reverb: E.reverb, reverbComp: E.reverbComp, musicSend: E.musicSend, drumSend: E.drumSend }; },
     noiseBuffer: function(){ return E.noiseBuf; },
     // T151: the FDN topology + the (max) per-style decays — so the divergence gate
     // can faithfully simulate the reverb feedback and prove the tail is bounded.

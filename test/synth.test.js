@@ -53,9 +53,11 @@ ok(typeof Synth.mount === "function" && typeof Synth.play === "function", "Synth
 Synth.mount({ ctx: StubCtx(rec) });
 const buses = Synth.buses();
 ok(buses.master && buses.limiter && buses.music && buses.drum && buses.sfx, "mount builds master + limiter + music/drum/sfx buses");
-ok(rec.types.comp === 1, "the master chain has a brickwall limiter (DynamicsCompressor)");
+ok(rec.types.comp === 2, "two compressors: the master brickwall limiter + the T175 reverb-return safety");
+ok(!!buses.reverbComp, "the reverb RETURN has a safety compressor (T175 — a runaway wet DECAYS, never rails the limiter into a foghorn)");
 const has = (a, b) => rec.conns.some(c => c[0] === a && c[1] === b);
 ok(has("gain", "comp") && has("comp", "destination"), "master → limiter → destination");
+ok(has("gain", "comp"), "reverb output → safety compressor → master (the reverb return is bounded before it sums)");
 // the three submix buses feed the master (gain→gain)
 ok(rec.conns.filter(c => c[0] === "gain" && c[1] === "gain").length >= 3, "music/drum/sfx buses → master");
 ok(Math.abs(buses.master.gain.value - Synth.MASTER_VOL) < 1e-9, "master gain = MASTER_VOL");
@@ -571,12 +573,13 @@ ok(typeof Synth.setReverbDecay === "function", "setReverbDecay is exposed");
 // style's actual reverb and asserts peak ≤ 2. This Node guard is the cheap CI
 // backstop that the shipped CONSTANTS never leave the safe range.)
 //
-// Measured (OfflineAudioContext, real BiquadFilters, 5 s continuous excitation @ the
-// 0.22 send level): 0.78 SOLID (~0.45 every run) · 0.80 ON THE CLIFF (0.45↔2.4,
-// excitation-dependent) · 0.82 → 2.4 · 0.83 → 9.9. → cap at 0.78, below the cliff.
+// Measured: under NOISE, 0.78 was bounded — but T175 found that under a SUSTAINED
+// TONAL pad (the T155 triangle `padglass` on an FDN comb mode) 0.78 RAMPS to a rail
+// (the "foghorn"); ≤0.70 stays ~0.5 over a 16 s sustained chord. So the cap is now the
+// tonal-safe 0.66. (The reverb-return safety compressor is the second line of defence.)
 // ===========================================================================
 (function(){
-  const SAFE_DECAY_CEILING = 0.78;   // measured: ≤0.78 solidly bounded; 0.80 marginal; ≥0.82 diverges
+  const SAFE_DECAY_CEILING = 0.70;   // T175: ≤0.70 bounded for sustained TONAL input; 0.78 → foghorn
   const P = Synth.reverbParams();
   ok(typeof P === "object" && P.times.length === 4, "reverbParams() exposes the FDN topology (4 lines)");
 

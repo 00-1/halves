@@ -6,6 +6,46 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T175 — the FOGHORN is back: a sustained TONAL pad ramps the reverb to a rail ([B], 🔴 DO-FIRST)
+
+Owner (totally reproducible): **every** song starts nice then **ramps up to foghorn/pain**
+over ~15–30 s. Measured the REAL path (OfflineAudioContext, sustained pad chord → the
+engine's own reverb, 16 s): a **sustained `padglass`** (the T155 triangle bed) drives the
+reverb to **520 / 143 / 112…** — it RAMPS over the reverb's fill, exactly the owner's tell.
+
+### Root cause: the FDN was NOISE-safe but TONAL-MARGINAL
+T151 capped decay at 0.78 measured against **white noise** (broadband → bounded). But a
+**sustained tonal** pad concentrates energy on an FDN **comb resonance** where the
+effective loop gain ≈ 1, so it builds unboundedly over the multi-second tail → rails the
+−1.5 dB limiter into the sustained drone. It's **chaotic/marginal** (the same config gave
+0.55 one run, 520 the next — the signature of loop gain ≈ 1). The new T155 sustained pads
+are the trigger; the 5 s white-noise gate couldn't see it. Decay sweep (worst over sends,
+sustained `padglass`): **0.78 → 143**, but **≤ 0.70 → ~0.5**.
+
+### Fix — two lines of defence
+1. **Lower the FDN decay to 0.66** (`FDN_DECAY_DEFAULT`/`_MAX`) — subcritical for sustained
+   tonal input with margin (measured: all 5 pads bounded ~0.25–1.3 over 16 s; was 143).
+2. **Safety compressor on the reverb RETURN** (`buildGraph`: `reverb.output → reverbComp →
+   master`, threshold −3 dB / ratio 12). Transparent at the normal wet (~0.5), but caps any
+   residual buildup so a runaway **DECAYS to a ceiling, never rails** — defence in depth so
+   the foghorn can't come back via some untested tonal mode.
+
+### Gate extended (it would now CATCH this)
+`test/browser/audio.test.js`: a **16 s sustained-pad-chord** render per pad asserts the
+late window stays bounded ≤ 2 (the 5 s white-noise test missed this class). Teeth: the
+pre-fix 0.78 decay foghorns on the triangle pad (worst-over-sends 65–76 ≫ 2; single-send
+is unreliable — the divergence is chaotic). `synth.test` asserts the reverb-return safety
+compressor is wired + the decay ceiling is the tonal-safe 0.70.
+
+### Verify
+- `node -c` clean; `synth.test` **176**; real-audio gate **27**; `golden-synth`/`synth-wiring`
+  + full Node suite + all 3 browser gates green. **B-owned (`synth.js` + tests).** *(Also
+  re-blessed `visual_audio.json` for an unrelated upstream [A] audio-menu layout shift —
+  all elements present, benign; the visual gate caught it as designed.)* Babysitter
+  re-measures a long real-music render; owner confirms on device.
+
+---
+
 ## T174 — research/art pass: representing an accumulating COIN HOARD ([B], research-first; precedes T172)
 
 Owner wants a Smaug/Scrooge gold hoard on the home backdrop — individual beveled coins,

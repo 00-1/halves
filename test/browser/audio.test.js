@@ -155,6 +155,39 @@ function skip(why){ console.log("\nSKIP (real-audio gate not run): " + why + "\n
       ok(fl.withFlush < fl.noFlush * 0.05, "T165: flush() DRAINS the FDN tail — post-flush energy " + fl.withFlush.toExponential(2) + " ≪ 5% of the un-flushed " + fl.noFlush.toExponential(2) + " (no carry-over past a switch)");
     }
 
+    // ---- T175: a SUSTAINED TONAL pad must not ramp the reverb to a foghorn ---------
+    // The recurring foghorn: a sustained tonal pad (the T155 triangle padglass) on an
+    // FDN comb mode RAMPS UP over the reverb fill to a rail. The old 5 s white-noise
+    // test missed it (broadband ≠ a sustained tone on a comb peak). Render each pad as
+    // a sustained chord into the reverb for 16 s (worst over sends) and assert the LATE
+    // window stays bounded — this is the test that catches this class.
+    const fog = await page.evaluate(async () => {
+      const SR = 44100, OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, S = window.Synth, SECS = 16;
+      if(!OAC) return { unsupported: true };
+      async function latePeak(pad, send, decay){
+        const ctx = new OAC(1, Math.round(SR * SECS), SR);
+        const rv = S.makeReverb(ctx, decay == null ? {} : { decay: decay });   // default = the shipped (safe) decay
+        const g = ctx.createGain(); g.gain.value = send; g.connect(rv.input); rv.output.connect(ctx.destination);
+        [50, 53, 57].forEach(m => S.renderVoice(ctx, g, S.PATCHES[pad], S.hz(m), 0, SECS - 1));   // a sustained pad chord
+        const d = (await ctx.startRendering()).getChannelData(0);
+        let p = 0; for(let i = Math.round((SECS - 2) * SR); i < d.length; i++){ const v = Math.abs(d[i]); if(v > p) p = v; }
+        return p;
+      }
+      const sends = [0.1, 0.16, 0.22, 0.3, 0.4, 0.55];
+      const pads = Object.keys(S.PATCHES).filter(n => n.indexOf("pad") === 0), worst = {};
+      for(const pad of pads){ let mx = 0; for(const send of sends) mx = Math.max(mx, await latePeak(pad, send, null)); worst[pad] = +mx.toFixed(3); }
+      // teeth: at the pre-fix 0.78 decay the triangle pad foghorns. The divergence is
+      // CHAOTIC per-send (marginal stability), so take the WORST over sends — reliably ≫ 2.
+      let dv = 0; for(const send of sends) dv = Math.max(dv, await latePeak("padglass", send, 0.78));
+      return { worst: worst, divergeAt078: +dv.toFixed(3) };
+    }, null);
+    if(!fog.unsupported){
+      let wmax = 0, wpad = "";
+      for(const pad of Object.keys(fog.worst)){ const v = fog.worst[pad]; if(v > wmax){ wmax = v; wpad = pad; } ok(v <= PEAK_MAX, "T175: sustained '" + pad + "' bed stays BOUNDED over 16 s (late peak " + v + " ≤ " + PEAK_MAX + ")"); }
+      ok(wmax <= PEAK_MAX, "T175: NO pad ramps the reverb to a foghorn over 16 s (worst " + wmax + " @ '" + wpad + "')");
+      ok(fog.divergeAt078 > PEAK_MAX, "the gate HAS TEETH: the pre-fix decay 0.78 DOES foghorn on a sustained triangle pad (late peak " + fog.divergeAt078 + " ≫ " + PEAK_MAX + ")");
+    }
+
     await browser.close();
   } catch(e){
     fails++; console.log("  FAIL: harness error — " + (e && e.stack || e));
