@@ -42,7 +42,7 @@ const sw = read("sw.js");
 ok(/addEventListener\("fetch"/.test(sw) && /addEventListener\("install"/.test(sw) && /addEventListener\("activate"/.test(sw), "(c) sw.js has install/activate/fetch handlers");
 // the update-flow safety: build.json + navigations are network-first; build.json never cached
 ok(/isBuild/.test(sw) && /req\.mode === "navigate"/.test(sw), "(c) sw.js distinguishes navigations + build.json (the update-critical requests)");
-ok(/isNav \|\| isBuild/.test(sw) && /await fetch\(req\)/.test(sw), "(c) navigations + build.json are NETWORK-FIRST (a new deploy + the T54 version check always reach the user)");
+ok(/isNav \|\| isBuild/.test(sw) && /await fetch\(req,\s*\{\s*cache:\s*"no-store"\s*\}\)/.test(sw), "(c) navigations + build.json are NETWORK-FIRST with cache:'no-store' (a new deploy + the T54 version check always reach the user, defeating the HTTP-cache shadow)");
 ok(/!isBuild/.test(sw) && sw.indexOf("!isBuild") < sw.lastIndexOf("c.put"), "(c) sw.js NEVER caches build.json (the version check reads fresh)");
 ok(/caches\.keys\(\)[\s\S]{0,160}caches\.delete/.test(sw), "(c) activate cleans superseded caches (no stale-forever assets)");
 ok(/self\.skipWaiting\(\)/.test(sw) && /clients\.claim\(\)/.test(sw), "(c) the SW takes over promptly (skipWaiting + clients.claim)");
@@ -52,12 +52,12 @@ const { bust } = require("../scripts/cachebust.js");
 const built = bust(html, "abc1234");
 ok(!/manifest\.webmanifest\?v=/.test(built) && !/sw\.js\?v=/.test(built) && !/icon\.svg\?v=/.test(built), "(d) cache-bust leaves the manifest/sw/icon refs BARE (the browser manages those itself)");
 
-// ---- (e) T158: the SW must NOT serve STALE same-origin app JS from cache ------
-// The bug that froze the installed PWA ("foghorn"): un-versioned scripts cached
-// cache-first → forever stale. Run the REAL fetch handler in a fake SW sandbox and
-// prove a same-origin app script resolves NETWORK-FIRST (fresh wins over a stale
-// cached copy), while cross-origin fonts stay cache-first + build.json is never
-// cached + the CACHE name is bumped so activate purges the poisoned cache.
+// ---- (e) T158: nav/build.json no-store; immutable ?v= assets stay cache-first --
+// The deployed assets are ?v=-versioned (immutable), so cache-first on them is
+// CORRECT — the staleness risk is the nav DOCUMENT shadowed by the HTTP cache. Run
+// the REAL fetch handler in a fake SW sandbox and prove: navigations + build.json
+// are fetched cache:"no-store" (defeat the shadow), versioned assets are served
+// cache-first, fonts are cache-first, build.json is never cached, CACHE is bumped.
 (async function swBehaviour(){
   const origin = "https://halves.example";
   const listeners = {};
@@ -69,13 +69,13 @@ ok(!/manifest\.webmanifest\?v=/.test(built) && !/sw\.js\?v=/.test(built) && !/ic
   let deleted = [];
   const cachesObj = {
     async open(){ return theCache; },
-    async keys(){ return ["halves-static-v1", "halves-static-v2"]; },
+    async keys(){ return ["halves-static-v2", "halves-static-v3"]; },
     async delete(k){ deleted.push(k); return true; },
     async match(req){ return theCache.match(req); }
   };
   const mkRes = tag => ({ ok:true, type:"basic", _tag:tag, clone(){ return this; } });
   let netHits = [];
-  const fetchImpl = async (req) => { netHits.push(req.url || req); return mkRes("NET"); };
+  const fetchImpl = async (req, init) => { netHits.push({ url: req.url || req, cache: init && init.cache }); return mkRes("NET"); };
   const ResponseObj = { error: () => mkRes("ERR") };
   const selfObj = { addEventListener(t, fn){ listeners[t] = fn; }, skipWaiting(){}, clients:{ claim(){} }, location:{ origin } };
   // run sw.js with the SW globals injected as locals
@@ -87,26 +87,28 @@ ok(!/manifest\.webmanifest\?v=/.test(built) && !/sw\.js\?v=/.test(built) && !/ic
     listeners.fetch({ request:req, respondWith(p){ captured = p; } });
     return captured;
   };
-  // same-origin app JS: a STALE copy sits in cache, a FRESH one on the network
-  cacheStore.set(origin + "/synth.js", mkRes("STALE"));
-  const rJs = await dispatch(origin + "/synth.js");
-  ok(rJs && rJs._tag === "NET", "(e) T158: same-origin app JS (synth.js) is NETWORK-FIRST — fresh network copy wins over a STALE cached one (no foghorn)");
-  cacheStore.set(origin + "/main.js", mkRes("STALE"));
-  const rMain = await dispatch(origin + "/main.js");
-  ok(rMain && rMain._tag === "NET", "(e) T158: main.js is also network-first (the installed PWA gets the latest UI)");
-  // cross-origin fonts stay cache-first (served from cache, no network)
+  const lastHit = () => netHits[netHits.length - 1];
+  // a navigation is network-first + cache:"no-store" (no stale index.html shadow)
+  const rNav = await dispatch(origin + "/", "navigate");
+  ok(rNav && rNav._tag === "NET" && lastHit() && lastHit().cache === "no-store", "(e) T158: navigations are fetched NETWORK-FIRST with cache:'no-store' (a stale index.html can't shadow a deploy)");
+  // build.json: no-store, network-first, and NEVER cached
+  const rBuild = await dispatch(origin + "/build.json");
+  ok(rBuild && rBuild._tag === "NET" && lastHit().cache === "no-store" && !cacheStore.has(origin + "/build.json"), "(e) build.json is no-store + network-first + NEVER cached (the T54/T161 version check reads fresh)");
+  // an immutable ?v= asset already in cache is served CACHE-FIRST (no network)
+  cacheStore.set(origin + "/synth.js?v=abc123", mkRes("CACHED"));
+  const beforeJs = netHits.length;
+  const rJs = await dispatch(origin + "/synth.js?v=abc123");
+  ok(rJs && rJs._tag === "CACHED" && netHits.length === beforeJs, "(e) immutable ?v= assets are CACHE-FIRST (a new deploy = new ?v= URL = cache miss = fresh; no stale pin)");
+  // cross-origin fonts stay cache-first too
   const fontUrl = "https://fonts.example/f.woff2";
   cacheStore.set(fontUrl, mkRes("FONTCACHE"));
   const beforeFont = netHits.length;
   const rFont = await dispatch(fontUrl);
-  ok(rFont && rFont._tag === "FONTCACHE" && netHits.length === beforeFont, "(e) cross-origin fonts stay CACHE-FIRST (offline-fast, no needless network)");
-  // build.json: network-first AND never cached (the T54 version check reads fresh)
-  const rBuild = await dispatch(origin + "/build.json");
-  ok(rBuild && rBuild._tag === "NET" && !cacheStore.has(origin + "/build.json"), "(e) build.json stays network-first + NEVER cached (T54 update check unbroken)");
-  // the CACHE name is bumped + activate purges the stale v1
-  ok(/const CACHE = "halves-static-v2"/.test(sw), "(e) T158: CACHE bumped v1→v2 (so activate drops the poisoned cache)");
+  ok(rFont && rFont._tag === "FONTCACHE" && netHits.length === beforeFont, "(e) cross-origin fonts stay CACHE-FIRST (offline-fast)");
+  // the CACHE name is bumped + activate purges the prior cache
+  ok(/const CACHE = "halves-static-v3"/.test(sw), "(e) T158: CACHE bumped (so activate drops index.html cached under the prior policy)");
   let waited; listeners.activate({ waitUntil(p){ waited = p; } }); await waited;
-  ok(deleted.indexOf("halves-static-v1") >= 0, "(e) activate purges the stale v1 cache on the new SW");
+  ok(deleted.indexOf("halves-static-v2") >= 0, "(e) activate purges the superseded cache on the new SW");
 
   console.log("\n" + (fails === 0 ? "ALL " + checks + " PWA CHECKS PASSED" : fails + "/" + checks + " FAILED"));
   process.exit(fails ? 1 : 0);

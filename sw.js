@@ -1,26 +1,27 @@
 /*
- * Halves — service worker (T102; T158 fix). Caches assets for offline WITHOUT
- * pinning stale code or breaking the T54 update flow:
- *   - navigation requests (index.html), `build.json`, AND every same-origin app
- *     asset (.js / .css / .html / .json / .svg / the manifest) → NETWORK-FIRST.
- *     Our scripts are loaded UN-versioned (no `?v=<sha>`), so cache-firsting them
- *     froze the installed PWA on the first-seen copy — a stale pre-T151 synth.js
- *     ran the diverging FDN reverb (the "foghorn") and main.js never updated.
- *     Network-first means a correctness fix lands on the very next ONLINE launch;
- *     the cache is only the OFFLINE fallback. `build.json` is never cached so the
- *     T54 version check always reads fresh.
- *   - cross-origin, genuinely-immutable assets (the web-font CSS/files) →
- *     CACHE-FIRST (safe + fast + offline), cached on first fetch.
+ * Halves — service worker (T102; T158 rescoped). Offline + always-fresh updates,
+ * without pinning stale code:
+ *   - navigation requests (index.html) + `build.json` → NETWORK-FIRST and fetched
+ *     with `cache:"no-store"`. T107/cachebust appends `?v=<sha>` to every deployed
+ *     script, so the ASSETS are immutable + safe to cache-first; the real staleness
+ *     risk is the navigation DOCUMENT — a plain fetch goes through the browser HTTP
+ *     cache and GH-Pages serves index.html with a max-age, so the SW could be handed
+ *     a STALE index.html (old `?v=` refs → old JS) even online. `no-store` defeats
+ *     that shadow; the cache is the OFFLINE fallback. `build.json` is never cached
+ *     (the T54/T161 version check reads fresh).
+ *   - everything else — the immutable `?v=<sha>` app assets + the cross-origin web
+ *     fonts → CACHE-FIRST (fast + offline; a new deploy = new `?v=` URL = cache miss
+ *     = fresh fetch). This is correct precisely because those URLs are versioned.
  * No-build: this file is served as-is and registered by main.js.
  */
-const CACHE = "halves-static-v2";   // T158: v1→v2 so `activate` PURGES the cache that pinned stale JS
+const CACHE = "halves-static-v3";   // T158: bump so activate purges any index.html cached under the prior policy
 
 self.addEventListener("install", () => { self.skipWaiting(); });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));   // drop superseded caches (incl. the poisoned v1)
+    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));   // drop superseded caches
     await self.clients.claim();
   })());
 });
@@ -31,16 +32,15 @@ self.addEventListener("fetch", (e) => {
   let url; try{ url = new URL(req.url); }catch(_){ return; }
   const isNav = req.mode === "navigate";
   const isBuild = url.pathname.replace(/\/+$/, "").endsWith("/build.json") || url.pathname.endsWith("build.json");
-  const sameOrigin = url.origin === self.location.origin;
 
-  // NETWORK-FIRST for navigations, build.json, AND all same-origin app assets.
-  // (T158: our app code is un-versioned, so it must never be served stale from
-  // cache while a network copy exists — cache is the offline net only.)
-  if(isNav || isBuild || sameOrigin){
+  if(isNav || isBuild){
+    // NETWORK-FIRST + no-store: always pull the freshest index.html/build.json
+    // (bypass the HTTP cache so a stale document can't shadow a deploy). The cache
+    // is the offline net; build.json is never cached (the version check reads fresh).
     e.respondWith((async () => {
       try{
-        const res = await fetch(req);
-        if(res && res.ok && !isBuild){ const c = await caches.open(CACHE); c.put(req, res.clone()); }   // never cache build.json
+        const res = await fetch(req, { cache: "no-store" });
+        if(res && res.ok && !isBuild){ const c = await caches.open(CACHE); c.put(req, res.clone()); }
         return res;
       }catch(_){
         const cached = await caches.match(req);
@@ -50,7 +50,8 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // CACHE-FIRST only for cross-origin, immutable assets (the web fonts).
+  // CACHE-FIRST for the immutable, version-busted (?v=<sha>) assets + the fonts.
+  // (Correct because each deploy gives a NEW ?v= URL → a cache miss → a fresh copy.)
   e.respondWith((async () => {
     const cached = await caches.match(req);
     if(cached) return cached;

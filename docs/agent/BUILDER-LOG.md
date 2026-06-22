@@ -4795,3 +4795,27 @@ how I verified: new **`back-nav.test.js` (13 checks, gated in `pages.yml`)** boo
 notes: **owner device-verify** — on the installed PWA, the system back should step Arena/menus → home and only
   exit (after a confirm) from home, never quitting mid-game. Next per `NEXT.md`: **`T159`** (cold-start audio
   hardening) → `T89`/`T90` (done) → content.
+
+---
+
+## Builder A — T158 (rescoped): SW nav/build.json fetched no-store (kill the stale-index.html shadow)
+commit: (this commit) — [A]. **Corrects my earlier T158 (`e454208`) — that diagnosis was WRONG.** T107/cachebust
+appends `?v=<sha>` to EVERY deployed script, so the assets are versioned + immutable and cache-firsting them is
+CORRECT (a new deploy = new URL = cache miss = fresh). The real staleness is the **navigation document**: the
+SW's network-first nav did a plain `fetch(req)` that goes through the browser HTTP cache, and GH-Pages serves
+`index.html` with a max-age → Firefox could hand the SW a STALE `index.html` (old `?v=` refs → old JS) even
+online (the owner's Firefox-frozen-pre-3v3).
+fix ([A]-only, `sw.js`):
+  - **Reverted** the network-first-for-all-same-origin-assets change; the cache-first branch for the immutable
+    `?v=` assets + cross-origin fonts is restored (it's correct).
+  - The network-first branch (navigations + `build.json`) now fetches with **`cache:"no-store"`** so the freshest
+    document is always pulled, defeating the HTTP-cache shadow; offline still falls back to cache; `build.json`
+    still never cached.
+  - **Bumped `CACHE` → `v3`** so `activate` purges any `index.html` cached under the prior (network-first-all)
+    policy. `skipWaiting`+`clients.claim` kept.
+how I verified: **`pwa.test` (27)** — the behavioural SW sandbox now proves navigations + `build.json` are
+  fetched **`cache:"no-store"`** (network-first), the immutable **`?v=` assets are served CACHE-FIRST** (no
+  network when cached), fonts stay cache-first, `build.json` is never cached, and `CACHE` is bumped + `activate`
+  purges the superseded cache. `node -c sw.js` clean; **full suite green**. [A]-only (`sw.js`, `test/pwa.test.js`).
+notes: pairs with T161 (now live) — with the truthful marker the owner can SEE Firefox advance to the deploy sha
+  + 3v3 appear after a reload. Next per `NEXT.md`: **`T159`** (foghorn-on-resume) → `T160` (Arena death VFX).
