@@ -295,6 +295,35 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
   const early = litCentroidY(0.1), late = litCentroidY(0.7);
   ok(early > 0 && late > early, "T172: the earn burst CONVERGES — lit centroid moves from the earn-point (y≈" + early.toFixed(2) + ") toward the hoard (y≈" + late.toFixed(2) + ")");
 })();
+// T185 — the hoard must draw on the WebGL/WebGPU backends too (the live bug: only the CPU
+// backend drew it → invisible on the owner's device). The Controller composites it on a 2D
+// OVERLAY canvas for non-CPU backends; here we drive _syncHoard with a stub GL backend +
+// stub document and assert it CREATES the overlay and DRAWS the pile into it.
+(function(){
+  const savedDoc = global.document;
+  let created = null;
+  function recCanvas(){ const calls = []; return { width: 0, height: 0, className: "", style: {}, setAttribute(){},
+    getContext(){ return { _fills: calls, globalAlpha: 1, set fillStyle(v){}, get fillStyle(){ return "#000"; },
+      clearRect(){}, fillRect(x, y, w, h){ calls.push([x | 0, y | 0, w | 0, h | 0]); },
+      beginPath(){}, ellipse(){}, fill(){}, save(){}, restore(){}, translate(){}, rotate(){}, scale(){} }; } }; }
+  global.document = { createElement(tag){ created = recCanvas(); return created; } };
+  try{
+    const cv = stubCanvas(390, 844); cv.className = "fx-backdrop"; cv.parentNode = { insertBefore(){} };
+    const ov = new FXGL.Controller(cv, { backend: "2d", ctx2d: { fillRect(){}, clearRect(){}, createImageData: (w,h) => ({ data: new Uint8ClampedArray(w*h*4) }), putImageData(){} }, raf: () => 1, caf: () => {}, width: 390, height: 844, dpr: 2, reducedMotion: false });
+    // force a non-CPU backend + a hoard scene, then sync the overlay
+    ov.backend = { name: "webgl2", w: 780, h: 1688, pxScale: 2 };
+    ov.derived = FXGL.deriveScene({ grid: [[[20,20,30]]], seed: 5, hoard: { level: 0.8, seed: 9 } }, 200);
+    ov._syncHoard();
+    ok(created !== null, "T185: a non-CPU backend with a hoard CREATES a 2D overlay canvas (was invisible on WebGL)");
+    ok(created && created.width === 780 && created.height === 1688, "T185: the overlay buffer matches the GL backend size (" + (created && created.width) + "×" + (created && created.height) + ")");
+    const fills = created && created.getContext()._fills;
+    ok(fills && fills.length > 50, "T185: the hoard is DRAWN into the overlay (" + (fills ? fills.length : 0) + " fills — the mound silhouette + coins)");
+    // no hoard → the overlay is cleared, not redrawn
+    ov.derived = FXGL.deriveScene({ grid: [[[20,20,30]]], seed: 5 }, 200);
+    ov._syncHoard();
+    ok(true, "T185: _syncHoard handles a scene with no hoard without error (clears the overlay)");
+  } finally { global.document = savedDoc; }
+})();
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FX-GOLDEN CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

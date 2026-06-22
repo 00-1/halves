@@ -1177,6 +1177,31 @@
       ctx.fillStyle = toHex(shade(rgb, 0.5)); ctx.fillRect((cx - hw / 2) | 0, (cy - hh / 2) | 0, hw, hh);
     }
   }
+  // T172/T185 — render the settled hoard into ANY 2D ctx (buffer W×H, pxScale): a dithered
+  // gold mound SILHOUETTE (the implied bulk, a shaded shape — not particles) + the beveled
+  // SURFACE coins on top. Backend-agnostic so the CPU still AND the WebGL/WebGPU 2D OVERLAY
+  // (T185) share one identical draw (the live bug: the GL/GPU backends never drew the hoard).
+  function drawHoard(ctx, h, W, H, pxScale){
+    if(!ctx || !ctx.fillRect || !h || h.level <= 0) return;
+    const base = h.palette && h.palette.length ? parseColor(h.palette[1] || h.palette[0]) : GOLD_TONES[1];
+    if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
+    const step = Math.max(2, Math.round(W / 160));   // column width for the silhouette fill
+    for(let px = 0; px < W; px += step){
+      const x = (px + step / 2) / W, mh = moundProfile(x, h.level, h.seed);
+      if(mh <= 0) continue;
+      const top = Math.round((1 - mh) * H);
+      for(let y = top; y < H; y += step){
+        const depth = (y - top) / Math.max(1, H - top);     // 0 crest → 1 base (fake AO)
+        ctx.fillStyle = toHex(shade(base, 0.25 - depth * 0.6));
+        ctx.fillRect(px, y, step + 1, step + 1);
+      }
+    }
+    const scale = pxScale || 1;
+    for(const c of h.coins){
+      const r = Math.max(2, Math.round(c.size * scale)) / 2;
+      drawCoin(ctx, c.x * W, c.y * H, r, c.rot || 0, c.aspect || 1, [c.r, c.g, c.b], 0);
+    }
+  }
   function CPUBackend(ctx2d){ this.name = "cpu-still"; this.ctx = ctx2d; this.w = 1; this.h = 1; this.burst = null; this.pxScale = 1; }
   CPUBackend.prototype.setData = function(derived){ this.derived = derived; };
   CPUBackend.prototype.setBurst = function(parts){ this.burst = parts; this.burstCount = parts.length; };
@@ -1244,29 +1269,7 @@
   // SILHOUETTE (the implied bulk, drawn as a shaded shape — not particles), then
   // (2) the beveled SURFACE coins on top. The eye infers "amassed" from the lit
   // silhouette; only the surface is ever drawn.
-  CPUBackend.prototype._hoard = function(h){
-    const ctx = this.ctx, W = this.w, H = this.h; if(!ctx.fillRect) return;
-    const base = h.palette && h.palette.length ? parseColor(h.palette[1] || h.palette[0]) : GOLD_TONES[1];
-    if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
-    const step = Math.max(2, Math.round(W / 160));   // column width for the silhouette fill
-    for(let px = 0; px < W; px += step){
-      const x = (px + step / 2) / W, mh = moundProfile(x, h.level, h.seed);
-      if(mh <= 0) continue;
-      const top = Math.round((1 - mh) * H);
-      // depth shade: darker toward the base (fake AO), brighter near the crest
-      for(let y = top; y < H; y += step){
-        const depth = (y - top) / Math.max(1, H - top);     // 0 crest → 1 base
-        ctx.fillStyle = toHex(shade(base, 0.25 - depth * 0.6));
-        ctx.fillRect(px, y, step + 1, step + 1);
-      }
-    }
-    // surface coins (static settled pile — the WebGL backdrop shimmers; the still is calm)
-    const scale = this.pxScale || 1;
-    for(const c of h.coins){
-      const r = Math.max(2, Math.round(c.size * scale)) / 2;
-      drawCoin(ctx, c.x * W, c.y * H, r, c.rot || 0, c.aspect || 1, [c.r, c.g, c.b], 0);
-    }
-  };
+  CPUBackend.prototype._hoard = function(h){ drawHoard(this.ctx, h, this.w, this.h, this.pxScale); };
   CPUBackend.prototype.dispose = function(){};
 
   // =========================================================================
@@ -1347,6 +1350,7 @@
     // on a Poco-X3 → drawn but invisible). Hand the CPU 2D path this factor so it draws
     // particles at a constant, visible *screen* size regardless of device DPR.
     this.backend.pxScale = Math.max(1, dpr * q.res);
+    this._syncHoard();   // T185: re-fit + redraw the hoard overlay at the new buffer size
   };
   Controller.prototype._init = function(){
     const o = this.opts;
@@ -1454,8 +1458,40 @@
     if(this.backend){
       this.backend.setData(this.derived);
       if(this._isStill()) this._renderOnce();   // reduced/no-GPU → refresh the still
+      this._syncHoard();                          // T185: draw the pile on the 2D overlay (GL/GPU backends)
     }
     return this;
+  };
+  // T185 — the gold hoard was INVISIBLE on the live build: only CPUBackend drew it, but
+  // the real device runs WebGL2/WebGPU (which ignore `derived.hoard`). Fix: composite the
+  // hoard via a backend-agnostic 2D OVERLAY canvas stacked directly over the scene canvas
+  // (same box + z, inserted just after it → over the purple backdrop, under the UI), reusing
+  // the exact `drawHoard` 2D code. CPU still draws it inline (no overlay needed there).
+  Controller.prototype._ensureHoardCanvas = function(){
+    if(this._hoardCv !== undefined) return this._hoardCv;   // created once (or null if impossible)
+    const cv = this.canvas;
+    if(!cv || typeof document === "undefined" || !document.createElement || !cv.parentNode){ this._hoardCv = null; return null; }
+    const ov = document.createElement("canvas");
+    ov.setAttribute("aria-hidden", "true");
+    ov.className = ((cv.className || "") + " fxgl-hoard").replace(/\bhidden\b/g, "").trim();   // same box/z as the backdrop, never display:none
+    ov.style.pointerEvents = "none";
+    if(!cv.className){ const s = ov.style; s.position = "absolute"; s.left = "0"; s.top = "0"; s.width = "100%"; s.height = "100%"; }
+    cv.parentNode.insertBefore(ov, cv.nextSibling);   // just ABOVE the backdrop (same z, later in DOM), below the UI
+    try{ this._hoardCtx = ov.getContext("2d"); }catch(e){ this._hoardCtx = null; }
+    this._hoardCv = this._hoardCtx ? ov : null;
+    return this._hoardCv;
+  };
+  Controller.prototype._syncHoard = function(){
+    const be = this.backend, d = this.derived;
+    if(!be || be.name === "cpu-still") return;             // the CPU still draws the hoard inline
+    const hoard = (d && d.hoard && d.hoard.level > 0) ? d.hoard : null;
+    if(!hoard){ if(this._hoardCtx && this._hoardCv) this._hoardCtx.clearRect(0, 0, this._hoardCv.width, this._hoardCv.height); return; }
+    const ov = this._ensureHoardCanvas(); if(!ov || !this._hoardCtx) return;
+    const W = be.w | 0, H = be.h | 0;
+    if(ov.width !== W) ov.width = W;
+    if(ov.height !== H) ov.height = H;
+    this._hoardCtx.clearRect(0, 0, W, H);
+    drawHoard(this._hoardCtx, hoard, W, H, be.pxScale || 1);
   };
   // Semantic home backdrop (T95): derive a calm ambient scene from live home
   // state and apply it. Re-callable as state changes (progress / event / streak).
@@ -1534,7 +1570,7 @@
     return this._ignite(seedConverge(opts, this.reduced, BURST_CAP));
   };
   Controller.prototype.resize = function(){ this._applyResize(); if(this.backend && this._isStill() && this.derived) this._renderOnce(); return this; };
-  Controller.prototype.dispose = function(){ this.stop(); this.burst_.active = false; if(this.rafId){ this.caf(this.rafId); this.rafId = 0; } if(this.backend) this.backend.dispose(); this.backend = null; this.ready = false; return this; };
+  Controller.prototype.dispose = function(){ this.stop(); this.burst_.active = false; if(this.rafId){ this.caf(this.rafId); this.rafId = 0; } if(this.backend) this.backend.dispose(); this.backend = null; this.ready = false; if(this._hoardCv && this._hoardCv.parentNode) this._hoardCv.parentNode.removeChild(this._hoardCv); this._hoardCv = undefined; this._hoardCtx = null; return this; };
   Controller.prototype.isAnimating = function(){ return this._ambientLoops(); };
   Controller.prototype.isBursting = function(){ return this.burst_.active; };
   Controller.prototype.particleCount = function(){ return this.derived ? this.derived.particles.length : 0; };

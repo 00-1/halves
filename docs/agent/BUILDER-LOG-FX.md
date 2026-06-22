@@ -6,6 +6,35 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T185 — the gold hoard was INVISIBLE on-device: only the CPU backend drew it ([B], 🔴 DO-FIRST)
+
+Owner: 1T gold, no pile on home. Babysitter-verified root cause: T172 rendered the hoard
+**only in `CPUBackend._still`**; the real device runs **WebGL2/WebGPU**, whose `setData`/
+`renderFrame` ignore `derived.hoard` entirely → the mound + coins were never drawn (exactly
+the "not displaying at all" the owner saw). This was the GL-vs-CPU risk I flagged on T172.
+
+### Fix — a backend-agnostic 2D OVERLAY (the Babysitter's recommended option)
+Extracted the hoard draw to a standalone **`drawHoard(ctx, hoard, W, H, pxScale)`** (CPU
+still + the overlay share one identical 2D draw — the beveled mound + coins). The Controller
+now composites the hoard on a **2D overlay canvas** for non-CPU backends (`_syncHoard` +
+`_ensureHoardCanvas`): it dynamically creates a `<canvas>` sibling of the scene canvas,
+copies its class/box (so it inherits `.fx-backdrop`: `position:fixed; inset:0; z-index:-1`)
+minus `hidden`, `pointer-events:none`, inserted **just after** the backdrop → paints **over
+the purple backdrop, under the UI** (the owner's "over the backdrop, behind the buttons").
+Sized to the GL buffer + redrawn on `setScene`/resize; CPU still draws it inline (no overlay).
+**No `index.html` change needed** — the Controller owns the overlay.
+
+### Verify
+- 🌐 **Browser-verified** (`?dev&gold=1e12` → home, dpr 2.75): the overlay canvas mounts
+  (912×1973, `z-index:-1`, `position:fixed`) with a real gold pile (399 lower-half gold px;
+  was 0). `node -c` clean; new headless test drives `_syncHoard` with a stub GL backend →
+  asserts the overlay is created, sized to the GL buffer (780×1688), and the pile is drawn
+  (7220 fills). Existing scenes byte-identical when `scene.hoard` is absent; full Node suite
+  (incl. `fx-wiring` + `hoard-wiring`) + all 3 browser gates green. **B-owned** (`fxgl.js` +
+  `test/golden-fx.test.js`).
+
+---
+
 ## T183 — research: study-friendly music + brighten the dark/bassy `lofi` ([B], owner-feedback)
 
 Owner: "audio switching sounds very good now; only the Lo-Fi Study is a bit dark/bassy —
