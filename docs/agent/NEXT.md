@@ -16,6 +16,10 @@
   **bump `CACHE` v3→v4** so existing users get purged on next visit. DoD: after a normal revisit the Install dialog
   shows **Goblin Gold + Magnar**, and future deploys propagate. [A]-only (`sw.js`, `index.html`). **Launch blocker.**
   *(BACKLOG T201.)*
+- **`T202` — entry/splash mark = Magnar too** (owner). `renderBrand()` paints the **x/2 glyph** onto the `#entry`
+  `.mark` canvas via `paintGlyph(el, byId("halves"))`; swap it to paint **Magnar** (`ICON_HERO="hero:mo"`) reusing
+  T194's icon renderer (`C.iconColorGrid`), pixelated at the mark size, portrait on the dark bg (no tile square).
+  Keep the Goblin Gold wordmark. Quick visual win. [A]-only (`main.js`). *(BACKLOG T202.)*
 - **`T198` — hoard fills too fast.** `hoardLevel = log10(1+gold)/log10(1e12)` → 25% at 1k, 40% at 60k. Recurve with a
   **floor-offset log**: `clamp((log10(1+gold)−log10(GOLD_EMPTY))/(log10(GOLD_FULL)−log10(GOLD_EMPTY)),0,1)`,
   `GOLD_EMPTY`≈100–1k, `GOLD_FULL`≈1e15 → **1k≈5%, 60k≈15–20%, 1M≈30%, 1Bn≈55%, 1T≈75%, 1e15 full** (tune vs

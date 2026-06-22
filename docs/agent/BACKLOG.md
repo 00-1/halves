@@ -3136,6 +3136,21 @@ already says `name:"Goblin Gold"` and points at `icon-512.png`/`icon-192.png` (M
   page-info icon left of the URL → Site settings → **Clear & reset** → revisit; or uninstall the PWA then clear site
   data. A plain refresh won't fix it — the SW serves the manifest from cache.)*
 
+### T202 — [A] **Entry/splash mark = Magnar too** (replace the `x/2` glyph) · status: OPEN · owner-requested
+**Owner (2026-06-22): "should also put Magnar instead of x/2 on the entry screen."** The entry/splash `.mark`
+(`#entry` in `index.html`) is painted by **`renderBrand()`** (`main.js`) → `paintGlyph(el, byId("halves"), 10)`,
+which draws the **x/2 Halves-topic glyph** onto a `<canvas>` in `.mark` (CSS `.mark canvas{image-rendering:pixelated}`).
+Swap it for **Magnar** so the splash matches the new app icon (T194).
+- **Fix (`main.js`, `renderBrand`):** paint **Magnar** (`ICON_HERO = "hero:mo"`, `HERO_PAL.Brawn`, "familiar")
+  onto the `.mark` canvas instead of the halves glyph — **reuse T194's icon renderer** (`C.iconColorGrid(ICON_HERO,
+  …)` / the same draw `installFavicon` uses), nearest-neighbour/pixelated at the `.mark` size
+  (`height:clamp(54px,18vw,92px)`). Default to **Magnar's portrait on the entry's dark bg** (transparent, no icon
+  background square — the character reads better on the splash than the maskable tile). Keep the "Goblin Gold"
+  wordmark + tag as-is. Update the stale `renderBrand` comment ("the topic mark stays x/2").
+- **DoD:** the entry/splash shows **Magnar** (not x/2), crisp/pixelated at the mark size, matching the T194 launcher
+  icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
+  device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
+
 ### T199 — [B] **A full pile should reach the TOP of the screen** (1T still leaves a gap) · status: OPEN · owner-reported
 **Owner (2026-06-22): "1T still doesn't fill the screen — although it's better than what we had before."** T192
 raised **`HOARD_MAX_H` 0.34 → 0.82**, so a level-1.0 pile climbs ~82% and stops short of the ceiling.
