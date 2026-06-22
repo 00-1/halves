@@ -2690,17 +2690,18 @@ localised small bursts; reuse the existing `fxBigBurst` + the `elCentre(el)` hel
   triggers a localised burst at the foe cell (centroid ≈ the cell, small `sizePx`) — turn it into a gate, not
   just a visual. **[A]-only** (`main.js`, arena tests). **Verify:** browser-confirm the per-death bursts fire
   from the foe cells when the harness is back; until then the owner confirms on the live build + the wiring gate.
-  **⚠ Depends on T158 landing first** — until the SW cache fix ships, this VFX won't reach the owner's installed
-  PWA (it'd serve stale `main.js`). Sequence: T158 → T160.
+  **⚠ Sequence after the trust fixes** — land **T161** (truthful build marker) + **T158** (no-store nav) first so
+  this VFX actually reaches the owner's clients and they can confirm via a truthful build number. Sequence:
+  T161 → T158 → T160.
 
-### T159 — [A]-led / [B]-support: harden COLD-START audio so a first PWA launch can't foghorn · status: OPEN · investigation (owner-observed, transient)
-**Owner (2026-06-22): "sound is really bad in PWA — like a foghorn"**, then after a **relaunch: "it sounds
-good."** A transient, self-clearing artifact on the **very first cold launch** of the installed PWA → the most
-likely cause is the **AudioContext / synth coming up in a bad state on first run** (a stuck or runaway voice, or
-the FDN reverb fed garbage during an interrupted/partial init), which a clean relaunch resets. Foghorn = a loud
-sustained low drone = a voice/feedback that never released. Reproducing needs a real device + a genuine *first*
-post-install launch (hard headless, esp. with the harness OOM-down) — so this is **investigation + defensive
-hardening**, not a blind code change.
+### T159 — [A]-led / [B]-support: fix the foghorn on AudioContext resume (app-switch / cold-start) · status: OPEN · 🔴 BUG (now REPRODUCIBLE)
+**Owner (2026-06-22): "the foghorn came back on PWA when switching between apps."** (Earlier: foghorn on first
+launch, gone on relaunch.) **Upgraded from transient-investigation to a real, reproducible bug** with a clear
+trigger: **backgrounding the PWA and returning** (app-switch) → the OS **suspends the AudioContext**, and on
+resume the engine comes back **in a bad state** → a loud sustained low drone (a voice/reverb tail that survived
+the suspend and blasts on resume, or the context resuming mid-scheduled-note). The repro is now an **app-switch /
+`visibilitychange` resume**, not just cold start — so it's testable by simulating suspend→resume, not only a
+fresh install.
 - **[A] (wiring/timing — `main.js`):** audit the cold-start audio path — `audioUnlock()` / `warmAudio` (T101) /
   `musicForScreen` / `applySoundPref`. On a cold PWA launch the `AudioContext` may start **suspended** or resume
   late; ensure (a) **nothing schedules/sounds before `ctx.state === "running"`** and the synth is fully wired
@@ -2720,43 +2721,62 @@ hardening**, not a blind code change.
   split it into a [B] line if the audit lands there. *(If the audit finds nothing actionable + it never recurs,
   close as NOT-REPRODUCIBLE with the hardening guards kept.)*
 
-### T158 — [A] **BUG (CONFIRMED ACTIVE):** the service worker cache-firsts un-versioned JS → clients pin STALE code (version skew) · status: OPEN · 🔴 DO-FIRST / ABSOLUTE
-**🔴 CONFIRMED 2026-06-22 — owner: "I seem to have 3v3 in PWA but not Firefox."** That is the **proof**: the
-un-versioned cache-first SW pins each client to whatever `main.js` it FIRST cached — the owner's **Firefox is
-frozen on a pre-T89/T90 (no-3v3) build**; the PWA cached post-3v3. Same origin, different frozen versions per
-client. **This actively MASKS every fix we ship** (incl. the queued `T160` Arena VFX — it would NOT reach the
-owner's installed PWA until this lands), so **`T158` is DO-FIRST/ABSOLUTE: do ONLY this and push before `T160`
-or anything else.** *(NOT the "foghorn" cause — that was transient cold-start, see T159 — but the SAME bug, now
-demonstrably biting.)* The mechanism: `index.html`
-loads every app script with **NO version query** (`<script src="synth.js">`, `main.js`, …), but `sw.js`'s fetch
-handler (sw.js:48-55) is **CACHE-FIRST for ALL non-navigation same-origin GETs** with **no `?v=` check** — its
-comment *assumes* immutable `?v=<sha>` URLs that don't exist. So a deploy does **not reach an already-cached
-client** (it serves frozen `*.js`). Critical for **Play-Store distribution** too (users must get updates).
-- **THE FIX (sw.js):** stop cache-firsting un-versioned app code. Make same-origin app assets — `.js`, `.css`,
-  `.html`/`.json` (and to be safe `icon.svg`/manifest, they're tiny) — **NETWORK-FIRST** (always fresh online,
-  cache as the OFFLINE fallback), exactly like the nav/`build.json` branch already is. Reserve **cache-first**
-  for **cross-origin fonts** and any genuinely content-hashed asset only. (Network-first chosen over
-  stale-while-revalidate so a correctness fix is picked up on the *very next* online launch, not one launch
-  later. The app is small; the latency cost is negligible and cache still covers offline.)
-- **Force the poisoned cache to purge: bump `CACHE = "halves-static-v1"` → `"halves-static-v2"`.** The existing
-  `activate` handler deletes every cache key !== `CACHE`, so bumping the name **drops the stale entries** when the
-  new SW activates. Keep `skipWaiting()` + `clients.claim()` (already present) so the new SW takes over promptly.
-- **Self-heal path (document in BUILDER-LOG):** on the next ONLINE launch the browser byte-compares `sw.js`,
-  sees it changed, installs the new SW → `skipWaiting`/`activate` purges the old cache + claims → app JS now
-  network-first → fresh `synth.js`. Foghorn gone without a reinstall. (Belt-and-braces for the owner: fully
-  close & reopen the installed app twice, or uninstall/reinstall, to force it immediately.)
-- **Make this invisible regression a GATE (the "stronger-than-green" requirement):** extend **`test/pwa.test.js`**
-  to assert the SW **does NOT cache-first un-versioned same-origin app scripts** — i.e. a request for `synth.js`
-  / `main.js` resolves via **network-first** (fetch attempted, cache only as fallback), NOT served stale from
-  cache while a network copy exists. (Simulate the fetch handler with a fake cache+network and assert the network
-  copy wins for app `.js`.) Also assert the `CACHE` name bumped. This is the check that would have caught T102.
-- **DoD:** `sw.js` network-first for same-origin app assets (offline still works via cache fallback); `CACHE`
-  bumped to v2; `pwa.test` extended to FAIL on cache-first-stale-JS (prove the teeth) + assert the cache bump;
-  `node -c` clean on `sw.js`; **does NOT break the T54 update-check or `build.json` no-store**; **[A]-only**
-  (`sw.js`, `index.html`, `test/pwa.test.js`). **Verify:** the owner re-launches the installed PWA (online) and
-  confirms the foghorn is gone + the audio matches the browser tab. *(Browser SW re-check needs https/localhost
-  and the in-env Chromium harness is OOM-down this session — lean on the extended `pwa.test` logic gate + the
-  owner's device confirmation.)*
+### T161 — [A] **The build marker must be an ABSOLUTE marker of the RUNNING code** (owner-flagged root cause) · status: OPEN · 🔴 DO-FIRST / ABSOLUTE
+**Owner (2026-06-22): "while they show the same build number — so we have cache problems. The build number
+should be an absolute marker of what you're looking at, but I don't think it is. I think that has caused us a
+lot of problems through this."** **He's exactly right, and it's a confirmed code bug.** `main.js` (lines
+2445-2448) sets the displayed build + `bootSha` from a **fresh `fetch("build.json", {cache:"no-store"})`** —
+i.e. from the network, **decoupled from the code actually executing.** So the pill always shows the LATEST
+deployed sha even when the running `main.js` is an older cached bundle → **two clients running different code
+show the SAME number** (the owner's Firefox-no-3v3 vs PWA-3v3). Worse, the **update-check** (line 2440-2442)
+compares the fresh `build.json` sha against `bootSha` — **which was itself set from the same fresh fetch** — so
+it compares fresh-vs-fresh, **always matches, and NEVER fires** even when the running code is stale. The marker
+and the staleness detector are both blind to what's really running. *(This — not a SW cache-strategy flaw — is
+the thing that made live review untrustworthy all session. Note T107/`scripts/cachebust.js` already appends
+`?v=<sha>` to every deployed script URL, so deployed assets ARE versioned/immutable; the gap is purely that the
+marker reads build.json instead of the running bundle.)*
+- **THE FIX (minimal, no CI change):** derive the **running** version from **`main.js`'s OWN `?v=<sha>`** — the
+  cachebust-injected query on its own `<script src="main.js?v=…">`. At the top of the IIFE capture
+  `RUNNING_V = (document.currentScript && /[?&]v=([^&]+)/.exec(document.currentScript.src) || [])[1] || null`
+  (main.js is a normal sync script, so `document.currentScript` is valid during its execution; fall back to
+  `document.querySelector('script[src*="main.js"]')` if needed). This is the sha of the code **actually
+  executing**.
+- **Pill shows `RUNNING_V`** (truthful: a stale cached bundle shows its OWN old sha, NOT build.json's). No `?v=`
+  (local/dev) → keep "local build".
+- **Update-check compares `RUNNING_V` vs the FRESH `build.json` sha** → if they differ, **you are running stale
+  code → `showUpdate()`** (and the reload lands on fresh `?v=` assets). This makes the "update available" bar
+  actually fire when stale — the safety net that was silently broken. Keep `build.json` for the *latest-available*
+  sha + the "ago" time; just stop using it as the *running* identity.
+- **DoD:** the build pill reflects the RUNNING asset version (from `main.js`'s own `?v=`), so two clients on
+  different code show different numbers; the update-check fires when `RUNNING_V !== build.json.sha`; local build
+  still reads "local build"; extend **`test/version.test.js`** (and/or `cache-bust.test.js`) to assert (a) the
+  pill/`bootSha` come from the script `?v=` not the fetch, and (b) `showUpdate` fires on a `RUNNING_V`≠fetched-sha
+  mismatch and does NOT fire when equal. `node -c` clean; **[A]-only** (`main.js`, `test/version.test.js`).
+  **This is the highest-value fix in the queue** — once it lands, every subsequent live review is trustworthy.
+
+### T158 — [A] SW: make the navigation/`build.json` fetch bypass the HTTP cache (so a stale `index.html` can't shadow a deploy) · status: OPEN · IMPORTANT (likely the Firefox-staleness root) · pairs with T161
+**Re-scoped 2026-06-22 (earlier diagnosis CORRECTED).** My first take — "the SW cache-firsts *un-versioned* JS"
+— was **wrong**: T107/`scripts/cachebust.js` appends `?v=<sha>` to **every** deployed script URL (and gates that
+no bare ref survives), so deployed assets ARE versioned + immutable, and the SW cache-firsting those `?v=` URLs
+is **correct** (fast, offline-safe; a new deploy = new URL = cache miss = fresh). **So the staleness is NOT the
+asset cache.** The remaining real risk is the **navigation document (`index.html`) itself**: the SW's
+network-first nav does a plain `fetch(req)` (sw.js:36) which **goes through the browser HTTP cache** — GH-Pages
+serves `index.html` with a max-age, so Firefox can hand the SW a **stale `index.html`** (old `?v=` refs → old
+JS) even "online." That fits the owner's Firefox-frozen-pre-3v3.
+- **THE FIX (sw.js):** in the network-first branch (nav + `build.json`), fetch with **`cache:"no-store"`** (or
+  `"reload"`) so the freshest `index.html`/`build.json` is always retrieved, defeating the HTTP-cache shadow; on
+  network failure still fall back to the cached copy (offline unaffected). Leave the cache-first branch for the
+  immutable `?v=` assets + fonts **as-is** (it's correct).
+- **Cache-version bump** `halves-static-v1`→`v2` so `activate` purges any index.html cached under the old policy.
+  Keep `skipWaiting`+`clients.claim`.
+- **GATE:** extend `test/pwa.test.js` to assert the nav/`build.json` fetch uses a no-store/reload cache mode (not
+  default), and the cache name bumped.
+- **DoD:** SW nav + `build.json` fetched no-store (offline fallback intact); cache-first for `?v=`/fonts
+  unchanged; `CACHE` bumped; `pwa.test` asserts the no-store nav + bump; `node -c` clean; **[A]-only** (`sw.js`,
+  `test/pwa.test.js`). **Sequence: `T161` first** (truthful marker — so we can SEE whether this actually clears
+  the owner's Firefox staleness), then this. **Verify:** with T161 live, the owner reloads Firefox and the pill
+  shows the running sha advancing to match the deploy + 3v3 appears. *(Headless SW re-check blocked — harness
+  OOM-down; lean on the `pwa.test` logic gate + owner confirmation.)*
 
 ### T156 — [A] Hide the fullscreen affordances when running installed/standalone (TWA/PWA) · status: OPEN · OWNER-REQUESTED · Play-Store track
 Owner (2026-06-22, exploring the Android wrap): *"one difference will be the full-screen buttons will no longer

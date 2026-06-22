@@ -10,28 +10,37 @@
 
 ---
 
-**Builder A → `T158` 🔴 BUG ABSOLUTE-DO-FIRST (SW stale-cache — CONFIRMED) → `T160` (Arena death VFX + slower playout) → `T156` (hide fullscreen buttons) → `T157` (Android back) → `T159` (cold-start audio) → content `T58`–`T61` → `T72`**
-**RE-READ FRESH — order changed.** Arena 3v3 (`T89`/`T90`) is **DONE+APPROVED** (`9197265`/`dffa345`, owner
-"looks good") — but you built it **out of NEXT order** (T158/T156/T157 were queued ahead). **Re-read this line
-before every task.**
-**🔴 `T158` is ABSOLUTE — do ONLY this, push, before `T160` or anything.** CONFIRMED active: owner sees **"3v3
-in PWA but not Firefox"** → the un-versioned cache-first SW pins each client to its first-cached `main.js`
-(Firefox frozen pre-3v3). **It masks every fix we ship**, so until it lands, even `T160`'s VFX won't reach the
-owner's PWA. **Fix:** same-origin app assets (`.js`/`.css`/`.html`) **NETWORK-FIRST** (cache = offline fallback
-only), cache-first reserved for cross-origin fonts; **bump `CACHE` v1→v2** so `activate` purges; keep
-`skipWaiting`+`clients.claim`; **extend `pwa.test` to FAIL on cache-first-stale-JS** + assert the bump. [A]-only
-(`sw.js`, `index.html`, `test/pwa.test.js`). Self-heals on next online launch. *(BACKLOG T158.)*
-**Then `T160`** (owner, on live Arena): per-**enemy**-death **localised** VFX + slow the playout a touch — both
-in the **T90 playout** (`applyEvent`, main.js:1468): on a FOE KO (`ev.tSide===1`) fire `fxBigBurst` at
-`elCentre(cellEl[k])` — small/tight (`sizePx:FX_SMALL`, `spread≈0.7`), foe-**type** palette + impact white,
-count ~140-220; and bump the pace line (main.js:1474) budget 2600→~3800-4200, floor 90→~130, ceil 360→~480.
-Keep Skip + reduced-motion intact; add an `arena3`/`fx-wiring` gate that a foe-KO triggers a localised burst at
-the foe cell. [A]-only. *(BACKLOG T160.)*
-**Then** `T156` (display-mode → hide `#entryFs`/`#fsToggle` when installed; manifest `display:"fullscreen"`;
-keep the T112 safe-area invariant) → `T157` (Android back via `history.pushState`+`popstate` → screen-stack nav,
-confirm-exit at home) → `T159` (cold-start audio hardening — idempotent start + running-context guard; any
-`synth.js` guard is a [B] follow-up I'll split out) → content `T58`–`T61`. *(`T103`/`T72` Play-Store submission
-need owner creds — hold.)*
+**Builder A → `T161` 🔴 ABSOLUTE-DO-FIRST (build marker = running code) → `T158` (SW no-store nav) → `T159` (foghorn on resume) → `T160` (Arena death VFX + slower playout) → `T156` → `T157` → content → `T72`**
+**RE-READ FRESH — order corrected (my earlier T158 diagnosis was WRONG and is rescoped).** Arena 3v3
+(`T89`/`T90`) is **DONE+APPROVED** (`9197265`/`dffa345`, owner "looks good") — but you keep building **out of
+NEXT order**; re-read this line before every task.
+**🔴 `T161` is ABSOLUTE — do ONLY this, push, first.** Owner root-cause: *"they show the same build number… the
+build number should be an absolute marker of what you're looking at, but it isn't — that's caused a lot of
+problems."* Confirmed: `main.js:2445-2448` sets the pill + `bootSha` from a **fresh `fetch(build.json)`** —
+decoupled from the running code — so stale clients show the latest sha and the **update-check compares
+fresh-vs-fresh and never fires.** **Fix:** read the RUNNING version from **`main.js`'s OWN `?v=<sha>`** (the
+T107/cachebust query on `document.currentScript.src`); show THAT in the pill; compare it to the fresh
+`build.json` sha → differ ⇒ `showUpdate()`. No `?v=` ⇒ "local build". Extend `version.test`. [A]-only
+(`main.js`, `test/version.test.js`). *(NOTE: T107 `scripts/cachebust.js` already appends `?v=` to every deployed
+script — deployed assets ARE versioned; the bug is purely the marker reading build.json not the bundle.)*
+**Then `T158`** (rescoped): the deployed assets are already versioned+immutable, so cache-first on them is
+CORRECT — the real staleness risk is the **nav document**: the SW's network-first `fetch(req)` (sw.js:36) hits
+the **HTTP cache** → a stale `index.html` (old `?v=` refs) can shadow a deploy. Fix: fetch nav + `build.json`
+with **`cache:"no-store"`** (offline fallback intact); bump `CACHE` v1→v2; `pwa.test` asserts no-store nav +
+bump. [A]-only. *(BACKLOG T158.)*
+**Then `T159`** 🔴 (now reproducible — owner: "foghorn came back on PWA when switching between apps"): the
+AudioContext resumes badly after app-switch/`visibilitychange` → stuck drone. Audit the resume path
+(`audioUnlock`/`warmAudio`/`musicForScreen`, sound.js suspend/resume); on resume **panic/all-notes-off + clean
+re-sync** (no surviving voice/reverb tail); idempotent start; guard on `ctx.state==="running"`. [A] wiring; an
+engine `panic()` in `synth.js` is a [B] follow-up I'll split out if needed. *(BACKLOG T159.)*
+**Then `T160`** (Arena, owner): on a FOE KO in the T90 playout (`applyEvent`, main.js:1468, `ev.tSide===1`)
+fire `fxBigBurst` at `elCentre(cellEl[k])` — small/tight (`sizePx:FX_SMALL`, `spread≈0.7`), foe-**type** palette
++ impact white, count ~140-220; slow the pace line (main.js:1474) budget 2600→~3800-4200, floor 90→~130, ceil
+360→~480; keep Skip + reduced-motion; add an `arena3`/`fx-wiring` gate (foe-KO ⇒ localised burst at the cell).
+[A]-only. *(BACKLOG T160.)*
+**Then** `T156` (hide `#entryFs`/`#fsToggle` when installed; manifest `display:"fullscreen"`; keep T112
+safe-area) → `T157` (Android back → screen-stack nav) → content `T58`–`T61`. *(`T103`/`T72` Play-Store need
+owner creds — hold.)*
 
 **Builder B → `T155` (distinct PAD/bed timbre per style — OWNER feedback) → then `T154` (visual-regression gate).**
 Off standby. **`T155` FIRST** — owner: *"every style seems to share the same synth string sound… vary a lot
