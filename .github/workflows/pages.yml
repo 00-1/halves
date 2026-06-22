@@ -118,6 +118,8 @@ jobs:
         run: node test/fx-wiring.test.js
       - name: Gold-hoard wiring (T173) test (gate)
         run: node test/hoard-wiring.test.js
+      - name: App icon (Magnar, T194) test (gate)
+        run: node test/icon-app.test.js
       - name: PWA (manifest + service worker) test (gate)
         run: node test/pwa.test.js
       - name: Install-display (fullscreen affordances) test (gate)

@@ -5606,3 +5606,27 @@ present; and the pin is `.screen`-scoped (modals keep their spacing). `home-layo
 `hero-detail`/`wayfinding`/`ui-restyle` all still green. **Full suite 52/52.** [A]-only (index.html, styles.css,
 the gate). *(A fixed top-left chevron was the alt; I went with the recommended bottom-left to keep the existing
 button styling — flag for the owner if they'd prefer the chevron.)*
+
+---
+### [A] T194 — the app ICON is Magnar (owner's pick)
+what: the launcher/PWA icon was a placeholder `x/2` glyph. The owner chose **Magnar** (hero id `mo`, a Brawn
+hero). Composed him as a MASKABLE icon — his pixel portrait (`Collectibles.iconColorGrid("hero:mo", Brawn,
+"familiar")`) nearest-neighbour-scaled into the central ~80% safe zone on a full-bleed brand-violet field
+(#1a102e, matching the Emblems' gold-on-violet brand). Because the installed-PWA/Android icon is fetched from
+the manifest (a runtime data-URL isn't enough), I:
+- added **`scripts/geticon.js`** — renders the icon OFFLINE via the app's own generator (RGBA → PNG with Node's
+  zlib, no native canvas dep) and writes **`icon-512.png` + `icon-192.png`**;
+- **committed both PNGs** (deterministic, reproducible from the script);
+- pointed **`manifest.webmanifest`** at them (`192²`/`512²`, `purpose:"any maskable"`; kept `icon.svg` as a
+  non-maskable fallback);
+- rewrote **`installFavicon()`** to draw the SAME Magnar composition (new `paintAppIcon()` helper) so the browser
+  tab/bookmark favicon matches the launcher icon — dropped the old `x/2` glyph favicon.
+how I verified: **NEW `test/icon-app.test.js` (13 checks, gated)** — the manifest lists the maskable PNGs; both
+PNGs are valid 512²/192² 8-bit RGBA AND **byte-identical to a fresh `scripts/geticon.js` run** (reproducible, not
+hand-edited); a built-in PNG decoder confirms the committed `icon-192.png` actually contains the composition —
+brand-violet at the corners (maskable) + **all 208 of Magnar's portrait cells render the right colour at the
+right spot**; and `installFavicon`/`paintAppIcon` draw the same `hero:mo` Brawn composition. `pwa` 33 still green.
+**Full suite 53/53.** [A]-only (manifest.webmanifest, main.js, scripts/geticon.js, the committed PNGs, the gate).
+notes: this unblocks the ICON half of `T168`; the Play `.aab` reuses `icon-512.png`. The rest of `T168`
+(Designed-for-Families / Teacher-Approved / closed-testing) stays HELD on the owner's Google Play ID verification.
+Owner confirms by (re)installing the PWA → the launcher icon is Magnar.

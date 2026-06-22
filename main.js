@@ -831,14 +831,28 @@
   // Mint the favicon / home-screen icon from the same pixel renderer: draw the
   // "x/2" mark, dark-bg-padded, onto an offscreen canvas and wire it up as a
   // data-URL <link rel="icon"> (+ apple-touch-icon + theme-color) at runtime.
+  // T194 — the browser favicon = the app icon = MAGNAR (hero `mo`, Brawn), so the
+  // tab/bookmark matches the installed launcher icon (scripts/geticon.js commits the
+  // static PNGs the manifest points at; this draws the same composition at runtime).
+  // Magnar's pixel portrait, nearest-neighbour, in the central ~80% safe zone on the
+  // full-bleed brand-violet field (= the committed icon-512/192.png + the Emblems bg).
+  const ICON_HERO = "hero:mo", ICON_BRAND_BG = "#1a102e", ICON_SAFE = 0.80;
+  function paintAppIcon(cv){
+    const cx = cv.getContext && cv.getContext("2d"); if(!cx || !C.iconColorGrid) return false;
+    const size = cv.width, grid = C.iconColorGrid(ICON_HERO, HERO_PAL.Brawn, "familiar"), G = grid.length;
+    cx.fillStyle = ICON_BRAND_BG; cx.fillRect(0, 0, size, size);
+    const scale = Math.max(1, Math.floor((size * ICON_SAFE) / G)), off = Math.floor((size - scale * G) / 2);
+    for(let gy = 0; gy < G; gy++) for(let gx = 0; gx < G; gx++){
+      const hex = grid[gy][gx]; if(!hex) continue;
+      cx.fillStyle = hex; cx.fillRect(off + gx * scale, off + gy * scale, scale, scale);
+    }
+    return true;
+  }
   function installFavicon(){
-    if(!window.Glyphs || !document.createElement) return;
-    const halves = byId("halves");
-    if(!halves || !halves.glyphTokens) return;
+    if(!document.createElement) return;
     const cv = document.createElement("canvas");
     cv.width = cv.height = 64;
-    if(!cv.getContext) return;
-    Glyphs.draw(cv, halves.glyphTokens, { bg:"#0E1116", body:"#E6E9EF", accent:"#F5B544", pad:8 });
+    if(!paintAppIcon(cv)) return;
     let url; try { url = cv.toDataURL("image/png"); } catch(e){ return; }
     const head = document.head || document.getElementsByTagName("head")[0];
     if(!head) return;
