@@ -3198,25 +3198,28 @@ level)."** Currently each coin's gold tone is picked ~uniformly at random → a 
 
 ### T198 — [A] **Hoard fills too fast — recalibrate the wealth→pile curve for the real economy** · status: OPEN · owner-reported
 **Owner (2026-06-22): "the coins accumulate too fast. At 1k there's already a lot, but it's actually easy to get
-like 60k in one day."** The pile maps wealth → fill far too eagerly at the low end.
+like 60k in one day."** + **UPDATE: "1k pile too high still — should be about a TENTH of that height."** So 1k must
+be **~1/10 of its current height** (it's ~25% now → target **≈2.5%**). The pile maps wealth → fill far too eagerly.
 - **Root cause (`main.js`, [A]):** `hoardLevel(gold) = log10(1+gold) / log10(GOLD_FULL_MAG)` with **`GOLD_FULL_MAG =
   1e12`** → **1k = 25% full, 60k (one day!) = 40%**, 1M = 50%. A player blows past "a lot" on day one, and there's
   no headroom for the **T178 absurd-wealth ramp** (g=2.5 → billions/trillions+ late game). The pure log gives a big
   chunk at low magnitudes because `log10(1000)=3` is already a quarter of `log10(1e12)`.
 - **Fix:** recalibrate so **early wealth = a small pile** and the visual range **spans the real economy into the
   absurd late game.** Use a **floor-offset log**: `hoardLevel = clamp((log10(1+gold) − log10(GOLD_EMPTY)) /
-  (log10(GOLD_FULL) − log10(GOLD_EMPTY)), 0, 1)`, with **`GOLD_EMPTY` ≈ 100–1k** (below it the pile is ~empty) and
-  **`GOLD_FULL` ≈ 1e15** (quadrillion — past where the T178 ramp peaks). Target feel (tune + owner-confirm):
-  **1k ≈ small/sparse starter (~5%), 60k ≈ modest (~15–20%), 1M ≈ ~30%, 1Bn ≈ ~55%, 1T ≈ ~75%, 1e15 = full.**
+  (log10(GOLD_FULL) − log10(GOLD_EMPTY)), 0, 1)`, with **`GOLD_EMPTY` ≈ 300–500** and **`GOLD_FULL` ≈ 1e15**
+  (quadrillion — past where the T178 ramp peaks). e.g. `GOLD_EMPTY=500, GOLD_FULL=1e15` →
+  **1k ≈ 2–3% (the owner's "tenth"), 60k ≈ ~17%, 1M ≈ ~27%, 1Bn ≈ ~51%, 1T ≈ ~76%, 1e15 = full.** Tune + owner-
+  confirm; the key anchor is **1k ≈ a tenth of today (~2.5%), still a small *visible* starter (not literally zero).**
   Cross-check against `docs/agent/economy-sim.js` (regular player ≈150B by day ~120) so the bulk of the visual
   growth lands across the mid/late game, not day one.
 - **Purely VISUAL** — this changes only the pile size mapping, **NOT** the gold counter, earnings, or economy. Keep
   a small visible starter pile (don't make new players see literally nothing). Update `docs/agent/GOLD-HOARD-DESIGN.md`
   if the constants move.
-- **DoD:** at 1k the pile is **small/sparse** (not ~25%); a day's ~60k reads modest; the pile keeps visibly growing
-  through millions→billions→trillions (headroom for the absurd ramp); the gold counter/economy unchanged; `node -c`
-  clean; `gold`/`hoard-wiring` tests green (+ a check the curve gives small fill at 1k, full near `GOLD_FULL`);
-  **owner device-confirms** the slower fill. **[A]-only** (`main.js`; `GOLD-HOARD-DESIGN.md` doc). *(Pairs with the
+- **DoD:** at 1k the pile is **~a tenth of its current height (~2.5%)** — small/sparse but still visible; a day's
+  ~60k reads modest; the pile keeps visibly growing through millions→billions→trillions (headroom for the absurd
+  ramp); the gold counter/economy unchanged; `node -c` clean; `gold`/`hoard-wiring` tests green (+ a check the curve
+  gives ~2–3% fill at 1k, full near `GOLD_FULL`); **owner device-confirms** the slower fill. **[A]-only** (`main.js`;
+  `GOLD-HOARD-DESIGN.md` doc). *(Pairs with the
   [B] render work T195/T196/T197 — this is the curve, those are the look.)*
 
 ### T197 — [B] **The COINS also need the dither/pixelation** (T195 filtered the pile shape but not the coins) · status: DONE (`2c696e4`) · APPROVED · ✅ owner

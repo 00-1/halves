@@ -20,11 +20,11 @@
   `.mark` canvas via `paintGlyph(el, byId("halves"))`; swap it to paint **Magnar** (`ICON_HERO="hero:mo"`) reusing
   T194's icon renderer (`C.iconColorGrid`), pixelated at the mark size, portrait on the dark bg (no tile square).
   Keep the Goblin Gold wordmark. Quick visual win. [A]-only (`main.js`). *(BACKLOG T202.)*
-- **`T198` — hoard fills too fast.** `hoardLevel = log10(1+gold)/log10(1e12)` → 25% at 1k, 40% at 60k. Recurve with a
-  **floor-offset log**: `clamp((log10(1+gold)−log10(GOLD_EMPTY))/(log10(GOLD_FULL)−log10(GOLD_EMPTY)),0,1)`,
-  `GOLD_EMPTY`≈100–1k, `GOLD_FULL`≈1e15 → **1k≈5%, 60k≈15–20%, 1M≈30%, 1Bn≈55%, 1T≈75%, 1e15 full** (tune vs
-  `economy-sim.js`; small visible starter pile). **Visual only.** [A]-only (`main.js`, `GOLD-HOARD-DESIGN.md`).
-  *(BACKLOG T198.)* Then **`T168`** stays HELD on the owner's Play ID verification.
+- **`T198` — hoard fills too fast.** `hoardLevel = log10(1+gold)/log10(1e12)` → 25% at 1k, 40% at 60k. **Owner
+  update: "1k pile too high — should be about a TENTH of that" → 1k ≈ ~2.5%.** Recurve with a **floor-offset log**:
+  `clamp((log10(1+gold)−log10(GOLD_EMPTY))/(log10(GOLD_FULL)−log10(GOLD_EMPTY)),0,1)`, e.g. `GOLD_EMPTY=500`,
+  `GOLD_FULL=1e15` → **1k≈2–3%, 60k≈17%, 1M≈27%, 1Bn≈51%, 1T≈76%, 1e15 full** (small but VISIBLE starter; tune vs
+  `economy-sim.js`). **Visual only.** [A]-only (`main.js`, `GOLD-HOARD-DESIGN.md`). *(BACKLOG T198.)* Then **`T168`** stays HELD on the owner's Play ID verification.
 **Re-read this line fresh before each task + push.**
 
 **Builder B → `T203` (coin shower polish).** `T193`(fix)/`T197`/`T199`/`T200` all **APPROVED** (live `b498216`) —
