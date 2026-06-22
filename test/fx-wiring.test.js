@@ -72,10 +72,10 @@ ok(/Ev\.today\(\)/.test(main.slice(main.indexOf("function homeFxState"))), "(3) 
 ok(/function arenaFxState\(/.test(main) && /currentTier\(loadCollected\(\)\)/.test(main) && /tierRegion\(/.test(main), "(3) arenaFxState() reads the live Arena region/tier (T108)");
 ok(/setArenaState\(arenaFxState\(\)\)/.test(main), "(3) the Arena screen drives the backdrop with the live Arena scene");
 ok(/fxSetScreen\(name\)/.test(main), "(3) show() drives the backdrop per screen (home / Arena / idle)");
-ok(/fxCelebrate\(items\)/.test(main.slice(main.indexOf("function showUnlocks"), main.indexOf("function showUnlocks") + 260)), "(3) the reward burst fires from showUnlocks (every reward-gain path routes here)");
+ok(/fxCelebrate\(items, \$\("unlockGrid"\)\)/.test(main), "(3) T152: the reward celebration emits FROM the unlock card (#unlockGrid)");
 // T112: celebrate real WINS too (Arena victory + a rank-scaled round finish)
-ok(/if\(res\.win\)\{[^}]*fxCelebrateWin\(tier\.n\)/.test(main), "(3) an Arena VICTORY fires a celebration burst");
-ok(/fxCelebrateRank\(rankIdx\)/.test(main), "(3) EVERY completed topic run fires a rank-scaled celebration");
+ok(/fxCelebrateWin\(tier\.n, foe\)/.test(main) && /querySelector\("\.at-enemy/.test(main), "(3) T152: an Arena VICTORY emits FROM the defeated foe portrait (.at-enemy)");
+ok(/fxCelebrateRank\(rankIdx, \$\("rankLine"\)\)/.test(main), "(3) T152: a completed topic run emits FROM the rank badge (#rankLine)");
 // ---- T125: the burst RENDERS (resize wiring) + fires BIG on EVERY moment -----
 ok(!/FX_RANK_MIN/.test(main), "(T125) the FX_RANK_MIN 'decent run only' gate is GONE → every run celebrates");
 ok(/function fxBigBurst\(opts\)\{[\s\S]{0,160}\.resize\(\)[\s\S]{0,140}\.celebrate\(opts\)/.test(main),
@@ -116,12 +116,14 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
       toggle(c,f){ if(f===undefined){ this._s.has(c)?this._s.delete(c):this._s.add(c); return this._s.has(c);} else { f?this._s.add(c):this._s.delete(c); return !!f; } }, contains(c){return this._s.has(c);} },
     addEventListener(e,fn){ (this._h[e]=this._h[e]||[]).push(fn); }, removeEventListener(){},
     appendChild(c){return c;}, insertBefore(c){return c;}, setAttribute(){}, getAttribute(){return null;}, removeAttribute(){}, remove(){}, focus(){}, blur(){},
-    querySelector(s){ return /canvas/.test(s||"") ? mkEl("_c") : null; }, querySelectorAll(){ return []; }, closest(){ return null; },
+    querySelector(s){ return (/canvas|enemy/.test(s||"")) ? mkEl("_c") : null; }, querySelectorAll(){ return []; }, closest(){ return null; },
+    getBoundingClientRect(){ return { left:40, top:100, width:80, height:60, right:120, bottom:160 }; },   // T152: a non-centre source rect → centre (80,130)
     getContext(){ return { clearRect(){}, fillRect(){}, save(){}, restore(){}, beginPath(){}, fill(){}, set fillStyle(v){}, get fillStyle(){return"";}, set imageSmoothingEnabled(v){}, get imageSmoothingEnabled(){return false;} }; },
     get innerHTML(){return this._html;}, set innerHTML(v){this._html=String(v);}, get textContent(){return this._text;}, set textContent(v){this._text=String(v);} }; }
   global.window = {}; global.window.addEventListener = (e,f) => { (winH[e]=winH[e]||[]).push(f); }; global.window.removeEventListener = () => {};
   global.window.matchMedia = () => ({ matches:false, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} });
-  global.window.location = { hash:"" }; global.location = global.window.location; global.window.innerWidth = 390;
+  global.window.location = { hash:"" }; global.location = global.window.location;
+  global.window.innerWidth = 390; global.innerWidth = 390; global.window.innerHeight = 844; global.innerHeight = 844;
   global.requestAnimationFrame = () => 1; global.window.requestAnimationFrame = global.requestAnimationFrame;
   global.cancelAnimationFrame = () => {}; global.window.cancelAnimationFrame = global.cancelAnimationFrame;
   global.performance = { now: () => 1000 };
@@ -184,8 +186,11 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   const cw = fx.celebrates[fx.celebrates.length - 1];
   ok(cw && typeof cw.o.x === "number" && typeof cw.o.y === "number" && cw.o.count > 0 && cw.o.seed, "boot: the WIN celebration carries {x,y,count,seed} (deterministic, positioned)");
   ok(cw && cw.w > 1 && cw.h > 1, "boot: T125 — the WIN celebration fires on a correctly-sized controller (not 1×1) — " + (cw && cw.w) + "×" + (cw && cw.h));
-  ok(cw && cw.o.count >= 400, "boot: T125 — it's a BIG shower (hundreds of particles; count " + (cw && cw.o.count) + ")");
-  ok(cw && (cw.o.palette == null || Array.isArray(cw.o.palette)), "boot: the WIN celebration palette is seeded (array or default)");
+  ok(cw && cw.o.count > 0 && cw.o.sizePx > 0 && cw.o.sizePx <= 8, "boot: T152 — the celebration uses SMALL/FINE particles (sizePx " + (cw && cw.o.sizePx) + "), emitted from a point (x " + (cw && cw.o.x) + ")");
+  // T152 — the celebration emits FROM the source element's rect centre (80/390≈0.205,
+  // 130/844≈0.154), NOT the screen centre (0.5) — proves point-emission, not a constant.
+  ok(cw && Math.abs(cw.o.x - 80/390) < 0.02 && Math.abs(cw.o.y - 130/844) < 0.02, "boot: T152 — the celebration centroid is at the SOURCE element's rect centre (" + (cw && cw.o.x.toFixed(3)) + "," + (cw && cw.o.y.toFixed(3)) + "), not screen-centre");
+  ok(cw && (cw.o.palette == null || Array.isArray(cw.o.palette)), "boot: the celebration palette is seeded (array or default)");
 
   // finish a TOPIC RUN — even SKIP-everything (worst rank) STILL celebrates now (the
   // FX_RANK_MIN gate is gone), on a correctly-sized controller.

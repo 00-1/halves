@@ -260,9 +260,22 @@
     try{ if(fxBurst.resize) fxBurst.resize(); }catch(e){}
     try{ if(fxBurst.celebrate) fxBurst.celebrate(opts); else fxBurst.burst(opts); }catch(e){}
   }
+  // T152 — emit a celebration FROM a source element's centre (so the colour-coded
+  // shower reads as coming "from the thing"). Normalized to the viewport; falls back
+  // to screen-centre when the element/rect is unavailable (e.g. the Settings tester).
+  function elCentre(el){
+    try{
+      if(el && el.getBoundingClientRect && typeof innerWidth === "number" && innerWidth && innerHeight){
+        const r = el.getBoundingClientRect();
+        if(r && r.width > 0 && r.height > 0) return { x: (r.left + r.width / 2) / innerWidth, y: (r.top + r.height / 2) / innerHeight };
+      }
+    }catch(e){}
+    return { x: 0.5, y: 0.55 };
+  }
+  const FX_SMALL = 5;   // T152 — small/fine particle ceiling (px); the engine floors at MIN_PARTICLE_PX
   // EVERY new inventory item (the showUnlocks path covers loot/reward/event gains):
-  // a real shower, richer for more / rarer items — but it always fires.
-  function fxCelebrate(items){
+  // small/fine particles emanating from the unlock card, in the item's RARITY colour.
+  function fxCelebrate(items, srcEl){
     if(!fxBurst || !items || !items.length) return;
     let seed = items.length >>> 0, pal = null, best = -1;
     for(const it of items){
@@ -272,25 +285,29 @@
       if(rk > best){ best = rk; pal = C.paletteFor ? C.paletteFor(it.rarity) : null; }
     }
     const palette = pal ? [pal.accent, pal.body, "#ffffff"] : null;
-    const count = Math.min(800, 360 + items.length * 60 + best * 80);
-    fxBigBurst({ x: 0.5, y: 0.55, count: count, seed: seed || 1, palette: palette });
+    const count = Math.min(700, 200 + items.length * 50 + best * 90);   // denser for rarer/more
+    const c = elCentre(srcEl);
+    fxBigBurst({ x: c.x, y: c.y, count: count, seed: seed || 1, palette: palette, sizePx: FX_SMALL, spread: 0.85 });
   }
-  // EVERY completed topic RUN celebrates (T125 — no "decent run only" gate). Scaled
-  // by rank (a great run is huge) but a modest run still throws a real shower.
-  function fxCelebrateRank(rankIdx){
+  // EVERY completed topic RUN celebrates — small/fine, from the RANK BADGE, in the
+  // rank's colour; scaled by rank (a great run is denser) but always fires.
+  function fxCelebrateRank(rankIdx, srcEl){
     if(!fxBurst) return;
     const ranks = C.RANKS || [];
     const rk = ranks.length ? ranks[Math.min(Math.max(rankIdx, 0), ranks.length - 1)] : null;
     const t = ranks.length > 1 ? Math.min(1, Math.max(0, rankIdx) / (ranks.length - 1)) : 1;
-    const count = Math.round(380 + t * 420);
-    fxBigBurst({ x: 0.5, y: 0.55, count: count, seed: (rankIdx + 1) * 0x9e3779b1 >>> 0,
-      palette: rk ? [rk.color, "#ffd98a", "#ffffff"] : null });
+    const count = Math.round(220 + t * 380);
+    const c = elCentre(srcEl);
+    fxBigBurst({ x: c.x, y: c.y, count: count, seed: (rankIdx + 1) * 0x9e3779b1 >>> 0,
+      palette: rk ? [rk.color, "#ffd98a", "#ffffff"] : null, sizePx: FX_SMALL, spread: 0.9 });
   }
-  // EVERY Arena VICTORY celebrates BIG (T125).
-  function fxCelebrateWin(tierN){
+  // EVERY Arena VICTORY: the biggest/widest of the set — small/fine particles bursting
+  // outward FROM THE DEFEATED FOE'S portrait, gold + a bright accent.
+  function fxCelebrateWin(tierN, srcEl){
     if(!fxBurst) return;
-    fxBigBurst({ x: 0.5, y: 0.55, count: 800, seed: ((tierN | 0) + 1) * 0x85ebca6b >>> 0,
-      palette: ["#f5b544", "#ffd98a", "#ffffff", "#78dcff"] });
+    const c = elCentre(srcEl);
+    fxBigBurst({ x: c.x, y: c.y, count: 700, seed: ((tierN | 0) + 1) * 0x85ebca6b >>> 0,
+      palette: ["#f5b544", "#ffd98a", "#ffffff", "#78dcff"], sizePx: FX_SMALL + 1, spread: 1.4 });
   }
 
   // ---- Synth wiring (T122) — the generative MUSIC engine ------------------
@@ -881,8 +898,8 @@
   function showUnlocks(items){
     const n = items.length;
     const title = n === 1 ? "New collectible!" : n + " new collectibles!";
-    fxCelebrate(items);   // T110: FXGL celebration burst over the unlock modal (every reward-gain path routes here)
     openModal(title, items, n > 4);
+    fxCelebrate(items, $("unlockGrid"));   // T152: emit FROM the unlock card, in the rarity colour
   }
 
   // Slide a toast out and remove it after `hold` ms on screen (non-blocking).
@@ -1400,7 +1417,7 @@
     renderArena();
     const ab = $("arenaBody"); if(ab) ab.scrollTop = 0;   // T65: show the result + tier, not the hero list
     show("arena");
-    if(res.win){ fxCelebrateWin(tier.n); wubSting(); }   // T112 victory burst + T122 Synth "wub" win-sting
+    if(res.win){ const foe = $("arenaBody") && $("arenaBody").querySelector(".at-enemy, .ar-enemy"); fxCelebrateWin(tier.n, foe); wubSting(); }   // T152: burst from the defeated foe's portrait
     if(loot.length) setTimeout(() => showUnlocks(loot), 650);
   }
 
@@ -1764,7 +1781,7 @@
     show("results");
     renderTopicInfo();
     showGold($("resGold"), goldBefore, loadGold(), earn);
-    fxCelebrateRank(rankIdx);   // T112: a rank-scaled celebration burst on a good round (none for a poor run)
+    fxCelebrateRank(rankIdx, $("rankLine"));   // T152: small spray from the rank badge, in the rank colour
     if(mo.wentUp) momentumToast(mo.state);
     if(unlocked.length) setTimeout(() => showUnlocks(unlocked), 650);
   }

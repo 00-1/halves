@@ -41,7 +41,7 @@ ok(/Sy\.intensity\(arenaBossProx\(\)\)/.test(main) && /facingBoss \? 1/.test(mai
 // the SFX bus) — the old hand-rolled play("wub",{bus:"music"})+duck ducked its OWN wub.
 ok(/function wubSting\(\)[\s\S]{0,200}Sy\.sting\("victory"\)/.test(main), "(4) T128: the win-sting uses Synth.sting('victory') (wub on the un-ducked SFX bus)");
 ok(!/Sy\.play\("wub"[^)]*bus: "music"/.test(main), "(4) T128: the wub is no longer played on the (ducked) MUSIC bus → it isn't self-suppressed");
-ok(/if\(res\.win\)\{ fxCelebrateWin\(tier\.n\); wubSting\(\);/.test(main) && /cat === "Mastery"[\s\S]{0,80}wubSting\(\)/.test(main), "(4) the win-sting fires on a real win (Arena victory + topic-complete/mastery)");
+ok(/if\(res\.win\)\{[\s\S]{0,120}fxCelebrateWin\(tier\.n, foe\); wubSting\(\);/.test(main) && /cat === "Mastery"[\s\S]{0,80}wubSting\(\)/.test(main), "(4) the win-sting fires on a real win (Arena victory + topic-complete/mastery)");
 ok(/DUCK_SFX/.test(main) && /window\.Synth\.duck\(\)/.test(main), "(4) the louder SFX stings DUCK the music (Synth.duck)");
 ok(/window\.Synth\.setMuted\(!on\)/.test(main), "(4) mute silences Synth too (applySoundPref)");
 ok(/synthTempoMult\(\)/.test(main) && /loadTempo\(\) \/ 100/.test(main), "(4) the T113 tempo slider drives the Synth context tempo");

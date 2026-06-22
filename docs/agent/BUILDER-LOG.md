@@ -4571,3 +4571,30 @@ notes / questions — **⚠ STOP/FLAG (owner away):** the **TWA wrapper** (Bubbl
   the site as a home-screen app + run offline; on-device install/parity is the babysitter/owner check (the
   service worker only activates over https — GH Pages, not file://). **Next: pivoting to `T152[A]`** (now
   unblocked by B's T152[B]) — the celebration point-emission the owner's keen on.
+
+## T152[A] — Celebrations emit from the source element, small/fine, context-coloured  [HANDOFF]
+commit: (this commit) — [A], OWNER-PRIORITY. Owner: "very small particle sizes, emanating from the point of
+interest (where the toast appears), colour-coded by rarity." B's T152[B] (`a2f9475`) added the engine size/
+spread options (`sizePx`/`sizeScale`/`spread`, DPR-aware, floored at MIN_PARTICLE_PX). This wires it.
+changed (A-owned, `main.js`):
+  - **`elCentre(el)`** — a source element's viewport-normalized centre (`getBoundingClientRect()` /
+    innerWidth,innerHeight), robust fallback to screen-centre when the element/rect is absent (the Settings
+    tester, missing DOM).
+  - each `fxCelebrate*` now takes a **source element** + emits from its centre with **small/fine particles**
+    (`sizePx` 5–6) and the **contextual palette**, per the babysitter's table:
+    - **inventory** (`fxCelebrate`, from `showUnlocks`) → the **unlock card** (`#unlockGrid`), the item's
+      **rarity** palette, count denser for rarer/more.
+    - **topic run** (`fxCelebrateRank`) → the **rank badge** (`#rankLine`), the **rank colour** + gold,
+      scaled by rank.
+    - **arena victory** (`fxCelebrateWin`) → the **defeated foe's portrait** (`.at-enemy`/`.ar-enemy` in
+      `#arenaBody`), **gold + a bright accent**, the widest spread (the biggest of the set).
+  - `showUnlocks` now opens the modal FIRST so the card has a rect to emit from.
+how I verified: **fx-wiring.test (80→81)** — source checks (each `fxCelebrate*` passes its source element);
+  the stub gained a `getBoundingClientRect` + innerHeight, and the live boot asserts a real Arena-win
+  celebration's **centroid is at the SOURCE rect centre (≈0.205,0.154), NOT screen-centre (0.5)** and uses
+  **small `sizePx`** — proving point-emission, not a constant. synth-wiring win-sting updated for the new
+  call signature. `node -c` clean; **full 35-gate suite green**. [A]-owned only.
+notes: **babysitter/owner browser-verify** — each celebration should now spray fine particles FROM its
+  trigger (toast / rank badge / vanquished foe) wearing that thing's colour. The Settings tester (no DOM
+  source) still fires from screen-centre (the fallback). Next per `NEXT.md`: **`T153`** (home backdrop →
+  purple) → roadmap.
