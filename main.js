@@ -416,7 +416,11 @@
     screens[name].classList.add("active");
     fxSetScreen(name);     // T110/T112: full-bleed backdrop — home scene on #start, Arena scene on #arena, idle elsewhere
     musicForScreen(name);  // T122: Synth music — solve (calm) in-game, arena on the Arena, menu elsewhere
-    pushBackSentinel(name);  // T157: keep a history sentinel on top so the Android back gesture is trapped (navigates our screens, not out of the app)
+    // T166 — DO NOT push a sentinel on every show(). Forward navs already push a
+    // hash history entry (via `location.hash = …`); pushing a sentinel here too
+    // double-stacked the history and made back over-shoot its parent + exit the
+    // config (T157 regression). The hash IS our screen stack; the lone setup-time
+    // sentinel below is solely the home-exit trap.
   }
   function fmt(t){ return t.toFixed(1); }
   function numStr(n){ return String(n); }
@@ -2068,39 +2072,21 @@
   function navStart(){ if(location.hash === "#/" || location.hash === "") applyRoute(); else location.hash = "#/"; }
   window.addEventListener("hashchange", applyRoute);
 
-  // ---- T157: Android system-back navigates our screen stack -----------------
-  // A standalone PWA / TWA otherwise EXITS the app on the back gesture (our nav is
-  // screen-state, not deep web history). We trap back with a history sentinel kept
-  // on top of the stack (pushed after every screen via show()); a popstate handler
-  // walks to the screen's PARENT (Arena/menus → home, sub-menus → parent), and only
-  // at home does back confirm-then-exit. Inert where there's no History API
-  // (try/catch + a feature flag) so browser-tab + headless play are unaffected.
-  const BACK_PARENT = {
-    game:"start", results:"start", practice:"start", summary:"start",
-    inventory:"start", heroes:"start", arena:"start", settings:"start",
-    heroDetail:"heroes", audio:"settings", graphics:"settings"
-  };
-  // hash for each routed screen (so back keeps the URL in sync); others use show()
-  const BACK_HASH = { start:"#/", inventory:"#/inventory", heroes:"#/heroes", arena:"#/arena",
-    settings:"#/settings", audio:"#/audio", graphics:"#/graphics", summary:"#/best-times" };
-  let backInstalled = false, backExitArmed = false;
-  function pushBackSentinel(name){
-    if(!backInstalled || name === "entry") return;          // entry/splash is the root
-    try{ history.pushState({ hb: 1 }, ""); }catch(e){}
-  }
-  function navToScreen(name){
-    if(name === "start"){ navStart(); }
-    else if(BACK_HASH[name]){ if(location.hash === BACK_HASH[name]) applyRoute(); else location.hash = BACK_HASH[name]; }
-    else { show(name); }
-  }
-  // The system back was pressed. Returns "nav" (navigated → show() re-armed the
-  // sentinel), "stay" (home, first press → confirm + caller re-arms), or "exit".
-  function onBackPressed(){
-    const parent = BACK_PARENT[curScreen];
-    if(parent){ backExitArmed = false; navToScreen(parent); return "nav"; }
-    if(!backExitArmed){ backExitArmed = true; backExitHint(); setTimeout(() => { backExitArmed = false; }, 2000); return "stay"; }
-    return "exit";
-  }
+  // ---- T157 + T166: Android system-back navigates our screen stack ----------
+  // A standalone PWA / TWA otherwise EXITS the app on the back gesture (our nav
+  // is screen-state, not deep web history). T166 rework: the HASH is the single
+  // source of truth — forward navs use `location.hash = "#/<screen>"`, so the
+  // browser's natural history IS our screen stack and the system back pops it,
+  // firing `hashchange` → `applyRoute` routes for us. We do NOT push a sentinel
+  // on every screen; the lone setup-time sentinel is purely the EXIT TRAP at
+  // home (so the first back at home shows a confirm hint instead of dropping
+  // straight out). A popstate WITHOUT a hash change == the user popped past
+  // the trail (back from a hashed screen onto the sentinel, or back from the
+  // sentinel itself onto the original page-load entry) — that's the exit
+  // attempt, which we trap once. Inert where there's no History API.
+  // The `lastSeenHash` flag lets popstate distinguish a routed pop (URL
+  // changed → applyRoute will handle it) from an exit pop (URL unchanged).
+  let backInstalled = false, backExitArmed = false, lastSeenHash = "";
   function backExitHint(){
     try{
       const host = $("toasts"); if(!host) return;
@@ -2114,11 +2100,31 @@
     if(typeof history === "undefined" || !history.pushState || !window.addEventListener) return;
     try{
       backInstalled = true;
-      history.pushState({ hb: 1 }, "");                     // initial sentinel to absorb the first back
+      lastSeenHash = location.hash || "";
+      // ONE trailing sentinel — solely the home-exit trap. Forward navs do NOT
+      // push more; back-from-screens just lets the browser pop the hash chain.
+      history.pushState({ hb: 1 }, "");
+      // Whenever the user navigates (forward OR backward via hash), refresh the
+      // seen-hash so popstate can compare against the new state. hashchange
+      // already drives applyRoute (set above), so this is purely bookkeeping.
+      window.addEventListener("hashchange", () => { lastSeenHash = location.hash || ""; });
       window.addEventListener("popstate", () => {
-        const r = onBackPressed();
-        if(r === "stay"){ try{ history.pushState({ hb: 1 }, ""); }catch(e){} }   // re-trap so the app stays open for the confirm
-        // "nav": show() already pushed a fresh sentinel · "exit": leave history alone
+        const cur = location.hash || "";
+        if(cur !== lastSeenHash){
+          // URL changed → a hashchange will route us via applyRoute. Just track.
+          lastSeenHash = cur;
+          return;
+        }
+        // URL unchanged → the user popped past the routed entries (the sentinel
+        // or pre-app entry) → treat as an exit attempt. Trap the first one with
+        // a confirm hint + re-push the sentinel; the second within 2s exits.
+        if(!backExitArmed){
+          backExitArmed = true;
+          backExitHint();
+          try{ history.pushState({ hb: 1 }, ""); }catch(e){}
+          setTimeout(() => { backExitArmed = false; }, 2000);
+        }
+        // else: leave history alone — the next back will exit the app naturally.
       });
     }catch(e){ backInstalled = false; }
   })();

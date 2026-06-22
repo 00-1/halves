@@ -4977,3 +4977,49 @@ how I verified: **all 37 suites green** including the extended P1 gate; `node -c
   picker shows `balance` only once `mastery:addsub2` lands, so the live unlock chain is unchanged.
 notes: T162 P1 now ships **all 4** P1 modes (`scaling`, `percentoff`, `partwhole`, `balance`) in one push,
   matching the new pointer. Next: T162 P2 (`ratioshare`, `timegap`, `lcmhcf`, `mean`).
+
+---
+
+## Builder A — T166 🔴 BUG: config submenus exit instead of navigating (T157 back-nav regression)
+commit: (this commit) — [A], DO-FIRST/ABSOLUTE. Owner: "the menus in the config are now broken — they just
+exit the config instead of going to that menu." Live regression from MY T157 (`1a3e3fb`).
+root cause (confirmed): T157 made `show(name)` push a history sentinel AFTER every screen render, AND the
+existing config nav uses `location.hash = "#/audio"` etc. (which the browser ALREADY pushes as a history
+entry). So **one forward nav was creating TWO history entries** (the hash entry + the sentinel). When the
+user then pressed back (system gesture OR the in-app `←`), `popstate` fired and the handler called
+`navToScreen(parent)` which set `location.hash = parentHash` — pushing **even more state during the
+popstate**. The cumulative cursor/stack inconsistency caused back to **over-shoot its parent and exit the
+config** (audio → home, instead of audio → settings).
+fix ([A]-only, `main.js`):
+  - **Dropped `pushBackSentinel(name)` from `show()` entirely** — the per-show sentinel was the double-stack
+    root. The `BACK_PARENT` / `BACK_HASH` / `navToScreen` / `onBackPressed` plumbing is also removed (it was
+    only needed to compensate for the double-stack — with the hash as the source of truth, the browser's own
+    history walks the chain for us).
+  - The **hash IS the screen stack now** — forward navs are `location.hash = "#/<screen>"` (already what every
+    button click does); `hashchange` → `applyRoute` routes; the system back pops a hash entry naturally and
+    fires `hashchange` → `applyRoute` routes back to the parent. One entry per forward nav, one pop per back.
+  - **ONE setup-time sentinel** is the sole home-exit trap. The `popstate` handler distinguishes a routed pop
+    (URL changed → `applyRoute` will handle it via `hashchange`) from an exit pop (URL **unchanged** — the user
+    popped past the routed trail onto the sentinel/pageload) via a `lastSeenHash` flag. On the exit pop: first
+    one shows the confirm hint + re-pushes the sentinel (stays in-app); a second one within 2s does NOT
+    re-arm → trap releases → the next back exits the app naturally.
+how I verified: **`back-nav.test.js` rewritten with a realistic history-stack simulator** (entries are
+  `{url,state}`; `pushState` appends + truncates forward; `back()` decrements + fires `popstate` always +
+  `hashchange` only on URL change — matching browser contracts). **22 checks, gated** — proves:
+  - **The T166 bug (a):** settings → audio → BACK lands on **settings** (not home).
+  - **(b)** Full chain: audio → settings → home (each via system back).
+  - **(c)** Arena → BACK → home (single pop, no overshoot).
+  - **(d)** At start: back stays in-app, shows the confirm hint, re-arms the sentinel; the next back releases
+    the trap (app may exit).
+  - **(e)** A forward nav pushes EXACTLY one history entry (was 2 — the regression invariant).
+  - **(f)** Inert without a History API (browser-tab/headless unaffected).
+  - **(g)** The in-app `audioBack`/`graphicsBack`/`arenaBack` `←` buttons still navigate cleanly.
+  - **(h)** Static design check: `pushBackSentinel` no longer exists in `main.js`; `popstate` is wired; the
+    `lastSeenHash` flag distinguishes routed vs exit pops.
+
+  `node -c` clean; **full suite green** (perf gate: no listener/RAF leak — the popstate listener is set ONCE,
+  no per-nav re-bind). [A]-only (`main.js`, `test/back-nav.test.js`).
+notes: **owner device-verify** — on the installed PWA, Settings → Sound → ← lands on Settings (not home);
+  Settings → Graphics → ← lands on Settings; Arena → system back lands on home; home → back stays in-app
+  with a confirm hint; a quick second back exits cleanly. Next per `NEXT.md`: **`T164`** (music: only switch
+  on real track change) → **`T167`** (PWA fullscreen on tap) → resume T162 P2/P3.
