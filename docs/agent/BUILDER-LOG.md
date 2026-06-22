@@ -5310,3 +5310,30 @@ notes: **owner device-verify** — on the installed PWA the notch strip should n
   seamless dark (elsewhere), not a black bar; the home/game UI stays clear of the notch (nothing clipped).
   Next per `NEXT.md`: `T171` is already DONE (`1a4bcf5`) → content (re-scoped T60→Metric, T61→Sequences per
   the T59 overlap note) → `T173` (hoard wiring, after B's `T172`).
+
+---
+
+## Builder A — T177 🔴 BUG: PWA loses fullscreen on minimise + no way back
+commit: (this commit) — [A], DO-FIRST. Owner: "the PWA loses fullscreen every time I minimise it, and the
+fullscreen button is gone from the config menu now." Root cause: T167's `requestFullscreen()` is dropped by
+Android when the app is backgrounded and can't be re-entered without a gesture; meanwhile T156 had HIDDEN the
+manual toggle when installed → the owner was stuck windowed.
+fix ([A], `main.js` — two parts):
+  1. **Auto re-enter on the first tap after resume.** A `visibilitychange` handler records whether we were
+     fullscreen on hide; on return (installed + we LOST it) it arms a **one-shot** capture-phase `pointerdown`
+     listener that calls `fsEnter()` then removes itself — so the user's natural "tap to resume" silently
+     restores fullscreen, no visible button needed. Only arms when installed AND we were fullscreen before
+     (never forces it on otherwise); browser-tab never arms.
+  2. **Restored the manual Setup toggle when installed** — walked back T156's `isInstalledDisplay()` hiding of
+     `#fsToggle` (the entry `#entryFs` button stays hidden; T167's entry behaviour is unchanged). The toggle is
+     the explicit fallback precisely because a PWA loses fullscreen on minimise.
+how I verified: **`install-display.test` (14→18)** — the harness now captures document/window events + controls
+  `fullscreenElement`/`hidden`: the **first tap after a minimise→resume re-enters fullscreen** (one requestFS
+  call), it's a **one-shot** (a second tap doesn't re-fire), it does **NOT** force fullscreen if we weren't
+  fullscreen before, and a **browser tab never auto-re-enters**; the **`#fsToggle` is now shown when
+  installed**. `node -c` clean; **full suite green** (the perf gate confirms the one visibility listener is
+  added once at boot — no per-nav leak; the one-shot pointerdown removes itself). [A]-only (`main.js`,
+  `test/install-display.test.js`).
+notes: the robust fix is the TWA's native **immersive-sticky** mode (survives minimise with no gesture) — for
+  the packaging track (T168/T72). For the raw PWA, (1)+(2) is the best achievable. **Owner device-verify**:
+  minimise → return → tap → fullscreen restores; and the manual fullscreen toggle is back in Setup.

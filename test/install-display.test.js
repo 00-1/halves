@@ -16,7 +16,7 @@ function ok(c, m){ checks++; if(!c){ fails++; console.log("  FAIL: " + m); } els
 
 // boot main.js with a DOM shim; `standalone` toggles the display-mode match.
 function boot(standalone){
-  let els = {}, store = {}, winH = {};
+  let els = {}, store = {}, winH = {}, docH = {};
   function mkEl(id){ return { id, _html:"", _text:"", _h:{}, dataset:{}, style:{}, disabled:false,
     parentElement:{ clientWidth:300, dataset:{} }, width:48, height:48, scrollWidth:120, clientWidth:300, scrollHeight:400, scrollTop:0,
     classList:{ _s:new Set(), add(c){this._s.add(c);}, remove(c){this._s.delete(c);},
@@ -26,7 +26,8 @@ function boot(standalone){
     querySelector(s){ return /canvas/.test(s||"") ? mkEl("_c") : null; }, querySelectorAll(){ return []; }, closest(){ return null; },
     getContext(){ return { clearRect(){}, fillRect(){}, save(){}, restore(){}, beginPath(){}, fill(){}, set fillStyle(v){}, get fillStyle(){return"";} }; },
     get innerHTML(){return this._html;}, set innerHTML(v){this._html=String(v);}, get textContent(){return this._text;}, set textContent(v){this._text=String(v);} }; }
-  global.window = {}; global.window.addEventListener = (e,f) => { (winH[e]=winH[e]||[]).push(f); }; global.window.removeEventListener = () => {};
+  global.window = {}; global.window.addEventListener = (e,f) => { (winH[e]=winH[e]||[]).push(f); };
+  global.window.removeEventListener = (e,f) => { if(winH[e]) winH[e] = winH[e].filter(x => x !== f); };   // real removal (the T177 one-shot)
   // matchMedia reports standalone/fullscreen ONLY when `standalone` is set (the installed launch)
   global.window.matchMedia = q => ({ matches: standalone && /display-mode:\s*(standalone|fullscreen)/.test(q),
     addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} });
@@ -41,19 +42,23 @@ function boot(standalone){
   let fsCalls = 0;
   const docEl = mkEl("html"); docEl.requestFullscreen = () => { fsCalls++; return Promise.resolve(); };
   global.navigator = { standalone:false };
-  global.document = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
-    addEventListener(){}, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
-    documentElement:docEl, body:mkEl("body"), fullscreenElement:null };
+  const doc = { getElementById(id){ return els[id] || (els[id]=mkEl(id)); }, createElement(t){ return mkEl("_"+t); },
+    addEventListener(e,f){ (docH[e]=docH[e]||[]).push(f); }, removeEventListener(){}, querySelector(){return null;}, querySelectorAll(){return [];},
+    documentElement:docEl, body:mkEl("body"), fullscreenElement:null, hidden:false };
+  global.document = doc;
   global.window.navigator = global.navigator;
   ["modes.js","events.js","guides.js","collectibles.js","heroes.js","enemies.js","main.js"].forEach(f => new Function(read(f))());
-  return { els, fsCalls: () => fsCalls };
+  const fire = (bag, e) => (bag[e] || []).slice().forEach(f => f({}));
+  return { els, doc, docEl, fsCalls: () => fsCalls,
+    fireDoc: e => fire(docH, e), fireWin: e => fire(winH, e),
+    setHidden: h => { doc.hidden = h; }, setFs: on => { doc.fullscreenElement = on ? docEl : null; } };
 }
 
 // ---- (a) installed / standalone → both fullscreen affordances are HIDDEN ------
 (function installed(){
   const b = boot(true); const els = b.els;
   ok(els.entryFs.classList.contains("hidden"), "(a) installed: the entry 'Play in fullscreen' button is hidden");
-  ok(els.fsToggle.classList.contains("hidden"), "(a) installed: the Settings Fullscreen toggle row is hidden");
+  ok(!els.fsToggle.classList.contains("hidden"), "(a) T177: the Settings Fullscreen toggle is RESTORED when installed (the PWA loses FS on minimise → the manual toggle is the fallback)");
   ok(els.entryPlay.textContent === "Tap to begin", "(a) installed: the entry still serves the audio gesture (plain 'Tap to begin')");
   ok((els.entryPlay._h.click||[]).length >= 1, "(a) installed: 'Tap to begin' is still wired (the entry gesture survives)");
   // T167 — the installed "Tap to begin" tap must ALSO request fullscreen (the
@@ -79,6 +84,32 @@ function boot(standalone){
   const beforeFs = b.fsCalls();
   (els.entryFs._h.click||[]).forEach(f=>f({}));
   ok(b.fsCalls() === beforeFs + 1, "(b) browser-tab entryFs DOES request fullscreen (explicit user choice)");
+})();
+
+// ---- (b2) T177: auto re-enter fullscreen on the first tap after resume -------
+(function fsResume(){
+  const b = boot(true);                 // installed/standalone
+  b.setFs(true);                        // we're fullscreen
+  b.setHidden(true);  b.fireDoc("visibilitychange");   // minimise → records wasFs=true
+  b.setFs(false);                       // Android drops fullscreen while backgrounded
+  b.setHidden(false); b.fireDoc("visibilitychange");   // return → arms the one-shot
+  const before = b.fsCalls();
+  b.fireWin("pointerdown");
+  ok(b.fsCalls() === before + 1, "(b2) T177: the FIRST tap after resume re-enters fullscreen (no button needed)");
+  b.fireWin("pointerdown");
+  ok(b.fsCalls() === before + 1, "(b2) T177: it's a ONE-SHOT — a second tap doesn't re-fire requestFullscreen");
+  // not armed when we were NOT fullscreen before minimise (don't force it on)
+  const b2 = boot(true);
+  b2.setFs(false); b2.setHidden(true); b2.fireDoc("visibilitychange");
+  b2.setHidden(false); b2.fireDoc("visibilitychange");
+  const n2 = b2.fsCalls(); b2.fireWin("pointerdown");
+  ok(b2.fsCalls() === n2, "(b2) T177: if we weren't fullscreen before minimise, a tap does NOT force fullscreen");
+  // browser-tab: never arms (the re-enter is installed-only)
+  const b3 = boot(false);
+  b3.setFs(true); b3.setHidden(true); b3.fireDoc("visibilitychange");
+  b3.setFs(false); b3.setHidden(false); b3.fireDoc("visibilitychange");
+  const n3 = b3.fsCalls(); b3.fireWin("pointerdown");
+  ok(b3.fsCalls() === n3, "(b2) T177: a browser tab does NOT auto-re-enter fullscreen on tap (installed-only)");
 })();
 
 // ---- (c) static: the helper + the manifest ------------------------------------

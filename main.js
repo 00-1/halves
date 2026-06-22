@@ -2256,7 +2256,10 @@
   // removed). Same behaviour: enter/exit fullscreen, label reflects the state.
   (function setupFullscreenBtn(){
     const btn = $("fsToggle"); if(!btn) return;
-    if(isInstalledDisplay()){ btn.classList.add("hidden"); return; }   // T156: redundant when launched standalone (already locked fullscreen)
+    // T177 — KEEP the manual Setup toggle in the installed PWA too. (T156 hid it
+    // when installed, assuming "installed == always fullscreen" — but a PWA DROPS
+    // fullscreen on minimise, so the owner got stuck windowed with no way back.
+    // The toggle is the explicit fallback; the entry #entryFs button stays hidden.)
     if(!fsSupported()){ btn.classList.add("hidden"); return; }
     const sync = () => { const lbl = $("fsToggleVal");
       if(lbl) lbl.textContent = fsActive() ? 'Exit' : 'Enter'; };
@@ -2264,6 +2267,24 @@
     ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
       .forEach(ev => document.addEventListener(ev, sync));
     sync();
+  })();
+  // T177 — a standalone PWA DROPS JS fullscreen when minimised and can't re-enter
+  // without a user gesture. On returning to an installed app that WAS fullscreen,
+  // arm a ONE-SHOT: the next tap (the user always taps to resume play) silently
+  // re-enters fullscreen — no visible button needed. (The Setup toggle above is the
+  // explicit fallback; the robust fix is the TWA's immersive-sticky mode — T168.)
+  (function setupFsResume(){
+    if(typeof document === "undefined" || !document.addEventListener) return;
+    let wasFs = false;
+    document.addEventListener("visibilitychange", function(){
+      try{
+        if(document.hidden){ wasFs = fsActive(); return; }            // remember if we were fullscreen
+        if(!isInstalledDisplay() || !wasFs || fsActive()) return;     // only re-arm when installed + we LOST it
+        if(!window.addEventListener) return;
+        const reenter = () => { window.removeEventListener("pointerdown", reenter, true); try{ fsEnter(); }catch(e){} };
+        window.addEventListener("pointerdown", reenter, true);        // one-shot, capture phase
+      }catch(e){}
+    });
   })();
 
   // ---- sound preference (persisted) + SFX engine (window.Sound) -----------
