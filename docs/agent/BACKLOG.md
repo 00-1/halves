@@ -3088,6 +3088,48 @@ holding its **Back** button (`sumBack`, `menuBtn`, `invBack`, `practiceBack`, `a
   back row is the pinned bottom action row on the converted screens). **[A]-only** (`index.html`, `styles.css`,
   `main.js` if needed, tests).
 
+### T192 — [B] **Hoard visual overhaul — cell-shaded CYLINDER coins + a taller, wall-banked pile** · status: OPEN · owner-reported (screenshot, `ee118d3`)
+**Owner (2026-06-22, screenshot of the now-visible 1T hoard): three things.** (1) *"it doesn't stack to the ceiling
+or even near"* — at 1T it's a low pile; should climb much higher. (2) *"the stack shape doesn't look organic — I
+think it would collect and pile up against the SIDES of the screen (imagine they are walls)"* — not a single
+central dome; gold should fill the full width and **bank up against the left/right walls**, organically. (3) *"I
+don't like the ovals — prefer a cell-shaded appearance (no outline). They should be like rotated short cylinders,
+where the surface and edge have different colours."*
+- **New COIN PRIMITIVE (`drawCoin`, `fxgl.js`):** replace the beveled-oval-with-dark-rim look with a **cell-shaded
+  rotated short CYLINDER**: a foreshortened **top face** ellipse in one flat gold tone + a **rim/edge** band below
+  it in a *different (darker) flat* gold tone — **two flat cells, NO outline**, no gradient (a small flat highlight
+  cell is OK). The `rot`/`aspect` params drive the **spin**: as the coin tips, the face foreshortens and the edge
+  band grows/shrinks (edge-on → a thin bar). Same primitive used by the hoard AND the celebration (T193).
+- **Pile SHAPE (`moundProfile` + `HOARD_MAX_H`):** stop the single smooth central dome. **(a)** Raise the ceiling —
+  `HOARD_MAX_H` 0.34 → much taller (≈0.7–0.85) so at high wealth it climbs most of the screen (behind the UI is
+  fine — the owner's happy seeing it through the gaps). **(b)** Reshape to a **container fill banked against the
+  side walls**: full-width coverage that rises with `level`, with the surface **drifting UP against x≈0 and x≈1**
+  (the walls), plus organic irregularity (multiple drifts/clumps + noise, not one parabola). It should read like
+  coins poured into the phone and heaping against the walls. **(c)** Check `HOARD_CAP` (340) gives enough surface
+  coverage for the bigger pile — raise the cap and/or scale coin size with the pile so it doesn't look sparse.
+- **DoD:** at 1T the hoard climbs high (near the upper area, not a low bump); the pile fills the width and banks
+  against the side walls with organic variation; the coins render as **cell-shaded two-tone cylinders, no outline**
+  (face ≠ edge colour) at varied rotations; works on the **WebGL/WebGPU 2D overlay** (the owner's device) AND the
+  CPU still; existing non-hoard scenes byte-identical; `golden-fx`/`fxgl`/`hoard-wiring` green (update goldens, note
+  it); `node -c` clean; **owner device-confirms** the new look. **[B]-only** (`fxgl.js`, tests).
+
+### T193 — [B] **Money-gain celebration = the same spinning cell-shaded CYLINDER coins** (not square/disc particles) · status: OPEN · owner-reported
+**Owner (2026-06-22): "I'd like to see the same rotating cell-shaded cylinders in the money-gain celebrations.
+Since it's just particles at the moment, which don't register as coins at all."** Root cause: on the owner's
+**WebGL/WebGPU** device the burst renders through the **shader splat (disc mask)**, which **ignores the coin
+`look`** — so even the T173 `look:"coin"` earn-burst shows as plain disc/square particles. Only the CPU/2D path
+draws real coins (`drawCoin`, `look===1`).
+- **Fix (`fxgl.js`, B's call — recommend the 2D coin layer):** render **coin-look gain particles as spinning
+  cell-shaded CYLINDERS** (the T192 primitive) on the **backend-agnostic 2D layer** (the same always-presents 2D
+  path the T185 hoard overlay uses), **not** the shader splat — so they're real spinning coins on every backend
+  incl. the owner's device. Each coin **spins** (animate the T192 `rot`/face-foreshorten over its life) as it flies
+  out. Keep the amount-scaled count/juice tiers (T173 `earnBurstSpec`). Non-coin bursts (the generic celebration
+  confetti) can stay on the shader splat — only the **money/coin** burst becomes cylinders.
+- **DoD:** earning gold emits **visibly spinning cell-shaded cylinder COINS** (matching the hoard, T192) on the
+  WebGL/WebGPU backend (not discs/squares); amount-scaling preserved; no perf regression (respect the particle
+  caps); `golden-fx`/`fx-wiring` green (note any golden changes); `node -c` clean; **owner device-confirms** the
+  gain burst now reads as coins. **[B]-only** (`fxgl.js`, tests). *(Depends on T192's coin primitive.)*
+
 ### T184 — [A] **DEV MODE in the config — enabled from the MENU, no URLs** (houses all dev tools) · status: DONE (`d47685d`) · APPROVED
 **Owner (2026-06-22): "I see the Codex but no way to turn everything on. I don't want to edit URLs — make sure I
 can do all the dev-mode stuff in the config now. We'll disable dev mode later."** Replace the `?dev` URL gate with
