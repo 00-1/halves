@@ -926,7 +926,7 @@
       for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(data[(y*w+x)*4+3] > 96){ if(y<yMin)yMin=y; if(y>yMax)yMax=y; }
       // T220 — the void line gets TALLER-THAN-WIDE cells (vertical stretch); the gold
       // wordmark stays square. width:auto on .pixtitle keeps it fitting the splash.
-      const span = Math.max(1, yMax - yMin), PXX = 2, PXY = corrupt ? 3 : 2, cx = w / 2;
+      const span = Math.max(1, yMax - yMin), PXX = 2, PXY = corrupt ? 6 : 2, cx = w / 2;   // T221 fix — void cells 3→6 (≈2× height; with .pixtitle max-width it renders the line ~2× taller, readable)
       const disp = document.createElement("canvas"); disp.width = w * PXX; disp.height = h * PXY; disp.className = "pixtitle";
       const d = disp.getContext("2d"); if(!d) return;
       const draw = (glintX, cseed) => {
@@ -955,7 +955,7 @@
             // T221 — Star-Wars perspective skew: each row's horizontal scale ramps
             // with depth about the centre, so the bottom is wider than the top. Cells
             // in a row share one scale → they stay contiguous (+0.6 closes seams).
-            const rs = 0.6 + 0.4 * ((y - yMin) / span);   // top 0.6× → bottom full width
+            const rs = 0.78 + 0.22 * ((y - yMin) / span);   // T221 fix — EASE the skew (top 0.78×, not 0.6×) so the caps don't collapse into streaks
             d.fillRect((cx + (ox - cx) * rs) * PXX, oy * PXY, PXX * rs + 0.6, PXY);
           } else {
             d.fillRect(ox * PXX, oy * PXY, PXX, PXY);

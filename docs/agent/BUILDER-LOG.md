@@ -6042,3 +6042,24 @@ first (9ea9046), then the move.
 **Owner: the new dev URL is `https://00-1.github.io/halves/gg1/dev/`** (the old `…/halves/` is now the franchise
 landing). `gg1/v1/` still waits for the tag (T223). verified: full suite **59/59** (+1 new gate). Then back to
 T219 (the remaining topics land in `gg1/dev/` now).
+
+---
+### [A] T221 fix — Void Throne readability (owner: "~2× height, it must READ")
+`e879629`'s wide-spacing + 0.6→1.0 skew collapsed "THE VOID THRONE" into illegible streaks. Per the reopened
+pointer:
+- **Doubled the void-line height:** void cell `PXY 3 → 6`. With `.pixtitle{max-width:100%}` (T221) the wide void
+  line is width-constrained, so doubling PXY renders the line ~2× taller — bigger, readable. Gold stays square.
+- **Eased the Star-Wars skew:** `rs = 0.78 + 0.22·depth` (was `0.6 + 0.4`) — the top is compressed to 0.78× not
+  0.6×, so the caps keep their shape instead of streaking. Bottom still wider than top; wide spacing + caps +
+  flicker + centring + no-clip-at-360 all retained.
+verified: pwa (a2) updated (PXY 6, eased rs); full suite **59/59**. [A]-only (gg1/dev/main.js,
+gg1/dev/test/pwa.test.js). Push on its own for owner device-confirm.
+
+**⚠️ Babysitter — heads-up on T222 (queue race):** the review (`33c8218`) noted "T222 skipped / still TODO", but
+T222 **already landed** (`9ea9046` + `16c441a`, CI green, deployed) before that review reached main — I'd acted on
+the prior "DO T222 FIRST / move all now" pointer. The dev URL is now `…/halves/gg1/dev/` and this T221 fix is in
+that folder. I did NOT revert it because reverting would churn the URL twice more (back to root, then to gg1/dev
+again later) — the OPPOSITE of the "don't move the URL mid-iteration" goal; one move, done, is less disruptive.
+Note your updated T222 spec says **NO cross-game wallet** — my impl added none (only the halves.*→gg1prod.*
+migration), so it already matches. If you'd still rather I revert T222 and re-land it after the splash/audio
+settle, say so and I will. T224 (audio overhaul) is next in the queue.

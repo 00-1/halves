@@ -73,12 +73,12 @@ if(mani){
   ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true, "'JetBrains Mono',ui-monospace,monospace", true\)/.test(mn), "(a2) T217: the void subtitle is rendered uppercase ('THE VOID THRONE')");
   ok(/const burst = \(\) =>/.test(mn) && /function flick\(\)/.test(mn), "(a2) T217: a burst/flick scheduler replaces the continual tick (intermittent interference)");
   // T220 — the void line is stretched VERTICALLY + the flicker is faster/more random, cutting fully on/off
-  ok(/PXX = 2, PXY = corrupt \? 3 : 2/.test(mn) && /d\.fillRect\(ox \* PXX, oy \* PXY, PXX, PXY\)/.test(mn), "(a2) T220: the void line uses taller-than-wide cells (PXY>PXX); gold stays square");
+  ok(/PXX = 2, PXY = corrupt \? 6 : 2/.test(mn) && /d\.fillRect\(ox \* PXX, oy \* PXY, PXX, PXY\)/.test(mn), "(a2) T220/T221: the void line uses much taller cells (PXY 6 vs PXX 2 → ~2× line height for readability); gold stays square");
   ok(/const blankLine = \(\) => d\.clearRect\(0, 0, disp\.width, disp\.height\)/.test(mn) && /Math\.random\(\) < 0\.2\) blankLine\(\)/.test(mn), "(a2) T220: brief WHOLE-LINE dropouts cut the line fully on/off during a burst");
   ok(/setTimeout\(flick, 35 \+ Math\.random\(\) \* 70\)/.test(mn), "(a2) T220: the flicker is faster + jittery (random ~35–105ms ticks, not a fixed 90ms)");
   ok(/setTimeout\(burst, 1600 \+ Math\.random\(\) \* 2600\)/.test(mn), "(a2) T220: shorter, more frequent idle between bursts; settles to the clean frame (draw(null))");
   // T221 — void line gets wide letter-spacing + a Star-Wars perspective skew (bottom wider than top)
-  ok(/const rs = 0\.6 \+ 0\.4 \* \(\(y - yMin\) \/ span\)/.test(mn) && /\(cx \+ \(ox - cx\) \* rs\) \* PXX/.test(mn), "(a2) T221: per-row horizontal scale ramps with depth about the centre (bottom wider than top)");
+  ok(/const rs = 0\.78 \+ 0\.22 \* \(\(y - yMin\) \/ span\)/.test(mn) && /\(cx \+ \(ox - cx\) \* rs\) \* PXX/.test(mn), "(a2) T221: per-row horizontal scale ramps with depth about the centre (bottom wider than top), EASED so the caps stay legible");
   ok(/cx = w \/ 2/.test(mn), "(a2) T221: the skew is taken about the horizontal centre (cx = w/2)");
   ok(/\.pixtitle\{[^}]*max-width:100%/.test(cssT), "(a2) T221: .pixtitle max-width:100% guarantees no clip at 360px");
 }
