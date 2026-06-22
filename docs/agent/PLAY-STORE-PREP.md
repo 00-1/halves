@@ -126,7 +126,8 @@
 - **`.well-known/assetlinks.json`** on Pages (for the TWA) — part of T168/packaging.
 
 ## 9. Submission checklist — [owner-action] vs [in-repo]
-- [in-repo] Privacy policy page live at /privacy.html · listing copy · screenshots + icon + feature graphic ·
+- [in-repo] **Verify DEV tools are gated/absent** (the `?dev` gold-setter etc. — not reachable in production) ·
+  Privacy policy page live at /privacy.html · listing copy · screenshots + icon + feature graphic ·
   the .aab · (recommended) self-hosted fonts · assetlinks.json
 - [owner] ✅ Pay $25 + ID verification (in progress) · create the support Gmail · create the app in Play Console ·
   choose the **permanent package id** · upload the .aab · paste listing copy + privacy URL · fill Data Safety

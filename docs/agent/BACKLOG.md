@@ -2840,8 +2840,9 @@ Goblin King/Warren are the first foes). The comedy = an adventurer amassing an a
   formatting); the wealth milestones become reachable in sane time; Arena difficulty/`FOE_BUDGET` invariants
   unaffected; `Gold` unit tests updated (`questionGold`/`roundBonusGold`/`tierGold`/the new factor); `node -c`
   clean; **[A]-only** (`main.js`, gold tests). **Sequence:** feeds the hoard `GOLD_FULL` (T173) — do before/with
-  T173; behind the live bugs. **Babysitter can run a Node economy SIM to set `g` + `GOLD_FULL` from real
-  gold-after-N-days curves** (offered to the owner).
+  T173; behind the live bugs. **✅ ECONOMY SIM RUN** (`docs/agent/economy-sim.js`): **recommended `g` ≈ 2.0–2.2**
+  (regular player → millions in weeks, **billions by ~2 months**, trillions long-term; full table in
+  `GOLD-HOARD-DESIGN.md`). The boss multiplier is a single tunable constant; the owner dials the final feel.
 
 ### T177 — [A] **BUG (live):** PWA loses fullscreen on minimize + no way back (T156 removed the button) · status: OPEN · 🔴 DO-FIRST
 **Owner (2026-06-22): "the PWA loses fullscreen every time I minimise it, and the fullscreen button is gone from
@@ -2957,6 +2958,14 @@ compliant (gold-on-purple).
   huge earn-burst) as fire-buttons in the existing `#fxTest` group in the **Graphics** menu (alongside the current
   item/rank/win testers, `main.js:2428-2441`), so the owner can **fire each tier on-device and check it's
   PERFORMANT** (no frame drops). Fire from a default point (screen-centre is fine in the tester).
+- **DEV gold-setter (owner, 2026-06-22 — "set my gold temporarily to see the different gold levels; remove before
+  publishing"):** a **DEV-ONLY** control in the Graphics menu to **set the gold total** to test values (e.g.
+  buttons 0 / 1K / 100K / 1M / 100M / 1B / 1T, or an input) so the owner can preview every hoard fill-level + the
+  big-number display. **Gate it behind a DEV flag so it's invisible in production** — recommended a `?dev` URL-param
+  gate (`/[?&]dev\b/.test(location.search)`): hidden for normal users (they never use `?dev`), the owner appends
+  `?dev=1`. Mark the block clearly (`// DEV TOOLS — gated, do not ship enabled`). **Add to the T168 publish
+  checklist: verify the dev tools are gated/absent before release.** (Persisting a test value writes
+  `halves.gold` — the owner can reset it via the 0 button.)
 - **DoD:** the hoard grows with gold + the amount-scaled spinning-coin burst fires on earn; **each gold tier is
   fireable from the Graphics FX tester** for perf testing; legibility intact; reduced-motion static; `node -c`
   clean; `$("id")`/home-layout invariants hold; **[A]-only** (`main.js`, `index.html` for the test buttons, tests).

@@ -92,9 +92,26 @@ hundreds/day early, tens-of-thousands/day once progressed (Arena tiers alone add
   **or** `1−1/(1+gold/K)` with `K≈110K`. Quantise into ~6–8 tiers; re-seed only on tier change. **`GOLD_FULL` is
   the one knob the owner dials.** *(Optional comedic flourish at extreme wealth — e.g. the mound overflows / a few
   coins spill — deferred.)*
-- **Want a precise number?** I can run a quick **Node economy simulation** (rounds/day × accuracy → questionGold +
-  roundBonus + Arena wins, with `goldMult` growing as collection fills) to estimate gold-after-N-days under a few
-  play-frequency assumptions, and set `GOLD_FULL` from real curves rather than a guess. Say the word.
+- **✅ ECONOMY SIM RUN (`docs/agent/economy-sim.js`, 2026-06-22)** — day-by-day, real formulas, progression ramps
+  (full collection/bosses ~day 60), with the T178 boss multiplier `g`. Cumulative gold reached:
+
+  | g (×g^10 at full clear) | casual d30 / d120 | regular d30 / d120 | dedicated d30 / d120 |
+  |---|---|---|---|
+  | **1.8** (×357) | 7.9M / 2.8B | 15.6M / 5.9B | 32.4M / 12.7B |
+  | **2.0** (×1024) | 12.1M / 8.0B | 24.3M / 16.5B | 50.1M / 35.8B |
+  | **2.2** (×2656) | 18.0M / 20.6B | 35.8M / 42.4B | 75.5M / 91.8B |
+  | **2.5** (×9537) | 32.2M / 72.8B | 63.2M / 151B | 131M / 327B |
+
+  **Reading:** every setting hits **millions within the first month** and **billions within ~2–3 months** — the
+  comedy lands. **Trillions** come for the long-haul (post-completion earning is ~linear at a huge daily rate, so
+  T arrives over ~6–9 months; the milestones ladder to **1e15** gives the chase). **Recommended `g` ≈ 2.0–2.2**
+  (regular player: millions in weeks, billions by ~2 months, trillions long-term). *(Assumptions — rounds/day,
+  accuracy, progression ramp — are explicit constants in the sim; tune on the live build.)*
+- **GOLD_FULL (the VISUAL pile) — REVISED to ≈ `1e9` (1 billion), not 1M.** Reason: the owner wants the pile to
+  **build up over the whole journey** ("as you amass more and more"), and the sim shows 1M is reached in ~week 1
+  — too early to max the pile. At **`GOLD_FULL = 1e9`** with the power curve `(gold/1e9)^0.4`: ~6% at 1M (a small
+  early mound), ~40% at 100M, **full at ~1B (~2–3 months)** — so the pile tracks the billions while the NUMBER
+  explodes past it into **T/Qa (the comedic "overflow")**. Owner's one knob to dial.
 
 ## Core principle (owner, confirmed): IMPRESSION, not simulation
 **The hoard is NOT thousands of physics particles** — it must just give the **overall impression of amassed
