@@ -336,10 +336,17 @@
   ];
 
   // ---- T162 Tier P3 — extensions to existing modes (cheap, high-leverage) ----
-  // 9. `cubes` — n³ for small n. Calibration: n ∈ 2..6 plus 10 (answers ≤216,
-  //    or 1000). Extended to n ∈ 2..10 (max 1000) so a fluent player has more
-  //    items per round; the spec called for a "small fixed set + mixed review".
-  const CUBES_P3_SRC = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+  // 9. `cubes` (now "Cubes & Roots") — n³ for small n, PLUS the inverse the design
+  //    pairs it with (research-11plus.md line 164, "Cubes & roots"): cube roots (∛)
+  //    of perfect cubes and square roots (√) of perfect squares. Tagged entries:
+  //      ["c", n]        → "n³"     (a = n³)
+  //      ["∛", cube, a]  → "∛cube"  (a = the cube root)
+  //      ["√", sq,   a]  → "√sq"    (a = the square root)
+  const CUBES_P3_SRC = [
+    ["c",2],["c",3],["c",4],["c",5],["c",6],["c",7],["c",8],["c",9],["c",10],
+    ["∛",8,2],["∛",27,3],["∛",64,4],["∛",125,5],["∛",216,6],["∛",1000,10],
+    ["√",36,6],["√",49,7],["√",64,8],["√",81,9],["√",121,11],["√",144,12],["√",169,13],["√",196,14],["√",225,15]
+  ];
   // 10. `money` — n items at £x.xx and change from £10/£20. Tagged entries:
   //       ["m", n, price, A]  → "n × £price"            (A = n·price, 2dp)
   //       ["c", from, of,  A] → "change from £F of £O"  (A = F − O,    2dp)
@@ -508,6 +515,11 @@
   function moneyItem(e){
     if(e[0] === "m") return { p: e[1] + " × £" + e[2].toFixed(2), a: e[3] };
     return { p: "change from £" + e[1] + " of £" + e[2].toFixed(2), a: e[3] };
+  }
+  // Cubes & roots: "n³" (cube), or "∛cube" / "√sq" (the inverse roots).
+  function cubeRootItem(e){
+    if(e[0] === "c") return { p: e[1] + "³", a: e[1] * e[1] * e[1] };
+    return { p: e[0] + e[1], a: e[2] };
   }
   // Digit sum: "digit sum of N" or "remainder N ÷ 9" (= digitSum mod 9).
   function digitsumItem(e){
@@ -753,10 +765,10 @@
     {
       // Cubes mirrors squares: squares is the spine leaf with no existing child,
       // so cubes slots cleanly as its P2 (depth 2): squares → cubes.
-      id:"cubes", name:"Cubes", tag:"Cube it.",
+      id:"cubes", name:"Cubes & Roots", tag:"Cube it; undo it with roots.",
       glyph:'x<span class="slash">³</span>',
-      eyebrow:'cube of <b>↓</b>', expr:false, requires:"mastery:squares", masterSecs:4, group:"Core",
-      build(){ return shuffle(CUBES_P3_SRC).map(n => ({ p:n+"³", a:n*n*n })); }
+      eyebrow:'evaluate <b>↓</b>', expr:false, requires:"mastery:squares", masterSecs:5, group:"Core",
+      build(){ return shuffle(CUBES_P3_SRC).map(cubeRootItem); }
     },
     {
       // Money per spec is "after addsub2", but the addsub branch already chains

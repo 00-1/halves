@@ -275,13 +275,14 @@
       example: "20 in 2:3 → bigger → 5 parts, 20 ÷ 5 = 4 each, bigger is 3 → 3 × 4 → 12."
     },
     cubes: {
-      intro: "Cubing means multiplying a number by itself three times.",
+      intro: "Cubing multiplies a number by itself three times; a ROOT undoes it — ∛ finds the cube's source, √ the square's.",
       tips: [
-        "n³ means n × n × n. Work in steps: 4³ = 4 × 4 = 16, then × 4 = 64.",
-        "Learn the small ones: 2³ = 8, 3³ = 27, 5³ = 125, 10³ = 1000.",
-        "It is NOT n × 3 — that's the commonest slip."
+        "n³ means n × n × n: 4³ = 4 × 4 = 16, then × 4 = 64. (It is NOT n × 3.)",
+        "Learn the small cubes: 2³ = 8, 3³ = 27, 5³ = 125, 10³ = 1000.",
+        "A root reads them backwards: ∛64 asks 'what cubed makes 64?' (4); √225 asks 'what squared makes 225?' (15).",
+        "So know your squares and cubes and the roots come for free."
       ],
-      example: "3³ → 3 × 3 = 9, then × 3 → 27."
+      example: "∛125 → what number cubed is 125? 5 × 5 × 5 = 125 → 5."
     },
     money: {
       intro: "Everyday money sums — totals for several items, or the change from a note.",
@@ -489,8 +490,14 @@
       case "ratioshare": { const m = p.match(/^(\d+)\s*in\s*([\d:]+)\s*→\s*(bigger|smaller|biggest)$/); if(!m) break;
         const t = +m[1], parts = m[2].split(":").map(Number), total = parts.reduce((s, n) => s + n, 0);
         return "Add the ratio (" + parts.join(" + ") + " = " + total + " parts), divide " + t + " by " + total + " for one part, then take the " + m[3] + " share's worth."; }
-      case "cubes": { const m = p.match(/^(\d+)³$/); if(!m) break; const n = +m[1];
-        return "Cube it: multiply " + n + " by itself, then by " + n + " again — three " + n + "s (not " + n + " × 3)."; }
+      case "cubes": {
+        const mc = p.match(/^(\d+)³$/);
+        if(mc){ const n = +mc[1]; return "Cube it: multiply " + n + " by itself, then by " + n + " again — three " + n + "s (not " + n + " × 3)."; }
+        const mr = p.match(/^∛(\d+)$/);
+        if(mr) return "Cube root: find the number that, multiplied by itself three times, makes " + mr[1] + " (run through the small cubes).";
+        const ms = p.match(/^√(\d+)$/);
+        if(ms) return "Square root: find the number that, multiplied by itself, makes " + ms[1] + " (which square is it?).";
+        break; }
       case "money": {
         const mm = p.match(/^(\d+)\s*×\s*£([\d.]+)$/);
         if(mm) return "Multiply £" + mm[2] + " by " + mm[1] + " — the pence scale up just like the pounds.";

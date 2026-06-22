@@ -5897,3 +5897,14 @@ Round-2 guide fixes (pushed separately): **🔴 `digitsum`** remainder ÷9 corre
 verified: full suite **54/54**. hero-icons catalogue 1615 → 1636 (fractions2's per-mode collectibles).
 glyphs distinctness holds across all 32 modes; tech-tree/guides-coverage/hints green. [A]-only (modes.js,
 guides.js, tests). Remaining: `cubes`+roots, then 2c (de-dup + harness regression gate). T168 held on Play ID.
+
+---
+### [A] T213 2b — `cubes` → "Cubes & Roots" (add ∛/√)
+Per the audit (research-11plus.md line 164 pairs cubes WITH roots). The `cubes` mode (id unchanged → tree wiring
++ unlock intact) is now **"Cubes & Roots"**: 9 cubes (n³, n∈2–10) + 6 cube roots (∛ of perfect cubes) + 9
+square roots (√ of perfect squares) = 24 items. New tagged source + `cubeRootItem` renderer; tag "Cube it; undo
+it with roots.", eyebrow "evaluate ↓", masterSecs 4→5. Guide rewritten to teach roots as cubes/squares read
+backwards; `explain()` gains answer-free ∛/√ branches (point at the radicand, never the root). t162-p3 (3)
+rewritten to validate cubes AND both roots (answer³ = radicand / answer² = radicand). hero-icons catalogue
+1636 → 1666 (+15 questions × the per-question solve/spark collectibles). verified: full suite **54/54**.
+[A]-only (modes.js, guides.js, tests). Remaining: 2c — de-dup pool slots + a harness regression gate. T168 held.

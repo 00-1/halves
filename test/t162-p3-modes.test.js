@@ -52,20 +52,21 @@ P3_IDS.forEach(id => {
   ok(distinctPrompts(qs), "(2) `" + id + "` all prompts are distinct (no duplicate)");
 });
 
-// ---- (3) cubes: every answer is n³ ------------------------------------------
+// ---- (3) cubes & roots: cube (n³), cube-root (∛), square-root (√) ------------
 (function checkCubes(){
   const m = byId("cubes"); if(!m) return;
   const qs = m.build();
-  let formulaOk = 0, rangeOk = 0;
+  let mathOk = 0, cubeN = 0, crootN = 0, srootN = 0;
   qs.forEach(q => {
-    const mm = /^(\d+)³$/.exec(q.p);
-    if(!mm) return;
-    const n = +mm[1];
-    if(q.a === n * n * n) formulaOk++;
-    if(n >= 2 && n <= 10) rangeOk++;
+    let mm = /^(\d+)³$/.exec(q.p);
+    if(mm){ cubeN++; const n = +mm[1]; if(q.a === n * n * n && n >= 2 && n <= 10) mathOk++; return; }
+    mm = /^∛(\d+)$/.exec(q.p);
+    if(mm){ crootN++; if(q.a * q.a * q.a === +mm[1]) mathOk++; return; }   // the answer cubed = the radicand
+    mm = /^√(\d+)$/.exec(q.p);
+    if(mm){ srootN++; if(q.a * q.a === +mm[1]) mathOk++; return; }          // the answer squared = the radicand
   });
-  ok(formulaOk === qs.length, "(3) cubes: every answer = n³ — math matches the prompt (" + formulaOk + "/" + qs.length + ")");
-  ok(rangeOk === qs.length, "(3) cubes: every n ∈ [2,10] (the calibrated band; answers ≤ 1000)");
+  ok(mathOk === qs.length, "(3) cubes&roots: every answer is the correct cube / cube-root / square-root (" + mathOk + "/" + qs.length + ")");
+  ok(cubeN >= 6 && crootN >= 3 && srootN >= 3, "(3) cubes&roots: the set covers cubes AND both roots (cubes " + cubeN + ", ∛ " + crootN + ", √ " + srootN + ")");
 })();
 
 // ---- (4) money: totals (n×£p) and change (£F − £O), both 2dp ----------------
