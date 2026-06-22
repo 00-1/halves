@@ -53,6 +53,13 @@ ok(/\.pad\{[^}]*flex:0 0 auto/.test(css), "(1) T118: the numpad (#pad) is flex:0
   delete global.window;
 })();
 
+// ---- (1c) T176: the PWA paints into the notch/cutout (no black bar) ----------
+ok(/name="viewport"[^>]*viewport-fit=cover/.test(html), "(1c) T176: the viewport meta sets viewport-fit=cover (content extends into the display cutout, so the purple backdrop reaches the very top — no black notch bar)");
+// the full-bleed backdrop is anchored to the VIEWPORT (fixed; inset:0), not the
+// inset-padded body — so it fills the cutout; the inset-aware UI still uses the insets.
+ok(/\.fx-backdrop\{[^}]*position:fixed[^}]*inset:0/.test(css), "(1c) T176: the .fx-backdrop is fixed + inset:0 (fills the cutout edge-to-edge, under the inset-aware app)");
+ok(/body\{[^}]*padding:env\(safe-area-inset-top\)/.test(css), "(1c) T176: the body still pads by the safe-area insets (the UI stays clear of the notch even though content bleeds under it)");
+
 // ---- (2) the gold/momentum readout is at the TOP, then the banner, then the tree --
 const startBlock = html.slice(html.indexOf('id="start"'), html.indexOf('id="summary"'));
 const readoutsIdx = startBlock.indexOf('class="readouts"');

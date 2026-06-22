@@ -5286,3 +5286,27 @@ notes — **⚠ T60/T61 OVERLAP (for the babysitter to reconcile):** T162 alread
   DUPLICATE live modes. Recommend re-scoping T60→Metric-only and T61→Sequences-only (I can build those next
   if confirmed). Next per `NEXT.md`: content continues (re-scoped T60/T61) → `T173` (hoard wiring, once B's
   `T172` lands).
+
+---
+
+## Builder A — T176 🔴 BUG: black bar in the notch/cutout on PWA (purple backdrop didn't reach the top)
+commit: (this commit) — [A], DO-FIRST. Owner: "black bar at the top of the screen in PWA, whereas in Firefox
+the purple background goes all the way to the top. This is the phone's notch area."
+root cause: the viewport meta lacked **`viewport-fit=cover`**, so a standalone PWA won't paint into the display
+cutout (notch) — that strip showed the dark `theme-color` `#0E1116` (the black bar). A browser tab has no
+cutout, so Firefox looked fine.
+fix ([A], `index.html`): added **`viewport-fit=cover`** to the viewport meta. The full-bleed `.fx-backdrop`
+(`position:fixed; inset:0; 100vw×100dvh`) is anchored to the VIEWPORT (not the inset-padded body), so it now
+fills the cutout with the **purple** home/arena backdrop; elsewhere `body{background:var(--bg)}` (#0E1116, ==
+the theme-color) fills it seamlessly (no distinct bar). The interactive UI stays inset-aware — body padding +
+`.app` height + toasts + update-bar already use `env(safe-area-inset-*)` (T112); those insets become non-zero
+under `viewport-fit=cover`, and the layout already accounts for them (no clipping).
+how I verified: **`home-layout.test` (31→34)** with a T176 block — the viewport meta sets `viewport-fit=cover`;
+  the `.fx-backdrop` is `fixed; inset:0` (fills the cutout); the body still pads by the safe-area insets (UI
+  stays clear of the notch). The T112 `.app`/safe-area invariants are unchanged (CSS untouched). `node -c`
+  clean; **full suite green** (no `index.html`-only-ref breakage; cache-bust gate still clean). [A]-only
+  (`index.html`, `test/home-layout.test.js`).
+notes: **owner device-verify** — on the installed PWA the notch strip should now read PURPLE (home) /
+  seamless dark (elsewhere), not a black bar; the home/game UI stays clear of the notch (nothing clipped).
+  Next per `NEXT.md`: `T171` is already DONE (`1a4bcf5`) → content (re-scoped T60→Metric, T61→Sequences per
+  the T59 overlap note) → `T173` (hoard wiring, after B's `T172`).
