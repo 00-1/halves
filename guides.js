@@ -288,7 +288,7 @@
       tips: [
         "Add the digits one at a time: 7263 → 7 + 2 + 6 + 3.",
         "If the digit sum divides by 9 (or 3), so does the whole number.",
-        "For the remainder ÷ 9, keep adding the digits until one digit is left — that's the remainder."
+        "For the remainder ÷ 9, keep adding the digits to a single digit — that's the remainder; but if you reach 9 the number divides exactly, so the remainder is 0."
       ],
       example: "digit sum of 384 → 3 + 8 + 4 → 15."
     }
@@ -492,7 +492,7 @@
         const ms = p.match(/^digit sum of (\d+)$/);
         if(ms) return "Add the digits of " + ms[1] + " one at a time.";
         const mr = p.match(/^remainder (\d+) ÷ 9$/);
-        if(mr) return "Add the digits of " + mr[1] + ", and keep adding until one digit is left — that's the remainder.";
+        if(mr) return "Add the digits of " + mr[1] + " down to a single digit — that's the remainder, unless it reaches 9, which means 9 divides in exactly.";
         break; }
     }
     return FALLBACK;
