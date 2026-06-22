@@ -3480,22 +3480,25 @@ can stay. By subtitle I mean THE VOID THRONE."*
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
 ### T221 — [A] **Void Throne: wide LETTER-SPACING + Star-Wars perspective skew (bottom wider)** · status: CHANGES (`e879629` made it UNREADABLE — fix: ~2× height) · owner-requested
-**🔴 REOPEN (owner device-confirm on `e879629`): "void throne not readable now. Probably needs 2× height to be
-readable (stretch)."** The wide spacing + skew collapsed "THE VOID THRONE" into a splayed fan of unreadable purple
-streaks. **Cause:** the perspective ramp crushes the TOP rows to `0.6×` width (`rs = 0.6 + 0.4·((y-yMin)/span)`)
-while the glyphs are only `PXY=3` tall — not enough vertical resolution to stay legible under the skew.
-- **PRIMARY FIX — ~2× the void-line HEIGHT (owner's call):** roughly **double the void line's rendered height** —
-  e.g. `PXY 3 → 6` (and/or raise the void raster `cellsH` so it's taller at the source, not just upscaled-chunky),
-  so the letters have the vertical resolution to read clearly through the skew + glitch. Keep the gold line as-is.
-- **SECONDARY (if 2× height alone isn't enough — reviewer note from the screenshot):** the top-compression is the
-  other culprit — **ease the perspective** so the top isn't crushed (raise the top scale, e.g. `rs = 0.78 + 0.22·d`
-  instead of `0.6 + 0.4·d`), keeping a gentle bottom-wider trapezoid rather than an aggressive one.
-- Keep the **wide letter-spacing**, the **caps/stretch/flicker** (T217/T220), centred, **no clip at 360px** (taller +
-  wide-tracked caps must still fit the splash width — shrink the cell or tracking before letting it overflow).
-- **DoD:** "THE VOID THRONE" is **clearly READABLE** (the headline test) with the wider spacing + a (gentler if
-  needed) bottom-wider skew; gold unchanged; centred + no clip at 360px; glitch/flicker still work; reduced-motion
-  static; `node -c` clean; entry tests green; **owner device-confirms it reads.** **[A]-only** (`main.js`, maybe
-  `styles.css`). *(Owner is live on this — do it FIRST.)*
+**ROUND A (done, `36ef632`): "~2× height + eased skew"** → now READABLE but the builder read "2×" too literally — the
+void line is still small. **🔴 ROUND B — owner CLARIFIED with a drawn target box (screenshot on `36ef632`): "it's not
+understanding about the text. I want it STRETCHED TO FILL THIS BOX — while keeping the skewed bottom."**
+- **THE ASK = SCALE "THE VOID THRONE" UP to FILL a big box under the wordmark — it should be a tall, dominant block,
+  NOT a small line.** The owner drew a box sitting directly below "Goblin Gold": width ≈ the wordmark's width (a touch
+  narrower), height ≈ **2.5–3× the "Goblin Gold" wordmark height**. "THE VOID THRONE" (13 chars) fills that → the
+  letters become **tall + vertically stretched** (condensed-tall), spanning the width.
+- **Implementation:** drive the void line off a **TARGET HEIGHT** (≈ 2.5–3× the rendered wordmark height), not a fixed
+  `PXY` multiple — i.e. compute the scale so the glyph block fills the target box, rather than guessing `PXY=6`. Much
+  bigger than the current round-A size (~5–6× taller than it is now).
+- **KEEP the bottom-wider Star-Wars SKEW** (the part the owner likes) on top of the big size; keep the wide
+  letter-spacing + caps + flicker (T217/T220).
+- **Legible + centred + NO CLIP at 360px:** now it's large AND skewed, the **widest (bottom) row** is the overflow
+  risk — **cap the bottom scale / tracking so the bottom edge still fits** the splash width on a narrow phone (don't
+  let the skew push it off-screen). Reduced-motion still static.
+- **DoD:** "THE VOID THRONE" is a **large block filling ~the drawn box (≈2.5–3× the wordmark height)**, clearly
+  readable, with the bottom-wider skew kept; gold wordmark unchanged; centred + no clip at 360px (incl. the widest
+  bottom row); glitch/flicker still work; `node -c` clean; entry tests green; **owner device-confirms the size + that
+  it reads.** **[A]-only** (`main.js`, maybe `styles.css`). *(Owner is live on this — current task.)*
 
 **[original spec, for reference]** Owner (on `6a5524a`): "add letter spacing… plenty of space between letters; skew
 it so the bottom is wider, Star Wars style." Continues the void-line styling (`paintPixelTitle`/`renderTitles` in

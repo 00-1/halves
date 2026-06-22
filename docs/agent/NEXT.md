@@ -14,10 +14,12 @@
   Roots via Cubes).
 - ✅ **T222 — restructure: PUSHED (`16c441a`), in Babysitter review.** App now lives in `gg1/dev/`; new dev URL is
   **`https://00-1.github.io/halves/gg1/dev/`**. (Don't redo it.)
-- ⏳ **`T221` ← DO THIS NOW.** The Void Throne is **UNREADABLE** (the skew collapsed it to streaks). **Fix: ~2× the
-  void-line HEIGHT** (`PXY 3→6`, ideally a taller source raster too). If still not legible, EASE the skew
-  (`rs = 0.78 + 0.22·d`, not `0.6 + 0.4·d`). Keep the wide letter-spacing + caps + flicker; centred; no clip at
-  360px. **DoD = it READS.** *(BACKLOG T221 — reopened. Owner is waiting on this.)*
+- ⏳ **`T221` ← DO THIS NOW (round B — owner clarified with a drawn box).** Round A (`36ef632`) made it readable but
+  TOO SMALL (read "2×" too literally). **Now: SCALE "THE VOID THRONE" UP to FILL a big box under the wordmark — a tall,
+  dominant block ≈ 2.5–3× the "Goblin Gold" wordmark HEIGHT** (drive off a TARGET height, not a fixed `PXY`; ~5–6×
+  bigger than it is now). **KEEP the bottom-wider skew** + wide spacing + caps + flicker. Must READ, be centred, and
+  **NOT clip at 360px — the widest (bottom) row is the overflow risk, cap the bottom scale so it fits.** *(BACKLOG
+  T221.)*
 - ⏳ **`T224`** — AUDIO overhaul: REMOVE the tempo slider (lock tempo 1.0×); both volume sliders → ONE shared **0–11**
   integer scale (drop the `×`); fresh-install **defaults at the MIDPOINT** (music ≈0.10× gain, SFX ≈0.50× gain), 11≈2×
   louder, 0=silent; migrate existing prefs safely; keep live-preview + persistence + style picker. *(BACKLOG T224.)*
