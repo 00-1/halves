@@ -6002,3 +6002,20 @@ pages.yml); hero-icons catalogue 1764 → 1862; question-integrity + glyph-disti
 modes; full suite **57/57**. [A]-only (modes.js, guides.js, tests, pages.yml). Remaining T219: Part-1 BODMAS,
 ×-tricks, Negatives-P1, Algebra/function-machines; Part-2 Geometry group (Area/Volume/Angles), Speed-Distance-
 Time, Median/Mode/Range, Prime-factorisation; then the Collector-ladder rebalance LAST.
+
+---
+### [A] T219 batch 3 (Reasoning group) — BODMAS + Function Machines
+Third T219 group batch.
+- **`bodmas`** — evaluate a mixed-operation expression in the right order (3 + 4 × 2 → 11; brackets too).
+  21 items, non-negative integer answers, every ÷ exact. Chains off `sequences2` (evaluate-the-rule →
+  evaluate-the-expression). Glyph `×+`. Test re-derives every answer with a precedence-correct eval.
+- **`algebra`** — function machines: run the input through each box LEFT TO RIGHT (5 → ×2 → +3 → 13). 21 items,
+  every intermediate step non-negative (numpad-safe throughout). Chains off `bodmas`; the Reasoning eval-chain
+  sequences→sequences2→bodmas→algebra sits at the 4-abreast max. Glyph `n±k`. Test re-derives via a sequential
+  left-to-right apply (NOT BODMAS) and checks no step goes negative.
+- Both group Reasoning, single-child branches, guides + answer-free method explains.
+verified: new `test/t219-bodmas-algebra.test.js` (24 checks, independent eval of every expression; wired into
+pages.yml); hero-icons catalogue 1862 → 1960; home-layout T170 ≤4-abreast holds; glyph-distinctness + integrity
+gates green across all 36 modes; full suite **58/58**. [A]-only (modes.js, guides.js, tests, pages.yml).
+Remaining T219: Part-1 ×-tricks, Negatives-P1; Part-2 Geometry group (Area/Volume/Angles), Speed-Distance-Time,
+Median/Mode/Range, Prime-factorisation; then the Collector-ladder rebalance LAST.

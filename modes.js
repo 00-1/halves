@@ -440,6 +440,28 @@
     ["f",3,5,60],["f",1,4,25],["f",7,10,70],["f",1,2,50],["f",4,5,80],["f",9,20,45],["f",3,4,75]
   ];
 
+  // ---- T219 batch 3 (Reasoning group) — BODMAS + function machines -----------
+  // `bodmas` — evaluate a multi-operation expression in the correct order (×÷
+  // before +−, brackets first). Each entry [expr, A]; A is a non-negative integer
+  // and every ÷ in the set divides exactly. The expression string is the prompt.
+  const BODMAS_SRC = [
+    ["3 + 4 × 2", 11], ["5 × 2 + 6", 16], ["20 − 3 × 4", 8], ["2 × (3 + 4)", 14],
+    ["10 − 6 ÷ 2", 7], ["(8 + 4) ÷ 3", 4], ["6 + 2 × 5", 16], ["18 ÷ 3 + 7", 13],
+    ["4 × 5 − 8", 12], ["3 × (10 − 6)", 12], ["12 ÷ 4 + 9", 12], ["7 + 3 × 3", 16],
+    ["(5 + 5) × 2", 20], ["30 − 4 × 5", 10], ["2 + 6 × 4", 26], ["9 × 2 − 5", 13],
+    ["16 ÷ 2 + 3", 11], ["(9 − 3) × 4", 24], ["5 × 4 ÷ 2", 10], ["8 + 12 ÷ 4", 11], ["2 × 3 + 4 × 5", 26]
+  ];
+  // `algebra` — function machines: feed the number through each op in turn, LEFT TO
+  // RIGHT (sequential, not BODMAS). Each entry [machine, A]; A non-negative integer,
+  // every intermediate step non-negative and every ÷ exact.
+  const ALGEBRA_SRC = [
+    ["5 → ×2 → +3", 13], ["4 → ×3 → +1", 13], ["7 → +3 → ×2", 20], ["6 → ×2 → −4", 8],
+    ["3 → ×4 → +2", 14], ["8 → −3 → ×2", 10], ["10 → ÷2 → +6", 11], ["9 → +1 → ÷2", 5],
+    ["2 → ×5 → +3", 13], ["12 → ÷3 → ×2", 8], ["5 → ×3 → −7", 8], ["4 → +6 → ×2", 20],
+    ["6 → ×3 → ÷2", 9], ["7 → ×2 → −5", 9], ["3 → +7 → ×3", 30], ["8 → ÷4 → +9", 11],
+    ["5 → ×4 → −6", 14], ["10 → −4 → ×3", 18], ["6 → ÷2 → ×5", 15], ["9 → ×2 → +4", 22], ["4 → ×5 → ÷2", 10]
+  ];
+
   // ---- T59 — Wave-2 Batch A: Rounding + Larger ×/÷ (genuinely NEW topics; no
   // overlap with the T162 mock modes). Specs from docs/research-11plus.md.
   // `rounding` — round N to the nearest 10/100/1000. Each entry [N, unit, A] with
@@ -556,6 +578,8 @@
   // Roman numeral: show the numeral, answer the value. Prime: "next prime > n".
   function romanItem(e){ return { p: e[0], a: e[1] }; }
   function primeItem(e){ return { p: "next prime > " + e[0], a: e[1] }; }
+  // BODMAS / function machine: the curated expression string IS the prompt.
+  function exprItem(e){ return { p: e[0], a: e[1] }; }
   // Percent increase: "base + pct%" → the new total. F↔D↔P: three conversion shapes.
   function pctUpItem(e){ return { p: e[1] + " + " + e[0] + "%", a: e[2] }; }
   function fdpItem(e){
@@ -870,6 +894,24 @@
       glyph:'%<span class="slash">/</span>d',
       eyebrow:'convert <b>↓</b>', expr:false, requires:"mastery:fractions2", masterSecs:8, group:"Fractions & %",
       build(){ return shuffle(FDP_SRC).map(fdpItem); }
+    },
+    // ---- T219 batch 3 (Reasoning group) — BODMAS + function machines -----------
+    {
+      // BODMAS — evaluate-the-expression in the right order. Branches off `sequences2`
+      // (evaluate-the-rule → evaluate-the-expression). Group Reasoning.
+      id:"bodmas", name:"Order of Operations", tag:"BODMAS — what comes first?",
+      glyph:'<span class="slash">×</span>+',
+      eyebrow:'work it out <b>↓</b>', expr:true, requires:"mastery:sequences2", masterSecs:9, group:"Reasoning",
+      build(){ return shuffle(BODMAS_SRC).map(exprItem); }
+    },
+    {
+      // Function machines — run the input through each op in turn. Branches off
+      // `bodmas` (both "evaluate the operations"); keeps the Reasoning eval-chain
+      // sequences→sequences2→bodmas→algebra at the 4-abreast max. Group Reasoning.
+      id:"algebra", name:"Function Machines", tag:"Run the machine.",
+      glyph:'n<span class="slash">±</span>k',
+      eyebrow:'in → out <b>↓</b>', expr:true, requires:"mastery:bodmas", masterSecs:9, group:"Reasoning",
+      build(){ return shuffle(ALGEBRA_SRC).map(exprItem); }
     }
   ];
 
@@ -940,7 +982,10 @@
     primes:       ["*1","n"],          // 1·n — a prime's only factors are 1 and itself
     // T219 batch 2 — Fractions & % additions (distinct grids).
     pctup:        ["*+","%"],          // +% — increase by a percent
-    fdp:          ["f12","*%"]         // ½% — fraction ↔ decimal ↔ percent
+    fdp:          ["f12","*%"],        // ½% — fraction ↔ decimal ↔ percent
+    // T219 batch 3 — Reasoning eval topics (distinct grids).
+    bodmas:       ["*×","+"],          // ×+ — × before + (order of operations)
+    algebra:      ["n","*±","k"]       // n±k — a function machine transforming n
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 

@@ -293,6 +293,24 @@
       ],
       example: "3 × £2.40 → 3 × £2 = £6, 3 × 40p = £1.20 → £7.20."
     },
+    bodmas: {
+      intro: "When a sum mixes operations, BODMAS sets the order so everyone gets the same answer.",
+      tips: [
+        "Order: Brackets, then Orders (powers), then × and ÷, then + and −.",
+        "Do the brackets FIRST, then all the × and ÷ (left to right), then + and −.",
+        "3 + 4 × 2 is 3 + 8 = 11, NOT 7 × 2 — the × happens before the +."
+      ],
+      example: "20 − 3 × 4 → do 3 × 4 = 12 first → 20 − 12 → 8."
+    },
+    algebra: {
+      intro: "A function machine takes a number IN and applies each step in turn to get the number OUT.",
+      tips: [
+        "Work LEFT TO RIGHT, one box at a time — not BODMAS.",
+        "The output of each step is the input to the next.",
+        "5 → ×2 → +3: 5 × 2 = 10, then 10 + 3 = 13."
+      ],
+      example: "6 → ×2 → −4 → 6 × 2 = 12, then 12 − 4 → 8."
+    },
     pctup: {
       intro: "A percentage INCREASE adds that slice ON — find the part, then add it to the original.",
       tips: [
@@ -542,6 +560,12 @@
         const mc = p.match(/^change from £(\d+) of £([\d.]+)$/);
         if(mc) return "Count up from £" + mc[2] + " to £" + mc[1] + ", or subtract — that's the change.";
         break; }
+      case "bodmas":
+        // METHOD only — the ordering rule, never the result.
+        return "Work in BODMAS order: brackets first, then × and ÷ (left to right), then + and − last.";
+      case "algebra":
+        // METHOD only — feed it through the boxes, never the output.
+        return "Run the number through the boxes left to right — each step's result is the next step's input.";
       case "pctup": { const m = p.match(/^(\d+) \+ (\d+)%$/); if(!m) break; const base = +m[1], pct = +m[2];
         return "Find " + pct + "% of " + base + ", then add it on to " + base + " for the new total."; }
       case "fdp": {
