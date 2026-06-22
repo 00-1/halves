@@ -3203,10 +3203,21 @@ format-blocked = confirmed deliberate omissions.)*
   **enumeration-harness + assessment loop** (correct, numpad-safe, no degenerate items) before it's done. Reasoning/
   multi-step topics first (they need the guide most). **Build + push in BATCHES (by group) so the Babysitter can
   re-assess each** — don't land all 15 in one push.
+- **REBALANCE THE COLLECTOR LADDER (owner-flagged, do LAST — after all 15 land).** Every new topic adds its
+  per-topic collectibles (Initiation, Mastery, Flawless, Speed, Solved-count tiers, Rank, Spark…), so the total
+  catalogue count jumps well past today's ~1,900. The Collector ladder (`collectibles.js`, the `25…1900` count-
+  thresholds) is pegged to "≈ the full collection" at the top (`1900 = Keeper of the Myriad`). After the new items
+  are wired, **recompute the ACTUAL total catalogue count and re-space the whole ladder** so the top award again
+  lands ≈ the full collection, the lower rungs stay evenly reachable, and the **award COUNT + cell sizes are
+  unchanged** (15 Collector awards: 12 count-rungs + B's 3 emblems — emblems carry no `n`, leave them). Keep it
+  **migration-safe** (don't strand a saved unlock id a player already earned — re-space values, don't delete earned
+  rungs; if a rung's `n` moves, a player at/above it keeps it). Confirm the new top `n` matches the real count.
 - **DoD:** all **15 new topics** live (7 Part-1 + 8 Part-2), calibrated, each with a guide + `explain()`; Negatives
-  P2 explicitly deferred (noted, needs minus-key input); a NEW "Geometry" group exists for Angles; assessment-clean
-  per batch; all gates green; `node -c` clean; **owner spot-confirms**. **[A]** (`modes.js`, `guides.js`, music/glyph
-  maps, tests). **Build NOW** (owner-decided, not v1.1). *(Queue after the T213 polish loop converges + T220.)*
+  P2 explicitly deferred (noted, needs minus-key input); a NEW "Geometry" group exists for Angles; **the Collector
+  ladder re-spaced to the new catalogue total (top ≈ full collection), 15 awards kept, migration-safe**;
+  assessment-clean per batch; all gates green; `node -c` clean; **owner spot-confirms**. **[A]** (`modes.js`,
+  `guides.js`, `collectibles.js`, music/glyph maps, tests). **Build NOW** (owner-decided, not v1.1). *(Queue after the
+  T213 polish loop converges + T220.)*
 
 ### T218 — [A] **Notification BADGES on nav menu items (new / "there's something here")** · status: OPEN · owner-requested
 **Owner (2026-06-22): "we're missing alert bubbles on menu items where there's something new. GG1 should have it —
