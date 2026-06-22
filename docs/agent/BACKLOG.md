@@ -2721,7 +2721,7 @@ fresh install.
   split it into a [B] line if the audit lands there. *(If the audit finds nothing actionable + it never recurs,
   close as NOT-REPRODUCIBLE with the hardening guards kept.)*
 
-### T166 — [A] **BUG (live regression):** config submenus EXIT the config instead of navigating (T157 back-nav) · status: OPEN · 🔴 DO-FIRST
+### T166 — [A] **BUG (live regression):** config submenus EXIT the config instead of navigating (T157 back-nav) · status: DONE (`0aca3ee`) · APPROVED· 🔴 DO-FIRST
 **Owner (2026-06-22, on PWA): "the menus in the config are now broken — they just exit the config instead of
 going to that menu. Maybe related to the work done around supporting the back arrow? Assuming that changed
 routing."** Almost certainly a **T157** (`1a3e3fb`) regression: T157 made **every `show()` push a history
@@ -2745,7 +2745,7 @@ reads correct in isolation; the bug is the sentinel ↔ hash ↔ popstate intera
   (not home) and the full chain; `node -c` clean; browser-tab + headless unaffected; **[A]-only** (`main.js`,
   a nav test). **Verify in a real browser** (the harness; or owner confirms on PWA).
 
-### T167 — [A] Launch/fullscreen behaviour by runtime context (entry screen kept in ALL modes) · status: OPEN · owner-spec (revised 2026-06-22)
+### T167 — [A] Launch/fullscreen behaviour by runtime context (entry screen kept in ALL modes) · status: DONE (`9722cb4`) · APPROVED· owner-spec (revised 2026-06-22)
 **Owner REVISED the design: KEEP THE LAUNCH/ENTRY SCREEN IN ALL MODES** (browser, PWA, and the packaged app) —
 *"we don't want to miss the music"* (the entry tap is the Web-Audio unlock gesture; without it the music starts
 late). The only thing that varies by context is **how fullscreen is reached:**
@@ -2776,7 +2776,7 @@ late). The only thing that varies by context is **how fullscreen is reached:**
   `index.html`). **Verify:** owner confirms browser (both options) + installed PWA (single tap → fullscreen). The
   TWA launch-fullscreen is confirmed once packaged (T72/T103, immersive config).
 
-### T164 — [A] Audio: only switch music when the TRACK actually changes (no restart between same-music screens) · status: OPEN · 🔴 owner-flagged (also the likely foghorn root)
+### T164 — [A] Audio: only switch music when the TRACK actually changes (no restart between same-music screens) · status: DONE (`9722cb4`) · APPROVED· 🔴 owner-flagged (also the likely foghorn root)
 **Owner (2026-06-22): "we need to make sure it only switches when the track actually changes. E.g. moving
 between the main screen and the config menu the music restarts, but it's the same music, right?"** **Right —
 confirmed in code.** `musicForScreen` (main.js:380) maps **home/settings/audio/graphics/inventory/heroes ALL to
@@ -2797,7 +2797,7 @@ change; the code just re-triggers).
   Pairs with **T165** (B cleans the actual switch). **Verify:** owner confirms no restart between menu screens +
   the foghorn-on-screen-change is gone.
 
-### T165 — [B] Audio engine: a context SWITCH must fully stop the previous generator (no tail / no foghorn) · status: OPEN · 🔴 pairs with T164
+### T165 — [B] Audio engine: a context SWITCH must fully stop the previous generator (no tail / no foghorn) · status: DONE (`4a10a4b`) · APPROVED· 🔴 pairs with T164
 **Owner (recurring): the music "switcher doesn't fully switch — elements of the previous music continue," and
 the FOGHORN keeps returning on switches.** Even after T164 stops the *needless* switches, a **real** switch
 (menu→lofi→arena, or a picker change) must swap **cleanly**. In `synth.js`, ensure `setContext`/`setMusic`/
@@ -2812,7 +2812,7 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
-### T163 — [B] Firm up + re-bless the brittle `visual_arena` golden · status: OPEN · small (B follow-up to T154)
+### T163 — [B] Firm up + re-bless the brittle `visual_arena` golden · status: DONE (`461fddc`) · APPROVED· small (B follow-up to T154)
 The harness recovered; `test/browser/visual.test.js` now reports **1/13 FAIL — `visual_arena` golden mismatch**
 (the Arena gained 3v3 + death-VFX after the baseline was captured). NOT a CI gate (absent from `pages.yml`) so
 NOT deploy-blocking — but it violates T154's own "robust signature, not a brittle pixel diff" principle. **Make

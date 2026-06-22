@@ -1,6 +1,35 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T161 · T158 · T159 · T160 · T156 · T157 · T58` [A] (a 7-task batch A pushed
+**Current verdict:** `APPROVED — T166 · T164 · T167 [A] · T165 · T163 [B]` (the owner's live-bug batch — config
+nav, music/foghorn, fullscreen, audio-switch tail, visual golden). Live build **`9722cb4`**. Full suite + new
+gates green; footprints disjoint.
+- **`T166`** (`0aca3ee`) — config submenus EXIT fixed. Root cause confirmed = my diagnosis: the
+  **sentinel-pushed-on-every-`show()`** double-stacked history so back over-shot its parent. Fix removes that;
+  keeps **ONE trailing exit-trap sentinel** and lets the hash route handle back (`lastSeenHash` distinguishes a
+  routed pop from the exit-trap pop). `back-nav.test` (22 checks, CI) asserts **settings→audio→back == settings
+  (not home)**, the full audio→settings→home chain, AND the in-app `←` buttons. Strong behavioural gate.
+- **`T164`** (`9722cb4`) — music switching now **idempotent**: `curMusicKey = context+":"+seed`; if unchanged +
+  `Sy.musicPlaying()`, `musicForScreen` **returns early** (no setContext/setMusic/swapNow/start), still ticking
+  arena intensity. `music-idempotent.test` (15, CI) proves **5 same-music screen changes → ZERO setContext + ZERO
+  start** (was 5+). Directly fixes the owner's "same track restarts" + the likely foghorn-on-screen-change root.
+- **`T167`** (`9722cb4`) — launch/fullscreen per the owner's revised spec: **entry screen kept in ALL modes**;
+  browser keeps the 2-way choice (`#entryFs` FS + `#entryPlay` windowed); installed/standalone → the single
+  "Tap to begin" calls `enter(isInstalledDisplay())` = audio unlock **+ `requestFullscreen()`** (the one gesture
+  we get). `install-display.test` 14 (CI). *(TWA native-immersive launch is a packaging concern on T72/T103, as
+  noted — not web code.)*
+- **`T165`** (`4a10a4b`, [B]) — a real context switch now **fully stops the previous generator**: dips the wet
+  reverb output AND **`reverb.flush()` drains the FDN feedback** (the dip alone left ~37% of the tail), so nothing
+  bleeds past the swap → no carryover drone; `setContext(current)` is now a **no-op** (idempotent, defence with
+  T164). `synth` 174 + `audio.test` extended. Kills the "switcher doesn't fully switch" + the foghorn tail.
+- **`T163`** (`461fddc`, [B]) — the brittle `visual_arena` golden is now a **robust signature**: static screens =
+  presence + 5%-bucketed bbox; **dynamic Arena = presence-boolean only** (stable across 3v3 teams / death-VFX /
+  gold reflow). Re-blessed; the gate still has teeth (hue/layout flips fail).
+**Verified:** node -c clean; full suite + the 3 new CI gates (`back-nav` 22, `music-idempotent` 15, `install-
+display` 14) + `synth` 174 all pass; T165's flush/idempotency + T164's guard inspected (not just "suite green").
+**Owner-confirm pending (device):** the foghorn-on-switch gone, config menus navigate, PWA single-tap fullscreen.
+All 5 → DONE. **→ A: `T162` P2/P3 (drill modes) → content `T59`–`T61`. → B: STAND BY** (engine queue clear).
+
+> **Previously approved (done):** `T161 · T158 · T159 · T160 · T156 · T157 · T58` [A] (a 7-task batch A pushed
 ahead of review; all independently verified, full suite + `node -c` green). Live build **`c89eebc`**.
 - **`T161`** (`555464f`) — **the trust fix, verified.** `RUNNING_V` is read from **`main.js`'s own `?v=<sha>`**
   (`document.currentScript.src`, with a `querySelector` fallback); the pill shows the **running** sha (truthful
