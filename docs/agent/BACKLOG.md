@@ -3002,7 +3002,7 @@ popup** mirroring the existing inventory `openModal` pattern (:1012) — the sam
   regression to the existing inventory-item popups; `node -c` clean; `codex` test green (+ a check the Codex click
   path resolves a cell to its art/label). **[A]-only** (`main.js`, maybe `index.html`/`styles.css`, tests).
 
-### T190 — [B] **Lo-Fi Study still feels dark + stressful — IMPLEMENT the research findings** (not blind nudges) · status: DONE (`91596dd`) · APPROVED · owner device-confirm
+### T190 — [B] **Lo-Fi Study still feels dark + stressful — IMPLEMENT the research findings** (not blind nudges) · status: DONE (`91596dd`) · APPROVED · ✅ owner-confirmed (2026-06-22, "lofi is ok")
 **Owner (2026-06-22): "lo-fi doesn't need blind (deaf) nudges — we need a research pass to check what music is
 actually good for drills like this (low stress!) and implement the findings."** T183 (`5633895`) only nudged
 pitch/reverb and **left the mode minor** — that's why it still reads dark.
