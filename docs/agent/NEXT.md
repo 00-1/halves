@@ -29,8 +29,7 @@ is for the OWNER to run on a low-end phone; if it surfaces jank, the follow-up f
 
 ---
 
-**Owner device-confirm (live `951e532`):** the **perf** (run the on-device plan in `docs/PERF-RESEARCH-2.md` on your
-lowest-end phone — watch for jank/battery/heat). Title position + void font → feeding T216. Earlier ✅: lofi, icon/
+**Owner device-confirm (live `951e532`):** perf on-device plan **DEFERRED by owner** (not now) — parked as a pre-launch check / covered by the 12-tester window; resurface only if a tester reports jank. Title position + void font → feeding T216. Earlier ✅: lofi, icon/
 splash, coin shine, hoard home-only, install identity, app-switch backdrop, 1k pile, Collector (15), "i" fix.
 
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
