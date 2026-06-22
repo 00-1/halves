@@ -114,11 +114,16 @@ body{
 .tree{width:100%;max-width:360px;margin-top:0;flex:1 1 auto;min-height:150px;overflow-y:auto;display:flex;
   flex-direction:column;align-items:center;gap:0;padding:4px 2px}
 .tree-row{display:flex;align-items:center;justify-content:center;gap:0;width:100%}
-.tpart{display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+/* T170 — parts SHARE the row width (flex:3) so a row of ANY count up to 4 fits
+   the .tree box with no horizontal clipping; nodes cap at 96px so sparse 1–2-up
+   rows keep the current size, and shrink (min-width:0) as the count grows. Parts
+   outweigh the connectors (flex:3 vs flex:1) so the nodes — not the arrows — get
+   the width when it's tight. */
+.tpart{display:flex;align-items:center;justify-content:center;flex:3 1 0;min-width:0}
 /* horizontal MASTERY-gate connector (Part N → N+1): a right-pointing arrow that
    STRETCHES so a multi-part topic row fills the width; purple when crossed (the
    later part is unlocked), dim while locked. */
-.tbranch{flex:1 1 24px;min-width:24px;max-width:130px;height:18px;position:relative;align-self:center}
+.tbranch{flex:1 1 18px;min-width:12px;max-width:130px;height:18px;position:relative;align-self:center}
 .tbranch::before{content:"";position:absolute;left:2px;right:8px;top:50%;height:3px;transform:translateY(-50%);background:var(--line)}
 .tbranch::after{content:"";position:absolute;right:2px;top:50%;transform:translateY(-50%);
   border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid var(--line)}
@@ -134,9 +139,15 @@ body{
 .tchain.lit::before{background:var(--amber)}
 .tchain.lit::after{border-top-color:var(--amber)}
 .tchain.dim::before,.tchain.dim::after{opacity:.4}
-.tnode{display:flex;flex-direction:column;align-items:center;gap:4px;width:96px;padding:11px 7px;cursor:pointer;
-  background:var(--surface);border:1.5px solid var(--line);border-radius:12px;position:relative;
+.tnode{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;max-width:96px;min-width:0;padding:11px 7px;cursor:pointer;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:12px;position:relative;box-sizing:border-box;
   font-family:var(--mono);transition:border-color .15s,transform .1s}
+/* T170 — at 3- and 4-up the nodes are narrower; trim padding + the icon/labels so
+   the topic glyph + x/y progress stay legible and nothing clips. */
+.tree-row[data-parts="3"] .tnode{padding:9px 4px}
+.tree-row[data-parts="4"] .tnode{padding:8px 2px;gap:3px}
+.tree-row[data-parts="4"] .tn-ico{height:18px}
+.tree-row[data-parts="4"] .tbranch,.tree-row[data-parts="3"] .tbranch{max-width:46px}
 .tnode:active{transform:scale(.97)}
 .tnode.active{border-color:var(--amber);background:var(--surface-2)}
 .tnode .tn-ico{height:22px;width:auto;image-rendering:pixelated}

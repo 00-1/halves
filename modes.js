@@ -609,12 +609,15 @@
       build(){ return shuffle(TIMEGAP_P2_SRC).map(timegapItem); }
     },
     {
-      // ratioshare per spec is "after scaling" — scaling has no existing children,
-      // so this fits cleanly: percentages → percentages2 → percentoff → scaling →
-      // ratioshare (the Reasoning chain off the percentages family, depth 5).
+      // T170 — ratioshare chains off `partwhole` (NOT `scaling`) so no tech-tree
+      // row exceeds 4 nodes abreast (the owner's max): fractionsof → fractionsof2
+      // → partwhole → ratioshare (4), keeping percentages → percentages2 →
+      // percentoff → scaling at 4 too. Skill link holds — partwhole (reverse
+      // proportion: find the whole) → ratioshare (share in proportion). Group
+      // stays "Reasoning" (the picker family; independent of the tree chain).
       id:"ratioshare", name:"Ratio Share", tag:"Share an amount in a ratio.",
       glyph:'a<span class="slash">÷</span>b',
-      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:scaling", masterSecs:10, group:"Reasoning",
+      eyebrow:'solve <b>↓</b>', expr:true, requires:"mastery:partwhole", masterSecs:10, group:"Reasoning",
       build(){ return shuffle(RATIOSHARE_P2_SRC).map(ratioShareItem); }
     },
     // ---- T162 P3 — extensions to existing modes ----------------------------

@@ -26,6 +26,33 @@ ok(!/body\{[^}]*align-items:center/.test(css), "(1) body no longer vertically ce
 // the keypad+Skip block never shrinks → Skip stays on-screen even if space is tight
 ok(/\.pad\{[^}]*flex:0 0 auto/.test(css), "(1) T118: the numpad (#pad) is flex:0 0 auto — the Skip key can't be clipped; the stage gives first");
 
+// ---- (1b) T170: the tech-tree row fits ANY count up to 4 — no horizontal clip --
+// (a) DATA invariant: no tech-tree row can ever render more than 4 nodes — follow
+// the live `requires` (mastery) chains from each spine topic; the longest chain is
+// the widest row. This is the real "≤4 abreast" guarantee (data-driven, not pixels).
+(function treeFit(){
+  const sandbox = {}; global.window = sandbox;
+  new Function(read("modes.js"))();
+  const MODES = sandbox.MODES;
+  const spine = MODES.filter(m => !m.requires);
+  const branchOf = {};
+  MODES.filter(m => m.requires).forEach(m => { const p = m.requires.replace(/^mastery:/, ""); branchOf[p] = m; });
+  let maxDepth = 1, widest = "";
+  spine.forEach(s => {
+    let cur = s, depth = 1, chain = s.id;
+    while(branchOf[cur.id]){ cur = branchOf[cur.id]; depth++; chain += " → " + cur.id; }
+    if(depth > maxDepth){ maxDepth = depth; widest = chain; }
+  });
+  ok(maxDepth <= 4, "(1b) T170: no tech-tree row exceeds 4 nodes abreast (the owner's max) — widest is " + maxDepth + " (" + widest + ")");
+  // (b) CSS: the row's parts SHARE the width + shrink so 4 nodes fit the .tree box.
+  ok(/\.tpart\{[^}]*flex:3 1 0[^}]*min-width:0/.test(css), "(1b) T170: .tpart flexes (flex:3 1 0; min-width:0) — parts share the row width + shrink as the count grows");
+  ok(/\.tnode\{[^}]*max-width:96px[^}]*min-width:0/.test(css), "(1b) T170: .tnode caps at 96px (sparse rows keep size) but min-width:0 (dense rows shrink, no overflow)");
+  ok(/\.tnode\{[^}]*box-sizing:border-box/.test(css), "(1b) T170: .tnode is border-box so its padding/border don't push the row past the .tree width");
+  ok(/\.tree-row\[data-parts="4"\] \.tnode\{/.test(css), "(1b) T170: the 4-up node steps down its padding/labels so the glyph + x/y stay legible");
+  // restore globals the rest of the file expects to set fresh
+  delete global.window;
+})();
+
 // ---- (2) the gold/momentum readout is at the TOP, then the banner, then the tree --
 const startBlock = html.slice(html.indexOf('id="start"'), html.indexOf('id="summary"'));
 const readoutsIdx = startBlock.indexOf('class="readouts"');

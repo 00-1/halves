@@ -5159,3 +5159,37 @@ notes: **T162 is DONE** — 26 total modes (15 original + 11 new mock-driven). N
   `T59`–`T61` (the Wave-2 batches the T58 blueprint maps), then `T72` (held for owner creds). A sensible
   cross-cutting follow-up: `guides.js` `Guides.explain()` branches for all 11 new T162 modes (method-only
   hints) — flagged in each tier's handoff; not gating, but it'd round out the new topics.
+
+---
+
+## Builder A — T170 🔴 BUG: topic tree overflows (rows 4-up clipped off-screen)
+commit: (this commit) — [A], DO-FIRST. Owner (screenshot): "our tree is now four deep, which doesn't fit. The
+plan was 3, but we can do 4 if needed — needs to fit though." Caused by MY T162 modes: the new `requires`
+chains pushed some tech-tree rows wide, and `.tree-row` laid **fixed-width** `.tnode`s (96px) at `gap:0`
+inside `.tree` (max-width 360px), so ≥4 nodes overflowed + clipped both edges.
+two-part fix ([A]):
+  - **`modes.js` — rebalanced the one OVER-4 chain.** The tech-tree renders each spine topic's `requires`
+    chain as ONE horizontal row, so chain depth == row width. My percentages chain was **5 deep**
+    (`percentages → percentages2 → percentoff → scaling → ratioshare`). Re-parented **`ratioshare` from
+    `mastery:scaling` to `mastery:partwhole`**, so now: `fractionsof → fractionsof2 → partwhole → ratioshare`
+    (4) and `percentages → percentages2 → percentoff → scaling` (4). **Max row is now exactly 4** (also
+    `addsub → addsub2 → balance → mean`). Skill link holds (partwhole = reverse proportion → ratioshare =
+    share in proportion); the "Reasoning" group label is independent of the tree chain.
+  - **`styles.css` — rows fit ANY count up to 4.** `.tpart` is now `flex:3 1 0; min-width:0` (parts SHARE the
+    row width and shrink as the count grows, outweighing the `.tbranch` connectors at `flex:1` so the NODES
+    get the width when tight). `.tnode` is `width:100%; max-width:96px; min-width:0; box-sizing:border-box`
+    (sparse 1–2-up rows keep the current 96px size; dense rows shrink without the padding/border pushing past
+    the `.tree` width). At 3- and 4-up the node padding + icon step down (`[data-parts]` rules) so the glyph +
+    `x/y` progress stay legible (font stays ≥10px per the contrast policy). A 4-up row ≈ 4×71 + 3×24 ≈ 356px
+    ≤ 360px; `min-width:0` makes horizontal overflow impossible.
+how I verified: **`home-layout.test` 26→31** with a new **T170 block**:
+  - **DATA invariant (the real ≤4 guarantee):** loads the live `MODES`, follows the `requires` chains from
+    each spine topic, asserts **no chain exceeds 4** (widest = 4: `addsub → addsub2 → balance → mean`). This
+    proves no row can EVER render >4 nodes — not a pixel check.
+  - **CSS:** `.tpart` flexes + shrinks; `.tnode` caps at 96px AND `min-width:0` (shrinks, no overflow) AND
+    `box-sizing:border-box`; the 4-up node steps down. The `.app`/safe-area `home-layout` invariants are
+    untouched (no regression). `node -c` clean; **full suite green** (contrast ≥10px policy respected).
+  [A]-only (`modes.js`, `styles.css`, `test/home-layout.test.js`).
+notes: **owner/babysitter browser-verify** — the topic tree's 4-up rows (e.g. Add&Subtract → II → Balance →
+  Mean) should now fit the column with no left/right clipping, glyph + count legible. Next per `NEXT.md`:
+  **`T169`** (self-host the web fonts) → content `T59`–`T61`.
