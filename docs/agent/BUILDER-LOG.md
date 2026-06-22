@@ -5908,3 +5908,23 @@ backwards; `explain()` gains answer-free ∛/√ branches (point at the radicand
 rewritten to validate cubes AND both roots (answer³ = radicand / answer² = radicand). hero-icons catalogue
 1636 → 1666 (+15 questions × the per-question solve/spark collectibles). verified: full suite **54/54**.
 [A]-only (modes.js, guides.js, tests). Remaining: 2c — de-dup pool slots + a harness regression gate. T168 held.
+
+---
+### [A] T213 Phase 2c — de-dup pool slots + question-integrity regression gate
+Closes Phase 2. The enumeration-harness fixes are landed; this batch frees the clear duplicate slots and adds
+the permanent gate the audit asked for.
+- **De-dups (clear wins):** `placevalue` P1 `3.5 × 100 = 350` was an EXACT duplicate of a `placevalue2` item →
+  swapped P1's for `1.2 × 100 = 120` (frees the slot, no cross-topic dup). `timegap` had **five** questions all
+  = 105 min (pattern-guessable) → re-spread four of them to 90/115/80/120 (formula + 15–179 span preserved), so
+  105 now appears once.
+- **NEW gate `test/question-integrity.test.js`** (wired into `pages.yml`) — enumerates all 32 topics / 665
+  questions and locks in: (a) every answer non-negative + terminating + numpad-clean (≤4 dp, ≤8 chars, no
+  minus/colon/exp); (b) no two identical SELF-CONTAINED prompts carry differing answers (bare-number prompts
+  are topic-scoped — "250" legitimately = half-of vs double-of — so they're excluded by design); (c) prompts
+  distinct within every topic.
+- **Left as intentional (LOW):** the `halves`/`doubles` numeric overlap (topic-scoped, the eyebrow
+  disambiguates) and the `bonds` inverse / `partwhole` ¼≡25% near-pairs — these add legitimate practice
+  variety; the gate documents the bare-number overlaps as by-design rather than churning the pools.
+verified: full suite **55/55** (+1 new gate). [A]-only (modes.js, test/, pages.yml). **T213 Phase 2 COMPLETE**
+(2a guides + 2b calibration/structural + 2c de-dup/gate). Next per the pointer: T219 (planned-but-unbuilt
+topics), then T218 (nav badges); T168 held on Play ID-verify.
