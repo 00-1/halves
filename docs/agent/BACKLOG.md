@@ -2936,7 +2936,25 @@ build.**
   + reduced-motion); **B-owned doc only** (no engine change yet); `node -c` clean if any code/test touched.
   **The Babysitter surfaces the recommended technique to the owner for a thumbs-up before T172 builds it.**
 
-### T182 — [A] **Hoard FIX:** make the pile VISIBLE (log-of-magnitude curve) + a live menu preview/gold-setter · status: OPEN · 🔴 DO-FIRST (the owner can't see the hoard at all)
+### T184 — [A] **DEV MODE in the config — enabled from the MENU, no URLs** (houses all dev tools) · status: OPEN · 🔴 DO-FIRST (owner is blocked from testing)
+**Owner (2026-06-22): "I see the Codex but no way to turn everything on. I don't want to edit URLs — make sure I
+can do all the dev-mode stuff in the config now. We'll disable dev mode later."** Replace the `?dev` URL gate with
+an **in-app DEV-MODE flag** enabled from the UI:
+- **Enable gesture (no URL):** **tap the build-info pill ~7×** (the low-contrast build pill at the bottom of home —
+  the classic Android "tap build number" pattern) → toggles a persisted **`halves.dev`** flag → a "Developer mode
+  ON/OFF" toast. (Keep `?dev` working too as a fallback; the gesture is the primary.)
+- **A "Developer" section in Setup/config, shown ONLY when `halves.dev` is on**, housing **ALL dev tools:** the
+  **gold-setter buttons** (T182 — real `saveGold()` for 0/1K/100K/1M/100M/1Bn/1T, refreshing pill+pile+milestones),
+  the **reveal-all-collections** toggle (T180 — heroes/inventory/Codex shown fully unlocked, view-only override),
+  and the existing **FX / hoard testers** (move them under Dev).
+- **Disable:** tap the build pill 7× again (or a "Turn off dev mode" button). **Before publish: remove dev mode
+  entirely** — on the **T168 checklist**.
+- **DoD:** dev mode enable-able from the menu with NO URL; when on, a Dev section in config exposes the gold-setter
+  + reveal-all + testers; off by default (normal users never see it); `halves.dev` persists; `node -c` clean;
+  **[A]-only** (`main.js`, `index.html`, tests). *(Absorbs **T180**'s reveal-all + houses **T182**'s gold-setter.)*
+  **Verify:** owner enables dev from the menu, sets gold to 1Bn, reveals all collections — no URL touched.
+
+### T182 — [A] **Hoard FIX:** make the pile VISIBLE (log-of-magnitude curve); the gold-setter lives in the T184 Dev panel · status: OPEN · 🔴 DO-FIRST (the owner can't see the hoard at all)
 **Owner (2026-06-22): "I haven't seen any pile. I wasn't able to simulate piles from the [graphics] menu — maybe
 they're displayed invisibly behind the menu. I should be able to set the number of coins globally from this menu
 to see what happens to the pile."** **Root cause = mis-calibration + wrong place:** `GOLD_FULL = 1e10` with the
@@ -3031,7 +3049,7 @@ hub). **Reuses the EXISTING art generators** (no new art) — the new work is **
   `scenery.js` for the gallery-brightness, `index.html` tab, tests). **Sequence:** roadmap feature — after the
   in-flight hoard/economy/content. Pairs with **T180** (the dev reveal-all, for art review).
 
-### T180 — [A] DEV: a `?dev` "reveal all collections" toggle (heroes + inventory + Codex filled out, for art review) · status: OPEN · dev-tool (remove/gate before publish)
+### T180 — [A] DEV: "reveal all collections" toggle (heroes + inventory + Codex) · status: ABSORBED into T184 (the Dev panel) · the reveal-all toggle now lives in the T184 menu-enabled Dev section
 **Owner (2026-06-22): "add a toggle in the menu to see everything filled out — heroes, inventory, codex — so I
 can review the art more easily."** A **DEV-ONLY** toggle that displays **every collection as fully unlocked/
 discovered** (heroes, inventory items, the Codex Beasts/Bosses/Realms/Events) so the owner can review all the

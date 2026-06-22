@@ -10,19 +10,18 @@
 
 ---
 
-**Builder A → `T182` 🔴 STILL PENDING (HOARD FIX — you SKIPPED it; the pile is invisible) → wire Codex Emblems → `T180` (`?dev` reveal-all)**
-**You did the T173 follow-ups + T179 Codex — but SKIPPED `T182`** (filed after you pulled). The hoard pile is
-**still invisible at real gold** (`hoardLevel` is still the power curve). **Do `T182` NOW:**
-1. **LOG-OF-MAGNITUDE curve:** `hoardLevel(gold) = clamp(log10(1+gold)/log10(GOLD_FULL_MAG),0,1)`,
-   `GOLD_FULL_MAG`≈1e12–1e15 (1K≈25%, 1M≈50%, 1Bn≈75%, 1T≈full) — visible from the start.
-2. **`?dev` Graphics-menu gold-setter BUTTONS that ACTUALLY set the counter:** real `saveGold()` for
-   `0/1K/100K/1M/100M/1Bn/1T`, each refreshing the pill + home pile + milestones (NOT a preview). `?dev`-gated +
-   publish checklist.
-3. Earn-burst outward (done in `95dc896` ✓) — just confirm. 4. Minor: burst coins are squares → pass `look:"coin"`.
-[A]-only. *(BACKLOG T182.)*
-- **Then wire the Codex EMBLEMS section** (T179 DoD remnant) using B's new `emblems.js` — show the candidates,
-  the rest unlockable via milestones; this is also the owner's icon-review surface.
-- **Then `T180`** (`?dev` reveal-all collections). *(`T168` Play-Store held for ID-verify.)*
+**Builder A → `T184` + `T182` 🔴 BOTH DO-FIRST (dev mode in the menu + visible pile) → wire Codex Emblems**
+The owner is **blocked from testing** — can't enable dev tools without editing URLs, and can't see the pile.
+- **🔴 `T184` — DEV MODE from the MENU (no URLs):** enable via **tapping the build pill ~7×** → persisted
+  `halves.dev` flag → a **"Developer" section in Setup** with ALL dev tools: the **gold-setter buttons** (set real
+  gold: 0/1K/1M/1Bn/1T…, refresh pill+pile+milestones), the **reveal-all-collections** toggle (heroes/inventory/
+  Codex), and the **FX/hoard testers**. (Keep `?dev` as a fallback.) Off by default; remove for publish (T168).
+  Absorbs T180. [A]-only. *(BACKLOG T184.)*
+- **🔴 `T182` — make the pile VISIBLE:** `hoardLevel(gold) = clamp(log10(1+gold)/log10(GOLD_FULL_MAG),0,1)`,
+  `GOLD_FULL_MAG`≈1e12–1e15 (1K≈25%, 1M≈50%, 1Bn≈75%, 1T≈full). The log curve makes the pile show at any wealth
+  (currently power-curve → 0.17% at real gold = invisible). [A]-only. *(BACKLOG T182.)*
+- **Then wire the Codex EMBLEMS section** (B's `emblems.js` candidates; rest unlockable via milestones) — the
+  owner's icon-review surface. *(`T168` Play-Store held for ID-verify.)*
 **Re-read this line fresh before each task + push.**
 
 **Builder B → STAND BY (queue clear).** `T181` emblems DONE+APPROVED (`8f077cb` — all candidates + a bonus
