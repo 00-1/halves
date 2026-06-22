@@ -3190,22 +3190,26 @@ match the size of the existing ones visually, cos in the emblems screen they loo
   same visual size as the other collectible icons**; `emblems.test` updated + green; `node -c` clean. **[B]-only**
   (`emblems.js`, `test/emblems.test.js`). *(Pairs with T206 [A], which consumes these as awards.)*
 
-### T208 — [A] **Entry fixes: kill the `x/2` flash + restore the missing subtitle** · status: OPEN · owner-reported
+### T208 — [A] **Entry fixes: kill the `x/2` flash + ADD the "The Void Throne" subtitle** · status: OPEN · owner-reported
 **Owner (2026-06-22): "I see Magnar now, that's good. There's still a flash of x/2 though, which I don't want.
-Also we're missing the subtitle under Goblin Gold."**
+Also we're missing the subtitle under Goblin Gold."** + clarification: *"mental-maths-drills text is there, that
+can stay. By subtitle I mean THE VOID THRONE."*
 - **No `x/2` flash:** `index.html` hard-codes `<div class="mark">x<span class="slash">/</span>2</div>` (CSS text,
   paints instantly), and `renderBrand()` only swaps in the **Magnar** canvas *after* JS runs → a visible flash of
   x/2 on every load. **Empty the static `.mark`** (`<div class="mark"></div>`) — or hide it until painted — so
   nothing shows before Magnar. Keep the `paintGlyph(halves)` fallback for the no-generator case (it can stay the
   fallback content but must NOT flash on the normal path). Reserve the mark's height in CSS so there's no layout
   jump while Magnar paints.
-- **Restore the subtitle:** the `.tag` ("Fast mental-maths drills") is **still in the `#entry` markup** but the
-  owner reports it's not showing under "Goblin Gold" → it's **hidden or pushed off**, not deleted. Investigate
-  (likely a layout/height change from the Magnar `.mark` canvas, or a CSS regression) and **ensure the subtitle
-  renders under the title** on the entry/splash.
-- **DoD:** on load the splash shows **Magnar (no x/2 flash)** + "Goblin Gold" + the **subtitle visible** beneath it;
-  no layout jump; `node -c` clean; entry/icon tests green; **owner device-confirms**. **[A]-only** (`index.html`,
-  `main.js`, `styles.css`).
+- **ADD the "The Void Throne" subtitle:** the full app title is **"Goblin Gold: The Void Throne"** but the splash
+  only shows "Goblin Gold" + the maths tag. **The maths tag ("Fast mental-maths drills") is correct and STAYS** —
+  the missing piece is **"The Void Throne"** (the series/subtitle). Add it as a **subtitle line under "Goblin Gold"**
+  (between the brand wordmark and the maths tag). Style it as a subtitle — distinct from the big title and the
+  muted tag (e.g. a smaller gold/amber series line); it should NOT be pixel-gold like the title (that's T209 — this
+  is just adding the missing text cleanly). Final entry stack: **Magnar → "Goblin Gold" → "The Void Throne" →
+  "Fast mental-maths drills" → buttons.**
+- **DoD:** on load the splash shows **Magnar (no x/2 flash)** + "Goblin Gold" + **"The Void Throne"** subtitle +
+  the maths tag, in that order; no layout jump; `node -c` clean; entry/icon tests green; **owner device-confirms**.
+  **[A]-only** (`index.html`, `main.js`, `styles.css`).
 
 ### T209 — [A] **Stylise the "Goblin Gold" title — pixel-gold, built from the hoard, with occasional glints** · status: OPEN · owner-requested
 **Owner (2026-06-22): "the title text, at least Goblin Gold, could be more stylised and pixelated — everything

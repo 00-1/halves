@@ -13,9 +13,10 @@ because it **depends on B's `T205`** (the resized creature art for the award ico
 - **`T208` — kill the `x/2` flash + restore the subtitle (quick, owner-bothered).** `index.html` hard-codes
   `<div class="mark">x/2</div>` (paints instantly) and `renderBrand()` only swaps in Magnar after JS → a flash.
   **Empty the static `.mark`** (reserve its height to avoid a jump); keep `paintGlyph(halves)` as the no-flash
-  fallback only. **Restore the subtitle:** `.tag` ("Fast mental-maths drills") is still in `#entry` markup but not
-  showing → it's hidden/pushed-off (likely a layout change from the Magnar canvas) — find it + make it render.
-  [A]-only (`index.html`, `main.js`, `styles.css`). *(BACKLOG T208.)*
+  fallback only. **ADD the "The Void Throne" subtitle:** the maths tag is fine + stays — the missing piece is **"The
+  Void Throne"** (full title = *Goblin Gold: The Void Throne*). Add it as a subtitle line between "Goblin Gold" and
+  the maths tag (smaller gold/amber series line; NOT pixel-gold — that's T209). Stack: Magnar → Goblin Gold → The
+  Void Throne → Fast mental-maths drills. [A]-only (`index.html`, `main.js`, `styles.css`). *(BACKLOG T208.)*
 - **`T209` — stylise the "Goblin Gold" TITLE: pixel-gold (built from the hoard) + occasional glints** (owner). Only
   the title wordmark; subtitle/buttons/everything else **stay clean/readable**. Render the title as a **pixelated
   gold-textured wordmark** filled with the hoard's `GOLD_TONES`/T195 gold-ramp+dither, with **occasional throttled
