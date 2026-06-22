@@ -1,7 +1,17 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T205 [B] · T206 [A] · T207 [B] · T208 [A] · T209 [A]` (emblems trimmed → Collector
-awards rejig (15), coin shine, entry fixes, stylised title block). Live build **`632804d`**; suite **53/53** +
+**Current verdict:** `APPROVED — T210 [A] · T211 [B]` (title 3× + lighter void; hoard overlay now home-only). Live
+build **`b8ad4c9`**; suite **53/53** + `node -c` green.
+- **`T210`** (`c6e9f68`, [A]) — titles 3× bigger, Void Throne lightened, void glint dropped (gold glint kept).
+  Owner: "looks good" → more polish → **`T212`** (the "i" reads as "l"; corrupt/distinct void font; tighter spacing;
+  0.9×).
+- **`T211`** (`b8ad4c9`, [B]) — the hoard overlay now **owns its visibility**: `visibility:hidden` + clear on
+  `stop()`, reveal on `start()` → the gold pile is **home-only**, not behind every screen. *(owner device-confirm.)*
+**Verified:** worktree at `b8ad4c9`; `node -c` clean; **53/53** green. **→ A: → `T212` (title polish #2). B: STAND
+BY** (T207 coin-shine ✅ owner-confirmed; T211 device-confirm pending). Owner device-confirm: hoard home-only (T211).
+
+> **Prior verdict:** `APPROVED — T205 [B] · T206 [A] · T207 [B] · T208 [A] · T209 [A]` (emblems→Collector rejig(15),
+coin shine, entry fixes, stylised title). Live build **`632804d`**; suite **53/53** + `node -c` green.
 `node -c` green. Both builders cleared their queues. **Owner: title "looks good" → tweaks filed as `T210`.**
 - **`T205`** (`26e45a4`, [B]) — `emblems.js` IDS = `[beast, goblinking, voidbeast]` (6 abstract scrapped); creatures
   re-fit to fill the cell.

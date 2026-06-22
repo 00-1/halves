@@ -3211,7 +3211,7 @@ can stay. By subtitle I mean THE VOID THRONE."*
   the maths tag, in that order; no layout jump; `node -c` clean; entry/icon tests green; **owner device-confirms**.
   **[A]-only** (`index.html`, `main.js`, `styles.css`).
 
-### T211 — [B] **BUG: the gold hoard shows behind EVERY screen** (should be home-only) · status: OPEN · 🔴 owner-reported (live)
+### T211 — [B] **BUG: the gold hoard shows behind EVERY screen** (should be home-only) · status: DONE (`b8ad4c9`) · APPROVED · owner device-confirm
 **Owner (2026-06-22): "we have gold stacks behind every screen, but I only want it on the main screen."**
 - **✅ ROOT CAUSE (Babysitter-verified):** the hoard renders on a **separate overlay canvas** (`.fxgl-hoard`,
   `_hoardCv`, T185) inserted as a sibling of `#fxBackdrop`. Its className is built by **stripping `hidden`**
@@ -3232,7 +3232,27 @@ can stay. By subtitle I mean THE VOID THRONE."*
   behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
-### T210 — [A] **Title refinements: 3× bigger, lighten the Void Throne, drop its sparkle** · status: OPEN · owner-reported
+### T212 — [A] **Title polish #2: fix the "i" (reads as "l"), corrupt/distinct Void Throne font, tighter spacing, 0.9×** · status: OPEN · owner-reported
+**Owner (2026-06-22, screenshot on `b8ad4c9`): "this looks pretty good, perhaps improved a little. (1) the dots of
+the 'i' are not separated so they read as 'l' ('Goblln', 'Vold'). (2) I wonder if Void Throne can be a different
+font, or somehow look more corrupted. (3) less spacing between [the letters]. (4) both can shrink a touch, ~0.9×."**
+Refines `paintPixelTitle`/`renderTitles` (main.js). The title is the real **Space Grotesk 800** rasterised at
+**`cellsH=18px`** then upscaled **`PX=3`** — at 18px the **"i" dot merges into the stem**, so it reads "l".
+- **(1) Separate the "i" dot:** raise the **base raster resolution** (`cellsH` 18 → ~24–28) so the i's dot/stem
+  resolve as distinct pixels, then **drop `PX`** to keep the final size right (more detail, same look). Verify
+  "Goblin"/"Void" read correctly.
+- **(2) Void Throne distinct / more corrupted:** make "The Void Throne" visually different from the gold line — a
+  **different font** for the void line OR a **corruption pass** on its pixels (random dropped/displaced cells,
+  glitch jitter, occasional stray pixels — a "corrupted/void" look). Keep it legible (still reads "The Void
+  Throne"), just glitchier; gold line stays clean.
+- **(3) Tighter letter-spacing:** the letters read too spread out — **condense** (canvas `letterSpacing` negative,
+  or a condensed weight/font) so the words are tighter.
+- **(4) ~0.9× both:** scale both lines **down to ~0.9×** their current rendered size (a touch smaller).
+- **DoD:** the "i" reads as "i" not "l" on both lines; "The Void Throne" looks **distinct/corrupted** (still
+  legible) vs the clean gold "Goblin Gold"; tighter spacing; both ~0.9×; maths tag + rest unchanged; no layout
+  overflow; `node -c` clean; entry tests green; **owner device-confirms**. **[A]-only** (`main.js`, `styles.css`).
+
+### T210 — [A] **Title refinements: 3× bigger, lighten the Void Throne, drop its sparkle** · status: DONE (`c6e9f68`) · APPROVED · ✅ owner (looks good; more tweaks → T212)
 **Owner (2026-06-22, on T209 `632804d`): "title text looks good, but let's 3× the size of both. Void Throne needs
 lightening. Void Throne doesn't need the same sparkle."** Refines T209's `paintPixelTitle`/`renderTitles` (main.js).
 - **3× size — both lines:** make "Goblin Gold" AND "The Void Throne" **~3× their current rendered size** (bump the
