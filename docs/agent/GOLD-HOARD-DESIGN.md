@@ -17,7 +17,14 @@
    and **per-particle rotation + a vertical squash (ellipse)** so coins lie at **varied angles** and catch light
    differently. Individual coins are discernible within the mass.
 3. **EARN → coins burst from the earn-point (NO settling required — owner, 2026-06-22).** On banking gold, a
-   burst of **spinning coins** flies out from the earn-point. **It does NOT need to converge/settle onto the
+   burst of **spinning coins** flies out from the earn-point. **The burst SCALES with HOW MUCH you gain (owner,
+   2026-06-22):** a tiny gain = a few coins; a big haul = a lavish shower. **Crucial wrinkle:** with the T178
+   absurd-wealth economy the gain spans **~10 → millions**, so map **gain → burst via a LOG/saturating curve,
+   capped** (you can't spawn a million coins): e.g. count `≈ clamp(k·log10(1+gain), MIN, COIN_BURST_CAP)`, ~5–8
+   coins for a small question up to the cap (~60–90) for a huge Arena payout. **Past the count cap, add "juice"
+   not count** — bigger/faster/longer-spinning coins, wider spread, a brighter glint (and a tiered SFX cue) — so
+   a million-gold boss kill *feels* enormous without more particles. Consider ~3–4 discrete tiers
+   (small/medium/large/huge) for a readable escalation. **It does NOT need to converge/settle onto the
    pile** — the owner: *"new coins don't need to physically settle on the pile — we're usually not on the home
    screen when we earn, and the coins flying out already evoke landing in the hoard."* So the earn-burst is a
    **standalone spinning-coin burst** (fired wherever earning happens — drills/Arena), and the persistent mound
