@@ -2936,7 +2936,7 @@ build.**
   + reduced-motion); **B-owned doc only** (no engine change yet); `node -c` clean if any code/test touched.
   **The Babysitter surfaces the recommended technique to the owner for a thumbs-up before T172 builds it.**
 
-### T185 — [B] **BUG (live):** the gold hoard pile is INVISIBLE — ROOT CAUSE FOUND: only the CPU backend draws it · status: OPEN · 🔴 DO-FIRST
+### T185 — [B] **BUG (live):** the gold hoard pile is INVISIBLE — ROOT CAUSE FOUND: only the CPU backend draws it · status: DONE (`709c75f`) · APPROVED
 **Owner (2026-06-22, screenshot): 1.00T gold, build `d47685d`, but NO pile on home.** Then (2026-06-22,
 clarifying): *"the gold pile should appear over the purple backdrop, but behind the buttons. the buttons only
 partially occlude the pile — you'd still see it fine through the gaps. that's really not the problem. it's just
@@ -3002,7 +3002,7 @@ popup** mirroring the existing inventory `openModal` pattern (:1012) — the sam
   regression to the existing inventory-item popups; `node -c` clean; `codex` test green (+ a check the Codex click
   path resolves a cell to its art/label). **[A]-only** (`main.js`, maybe `index.html`/`styles.css`, tests).
 
-### T190 — [B] **Lo-Fi Study still feels dark + stressful — IMPLEMENT the research findings** (not blind nudges) · status: OPEN · owner-reported
+### T190 — [B] **Lo-Fi Study still feels dark + stressful — IMPLEMENT the research findings** (not blind nudges) · status: DONE (`91596dd`) · APPROVED · owner device-confirm
 **Owner (2026-06-22): "lo-fi doesn't need blind (deaf) nudges — we need a research pass to check what music is
 actually good for drills like this (low stress!) and implement the findings."** T183 (`5633895`) only nudged
 pitch/reverb and **left the mode minor** — that's why it still reads dark.
@@ -3023,7 +3023,7 @@ pitch/reverb and **left the mode minor** — that's why it still reads dark.
   `node -c` clean; **owner device-confirms** it's no longer dark/stressful. **[B]-only** (`synth.js`, golden tests).
   *(Implements `research-study-music.md`; supersedes the T183 nudge.)*
 
-### T191 — [B] **Audio crackling / popping** (engine-wide; "not terrible though") · status: OPEN · owner-reported
+### T191 — [B] **Audio crackling / popping** (engine-wide; "not terrible though") · status: DONE (`495f954`) · APPROVED · owner device-confirm
 **Owner (2026-06-22): "the audio can have some crackling/popping. not terrible though."** Low-severity but real,
 and it spans styles (not just lofi). Crackle/pop in a Web-Audio synth is almost always **envelope discontinuities**
 (a voice that starts/stops on a non-zero sample with no ramp → a click), **DC offset**, **summed-voice clipping**
@@ -3040,7 +3040,7 @@ into the limiter, or **scheduling underruns** (not enough look-ahead → buffer 
   green (regenerate if envelopes change, note it); `node -c` clean; owner device-confirms the crackle is gone.
   **[B]-only** (`synth.js`, golden tests). *(Adjacent to T190 — both are soft-envelope/declick work.)*
 
-### T188 — [B] **More icon candidates — in the BEASTS/HEROES generative style** (into `emblems.js` / Codex Emblems) · status: OPEN · owner-requested
+### T188 — [B] **More icon candidates — in the BEASTS/HEROES generative style** (into `emblems.js` / Codex Emblems) · status: DONE (`ee118d3`) · APPROVED · owner picks the icon
 **Owner (2026-06-22, after reviewing the live emblems): "now I see the emblems. they could be useful for
 something. but honestly I think heroes or beasts/bosses are still our best bet. you could do one more pass at
 generating something interesting — put it in emblems too. with the direction that we prefer the heroes/beasts
@@ -3062,7 +3062,7 @@ vertically-symmetric blob, horns/antennae, bold per-type palette) and/or the **h
   non-empty/deterministic, BG full-bleed); `node -c` clean; the Codex Emblems count reflects the additions.
   **[B]-only** (`emblems.js`, `test/emblems.test.js`). *(Builds on T181; after the T185 hoard-render bug.)*
 
-### T189 — [A] **Fixed BACK-button location across every menu screen** (it currently moves around) · status: OPEN · owner-reported
+### T189 — [A] **Fixed BACK-button location across every menu screen** (it currently moves around) · status: DONE (`02cd993`) · APPROVED
 **Owner (2026-06-22): "back button moves around on different menu pages. establish a fixed back button location."**
 Every subscreen has a bottom `.res-actions` flex row (`styles.css:480` — `display:flex; gap:12px; margin-top:26px`)
 holding its **Back** button (`sumBack`, `menuBtn`, `invBack`, `practiceBack`, `arenaBack`, `heroesBack`, `hdBack`,

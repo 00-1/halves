@@ -1,6 +1,35 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T187 [A]` (Codex items now open a detail popup). Live build **`39459e7`**
+**Current verdict:** `APPROVED — T185 [B] · T190 [B] · T191 [B] · T188 [B] · T189 [A]` (the hoard renders on the
+device, calmer/clean audio, creature icon art, fixed Back button). Live build **`ee118d3`** (all deployed); full
+suite **52/52** + `node -c` green.
+- **`T185`** (`709c75f`, [B]) — **the gold pile now draws on the owner's device.** Root cause was real: the hoard
+  rendered **only on `CPUBackend`**; the fix factors `drawHoard` out and the Controller composites it on a
+  **`pointer-events:none` 2D overlay canvas** inserted just above the backdrop (same z, **below the UI**) and
+  redrawn on `setData`/resize — so WebGL2/WebGPU devices get the pile **over the purple backdrop, behind the
+  buttons** (exactly the owner's spec). CPU still draws inline. `golden-fx` extended, green. *(Owner device-confirm
+  the mound is now visible.)*
+- **`T190`** (`91596dd`, [B]) — lofi implements `research-study-music.md`: **`dorian`→`mixolydian`** (major-family,
+  the cortisol/"dark" lever), progression **`[0,5,3,4]`→`[0,5,3,0]`** (resolves **home**, kills the looping
+  tension), soft **`croon`** lead (triangle, gain 0.22) replacing the `pluck` ping; ~78 BPM kept. Golden-synth +
+  distinctness green. *(Owner device-confirm it's warm/calm now.)*
+- **`T191`** (`495f954`, [B]) — declick: a tiny **linear ramp to TRUE zero** (exp ramps can't reach 0) before each
+  voice tears down → no end-of-note pop; + a **6 dB soft limiter knee** (was a hard 0-knee brickwall that clipped
+  dense-style transient peaks → crackle). T175 reverb safety intact. `synth` green. *(Owner device-confirm.)*
+- **`T188`** (`ee118d3`, [B]) — **3 character-forward CREATURE candidates** in the bestiary style (`beast` horned
+  brute, `goblinking` crowned bust, `voidbeast` smooth 3-eyed cosmic head) via a shared `creature()` helper;
+  existing 6 kept (9 total). Maskable. `emblems` test covers the new ids, green. *(Owner reviews in Codex ▸ Emblems
+  + picks the launcher icon.)*
+- **`T189`** (`02cd993`, [A]) — **Back is fixed bottom-left on every subscreen:** all 10 back buttons get
+  `.back-btn`; `.screen .res-actions{margin-top:auto;flex:0 0 auto;…}` pins the row to the bottom (`.screen` is a
+  flex column — confirmed), `.back-btn{order:-1;margin-right:auto}` floats Back to the left regardless of DOM order
+  (Arena's Fight goes right). `back-nav` green.
+**Verified:** worktree at `ee118d3`; `node -c` clean on every changed `.js`; **52/52** suite (golden-fx/synth/
+emblems/back-nav incl.) green; deploy confirmed (pages.yml `ee118d3` = success). *Browser/audio/visual confirmation
+is the owner's (harness is OOM-flaky) — all four owner-reported items are code-correct + gated; flagged for device
+confirm.* **→ Both queues CLEAR. A: STAND BY (next is `T168` Play-Store, held for ID-verify). B: STAND BY.**
+
+> **Prior verdict:** `APPROVED — T187 [A]` (Codex items now open a detail popup). Live build **`39459e7`**
 (deployed); full suite **52/52** + `node -c` green.
 - **`T187`** (`39459e7`, [A]) — tapping any Codex cell opens a detail popup reusing the `#unlockModal` chrome:
   `codexCell` now carries `data-cname`/`data-sub` (+ the existing `data-codex`/`n`/`type`/`region`/`seed`/`emblem`),

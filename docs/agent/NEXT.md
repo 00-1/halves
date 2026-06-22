@@ -10,51 +10,23 @@
 
 ---
 
-**Builder A → `T189` (FIXED Back-button location across menu screens, owner-reported).** Your `T187` (Codex
-detail popup) is **APPROVED** (live `39459e7`). Next:
-- **`T189` — the Back button MOVES around; pin it to one fixed location.** Every subscreen's `.res-actions` bottom
-  flex row (`styles.css:480`) holds its Back button, but it shifts **horizontally** (2-button rows like Arena put
-  Back on the right; single-button screens on the left) and **vertically** (the row follows variable content on
-  the screens that aren't bottom-pinned). Fix: **(vertical)** make every subscreen a `flex` column with a
-  scrollable `.scroll-body` over a `flex:0 0 auto` action row pinned to the bottom safe-area (extend the
-  `#settings`/`#audio` pattern to Inventory/Heroes/Arena/Practice/Hoard/etc.); **(horizontal)** Back **always in
-  the same corner** — recommend **bottom-LEFT** (primary action e.g. Fight/Save on the right; reorder Arena so Back
-  is first). Placement only, keep the styling. (A fixed top-left chevron is an acceptable alt **if** consistent on
-  EVERY subscreen — flag for the owner.) `back-nav` green. [A]-only (`index.html`, `styles.css`, maybe `main.js`).
-  *(BACKLOG T189.)*
-- **Then HOLD for the icon pick.** Once B's `T188` candidates land, the owner picks the launcher icon → Babysitter
-  files the wire-up. Don't pre-build. *(`T168` Play-Store held for ID-verify.)*
-**Re-read this line fresh before each task + push.**
+**Builder A → STAND BY.** All assigned work is **APPROVED** and live (`ee118d3`): `T187` (Codex detail popup),
+`T189` (fixed Back-button location). The remaining A task — **`T168` Play-Store productionisation** — is **HELD**
+on the owner's Google Play **ID verification** (external) and the **owner's launcher-icon pick** (from B's `T188`
+candidates). Do **not** start T168 speculatively. When the owner is ready, the Babysitter will file the wire-up
+(chosen emblem → manifest/PWA icons) + the Designed-for-Families/Teacher-Approved + closed-testing checklist.
+**Hold until the Babysitter points you at a task.**
 
-**Builder B → `T185` 🔴 BUG (the gold hoard pile DOESN'T DRAW on the device).** ✅ **ROOT CAUSE FOUND
-(Babysitter-verified in `fxgl.js`):** the hoard renders **only on `CPUBackend`** (`_still` → `_hoard`, :1241/:1247).
-**`GLBackend` (WebGL2) and `GPUBackend` (WebGPU) never draw it** — `renderFrame` is only scene+ambient+burst, and
-`setData` **ignores `derived.hoard`**. The owner's Android-Chrome PWA runs WebGL2/WebGPU → the mound is never
-drawn (matches the owner: *"not displaying at all… if anything it's behind the purple backdrop"* — NOT occlusion).
-**Fix (recommend the 2D overlay):** make the hoard render on **all** backends — preferably a backend-agnostic
-**Canvas2D hoard-overlay** layered over the GL/GPU scene canvas (transparent, `pointer-events:none`, z above the
-backdrop / below the buttons), reusing the existing `_hoard` + `drawCoin` 2D code; the Controller owns/sizes/
-redraws it on `setData`. DoD: pile visible **on the WebGL2/WebGPU backends** (not just CPU); scenes byte-identical
-when `scene.hoard` absent; `fxgl`/`fx-wiring`/`hoard-wiring` green. B-owned (`fxgl.js`, `index.html`, tests).
-*(BACKLOG T185.)*
-- **Then `T190` — Lo-Fi Study still dark/stressful → IMPLEMENT the research** (no more blind nudges). The research
-  pass is **already done**: read **`docs/agent/research-study-music.md`** (cited) and implement it. Headlines:
-  **MAJOR mode not `dorian`** (minor = the "dark"; → ionian/mixolydian), a **consonant progression that resolves
-  HOME** (current `[0,5,3,4]` ends on 4 = looping tension; → I–vi–IV–V / I–IV–V–I with maj7/min7 warmth), keep
-  **~78 BPM + sparse**, and a **soft, low-passed, sparse lead** (busy lead = stress). Keep it distinct from
-  ambient/tropical. Regenerate golden-synth + distinctness goldens. [B]-only (`synth.js`, goldens). *(BACKLOG T190.)*
-- **Then `T191` — audio CRACKLING/POPPING** (owner, low-severity, engine-wide). Almost certainly **envelope
-  discontinuities** — declick every voice with short attack **and** release ramps (to/from zero) so notes never
-  start/stop on a click; stop via a release ramp not abrupt `stop()`; confirm no clipping into the limiter + enough
-  scheduler look-ahead. Pairs with T190's soft-attack/low-pass work (same fix removes harshness AND clicks). Keep
-  the T175 reverb safety. golden-synth green. [B]-only (`synth.js`, goldens). *(BACKLOG T191.)*
-- **Then `T188` — MORE icon candidates, in the BEASTS/HEROES style.** The owner reviewed the live emblems: they're
-  fine but **heroes/beasts/bosses are the preferred icon direction.** Add ≈3–5 **character-forward** candidates to
-  `emblems.js` (so they show in Codex ▸ Emblems) in the `monsters.js` generative LOOK — a 16×16 role-grid pixel
-  creature/hero (body/accent/outline/eye, bold type-colour, glinting eye), composed as a **maskable** app icon
-  (full-bleed, centred, legible small + 512px). Keep `emblems.js` self-contained (re-implement the style; no
-  imports). Keep the existing 6. `emblems.test` extended + green. [B]-only. *(BACKLOG T188.)*
+**Builder B → STAND BY.** All assigned work is **APPROVED** and live (`ee118d3`): `T185` (hoard renders on
+WebGL/WebGPU via the 2D overlay), `T190` (calm/major lofi), `T191` (declick crackle/pop), `T188` (creature icon
+candidates). Queue is clear. **Hold until the Babysitter points you at a task** (likely owner device-feedback on
+the audio/hoard, or a follow-up on the chosen icon).
 
 ---
-*Maintained by the Babysitter on `claude/agent`, updated on every review.*
 
+**State:** the four owner-reported items (invisible pile, dark/stressful lofi, crackle/pop, back-button drift) are
+all fixed + deployed, plus the beasts/heroes icon candidates are in. Awaiting **owner device-confirmation** of the
+audio + the now-visible hoard, and the **owner's launcher-icon pick** (Codex ▸ Emblems, dev reveal-all). The
+critical path to launch is now mostly **external** (ID verification) + the icon pick.
+
+*Maintained by the Babysitter on `claude/agent`, updated on every review.*
