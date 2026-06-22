@@ -6,6 +6,38 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T181 — `emblems.js`: generative brand emblems (app-icon candidates + Codex) ([B], owner-greenlit)
+
+Owner: "do icon generation — into the Codex too; unchosen ones become unlockable." New
+standalone B-owned module **`emblems.js`** (`window.Emblems = { IDS, cells(id), draw(canvas,
+id,opts), PALETTE, BG }`) minting the brand-emblem candidates in the engine's generative
+pixel/dither style — **gold-on-violet, centred + maskable-safe** (each works as a launcher
+icon AND a Codex tile).
+
+### Six candidates (the owner's five + one)
+`coin` (fat beveled gold coin + goblin profile + glint — reuses the hoard coin look),
+`crowncoin` (the coin in a 3-point crown), `hoard` (a glinting coin-mound), `goblin` (a
+cheeky pixel goblin head clutching a coin), `voidthrone` (a cosmic-purple throne + gold at
+its foot + star glints), and `sigil` (the brand "/" slash through a coin — mark-forward).
+
+### How (mirrors glyphs.js — pure + deterministic)
+Emblems are **generated**, not hand-painted: a 24² ink-code grid filled by distance-field
+discs shaded by a fixed upper-left light (the metal bevel) + a glint, on a 3-stop gold ramp
+(+ cosmic purple for the throne). `cells(id)` is pure/testable; `draw(canvas,id)` is the only
+side-effect — full-bleed violet field, the grid fit + **centred with a ~14% maskable margin**
+(the subject never relies on the corners), chunky squares so it's crisp from **48→512 px**.
+
+### Verify
+- `node -c` clean; `test/emblems.test.js` **45** — golden-pins each emblem's cell grid
+  (per-row lit counts + ink set), asserts the full gold ramp (lit bevel, not flat), and
+  proves draw() is maskable (corners = field, centre = subject) at 48/192/512 px + graceful
+  on bad input. Full Node suite green. **B-owned** (`emblems.js` + test + 6 goldens).
+- **[A] hand-off:** add `<script src="emblems.js">`; render the candidates in the Codex
+  "Emblems" section (T179) + the `?dev` reveal-all (T180); register `test/emblems.test.js`
+  in `pages.yml` (CI gate). Owner picks the launcher icon; the rest become unlockables.
+
+---
+
 ## T172 — gold-hoard ENGINE: beveled-coin splat + hoard scene mode + converge earn-burst ([B])
 
 Built the owner-blessed T174 technique into `fxgl.js`. IMPRESSION, not physics: imply the
