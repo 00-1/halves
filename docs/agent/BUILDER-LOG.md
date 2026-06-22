@@ -4849,3 +4849,24 @@ notes: **owner device-verify** — background/return the installed PWA repeatedl
   the music should resume cleanly. If the foghorn ever survives even this (a tail inside the engine), that's the
   **[B] `synth.js panic()`/voice-cap** follow-up the babysitter flagged. Next per `NEXT.md`: **`T160`** (Arena
   foe-KO death VFX + slower playout).
+
+---
+
+## Builder A — T160: Arena playout death VFX + calmer pace
+commit: (this commit) — [A], owner (Arena polish on the T90 playout).
+changed (`main.js`):
+  - **Foe-KO death VFX:** in the playout's `applyEvent`, when a FOE goes down (`ev.tSide === 1 && ev.ko`) a
+    small, TIGHT impact burst now fires AT that foe's cell — `fxBigBurst` at `elCentre(cellEl[k])`, **count 180,
+    `sizePx: FX_SMALL`, `spread: 0.7`**, palette = the **foe-type colour** (`HERO_PAL[type]`) + **impact white**.
+    Localised so the kill reads without covering the board.
+  - **Calmer pace:** the per-step budget `2600→4000`ms, floor `90→130`ms, ceil `360→480`ms — a short fight is no
+    longer a blur and each KO has room to land. Skip + reduced-motion still honoured (the playout only runs when
+    motion is allowed; Skip jumps to the result).
+how I verified: new **`arena-playout-fx.test.js` (6 checks, gated)** drives a REAL fight to completion with an
+  FXGL recorder + a query-capable battle DOM + a drivable rAF, and asserts a **localised foe-KO burst** fired
+  (signature: spread 0.7 / small / count 180) **AT the foe cell** (x≈0.56,y≈0.50 — not the screen-centre
+  fallback) with the **foe-type + white** palette; plus source checks for the slowed pace + the wiring. `node -c`
+  clean; **full suite green** (arena.test's Skip path unaffected by pacing). [A]-only (`main.js` + the new test).
+notes: **owner/babysitter browser-verify** — watch a fight: each foe that drops should pop a small coloured
+  impact at its portrait, at a calmer tempo. This clears the jumped-queue batch (T161→T158→T159→T160) + the
+  Play-Store pair (T156/T157). Next per `NEXT.md`: content `T58`–`T61` → `T72`.

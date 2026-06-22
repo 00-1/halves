@@ -1472,13 +1472,25 @@
     function applyEvent(ev){
       const k = ev.tSide + ":" + ev.tOrd, mx = maxOf[k] || 1;
       const bar = hpEl[k]; if(bar) bar.style.width = Math.max(0, Math.min(100, (ev.tHp / mx) * 100)) + "%";
-      if(ev.ko && cellEl[k]) cellEl[k].classList.add("ko");
+      if(ev.ko && cellEl[k]){
+        cellEl[k].classList.add("ko");
+        // T160 — a FOE going down gets a small, TIGHT impact burst right at its cell
+        // (foe-type colour + impact white), so the kill reads. Localised (spread 0.7),
+        // small/fine (FX_SMALL); reduced-motion already skips the whole playout.
+        if(ev.tSide === 1){
+          const fp = HERO_PAL[(foesMeta[ev.tOrd - 100] || {}).type] || HERO_PAL.Brawn;
+          const cc = elCentre(cellEl[k]);
+          fxBigBurst({ x: cc.x, y: cc.y, count: 180, seed: (((ev.round | 0) + 1) * 0x9e3779b1 + ev.tOrd) >>> 0,
+            palette: [fp.body, fp.accent, "#ffffff"], sizePx: FX_SMALL, spread: 0.7 });
+        }
+      }
       const st = $("arenaBody").querySelector(".bp-status");
       if(st) st.textContent = dispName(ev.aSide, ev.aOrd) + " hits " + dispName(ev.tSide, ev.tOrd) +
         " for " + ev.dmg + (ev.ko ? " — down!" : "");
     }
-    // pace: the whole fight in ~2.6s, but never faster than 90ms/step (calm)
-    const STEP_MS = Math.max(90, Math.min(360, Math.round(2600 / log.length)));
+    // pace: T160 — slower/calmer than the first cut. ~4s total, floor 130ms/step,
+    // ceil 480ms so a short fight isn't a blur and each KO has room to read.
+    const STEP_MS = Math.max(130, Math.min(480, Math.round(4000 / log.length)));
     let i = 0, last = -1, acc = 0;
     function frame(ts){
       if(myToken !== playToken) return;            // superseded/cancelled
