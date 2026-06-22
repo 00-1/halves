@@ -165,6 +165,24 @@
         "To ÷, ask 'how many of the divisor fit?' — build up in easy chunks."
       ],
       example: "23 × 4 → (20 × 4) + (3 × 4) → 80 + 12 → 92."
+    },
+    metric: {
+      intro: "Metric units step by ×10, ×100 or ×1000 — so converting is just multiplying or dividing.",
+      tips: [
+        "Going to a SMALLER unit (km→m, m→cm, kg→g, l→ml)? Multiply.",
+        "Going to a BIGGER unit (m→km, cm→m, g→kg, ml→l)? Divide.",
+        "The steps: km↔m and kg↔g and l↔ml are ×1000; m↔cm is ×100; cm↔mm is ×10."
+      ],
+      example: "3 km in m → smaller unit, so × 1000 → 3000 m."
+    },
+    sequences: {
+      intro: "A linear sequence goes up (or down) by the same step each time — spot the step, then extend the rule.",
+      tips: [
+        "Find the common difference: subtract one term from the next.",
+        "For the NEXT term, add the difference to the last one.",
+        "For the rule 'Mn + A', M is the step and A shifts it; the kth term is M×k + A."
+      ],
+      example: "Next in 2, 5, 8, 11 → step is 3 → 11 + 3 = 14."
     }
   };
 
@@ -295,6 +313,24 @@
         // multiply: split the 2-digit number into tens + ones
         const tens = Math.floor(a / 10) * 10, ones = a % 10;
         return "Split " + a + " into " + tens + " and " + ones + ", multiply each by " + b + ", then add the two parts."; }
+      case "metric": { const m = p.match(/^([\d.]+)\s+(\w+)\s+in\s+(\w+)$/); if(!m) break;
+        const STEP = { "km-m":"× 1000", "m-cm":"× 100", "cm-mm":"× 10", "kg-g":"× 1000", "l-ml":"× 1000",
+          "m-km":"÷ 1000", "cm-m":"÷ 100", "mm-cm":"÷ 10", "g-kg":"÷ 1000", "ml-l":"÷ 1000" };
+        const op = STEP[m[2] + "-" + m[3]]; if(!op) break;
+        const dir = op[0] === "×" ? "a smaller unit, so multiply" : "a bigger unit, so divide";
+        // METHOD only — names the operation, not the converted value.
+        return m[3] + " is " + dir + ": " + op.replace(/^[×÷]/, op[0]) + "."; }
+      case "sequences": {
+        const nx = p.match(/^next:\s*([\d,\s]+)$/);
+        if(nx){ const nums = nx[1].split(",").map(s => +s.trim());
+          // METHOD only — point at the gap between the given terms (never state the
+          // step value itself, which can equal the answer in a descending run).
+          return "Find the step from " + nums[0] + " to " + nums[1] +
+            ", then carry that same step on past the last term, " + nums[nums.length - 1] + "."; }
+        const nth = p.match(/^(\d+)n\s*([+−]\s*\d+)?,\s*term\s*(\d+)$/);
+        if(nth){ const M = +nth[1], k = +nth[3];
+          return "Work out " + M + " × " + k + (nth[2] ? ", then " + (nth[2][0] === "+" ? "add " : "subtract ") + nth[2].replace(/[+−]\s*/, "") : "") + "."; }
+        break; }
     }
     return FALLBACK;
   }

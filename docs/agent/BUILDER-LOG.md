@@ -5375,3 +5375,38 @@ value moved. Full-clear hoard is now ×g^10 = **9537×** (was 1668×), and a com
 verified: widened the `gold.test` `g`-band assertion to the owner-set 2.0–2.6 (sim floor 2.0, owner dial 2.5);
 **all 22 gold checks pass**; Arena still decoupled (`enemies.js` never reads goldMult). [A]-only (`main.js`,
 `test/gold.test.js`). Pushed first per the absolute pointer, then continuing content `T60`/`T61`.
+
+---
+### [A] T60 / T61 — Wave-2 Batch B: Metric + Sequences (the non-overlapping remainder)
+what: the original T60 (Measures) / T61 (Reasoning) brief was Money/Time/Metric and Ratio/Mean/Sequences,
+but **Money/Time(gap)/Ratio(share)/Mean already shipped in T162** — building them again would duplicate live
+modes. So this batch is the two genuinely-NEW topics only:
+- **`metric`** (Measures) — mm/cm/m/km, g/kg, ml/l conversions ("<n> <from> in <to>"), step factors ×/÷
+  10/100/1000 (smaller→multiply, bigger→divide; 21 items, 11 mul / 10 div). Decimal answers stored as short
+  TERMINATING literals (250 cm → 2.5 m) so they're numpad-clean (no IEEE drift). *masterSecs 7, group Measures.*
+- **`sequences`** (Reasoning) — next-term of a linear run (2,5,8,11→14) AND the value of an nth-term rule
+  (3n+2, term 10 → 32), incl. descending + negative-shift rules; 21 items (10 next / 11 nth); all answers
+  non-negative. *masterSecs 9, group Reasoning.*
+Both EXTEND THE SPINE via `unlockedBy` (squares→rounding→largermd→**metric→sequences**) — each a 1-wide
+tech-tree row, so the T170 ≤4-abreast invariant is untouched. Glyph tokens `metric:["a","*/","k"]`,
+`sequences:["n","*+","k"]` — supported chars, pairwise-distinct bitmaps (glyphs.test green). Added GUIDES
+entries + method-only `explain()` branches in guides.js (the sequence hint points at the gap between given
+terms, never the step value — which can equal the answer in a descending run, so it would leak).
+arena recalibration (the important part): the +98 auto-generated collectibles (49/mode) re-tuned `FOE_BUDGET`
+and tripped arena3 tier-120 monotonicity (a ≤85% loadout over-won the boss). Root cause was a long-standing
+latent bug exposed by the bigger pool: the final-tier `edge()` binary search used a FIXED ceiling
+(`fb[119]*30`) that no longer bracketed the true edge, so every strong loadout clamped to the ceiling and
+TIED — collapsing eFull≈eSub and letting partials win. **Fixed the MECHANIC** (per the blueprint): `edge()`
+now auto-EXPANDS its upper bound until the trio actually loses (genuine bracketing), and sweeps a per-percent
+sub-near-full grid (50–96%) pinning above the strongest partial. Also hoisted `bestTeamVs` OUT of the search
+loop (the trio is fixed per loadout; only the foe budget varies) — **load-time calibration dropped 3151ms →
+241ms** (13×). enemies.js is A-owned.
+how I verified: **NEW `test/t60-t61-modes.test.js` (38 checks, gated)** — existence/spine-extension, the
+metric ×/÷ factor math + terminating-decimal literals, the sequence linear-next + nth-term math, correct
+groups, and a Guide + answer-free non-empty `explain()` for every item. Updated `hero-icons` catalogue
+counter 1465 → **1563** (+98). `arena3` all 27 green again (monotonicity restored on the grown pool).
+`hints`/`glyphs`/`guide-action` green. **Full suite: 48/48 test files pass.** [A]-only (modes.js, guides.js,
+enemies.js, the new gate + pages.yml, hero-icons counter, research doc).
+notes: per NEXT.md the next [A] task is **T173** (hoard WIRING — gold→homeFxState via GOLD_FULL≈1e10, the
+amount-scaled spinning-coin earn-burst, Graphics-menu tier testers, `?dev` gold-setter), which unblocks once
+**B's T172 engine** lands. Optional non-gating follow-up: `explain()` branches for the remaining T162 modes.

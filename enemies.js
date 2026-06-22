@@ -294,17 +294,27 @@
     // final tier 120: place between the near-full edge and the 85%-loadout edge
     const fType = TIERS[TIER_COUNT - 1].type;
     const subset = frac => { const ids = Object.keys(nearFull); const o = {}; ids.slice(0, Math.floor(ids.length * frac)).forEach(id => o[id] = true); return o; };
-    const edge = team => { let elo = fb[TIER_COUNT - 1] * 0.05, ehi = fb[TIER_COUNT - 1] * 30;
-      for(let it = 0; it < 60; it++){ const m = (elo + ehi) / 2, t = fb.slice(); t[TIER_COUNT - 1] = m;
-        if(simulateTeams(bestTeamVs(team, 3, fType), enemyTeamFromBudget(t, TIER_COUNT)).win) elo = m; else ehi = m; } return elo; };
-    const eFull = edge(nearFull);
-    // The greedy best-team heuristic can be slightly NON-MONOTONE near the boss (a
-    // larger loadout can pick a differently-typed top-rated trio that fares worse),
-    // so a single 85% sample can leave a smaller subset over-winning the top tier.
-    // Sample a few sub-near-full loadouts and pin ABOVE the STRONGEST of them, so
-    // EVERY ≤85% loadout loses (the curve stays monotone) while near-full still wins.
-    const eSub = Math.max(edge(subset(0.75)), edge(subset(0.80)), edge(subset(0.85)));
-    fb[TIER_COUNT - 1] = (eFull + Math.min(eSub, eFull)) / 2;   // near-full wins; ≤85% (incl. 75/80) loses
+    // edge = the highest main-foe budget at which a FIXED trio still wins. The trio
+    // is precomputed ONCE per loadout (bestTeamVs walks rating() over the whole
+    // collectible pool — the costly part), so only the cheap 3v3 sim runs inside the
+    // search. Auto-EXPAND the upper bound until the trio actually loses, so the
+    // binary search genuinely BRACKETS the edge (a fixed ceiling clamped strong
+    // loadouts to a tie, collapsing eFull≈eSub and letting ≤85% over-win).
+    const edgeOf = comb => { const winsAt = m => { const t = fb.slice(); t[TIER_COUNT - 1] = m;
+        return simulateTeams(comb, enemyTeamFromBudget(t, TIER_COUNT)).win; };
+      let elo = 1, ehi = Math.max(2, fb[TIER_COUNT - 1]);
+      while(winsAt(ehi) && ehi < 1e15) ehi *= 2;
+      for(let it = 0; it < 50; it++){ const m = (elo + ehi) / 2; if(winsAt(m)) elo = m; else ehi = m; } return elo; };
+    const eFull = edgeOf(bestTeamVs(nearFull, 3, fType));
+    // The greedy best-team heuristic is NON-MONOTONE near the boss (as the loadout
+    // grows, the top-rated trio can swap in a differently-typed hero that fares
+    // worse, so edge(fraction) zig-zags). A few fixed samples can therefore miss the
+    // strongest sub-near-full loadout and leave it over-winning the top tier. Sweep a
+    // per-percent grid of sub-near-full fractions and pin ABOVE the STRONGEST of
+    // them, so EVERY partial loadout loses (the top demands near-full) while the
+    // genuine near-full collection — whose top trio is strongest — still wins.
+    let eSub = 0; for(let p = 50; p <= 96; p++) eSub = Math.max(eSub, edgeOf(bestTeamVs(subset(p / 100), 3, fType)));
+    fb[TIER_COUNT - 1] = (eFull + Math.min(eSub, eFull)) / 2;   // near-full wins; every ≤96% partial loses
     return fb;
   })();
   // The enemy team for a tier from a foe-budget array: the tier foe + 2 weaker

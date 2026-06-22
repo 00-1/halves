@@ -101,6 +101,21 @@ positive distances, times as elapsed minutes, so no minus/colon keys).
     multiply each, add. *masterSecs ≈ 7.*
   - *(Note: the rest of the planned Wave-2 — Money, Time, Ratio, Mean — already
     shipped via T162; T60/T61 reduce to **Metric + Sequences**.)*
+- **T60 / T61 — Wave-2 Batch B, BUILT** *(2026-06-22)* — the non-overlapping
+  remainder (Money/Time/Ratio/Mean already live via T162):
+  - **Metric Units (`metric`, Measures):** mm/cm/m/km, g/kg, ml/l conversions —
+    "<n> <from> in <to>". Step factors ×/÷ 10/100/1000; smaller unit → multiply,
+    bigger unit → divide. Mix drills both directions (11 multiply, 10 divide).
+    Decimal answers are short terminating literals (250 cm → 2.5 m), numpad-clean.
+    *masterSecs ≈ 7.*
+  - **Sequences (`sequences`, Reasoning):** next-term of a linear run
+    (2,5,8,11 → 14) **and** the value of an nth-term rule (3n+2, term 10 → 32),
+    incl. descending and negative-shift rules; every answer non-negative. Method
+    hint points at the gap between given terms (never the step value, which can
+    equal the answer in a descending run). *masterSecs ≈ 9.*
+  - Both EXTEND THE SPINE: squares → rounding → largermd → **metric → sequences**
+    (each a 1-wide tech-tree row, so T170 ≤4-abreast holds). Gate:
+    `test/t60-t61-modes.test.js` (38 checks).
 
 ## Design principles (pass 2 — apps & pedagogy)
 

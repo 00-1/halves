@@ -90,6 +90,8 @@ jobs:
         run: node test/t162-p3-modes.test.js
       - name: T59 Wave-2 (rounding / larger ×÷) modes test (gate)
         run: node test/t59-modes.test.js
+      - name: T60/T61 Wave-2 (metric / sequences) modes test (gate)
+        run: node test/t60-t61-modes.test.js
       - name: Home layout + tidy-nav test (gate)
         run: node test/home-layout.test.js
       - name: UI pixel-bevel restyle test (gate)

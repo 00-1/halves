@@ -407,6 +407,28 @@
     [85, "÷", 5, 17], [60, "÷", 4, 15], [56, "÷", 4, 14], [92, "÷", 4, 23], [68, "÷", 4, 17]
   ];
 
+  // ---- T60 (Metric) + T61 (Sequences) — the remaining NON-overlapping Wave-2
+  // topics (Money/Time→T162 `money`/`timegap`; Ratio/Mean→T162 `ratioshare`/`mean`).
+  // `metric` — unit conversions. Each entry [val, from, to, A] with A the stored
+  // literal (numpad-clean integer or terminating decimal).
+  const METRIC_SRC = [
+    [3, "km", "m", 3000], [5, "km", "m", 5000], [2, "m", "cm", 200], [7, "m", "cm", 700],
+    [40, "cm", "mm", 400], [12, "cm", "mm", 120], [250, "cm", "m", 2.5], [180, "cm", "m", 1.8],
+    [4500, "m", "km", 4.5], [2000, "m", "km", 2],
+    [4, "kg", "g", 4000], [2, "kg", "g", 2000], [3500, "g", "kg", 3.5], [750, "g", "kg", 0.75], [1500, "g", "kg", 1.5],
+    [3, "l", "ml", 3000], [6, "l", "ml", 6000], [2500, "ml", "l", 2.5], [400, "ml", "l", 0.4], [1250, "ml", "l", 1.25], [5, "l", "ml", 5000]
+  ];
+  // `sequences` — next term (term-to-term linear) OR the nth-term value. Tagged:
+  //   ["next", [a,b,c,d], A]        → "a, b, c, d → next"   (A = d + common difference)
+  //   ["nth", mult, add, n, A]      → "<mult>n±<add>: <n>th" (A = mult·n + add, ≥ 0)
+  const SEQUENCES_SRC = [
+    ["next", [2,5,8,11], 14], ["next", [3,7,11,15], 19], ["next", [10,8,6,4], 2], ["next", [1,4,7,10], 13],
+    ["next", [5,10,15,20], 25], ["next", [20,17,14,11], 8], ["next", [2,4,6,8], 10], ["next", [6,11,16,21], 26],
+    ["next", [100,90,80,70], 60], ["next", [1,3,5,7], 9],
+    ["nth", 3, 2, 10, 32], ["nth", 2, 1, 8, 17], ["nth", 4, 0, 6, 24], ["nth", 5, -2, 5, 23], ["nth", 2, 3, 12, 27],
+    ["nth", 3, 1, 7, 22], ["nth", 10, 0, 9, 90], ["nth", 6, 4, 5, 34], ["nth", 2, 5, 10, 25], ["nth", 4, -1, 8, 31], ["nth", 5, 5, 6, 35]
+  ];
+
   // The proper minus sign (matches the "×" used by Times), for ± prompts.
   const MINUS = "−";
   // Map a fixed Add/Subtract entry [a, b, sub] to a { p, a } question.
@@ -476,6 +498,17 @@
   function roundingItem(e){ return { p: e[0] + " to nearest " + e[1], a: e[2] }; }
   // Larger ×/÷: "a × b" or "a ÷ b" (2-digit ×/÷ 1-digit, clean result).
   function largerMdItem(e){ return { p: e[0] + " " + e[1] + " " + e[2], a: e[3] }; }
+  // T60 — Metric conversion: "<n> <from> in <to>" (mm/cm/m/km, g/kg, ml/l).
+  // Answers are stored literals (terminating decimals e.g. 2.5, 0.75) — numpad-clean.
+  function metricItem(e){ return { p: e[0] + " " + e[1] + " in " + e[2], a: e[3] }; }
+  // T61 — Sequences: "next: a, b, c, d" (next linear term) or "Mn±A, term k"
+  // (the value of the kth term of the nth-term rule). Answers are non-negative.
+  function sequenceItem(e){
+    if(e[0] === "next") return { p: "next: " + e[1].join(", "), a: e[2] };
+    const add = e[2];
+    const rule = e[1] + "n" + (add < 0 ? " − " + (-add) : add > 0 ? " + " + add : "");
+    return { p: rule + ", term " + e[3], a: e[4] };
+  }
 
   // Listed in importance / unlock order: Halves → Times → Doubles →
   // Add&Subtract → Number Bonds → Place Value → Fractions of → Percentages of →
@@ -588,6 +621,23 @@
       glyph:'<span class="slash">×</span>÷',
       eyebrow:'solve <b>↓</b>', expr:true, unlockedBy:"rounding", masterSecs:7, group:"Number",
       build(){ return shuffle(LARGERMD_SRC).map(largerMdItem); }
+    },
+    // ---- T60 / T61 — Wave-2 Batch B: two more SPINE topics (the genuinely-new
+    // remainder of the Measures/Reasoning brief — Money/Time/Ratio/Mean already
+    // shipped in T162). Each is a 1-wide tree row (no children), so the T170
+    // ≤4-abreast invariant still holds. Continue the spine squares→rounding→
+    // largermd→metric→sequences.
+    {
+      id:"metric", name:"Metric Units", tag:"mm · cm · m · km · g · kg · ml · l.",
+      glyph:'k<span class="slash">→</span>m',
+      eyebrow:'convert <b>↓</b>', expr:true, unlockedBy:"largermd", masterSecs:7, group:"Measures",
+      build(){ return shuffle(METRIC_SRC).map(metricItem); }
+    },
+    {
+      id:"sequences", name:"Sequences", tag:"Next term · nth-term value.",
+      glyph:'n<span class="slash">+</span>k',
+      eyebrow:'find <b>↓</b>', expr:true, unlockedBy:"metric", masterSecs:9, group:"Reasoning",
+      build(){ return shuffle(SEQUENCES_SRC).map(sequenceItem); }
     },
     // T162 P1 — mock-driven drill gaps (per docs/agent/T162-calibration.md). Each
     // sits OFF the main chain via `requires:"mastery:<predecessor>"`, so the live
@@ -746,7 +796,10 @@
     digitsum:     ["*+","9"],          // +9 — sum-of-digits → ÷9 divisibility mechanic
     // T59 — two new spine topics (supported chars only; pairwise-distinct grids).
     rounding:     ["n","*0"],          // n→0 — a number rounded to a round number
-    largermd:     ["*×","*÷"]          // ×÷ both accented (distinct from placevalue ×÷)
+    largermd:     ["*×","*÷"],         // ×÷ both accented (distinct from placevalue ×÷)
+    // T60 / T61 — two more spine topics (supported chars only; pairwise-distinct).
+    metric:       ["a","*/","k"],      // a/k — a quantity rescaled per unit (conversion)
+    sequences:    ["n","*+","k"]       // n+k — the linear nth-term rule (Mn ± A)
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 
