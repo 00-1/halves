@@ -16,8 +16,10 @@ Owner on the screenshot:
 - **ANIMATED glitches** — the corruption must **flicker/shift over time** (periodic re-roll of the dropped/
   displaced/alpha cells), not static; throttled + cheap; **reduced-motion → static**; still legible.
 - [A]-only (`main.js`, `styles.css`, maybe a font link in `index.html`). *(BACKLOG T216.)*
-- Then queued for A: **`T213` Phase-2** content fixes (`docs/agent/QUESTION-QUALITY-AUDIT.md` — 11 missing guides
-  first), and **`T168`** (held on Play ID-verify).
+- **A's next MAJOR task after T216: `T213` Phase-2 content fixes** — HIGH PRIORITY (owner: "very important… as
+  perfect as we can get it"). Work the audit's prioritised list in BATCHES (2a 11 missing guides+explain() → 2b
+  calibration/clarity → 2c de-dup+gate); after EACH batch the Babysitter re-assesses (Phase 3) + surfaces more recs,
+  looping until clean. Then **`T168`** (held on Play ID-verify).
 **Re-read this line fresh before each task + push.**
 
 **Builder B → STAND BY.** `T103` (perf pass) + `T211`/`T207` **APPROVED** (live `951e532`); queue clear. Hold until

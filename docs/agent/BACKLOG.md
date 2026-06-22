@@ -3151,7 +3151,7 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
-### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (AI-agent assessment → fixes) · status: PHASE 1 DONE (audit: docs/agent/QUESTION-QUALITY-AUDIT.md) · PHASE 2 (fixes) → [A], OPEN
+### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (iterative: assess ↔ fix until perfect) · status: PHASE 1 DONE · PHASE 2 FIXES → [A] HIGH-PRIORITY (after T216) · PHASE 3 re-assess loop (Babysitter) · owner: "as perfect as we can get it"
 **Owner (2026-06-22): "queue up a quality pass for the questions and guides/questions text — a DEEP pass where
 every question and piece of text gets looked over by an AI agent and assessed on various criteria to make sure
 everything is as high quality as possible."** Scope: the **~30 topic generators** (`modes.js`: halves, times,
@@ -3182,16 +3182,23 @@ copy). Reference `docs/research-11plus.md` + `docs/CONTENT-EXTENSION.md` + the o
   static text → **`docs/agent/QUESTION-QUALITY-AUDIT.md`**. **Headline: NO correctness bugs** (all 622 answers
   verified correct/numpad-clean). Real findings = clarity/calibration/coverage. **Biggest gap: 11 of 30 topics
   have NO guide.** Full prioritised fix list in the audit.
-- **PHASE 2 — FIXES [A] (per the audit's prioritised list):** write the 11 missing guides + `explain()` cases;
-  split `sequences` nth-term to a locked Part-2; clarify terse notations (`scaling`/`balance`/`ratioshare`/
-  `metric` litres→L); re-tier outliers (`fractions` 1/16, `mean` 6-term, `bonds2`, `rounding` 560-tie); verify
-  the `money` decimal matcher; add `cubes`+roots; de-dup pool slots; re-run the harness + add a regression gate.
-- **DoD:** every topic's generated questions pass the criteria (correct, in-range, numpad-safe, calibrated, no
-  degenerate items); all guides/static text reviewed + fixed (correct/clear/typo-free); the audit doc records what
-  was assessed + changed; new/extended automated checks for the catchable criteria; all gates green; `node -c`
-  clean; **owner spot-confirms** a sample. **Assessment = Babysitter (sub-agents) → `docs/agent/`; fixes = [A]**
-  (`modes.js`, `guides.js`, tests). *(Queued — start the assessment whenever; fixes after the current visual/perf
-  loop or sooner.)*
+- **PHASE 2 — FIXES [A] (per the audit's prioritised list) — HIGH PRIORITY (owner: "very important to get it
+  right… as perfect as we can get it").** Do it in **BATCHES** so the Babysitter can re-assess each: **(2a) the 11
+  missing guides + `explain()` cases**; **(2b) calibration/clarity** — split `sequences` nth-term to a locked
+  Part-2, clarify terse notations (`scaling`/`balance`/`ratioshare`/`metric` litres→L), re-tier outliers
+  (`fractions` 1/16, `mean` 6-term, `bonds2`, `rounding` 560-tie), verify the `money` decimal matcher, add
+  `cubes`+roots; **(2c) de-dup pool slots** + re-run the harness + add a regression gate. [A] (`modes.js`,
+  `guides.js`, tests). **A's next major task after T216.**
+- **PHASE 3 — RE-ASSESS (Babysitter, ITERATIVE) — owner-mandated:** after each Phase-2 batch lands, **re-run the
+  enumeration harness + the sub-agent assessment** on the changed topics/new guides, confirm the fixes are clean,
+  and **surface any NEW/remaining recommendations** → a fresh round of fixes. **Loop Phase 2 ↔ Phase 3 until the
+  content is as perfect as we can get it** (owner: "when it's done you'll do another deep pass and surface any more
+  recs"). Each round appends to `QUESTION-QUALITY-AUDIT.md` (dated).
+- **DoD:** every topic's questions pass the criteria (correct, in-range, numpad-safe, calibrated, no degenerate
+  items); all guides/static text correct/clear/typo-free; **every topic has a guide + tailored `explain()`**; the
+  audit records each round's findings + fixes; automated regression gates added; **multiple Babysitter re-assess
+  rounds run with no remaining HIGH/MED findings**; all gates green; `node -c` clean; **owner spot-confirms**.
+  *(High-priority; A starts Phase 2 right after T216.)*
 
 ### T207 — [B] **Coin SHINE — animated glints on the pile + the shower; clearer coin rotation** · status: DONE (`2300ac6`) · APPROVED · ✅ owner-confirmed ("seeing glints now" — subtle; can boost if asked)
 **Owner (2026-06-22): "occasional glints appearing in the pile of coins; glints on the shower of coins; ideally
