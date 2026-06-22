@@ -44,7 +44,7 @@ ok(!/Sy\.play\("wub"[^)]*bus: "music"/.test(main), "(4) T128: the wub is no long
 ok(/if\(res\.win\)\{[\s\S]{0,120}fxCelebrateWin\(tier\.n, foe\); wubSting\(\);/.test(main) && /cat === "Mastery"[\s\S]{0,80}wubSting\(\)/.test(main), "(4) the win-sting fires on a real win (Arena victory + topic-complete/mastery)");
 ok(/DUCK_SFX/.test(main) && /window\.Synth\.duck\(\)/.test(main), "(4) the louder SFX stings DUCK the music (Synth.duck)");
 ok(/window\.Synth\.setMuted\(!on\)/.test(main), "(4) mute silences Synth too (applySoundPref)");
-ok(/synthTempoMult\(\)/.test(main) && /loadTempo\(\) \/ 100/.test(main), "(4) the T113 tempo slider drives the Synth context tempo");
+ok(/function synthTempoMult\(\)\{ return 1; \}/.test(main), "(4) T224: tempo is LOCKED to the engine's native BPM (synthTempoMult → 1; the slider is gone)");
 // T101 — Start feels instant: the gesture-required unlock/fullscreen stay sync, the
 // round paints, and the heavier setupSynth build is DEFERRED off the first-paint path.
 ok(/function enter\(useFs\)\{[\s\S]{0,700}Sound\.unlock\(\)[\s\S]{0,200}fsEnter\(\)[\s\S]{0,300}startIntro\(\)[\s\S]{0,80}applyRoute\(\)[\s\S]{0,700}requestAnimationFrame\(warmAudio\)/.test(main), "(4) T101: enter() unlocks audio + fullscreen (gesture) and PAINTS the round before the deferred warmAudio (no janky Start delay)");

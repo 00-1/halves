@@ -61,23 +61,23 @@ ok(S.sfxSpec("correct", { combo: 5 }).v[0].f > S.sfxSpec("correct", { combo: 0 }
 ok(typeof S.ctx === "function" && typeof S.master === "function" && S.master() === master, "T122: sound.js exposes ctx()/master() for the Synth wire (returns the real master)");
 ok(!/setMusic|stopMusic|musicPlaying|STYLES|startScheduler|setInterval|styleIndexFor|stepVoices/.test(ssrc), "T122: the old music scheduler is GONE from sound.js (no STYLES/setMusic/setInterval) — one scheduler total");
 ok(!/function wub\(/.test(ssrc), "T122: the duplicate sound.js wub() is removed (Synth's wub is the one win-sting)");
-ok(!/setTempo|tempoMult|TEMPO_MIN/.test(ssrc), "T122: sound.js no longer owns tempo (the T113 tempo slider drives Synth)");
+ok(!/setTempo|tempoMult|TEMPO_MIN/.test(ssrc), "T122: sound.js no longer owns tempo");
 // visibility still suspends/resumes the shared ctx (battery), without music calls
 hidden = true; visHandler && visHandler(); ok(S.ctx().state === "suspended", "tab hidden suspends the shared AudioContext");
 hidden = false; visHandler && visHandler(); ok(S.ctx().state === "running", "tab visible resumes the shared AudioContext");
 
-// ---- T143/T135: separate Music + SFX volume DEFAULTS in main.js (saved prefs win) --
-// Fresh music vol = 5 (0.05×, the loud synth); SFX vol = 8 (louder, so blips aren't
-// lost under the music). The old single `halves.vol` migrates (in-range → music level).
-ok(/function loadMusicVol\(\)[\s\S]{0,220}\? 5 :/.test(msrc) && /halves\.musicVol/.test(msrc), "T143: fresh-profile music volume = 5 (0.05×)");
-// T148 — the SFX slider maps to the REAL 0→SFX_MAX(1.0×) range (not music's 0.10×):
-// fresh default 60 (0.60×), stored as 0–100 (`halves.sfxLvl`), migrating T143's 0–10 ×10.
-ok(/function loadSfxVol\(\)[\s\S]{0,320}return 60/.test(msrc) && /halves\.sfxLvl/.test(msrc), "T148: fresh-profile SFX volume = 60 (0.60× — clearly over the music)");
-ok(/old \* 10/.test(msrc), "T148: the old 0–10 halves.sfxVol migrates ×10 to the new 0–100 scale (returning users get the louder mapping)");
-ok(/setSfxVolume\(loadSfxVol\(\) \/ 100\)/.test(msrc), "T148: the SFX gain = sfxLvl/100 → up to SFX_MAX (1.0×), not capped at music's 0.10×");
-ok(/function migVol\(\)[\s\S]{0,160}v <= 10\)/.test(msrc), "T143: the old single halves.vol migrates (in-range → the music level)");
-ok(/function loadTempo\(\)\{[\s\S]{0,90}: 50;/.test(msrc), "T114: fresh-profile default tempo = 50 (0.5×)");
-ok(/id="musicVolRange"[^>]*max="10"/.test(hsrc) && /id="sfxVolRange"[^>]*max="100"/.test(hsrc) && /id="sfxVolRange"[^>]*value="60"/.test(hsrc) && /id="tempoRange"[^>]*value="50"/.test(hsrc), "T143/T148: Music slider 0–10 (0.10× max); SFX slider 0–100 (1.0× max, default 60); tempo default 50");
+// ---- T224: ONE shared 0–11 volume scale, midpoint defaults, no tempo slider -------
+// Both music + SFX sliders are 0–11 integers (default 6 = the midpoint). The per-bus
+// gain differs (music ≈0.11× at 6, SFX ≈0.55×); 0 = silent, 11 ≈ 2× the midpoint.
+ok(/function loadMusicLevel\(\)[\s\S]{0,420}return 6;/.test(msrc) && /halves\.musLv11/.test(msrc), "T224: fresh-profile music level = 6 (midpoint of 0–11)");
+ok(/function loadSfxLevel\(\)[\s\S]{0,560}return 6;/.test(msrc) && /halves\.sfxLv11/.test(msrc), "T224: fresh-profile SFX level = 6 (midpoint of 0–11)");
+ok(/const VOL_MAX = 11, MUSIC_MAX_GAIN = 0\.20, SFX_MAX_GAIN = 1\.0/.test(msrc), "T224: one 0–11 scale; per-bus MAX gain (music 0.20×, SFX 1.0×)");
+ok(/function musicGainFor\(level\)\{ return MUSIC_MAX_GAIN \* Math\.max\(0, Math\.min\(VOL_MAX, level\)\) \/ VOL_MAX/.test(msrc) && /function sfxGainFor\(level\)/.test(msrc), "T224: gain ramps linearly 0→MAX across the 0–11 level (0 = silent)");
+ok(/setSfxVolume\(sfxGainFor\(loadSfxLevel\(\)\)\)/.test(msrc), "T224: the SFX gain comes from sfxGainFor(level), not a raw /100");
+ok(/migLevel\(old, 10\)/.test(msrc) && /migLevel\(a, 100\)/.test(msrc), "T224: old prefs migrate to 0–11 (music 0–10 → ×11/10; SFX 0–100 → ×11/100)");
+ok(/function synthTempoMult\(\)\{ return 1; \}/.test(msrc), "T224: tempo is LOCKED to native (the tempo slider is gone)");
+ok(/id="musicVolRange"[^>]*max="11"[^>]*value="6"/.test(hsrc) && /id="sfxVolRange"[^>]*max="11"[^>]*value="6"/.test(hsrc), "T224: both sliders are 0–11, default 6");
+ok(!/id="tempoRange"/.test(hsrc), "T224: the Music-tempo slider is removed from the Audio menu");
 
 // ---- T143: the dedicated Audio menu + the navigation-trap (scroll) fix --------
 const css143 = read("styles.css");

@@ -6088,3 +6088,23 @@ Owner confirmed the two-line look reads well; last ask = move it DOWN toward the
 `-6px` → `clamp(44px,14vh,130px)` — the `.tag` stays bottom-pinned (margin-top:auto), so the void block drops
 into the gap toward the screen centre. Suite 59/59. [A]-only (gg1/dev/styles.css). T221 DONE pending the owner's
 final device-confirm.
+
+---
+### [A] T224 — audio settings overhaul (unified 0–11 scale, tempo removed)
+Per the owner's AUTONOMY GRANT (run unattended to completion). T221 is owner-approved (the two-line Void Throne
+"yea it's ok" — supersedes the Babysitter's round-B "stretch single-line" note, since the owner directly chose
+the two-line render), so I drove on to the next queue item.
+- **Removed the Music-tempo slider** (index.html row + handler + load/save) and **locked tempo to native**
+  (`synthTempoMult() → 1`; the engine's per-context BPMs play unscaled).
+- **Both volume sliders → ONE shared 0–11 integer scale** (was mismatched: music 0–10→0.10× max, SFX
+  0–100→1.0× max). New `musicGainFor`/`sfxGainFor(level)` ramp gain linearly 0→MAX over 0–11 (MUSIC_MAX 0.20×,
+  SFX_MAX 1.0×): **0 = silent, 11 ≈ 2× the midpoint**. The value display shows the level ("6 / 11") — the ×
+  multiplier is dropped.
+- **Fresh default 6** (the midpoint) ≈ the screenshot levels (music ≈0.11× gain, SFX ≈0.55×).
+- **Migration:** new keys `halves.musLv11` / `halves.sfxLv11`; old prefs convert once (music 0–10 ×11/10, SFX
+  0–100 ×11/100, legacy sfxVol 0–10 ×11/10) so returning players keep a sensible level. Live-preview +
+  persistence + the style picker all retained; clear-data sweep updated.
+verified: sound.test rewritten for the 0–11 scheme + no tempo slider; synth-wiring tempo assertion updated to the
+locked multiplier; full suite **59/59**. [A]-only (gg1/dev/main.js, index.html, test/). Push for owner
+device-confirm at `…/halves/gg1/dev/`. Next: T219 remaining topics (×-tricks, Negatives-P1, Geometry group,
+Speed-Distance-Time, Median/Mode/Range, Prime-factorisation) + Collector rebalance, then T218, then T225.

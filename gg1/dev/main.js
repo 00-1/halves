@@ -485,15 +485,21 @@
       // (mute-only) → limiter. SFX route through sound.js's separate sfx bus.
       if(out && sMaster){
         try{ out.disconnect(); }catch(e){}
-        try{ musicGain = ctx.createGain(); musicGain.gain.value = loadMusicVol() / 100; out.connect(musicGain); musicGain.connect(sMaster); }
+        try{ musicGain = ctx.createGain(); musicGain.gain.value = musicGainFor(loadMusicLevel()); out.connect(musicGain); musicGain.connect(sMaster); }
         catch(e){ musicGain = null; out.connect(sMaster); }
       }
       Sy.setMuted(!soundOn());
       synthWired = true;
     }catch(e){ synthWired = false; }
   }
-  function setMusicVolume(slider){ const g = Math.max(0, Math.min(10, slider)) / 100; if(musicGain){ try{ musicGain.gain.value = g; }catch(e){} } return g; }
-  function synthTempoMult(){ const v = loadTempo() / 100; return isFinite(v) ? v : 1; }
+  // T224 — ONE shared 0–11 integer level scale for both buses; the per-bus MAX gain
+  // differs (music sits quieter under the master). level 0 = silent, 11 ≈ 2× the
+  // midpoint (the fresh default 6), gain ramps linearly. The tempo slider is gone.
+  const VOL_MAX = 11, MUSIC_MAX_GAIN = 0.20, SFX_MAX_GAIN = 1.0;
+  function musicGainFor(level){ return MUSIC_MAX_GAIN * Math.max(0, Math.min(VOL_MAX, level)) / VOL_MAX; }
+  function sfxGainFor(level){ return SFX_MAX_GAIN * Math.max(0, Math.min(VOL_MAX, level)) / VOL_MAX; }
+  function setMusicVolume(level){ const g = musicGainFor(level); if(musicGain){ try{ musicGain.gain.value = g; }catch(e){} } return g; }
+  function synthTempoMult(){ return 1; }   // T224 — tempo locked to the engine's native BPM (the user tempo slider was removed)
   // T128(1) — drive the engine's DISTINCT built-in context (its own progression /
   // patches / reverb — incl. the Arena's wub bass + dark Aeolian) via
   // Synth.setContext, with the T113 tempo multiplier on top. This REPLACES the old
@@ -2749,8 +2755,8 @@
   function ensureAudioReady(){
     if(window.Sound && window.Sound.unlock) window.Sound.unlock();
     setupSynth();
-    if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(loadSfxVol() / 100);
-    setMusicVolume(loadMusicVol());
+    if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(sfxGainFor(loadSfxLevel()));
+    setMusicVolume(loadMusicLevel());
   }
   // T159 — the shared AudioContext (sound.js owns it; Synth mounts on it).
   function audioCtx(){ try{ return (window.Sound && window.Sound.ctx && window.Sound.ctx()) || null; }catch(e){ return null; } }
@@ -2798,28 +2804,29 @@
   // music. Migrate the old single `halves.vol`: a stale OLD-scale value (>10, e.g.
   // 300=3.0×) → the new defaults; a valid in-range one → the music level. Tempo
   // stored 40–100 (→ ×0.40..1.00), default 50. A saved pref otherwise wins.
-  function migVol(){ const v = parseInt(localStorage.getItem("halves.vol"), 10); return (isFinite(v) && v >= 0 && v <= 10) ? v : null; }
-  function loadMusicVol(){ const v = parseInt(localStorage.getItem("halves.musicVol"), 10); if(isFinite(v) && v >= 0 && v <= 10) return v; const m = migVol(); return m == null ? 5 : m; }
-  // T148 — the SFX slider now maps to the REAL SFX range (0→SFX_MAX=1.0× via /100,
-  // not the music's 0.10× scale): the sfxBus had ~10× unused headroom, so SFX were
-  // way too quiet. Stored under a new 0–100 key (`halves.sfxLvl`); migrate T143's old
-  // 0–10 `halves.sfxVol` ×10 so returning users get the louder mapping (not 8/100).
-  // Louder default 60 (0.60×) — SFX clearly cut over the music; limiter keeps it safe.
-  function loadSfxVol(){
-    const v = parseInt(localStorage.getItem("halves.sfxLvl"), 10);
-    if(isFinite(v) && v >= 0 && v <= 100) return v;
-    const old = parseInt(localStorage.getItem("halves.sfxVol"), 10);   // T143's 0–10 → ×10 to the new 0–100 scale
-    if(isFinite(old) && old >= 0 && old <= 10) return Math.min(100, old * 10);
-    return 60;
+  // T224 — both volumes now live on ONE 0–11 integer scale under NEW keys
+  // (`halves.musLv11` / `halves.sfxLv11`), fresh default 6 (the midpoint: music
+  // ≈0.11× gain, SFX ≈0.55×). One-time migration of the old scales to a valid level:
+  // music `halves.musicVol` (0–10) and SFX `halves.sfxLvl` (0–100) / `halves.sfxVol`
+  // (0–10) → 0–11. The tempo slider/pref is gone (tempo locked to native).
+  function migLevel(v, oldMax){ return Math.max(0, Math.min(11, Math.round(v * 11 / oldMax))); }
+  function loadMusicLevel(){
+    const v = parseInt(localStorage.getItem("halves.musLv11"), 10); if(isFinite(v) && v >= 0 && v <= 11) return v;
+    const old = parseInt(localStorage.getItem("halves.musicVol"), 10); if(isFinite(old) && old >= 0 && old <= 10) return migLevel(old, 10);
+    return 6;
   }
-  function loadTempo(){ const v = parseInt(localStorage.getItem("halves.tempo"), 10); return isFinite(v) ? v : 50; }
-  function saveMusicVol(v){ try{ localStorage.setItem("halves.musicVol", String(v)); }catch(e){} }
-  function saveSfxVol(v){ try{ localStorage.setItem("halves.sfxLvl", String(v)); }catch(e){} }
-  function saveTempo(v){ try{ localStorage.setItem("halves.tempo", String(v)); }catch(e){} }
+  function loadSfxLevel(){
+    const v = parseInt(localStorage.getItem("halves.sfxLv11"), 10); if(isFinite(v) && v >= 0 && v <= 11) return v;
+    const a = parseInt(localStorage.getItem("halves.sfxLvl"), 10); if(isFinite(a) && a >= 0 && a <= 100) return migLevel(a, 100);
+    const b = parseInt(localStorage.getItem("halves.sfxVol"), 10); if(isFinite(b) && b >= 0 && b <= 10) return migLevel(b, 10);
+    return 6;
+  }
+  function saveMusicLevel(v){ try{ localStorage.setItem("halves.musLv11", String(v)); }catch(e){} }
+  function saveSfxLevel(v){ try{ localStorage.setItem("halves.sfxLv11", String(v)); }catch(e){} }
   function applyAudioPrefs(){
-    const S = window.Sound; if(S && S.setSfxVolume) S.setSfxVolume(loadSfxVol() / 100);   // SFX bus
-    setMusicVolume(loadMusicVol());                                                       // music gain
-    musicForScreen(curScreen);   // re-derive the current context at the new tempo
+    const S = window.Sound; if(S && S.setSfxVolume) S.setSfxVolume(sfxGainFor(loadSfxLevel()));   // SFX bus
+    setMusicVolume(loadMusicLevel());                                                             // music gain
+    musicForScreen(curScreen);
   }
   // Guarded SFX trigger — a no-op if the engine is absent or muted.
   const DUCK_SFX = { item:1, gold:1, mastery:1, topic100:1, topicUnlock:1 };
@@ -2835,15 +2842,13 @@
   { const sb = $("soundBtn"); if(sb) sb.addEventListener("click", toggleSound); }                         // entry → toggle mute
 
   // ---- Settings + Audio menus (T85/T143) + "Clear all data" --------------------
-  function fmtVol(slider){ return (slider / 100).toFixed(2) + "×"; }
-  function fmtTempo(slider){ return (slider / 100).toFixed(2) + "×"; }
+  function fmtLevel(level){ return String(level) + " / 11"; }   // T224 — show the 0–11 level (no × multiplier)
   function renderSettings(){ syncSoundButtons(); }
   function renderAudio(){
     syncSoundButtons();
-    const mr = $("musicVolRange"), sr = $("sfxVolRange"), tr = $("tempoRange");
-    if(mr){ mr.value = loadMusicVol(); const v = $("setMusicVolVal"); if(v) v.textContent = fmtVol(loadMusicVol()); }
-    if(sr){ sr.value = loadSfxVol(); const v = $("setSfxVolVal"); if(v) v.textContent = fmtVol(loadSfxVol()); }
-    if(tr){ tr.value = loadTempo(); const v = $("setTempoVal"); if(v) v.textContent = fmtTempo(loadTempo()); }
+    const mr = $("musicVolRange"), sr = $("sfxVolRange");
+    if(mr){ mr.value = loadMusicLevel(); const v = $("setMusicVolVal"); if(v) v.textContent = fmtLevel(loadMusicLevel()); }
+    if(sr){ sr.value = loadSfxLevel(); const v = $("setSfxVolVal"); if(v) v.textContent = fmtLevel(loadSfxLevel()); }
     musicPreview = null; syncMusicSwitch();   // T129: fresh entry → "Auto" (per-screen music), nothing pre-selected
   }
   // T129 — the music switcher: reflect the picked style (or "Auto").
@@ -2912,23 +2917,17 @@
   // tempo, the style picker, and the celebration tester. None RESTART the music (they
   // use audioUnlock, which only starts music if it isn't already playing).
   (function wireAudioControls(){
-    const mr = $("musicVolRange"), sr = $("sfxVolRange"), tr = $("tempoRange"), test = $("setTest");
+    const mr = $("musicVolRange"), sr = $("sfxVolRange"), test = $("setTest");
     if(mr) mr.addEventListener("input", () => {
-      const v = parseInt(mr.value, 10) || 0; saveMusicVol(v);
-      const el = $("setMusicVolVal"); if(el) el.textContent = fmtVol(v);
+      const v = parseInt(mr.value, 10) || 0; saveMusicLevel(v);
+      const el = $("setMusicVolVal"); if(el) el.textContent = fmtLevel(v);
       audioUnlock(); setMusicVolume(v);   // music gain only (independent of SFX)
     });
     if(sr) sr.addEventListener("input", () => {
-      const v = parseInt(sr.value, 10) || 0; saveSfxVol(v);
-      const el = $("setSfxVolVal"); if(el) el.textContent = fmtVol(v);
-      audioUnlock(); if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(v / 100);
+      const v = parseInt(sr.value, 10) || 0; saveSfxLevel(v);
+      const el = $("setSfxVolVal"); if(el) el.textContent = fmtLevel(v);
+      audioUnlock(); if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(sfxGainFor(v));
       sfx("correct", 6);   // preview the SFX at the new level (so the balance is audible)
-    });
-    if(tr) tr.addEventListener("input", () => {
-      const v = parseInt(tr.value, 10) || 100; saveTempo(v);
-      const el = $("setTempoVal"); if(el) el.textContent = fmtTempo(v);
-      audioUnlock();
-      if(musicPreview) synthSwitchContext(musicPreview); else musicForScreen(curScreen);   // re-derive at the new tempo
     });
     if(test) test.addEventListener("click", () => { audioUnlock(); sfx("correct", 6); });
     const musGrp = $("musicSwitch");
@@ -3025,7 +3024,8 @@
   // drop the in-memory caches and reload so nothing survives.
   const KNOWN_KEYS = ["halves.collected","halves.stats","halves.gold","halves.streak",
     "halves.eventBest","halves.qbest","halves.mode","halves.pickerView","halves.sound",
-    "halves.vol","halves.tempo"];
+    "halves.vol","halves.tempo","halves.musicVol","halves.sfxLvl","halves.sfxVol",
+    "halves.musLv11","halves.sfxLv11","halves.dev","halves.devReveal","halves.unlocked"];
   function clearAllData(){
     try{
       const keys = [];
