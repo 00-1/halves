@@ -18,10 +18,15 @@ screenshot: looks good, four tweaks. The title is **Space Grotesk 800 rasterised
 - [A]-only (`main.js`, `styles.css`). *(BACKLOG T212.)* Then **`T168`** stays HELD on Play ID verify.
 **Re-read this line fresh before each task + push.**
 
-**Builder B → STAND BY.** `T211` (hoard home-only) + `T207` (coin shine, ✅ owner-confirmed) **APPROVED** (live
-`b8ad4c9`); queue clear. Hold until the Babysitter points you at a task. *(Candidate when free: the low-end-Android
-**perf pass** — the pile sparkles/title glints/coin shower added new continuous animation; validate on a cheap
-device before launch. Ask the owner before starting.)*
+**Builder B → `T103` (low-end-Android PERF pass — REQUIRED, owner: "not optional").** `T211`/`T207` **APPROVED**
+(live `b8ad4c9`); off standby. A **measure-and-fix** pass (not doc-only) for the now-animated home screen. Audit the
+render hot paths — **`fxgl.js` first**: the **T207 `_pileGlint`** (full ~480-coin pile redraw at 5 Hz — is that
+within a weak-GPU budget, or repaint only the glinting coins?), the 2D overlay/dither cost, RAF/listener leaks
+(incl. T204/T211), the degrade ladder (WebGPU→WebGL2→CPU-still + quality tiers/caps) actually engaging, reduced-
+motion killing the loops, high-refresh bounding, memory/context count, the Canvas2D fallback. **Apply the cheap
+fixes** (throttle/shrink over-budget work; idle screens ~0 cost). Deliver `docs/PERF-RESEARCH-2.md` (findings + fixes
++ an **owner on-device measurement plan** — the owner is the low-end oracle). [B]-led (`fxgl.js`, doc, tests); any
+`main.js` fixes → [A] follow-ups. *(BACKLOG T103.)*
 **Re-read this line fresh before each task + push.**
 
 ---

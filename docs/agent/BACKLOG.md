@@ -4752,22 +4752,30 @@ green. **TWA wrapper / Play-Store signing deferred to `T103`/`T72` (need owner c
   TWA/assetlinks steps are real, and nothing about the web build regressed. **Owner** confirms it
   installs + runs at parity on the Poco X3.)
 
-### T103 — [A] Deep perf research, now including Android (doc only) · status: OPEN
-A second perf deep-dive (after the early `perf.test.js` work) **including the Poco-X3 Android
-target** and the incoming FX layer. **Doc only** (read code; produce `docs/PERF-RESEARCH-2.md`);
-zero behaviour change.
-- **Cover:** cold-load + first-paint cost; the **Start→fullscreen delay** root cause (cross-ref
-  T101); the **FX-layer frame budget** on Adreno-618 (WebGPU vs WebGL2 vs CPU-still paths,
-  particle caps, the degrade ladder); RAF/listener/leak audit across screens; canvas/redraw cost
-  (the procedural generators, the tree, toasts); memory; the TWA/WebView differences vs Chrome;
-  what `perf.test.js` can and can't catch and how to extend it.
-- **Deliver:** concrete findings + a prioritised fix list + an **on-device measurement plan** the
-  owner runs on the Poco X3 (since the Builder can't measure real hardware) + targets (stable 60fps;
-  acceptable cold start).
-- **DoD:** the doc substantively covers the above with **concrete** findings/targets/measurement
-  steps (not a listicle), names the real hot paths from the live code, and ties to T101 (delay) +
-  the FX budget; **doc only**, all gates green. (Babysitter: verify it's concrete, Android-aware,
-  and gives an actionable on-device plan + prioritised fixes.)
+### T103 — [B] **Low-end-Android PERF pass — measure + fix the render hot paths** (REQUIRED, owner: "it's not optional") · status: OPEN · owner-mandated
+**Owner (2026-06-22): the perf pass "is not optional."** A focused **measure-and-fix** pass for low-end Android
+(Adreno-618 / Poco-X3 class), now that the home screen carries continuous animation: the **T207 pile sparkle**
+(redraws the full ~480-coin pile at ~5 Hz), the hoard **2D overlay** compositing, the **coin shower** (per-frame
+overlay draws), the title **glints** (T209/T212), the dithered scene + ambient particles. **Not doc-only** — audit,
+then APPLY the cheap fixes. NB: no native work (PWA/TWA), so this is **web perf with an Android-reality lens**, not
+a separate native discipline.
+- **Audit the hot paths (`fxgl.js` first — the dominant cost):** (1) the **T207 `_pileGlint`** — is a full-pile
+  redraw at 5 Hz within budget on a weak GPU, or should it repaint only the glinting coins / a region? (2) the
+  **2D overlay** read-back/compositing cost; the **dither** pass cost; (3) **RAF/listener leaks** across screens
+  (now incl. the T204 context listeners + T211 overlay); (4) the **degrade ladder** (WebGPU→WebGL2→CPU-still,
+  quality tiers, particle caps) actually kicking in on weak devices; (5) **reduced-motion** genuinely killing the
+  continuous loops; (6) **high-refresh (90/120 Hz)** bounding per-frame work; (7) memory / live canvas-context
+  count; (8) the **Canvas2D-still fallback** being acceptable (WebView may not expose WebGPU).
+- **Fix (cheap, in-pass):** throttle/shrink anything over budget (esp. the pile-glint full redraw), cap contexts,
+  bound frame work, ensure idle/hidden screens cost ~0. Behaviour-preserving where possible.
+- **Deliver:** `docs/PERF-RESEARCH-2.md` — concrete findings (named hot paths from live code) + the fixes applied +
+  an **on-device measurement plan the OWNER runs on a real Android phone** (the Builder can't measure real hardware;
+  owner is the low-end oracle — report jank/battery/heat) + targets (stable frame-rate, cheap idle, no battery
+  drain). Cross-ref **T101** (Start→fullscreen delay).
+- **DoD:** the render hot paths are audited + the over-budget ones fixed (cheap/throttled); a concrete Android-aware
+  findings+fixes doc with an owner on-device plan; reduced-motion + degrade ladder verified; gates green; `node -c`
+  clean; **owner device-confirms** no jank/battery issue on their phone. **[B]-led** (`fxgl.js`, doc, tests); any
+  `main.js`/`[A]` perf fixes the audit surfaces get split out as follow-ups.
 
 ---
 
