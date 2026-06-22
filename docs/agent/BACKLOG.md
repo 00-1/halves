@@ -2936,6 +2936,48 @@ build.**
   + reduced-motion); **B-owned doc only** (no engine change yet); `node -c` clean if any code/test touched.
   **The Babysitter surfaces the recommended technique to the owner for a thumbs-up before T172 builds it.**
 
+### T179 — [A] CODEX: a bestiary/art-gallery tab on Inventory (collect the generative art you encounter) · status: OPEN · owner-feature
+**Owner (2026-06-22): "definitely we want the bestiary — a place to collect non-inventory art as you encounter
+it (arena enemies + anything else). Maybe a tab on Inventory."** A Pokédex/bestiary collection that **showcases
+the generative art** and rewards exploration. Home: a **new "Codex" tab on Inventory** (the existing collection
+hub). **Reuses the EXISTING art generators** (no new art) — the new work is **encounter-tracking + the tab UI**.
+- **Sections + sources (counts):**
+  - **Beasts** — arena enemies via `Monsters.draw`. **Granularity: one entry per REGION × TYPE (~30)** (10
+    regions × Brawn/Arcane/Cunning) — satisfying + finishable, not 120 grindy tiers. *(Owner may adjust grain.)*
+  - **Bosses** — the **10** named region bosses (Goblin King → The Frost Jarl → Void Sovereign), distinct trophy
+    entries (from `enemies.js BOSSES`, rendered via `Monsters.draw` at the boss tier).
+  - **Realms** — the **~10** region biomes via `Scenery.draw`. *(The backdrops are deliberately DARK/scrimmed in
+    the Arena — render them **brighter/un-scrimmed** in the Codex so the art shows; a small `Scenery` gallery-
+    brightness option, `scenery.js` [A].)*
+  - **Events** — the **14** event emblems via `eventart.js` (art only; the event REWARDS stay in the Events tab —
+    show the emblem, don't duplicate the rewards).
+- **Encounter-unlock (progressive reveal, like the collectibles "?"):** Beast = fought that region×type; Boss =
+  faced/defeated that boss; Realm = reached that region; Event = that event has been live/seen. **Locked entries =
+  silhouette / "?"**; track discoveries in the existing `col` collection store (e.g. `codex:beast:<region>:<type>`,
+  `codex:boss:<n>`, `codex:realm:<r>`, `codex:event:<id>`), set at the encounter sites (Arena fight, region
+  entry, event activation).
+- **Excluded** (owner steer): heroes (own catalogue), inventory items, topic glyphs (maths), UI icons.
+- **DoD:** a Codex tab on Inventory with Beasts/Bosses/Realms/Events, encounter-unlocked (locked=silhouette),
+  reusing the existing generators (full/lit Realms); tapping an entry shows the art (+ its name/where-found);
+  discoveries persist in `col`; `node -c` clean; `$("id")`/inventory invariants hold; **[A]-only** (`main.js`,
+  `scenery.js` for the gallery-brightness, `index.html` tab, tests). **Sequence:** roadmap feature — after the
+  in-flight hoard/economy/content. Pairs with **T180** (the dev reveal-all, for art review).
+
+### T180 — [A] DEV: a `?dev` "reveal all collections" toggle (heroes + inventory + Codex filled out, for art review) · status: OPEN · dev-tool (remove/gate before publish)
+**Owner (2026-06-22): "add a toggle in the menu to see everything filled out — heroes, inventory, codex — so I
+can review the art more easily."** A **DEV-ONLY** toggle that displays **every collection as fully unlocked/
+discovered** (heroes, inventory items, the Codex Beasts/Bosses/Realms/Events) so the owner can review all the
+generative art without grinding to unlock it.
+- **Implementation:** a display-time override — when the dev toggle is on, the collection-gated renderers treat
+  everything as owned/discovered (do **NOT** write to the saved `col`; it's a **view override**, not a real
+  unlock, so toggling off restores the true state). Put it in the **same `?dev` dev panel as the T173 gold-setter**
+  (gate: `/[?&]dev\b/.test(location.search)`), marked `// DEV TOOLS — gated, do not ship enabled`. Hidden from
+  normal users (no `?dev` → absent).
+- **DoD:** with `?dev`, a menu toggle reveals all heroes/inventory/Codex art (view-only, non-persistent — off
+  restores real progress); invisible without `?dev`; on the **T168 publish checklist** ("verify dev tools gated/
+  absent"); `node -c` clean; **[A]-only** (`main.js`, tests). *(Useful now for heroes/inventory; extends to the
+  Codex once T179 lands.)*
+
 ### T172 — [B] Gold-hoard ENGINE: beveled-coin splat + hoard scene mode + attractor burst (`fxgl.js`) · status: OPEN · after T174 + owner-bless
 Build the **owner-blessed** technique from T174 into `fxgl.js` (spec in `GOLD-HOARD-DESIGN.md` §engine): (a)
 **beveled-coin splat** (enhance the disc-mask fragment — rim highlight + inner gradient + specular glint, gold

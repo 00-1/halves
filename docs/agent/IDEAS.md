@@ -117,6 +117,14 @@ arcane ranks (Adept → Battle Mage → Archmage → Runelord → Sage → Grand
 plunder** (the in-game currency). **Don't write flavour/art that makes the player a goblin.** The absurd-wealth
 humour (T178/hoard) = an *adventurer* amassing an inordinate pile of goblin gold — still lands.
 
+## I12 — CODEX (bestiary/art-gallery) — ✅ PROMOTED to BACKLOG (T179) on 2026-06-22
+Owner-confirmed feature: a **Codex tab on Inventory** collecting the generative art you encounter — **Beasts**
+(arena enemies, ~30 region×type), **Bosses** (10), **Realms** (10 biomes, shown full/lit), **Events** (14
+emblems); encounter-unlocked with locked silhouettes; reuses existing generators (`Monsters`/`Scenery`/
+`eventart`). Excludes heroes/items/maths-glyphs/UI. Showcases the procedural art + rewards exploration. Paired
+with **T180** (a `?dev` "reveal all collections" toggle so the owner can review all art easily). Full spec in
+BACKLOG T179/T180.
+
 ## I1 — Events — ✅ PROMOTED to BACKLOG (Phase 6.5, T78–T81) on 2026-06-21
 
 > **No longer a parked idea.** The owner brought Events forward ("I decided I like it a
