@@ -10,31 +10,27 @@
 
 ---
 
-**Builder A → `T182` 🔴 (HOARD FIX — make the pile visible) → `T179` (Codex) → `T180` (`?dev` reveal-all)**
-**🔴 `T182` FIRST — the owner can't see the hoard at all.** Root cause: `GOLD_FULL=1e10` + power curve → at real
-gold (~1.23K) the pile is **~0.17% = invisible**; and the pile renders on HOME, not in the graphics menu. Fix:
-1. **Recalibrate to a LOG-OF-MAGNITUDE curve** — `level = clamp(log10(1+gold)/log10(GOLD_FULL_MAG),0,1)`,
-   `GOLD_FULL_MAG`≈1e12–1e15 → 1K≈25%, 1M≈50%, 1B≈75%, 1T≈full. Pile visible from the start, grows across K→M→B→T.
-2. **A `?dev` Graphics-menu gold-setter that ACTUALLY sets the real gold counter** (owner: *"actually change my
-   Goblin Gold counter"*) — real `saveGold()` buttons for `0/1K/100K/1M/100M/1Bn/1T`; each refreshes the pill +
-   home pile + milestones (pick a value → go home → see the pile). NOT a sandboxed preview. `?dev`-gated + on the
-   publish checklist (it edits the save).
-3. **Earn-burst flies OUTWARD** (drop the `tx/ty` converge — the prior follow-up, folded in).
-4. Minor (owner OK): burst coins are squares not beveled — pass/apply `look:"coin"`.
+**Builder A → `T182` 🔴 STILL PENDING (HOARD FIX — you SKIPPED it; the pile is invisible) → wire Codex Emblems → `T180` (`?dev` reveal-all)**
+**You did the T173 follow-ups + T179 Codex — but SKIPPED `T182`** (filed after you pulled). The hoard pile is
+**still invisible at real gold** (`hoardLevel` is still the power curve). **Do `T182` NOW:**
+1. **LOG-OF-MAGNITUDE curve:** `hoardLevel(gold) = clamp(log10(1+gold)/log10(GOLD_FULL_MAG),0,1)`,
+   `GOLD_FULL_MAG`≈1e12–1e15 (1K≈25%, 1M≈50%, 1Bn≈75%, 1T≈full) — visible from the start.
+2. **`?dev` Graphics-menu gold-setter BUTTONS that ACTUALLY set the counter:** real `saveGold()` for
+   `0/1K/100K/1M/100M/1Bn/1T`, each refreshing the pill + home pile + milestones (NOT a preview). `?dev`-gated +
+   publish checklist.
+3. Earn-burst outward (done in `95dc896` ✓) — just confirm. 4. Minor: burst coins are squares → pass `look:"coin"`.
 [A]-only. *(BACKLOG T182.)*
-- **Then `T179` (Codex)** (Beasts/Bosses/Realms/Events **+ Emblems** from B's `T181`) → **`T180`** (`?dev`
-  reveal-all). *(`T168` Play-Store held for ID-verify.)*
+- **Then wire the Codex EMBLEMS section** (T179 DoD remnant) using B's new `emblems.js` — show the candidates,
+  the rest unlockable via milestones; this is also the owner's icon-review surface.
+- **Then `T180`** (`?dev` reveal-all collections). *(`T168` Play-Store held for ID-verify.)*
 **Re-read this line fresh before each task + push.**
 
-**Builder B → `T181` (`emblems.js` brand emblems) → `T183` (RESEARCH: study/focus-friendly music — `lofi` too dark/bassy).**
-`T181` first (the app-icon/Codex emblems — see below). **Then `T183`:** owner — *"audio switching sounds very good
-now; the Lo-Fi Study sounds a bit dark/bassy. Research what's nice to listen to while studying / being tested."* A
-short research pass on focus/test-condition music for ~10-yr-olds → a concrete **`lofi` revision** (warmer/brighter,
-less bass/dark) + any calm-context tweaks; keep per-style distinctness + the T175 stability (no foghorn). B-owned
-(`synth.js` + tests). *(BACKLOG T183.)*
-**`T181`:** build NEW standalone `emblems.js` (`window.Emblems = { draw(canvas,id), IDS }`) — the brand-emblem
-candidates in the generative pixel/dither style, gold-on-purple, maskable-safe (icon 48→512 + Codex tile): `coin`
-(beveled goblin-stamped coin + glint), `goblin`, `hoard`, `voidthrone`, `crowncoin`. Deterministic + headless-test
-(`test/emblems.test.js`). **B-owned only**; never touch existing Halves files; never push `claude/agent`.---
+**Builder B → STAND BY (queue clear).** `T181` emblems DONE+APPROVED (`8f077cb` — all candidates + a bonus
+`sigil`, 45-check test), `T183` lofi brightened + study-music research DONE (`5633895`). Hoard engine + foghorn
+all landed earlier. **Nothing engine-side queued.** Hold for a real engine need (an owner audio/FX report, a
+Codex art tweak that needs the engine, or a new feature surfacing one) — I'll file it and point this line at it.
+**B-owned only; never touch existing Halves files; never push `claude/agent`.**
+
+---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*
 

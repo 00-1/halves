@@ -1,6 +1,24 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T172 [B] · T173 · T178 · T60 · T61 [A]` (the GOLD HOARD is built + the absurd
+**Current verdict:** `APPROVED — T181 [B] · T183 [B] · T179 [A]` (emblems, brighter lofi, the Codex) + the
+`T173` follow-ups. Live build **`5633895`**; full suite + `node -c` green. **⚠ `T182` (hoard-visibility) is STILL
+PENDING — A skipped it; the pile is still invisible at real gold. It's A's DO-FIRST.**
+- **`T181`** (`8f077cb`, [B]) — `emblems.js`: all candidates (`coin`/`crowncoin`/`hoard`/`goblin`/`voidthrone` +
+  a bonus `sigil`), beveled coin with a goblin-profile stamp + glint, gold-on-purple, maskable-safe; `emblems.test`
+  45 green. Ready for the owner to review + pick the launcher icon.
+- **`T183`** (`5633895`, [B]) — `lofi` brightened (root +5, lead octave +1, reverb 0.42→0.32) → less dark/bassy,
+  per the owner; + a study-music research note. *(Stability: gates green; I'll re-measure the long-render if the
+  harness recovers — the T175 cap holds.)*
+- **`T179`** (`688d142`, [A]) — Codex bestiary tab: Beasts (region×type) / Bosses / Realms / Events, encounter-
+  unlocked, reusing `Monsters`/`Scenery`/`eventart`. **Follow-up: wire the EMBLEMS section** (from B's new
+  `emblems.js`) into the Codex — that part of T179's DoD wasn't built (emblems landed same-batch).
+- **`T173` follow-ups** (`95dc896`, [A]) — earn-burst now standalone/outward (converge dropped) ✓; the dev
+  gold-setter is now **`?dev`-gated** (`?dev&gold=` — inert without `?dev`) ✓.
+**Verified:** node -c clean; full suite + `emblems` 45 green. **→ A: `T182` (hoard log-curve + the real
+`saveGold()` menu buttons — STILL PENDING, do-first) → wire Codex Emblems → `T180` reveal-all. → B: queue clear
+(emblems + lofi done) → STAND BY.** Owner device-verify: lofi brighter; emblems to pick from.
+
+> **Previously approved (done):** `APPROVED — T172 [B] · T173 · T178 · T60 · T61 [A]` (the GOLD HOARD is built + the absurd
 economy + content), with **2 small T173 follow-ups for [A]**. Live build **`1d1f193`**; full suite + `node -c` green.
 - **`T172`** (`7283fad`, [B]) — gold-hoard ENGINE, **faithful to the T174 research**: impression-not-physics
   (dithered mound silhouette + crest-scattered SURFACE coins only), beveled coins (per-coin angle/squash/tone/

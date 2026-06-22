@@ -2967,7 +2967,7 @@ from the menu shows nothing.
   earn-burst flies outward; `node -c` clean; **[A]-only** (`main.js`, tests). **Verify:** owner sees a pile (set
   gold to 1M/1B in the menu → pile grows in the preview + on home).
 
-### T183 — [B] RESEARCH: study/focus-friendly music — the `lofi` context is too dark/bassy · status: OPEN · owner-feedback
+### T183 — [B] RESEARCH: study/focus-friendly music — the `lofi` context is too dark/bassy · status: DONE (`5633895`) · APPROVED· owner-feedback
 **Owner (2026-06-22): "audio switching sounds very good now. My only comment: the Lo-Fi Study sounds a bit dark/
 bassy. Can we do a research pass on what's nice to listen to while studying — or being tested, in this case?"**
 A short research pass (like the music-styles research) on **music for focus / test conditions** for ~10-year-olds:
@@ -2980,7 +2980,7 @@ study-friendly tweaks to the other "calm" contexts); the per-style distinctness 
 not foghorn-prone) must hold; **B-owned (`synth.js` + tests) only.** I'll re-measure stability + the owner ears it.
 After `T181` (emblems).
 
-### T181 — [B] `emblems.js`: generative BRAND EMBLEMS (app-icon candidates + Codex "Emblems") · status: OPEN · owner-greenlit
+### T181 — [B] `emblems.js`: generative BRAND EMBLEMS (app-icon candidates + Codex "Emblems") · status: DONE (`8f077cb`) · APPROVED· owner-greenlit
 **Owner (2026-06-22): "do icon generation — but these should go into the Codex too; if they're good, make the
 ones not chosen for the icon UNLOCKABLE in the app."** A **new standalone B-owned module** `emblems.js`
 (`window.Emblems = { draw(canvas, id), IDS }`) that renders the brand-emblem candidates in the game's **generative
@@ -2996,7 +2996,7 @@ pixel / dither style**, **gold-on-purple**, centered/maskable-safe (works as an 
   **The owner reviews them via the Codex "Emblems" section (T179) + the `?dev` reveal-all (T180), then picks the
   LAUNCHER icon.** Off standby — B's next.
 
-### T179 — [A] CODEX: a bestiary/art-gallery tab on Inventory (collect the generative art you encounter) · status: OPEN · owner-feature
+### T179 — [A] CODEX: a bestiary/art-gallery tab on Inventory (collect the generative art you encounter) · status: DONE (`688d142`) · APPROVED· owner-feature
 **Owner (2026-06-22): "definitely we want the bestiary — a place to collect non-inventory art as you encounter
 it (arena enemies + anything else). Maybe a tab on Inventory."** A Pokédex/bestiary collection that **showcases
 the generative art** and rewards exploration. Home: a **new "Codex" tab on Inventory** (the existing collection
