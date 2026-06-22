@@ -6,6 +6,32 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T192 — hoard overhaul: cell-shaded CYLINDER coins + a taller, wall-banked pile ([B], owner screenshot)
+
+Owner's 3 notes on the live 1T hoard: (1) too low — should climb much higher; (2) not a
+central dome — gold should bank against the side WALLS; (3) drop the beveled ovals →
+cell-shaded short cylinders (face ≠ edge colour, no outline). All in `fxgl.js`:
+- **New coin primitive (`drawCoin`):** a **cell-shaded rotated short CYLINDER** — a flat
+  foreshortened top-face ellipse + a darker flat EDGE band below (the side), **two flat
+  tones, NO outline, no gradient** (+ an optional tiny flat highlight). `aspect` tips it
+  (face-on disc → edge-on bar), `rot` spins it. Same primitive for the hoard + (T193) the
+  celebration. The path-less test raster gets a two-rect fallback (face + edge), still measurable.
+- **Pile shape (`moundProfile`):** no more central dome — `0.42 + 0.50·wall^1.5 + drifts +
+  roughness`, i.e. a **full-width fill that banks HIGHER against x≈0/1** with organic clumps,
+  dipping in the middle (a heaping container). **`HOARD_MAX_H` 0.34 → 0.82** so at high
+  wealth the walls climb most of the screen. **`HOARD_CAP` 340 → 480** + coin size grows
+  with the pile → full, not sparse. `seedHoard` scatters **full-width** (mild wall bias).
+- 🌐 **Browser-verified** at `?dev&gold=1e12`: gold banks thick up BOTH walls to near the
+  top with a centre valley framing the UI; cylinder coins read; renders on the WebGL 2D
+  overlay (the device) AND the CPU still.
+
+Verify: `node -c` clean; `golden-fx` **62** (mound/pile assertions reframed for the
+wall-bank + cylinder; `fx_hoard_scatter` re-blessed); existing non-hoard scenes byte-
+identical; full Node suite + render/visual gates green. B-owned (`fxgl.js` + tests).
+Owner device-confirms; **T193 next** (the earn celebration reuses the cylinder coin).
+
+---
+
 ## T188 — character-forward creature/hero emblems in the bestiary style ([B], owner-requested)
 
 Owner (after reviewing the live emblems): the abstract marks "could be useful," but

@@ -341,9 +341,9 @@
   // stay byte-identical. Fits PARTICLE_CAP (512) + the degrade ladder; reduced-motion
   // → a static pile. Pure math here is headless-tested like the other fxgl maths.
   // ===========================================================================
-  const HOARD_CAP = 340;            // surface-coin ceiling at full level (≪ PARTICLE_CAP 512)
+  const HOARD_CAP = 480;            // surface-coin ceiling at full level (≪ PARTICLE_CAP 512) — fuller pile (T192)
   const HOARD_K = 600;              // saturating-curve constant: gold==K → level 0.5
-  const HOARD_MAX_H = 0.34;         // tallest mound = 34% of the backdrop height
+  const HOARD_MAX_H = 0.82;         // T192: a deep pile — at high wealth it climbs most of the screen
   const HOARD_TIERS = 8;            // re-seed the static coin buffer only when the tier changes
   // gold highlight / mid / shadow — a lit metal ramp (the bevel reads from these).
   const GOLD_TONES = [[255, 214, 110], [212, 158, 46], [120, 84, 22]];
@@ -355,18 +355,22 @@
   function hoardTier(level, tiers){ return Math.round(clamp01(level) * ((tiers || HOARD_TIERS) | 0)); }
   // a small positional hash (organic micro-roughness without a sequential RNG).
   function hash01i(i, salt){ let h = ((i | 0) * 374761393 + (salt | 0) * 668265263) >>> 0; h = (h ^ (h >>> 13)) >>> 0; h = (h * 1274126177) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
-  // The mound HEIGHT (0..HOARD_MAX_H, fraction of screen) at normalised column x∈[0,1]:
-  // a smooth centred dome whose half-width + height grow with `level`, plus hashed
-  // micro-roughness so the crest reads organic, not a parabola. 0 outside the footprint.
+  // The pile HEIGHT (0..HOARD_MAX_H, fraction of screen) at normalised column x∈[0,1].
+  // T192 — NOT a central dome: coins poured into the phone bank up against the side WALLS.
+  // Full-width fill that rises with `level`, HIGHER toward x≈0 and x≈1 (the walls), dipping
+  // in the middle, with organic clumps (summed drifts + hashed roughness) so it's not a
+  // smooth parabola. Reads like a heaping container, climbing the walls at high wealth.
   function moundProfile(x, level, seed){
     level = clamp01(level);
     if(level <= 0) return 0;
-    const spread = 0.16 + 0.34 * level;                 // footprint half-width grows with level
-    const d = Math.abs(x - 0.5) / spread;
-    if(d >= 1) return 0;
-    let hump = Math.pow(1 - d * d, 1.4);                // smooth dome, 0 at the edges
-    hump *= 0.82 + 0.30 * hash01i(Math.floor(x * 48), (seed | 0) ^ 0x9e37);   // organic roughness
-    return clamp01(level * HOARD_MAX_H * hump);
+    const s = (seed | 0) || 1;
+    const wall = Math.pow(Math.abs(x - 0.5) * 2, 1.5);            // 0 centre → 1 at the walls
+    // a couple of organic drifts/clumps (seeded) + hashed micro-roughness on top
+    const drift = 0.10 * Math.sin(x * 9.1 + (s % 17)) + 0.07 * Math.sin(x * 17.3 + (s % 23));
+    const rough = (hash01i(Math.floor(x * 40), s ^ 0x9e37) - 0.5) * 0.10;
+    let f = 0.42 + 0.50 * wall + drift + rough;                  // full-width base + wall banking + organics
+    f = Math.max(0.12, f);                                       // always some floor of coins across the width
+    return clamp01(level * HOARD_MAX_H * f);
   }
   // Seed the SURFACE coins of the hoard (T172): a crest-weighted scatter ON the mound
   // surface, each coin carrying position + size + rotation + aspect(squash) + a gold
@@ -384,21 +388,23 @@
     if(!pool.length) pool = [[255, 255, 255]];
     const out = new Array(n);
     for(let i = 0; i < n; i++){
-      // crest-weighted x: average two uniforms → triangular bias toward the centre/crest
-      const x = clamp01(0.5 + ((rng() + rng()) / 2 - 0.5) * (0.32 + 0.62 * level));
+      // T192 — scatter across the FULL WIDTH (the pile fills wall-to-wall), with a mild
+      // wall bias so the banked sides read as denser.
+      let x = rng(); if(rng() < 0.4) x = (x < 0.5 ? x * x : 1 - (1 - x) * (1 - x));   // gentle pull toward the walls
       const h = moundProfile(x, level, seed);
       const surfaceY = 1 - h;                                  // y=1 is the bottom of the backdrop
-      const band = 0.018 + 0.05 * h;                           // coins sit in a thin surface band
-      const y = clamp01(surfaceY + rng() * band);              // just below the silhouette top
+      // coins layer down the visible face of the pile (a deeper band for a deep pile)
+      const band = 0.03 + 0.16 * h;
+      const y = clamp01(surfaceY + rng() * band);
       const col = pool[(rng() * pool.length) | 0];
       out[i] = {
         x: x, y: y,
-        size: lerp(reduced ? 4 : 5, reduced ? 7 : 11, rng()),  // screen px (DPR-scaled by pxScale)
-        rot: rng() * TAU,                                      // varied coin angle
-        aspect: lerp(0.45, 0.92, rng()),                       // vertical squash → coins lie at angles
+        size: lerp(reduced ? 5 : 6, reduced ? 8 : 13, rng()) * (0.85 + 0.3 * level),   // grow with the pile
+        rot: rng() * TAU,                                      // spin orientation
+        aspect: lerp(0.35, 0.95, rng()),                       // tip (face-on … edge-on cylinder)
         r: col[0], g: col[1], b: col[2],
-        glint: reduced ? 0 : rng() * TAU,                      // specular twinkle phase (0 = static)
-        look: 1                                                // 1 = coin (beveled), for the renderers
+        glint: reduced ? 0 : rng() * TAU,
+        look: 1
       };
     }
     return out;
@@ -1161,20 +1167,27 @@
   // → an axis-aligned squashed rect (mid body + highlight) so coverage + a bevel still
   // read and the draw stays measurable.
   function shade(c, f){ return f >= 0 ? [c[0] + (255 - c[0]) * f | 0, c[1] + (255 - c[1]) * f | 0, c[2] + (255 - c[2]) * f | 0] : [c[0] * (1 + f) | 0, c[1] * (1 + f) | 0, c[2] * (1 + f) | 0]; }
-  function drawCoin(ctx, cx, cy, r, rot, aspect, rgb, glint){
-    r = Math.max(1, r); aspect = aspect || 1;
+  // T192 — a CELL-SHADED rotated short CYLINDER (the owner rejected the beveled ovals): a
+  // flat foreshortened TOP-FACE ellipse + a darker flat EDGE band below it (the cylinder
+  // side) — two flat tones, NO outline, no gradient (an optional tiny flat highlight). The
+  // `rot` spins it; `aspect` tips it (face-on → a disc, edge-on → the edge band dominates).
+  function drawCoin(ctx, cx, cy, r, rot, aspect, rgb, hi){
+    r = Math.max(1, r); aspect = Math.max(0.12, Math.min(1, aspect || 1));
+    const ry = r * aspect, edgeH = r * (0.18 + 0.5 * (1 - aspect));   // tip more → taller edge
+    const edge = shade(rgb, -0.4);                                    // darker flat edge tone
     if(ctx.beginPath && ctx.ellipse && ctx.fill && ctx.save){
-      ctx.save(); ctx.translate(cx, cy); if(rot) ctx.rotate(rot); ctx.scale(1, aspect);
-      ctx.beginPath(); ctx.ellipse(0, 0, r, r, 0, 0, TAU); ctx.fillStyle = toHex(shade(rgb, -0.45)); ctx.fill();            // rim / shadow
-      ctx.beginPath(); ctx.ellipse(0, 0, r * 0.82, r * 0.82, 0, 0, TAU); ctx.fillStyle = toHex(rgb); ctx.fill();           // mid body
-      ctx.beginPath(); ctx.ellipse(-r * 0.16, -r * 0.16, r * 0.44, r * 0.44, 0, 0, TAU); ctx.fillStyle = toHex(shade(rgb, 0.5)); ctx.fill();   // inner highlight
-      if(glint > 0){ ctx.beginPath(); ctx.ellipse(-r * 0.3, -r * 0.3, r * 0.16, r * 0.16, 0, 0, TAU); ctx.fillStyle = "rgba(255,255,255," + Math.min(0.9, glint).toFixed(2) + ")"; ctx.fill(); }
+      ctx.save(); ctx.translate(cx, cy); if(rot) ctx.rotate(rot);
+      ctx.fillStyle = toHex(edge);                                    // the cylinder SIDE (flat, no outline)
+      ctx.fillRect(-r, 0, 2 * r, edgeH);
+      ctx.beginPath(); ctx.ellipse(0, edgeH, r, ry, 0, 0, TAU); ctx.fill();   // rounded bottom of the side
+      ctx.beginPath(); ctx.ellipse(0, 0, r, ry, 0, 0, TAU); ctx.fillStyle = toHex(rgb); ctx.fill();   // the flat TOP FACE
+      if(hi > 0){ ctx.beginPath(); ctx.ellipse(-r * 0.3, -ry * 0.3, r * 0.34, ry * 0.34, 0, 0, TAU); ctx.fillStyle = toHex(shade(rgb, 0.42)); ctx.fill(); }
       ctx.restore();
     } else {
-      const w = Math.max(2, Math.round(r * 2)), h = Math.max(2, Math.round(r * 2 * aspect));
-      ctx.fillStyle = toHex(rgb); ctx.fillRect((cx - w / 2) | 0, (cy - h / 2) | 0, w, h);
-      const hw = Math.max(1, (w * 0.5) | 0), hh = Math.max(1, (h * 0.5) | 0);
-      ctx.fillStyle = toHex(shade(rgb, 0.5)); ctx.fillRect((cx - hw / 2) | 0, (cy - hh / 2) | 0, hw, hh);
+      // fallback (path-less test raster): two flat rects — face + the darker edge band below.
+      const w = Math.max(2, Math.round(2 * r)), fh = Math.max(2, Math.round(2 * ry)), eh = Math.max(1, Math.round(edgeH));
+      ctx.fillStyle = toHex(edge); ctx.fillRect((cx - w / 2) | 0, (cy - fh / 2) | 0, w, fh + eh);
+      ctx.fillStyle = toHex(rgb);  ctx.fillRect((cx - w / 2) | 0, (cy - fh / 2) | 0, w, fh);
     }
   }
   // T172/T185 — render the settled hoard into ANY 2D ctx (buffer W×H, pxScale): a dithered

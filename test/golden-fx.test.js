@@ -242,16 +242,18 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
   ok(L(100) < L(1000) && L(1000) < L(1e6), "hoardLevel is monotonic in gold");
   ok(FXGL.hoardTier(0, 8) === 0 && FXGL.hoardTier(1, 8) === 8 && FXGL.hoardTier(0.5, 8) === 4, "hoardTier quantises the level (re-seed only on a tier change)");
   // (2) mound profile: 0 at the edges + level 0, peaks at the centre, bounded, grows with level.
-  ok(FXGL.moundProfile(0, 1, 1) === 0 && FXGL.moundProfile(1, 1, 1) === 0, "mound is 0 at the screen edges (a footprint, not full-width)");
+  ok(FXGL.moundProfile(0.02, 1, 9) > FXGL.moundProfile(0.5, 1, 9) && FXGL.moundProfile(0.98, 1, 9) > FXGL.moundProfile(0.5, 1, 9), "T192: the pile BANKS against the side walls (higher at x≈0/1 than centre — not a central dome)");
   ok(FXGL.moundProfile(0.5, 0, 1) === 0, "mound is 0 at level 0 (no gold → no pile)");
-  ok(FXGL.moundProfile(0.5, 1, 1) > FXGL.moundProfile(0.5, 0.3, 1) && FXGL.moundProfile(0.5, 1, 1) <= FXGL.HOARD_MAX_H, "the mound grows with level, capped at HOARD_MAX_H");
+  ok(FXGL.moundProfile(0.5, 1, 1) > FXGL.moundProfile(0.5, 0.3, 1) && FXGL.moundProfile(0.5, 1, 1) <= FXGL.HOARD_MAX_H, "the pile grows with level, capped at HOARD_MAX_H");
+  ok(FXGL.HOARD_MAX_H >= 0.7 && FXGL.moundProfile(0.02, 1, 9) > 0.55, "T192: at full wealth the pile climbs HIGH (walls reach " + FXGL.moundProfile(0.02, 1, 9).toFixed(2) + " of the screen)");
   // (3) surface-coin scatter: count rides level (capped), coins on the lower-half surface,
   //     deterministic, each a beveled coin with a varied angle/squash.
   const big = FXGL.seedHoard({ level: 1, seed: 7 }, false, FXGL.HOARD_CAP);
   const small = FXGL.seedHoard({ level: 0.3, seed: 7 }, false, FXGL.HOARD_CAP);
   ok(big.length === FXGL.HOARD_CAP && small.length < big.length && small.length > 0, "coin count scales with level + is capped at HOARD_CAP (" + small.length + " < " + big.length + ")");
-  ok(big.every(c => c.x >= 0 && c.x <= 1 && c.y >= 0.5 && c.y <= 1), "every surface coin sits in the lower-half, in-bounds (a settled pile)");
-  ok(big.every(c => c.look === 1 && c.aspect < 1 && c.rot >= 0), "each coin is beveled (look) with a squash + rotation (varied angles)");
+  ok(big.every(c => c.x >= 0 && c.x <= 1 && c.y >= 0 && c.y <= 1), "every surface coin is in-bounds");
+  ok(big.filter(c => c.x < 0.2 || c.x > 0.8).length > big.length * 0.25, "T192: coins fill the WIDTH incl. the wall regions (" + big.filter(c => c.x < 0.2 || c.x > 0.8).length + " near the walls)");
+  ok(big.every(c => c.look === 1 && c.aspect <= 1 && c.rot >= 0), "each coin is a cylinder (look) with a tip-aspect + spin (varied angles)");
   ok(new Set(big.slice(0, 40).map(c => Math.round(c.rot * 100))).size > 20 && new Set(big.slice(0, 40).map(c => Math.round(c.aspect * 100))).size > 20, "coin angles + squashes genuinely vary (not uniform discs)");
   ok(JSON.stringify(FXGL.seedHoard({ level: 1, seed: 7 }, false, FXGL.HOARD_CAP)) === JSON.stringify(big), "the hoard scatter is deterministic for its (level, seed)");
   ok(FXGL.seedHoard({ level: 1, seed: 7 }, true, FXGL.HOARD_CAP).length < big.length, "reduced-motion → a smaller (calmer) pile");
@@ -279,8 +281,9 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
     return { lower: lower, upper: upper };
   }
   const on = hoardLit(0.8);
-  ok(on.lower > 2000, "T172: a level-0.8 hoard paints a REAL lower-half pile (" + on.lower + " lit px — mound + surface coins)");
-  ok(on.lower > on.upper * 2, "T172: the pile is concentrated in the LOWER half (settled at the bottom, not floating)");
+  ok(on.lower > 2000, "T172/T192: a level-0.8 hoard paints a REAL pile (lower-region " + on.lower + " lit px — mound + cylinder coins)");
+  ok(on.lower > on.upper, "T192: the pile is BOTTOM-anchored (more fill below the midline) — heaped from the floor");
+  ok(on.upper > 800, "T192: …yet it CLIMBS HIGH — banks past the midline into the upper region (" + on.upper + " lit px), not a low bump");
 })();
 // the earn burst converges toward the hoard (coins move from the earn-point downward over time)
 (function(){
