@@ -106,7 +106,7 @@ Unifying pattern (if adopted): **hoard → deduce → craft → build** — same
 stay *simple* (fill a board / spellbook / structure — not a deep sim). **STATUS: open — owner deciding.**
 
 ### 6a. CANDIDATE (owner's, 2026-06-22) — "Plants & Beasts" (CULTIVATE / PACIFY)
-A fleshed-out, owner-originated metagame option (not yet assigned to a game). It's an **Arena-adjacent
+A fleshed-out, owner-originated metagame — **provisionally GG2 (VR), plant/nature aesthetic.** It's an **Arena-adjacent
 reskin with a fresh farming layer** — the owner: *"almost the same arena challenge, but a different
 flavour."*
 - **Collectibles = SEEDS / tubers** (instead of loot). You **plant** them; after a **growth duration**
