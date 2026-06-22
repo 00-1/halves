@@ -2661,6 +2661,42 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
+### T158 — [A] **BUG (live, owner-flagged):** the service worker pins STALE JS in the installed PWA (the "foghorn") · status: OPEN · 🔴 DO-FIRST / ABSOLUTE
+**Owner (2026-06-22): "sound is really bad in PWA — like a foghorn."** **Root cause (Babysitter, confirmed in
+`sw.js` + `index.html`):** `index.html` loads every app script with **NO version query** (`<script src="synth.js">`,
+`main.js`, `fxgl.js`, …) — but `sw.js`'s fetch handler (sw.js:48-55) is **CACHE-FIRST for ALL non-navigation
+same-origin GETs**, with **no `?v=` check**. Its comment *assumes* the scripts are immutable `?v=<sha>` URLs;
+they are NOT. So once the installed PWA caches `synth.js`/`main.js`/etc. on first visit, **it serves that frozen
+copy forever — deploys never update the PWA's JS.** The owner's install cached a **pre-`T151` `synth.js`** → the
+PWA runs the OLD **diverging FDN reverb** (the documented exponential low-drone divergence) = the foghorn. **This
+also means the installed PWA is running stale `main.js`** (the T153 purple / T152 celebration fixes may not show
+there) — audio is just the loudest symptom. Browser-tab play is fine (no SW cache-first there on a fresh load).
+- **THE FIX (sw.js):** stop cache-firsting un-versioned app code. Make same-origin app assets — `.js`, `.css`,
+  `.html`/`.json` (and to be safe `icon.svg`/manifest, they're tiny) — **NETWORK-FIRST** (always fresh online,
+  cache as the OFFLINE fallback), exactly like the nav/`build.json` branch already is. Reserve **cache-first**
+  for **cross-origin fonts** and any genuinely content-hashed asset only. (Network-first chosen over
+  stale-while-revalidate so a correctness fix is picked up on the *very next* online launch, not one launch
+  later. The app is small; the latency cost is negligible and cache still covers offline.)
+- **Force the poisoned cache to purge: bump `CACHE = "halves-static-v1"` → `"halves-static-v2"`.** The existing
+  `activate` handler deletes every cache key !== `CACHE`, so bumping the name **drops the stale entries** when the
+  new SW activates. Keep `skipWaiting()` + `clients.claim()` (already present) so the new SW takes over promptly.
+- **Self-heal path (document in BUILDER-LOG):** on the next ONLINE launch the browser byte-compares `sw.js`,
+  sees it changed, installs the new SW → `skipWaiting`/`activate` purges the old cache + claims → app JS now
+  network-first → fresh `synth.js`. Foghorn gone without a reinstall. (Belt-and-braces for the owner: fully
+  close & reopen the installed app twice, or uninstall/reinstall, to force it immediately.)
+- **Make this invisible regression a GATE (the "stronger-than-green" requirement):** extend **`test/pwa.test.js`**
+  to assert the SW **does NOT cache-first un-versioned same-origin app scripts** — i.e. a request for `synth.js`
+  / `main.js` resolves via **network-first** (fetch attempted, cache only as fallback), NOT served stale from
+  cache while a network copy exists. (Simulate the fetch handler with a fake cache+network and assert the network
+  copy wins for app `.js`.) Also assert the `CACHE` name bumped. This is the check that would have caught T102.
+- **DoD:** `sw.js` network-first for same-origin app assets (offline still works via cache fallback); `CACHE`
+  bumped to v2; `pwa.test` extended to FAIL on cache-first-stale-JS (prove the teeth) + assert the cache bump;
+  `node -c` clean on `sw.js`; **does NOT break the T54 update-check or `build.json` no-store**; **[A]-only**
+  (`sw.js`, `index.html`, `test/pwa.test.js`). **Verify:** the owner re-launches the installed PWA (online) and
+  confirms the foghorn is gone + the audio matches the browser tab. *(Browser SW re-check needs https/localhost
+  and the in-env Chromium harness is OOM-down this session — lean on the extended `pwa.test` logic gate + the
+  owner's device confirmation.)*
+
 ### T156 — [A] Hide the fullscreen affordances when running installed/standalone (TWA/PWA) · status: OPEN · OWNER-REQUESTED · Play-Store track
 Owner (2026-06-22, exploring the Android wrap): *"one difference will be the full-screen buttons will no longer
 be needed. It'll be locked full screen presumably."* Correct — in a **TWA / installed PWA** the app launches

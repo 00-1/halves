@@ -10,8 +10,17 @@
 
 ---
 
-**Builder A → `T156` (hide fullscreen buttons when installed/standalone) → `T157` (Android back-button nav) → `T89`/`T90` (Arena 3v3) → content `T58`–`T61` → `T72` (held for owner creds)**
-**`T153` DONE+APPROVED (`c942859`, fixed-purple, owner-confirmed); `T152[A]` DONE (`bdd0e6a`).** Two small
+**Builder A → `T158` 🔴 BUG DO-FIRST (SW pins stale JS in the PWA — the "foghorn") → then `T156` → `T157` → `T89`/`T90` (Arena 3v3) → content → `T72`**
+**`T158` is ABSOLUTE — do ONLY this and push before anything else.** Owner: *"sound is really bad in PWA — like
+a foghorn."* Root cause: `index.html` loads scripts with **NO `?v=`**, but `sw.js` (lines 48-55) **cache-firsts
+ALL non-nav same-origin GETs** → the installed PWA serves a **frozen pre-T151 `synth.js`** (old diverging FDN
+reverb = the foghorn) and **stale `main.js`** too. **Fix:** make same-origin app assets (`.js`/`.css`/`.html`)
+**NETWORK-FIRST** (cache = offline fallback only), cache-first reserved for cross-origin fonts; **bump `CACHE`
+v1→v2** so `activate` purges the poisoned cache; keep `skipWaiting`+`clients.claim`. **Extend `pwa.test` to FAIL
+on cache-first-stale-JS** (the gate that would've caught T102) + assert the cache bump. **[A]-only** (`sw.js`,
+`index.html`, `test/pwa.test.js`). Self-heals on next online launch (new SW byte-changes → purge → network-first
+JS). See **BACKLOG T158**. **Then** the two Play-Store-track tasks: **`T153` DONE+APPROVED (`c942859`,
+fixed-purple, owner-confirmed); `T152[A]` DONE (`bdd0e6a`).** Two small
 **Play-Store-track / app-feel** tasks jump the queue (owner is testing the app on Android NOW — these make the
 installed-PWA test feel app-like): **`T156`** — detect `display-mode: standalone/fullscreen` (`isInstalledDisplay()`)
 and **hide** the entry `#entryFs` "Play in fullscreen" button + the Settings `#fsToggle` row when installed
