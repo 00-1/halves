@@ -17,7 +17,7 @@
 rebuild any of those.**
 **NEXT REAL WORK → `T162` (owner-blessed, build ALL 11 drill modes, in 3 tiered pushes — do TIER P1 first and
 push before P2):**
-- **Tier P1 (push 1): `scaling`, `percentoff`, `partwhole`.** Full item sets + calibrated ranges + `masterSecs`
+- **Tier P1 (push 1): `scaling`, `percentoff`, `partwhole`, `balance`** (the last = "Complete the Sum", from the Verbal report's maths section)**.** Full item sets + calibrated ranges + `masterSecs`
   + unlock slots are in **`docs/agent/T162-calibration.md`** — read it. Each mode = a fixed `*_SRC` array →
   `build()` mapping to `{p,a}` (match the existing mode shape), numpad-enterable/numeric/non-negative answers,
   a sensible `unlockedBy`/`requires` mastery gate, new **"Reasoning"** picker group for the multi-step ones,

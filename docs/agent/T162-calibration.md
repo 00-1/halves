@@ -41,6 +41,21 @@ this. **Calibration:** unit fractions ½ ¼ ⅓ ⅕ ⅛ and %s {10,20,25,50}; wh
 - `10% of □ is 9` (90) · `20% of □ is 9` (45) · `25% of □ is 7` (28) · `⅛ of □ is 5` (40)
 **masterSecs ≈ 8.** `expr:true`.
 
+### 12. `balance` — "Complete the Sum" (missing number that balances an equation)  ·  group "Reasoning" · unlock after `addsub2`
+**Added 2026-06-22 from the SEP Mock 7 _Verbal_ report's maths section (Q29–35) — a WHOLE exam section, Luke
+4/7 wrong.** **Atom (two-step):** (1) evaluate one side (a `×`/`+`/`−` fact), (2) use the **inverse** to find the
+missing number on the other side — `a⊕b = c⊖□`. Distinct from `partwhole`: it's the cross-the-equals balance
+the exam tests directly. **Mock misses:** Q29 `34+17=90−□` (39, inverse slip), Q30 `8×6=−12+□` (60, negative),
+Q33 `93−18=51+□` (24), Q35 `65×3=500−□` (305 — his 320 came from `65×3=180`, a ×-fact slip feeding the balance).
+**Calibration:** LHS within tables/≤100; **Part-1 answers non-negative & numpad-clean**; a small **negative-answer
+stretch** (e.g. `37×4=100−□` → −48) ONLY if the numpad supports a leading minus — else keep the stretch set to
+positives. The form drills both the inverse move AND the fluency of the underlying ×/+/− fact.
+- `34+17 = 90−□` (39) · `6×8 = 200−□` (152) · `93−18 = 51+□` (24) · `13×9 = 17+□` (100)
+- `65×3 = 500−□` (305) · `7×7 = 60−□` (11) · `45+28 = 100−□` (27) · `9×6 = 12+□` (42)
+- *(stretch, neg answers — numpad-permitting):* `37×4 = 100−□` (−48) · `8×6 = −12+□` (60)
+**masterSecs ≈ 9.** `expr:true`. **Open sub-question for A:** confirm the numpad/answer check accepts a negative
+entry; if not, ship `balance` with the **positive-answer set only** and flag negatives as a follow-up.
+
 ---
 
 ## Tier P2 — quick wins & clean procedures
@@ -120,9 +135,10 @@ asks **"remainder of N ÷ 9"** (= digit-sum mod 9) to connect the sum to divisib
 ---
 
 ## ✅ OWNER SIGN-OFF (2026-06-22)
-- **Scope: BUILD ALL** — P1 (`scaling`, `percentoff`, `partwhole`) + P2 (`ratioshare`, `timegap`, `lcmhcf`,
-  `mean`) + P3 (`cubes`, `money`, doubles/halves range check) + **`digitsum`** (the blessed divisibility answer).
-  **11 modes total.**
+- **Scope: BUILD ALL** — P1 (`scaling`, `percentoff`, `partwhole`, **`balance`**) + P2 (`ratioshare`, `timegap`,
+  `lcmhcf`, `mean`) + P3 (`cubes`, `money`, doubles/halves range check) + **`digitsum`** (the blessed
+  divisibility answer). **12 modes total** (`balance` added from the Verbal report's maths section — a whole exam
+  section; put it in P1 alongside the other high-frequency atoms).
 - **Divisibility → `digitsum`** (option a) — no new engine answer type.
 - **Suggested delivery: in TIERS** (P1 → P2 → P3), one push per tier, so the Babysitter reviews incrementally
   and the owner can feel P1 early — not one giant push. Each mode ships with its Node logic gate.

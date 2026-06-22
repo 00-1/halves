@@ -2721,7 +2721,7 @@ fresh install.
   split it into a [B] line if the audit lands there. *(If the audit finds nothing actionable + it never recurs,
   close as NOT-REPRODUCIBLE with the hardening guards kept.)*
 
-### T162 — [A] Mock-exam-driven drill gaps: 11 new building-block modes · status: OPEN · ✅ OWNER-BLESSED (build all, in tiers) · content · after the trust/audio fixes
+### T162 — [A] Mock-exam-driven drill gaps: 12 new building-block modes · status: OPEN · ✅ OWNER-BLESSED (build all, in tiers) · content · after the trust/audio fixes
 **Owner (2026-06-22) supplied a REAL mock** (target student Luke, SEP 11+ Mock 7 / BWS — scored 11/27). Frame:
 **"we're not trying to reproduce 11+ style questions, just drill the building blocks needed to answer these
 quickly."** Full per-question decomposition + the analysis live in **IDEAS I9**. **Findings:** one-step
@@ -2730,10 +2730,13 @@ the misses cluster into **(A) complement / "the rest" / % decrease, (B) proporti
 (C) ratio sharing, (D) un-drilled procedures: divisibility rules, time intervals, LCM/factors, averages** —
 and many wrongs are **near-misses** (fluency under time, not pure concept).
 - **✅ Step 1 DONE — calibration pass blessed.** Full spec (calibrated ~21-item sets, mock evidence, ranges,
-  `masterSecs`, unlock slots) in **`docs/agent/T162-calibration.md`**. **Owner (2026-06-22): build ALL 11 modes**,
+  `masterSecs`, unlock slots) in **`docs/agent/T162-calibration.md`**. **Owner (2026-06-22): build ALL 12 modes**,
   with **`digitsum`** as the divisibility answer (no new engine answer type), **delivered in TIERS**.
 - **Step 2 — BUILD (the 11 modes, in 3 tiered pushes — re-read the calibration doc for each set's items/ranges):**
-  - **Tier P1** (push 1): `scaling` (unit-rate), `percentoff` (% decrease / the-rest), `partwhole` (reverse part→whole).
+  - **Tier P1** (push 1): `scaling` (unit-rate), `percentoff` (% decrease / the-rest), `partwhole` (reverse part→whole),
+    **`balance`** ("Complete the Sum" — evaluate one side, inverse to find the missing number; from the Verbal
+    report's maths section, a whole exam section Luke got 4/7 wrong; confirm numpad accepts a negative entry —
+    else ship positive-answer set + flag negatives).
   - **Tier P2** (push 2): `ratioshare`, `timegap` (answer in minutes), `lcmhcf`, `mean` (+ reverse).
   - **Tier P3** (push 3): `cubes` (mirror `squares`), `money` (£ totals + change, 2dp), `digitsum` (+ remainder ÷9),
     and the **doubles/halves range check** (reach 2-digit; extend SRC only if needed).

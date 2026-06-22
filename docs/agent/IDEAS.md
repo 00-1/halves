@@ -77,6 +77,14 @@
 variants, numpad-enterable, answers within `docs/research-11plus.md`'s calibrated bands) → owner thumbs-up on
 the mode list → A builds the generators. Filed as **T162**.
 
+**Addendum (2026-06-22) — the SEP Mock 7 _Verbal_ report's maths section ("Complete the Sum", Q29–35):** the
+rest of that report is verbal-reasoning (a separate app), but the final section is pure maths and the owner
+flagged it. Format: `a⊕b = c⊖□` — **balance the equation / find the missing number.** Luke **4/7 wrong**
+(Q29 `34+17=90−□`→39 inverse slip · Q30 `8×6=−12+□`→60 negative · Q33 `93−18=51+□`→24 · Q35 `65×3=500−□`→305,
+his 320 came from `65×3=180`, a ×-fact slip). The **atom**: (1) evaluate one side, (2) **inverse** to find □ —
+reinforcing both the inverse move and the fluency of the underlying ×/+/− fact, sometimes crossing into
+**negatives**. Promoted to **T162 as the `balance` mode (P1)**; spec in `docs/agent/T162-calibration.md`.
+
 ---
 
 ## I1 — Events — ✅ PROMOTED to BACKLOG (Phase 6.5, T78–T81) on 2026-06-21
