@@ -1197,7 +1197,11 @@
   // (Enemies.statBattle over the REAL collected set). Drilling the topics is
   // where buffs are earned; the Arena is the payoff. Clearing it still demands a
   // near-complete collection (the win == the old max-perf win, T23/T43).
-  let arenaHero = null, lastBattle = null, practiceCtx = null, arenaMapOpen = false, eventCtx = null, introCtx = false;
+  // T89 — Arena 3v3: the player fields a PARTY of 1–3 owned heroes (ordered by
+  // pick) vs the tier's 3-foe enemy team; the fight resolves through the T88
+  // deterministic team sim (Enemies.teamBattle). `arenaParty` holds hero ids.
+  const PARTY_MAX = 3;
+  let arenaParty = [], lastBattle = null, practiceCtx = null, arenaMapOpen = false, eventCtx = null, introCtx = false;
 
   // ---- per-question best-time store (halves.qbest) for the Practice view -----
   let memQbest = null;
@@ -1260,6 +1264,8 @@
          : mu < 1 ? '<span class="mu weak">▼ Weak ×0.6</span>'
          :          '<span class="mu neu">● Neutral ×1.0</span>';
   }
+  // compact matchup glyph (T89 enemy-team chips) — the party's edge vs that foe
+  function muTag(mu){ return mu > 1 ? '<span class="mu adv">▲</span>' : mu < 1 ? '<span class="mu weak">▼</span>' : '<span class="mu neu">●</span>'; }
   function renderArena(){
     const E = window.Enemies, Hs = window.Heroes;
     if(!E || !Hs){ $("arenaBody").innerHTML = ""; return; }
@@ -1269,22 +1275,24 @@
     $("arenaMeta").textContent = cleared ? "Cleared!" : ("Tier " + tier.n + " / " + E.TIER_COUNT);
 
     const heroes = Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, col));
-    if(arenaHero && !heroes.some(h => h.id === arenaHero)) arenaHero = null;
+    // keep the party valid: only OWNED heroes, never more than the cap (T89)
+    arenaParty = arenaParty.filter(id => heroes.some(h => h.id === id)).slice(0, PARTY_MAX);
 
     let html = "";
     if(lastBattle){
       const r = lastBattle;
+      // T89: the party + the full enemy team, then the team-sim outcome summary.
+      const partyPorts = r.party.map(p => '<canvas class="pix ar-port" width="44" height="44" data-hero="'+esc(p.id)+'" data-type="'+esc(p.type||"Brawn")+'"></canvas>').join("");
+      const foePorts = r.foes.map(f => '<canvas class="pix ar-enemy" width="44" height="44" data-tier="'+(f.tierN||1)+'" data-tname="'+esc(f.name)+'" data-ttype="'+esc(f.type||"Brawn")+'"></canvas>').join("");
+      const survived = r.res.heroesAlive, sent = r.party.length;
       html += '<div class="arena-result '+(r.won ? "win" : "loss")+'">'+
-        '<div class="ar-port-row">'+
-          (r.heroId ? '<canvas class="pix ar-port" width="48" height="48" data-hero="'+esc(r.heroId)+'" data-type="'+esc(r.heroType||"Brawn")+'"></canvas>' : "")+
+        '<div class="ar-port-row"><span class="ar-side">'+partyPorts+'</span>'+
           '<span class="ar-vs">vs</span>'+
-          '<canvas class="pix ar-enemy" width="48" height="48" data-tier="'+(r.tierN||1)+'" data-tname="'+esc(r.tierName)+'" data-ttype="'+esc(r.tierType||"Brawn")+'"></canvas>'+
-        '</div>'+
+          '<span class="ar-side foe">'+foePorts+'</span></div>'+
         '<div class="ar-title">'+(r.won ? "Victory!" : "Defeated")+'</div>'+
-        '<div class="ar-sub">'+esc(r.heroName)+' vs '+esc(r.tierName)+'</div>'+
-        '<div class="ar-maths">'+Math.round(r.res.rating)+' '+ic("star")+' × '+r.res.matchup+
-          ' = power <b>'+r.res.power+'</b> vs DEF <b>'+r.res.def+'</b></div>'+
-        (r.won ? "" : '<div class="ar-hint">Not strong enough — collect more buffs (drill the topics) or pick the advantage-type hero.</div>')+
+        '<div class="ar-sub">'+esc(r.party.map(p => p.name).join(" + "))+' vs '+esc(r.tierName)+(r.foes.length > 1 ? ' +'+(r.foes.length-1) : '')+'</div>'+
+        '<div class="ar-maths">'+ic("swords")+' '+survived+'/'+sent+' '+(survived === 1 ? "hero" : "heroes")+' standing · '+r.res.foesAlive+'/'+r.foes.length+' foes left · '+r.res.rounds+' rounds</div>'+
+        (r.won ? "" : '<div class="ar-hint">Your party fell — collect more buffs (drill the topics), bring more heroes, or field advantage types.</div>')+
         (r.regionCleared ? '<div class="ar-region-clear">'+ic("flag")+' Region conquered! Next: '+esc(r.regionCleared)+'</div>' : '')+
         (r.goldEarn > 0 ? '<div class="ar-gold">'+ic("coin")+' +'+esc(fmtGold(r.goldEarn))+' '+esc(GOLD_LABEL)+'</div>' : '')+
         (r.newHeroes.length ? '<div class="ar-new">'+ic("star")+' New hero: '+r.newHeroes.map(esc).join(", ")+'!</div>' : '')+
@@ -1326,19 +1334,35 @@
          : bossNext ? '<div class="at-boss next">'+ic("swords")+' Boss next: '+esc(bossNameOf(reg))+'</div>' : '')+
         '<div class="at-name"><i class="typedot"></i>'+esc(tier.name)+'</div>'+
         '<div class="at-stats"><span class="at-type">'+esc(tier.type)+'</span><span class="at-def">DEF '+tier.def+'</span></div></div>';
+      // ---- T89: the full 3-foe enemy team (tier foe + 2 weaker adds) with each
+      // foe's BEST matchup vs the chosen party, so you can field advantage types.
+      const foes = E.enemyTeamMeta(tier.n);
+      const partyHeroes = arenaParty.map(id => Hs.byId(id)).filter(Boolean);
+      html += '<div class="arena-foes"><div class="af-head">'+ic("swords")+' Enemy team</div><div class="af-row">';
+      foes.forEach(f => {
+        const mu = partyHeroes.length ? Math.max.apply(null, partyHeroes.map(h => E.matchup(h.type, f.type))) : 1;
+        html += '<div class="af-foe t-'+f.type.toLowerCase()+'">'+
+          '<canvas class="pix af-port ar-enemy" width="40" height="40" data-tier="'+f.tierN+'" data-tname="'+esc(f.name)+'" data-ttype="'+esc(f.type)+'"></canvas>'+
+          '<div class="af-name">'+esc(f.role === "foe" ? f.name : "Support")+'</div>'+
+          '<div class="af-type"><i class="typedot"></i>'+esc(f.type)+(partyHeroes.length ? ' '+muTag(mu) : '')+'</div>'+
+          '</div>';
+      });
+      html += '</div></div>';
       if(!heroes.length){
         html += '<div class="arena-empty">Finish a drill round to unlock your first hero, then return to fight.</div>';
       } else {
-        html += '<div class="arena-pick">Choose your champion</div><div class="arena-heroes">';
+        // ---- T89: pick a PARTY of 1–3 owned heroes (tap to add/remove; capped) --
+        const cap = Math.min(PARTY_MAX, heroes.length);
+        html += '<div class="arena-pick">Choose your party (1–'+cap+') <span class="ap-count">'+arenaParty.length+'/'+cap+'</span></div><div class="arena-heroes">';
         heroes.forEach(h => {
           const rating = Math.round(Hs.rating(h, col)), mu = E.matchup(h.type, tier.type);
-          const power = Math.round(Hs.rating(h, col) * mu), wins = power >= tier.def;
-          html += '<div class="arena-hero t-'+h.type.toLowerCase()+(arenaHero === h.id ? " sel" : "")+'" data-hero="'+esc(h.id)+'">'+
+          const idx = arenaParty.indexOf(h.id), sel = idx >= 0, blocked = !sel && arenaParty.length >= cap;
+          html += '<div class="arena-hero t-'+h.type.toLowerCase()+(sel ? " sel" : "")+(blocked ? " blocked" : "")+'" data-hero="'+esc(h.id)+'">'+
             '<canvas class="pix ah-port" width="40" height="40"></canvas>'+
+            (sel ? '<span class="ah-badge">'+(idx + 1)+'</span>' : '')+
             '<div class="ah-body"><div class="ah-top"><span class="ah-name"><i class="typedot"></i>'+esc(h.name)+'</span>'+
               '<span class="ah-rating">'+ic("star")+' '+rating+'</span></div>'+
-            '<div class="ah-mu">'+matchupLabel(mu)+
-              '<span class="ah-power '+(wins ? "win" : "loss")+'">'+ic("swords")+' '+power+' vs '+tier.def+'</span></div></div></div>';
+            '<div class="ah-mu">'+matchupLabel(mu)+'</div></div></div>';
         });
         html += '</div>';
       }
@@ -1350,26 +1374,29 @@
       const card = cv.closest(".arena-hero"), h = card && Hs.byId(card.dataset.hero);
       if(h) C.drawIcon(cv, "hero:"+h.id, HERO_PAL[h.type], "familiar");
     });
-    const rp = $("arenaBody").querySelector(".ar-port");
-    if(rp && rp.dataset.hero) C.drawIcon(rp, "hero:"+rp.dataset.hero, HERO_PAL[rp.dataset.type] || HERO_PAL.Brawn, "familiar");
+    $("arenaBody").querySelectorAll(".ar-port").forEach(rp => {
+      if(rp.dataset.hero) C.drawIcon(rp, "hero:"+rp.dataset.hero, HERO_PAL[rp.dataset.type] || HERO_PAL.Brawn, "familiar");
+    });
     // enemy sprites (T52) — current-tier card + the result header's foe (static)
     if(window.Monsters) $("arenaBody").querySelectorAll(".at-enemy, .ar-enemy").forEach(cv => {
       window.Monsters.draw(cv, { n: +cv.dataset.tier, name: cv.dataset.tname, type: cv.dataset.ttype });
     });
     // region scenery (T53) — drawn once behind the tier card (static, no RAF)
     if(window.Scenery){ const sc = $("arenaBody").querySelector(".at-scene"); if(sc) window.Scenery.draw(sc, +sc.dataset.region); }
-    $("arenaFight").disabled = cleared || !arenaHero || !heroes.length;
-    $("arenaFight").textContent = cleared ? "Cleared" : (arenaHero ? "Fight!" : "Pick a hero");
+    $("arenaFight").disabled = cleared || !arenaParty.length || !heroes.length;
+    $("arenaFight").textContent = cleared ? "Cleared" : (arenaParty.length ? "Fight! ("+arenaParty.length+")" : "Pick your party");
   }
 
-  // Fight resolves INSTANTLY from hero stats (T47) — no maths round.
+  // Fight resolves INSTANTLY through the T88 deterministic team sim (no maths
+  // round) — the 1–3 hero party vs the tier's 3-foe enemy team (T89).
   function startBattle(){
     const E = window.Enemies, Hs = window.Heroes, col = loadCollected();
     if(!E || col["tier:" + E.TIER_COUNT]) return;                 // cleared
-    if(!arenaHero || !Hs.isHeroUnlocked(arenaHero, col)) return;
+    const party = arenaParty.filter(id => Hs.isHeroUnlocked(id, col)).slice(0, PARTY_MAX);
+    if(!party.length) return;
     const tier = E.currentTier(col);
-    const res = E.statBattle(arenaHero, tier, col);
-    finishBattle(arenaHero, tier, res);
+    const res = E.teamBattle(party, tier, col);
+    finishBattle(party, tier, res);
   }
 
   // Grant any hero/arena milestones now satisfied (unlock-all-heroes + tier
@@ -1383,12 +1410,12 @@
     return meta;
   }
 
-  // Apply a resolved stat-check: grant the tier + its loot on a win, award gold,
-  // and surface the result. `res` comes from Enemies.statBattle (T47 — no perf).
-  function finishBattle(heroId, tier, res){
+  // Apply a resolved battle: grant the tier + its loot on a win, award gold, and
+  // surface the result. `party` is the 1–3 hero-id array; `res` comes from the
+  // T88 team sim (Enemies.teamBattle — {win, heroesAlive, foesAlive, rounds}).
+  function finishBattle(party, tier, res){
     const E = window.Enemies, Hs = window.Heroes;
     const col = loadCollected();
-    const heroName = (C.HERO_NAMES && C.HERO_NAMES[heroId]) || heroId;
     const goldBefore = loadGold();
     const RS = E.REGION_SIZE || 12;
     let earn = 0, loot = [], newHeroes = [], regionCleared = null;
@@ -1411,8 +1438,9 @@
     const wealth = earnGold(earn, col);               // grants any wealth milestones into col
     saveCollected(col);
     loot = loot.concat(wealth);
-    lastBattle = { won: res.win, res: res, heroName: heroName, heroId: heroId, heroType: (Hs.byId(heroId)||{}).type, tierName: tier.name, tierN: tier.n, tierType: tier.type, loot: loot, newHeroes: newHeroes, regionCleared: regionCleared, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
-    arenaHero = null;
+    const partyMeta = party.map(id => { const h = Hs.byId(id) || {}; return { id: id, name: (C.HERO_NAMES && C.HERO_NAMES[id]) || h.name || id, type: h.type || "Brawn" }; });
+    lastBattle = { won: res.win, res: res, party: partyMeta, foes: E.enemyTeamMeta(tier.n), tierName: tier.name, tierN: tier.n, tierType: tier.type, loot: loot, newHeroes: newHeroes, regionCleared: regionCleared, goldBefore: goldBefore, goldAfter: loadGold(), goldEarn: earn };
+    arenaParty = [];
     renderArena();
     const ab = $("arenaBody"); if(ab) ab.scrollTop = 0;   // T65: show the result + tier, not the hero list
     show("arena");
@@ -1920,7 +1948,7 @@
       if(renderHeroDetail(h.slice(5))) show("heroDetail");
       else { location.hash = "#/heroes"; return; }   // unknown/locked → back to the list
     }
-    else if(h === "arena"){ lastBattle = null; arenaHero = null; arenaMapOpen = false; renderArena(); show("arena"); }
+    else if(h === "arena"){ lastBattle = null; arenaParty = []; arenaMapOpen = false; renderArena(); show("arena"); }
     else if(h === "settings"){ renderSettings(); show("settings"); }
     else if(h === "audio"){ renderAudio(); show("audio"); }
     else if(h === "graphics"){ renderGraphics(); show("graphics"); }
@@ -1969,7 +1997,11 @@
   $("arenaBody").addEventListener("click", e => {
     if(e.target.closest(".arena-map-btn")){ arenaMapOpen = !arenaMapOpen; renderArena(); return; }
     const card = e.target.closest(".arena-hero"); if(!card) return;
-    arenaHero = (arenaHero === card.dataset.hero) ? null : card.dataset.hero;
+    // T89: tap toggles a hero in/out of the party; adding is capped at PARTY_MAX,
+    // removing is always allowed (so you can swap once the party is full).
+    const id = card.dataset.hero, at = arenaParty.indexOf(id);
+    if(at >= 0) arenaParty.splice(at, 1);
+    else if(arenaParty.length < PARTY_MAX) arenaParty.push(id);
     renderArena();
   });
   // Switch inventory tabs (lazy-renders the chosen tab's tiles).

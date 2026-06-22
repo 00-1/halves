@@ -4624,3 +4624,34 @@ how I verified: **fx-wiring.test (81→84)** — new T153 checks: `homeFxState` 
 notes: **babysitter/owner browser-verify** — the home backdrop should now render **purple** across a rare-
   event day, a no-event day, and an epic-event day (it no longer goes blue). Next per `NEXT.md`: **`T152[A]`
   is DONE (`bdd0e6a`)** → roadmap `T89`/`T90` (Arena 3v3) → content `T58`–`T61` → `T72`.
+
+---
+
+## Builder A — T89: Arena 3v3 team-selection UI (1–3 heroes) + enemy-team display
+commit: (this commit) — [A], roadmap (Phase 6.10). Built on T88's deterministic team sim (`bdd0e6a`-era
+`Enemies.teamBattle`/`enemyTeam`/`simulateTeams`). The live Arena was still the 1v1 `statBattle` stat-check;
+this wires the real 3v3.
+changed:
+  - **`enemies.js`** (A-owned): added **`enemyTeamMeta(n)`** — display metadata (name/type/source-tier) for the
+    3 foes a tier fields (the tier foe + 2 weaker adds at `tier−K`), in the SAME order the sim fights, so the
+    shown line-up matches the actual battle. Exported it. The sim itself is unchanged (T88 invariants intact).
+  - **`main.js`**: the single `arenaHero` became a **`arenaParty` (1–`PARTY_MAX`=3 hero ids)**. The pick list is
+    now multi-select — tap to add/remove, **capped at 3** (a 4th tap is rejected; deselect always allowed), with
+    a pick-order **badge** (1/2/3) and a live **N/cap counter**. Only **owned** heroes are listed (locked/unowned
+    can't be fielded — inherent). A new **"Enemy team" panel** shows all 3 foes with each foe's **best matchup vs
+    the chosen party** (▲/●/▼). **Fight** now resolves through **`Enemies.teamBattle(party, tier, col)`** (the T88
+    sim), and `finishBattle(party, tier, res)` was generalised: the result card shows the **party vs the enemy
+    team** + the sim outcome (**heroes standing · foes left · rounds**) instead of the old rating/power/DEF line.
+    Loot/gold/region-clear/new-hero grants + the T152 win celebration (`.ar-enemy` source) + T65 scroll-to-top
+    are all preserved.
+  - **`styles.css`**: `.arena-foes`/`.af-foe` enemy-team chips, `.ah-badge` party-order badge, `.ar-side`
+    party/foe portrait groups, `.blocked` dim for capped cards — all with classic + `[data-ui="pixel"]` variants
+    (`.af-foe` squared/box-shadow:none; `.ah-badge` + `.af-port`(via `.ar-enemy`) squared via `--ui-radius`).
+how I verified: **arena.test (29→38)** — the live DOM-boot now proves: the **3-foe enemy team renders** +
+  is labelled; **only owned heroes are offered**; the party **fills to 3/3**, a **4th pick is rejected**,
+  **deselect** works (1–3 enforced); Fight routes through **`teamBattle`** (source-pattern + behaviour), never
+  opens a round, scrolls to top, shows **Victory** with **all 3 party portraits** + the **team-sim summary**
+  (standing · rounds), and records `tier:1`. `node -c` clean (`main.js`+`enemies.js`); **full suite green**
+  (incl. `arena3` T88 invariants, `ui-restyle` pixel-radius, `fx-wiring` win-burst). [A]-owned only.
+notes: **babysitter browser-verify** — pick 1, 2, then 3 heroes (4th blocked), see the enemy team of 3 with
+  matchups, Fight resolves to the team result. **Next: `T90`** (watchable turn-by-turn playout of the same sim).

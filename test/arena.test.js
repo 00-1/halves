@@ -25,10 +25,12 @@ ok(typeof E.statBattle === "function", "Enemies.statBattle exists");
 ok(E.resolveBattle === undefined && E.computePerf === undefined, "perf-scaled resolveBattle/computePerf removed");
 const mainSrc = read("main.js");
 ok(mainSrc.indexOf("BATTLE_MODE") < 0, "main.js: BATTLE_MODE synthetic mode gone");
-ok(/function startBattle[\s\S]*?finishBattle\(arenaHero/.test(mainSrc), "Fight (startBattle) resolves via statBattle→finishBattle, no round");
+// T89: the Fight now resolves the 1–3 hero PARTY through the deterministic team
+// sim (Enemies.teamBattle), not the 1v1 statBattle — still no maths round.
+ok(/function startBattle[\s\S]*?finishBattle\(party/.test(mainSrc), "Fight (startBattle) resolves via teamBattle→finishBattle(party), no round");
 const sbStart = mainSrc.indexOf("function startBattle");
 const sbBody = mainSrc.slice(sbStart, mainSrc.indexOf("\n  function ", sbStart + 1));
-ok(sbBody.indexOf("beginRound") < 0 && sbBody.indexOf("statBattle") >= 0, "Fight path never calls beginRound (no question round)");
+ok(sbBody.indexOf("beginRound") < 0 && sbBody.indexOf("teamBattle") >= 0, "Fight path never calls beginRound (no question round) — resolves via the team sim");
 
 // owned-set helpers
 const ALL = C.CATALOG.map(it => it.id);
@@ -143,19 +145,38 @@ ok(E.canAttempt(2, { "tier:1": 1 }) === true, "tier 2 attemptable once tier 1 cl
   const route = h => { global.window.location.hash = h; (winH.hashchange||[]).forEach(f=>f()); };
   route("#/arena");
   ok(els.arena.classList.contains("active"), "Arena screen active");
-  // pick the first hero card, then Fight
-  const heroId = (els.arenaBody._html.match(/data-hero="([^"]+)"/) || [])[1];
-  ok(!!heroId, "an unlocked hero card is offered");
-  // (T65) scroll down, then pick a hero — the pick re-render must NOT jump scroll
+  // ---- T89: the enemy TEAM of 3 is shown (the tier foe + 2 weaker adds) -------
+  ok((els.arenaBody._html.match(/af-foe/g) || []).length === 3, "T89: the 3-foe enemy team is displayed (foe + 2 adds)");
+  ok(/Enemy team/.test(els.arenaBody._html), "T89: the enemy-team panel is labelled");
+  // every offered pick card is an OWNED hero — locked/unowned never appear here
+  const heroIds = (els.arenaBody._html.match(/class="arena-hero[^"]*" data-hero="([^"]+)"/g) || [])
+    .map(s => (s.match(/data-hero="([^"]+)"/) || [])[1]);
+  ok(heroIds.length >= 4, "T89: several OWNED heroes are offered for the party (" + heroIds.length + ")");
+  const ownedSet = new Set(H.HEROES.filter(h => H.isHeroUnlocked(h, full)).map(h => h.id));
+  ok(heroIds.every(id => ownedSet.has(id)), "T89: only owned (unlocked) heroes can be fielded — locked excluded");
+  const pick = id => (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:id } } : null) } }));
+  const badges = () => (els.arenaBody._html.match(/class="ah-badge"/g) || []).length;
+  // ---- T89: party selection rules — 1–3, capped, deselect, no jump -----------
   els.arenaBody.scrollTop = 240;
-  (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
+  pick(heroIds[0]);
   ok(els.arenaBody.scrollTop === 240, "selecting a hero keeps the current scroll (no jump)");
+  pick(heroIds[1]); pick(heroIds[2]);
+  ok(badges() === 3 && /ap-count">3\/3</.test(els.arenaBody._html), "T89: the party fills to 3/3 (three heroes selected)");
+  pick(heroIds[3]);   // a 4th pick must be rejected — the party is capped at 3
+  ok(badges() === 3 && /ap-count">3\/3</.test(els.arenaBody._html), "T89: a 4th hero can't be added (party capped at 3)");
+  pick(heroIds[0]);   // tapping a selected hero removes it
+  ok(badges() === 2, "T89: tapping a selected hero removes it from the party (1–3 allowed)");
+  pick(heroIds[0]);   // back to a full party of 3 for the fight
+  ok(badges() === 3, "T89: re-adding refills the party to 3");
+  // ---- the team fight resolves instantly via the sim (no maths round) --------
   const gameActiveBefore = els.game.classList.contains("active");
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
   ok(els.game.classList.contains("active") === false && gameActiveBefore === false, "Fight never activates the game screen (no question round)");
   ok(els.arena.classList.contains("active"), "after Fight, still on the Arena screen");
   ok(els.arenaBody.scrollTop === 0, "after a fight the Arena scrolls back to the top (T65)");
   ok(/Victory!/.test(els.arenaBody._html), "instant Victory shown");
+  ok((els.arenaBody._html.match(/class="pix ar-port"/g) || []).length === 3, "T89: the result shows all 3 party heroes");
+  ok(/standing/.test(els.arenaBody._html) && /rounds/.test(els.arenaBody._html), "T89: the result summarises the team-sim outcome (heroes standing · rounds)");
   ok(JSON.parse(store["halves.collected"])["tier:1"], "win granted tier:1 marker");
 })();
 

@@ -299,6 +299,18 @@
   }
   // Public: the enemy team a tier fields (for display in T89).
   function enemyTeam(n){ return enemyTeamFromBudget(FOE_BUDGET, n); }
+  // Public: display metadata for the 3 foes a tier fields (names/types/source
+  // tier) so the T89 UI can show + sprite the whole enemy team. Mirrors
+  // enemyTeamFromBudget's roster (the tier foe + 2 weaker adds at tier−K), in the
+  // SAME order, so the displayed line-up matches what the sim actually fights.
+  function enemyTeamMeta(n){
+    const aL = Math.max(1, n - K), foe = TIERS[n - 1], add = TIERS[aL - 1];
+    return [
+      { role: "foe", name: foe.name,       type: TIERS[n - 1].type,   tierN: n  },
+      { role: "add", name: add.name,       type: TYPES[n % 3],        tierN: aL },
+      { role: "add", name: add.name,       type: TYPES[(n + 1) % 3],  tierN: aL }
+    ];
+  }
   // Public: resolve a 1–3 hero party vs a tier's enemy team (deterministic).
   function teamBattle(heroes, tier, collected){
     const list = (Array.isArray(heroes) ? heroes : [heroes]).slice(0, 3)
@@ -327,7 +339,7 @@
     TIERS, TIER_COUNT, REGION_SIZE,
     byTier, tierLoot, tierRegion, regionLabel, canAttempt, currentTier,
     statBattle,
-    teamBattle, enemyTeam, simulateTeams, heroCombatant,   // T88 — 3v3 deterministic sim
+    teamBattle, enemyTeam, enemyTeamMeta, simulateTeams, heroCombatant,   // T88 — 3v3 deterministic sim; T89 — enemyTeamMeta for the team UI
     matchup: H.matchup, beats: H.beats
   };
 })();

@@ -654,6 +654,21 @@ canvas.pix{image-rendering:pixelated}
 .ar-maths b{color:var(--amber)}
 .ar-hint{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
 .ar-new{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--mint);margin-top:8px}
+/* T89 — Arena 3v3: party (1–3) + enemy-team display */
+.ar-side{display:flex;align-items:center;gap:6px}
+.ar-side.foe{flex-direction:row-reverse}
+.arena-foes{margin:0 0 14px}
+.af-head{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 2px 8px;display:flex;align-items:center;gap:6px}
+.af-row{display:flex;gap:8px}
+.af-foe{flex:1 1 0;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 6px;text-align:center}
+.af-port{width:40px;height:40px;display:block;margin:0 auto 5px;border-radius:8px;background:var(--surface-2)}
+.af-name{font-family:var(--display);font-weight:700;font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.af-type{margin-top:3px;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:5px}
+.ap-count{color:var(--amber);margin-left:6px}
+.arena-hero{position:relative}
+.arena-hero.blocked{opacity:.5}
+.ah-badge{position:absolute;top:-6px;left:-6px;min-width:18px;height:18px;border-radius:9px;background:var(--amber);color:#0E1116;
+  font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;z-index:1}
 
 /* ---------- PRACTICE / REVIEW (T32) ---------- */
 #practice{align-items:center;padding:28px 8px 32px}
@@ -825,6 +840,7 @@ canvas.pix{image-rendering:pixelated}
 [data-ui="pixel"] .arena-tier,
 [data-ui="pixel"] .arena-hero,
 [data-ui="pixel"] .arena-result,
+[data-ui="pixel"] .af-foe,
 [data-ui="pixel"] .modal-card,
 [data-ui="pixel"] .u-cell{
   border-radius:var(--ui-radius);
@@ -891,6 +907,7 @@ canvas.pix{image-rendering:pixelated}
 [data-ui="pixel"] .toast canvas,
 [data-ui="pixel"] .toast .t-glyph,
 [data-ui="pixel"] .at-scene,
+[data-ui="pixel"] .ah-badge,
 [data-ui="pixel"] .toast,
 [data-ui="pixel"] .toast-more,
 [data-ui="pixel"] .update-bar{
