@@ -3151,7 +3151,31 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
-### T203 — [B] **Coin shower polish — slightly BIGGER coins + more GRAVITY (rain down, less fly up)** · status: OPEN · owner-reported
+### T204 — [B] **BUG: purple backdrop lost on app-switch (PWA)** — WebGL context loss, no restore/redraw · status: OPEN · 🔴 owner-reported (live)
+**Owner (2026-06-22, screenshot on `90db0f6`): "sometimes when switching apps I get this (PWA) — i.e. purple bg
+lost."** The home shows a **light-grey background** instead of the dark-purple semantic backdrop (the hoard pile
+still draws — it's on the always-present 2D overlay).
+- **✅ ROOT CAUSE (Babysitter-verified):** **WebGL/WebGPU context LOSS** when the PWA is backgrounded (the OS/GPU
+  frees the context on app-switch), and **nothing restores or redraws it**. `fxgl.js` has **no
+  `webglcontextlost`/`webglcontextrestored` handling**, and `main.js`'s `visibilitychange` handler only manages
+  **audio** (stop/resync) — it **never re-renders the backdrop** on return-to-foreground. The light-grey (not black)
+  is the tell: a **lost WebGL canvas presents ~white**, and `.fx-backdrop` has **`opacity:.85` over the dark body**
+  → white×0.85 over `#0E1116` = light grey.
+- **Fix (`fxgl.js` — self-heal, keep it [B]-only):** (1) on the GL canvas, handle **`webglcontextlost`**
+  (`e.preventDefault()` so the browser allows a restore) → mark not-ready + **clear/hide the canvas so it shows
+  nothing (dark body) not white**; (2) handle **`webglcontextrestored`** → re-init the backend, re-upload
+  `setData(derived)`, re-render the still (+ re-fit). (3) Also **re-render the still on `visibilitychange`→visible**
+  (the Controller listens itself, or expose a `redraw()` main can call on foreground) so even a non-context-loss
+  blank (throttled/paused tab) repaints on return. (Same for the WebGPU path — its device can be lost too.)
+- **Safety net:** ensure a backdrop with no live context **degrades to the dark brand bg, never white** (clear the
+  canvas on loss; the body is already `#0E1116`). This alone kills the jarring light flash.
+- **DoD:** backgrounding the PWA and returning **restores the dark-purple backdrop** (no light-grey/white state);
+  context-loss is handled (lost → dark, restored → full scene redraws); the hoard overlay + content unaffected; no
+  RAF leak; `node -c` clean; `fxgl`/`fx-wiring` green (+ a context-loss/visibility-redraw gate); **owner
+  device-confirms** (switch apps repeatedly). **[B]-only** (`fxgl.js`, tests; a tiny `main.js` foreground-redraw
+  hook only if the Controller can't self-listen).
+
+### T203 — [B] **Coin shower polish — slightly BIGGER coins + more GRAVITY (rain down, less fly up)** · status: DONE (`90db0f6`) · APPROVED · owner device-confirm
 **Owner (2026-06-22): "coin shower looks pretty good — but maybe make them slightly bigger, and give them a bit
 more gravity, more falling down, less flying up."** Tune the **money-gain coin shower** (the `look:"coin"` ballistic
 burst — `seedBurst`'s coin branch, fxgl.js:248/266) — NOT the generic celebration confetti.

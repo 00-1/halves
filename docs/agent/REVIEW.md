@@ -1,7 +1,22 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T193 [B] (re-open fix) · T197 [B] · T199 [B] · T200 [B]` (the coin shower bug fixed
-+ coins dithered + pile reaches the top + coins coloured by height). Live build **`b498216`**; suite **53/53** +
+**Current verdict:** `APPROVED — T203 [B]` (coin shower: ~+20% bigger + coin-specific gravity ×1.9 + suppressed
+upward launch → rain down; confetti arc untouched). Live build **`90db0f6`**; suite **53/53** + `node -c` green.
+**🔴 NEW BUG filed: `T204` — purple backdrop lost on PWA app-switch (WebGL context loss, no restore).**
+- **`T203`** (`90db0f6`, [B]) — coins `sizeRange 7–15` (~+20%), `vy` suppressed ×0.3 + gentle pop, `p.grav =
+  BURST_GRAVITY×1.9` (coin-only, NOT the global shader uniform — celebrations unchanged); coins render on the 2D
+  overlay so `p.grav` applies on every backend. Clean.
+- **🔴 `T204`** (owner, live `90db0f6`) — backgrounding the PWA loses the dark backdrop → **light-grey** home. Root
+  cause: WebGL **context loss** + **no `webglcontextlost/restored` handling** in `fxgl`, and `visibilitychange` only
+  manages audio (no backdrop redraw). Light-grey tell = a lost canvas presents ~white × `opacity:.85` over `#0E1116`.
+  Fix [B]: handle context lost/restored (clear→dark on loss, re-init+redraw on restore) + re-render on
+  foreground/visibility; degrade to dark bg never white.
+**Verified:** worktree at `90db0f6`; `node -c` clean; **53/53** green. **→ A: → `T201` 🔴 (stale manifest/icon
+cache) → `T202` (entry mark = Magnar) → `T198` (fill curve — owner sharpened: 1k ≈ a tenth, ~2.5%). B: → `T204` 🔴
+(backdrop context-loss self-heal).** A has not pushed yet (still on T201).
+
+> **Prior verdict:** `APPROVED — T193 [B] (re-open fix) · T197 [B] · T199 [B] · T200 [B]` (the coin shower bug fixed
++ coins dithered + pile reaches the top + coins coloured by height). Live build **`b498216`**.
 `node -c` green. **Owner confirms the pile + shower "look pretty good now."**
 - **`T193`** (`77a1b87` fix, [B]) — RE-OPEN RESOLVED: `seedBurst`/`seedCelebrate` now tag `look:"coin"` → `look:1`
   + spin fields, so the money-gain shower renders real spinning cylinder coins (was squares). Owner-confirmed coins

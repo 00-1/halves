@@ -27,12 +27,15 @@
   `economy-sim.js`). **Visual only.** [A]-only (`main.js`, `GOLD-HOARD-DESIGN.md`). *(BACKLOG T198.)* Then **`T168`** stays HELD on the owner's Play ID verification.
 **Re-read this line fresh before each task + push.**
 
-**Builder B → `T203` (coin shower polish).** `T193`(fix)/`T197`/`T199`/`T200` all **APPROVED** (live `b498216`) —
-owner: pile + shower "look pretty good now." New tweak: the **money-gain coin shower** (`seedBurst` coin branch,
-fxgl.js:248/266) should have **slightly BIGGER coins (+15–25%)** and **more GRAVITY — rain DOWN, less fly up** (cut
-the upward `up` bias for coins so gravity dominates; give coins more effective fall WITHOUT bumping the global
-`BURST_GRAVITY`, which celebrations share). Leave the generic celebration confetti's arc alone. [B]-only (`fxgl.js`,
-tests). *(BACKLOG T203.)*
+**Builder B → `T204` 🔴 (BUG: purple backdrop lost on PWA app-switch).** `T203` (coin shower) **APPROVED** (live
+`90db0f6`). Owner screenshot: backgrounding the PWA loses the dark backdrop → **light-grey** home (the hoard pile
+still draws — it's on the 2D overlay). Root cause: **WebGL/WebGPU context LOSS** on app-switch + **no
+`webglcontextlost`/`webglcontextrestored` handling** in `fxgl`, and `main.js`'s `visibilitychange` only manages
+audio (never redraws the backdrop). Light-grey tell = a lost canvas presents ~white × `.fx-backdrop opacity:.85`
+over `#0E1116`. **Fix (self-heal, [B]-only):** handle `webglcontextlost` (`preventDefault`, **clear/hide → dark not
+white**) + `webglcontextrestored` (re-init backend, re-`setData`, re-render); also **re-render the still on
+`visibilitychange`→visible**; degrade to the dark body bg, never white. WebGPU device-loss too. [B]-only (`fxgl.js`,
+tests; tiny `main.js` foreground hook only if the Controller can't self-listen). *(BACKLOG T204.)*
 **Re-read this line fresh before each task + push.**
 
 ---
