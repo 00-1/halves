@@ -2745,30 +2745,36 @@ reads correct in isolation; the bug is the sentinel ↔ hash ↔ popstate intera
   (not home) and the full chain; `node -c` clean; browser-tab + headless unaffected; **[A]-only** (`main.js`,
   a nav test). **Verify in a real browser** (the harness; or owner confirms on PWA).
 
-### T167 — [A] Launch/fullscreen behaviour, THREE WAYS by runtime context (browser / PWA / packaged app) · status: OPEN · owner-spec
-**Owner (2026-06-22) locked the design — fullscreen depends on WHERE it runs:**
-1. **Browser tab → a CHOICE** (the original behaviour): keep BOTH entry options — **"Play in fullscreen"**
-   (`#entryFs` → `requestFullscreen()` + audio unlock) AND a plain **non-fullscreen "Tap to begin"** (`#entryPlay`
-   → audio unlock only, windowed). *(This is what we had; T156 already leaves both buttons in a browser tab —
-   just confirm the windowed option still works and the FS one still enters fullscreen.)*
-2. **Installed PWA → ONE choice: fullscreen** ("it's an app, that's expected"). Show the entry with a **single**
-   "Tap to begin" (T156 already hides `#entryFs` when installed) and make that tap **unlock audio + call
-   `requestFullscreen()`** (gesture-required — there is NO auto-fullscreen-on-load for a raw PWA; the manifest
-   `display:"fullscreen"` alone didn't hide the owner's Android bars). No windowed option here.
-3. **Packaged "final app" (TWA) → NO launch screen: dropped straight into the app, fullscreen.** A TWA launches
-   **native immersive/edge-to-edge** (no gesture needed for fullscreen), so **skip the entry screen entirely**
-   and show the main screen immediately. Web Audio still needs a gesture, so **unlock audio on the first in-app
-   interaction** (first answer/nav tap) rather than an entry tap — acceptable (music starts a beat later).
-- **Context detection:** `display-mode: browser` (matchMedia) → case 1; standalone/fullscreen display-mode AND
-  **not** a TWA → case 2; **TWA** → case 3 via `document.referrer.startsWith("android-app://")` (the standard TWA
-  signal; can be implemented now and simply won't trigger until the app is packaged). Centralise as a small
-  `launchMode()` helper returning `"browser" | "pwa" | "app"`.
-- **DoD:** all three branches behave as above — browser keeps the 2-way choice; installed PWA = single
-  tap→fullscreen+audio; TWA(referrer) = no entry screen, straight into main, audio on first interaction; no
-  stray fullscreen button reappears; `node -c` clean; a Node test asserts `launchMode()` mapping + that the entry
-  is skipped in `"app"` mode; **[A]-only** (`main.js`, `index.html`). **Verify:** owner confirms browser (both
-  options), installed PWA (single tap → fullscreen). The TWA branch is confirmed once the app is packaged
-  (T72/T103) — note the immersive-config requirement there too.
+### T167 — [A] Launch/fullscreen behaviour by runtime context (entry screen kept in ALL modes) · status: OPEN · owner-spec (revised 2026-06-22)
+**Owner REVISED the design: KEEP THE LAUNCH/ENTRY SCREEN IN ALL MODES** (browser, PWA, and the packaged app) —
+*"we don't want to miss the music"* (the entry tap is the Web-Audio unlock gesture; without it the music starts
+late). The only thing that varies by context is **how fullscreen is reached:**
+1. **Browser tab → a CHOICE** (the original): keep BOTH entry options — **"Play in fullscreen"** (`#entryFs` →
+   `requestFullscreen()` + audio unlock) AND a windowed **"Tap to begin"** (`#entryPlay` → audio unlock only).
+   *(T156 already leaves both in a browser tab — just confirm windowed still works + the FS one enters fullscreen.)*
+2. **Installed PWA → ONE option:** a single "Tap to begin" (T156 already hides `#entryFs` when installed) whose
+   tap does **audio unlock + `requestFullscreen()`** (gesture-required; the manifest `display:"fullscreen"` alone
+   didn't hide the owner's Android bars).
+3. **Packaged app (TWA) → ENTRY SCREEN STILL SHOWN** (for the audio gesture), but the window is **ALREADY in
+   native immersive fullscreen at launch — no button press needed for fullscreen.** The entry tap just unlocks
+   audio. Fullscreen here comes from the **TWA wrapper's native immersive config, NOT from the web code** — so it
+   is fullscreen *before* and *independent of* the tap. *(Owner: "twa will still start in fullscreen without the
+   button press if that's possible" — yes: configure the TWA for immersive/`display:fullscreen` at the packaging
+   step.)*
+- **Web-app code (this task):** entry screen shown in every mode; **browser** = 2-way choice; **installed/
+  standalone** (PWA or TWA) = single "Tap to begin" → audio + best-effort `requestFullscreen()` (harmless/
+  redundant inside a TWA that's already immersive). A `launchMode()` helper (`"browser"` vs installed via
+  `display-mode` matchMedia) is enough; distinguishing TWA via `document.referrer` `android-app://` is OPTIONAL
+  (only if we want to skip the redundant `requestFullscreen` in a TWA — not required, the call is a harmless
+  no-op there).
+- **Packaging note (moves to T72/T103, NOT this task):** the TWA must be built with **immersive / edge-to-edge
+  fullscreen** (Bubblewrap/PWABuilder `display: "fullscreen"` + Android immersive sticky) so it launches
+  fullscreen with the entry screen already covering a fullscreen window. Capture this requirement there.
+- **DoD:** entry screen appears in browser AND installed/standalone (NOT skipped anywhere); browser keeps the
+  2-way choice; installed PWA = single tap → audio + fullscreen; no stray FS button reappears; `node -c` clean; a
+  Node test asserts `launchMode()` mapping + that the entry is shown in every mode; **[A]-only** (`main.js`,
+  `index.html`). **Verify:** owner confirms browser (both options) + installed PWA (single tap → fullscreen). The
+  TWA launch-fullscreen is confirmed once packaged (T72/T103, immersive config).
 
 ### T164 — [A] Audio: only switch music when the TRACK actually changes (no restart between same-music screens) · status: OPEN · 🔴 owner-flagged (also the likely foghorn root)
 **Owner (2026-06-22): "we need to make sure it only switches when the track actually changes. E.g. moving

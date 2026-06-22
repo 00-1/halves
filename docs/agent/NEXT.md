@@ -22,11 +22,13 @@
   track `curMusicKey = context+":"+seed`; if unchanged + already playing, **return** (no setContext/swapNow/
   start). Keep `musicPreview` + per-topic `lofi` seed switching. Node test asserts skip-when-same / fire-when-
   changed. [A]-only. Pairs with B's `T165`. *(BACKLOG T164.)*
-- **Then `T167` (launch/fullscreen THREE WAYS — owner-spec):** a `launchMode()` helper → **(1) browser tab:** keep
-  the 2-way choice (`#entryFs` fullscreen + `#entryPlay` windowed, the original); **(2) installed PWA:** single
-  "Tap to begin" that does audio-unlock **+ `requestFullscreen()`** (gesture-required; no windowed option);
-  **(3) TWA "final app"** (`document.referrer` `android-app://`): **NO entry screen — drop straight into main,
-  native immersive fullscreen, unlock audio on first in-app tap.** [A]-only. *(BACKLOG T167.)*
+- **Then `T167` (launch/fullscreen — owner REVISED: entry screen kept in ALL modes, "don't miss the music"):**
+  **(1) browser tab:** keep the 2-way choice (`#entryFs` fullscreen + `#entryPlay` windowed, the original);
+  **(2) installed/standalone (PWA or TWA):** single "Tap to begin" → audio unlock **+ best-effort
+  `requestFullscreen()`**. Entry screen is **shown in every mode** (it's the audio gesture). The **TWA launches
+  already-fullscreen via its NATIVE immersive config** (a packaging concern on T72/T103, not web code) — so it's
+  fullscreen without a button press, with the entry screen on top. `launchMode()` = browser vs installed (the
+  `android-app://` referrer split is optional). [A]-only. *(BACKLOG T167.)*
 - **Then resume `T162`:** Tier P2 (`ratioshare`, `timegap`, `lcmhcf`, `mean`) → Tier P3 (`cubes`, `money`,
   `digitsum`, doubles/halves range check), one push per tier (spec in `docs/agent/T162-calibration.md`) → content
   `T59`–`T61`. *(`T103`/`T72` Play-Store need owner creds — hold.)*
