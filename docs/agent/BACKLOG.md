@@ -2948,11 +2948,19 @@ the other `fxgl` tests; defaults for existing scenes byte-identical (opt-in); `g
 ### T173 — [A] Gold-hoard WIRING: feed gold→hoard + fire the earn-burst from the earn-point (`main.js`) · status: OPEN · after T172
 Wire B's gold-hoard engine into the home backdrop (spec in `GOLD-HOARD-DESIGN.md` §wiring): add the **hoard level**
 to `homeFxState` (a saturating curve over `loadGold()`), pass it into the home scene so the mound renders + grows;
-on `addGold(...)` fire the **attractor burst from the earn-point** (gold pill / answer point / reward toast — pick
-what reads best) into the hoard, then the persistent mound reflects the new total. **Keep it behind the UI + verify
-text legibility** over it (home a11y/contrast); **reduced-motion → static**; stays **T153 fixed-purple** compliant
-(gold-on-purple). **DoD:** the hoard grows with gold + earn-coins fly into it; legibility intact; `node -c` clean;
-`$("id")`/home-layout invariants hold; **[A]-only** (`main.js`, tests). Browser-verify; owner signs off the feel.
+on `addGold(amount)` fire the **standalone spinning-coin burst from the earn-point** (gold pill / answer point /
+reward toast), **scaled by `amount`** (log/saturating + capped; small→few coins, huge→capped shower + extra juice —
+design §3; **NO settling** on the pile); the persistent mound reflects the new total. **Keep it behind the UI +
+verify text legibility** over it (home a11y/contrast); **reduced-motion → static**; stays **T153 fixed-purple**
+compliant (gold-on-purple).
+- **Graphics-menu FX tester (owner, 2026-06-22):** expose **EVERY gold-celebration TIER** (small / medium / large /
+  huge earn-burst) as fire-buttons in the existing `#fxTest` group in the **Graphics** menu (alongside the current
+  item/rank/win testers, `main.js:2428-2441`), so the owner can **fire each tier on-device and check it's
+  PERFORMANT** (no frame drops). Fire from a default point (screen-centre is fine in the tester).
+- **DoD:** the hoard grows with gold + the amount-scaled spinning-coin burst fires on earn; **each gold tier is
+  fireable from the Graphics FX tester** for perf testing; legibility intact; reduced-motion static; `node -c`
+  clean; `$("id")`/home-layout invariants hold; **[A]-only** (`main.js`, `index.html` for the test buttons, tests).
+  Browser-verify; owner signs off the feel + confirms the tiers are smooth on his device.
 
 ### T171 — [A] Rename the PRODUCT to "Goblin Gold" (keep the "Halves" topic) · status: OPEN · owner-chosen brand
 **Owner chose the app name: "Goblin Gold"** (the in-game currency — intentional cohesion). Rename the **product/
