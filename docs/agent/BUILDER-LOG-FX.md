@@ -6,6 +6,31 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T183 — research: study-friendly music + brighten the dark/bassy `lofi` ([B], owner-feedback)
+
+Owner: "audio switching sounds very good now; only the Lo-Fi Study is a bit dark/bassy —
+research what's nice to study/be-tested to." Doc `docs/research-study-music.md` + the
+concrete `CONTEXTS.lofi` revision.
+
+Findings: focus/test music = lyric-free (✓), steady ~70–90 BPM (✓), low dynamic range (✓
+T175), sparse (✓ 0.24), and **warm-but-BRIGHT** — brightness from **register + a clear low
+end**, not a faster/edgier tempo or key. So "dark/bassy" is a register + low-weight + wash
+problem, not the genre (dorian + a Rhodes bed is authentic lo-fi).
+
+Revision (kept dorian / Rhodes `padep` / swing / light kit): **root 50→55** (+5 semis lifts
+the whole bed out of the dark register — the biggest fix), **leadOct 1→2** (the pluck sings
+brighter), **reverb 0.42→0.32** (clears the washy low-mid haze), tempo 76→78. `solve` (the
+in-game test music) is a `lofi` alias → inherits it. The other calm contexts (menu ionian/
+airy, ambient lydian/sparse) are already bright — no change.
+
+Verify: `node -c` clean; **distinctness holds** (12 mutually distinct, ≥5 modes, ≥10
+tempos); `golden-synth` re-blessed (only `synth_score_lofi` changed — the intended note
+shift); **T175 stability holds** (real-audio gate green; padep + decay 0.66 + the lower
+0.32 send → even less buildup-prone). Full Node suite + all 3 browser gates green. B-owned
+(`synth.js` + tests). Babysitter re-measures stability; owner ears the brightness.
+
+---
+
 ## T181 — `emblems.js`: generative brand emblems (app-icon candidates + Codex) ([B], owner-greenlit)
 
 Owner: "do icon generation — into the Codex too; unchosen ones become unlockable." New
