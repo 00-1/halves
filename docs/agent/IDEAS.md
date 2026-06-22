@@ -8,6 +8,77 @@
 
 ---
 
+## I9 — Mock-exam diagnostic (Luke, SEP 11+ Mock 7 / BWS) → building-block drill gaps · 2026-06-22
+
+> **Real diagnostic data** the owner supplied (the target student's actual mock). Owner's frame:
+> **"we're not trying to reproduce 11+ style questions, just drill the building blocks needed to answer
+> these quickly."** Scored **11/27 (~41%)**. This is the evidence base for the next content wave — captured
+> here; promoted to **BACKLOG T162** as a research/calibration pass + prioritized new generator modes.
+
+**Per-question decomposition (✓ = right, ✗ = wrong; "atom" = the mental building block):**
+
+| Q | topic | atom(s) | ✓/✗ | note |
+|---|---|---|---|---|
+| 1 | 3/5 of 240 + 25% of 160 | fraction-of-amount, %-of-amount, + | ✓ | one-step "of" — solid |
+| 2 | reverse mean (6 nums, mean 37) | mean→total, subtract | ✓ | got a HARD one (23% easy) |
+| 3 | counters 5:7, equalise after +18/+6 | ratio + linear reasoning | ✗ | 64 vs 72 — ratio/algebra |
+| 4 | £48 −15% then +£6.50 | **% decrease (×0.85)**, money +/− | ✗ | 47.90 vs 47.30 — decrease slip |
+| 5 | 4,9,19,39,? | **×2+1 / doubling 39** | ✗ | 69 vs 79 — saw +30, missed ×2+1 |
+| 6 | isosceles angle x | angle facts | ✗ | "not enough info" — geometry gap |
+| 7 | 2.4km/12min → 35min | **unit rate ÷ then ×** | ✗ | 6.9 vs 7 — proportion |
+| 8 | 3/4 − 2/5 | fraction subtraction (LCD 20) | ✓ | solid |
+| 9 | 84: 3/7 straw, half the rest lemon | fraction-of, **half the REST** | ✓ | solid |
+| 10 | ×6 −17 = 79, find it | inverse operations | ✓ | solid |
+| 11 | which ÷ by 9 | **divisibility rule (digit sum)** | ✗ | missed a 70%-easy — rule not used |
+| 12 | 14:38 → 16:07 | **time interval across the hour** | ✗ | 1h24 vs 1h29 — missed a 70%-easy |
+| 13 | avg speed, 18km apart | speed = dist/time | ✗ | needs time from timetable + formula |
+| 14 | rect perim 74, len 23, width | perim ÷2 − len | ✓ | solid |
+| 15 | 6 × £1.35, change from £10 | **money × small int, change** | ✗ | 1.70 vs 1.90 — ×1.35 slip |
+| 16 | 0.36 × 700 | decimal × | ✓ | solid |
+| 17 | 2/5 red, 1/4 blue, 28 green → total | **complement fraction + REVERSE (part→whole)** | ✗ | 92 vs 80 |
+| 18 | angles ratio 2:3:7, largest | **ratio share (180÷12×7)** | ✗ | 95 vs 105 |
+| 19 | 360 pupils, 45% boys → girls | **% complement (55% of 360)** | ✗ | 204 vs 198 |
+| 20 | bar-chart average per club | read chart + mean | ✗ | 34 vs 36 |
+| 21 | 250g/8 cakes → 28 cakes | **proportion / ×3.5 scaling** | ✗ | 925 vs 875 |
+| 22 | 4² + 3³ − 5 | **squares + CUBES** | ✓ | solid (cubes ok here) |
+| 23 | rounds to 4370 nearest 10, smallest | rounding boundaries | ✓ | solid |
+| 24 | 32: 3/8 walk, 1/4 bus, rest car | fraction-of + **the REST** | ✗ | 18 vs 12 |
+| 25 | 18% of 450 | %-of-amount | ✓ | got a HARD one (30% easy) |
+| 26 | table: not netball | read table | ✓ | solid |
+| 27 | buses 12/18/30, next meet | **LCM / common multiples** | ✗ | 9:00 vs 11:00 (LCM=180min) |
+
+**What we learn (the signal):**
+1. **One-step "of an amount" is already strong** — he nailed 25% of 160, **18% of 450** (hard), 3/5 of 240,
+   3/7 of 84, fraction subtraction, inverse ops, squares+cubes, decimal ×, reverse-mean. The atomic ops our
+   existing `fractionsof`/`percentages`/`squares` modes drill are landing.
+2. **The failures cluster into four building-block themes:**
+   - **(A) Complement / "the rest" / decrease** — the single most recurrent miss: −15% (Q4), girls = 100−45%
+     (Q19), remaining fraction (Q17, Q24). "whole − the parts," as a % or fraction. **4+ questions.**
+   - **(B) Proportion / unit-rate / scaling** — rates, recipes, speed (Q7, Q13, Q21). **Wholly un-drilled. 3 Qs.**
+   - **(C) Ratio sharing** — sum the parts, total÷parts × share (Q3, Q18). Un-drilled. **2 Qs.**
+   - **(D) Un-drilled "named procedures"** — divisibility rules (Q11), time intervals (Q12), LCM/factors (Q27),
+     chart/table mean (Q20). Several are *easy* questions (70%) lost for want of a learned rule.
+3. **Many wrongs are NEAR-MISSES** (off by 5 min, 60p, 20p, 10, 6, by one ×2+1 step) → a **fluency/accuracy**
+   problem under time pressure as much as a concept gap. Faster, more automatic atoms convert these directly —
+   which is *exactly* the drill-the-building-blocks thesis.
+
+**Proposed new/extended building-block drills (priority = exam-frequency × current-gap):**
+- **P1 — Proportion / Unit-rate ("Scaling"):** "if A→B, then C→?" reduced to ÷-to-one then ×-up; include clean
+  ×2.5/×3.5 scalings. *(biggest uncovered cluster — Q7/13/21)*
+- **P1 — Complement & decrease:** extend `percentages`/`fractionsof` with a "**reduced by**" / "**the rest**"
+  variant + a **reverse** (part→whole) variant. *(Q4/17/19/24)*
+- **P2 — Ratio sharing:** "share N in a:b(:c)" → parts, N÷parts, ×share. *(Q3/18)*
+- **P2 — Quick-win procedure modes:** **Divisibility rules** (2/3/4/5/9/10 digit tests), **Time intervals**
+  (HH:MM differences), **Factors / Multiples / LCM-HCF**, **Averages (mean + missing-value)**. *(Q11/12/27/20/2)*
+- **P3 — Extensions:** add **Cubes** alongside `squares`; a **Money** twist (n items at £x.xx, change from
+  £10/£20) on add/subtract; confirm `doubles`/`halves` range reaches 2-digit (double 39). *(Q22/15/4/5)*
+
+**Next step (owner's established pattern):** a short **research/calibration pass** (value ranges, which
+variants, numpad-enterable, answers within `docs/research-11plus.md`'s calibrated bands) → owner thumbs-up on
+the mode list → A builds the generators. Filed as **T162**.
+
+---
+
 ## I1 — Events — ✅ PROMOTED to BACKLOG (Phase 6.5, T78–T81) on 2026-06-21
 
 > **No longer a parked idea.** The owner brought Events forward ("I decided I like it a

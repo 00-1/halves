@@ -2721,7 +2721,30 @@ fresh install.
   split it into a [B] line if the audit lands there. *(If the audit finds nothing actionable + it never recurs,
   close as NOT-REPRODUCIBLE with the hardening guards kept.)*
 
-### T161 — [A] **The build marker must be an ABSOLUTE marker of the RUNNING code** (owner-flagged root cause) · status: OPEN · 🔴 DO-FIRST / ABSOLUTE
+### T162 — [A] Mock-exam-driven drill gaps: research/calibration pass → new building-block modes · status: OPEN · content (owner data) · sequence after the trust/audio fixes
+**Owner (2026-06-22) supplied a REAL mock** (target student Luke, SEP 11+ Mock 7 / BWS — scored 11/27). Frame:
+**"we're not trying to reproduce 11+ style questions, just drill the building blocks needed to answer these
+quickly."** Full per-question decomposition + the analysis live in **IDEAS I9**. **Findings:** one-step
+"X% / fraction OF an amount" is already strong (existing `fractionsof`/`percentages`/`squares` are landing);
+the misses cluster into **(A) complement / "the rest" / % decrease, (B) proportion / unit-rate / scaling,
+(C) ratio sharing, (D) un-drilled procedures: divisibility rules, time intervals, LCM/factors, averages** —
+and many wrongs are **near-misses** (fluency under time, not pure concept).
+- **Step 1 — research/calibration pass (doc first, for owner thumbs-up):** propose the new/extended modes with
+  **calibrated value ranges** (answers numeric, non-negative, numpad-enterable within the length guard, within
+  `docs/research-11plus.md` bands), each tied to the mock evidence. Prioritized set (from IDEAS I9):
+  **P1** Proportion/Unit-rate ("Scaling"); **P1** Complement/decrease + reverse (extend `percentages`/`fractionsof`
+  with "reduced by" / "the rest" / part→whole); **P2** Ratio sharing; **P2** quick-win procedure modes
+  (Divisibility rules, Time intervals, Factors/Multiples/LCM-HCF, Averages); **P3** Cubes (extend `squares`),
+  Money twist on add/subtract, confirm doubles/halves reach 2-digit.
+- **Step 2 — build the generators** the owner blesses (new `modes.js` entries + any UI), each with a **Node logic
+  gate** (answers numeric/non-negative/in-range, numpad-length OK) like the existing mode tests.
+- **DoD:** the calibration doc/section + owner-blessed mode list, then the built generators with passing logic
+  gates; no regressions to existing modes; `node -c` clean; **[A]-only** (`modes.js`, `docs/research-11plus.md`,
+  mode tests). **Babysitter surfaces the proposed mode list + ranges to the owner before building** (he may
+  reprioritize). **Sequence:** this is important content but NOT a live bug — it lands **after** the trust/audio
+  fixes (T161/T158/T159) and the owner's Arena VFX (T160); slot around the existing content wave (T58–T61).
+
+
 **Owner (2026-06-22): "while they show the same build number — so we have cache problems. The build number
 should be an absolute marker of what you're looking at, but I don't think it is. I think that has caused us a
 lot of problems through this."** **He's exactly right, and it's a confirmed code bug.** `main.js` (lines
