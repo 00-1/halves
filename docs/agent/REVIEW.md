@@ -1,6 +1,28 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T166 · T164 · T167 [A] · T165 · T163 [B]` (the owner's live-bug batch — config
+**Current verdict:** `APPROVED — T162(P2+P3) · T170 · T169 [A] · T174 [B]` (drill modes complete, tree-overflow
+fixed, fonts self-hosted, coin-hoard research done). Live build **`7df7699`**. Full suite + all new gates green.
+- **`T162` COMPLETE** (`2510e55` P2 + `8528658` P3) — all **12 mock-driven drill modes** built across P1/P2/P3
+  (`scaling`/`percentoff`/`partwhole`/`balance` · `ratioshare`/`timegap`/`lcmhcf`/`mean` · `cubes`/`money`/
+  `digitsum`/doubles-halves range). Three logic gates green: `t162-p1` 61, `t162-p2` 61, `t162-p3` 50 (answers
+  numeric/in-range/numpad). The mock-driven curriculum gaps are now drillable.
+- **`T170`** (`f73443c`) — the live tree-overflow fixed: `.tpart{flex:3 1 0; min-width:0}` shares the row width,
+  `.tnode{max-width:96px}` keeps sparse rows current-size + shrinks dense rows, `data-parts="3"/"4"` trim
+  padding/icons. `home-layout` gained a **data-driven "any row ≤4 fits, no clip" gate** (not a pixel snapshot).
+- **`T169`** (`d6fbae3`) — fonts self-hosted: **no `fonts.g*` refs remain**, `fonts/{space-grotesk,jetbrains-mono}.woff2`
+  shipped, `@font-face` + cachebust/SW. Zero third-party requests → the kids-privacy story is airtight.
+- **`T174`** (`7df7699`, [B]) — coin-hoard RESEARCH pass. Strong: surveys the "imply-the-bulk, render-only-the-
+  surface" genre trick, **borrows 3 brickmap recipes**, and recommends a **three-layer composite** (A: dithered
+  mound silhouette as scenery, 0 particles · B: `hash01`-scattered beveled-coin splats w/ per-coin rotation+squash,
+  count on a saturating curve · C: attractor earn-burst), with the gold→level curve, the cap/degrade (~120/220/340
+  ≤ 512), reduced-motion still, and honest open visual choices. Doc-only, no engine change. **→ SURFACED to the
+  owner for thumbs-up before `T172` builds it.** (`docs/research-coin-hoard.md`.)
+**Verified:** node -c clean; full suite + `t162-p1/p2/p3` + the home-layout tree-fit gate pass; T169 grep-clean.
+**Owner-confirm pending (device):** the tree now fits on the phone. All 4 → DONE; `T174` → awaiting owner-bless.
+**→ A: `T171` (Goblin Gold rename) → content `T59`–`T61` (+ `T173` hoard wiring once `T172` lands). → B: hold
+for the owner's thumbs-up on the hoard technique, then `T172`.**
+
+> **Previously approved (done):** `T166 · T164 · T167 [A] · T165 · T163 [B]` (the owner's live-bug batch — config
 nav, music/foghorn, fullscreen, audio-switch tail, visual golden). Live build **`9722cb4`**. Full suite + new
 gates green; footprints disjoint.
 - **`T166`** (`0aca3ee`) — config submenus EXIT fixed. Root cause confirmed = my diagnosis: the

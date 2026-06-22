@@ -2812,7 +2812,7 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
-### T174 — [B] RESEARCH/ART pass: representing an accumulating COIN HOARD (impression, not physics) · status: OPEN · research-first (gold-hoard feature)
+### T174 — [B] RESEARCH/ART pass: representing an accumulating COIN HOARD (impression, not physics) · status: DONE (`7df7699`) · APPROVED· research-first (gold-hoard feature)
 **Owner wants a Smaug/Scrooge gold hoard that piles up organically on the home screen** with **individual coins
 visible** ("circles at different angles, with the bevel"), fed by **coins that fly in from the earn-point** — but
 **"not literally thousands of particles with physics, just the overall impression of amassed coins"** + *"do a
@@ -2857,13 +2857,13 @@ brand**, NOT the maths topic: `manifest.webmanifest` `name`/`short_name` → **"
 short for the home-screen label); `index.html` `<title>` → "Goblin Gold"; any in-app product-name branding
 (entry/about/header, the manifest description) → "Goblin Gold". **KEEP** the **topic "Halves" (x/2 drill)** and
 "Halves & doubles" exactly as-is — only the *app* is renamed. *(The Play STORE listing title may carry a
-SUBTITLE — "Goblin Gold: <maths subtitle>", TBD — but that's a listing field in T168, not necessarily the
+SUBTITLE —  "Goblin Gold: The Void Throne" (owner-locked) — but that's a listing field in T168, not necessarily the
 manifest short_name.)*
 - **DoD:** product reads "Goblin Gold" in manifest + `<title>` + in-app branding; the "Halves" topic name is
   unchanged; `node -c` clean; `pwa.test` updated if it pins the manifest `name`; **[A]-only** (`manifest.webmanifest`,
   `index.html`, `main.js` branding if any, tests). Small. Slots after `T170`/`T169`.
 
-### T170 — [A] **BUG (live):** topic tree overflows — rows now 4 nodes abreast clip off-screen · status: OPEN · 🔴 DO-FIRST
+### T170 — [A] **BUG (live):** topic tree overflows — rows now 4 nodes abreast clip off-screen · status: DONE (`f73443c`) · APPROVED· 🔴 DO-FIRST
 **Owner (2026-06-22, screenshot): "our tree is now four deep, which doesn't fit. The plan was 3, but we can do 4
 if needed — needs to fit though."** The 12 new T162 modes pushed some unlock tiers to **4 nodes in a row**, but
 `.tree-row` (styles.css:116, T106 "1–3 parts abreast") lays fixed-width nodes at `gap:0` inside `.tree`
@@ -2882,7 +2882,7 @@ left/right nodes cut off).
   (`styles.css`, maybe `main.js`/`renderTree`, `test/home-layout.test.js`). **Verify in a real browser** (the
   harness, or owner confirms) — read that the 4-up row's nodes don't clip the `.tree` box.
 
-### T169 — [A] Self-host the web fonts (drop Google Fonts CDN) — privacy + offline · status: OPEN · owner-requested
+### T169 — [A] Self-host the web fonts (drop Google Fonts CDN) — privacy + offline · status: DONE (`d6fbae3`) · APPROVED· owner-requested
 **Owner: "let's bake the fonts in."** `index.html` loads **Space Grotesk + JetBrains Mono from
 `fonts.googleapis.com`/`fonts.gstatic.com`** (the app's ONLY third-party request → a child's device IP goes to
 Google). **Self-host** the needed weights locally (woff2), drop the three Google `<link>`s, add `@font-face`
@@ -2914,7 +2914,7 @@ the arena region signature robust to the Arena's DYNAMIC content** (enemy team, 
 **DoD:** `visual.test` green again with a stable arena signature; the gate still HAS TEETH (a real hue/layout
 flip still fails); B-owned (`test/browser/*`, `test/golden/*`); `node -c`/skip-clean intact.
 
-### T162 — [A] Mock-exam-driven drill gaps: 12 new building-block modes · status: OPEN · ✅ OWNER-BLESSED (build all, in tiers) · content · after the trust/audio fixes
+### T162 — [A] Mock-exam-driven drill gaps: 12 new building-block modes · status: DONE (`8528658`) · APPROVED· ✅ OWNER-BLESSED (build all, in tiers) · content · after the trust/audio fixes
 **Owner (2026-06-22) supplied a REAL mock** (target student Luke, SEP 11+ Mock 7 / BWS — scored 11/27). Frame:
 **"we're not trying to reproduce 11+ style questions, just drill the building blocks needed to answer these
 quickly."** Full per-question decomposition + the analysis live in **IDEAS I9**. **Findings:** one-step

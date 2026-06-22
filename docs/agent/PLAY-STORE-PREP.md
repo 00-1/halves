@@ -8,10 +8,12 @@
 ---
 
 ## 1. App identity
-- **App name (public): Goblin Gold** ✅ (owner-chosen 2026-06-22 — checked: no exact-title app on Play, and
-  Play doesn't enforce unique display names; Education category keeps it clear of the goblin idle-tycoon cluster).
-  *(The in-game currency is also "Goblin Gold" — intentional brand cohesion. The maths TOPIC "Halves" (x/2) keeps
-  its name; only the PRODUCT is renamed — see T171.)*
+- **Play Store title: "Goblin Gold: The Void Throne"** ✅ (owner-locked 2026-06-22). Subtitle = the Arena endgame
+  (region 10 / final boss The Void Sovereign) — metagame-forward by owner preference (sells the adventure, not
+  the maths; the maths sells in the description/category). On-device label / manifest `short_name` = **"Goblin
+  Gold"** (short for the home screen). Checked: no exact-title app on Play; Play doesn't enforce unique display
+  names; Education category keeps it clear of the goblin idle-tycoon cluster. *(Currency is also "Goblin Gold" —
+  intentional cohesion. The maths TOPIC "Halves" (x/2) keeps its name; only the PRODUCT is branded — see T171.)*
 - **Developer (public):** Joshua Bradshaw / United Kingdom (Individual, non-trader → no address shown)
 - **Package / application id (PERMANENT — cannot change after first publish):** proposed **`app.goblingold.maths`**
   *(reverse-DNS, doesn't expose a name; owner can swap before first upload — e.g. `io.github.<user>.goblingold`)*
