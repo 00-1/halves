@@ -6,6 +6,29 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T211 — BUG: the gold hoard showed behind EVERY screen → overlay now follows the backdrop ([B], 🔴 owner-reported)
+
+Owner: *"gold stacks behind every screen, but I only want it on the main screen."* Root cause: the
+hoard renders on a separate **overlay canvas** (`.fxgl-hoard`, `_hoardCv`, T185) whose className
+**strips `hidden`** (so it's never `display:none` — the T133/T185 reason). `[A]`'s screen router
+calls `fxBg.stop()` + hides `#fxBackdrop` on non-home/arena screens, but only toggles `hidden` on
+the **scene canvas** — the overlay sibling lingered, still showing the last home hoard behind
+Inventory/Heroes/Setup. Fix (`fxgl.js`, [B]-only — the overlay owns its own visibility):
+- New `_showOverlay(on)`: `visibility:hidden` + `clearRect` when off, reveal when on (kept as
+  **visibility**, not `display:none`, so it stays drawable).
+- **`stop()` → `_showOverlay(false)`** (backdrop off → hide + clear the pile); **`start()` →
+  `_showOverlay(true)`** (home/arena re-show; `setData`/`_syncOverlay` then repaint the right
+  content — Arena has no hoard so it draws empty). So the pile shows **only** where the scene does.
+- 🌐 **Browser-verified in the real app** (gold=1e9): home → overlay `visible`; navigate to
+  `#/audio` → `hidden`; back home → `visible`; no JS errors.
+
+Verify: `node -c` clean; **golden-fx 116** (+4 T211 assertions — overlay visible on the live
+backdrop, `stop()` hides + clears it, `start()` re-shows it); full Node suite green (fxgl 135 /
+fx-wiring 84 / hoard-wiring 47); render/visual/audio gates green; backdrop/burst behaviour
+unaffected. B-only (`fxgl.js`, `test/golden-fx.test.js`). Owner device-confirms.
+
+---
+
 ## T207 — coin SHINE: glints on the shower + occasional pile sparkles + clearer rotation ([B], owner-requested)
 
 Owner: *"occasional glints in the pile of coins; glints on the shower of coins; ideally some

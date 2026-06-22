@@ -556,5 +556,31 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
   ok(mr.o._f.length === 0, "T207: reduced-motion → the pile does NOT sparkle (static, safe)");
 })();
 
+// T211 — the hoard OVERLAY shows ONLY with the live backdrop (home), not behind every screen: it
+// follows start()/stop() (hidden+cleared on stop, re-shown on start). The live bug: [A] hid the
+// scene canvas + called stop() but the overlay sibling lingered with the last home hoard.
+(function(){
+  const savedDoc = global.document; let created = null;
+  function recCanvas(){ let clears = 0;
+    const ctx = { globalAlpha: 1, set fillStyle(v){}, get fillStyle(){ return "#000"; }, fillRect(){}, clearRect(){ clears++; },
+      beginPath(){}, ellipse(){}, fill(){}, save(){}, restore(){}, translate(){}, rotate(){}, scale(){}, _clears(){ return clears; } };
+    return { width: 0, height: 0, className: "", style: {}, setAttribute(){}, getContext(){ return ctx; } }; }
+  global.document = { createElement(){ created = recCanvas(); return created; } };
+  try{
+    const cv = stubCanvas(390, 844); cv.className = "fx-backdrop"; cv.parentNode = { insertBefore(){} };
+    const c = new FXGL.Controller(cv, { backend: "2d", ctx2d: { fillRect(){}, clearRect(){}, createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }), putImageData(){} }, raf: () => 1, caf: () => {}, width: 390, height: 844, dpr: 2, quality: 2, reducedMotion: false });
+    c.backend = { name: "webgl2", w: 780, h: 1688, pxScale: 2, resize(w, h){ this.w = w; this.h = h; }, setData(){}, setBurst(){} };
+    c.derived = FXGL.deriveScene({ grid: [[[20, 20, 30]]], seed: 5, hoard: { level: 0.8, seed: 9 } }, 200);
+    c._syncOverlay();   // home backdrop live → creates + draws the hoard overlay
+    ok(created && created.style.visibility !== "hidden", "T211: on the live home backdrop the hoard overlay is visible");
+    const clearsBefore = created.getContext()._clears();
+    c.stop();
+    ok(created.style.visibility === "hidden", "T211: stop() HIDES the hoard overlay → no gold stack behind Inventory/Heroes/Setup");
+    ok(created.getContext()._clears() > clearsBefore, "T211: stop() also CLEARS it (no stale last-home hoard left drawn under other screens)");
+    c.start();
+    ok(created.style.visibility === "", "T211: returning home (start()) RE-SHOWS the overlay");
+  } finally { global.document = savedDoc; }
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FX-GOLDEN CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

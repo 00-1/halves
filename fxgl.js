@@ -1748,16 +1748,31 @@
     if(this.backend && this._isStill() && this.derived) this._renderOnce();
     return this;
   };
+  // T211 — the hoard OVERLAY (a sibling canvas, T185) must follow the backdrop's on/off so the
+  // pile shows ONLY where the scene is shown (the home backdrop). [A] hides the scene canvas with
+  // `.hidden` + calls stop() on non-home screens, but the overlay strips `hidden` (never
+  // display:none) so it lingered — the gold stack bled behind Inventory/Heroes/Setup. Fix: the
+  // overlay owns its visibility — hide+clear on stop(), reveal on start() (then setData/_syncOverlay
+  // repaints the right content; Arena has no hoard → it draws empty). visibility (NOT display:none)
+  // keeps it drawable per the T133/T185 reason.
+  Controller.prototype._showOverlay = function(on){
+    const ov = this._hoardCv;
+    if(!ov || !ov.style) return;
+    ov.style.visibility = on ? "" : "hidden";
+    if(!on && this._hoardCtx && this._hoardCtx.clearRect) this._hoardCtx.clearRect(0, 0, ov.width | 0, ov.height | 0);
+  };
   Controller.prototype.start = function(){
     if(!this.ready){ this.wantStart = true; return this; }
     if(this.running) return this;
     this.running = true; this.sceneTs = 0;
+    this._showOverlay(true);                                     // T211: the hoard rides the live backdrop
     if(this._ambientLoops()) this._pump();                       // animate
     else if(this._isStill() && this.derived) this._renderOnce();  // reduced/static → one still
     return this;
   };
   Controller.prototype.stop = function(){
     this.running = false; this.sceneTs = 0;
+    this._showOverlay(false);                                    // T211: backdrop off → hide+clear the hoard overlay
     // keep the loop only if a burst is still alive; otherwise idle the RAF
     if(this.rafId && !this.burst_.active){ this.caf(this.rafId); this.rafId = 0; }
     return this;
