@@ -2661,6 +2661,38 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
+### T160 — [A] Arena: per-enemy-death VFX (localised) + slow the battle playout a touch · status: OPEN · OWNER-REQUESTED
+Owner (2026-06-22, on the live Arena 3v3): **"add some VFX on each enemy death, localised at the location of the
+defeated enemy. And slow down the battle animation a touch."** Both are small, contained tweaks to the **T90
+playout** (`playBattle`/`applyEvent` in `main.js`, ~L1421-1486) — **no engine change** (T152[B] already gave us
+localised small bursts; reuse the existing `fxBigBurst` + the `elCentre(el)` helper at main.js:266). **[A]-only.**
+- **(1) Death VFX, localised.** The KO is already detected in `applyEvent(ev)` (main.js:1468):
+  `if(ev.ko && cellEl[k]) cellEl[k].classList.add("ko")`. **There** — when a **FOE** is KO'd (`ev.tSide === 1`)
+  — fire a **localised burst at that foe's cell**: `const c = elCentre(cellEl[k]); fxBigBurst({ x:c.x, y:c.y,
+  count: <modest, ~140-220>, palette: <enemy-type colour + a bright impact white>, sizePx: FX_SMALL, spread:
+  <~0.7 so it HUGS the cell, not the screen> });` Use the foe's **type palette** (the `t-<type>` colour already
+  on the cell, or `HERO_PAL`/monster type colour) so a Brawn death reads differently from a Mind death; a brief
+  impact-white core is nice. Keep it SMALL + tight (this is a death puff at a 36px portrait, not a victory
+  shower). The existing `.ko` dim stays. **Scope: ENEMY deaths only** (owner said "each enemy death"); a subtler
+  hero-death cue is OPTIONAL/out-of-scope — don't add screen-wide noise.
+- **(2) Slow the playout a touch.** The pace is one line (main.js:1474):
+  `STEP_MS = Math.max(90, Math.min(360, Math.round(2600 / log.length)))`. Bump it modestly — e.g. budget
+  **2600 → ~3800-4200**, floor **90 → ~130**, ceiling **360 → ~480** — so each strike/KO is easier to read.
+  "A touch", not sluggish; keep it **skippable** (the Skip button) and keep the **reduced-motion/headless
+  instant path** untouched. Tune to feel on the live build.
+- **Timing nuance:** fire the death burst at the MOMENT the KO event is applied during playout (inside
+  `applyEvent`), at the cell's live `getBoundingClientRect` (cells don't move, so the rect is stable). Guard for
+  `fxBurst` absent (the helper already no-ops). Don't fire on the final instant-resolve path (that still uses
+  `fxCelebrateWin` for the overall victory — keep that; the per-death puffs are additive *during* the fight).
+- **DoD:** each foe KO during the watchable playout spawns a small, tight, type-coloured burst centred on that
+  foe's cell (not screen-centre); the playout is perceptibly-but-modestly slower; Skip + reduced-motion paths
+  intact; `node -c` clean; `$("id")`/selectors valid; a `fx-wiring`/`arena3` assertion that a foe-KO event
+  triggers a localised burst at the foe cell (centroid ≈ the cell, small `sizePx`) — turn it into a gate, not
+  just a visual. **[A]-only** (`main.js`, arena tests). **Verify:** browser-confirm the per-death bursts fire
+  from the foe cells when the harness is back; until then the owner confirms on the live build + the wiring gate.
+  **⚠ Depends on T158 landing first** — until the SW cache fix ships, this VFX won't reach the owner's installed
+  PWA (it'd serve stale `main.js`). Sequence: T158 → T160.
+
 ### T159 — [A]-led / [B]-support: harden COLD-START audio so a first PWA launch can't foghorn · status: OPEN · investigation (owner-observed, transient)
 **Owner (2026-06-22): "sound is really bad in PWA — like a foghorn"**, then after a **relaunch: "it sounds
 good."** A transient, self-clearing artifact on the **very first cold launch** of the installed PWA → the most
@@ -2688,16 +2720,18 @@ hardening**, not a blind code change.
   split it into a [B] line if the audit lands there. *(If the audit finds nothing actionable + it never recurs,
   close as NOT-REPRODUCIBLE with the hardening guards kept.)*
 
-### T158 — [A] **BUG (real, latent):** the service worker cache-firsts un-versioned JS → installed PWA can pin STALE code · status: OPEN · IMPORTANT (distribution correctness; NOT the foghorn cause)
-**Re-scoped 2026-06-22:** originally filed as the "foghorn" cause, but **the owner relaunched the PWA and audio
-was fine with NO fix shipped** — a frozen cache would persist across relaunches, so the foghorn was **transient,
-not stale-cache** (see **T159**). **This SW bug is still REAL and worth fixing on its own merits:** `index.html`
+### T158 — [A] **BUG (CONFIRMED ACTIVE):** the service worker cache-firsts un-versioned JS → clients pin STALE code (version skew) · status: OPEN · 🔴 DO-FIRST / ABSOLUTE
+**🔴 CONFIRMED 2026-06-22 — owner: "I seem to have 3v3 in PWA but not Firefox."** That is the **proof**: the
+un-versioned cache-first SW pins each client to whatever `main.js` it FIRST cached — the owner's **Firefox is
+frozen on a pre-T89/T90 (no-3v3) build**; the PWA cached post-3v3. Same origin, different frozen versions per
+client. **This actively MASKS every fix we ship** (incl. the queued `T160` Arena VFX — it would NOT reach the
+owner's installed PWA until this lands), so **`T158` is DO-FIRST/ABSOLUTE: do ONLY this and push before `T160`
+or anything else.** *(NOT the "foghorn" cause — that was transient cold-start, see T159 — but the SAME bug, now
+demonstrably biting.)* The mechanism: `index.html`
 loads every app script with **NO version query** (`<script src="synth.js">`, `main.js`, …), but `sw.js`'s fetch
 handler (sw.js:48-55) is **CACHE-FIRST for ALL non-navigation same-origin GETs** with **no `?v=` check** — its
-comment *assumes* immutable `?v=<sha>` URLs that don't exist. So a future deploy may **not reach the installed
-PWA** (it can serve frozen `*.js`). This matters a lot for **Play-Store distribution** (users must get updates) —
-fix it before we package. *(It evidently doesn't pin as hard as first feared — the audio recovered on relaunch —
-so the exact controlling/caching timing on mobile is uncertain; the fix below is correct regardless.)*
+comment *assumes* immutable `?v=<sha>` URLs that don't exist. So a deploy does **not reach an already-cached
+client** (it serves frozen `*.js`). Critical for **Play-Store distribution** too (users must get updates).
 - **THE FIX (sw.js):** stop cache-firsting un-versioned app code. Make same-origin app assets — `.js`, `.css`,
   `.html`/`.json` (and to be safe `icon.svg`/manifest, they're tiny) — **NETWORK-FIRST** (always fresh online,
   cache as the OFFLINE fallback), exactly like the nav/`build.json` branch already is. Reserve **cache-first**
@@ -3702,7 +3736,7 @@ Full design = **IDEAS I5 "Calibration design"**; this task implements it.
   (Babysitter: re-run the FULL invariant sweep across team sizes × loadout lattice, verify
   monotonicity, the single-starter-hero floor, the tier-120 one-boost flip, and migration.)
 
-### T89 — Arena 3v3: team-selection UI (1–3 heroes) + enemy-team display · status: OPEN
+### T89 — Arena 3v3: team-selection UI (1–3 heroes) + enemy-team display · status: DONE (`9197265`) · owner-accepted
 Let the player assemble the party and see what they're up against. Built on T88's sim.
 - Select **1–3 heroes** from **owned** heroes for a tier attempt (can send fewer — down to 1);
   **can't pick locked/unowned**; show the **3-foe enemy team** with their **type matchups** vs the
@@ -3716,7 +3750,7 @@ Let the player assemble the party and see what they're up against. Built on T88'
   through `statBattle`-team. (Babysitter: verify 1-hero and 3-hero attempts both work, locked/
   unowned can't be fielded, and tier progress still records.)
 
-### T90 — Arena 3v3: watchable deterministic turn playout + result · status: OPEN
+### T90 — Arena 3v3: watchable deterministic turn playout + result · status: DONE (`dffa345`) · owner-accepted
 Make the fight *readable* — show the deterministic sim resolving, calmly.
 - Render the sim **turn by turn** (who strikes whom, HP draining, KOs) then the result — a **calm,
   watchable** playout (consistent with the no-anxiety design), not a wall of numbers. Reuse/extend

@@ -10,29 +10,28 @@
 
 ---
 
-**Builder A → `T158` (SW → network-first for app JS; PWA must get updates) → `T156` (hide fullscreen buttons when installed) → `T157` (Android back-button) → `T159` (cold-start audio hardening) → `T89`/`T90` (Arena 3v3) → content → `T72`**
-**Foghorn update:** the owner **relaunched the PWA and audio is now fine** — so it was a **transient cold-start
-glitch (T159)**, NOT the stale-cache bug. **`T158` is still next** (real + foundational): `sw.js` (lines 48-55)
-**cache-firsts ALL non-nav same-origin GETs**, but `index.html` loads scripts with **NO `?v=`** → a deploy may
-not reach the installed PWA (it can pin frozen `*.js`). **Fix:** same-origin app assets (`.js`/`.css`/`.html`)
-**NETWORK-FIRST** (cache = offline fallback only), cache-first reserved for cross-origin fonts; **bump `CACHE`
-v1→v2** so `activate` purges; keep `skipWaiting`+`clients.claim`; **extend `pwa.test` to FAIL on
-cache-first-stale-JS** + assert the bump. Do this first so the owner's installed-PWA testing actually reflects
-what we ship. **[A]-only** (`sw.js`, `index.html`, `test/pwa.test.js`). See **BACKLOG T158**. **Then `T156`/`T157`**
-(Play-Store-track app-feel — owner testing on Android now), **then `T159`** (harden the cold-start audio path so a
-first launch can't foghorn — idempotent music start + running-context guard; any `synth.js` guard is a [B]
-follow-up I'll split out). **`T153` DONE+APPROVED (`c942859`, fixed-purple, owner-confirmed); `T152[A]` DONE
-(`bdd0e6a`).** Two small
-**Play-Store-track / app-feel** tasks jump the queue (owner is testing the app on Android NOW — these make the
-installed-PWA test feel app-like): **`T156`** — detect `display-mode: standalone/fullscreen` (`isInstalledDisplay()`)
-and **hide** the entry `#entryFs` "Play in fullscreen" button + the Settings `#fsToggle` row when installed
-(keep them in a browser tab; keep the entry audio-gesture); bump the manifest `display` to **`"fullscreen"`**;
-**don't regress the T112 safe-area invariant.** Then **`T157`** — integrate screen nav with `history.pushState`
-+ a `popstate` handler so the **Android back gesture navigates our screen stack** (Arena/menu → parent → home)
-instead of EXITING the app; confirm-exit only at home. Both **[A]-only**, existing Halves files. **Then** →
-`T89`/`T90` (Arena 3v3 — gameplay, no creds) → content `T58`–`T61`. *(`T103` TWA/Play-Store + `T72` submission
-need owner credentials — hold those till the owner's back.)* Re-read this line fresh before you start AND before
-you push (a fresh owner flag may land here as a `BUG`/DO-FIRST and overrides this order).
+**Builder A → `T158` 🔴 BUG ABSOLUTE-DO-FIRST (SW stale-cache — CONFIRMED) → `T160` (Arena death VFX + slower playout) → `T156` (hide fullscreen buttons) → `T157` (Android back) → `T159` (cold-start audio) → content `T58`–`T61` → `T72`**
+**RE-READ FRESH — order changed.** Arena 3v3 (`T89`/`T90`) is **DONE+APPROVED** (`9197265`/`dffa345`, owner
+"looks good") — but you built it **out of NEXT order** (T158/T156/T157 were queued ahead). **Re-read this line
+before every task.**
+**🔴 `T158` is ABSOLUTE — do ONLY this, push, before `T160` or anything.** CONFIRMED active: owner sees **"3v3
+in PWA but not Firefox"** → the un-versioned cache-first SW pins each client to its first-cached `main.js`
+(Firefox frozen pre-3v3). **It masks every fix we ship**, so until it lands, even `T160`'s VFX won't reach the
+owner's PWA. **Fix:** same-origin app assets (`.js`/`.css`/`.html`) **NETWORK-FIRST** (cache = offline fallback
+only), cache-first reserved for cross-origin fonts; **bump `CACHE` v1→v2** so `activate` purges; keep
+`skipWaiting`+`clients.claim`; **extend `pwa.test` to FAIL on cache-first-stale-JS** + assert the bump. [A]-only
+(`sw.js`, `index.html`, `test/pwa.test.js`). Self-heals on next online launch. *(BACKLOG T158.)*
+**Then `T160`** (owner, on live Arena): per-**enemy**-death **localised** VFX + slow the playout a touch — both
+in the **T90 playout** (`applyEvent`, main.js:1468): on a FOE KO (`ev.tSide===1`) fire `fxBigBurst` at
+`elCentre(cellEl[k])` — small/tight (`sizePx:FX_SMALL`, `spread≈0.7`), foe-**type** palette + impact white,
+count ~140-220; and bump the pace line (main.js:1474) budget 2600→~3800-4200, floor 90→~130, ceil 360→~480.
+Keep Skip + reduced-motion intact; add an `arena3`/`fx-wiring` gate that a foe-KO triggers a localised burst at
+the foe cell. [A]-only. *(BACKLOG T160.)*
+**Then** `T156` (display-mode → hide `#entryFs`/`#fsToggle` when installed; manifest `display:"fullscreen"`;
+keep the T112 safe-area invariant) → `T157` (Android back via `history.pushState`+`popstate` → screen-stack nav,
+confirm-exit at home) → `T159` (cold-start audio hardening — idempotent start + running-context guard; any
+`synth.js` guard is a [B] follow-up I'll split out) → content `T58`–`T61`. *(`T103`/`T72` Play-Store submission
+need owner creds — hold.)*
 
 **Builder B → `T155` (distinct PAD/bed timbre per style — OWNER feedback) → then `T154` (visual-regression gate).**
 Off standby. **`T155` FIRST** — owner: *"every style seems to share the same synth string sound… vary a lot

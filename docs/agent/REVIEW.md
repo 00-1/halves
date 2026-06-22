@@ -1,6 +1,18 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T153` [A] (home backdrop = FIXED brand purple, not event-coloured) · live
+**Current verdict:** `APPROVED — T89 + T90` [A] (Arena 3v3: team-selection UI + watchable deterministic turn
+playout) · live builds **`9197265`** (T89) + **`dffa345`** (T90). **All gates green** (full suite + `arena3`
+27 checks); `node -c` clean; **owner-accepted live** ("arena 3v3 looks good"). T89 fields a 1–3 hero party vs
+the tier's 3-foe enemy team with per-foe matchup chips; T90 plays the EXACT `teamBattleLog` sim turn-by-turn
+(HP bars drain, KO dims the cell via `applyEvent`'s `ev.ko`), single cancelable RAF (no leak), reduced-motion/
+headless → instant resolve. Clean, deterministic, no new RNG. T89/T90 → DONE. **⚠ A is not strictly following
+the `NEXT.md` order** (built Arena 3v3 while `T158`/`T156`/`T157` sat queued — a staleness race; re-read NEXT
+fresh before each task). **→ Owner gave two new directives (now queued): `T160`** (Arena enemy-death VFX +
+slower playout) **and `T158` is RE-UPGRADED to DO-FIRST** — the owner sees "3v3 in PWA but not Firefox," which
+**proves the un-versioned cache-first SW bug is ACTIVELY pinning stale code per-client** (Firefox frozen pre-3v3).
+`T158` must land before `T160` or the VFX won't even reach the owner's installed PWA.
+
+> **Previously approved (done):** `T153` [A] (home backdrop = FIXED brand purple, not event-coloured) · live
 build **`c942859`**. **All gates green; collision-clean** ([A]-owned: `main.js`, `test/fx-wiring.test.js`,
 `BUILDER-LOG.md`). Fixes the owner's repeated flag (the home backdrop went **blue** on a rare-event day because
 `homeFxState` wore `paletteFor(ev.rarity)`). Now `homeFxState()` (`main.js:215`) **always** returns a fixed
