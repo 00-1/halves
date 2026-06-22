@@ -2661,16 +2661,43 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
-### T158 — [A] **BUG (live, owner-flagged):** the service worker pins STALE JS in the installed PWA (the "foghorn") · status: OPEN · 🔴 DO-FIRST / ABSOLUTE
-**Owner (2026-06-22): "sound is really bad in PWA — like a foghorn."** **Root cause (Babysitter, confirmed in
-`sw.js` + `index.html`):** `index.html` loads every app script with **NO version query** (`<script src="synth.js">`,
-`main.js`, `fxgl.js`, …) — but `sw.js`'s fetch handler (sw.js:48-55) is **CACHE-FIRST for ALL non-navigation
-same-origin GETs**, with **no `?v=` check**. Its comment *assumes* the scripts are immutable `?v=<sha>` URLs;
-they are NOT. So once the installed PWA caches `synth.js`/`main.js`/etc. on first visit, **it serves that frozen
-copy forever — deploys never update the PWA's JS.** The owner's install cached a **pre-`T151` `synth.js`** → the
-PWA runs the OLD **diverging FDN reverb** (the documented exponential low-drone divergence) = the foghorn. **This
-also means the installed PWA is running stale `main.js`** (the T153 purple / T152 celebration fixes may not show
-there) — audio is just the loudest symptom. Browser-tab play is fine (no SW cache-first there on a fresh load).
+### T159 — [A]-led / [B]-support: harden COLD-START audio so a first PWA launch can't foghorn · status: OPEN · investigation (owner-observed, transient)
+**Owner (2026-06-22): "sound is really bad in PWA — like a foghorn"**, then after a **relaunch: "it sounds
+good."** A transient, self-clearing artifact on the **very first cold launch** of the installed PWA → the most
+likely cause is the **AudioContext / synth coming up in a bad state on first run** (a stuck or runaway voice, or
+the FDN reverb fed garbage during an interrupted/partial init), which a clean relaunch resets. Foghorn = a loud
+sustained low drone = a voice/feedback that never released. Reproducing needs a real device + a genuine *first*
+post-install launch (hard headless, esp. with the harness OOM-down) — so this is **investigation + defensive
+hardening**, not a blind code change.
+- **[A] (wiring/timing — `main.js`):** audit the cold-start audio path — `audioUnlock()` / `warmAudio` (T101) /
+  `musicForScreen` / `applySoundPref`. On a cold PWA launch the `AudioContext` may start **suspended** or resume
+  late; ensure (a) **nothing schedules/sounds before `ctx.state === "running"`** and the synth is fully wired
+  (no voice started against a not-yet-running/garbage context), (b) the music start is **idempotent** — a
+  re-entrant `warmAudio`/`musicForScreen` can't stack a second droning context or leave an unreleased pad, (c)
+  on `visibilitychange`/resume the engine **re-syncs cleanly** (no stuck tail). Add a guard: if `ctx.sampleRate`
+  is unexpected/0 or the context isn't running, defer the first note rather than playing into a bad context.
+- **[B] (engine robustness — `synth.js`, only if the wiring audit points here):** make the engine **safe against
+  a bad/again-init**: a `panic()`/all-notes-off that releases every active voice + zeroes the FDN state, called
+  on (re)start; ensure no voice is created with a non-finite freq/gain; confirm the master **limiter** can't be
+  driven into a sustained buzz by a single runaway input (hard-clip ceiling). These are cheap insurance even if
+  the root cause is timing.
+- **DoD:** a concrete, reasoned hardening of the cold-start path (idempotent start + running-context guard +,
+  if warranted, an engine `panic`/voice-cap) with a Node test simulating a re-entrant/suspended-context start and
+  asserting no duplicate/stuck voice is scheduled; `node -c` clean; owner confirms no first-launch foghorn on a
+  fresh install. Respect the partition: **[A] owns the `main.js` wiring**; any `synth.js` change is **[B]** — I'll
+  split it into a [B] line if the audit lands there. *(If the audit finds nothing actionable + it never recurs,
+  close as NOT-REPRODUCIBLE with the hardening guards kept.)*
+
+### T158 — [A] **BUG (real, latent):** the service worker cache-firsts un-versioned JS → installed PWA can pin STALE code · status: OPEN · IMPORTANT (distribution correctness; NOT the foghorn cause)
+**Re-scoped 2026-06-22:** originally filed as the "foghorn" cause, but **the owner relaunched the PWA and audio
+was fine with NO fix shipped** — a frozen cache would persist across relaunches, so the foghorn was **transient,
+not stale-cache** (see **T159**). **This SW bug is still REAL and worth fixing on its own merits:** `index.html`
+loads every app script with **NO version query** (`<script src="synth.js">`, `main.js`, …), but `sw.js`'s fetch
+handler (sw.js:48-55) is **CACHE-FIRST for ALL non-navigation same-origin GETs** with **no `?v=` check** — its
+comment *assumes* immutable `?v=<sha>` URLs that don't exist. So a future deploy may **not reach the installed
+PWA** (it can serve frozen `*.js`). This matters a lot for **Play-Store distribution** (users must get updates) —
+fix it before we package. *(It evidently doesn't pin as hard as first feared — the audio recovered on relaunch —
+so the exact controlling/caching timing on mobile is uncertain; the fix below is correct regardless.)*
 - **THE FIX (sw.js):** stop cache-firsting un-versioned app code. Make same-origin app assets — `.js`, `.css`,
   `.html`/`.json` (and to be safe `icon.svg`/manifest, they're tiny) — **NETWORK-FIRST** (always fresh online,
   cache as the OFFLINE fallback), exactly like the nav/`build.json` branch already is. Reserve **cache-first**

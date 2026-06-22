@@ -10,17 +10,19 @@
 
 ---
 
-**Builder A → `T158` 🔴 BUG DO-FIRST (SW pins stale JS in the PWA — the "foghorn") → then `T156` → `T157` → `T89`/`T90` (Arena 3v3) → content → `T72`**
-**`T158` is ABSOLUTE — do ONLY this and push before anything else.** Owner: *"sound is really bad in PWA — like
-a foghorn."* Root cause: `index.html` loads scripts with **NO `?v=`**, but `sw.js` (lines 48-55) **cache-firsts
-ALL non-nav same-origin GETs** → the installed PWA serves a **frozen pre-T151 `synth.js`** (old diverging FDN
-reverb = the foghorn) and **stale `main.js`** too. **Fix:** make same-origin app assets (`.js`/`.css`/`.html`)
+**Builder A → `T158` (SW → network-first for app JS; PWA must get updates) → `T156` (hide fullscreen buttons when installed) → `T157` (Android back-button) → `T159` (cold-start audio hardening) → `T89`/`T90` (Arena 3v3) → content → `T72`**
+**Foghorn update:** the owner **relaunched the PWA and audio is now fine** — so it was a **transient cold-start
+glitch (T159)**, NOT the stale-cache bug. **`T158` is still next** (real + foundational): `sw.js` (lines 48-55)
+**cache-firsts ALL non-nav same-origin GETs**, but `index.html` loads scripts with **NO `?v=`** → a deploy may
+not reach the installed PWA (it can pin frozen `*.js`). **Fix:** same-origin app assets (`.js`/`.css`/`.html`)
 **NETWORK-FIRST** (cache = offline fallback only), cache-first reserved for cross-origin fonts; **bump `CACHE`
-v1→v2** so `activate` purges the poisoned cache; keep `skipWaiting`+`clients.claim`. **Extend `pwa.test` to FAIL
-on cache-first-stale-JS** (the gate that would've caught T102) + assert the cache bump. **[A]-only** (`sw.js`,
-`index.html`, `test/pwa.test.js`). Self-heals on next online launch (new SW byte-changes → purge → network-first
-JS). See **BACKLOG T158**. **Then** the two Play-Store-track tasks: **`T153` DONE+APPROVED (`c942859`,
-fixed-purple, owner-confirmed); `T152[A]` DONE (`bdd0e6a`).** Two small
+v1→v2** so `activate` purges; keep `skipWaiting`+`clients.claim`; **extend `pwa.test` to FAIL on
+cache-first-stale-JS** + assert the bump. Do this first so the owner's installed-PWA testing actually reflects
+what we ship. **[A]-only** (`sw.js`, `index.html`, `test/pwa.test.js`). See **BACKLOG T158**. **Then `T156`/`T157`**
+(Play-Store-track app-feel — owner testing on Android now), **then `T159`** (harden the cold-start audio path so a
+first launch can't foghorn — idempotent music start + running-context guard; any `synth.js` guard is a [B]
+follow-up I'll split out). **`T153` DONE+APPROVED (`c942859`, fixed-purple, owner-confirmed); `T152[A]` DONE
+(`bdd0e6a`).** Two small
 **Play-Store-track / app-feel** tasks jump the queue (owner is testing the app on Android NOW — these make the
 installed-PWA test feel app-like): **`T156`** — detect `display-mode: standalone/fullscreen` (`isInstalledDisplay()`)
 and **hide** the entry `#entryFs` "Play in fullscreen" button + the Settings `#fsToggle` row when installed
