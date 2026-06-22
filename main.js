@@ -859,11 +859,12 @@
   // mid-purple (no near-black shadow).
   const TITLE_VOID = [[205,169,255],[154,92,246],[74,47,122]];
   const TITLE_GOLD_GLINT = [255,248,214];                        // T210 — gold glints; the void line gets NO sparkle
-  function paintPixelTitle(el, ramp, glint, corrupt, fontOverride){
+  function paintPixelTitle(el, ramp, glint, corrupt, fontOverride, upper){
     if(!el || !document.createElement) return;
-    const text = (el.dataset && el.dataset.title) || el.textContent; if(!text) return;
+    const src = (el.dataset && el.dataset.title) || el.textContent; if(!src) return;
     try{
-      if(el.dataset) el.dataset.title = text;                    // remember it (textContent gets replaced by the canvas)
+      if(el.dataset) el.dataset.title = src;                     // remember the ORIGINAL (textContent gets replaced by the canvas)
+      const text = upper ? src.toUpperCase() : src;             // T217 — the void line is ALL CAPS
       // T212 — raster at a HIGHER base res (cellsH 18→26) so the "i"/"l" dot+stem
       // separate (was merging → "Goblln"/"Vold"); PX 3→2 keeps the display size.
       // T216 — the void line uses a visibly DISTINCT (self-hosted JetBrains Mono) face.
@@ -925,16 +926,27 @@
         };
         setTimeout(sweep, 1800 + Math.random() * 1500);
       }
-      // T216 — ANIMATE the void corruption: re-roll the dropped/displaced/alpha cells
-      // on a throttled ~7fps timer so the glitch flickers/shifts (cheap; the canvas is
-      // tiny). Pauses while off the entry splash; reduced-motion → static (no re-roll).
+      // T217 — INTERMITTENT interference (not continual). The void line sits on ONE
+      // settled frame (the cseed=0 draw above) most of the time; occasionally it
+      // "cuts in" — re-rolling the dropped/displaced/alpha cells at ~11fps for a short
+      // BURST (~0.4–1.2s) like a signal flickering — then settles back onto a fresh
+      // stable frame and idles (no re-roll) ~2.2–5s before the next burst. Pauses off
+      // the entry splash; reduced-motion → fully static (this whole block is skipped).
       if(corrupt && !prefersReducedMotion() && typeof requestAnimationFrame === "function"){
         const onEntry = () => { try{ return screens.entry && screens.entry.classList.contains("active"); }catch(e){ return false; } };
+        const clk = () => (performance && performance.now) ? performance.now() : Date.now();
         let cseed = 1;
-        (function tick(){
-          if(onEntry()){ cseed = (Math.imul(cseed, 1103515245) + 12345) >>> 0; draw(null, cseed); }
-          setTimeout(tick, onEntry() ? 150 : 600);
-        })();
+        const burst = () => {
+          if(!onEntry()){ setTimeout(burst, 1500); return; }
+          const dur = 400 + Math.random() * 800, t0 = clk();   // active interference: 0.4–1.2s
+          (function flick(){
+            cseed = (Math.imul(cseed, 1103515245) + 12345) >>> 0;
+            draw(null, cseed);
+            if(clk() - t0 >= dur){ setTimeout(burst, 2200 + Math.random() * 2800); return; }   // settle → idle 2.2–5s
+            setTimeout(flick, 90);   // ~11fps while cutting in
+          })();
+        };
+        setTimeout(burst, 1500 + Math.random() * 1500);
       }
     }catch(e){ /* keep the plain CSS text on any failure */ }
   }
@@ -943,7 +955,7 @@
   function renderTitles(){
     const e = screens.entry; if(!e) return;
     paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT, false);   // gold: Space Grotesk, clean + glint
-    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, null, true, "'JetBrains Mono',ui-monospace,monospace");   // void: a DISTINCT mono face, animated glitch (T216)
+    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, null, true, "'JetBrains Mono',ui-monospace,monospace", true);   // void: a DISTINCT mono face, ALL CAPS, intermittent glitch (T217)
   }
 
   // Mint the favicon / home-screen icon from the same pixel renderer: draw the

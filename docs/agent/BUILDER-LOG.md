@@ -5785,3 +5785,22 @@ verified: `pwa.test` 52→56 (the JetBrains-Mono void call, the cseed-in-hash re
 reduced-motion-gated tick, and the upper-centre padding-top). The headless boot tests stay green (paintPixelTitle
 early-returns without a real 2D ctx, so the tick never starts). Full suite 53/53. [A]-only (main.js, styles.css).
 Owner verifies the live splash. Then queued: T213 Phase-2 content fixes; T168 held on Play ID-verify.
+
+---
+### [A] T217 — entry: void line ALL CAPS + intermittent (bursting) interference
+- **ALL CAPS.** `paintPixelTitle` gained an `upper` flag; the void call passes it so the line rasters as
+  **"THE VOID THRONE"** (uppercase). The HTML keeps proper-case "The Void Throne" (it's the canvas seed text);
+  the original survives in `dataset.title` so a font-ready re-render stays uppercase.
+- **Fits the splash width.** Mono caps are wider, so `.subtitle` shrank `clamp(38px,12.6vw,58px)` →
+  `clamp(30px,9.8vw,46px)` — "THE VOID THRONE" clears the splash edges at the narrowest phone widths.
+- **Intermittent interference (not continual).** T216's ~7fps tick re-rolled *every* frame (a constant buzz).
+  Replaced with a **burst scheduler**: the line sits on ONE settled frame (the cseed=0 draw) most of the time,
+  then occasionally "cuts in" — a `flick` loop re-rolls the dropped/displaced/alpha cells at ~11fps for a short
+  **burst (0.4–1.2s)** — then settles onto a fresh stable frame and **idles ~2.2–5s** (no re-roll) before the
+  next burst. Like a signal cutting in and out. Pauses off the entry splash. **reduced-motion → fully static**
+  (the whole block is skipped; only the settled cseed=0 frame shows).
+verified: `pwa.test` +5 (the `upper`/`toUpperCase` flag, the uppercase void call, the burst/flick scheduler, the
+~11fps flick cadence, the 2.2–5s idle between bursts) and the subtitle font-size shrink; relaxed the T216
+reduced-motion assertion to the gate itself. Headless boot stays green (paintPixelTitle early-returns without a
+real 2D ctx, so no burst ever starts). Full suite 53/53. [A]-only (main.js, styles.css). Owner verifies the live
+splash. Then queued: T213 Phase-2 content fixes; T168 held on Play ID-verify.

@@ -116,8 +116,8 @@ body{
 /* T208 — the full title is "Goblin Gold: The Void Throne"; the void line is the
    subtitle between the wordmark and the maths tag. Plain gold/amber for now —
    T209 stylises it (pixel-gold name / dithered-purple void line). */
-.subtitle{font-family:var(--display);font-weight:600;font-size:clamp(38px,12.6vw,58px);letter-spacing:.02em;
-  color:var(--amber-2,#e0a93c);margin-top:-6px;line-height:1.05;opacity:.92}   /* T214 — tighter to the wordmark */
+.subtitle{font-family:var(--display);font-weight:600;font-size:clamp(30px,9.8vw,46px);letter-spacing:.02em;
+  color:var(--amber-2,#e0a93c);margin-top:-6px;line-height:1.05;opacity:.92}   /* T217 — smaller so the wider mono ALL-CAPS "THE VOID THRONE" fits the splash width */
 /* T209 — the pixel-art title canvas (gold wordmark / void subtitle) replaces the text
    node; sized to the parent line's font-size, crisp nearest-neighbour. */
 .pixtitle{height:1.25em;width:auto;image-rendering:pixelated;display:block;margin:0 auto}

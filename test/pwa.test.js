@@ -51,7 +51,7 @@ if(mani){
   const cssT = read("styles.css");
   ok(/\.pixtitle\{[^}]*image-rendering:pixelated/.test(cssT), "(a2) T209: the pixel-title canvas renders crisp (image-rendering:pixelated)");
   // T210 — refinements: ~3× bigger, lightened void ramp, no void glint
-  ok(/\.brand\{[^}]*font-size:clamp\(54px/.test(cssT) && /\.subtitle\{[^}]*font-size:clamp\(38px/.test(cssT), "(a2) T210/T212: the titles are big (3× then ~0.9×)");
+  ok(/\.brand\{[^}]*font-size:clamp\(54px/.test(cssT) && /\.subtitle\{[^}]*font-size:clamp\(30px/.test(cssT), "(a2) T210/T217: the titles are big (3×), subtitle shrunk for wider mono ALL-CAPS");
   ok(/TITLE_VOID = \[\[205,169,255\]/.test(mn), "(a2) T210: the Void Throne ramp is lightened toward the brand purple (luminous)");
   // T212 — fix the "i" (higher raster res), corrupt the void line, tighter letters
   ok(/const cellsH = 26/.test(mn) && /span = Math\.max\(1, yMax - yMin\), PX = 2/.test(mn), "(a2) T212: raster res cellsH 18→26 (the 'i' dot/stem separate), PX 3→2");
@@ -66,8 +66,14 @@ if(mani){
   // T216 — distinct void font, animated glitch, title back to upper-centre
   ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true, "'JetBrains Mono'/.test(mn), "(a2) T216: the Void Throne uses a DISTINCT self-hosted face (JetBrains Mono)");
   ok(/Math\.imul\(cseed \| 0, 2654435761\)/.test(mn), "(a2) T216: the corruption pattern re-rolls per frame (cseed in the hash) — animated glitch");
-  ok(/if\(corrupt && !prefersReducedMotion\(\)[\s\S]{0,260}cseed = \(Math\.imul\(cseed/.test(mn), "(a2) T216: a throttled re-roll tick animates the glitch (reduced-motion → static)");
+  ok(/if\(corrupt && !prefersReducedMotion\(\)/.test(mn), "(a2) T216/T217: the corruption animation is skipped under reduced-motion → fully static");
   ok(/#entry\{[^}]*padding:clamp\(40px,11vh,120px\)/.test(cssT), "(a2) T216: the title is back upper-centre (space above via padding-top); actions stay at the bottom");
+  // T217 — void line ALL CAPS + intermittent (bursting) interference, not continual
+  ok(/function paintPixelTitle\(el, ramp, glint, corrupt, fontOverride, upper\)/.test(mn) && /const text = upper \? src\.toUpperCase\(\) : src/.test(mn), "(a2) T217: paintPixelTitle takes an `upper` flag → renders the void line ALL CAPS");
+  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true, "'JetBrains Mono',ui-monospace,monospace", true\)/.test(mn), "(a2) T217: the void subtitle is rendered uppercase ('THE VOID THRONE')");
+  ok(/const burst = \(\) =>/.test(mn) && /function flick\(\)/.test(mn), "(a2) T217: a burst/flick scheduler replaces the continual tick (intermittent interference)");
+  ok(/setTimeout\(flick, 90\)/.test(mn), "(a2) T217: during a burst the glitch re-rolls at ~11fps (flick every 90ms)");
+  ok(/setTimeout\(burst, 2200 \+ Math\.random\(\) \* 2800\)/.test(mn), "(a2) T217: between bursts it settles + idles ~2.2–5s (no re-roll)");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------
