@@ -6,20 +6,15 @@
 
 ---
 
-**Builder A → `T216` (entry: reposition title + new/animated void font).** `T214` **APPROVED** (live `951e532`).
-Owner on the screenshot:
-- **Title jumped to the very top** (T214's `justify-content:flex-start` + `margin-top:auto` actions) — bring it
-  back **upper-centre with space ABOVE it** (it's pinned to the top now with a big gap); **keep the actions at the
-  bottom** (that's good). `styles.css #entry`.
-- **Void Throne needs a different FONT** — it's the same Space Grotesk as the gold, just corrupted; use a **visibly
-  distinct typeface** (decorative/condensed/gothic/mono display; verify it actually loads).
-- **ANIMATED glitches** — the corruption must **flicker/shift over time** (periodic re-roll of the dropped/
-  displaced/alpha cells), not static; throttled + cheap; **reduced-motion → static**; still legible.
-- [A]-only (`main.js`, `styles.css`, maybe a font link in `index.html`). *(BACKLOG T216.)*
-- **A's next MAJOR task after T216: `T213` Phase-2 content fixes** — HIGH PRIORITY (owner: "very important… as
-  perfect as we can get it"). Work the audit's prioritised list in BATCHES (2a 11 missing guides+explain() → 2b
-  calibration/clarity → 2c de-dup+gate); after EACH batch the Babysitter re-assesses (Phase 3) + surfaces more recs,
-  looping until clean. Then **`T168`** (held on Play ID-verify).
+**Builder A → `T217` (void ALL CAPS + intermittent interference) → then `T213` Phase 2 (content quality).**
+`T216` **APPROVED** (live `2f55fad`). Owner on the void line:
+- **ALL CAPS** — render "THE VOID THRONE" (uppercase; re-check it fits the splash width — mono caps are wider).
+- **Intermittent interference (not continual)** — the glitch re-rolls every frame (~7fps) now; make it **bursts**:
+  stable/quiet most of the time, **occasionally flickering into active interference** (~0.4–1.2s) then settling —
+  like a signal cutting in and out. Idle (no re-roll) between bursts. **Reduced-motion → fully static.** Legible
+  throughout. [A]-only (`main.js`, maybe `styles.css`). *(BACKLOG T217 — quick.)*
+- **Then `T213` Phase 2** (HIGH PRIORITY content quality, batched 2a/2b/2c; Babysitter re-assesses each batch +
+  surfaces more recs, looping until clean), then **`T168`** (held on Play ID-verify).
 **Re-read this line fresh before each task + push.**
 
 **Builder B → STAND BY.** `T103` (perf pass) + `T211`/`T207` **APPROVED** (live `951e532`); queue clear. Hold until

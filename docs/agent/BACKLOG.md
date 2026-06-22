@@ -3281,7 +3281,24 @@ can stay. By subtitle I mean THE VOID THRONE."*
   behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
-### T216 — [A] **Entry: reposition the title (not at the very top) + Void Throne a NEW font + ANIMATED glitches** · status: OPEN · owner-reported
+### T217 — [A] **Void Throne: ALL CAPS + INTERMITTENT interference (glitch bursts on/off, not continual)** · status: OPEN · owner-reported
+**Owner (2026-06-22, on T216 `2f55fad`): "the Void Throne text — could try making it ALL CAPS. Also let's have the
+animated noise we just added come ON and OFF occasionally — rather than being continual. Like interference."**
+Refines T216's void line (`paintPixelTitle`/`renderTitles`, the JetBrains-Mono corrupted subtitle).
+- **All caps:** render "The Void Throne" as **"THE VOID THRONE"** (uppercase the void line — at the rasterise step
+  or via the source text). Re-verify legibility + that it still fits at the splash width (mono caps are wider).
+- **Intermittent interference (not continual):** today the glitch **re-rolls every frame (~7 fps) continuously.**
+  Change it to **bursts** — the void line sits **stable/quiet most of the time**, then **occasionally flickers into
+  active interference** for a short burst (~0.4–1.2 s), then settles again — like a signal cutting in and out. Use a
+  random-interval on/off cycle (stable → burst → stable), idle (no re-roll) between bursts so it's also cheaper.
+  **Reduced-motion → fully static** (no bursts at all). Still legible throughout (even mid-burst it reads "THE VOID
+  THRONE").
+- **DoD:** the void line is **ALL CAPS** and its glitch **comes and goes in occasional bursts** (interference feel),
+  stable + idle between bursts, fully static under reduced-motion, legible throughout; gold "Goblin Gold" unchanged;
+  fits the splash width; `node -c` clean; entry tests green; **owner device-confirms**. **[A]-only** (`main.js`,
+  maybe `styles.css`). *(Quick — before T213 Phase 2.)*
+
+### T216 — [A] **Entry: reposition the title (not at the very top) + Void Throne a NEW font + ANIMATED glitches** · status: DONE (`2f55fad`) · APPROVED · ✅ owner (more void tweaks → T217)
 **Owner (2026-06-22, screenshot on `951e532`): "button etc moved down nicely, but the title ALSO jumped up — I
 don't want it right at the top, better where it was. Still not quite happy with the Void Throne — I think it needs
 a new font or something. Maybe animated glitches."**

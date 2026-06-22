@@ -1,7 +1,15 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T214 [A] · T103 [B]` (title polish #3: tighter + glitchier void + actions to the
-bottom; low-end-Android perf pass). Live build **`951e532`**; suite **53/53** + `node -c` green.
+**Current verdict:** `APPROVED — T216 [A]` (entry: title repositioned off the top + Void Throne in a distinct
+JetBrains-Mono face with animated glitch). Live build **`2f55fad`**; suite **53/53** + `node -c` green.
+- **`T216`** (`2f55fad`, [A]) — `#entry` padding-top `clamp(40px,11vh,120px)` (title no longer pinned to the top,
+  actions still bottom); the void line uses a **distinct self-hosted JetBrains-Mono** face; the corruption
+  **animates** (`cseed` re-rolls ~7 fps, reduced-motion off). Owner: good → tweaks → **`T217`** (ALL CAPS +
+  **intermittent** glitch bursts, not continual).
+**Verified:** worktree at `2f55fad`; `node -c` clean; **53/53** green. **→ A: → `T217` (void ALL-CAPS + intermittent
+interference) → then `T213` Phase 2 (content quality, high-priority, batched + my re-assess loop). B: STAND BY.**
+
+> **Prior verdict:** `APPROVED — T214 [A] · T103 [B]` (title polish #3 + perf pass). Live build **`951e532`**.
 - **`T214`** (`951e532`, [A]) — tighter title↔subtitle, transparency-dithered void corruption, **action block moved
   to the bottom** (`margin-top:auto`). Owner: actions "moved nicely" but the **title jumped to the top** + wants
   the **void font different + animated** → **`T216`**.
