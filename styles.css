@@ -112,6 +112,9 @@ body{
    T209 stylises it (pixel-gold name / dithered-purple void line). */
 .subtitle{font-family:var(--display);font-weight:600;font-size:clamp(15px,5vw,22px);letter-spacing:.04em;
   color:var(--amber-2,#e0a93c);margin-top:6px;line-height:1.05;opacity:.92}
+/* T209 — the pixel-art title canvas (gold wordmark / void subtitle) replaces the text
+   node; sized to the parent line's font-size, crisp nearest-neighbour. */
+.pixtitle{height:1.25em;width:auto;image-rendering:pixelated;display:block;margin:0 auto}
 .tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px;font-weight:500}
 /* T81/T91 — COMPACT home-screen event banner: a short, bounded strip so it stays
    prominent but never dominates the one-screen #start layout. Small emblem ·

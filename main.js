@@ -828,6 +828,7 @@
   // The "Goblin Gold" wordmark (.brand) is separate and stays. Falls back to the
   // Halves glyph if the generator is unavailable.
   function renderBrand(){
+    renderTitles();   // T209 — stylise the Goblin Gold / Void Throne title pair (independent of the mark)
     const el = screens.entry && screens.entry.querySelector(".mark");
     if(!el) return;
     if(C.iconColorGrid && document.createElement){
@@ -843,6 +844,75 @@
       }
     }
     paintGlyph(el, byId("halves"), 10);
+  }
+
+  // T209 — stylise the title BLOCK as PIXEL-art text: each title line is rendered to a
+  // canvas, shaded by a vertical 3-tone ramp with Bayer-4 dither (currency-GOLD for
+  // "Goblin Gold", endgame-VOID purple→black for "The Void Throne"), then upscaled
+  // nearest-neighbour. An occasional THROTTLED glint sweeps each line (gold on gold,
+  // violet on void); reduced-motion → static, no sweep. Falls back to the plain CSS
+  // text on any failure (the element keeps its text until a canvas is built).
+  const BAYER4 = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+  const TITLE_GOLD = [[255,224,140],[226,168,52],[120,84,22]];   // highlight → mid → shadow (hoard gold)
+  const TITLE_VOID = [[170,108,250],[74,44,128],[18,11,30]];     // violet → deep → near-black
+  const TITLE_GOLD_GLINT = [255,248,214], TITLE_VOID_GLINT = [206,170,255];
+  function paintPixelTitle(el, ramp, glint){
+    if(!el || !document.createElement) return;
+    const text = (el.dataset && el.dataset.title) || el.textContent; if(!text) return;
+    try{
+      if(el.dataset) el.dataset.title = text;                    // remember it (textContent gets replaced by the canvas)
+      const cellsH = 18, weight = 800, fontFam = "'Space Grotesk',system-ui,sans-serif";
+      const off = document.createElement("canvas"); const m = off.getContext && off.getContext("2d");
+      if(!m || !m.measureText || !m.getImageData) return;        // headless/no-2d → keep the CSS text
+      const font = weight + " " + cellsH + "px " + fontFam;
+      m.font = font;
+      const w = Math.max(1, Math.ceil(m.measureText(text).width) + 2), h = Math.ceil(cellsH * 1.4);
+      off.width = w; off.height = h;
+      const c = off.getContext("2d"); c.font = font; c.textBaseline = "middle"; c.fillStyle = "#fff";
+      c.fillText(text, 1, h / 2);
+      const data = c.getImageData(0, 0, w, h).data;
+      let yMin = h, yMax = 0;
+      for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(data[(y*w+x)*4+3] > 96){ if(y<yMin)yMin=y; if(y>yMax)yMax=y; }
+      const span = Math.max(1, yMax - yMin), PX = 3;
+      const disp = document.createElement("canvas"); disp.width = w * PX; disp.height = h * PX; disp.className = "pixtitle";
+      const d = disp.getContext("2d"); if(!d) return;
+      const draw = glintX => {
+        d.clearRect(0, 0, disp.width, disp.height);
+        for(let y = 0; y < h; y++) for(let x = 0; x < w; x++){
+          if(data[(y*w+x)*4+3] <= 96) continue;
+          let v = (y - yMin) / span + (BAYER4[y&3][x&3] / 16 - 0.5) * 0.5;
+          v = v < 0 ? 0 : v > 1 ? 1 : v;
+          let col = ramp[Math.min(ramp.length - 1, (v * ramp.length) | 0)];
+          if(glintX != null && Math.abs(x - glintX) < 1.6) col = glint;
+          d.fillStyle = "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+          d.fillRect(x * PX, y * PX, PX, PX);
+        }
+      };
+      draw(null);
+      el.innerHTML = ""; el.appendChild(disp);
+      // throttled glint: a ~0.6s sweep every ~5s, animated only DURING the sweep (idle
+      // via setTimeout between), and only while the entry splash is showing.
+      if(glint && !prefersReducedMotion() && typeof requestAnimationFrame === "function"){
+        const onEntry = () => { try{ return screens.entry && screens.entry.classList.contains("active"); }catch(e){ return false; } };
+        const sweep = () => {
+          if(!onEntry()){ setTimeout(sweep, 3000); return; }
+          const dur = 600, t0 = (performance && performance.now) ? performance.now() : Date.now();
+          (function step(){
+            const now = (performance && performance.now) ? performance.now() : Date.now(), e = now - t0;
+            if(e >= dur){ draw(null); setTimeout(sweep, 4200 + Math.random() * 2000); return; }
+            draw((e / dur) * w); requestAnimationFrame(step);
+          })();
+        };
+        setTimeout(sweep, 1800 + Math.random() * 1500);
+      }
+    }catch(e){ /* keep the plain CSS text on any failure */ }
+  }
+  // Stylise the entry title pair (gold wordmark + void subtitle); re-runs once fonts
+  // load so the pixel shapes use the real display face, not a fallback.
+  function renderTitles(){
+    const e = screens.entry; if(!e) return;
+    paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT);
+    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, TITLE_VOID_GLINT);
   }
 
   // Mint the favicon / home-screen icon from the same pixel renderer: draw the
@@ -3023,6 +3093,9 @@
   setupFx();           // T110: mount the FXGL home backdrop + burst overlay (no-op if FXGL absent)
   renderTree();        // the tree is the home picker; it paints the topic-info row
   renderBrand();
+  // T209 — re-stylise the titles once the self-hosted display font loads, so the pixel
+  // shapes use Space Grotesk rather than a fallback face (guarded; no-op without fonts).
+  try{ if(document.fonts && document.fonts.ready && document.fonts.ready.then) document.fonts.ready.then(renderTitles); }catch(e){}
   installFavicon();
   renderStartState();
   drawMenuIcons();    // static procedural icons on the menu buttons (T50)

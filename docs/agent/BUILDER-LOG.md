@@ -5706,3 +5706,21 @@ stack is now Magnar → Goblin Gold → The Void Throne → Fast mental-maths dr
 stylises it). [A]-only (index.html, styles.css).
 verified: `pwa.test` 35→37 (the mark is empty — no hard-coded x/2 — and the subtitle is present). icon-app's
 renderBrand→Magnar check still green. Full suite 53/53.
+
+---
+### [A] T209 — stylise the title block (pixel-gold wordmark + dithered-void subtitle)
+what: rendered the entry title PAIR as pixel-art canvas text (new `paintPixelTitle`): each line is drawn to an
+offscreen canvas, shaded by a vertical 3-tone ramp with **Bayer-4 dither**, then upscaled nearest-neighbour
+(`.pixtitle{image-rendering:pixelated}`). **"Goblin Gold" → currency GOLD** (`TITLE_GOLD` highlight→mid→shadow,
+the hoard-gold tones); **"The Void Throne" → endgame VOID** (`TITLE_VOID` violet→deep→near-black) — a matched
+pair. An **occasional throttled GLINT** sweeps each line (gold glint on the gold line, violet on the void line):
+a ~0.6s sweep every ~5s, animated only DURING the sweep (idle via setTimeout between) and only while the entry
+splash is showing; **reduced-motion → static, no sweep**. `renderTitles()` styles `.brand`(gold)+`.subtitle`(void),
+re-run on `document.fonts.ready` so the pixel shapes use the real Space Grotesk face. Robustly guarded — any
+failure (no 2D ctx / headless) keeps the plain CSS text. The maths tag + everything else stay clean. [A]-only
+(main.js, styles.css).
+verified: `pwa.test` 37→42 — paintPixelTitle uses Bayer-4 + the GOLD/VOID ramps, the wordmark is gold + the
+subtitle void, the glint is throttled + reduced-motion-gated, and `.pixtitle` is pixelated. The headless boot
+tests (fx-wiring/install-display/home-layout) stay green (the renderer no-ops without a real 2D context). **Full
+suite 53/53.** Owner verifies the look on the live splash.
+notes: this completes the T208→T209→T206 entry/collector batch. T168 stays HELD on the owner's Play ID verification.

@@ -42,6 +42,13 @@ if(mani){
   ok(/<div class="mark"><\/div>/.test(idx) && !/<div class="mark">x<span/.test(idx), "(a2) T208: the splash mark is empty (painted by renderBrand; the old x/2 flash is gone)");
   // T208 — the full title is "Goblin Gold: The Void Throne" — the void line is the subtitle
   ok(/<div class="subtitle">The Void Throne<\/div>/.test(idx), "(a2) T208: 'The Void Throne' subtitle sits below the Goblin Gold wordmark");
+  // T209 — the title pair is rendered as pixel-art (gold wordmark / void subtitle) with Bayer dither + glints
+  const mn = read("main.js");
+  ok(/function paintPixelTitle\(/.test(mn) && /BAYER4/.test(mn), "(a2) T209: paintPixelTitle renders dithered pixel text (Bayer-4)");
+  ok(/TITLE_GOLD\s*=\s*\[\[255/.test(mn) && /TITLE_VOID\s*=/.test(mn), "(a2) T209: a GOLD ramp (Goblin Gold) + a VOID ramp (The Void Throne)");
+  ok(/paintPixelTitle\(e\.querySelector\("\.brand"\), TITLE_GOLD/.test(mn) && /paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID/.test(mn), "(a2) T209: the wordmark is gold, the subtitle is void");
+  ok(/glint && !prefersReducedMotion\(\)/.test(mn), "(a2) T209: the glint sweep is throttled + skipped under reduced-motion");
+  ok(/\.pixtitle\{[^}]*image-rendering:pixelated/.test(read("styles.css")), "(a2) T209: the pixel-title canvas renders crisp (image-rendering:pixelated)");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------
