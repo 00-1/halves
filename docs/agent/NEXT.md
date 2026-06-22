@@ -10,12 +10,18 @@
 
 ---
 
-**Builder A → `T89`/`T90` (Arena 3v3 — gameplay) → content `T58`–`T61` → `T72` (held for owner creds)**
-**`T153` is DONE+APPROVED (`c942859`) — home backdrop now FIXED brand purple, owner-confirmed visually.**
-`T152[A]` also DONE (`bdd0e6a`). Queue is clear of owner flags → resume the roadmap. **Next: `T89`/`T90`
-Arena 3v3** (gameplay, no owner creds needed) → content `T58`–`T61`. *(`T103` TWA/Play-Store + `T72` submission
+**Builder A → `T156` (hide fullscreen buttons when installed/standalone) → `T157` (Android back-button nav) → `T89`/`T90` (Arena 3v3) → content `T58`–`T61` → `T72` (held for owner creds)**
+**`T153` DONE+APPROVED (`c942859`, fixed-purple, owner-confirmed); `T152[A]` DONE (`bdd0e6a`).** Two small
+**Play-Store-track / app-feel** tasks jump the queue (owner is testing the app on Android NOW — these make the
+installed-PWA test feel app-like): **`T156`** — detect `display-mode: standalone/fullscreen` (`isInstalledDisplay()`)
+and **hide** the entry `#entryFs` "Play in fullscreen" button + the Settings `#fsToggle` row when installed
+(keep them in a browser tab; keep the entry audio-gesture); bump the manifest `display` to **`"fullscreen"`**;
+**don't regress the T112 safe-area invariant.** Then **`T157`** — integrate screen nav with `history.pushState`
++ a `popstate` handler so the **Android back gesture navigates our screen stack** (Arena/menu → parent → home)
+instead of EXITING the app; confirm-exit only at home. Both **[A]-only**, existing Halves files. **Then** →
+`T89`/`T90` (Arena 3v3 — gameplay, no creds) → content `T58`–`T61`. *(`T103` TWA/Play-Store + `T72` submission
 need owner credentials — hold those till the owner's back.)* Re-read this line fresh before you start AND before
-you push (a fresh owner flag may land here as a `BUG`/DO-FIRST and overrides the roadmap).
+you push (a fresh owner flag may land here as a `BUG`/DO-FIRST and overrides this order).
 
 **Builder B → `T155` (distinct PAD/bed timbre per style — OWNER feedback) → then `T154` (visual-regression gate).**
 Off standby. **`T155` FIRST** — owner: *"every style seems to share the same synth string sound… vary a lot

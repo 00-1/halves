@@ -2661,6 +2661,48 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
+### T156 — [A] Hide the fullscreen affordances when running installed/standalone (TWA/PWA) · status: OPEN · OWNER-REQUESTED · Play-Store track
+Owner (2026-06-22, exploring the Android wrap): *"one difference will be the full-screen buttons will no longer
+be needed. It'll be locked full screen presumably."* Correct — in a **TWA / installed PWA** the app launches
+**locked fullscreen** (no browser chrome), so the in-app fullscreen controls are **redundant there**. But the
+SAME build still runs in a plain **browser tab**, where they ARE useful — so **don't delete them; conditionally
+hide them by display-mode.**
+- **Detect installed/standalone:** `window.matchMedia('(display-mode: standalone)').matches ||
+  window.matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true`. Wrap it in a small
+  helper (e.g. `isInstalledDisplay()`).
+- **When installed/standalone → HIDE** both fullscreen affordances: the entry-screen **"Play in fullscreen"**
+  button (`#entryFs`) and the Settings **Fullscreen toggle** row (`#fsToggle`). (The entry screen still serves
+  the **audio user-gesture** unlock — keep that gesture; just drop the fullscreen *wording/button* when already
+  fullscreen, e.g. entry becomes a plain "Tap to begin".) In a browser tab → leave them exactly as today.
+- **Manifest:** bump `display` from `"standalone"` to **`"fullscreen"`** so the wrapped/installed app also hides
+  the **status bar** (true game fullscreen). Keep `orientation: "portrait"`. (`display_override` may list
+  `["fullscreen","standalone"]` for graceful fallback.) Re-check the **safe-area insets** still hold under true
+  fullscreen (T112 invariant — the `.app` height must still subtract insets; don't regress it).
+- **DoD:** display-mode helper + conditional hide of `#entryFs`/`#fsToggle` (browser-tab behaviour unchanged);
+  manifest `display:"fullscreen"`; the **`home-layout` safe-area invariant still asserts** (no regression);
+  `node -c` clean; `$("id")` refs still valid; pwa.test updated if it pins `display`. **[A]-only** (existing
+  Halves files). **Verify:** confirm in a browser tab the buttons still show + work; the installed/standalone
+  hide is best browser-verified (matchMedia display-mode) when the harness is back — until then assert the
+  helper's logic in a Node test + the owner confirms on his installed PWA.
+
+### T157 — [A] Handle the Android back button / back-gesture (don't exit the app mid-game) · status: OPEN · OWNER-track (Babysitter-caught) · Play-Store track
+The classic **TWA surprise**: our navigation is **JS screen-state, not URL history**, so the Android system
+**back gesture** finds no web-history to pop and **exits the app** instead of going "back one screen." To a
+10-year-old mid-Arena, hitting back to leave a fight would **quit the game** — feels broken. Make back navigate
+our screens.
+- **Integrate our screen nav with history:** on each `showScreen(...)`/screen transition push a
+  `history.pushState({screen})` (except the root/home), and add a `popstate` handler that **navigates our screen
+  stack back** (e.g. Arena→home, a sub-menu→its parent) instead of unloading. At the **home/root** screen, back
+  should **confirm-exit** (or allow the default exit) rather than dropping straight out mid-session — pick the
+  least-surprising behaviour (a "press back again to exit" or a small confirm).
+- **Must not break browser-tab play or deep state:** guard for environments without `history` (try/catch);
+  don't fight the T54 update-check or the service worker; pushState `url` should stay same-document (no
+  navigation, no new network). Don't leak state across a hard reload.
+- **DoD:** Android/system back navigates the app's screen stack (Arena/menus → parent → home), and only
+  exits (or confirms) from home — verified by a Node test that drives `showScreen` + simulates `popstate` and
+  asserts the resulting screen, plus the owner confirming on his installed PWA/wrapped build. Browser-tab
+  back-button behaviour stays sane (no traps, no infinite loops). `node -c` clean; **[A]-only**.
+
 ### T155 — [B] Distinct PAD/bed timbre per style (kill the shared "synth string" sound) · status: OPEN · OWNER-PRIORITY
 Owner (2026-06-22): **"The music styles are now a lot better. One thing I don't quite like is that every style
 seems to share the same synth string sound — that would be great to vary a lot more. It makes them feel a little
