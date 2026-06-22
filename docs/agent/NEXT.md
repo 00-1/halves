@@ -21,19 +21,20 @@ matches. Icon tests green; owner confirms by (re)installing the PWA. [A]-only (`
 512.)* The rest of **`T168`** stays **HELD** on the owner's Google Play ID verification.
 **Re-read this line fresh before each task + push.**
 
-**Builder B → `T192` (hoard visual overhaul) → then `T193` (coin-cylinder gain burst).** Off standby — the owner
-saw the now-visible hoard (`ee118d3`) and gave art direction.
-- **`T192` — cell-shaded CYLINDER coins + a taller, wall-banked pile.** Three owner asks: (1) the pile must **stack
-  much higher** at high wealth (`HOARD_MAX_H` 0.34 → ≈0.7–0.85); (2) **reshape** it — not a single central dome:
-  full-width fill that **banks up against the side walls** (x≈0 and x≈1), organic/irregular; (3) **drop the beveled
-  ovals** for **cell-shaded rotated short CYLINDERS** — a flat **top-face** ellipse + a *different darker* flat
-  **edge** band, **NO outline**, `rot`/`aspect` drive the spin. Rewrite `drawCoin` + `moundProfile`; check
-  `HOARD_CAP` coverage. Must work on the **WebGL/WebGPU 2D overlay** (owner's device). [B]-only (`fxgl.js`, tests).
-  *(BACKLOG T192.)*
+**Builder B → `T195` (pile dither/pixelate + gradation) → then `T193` (coin-cylinder gain burst).** `T192` (cylinder
+coins + taller wall-banked pile) is **APPROVED** (live `61efcc6`); owner "looks a bit better" + gave a refinement.
+*(If you're already mid-`T193`, finish + push it, then do `T195`.)*
+- **`T195` — FILTER pass + fine gradation.** Root cause: the engine renders the scene with **ordered 4×4 Bayer
+  dither + palette quantise**, but `drawHoard` draws a **smooth analog gradient** (`shade(base,0.25-depth*0.6)`) —
+  so the pile reads smooth against the dithered pixel scene. Bring the pile into the **same ordered-Bayer dithered,
+  pixel-quantised** look (chunkier grid + Bayer-threshold dithering across a **multi-tone gold ramp**, reuse the
+  engine's dither machinery). And **more gradation steps:** many-tone dithered shading (not ~5 flat bands) + raise
+  **`HOARD_TIERS`** 8 → ~24–32 for fine pile growth. Must work on the GL/GPU 2D overlay. [B]-only (`fxgl.js`, tests).
+  *(BACKLOG T195.)*
 - **`T193` — the SAME spinning cylinder coins in the money-GAIN celebration.** On the owner's GL/GPU backend the
   burst goes through the **shader splat (disc mask)** which **ignores the coin look** → "just particles." Render
   coin-look gain particles as **spinning T192 cylinders on the 2D layer** (like the T185 overlay), not the shader
-  splat; keep the T173 amount-scaling. [B]-only (`fxgl.js`, tests). *(BACKLOG T193 — depends on T192's primitive.)*
+  splat; keep the T173 amount-scaling. [B]-only (`fxgl.js`, tests). *(BACKLOG T193 — uses T192's coin primitive.)*
 **Re-read this line fresh before each task + push.**
 
 ---

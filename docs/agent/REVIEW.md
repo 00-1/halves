@@ -27,8 +27,12 @@ suite **52/52** + `node -c` green.
 **Verified:** worktree at `ee118d3`; `node -c` clean on every changed `.js`; **52/52** suite (golden-fx/synth/
 emblems/back-nav incl.) green; deploy confirmed (pages.yml `ee118d3` = success). *Browser/audio/visual confirmation
 is the owner's (harness is OOM-flaky) — all four owner-reported items are code-correct + gated; flagged for device
-confirm.* **→ A: off standby → `T194` (the app ICON = Magnar/hero `mo` — render to maskable static assets + wire the
-manifest/favicon; owner picked it over the emblems). B: off standby → `T192` (hoard look overhaul:
+confirm.* **`T192`** (`61efcc6`, [B]) APPROVED — cylinder coins (flat top-face + darker flat edge band, no outline, `aspect`/
+`rot` spin) + a taller (`HOARD_MAX_H` 0.34→0.82) fuller (`HOARD_CAP`→480) wall-banked `moundProfile`; gates green;
+owner "looks a bit better" → refinement filed **T195** (the pile uses a smooth analog gradient while the rest of
+the scene is ordered-Bayer dithered — bring it into the dithered/pixelated look + many fine gradation steps).
+**→ A: → `T194` (app ICON = Magnar/hero `mo`). B: → `T195` (pile dither/pixelate + gradation) → `T193` (gain-burst
+cylinder coins). Earlier B note: `T192` (hoard look overhaul:
 cell-shaded cylinder coins + taller wall-banked pile) → `T193` (the same spinning cylinder coins in the gain
 burst). Owner saw the now-visible hoard (T185 ✓) and gave art direction via screenshot.**
 

@@ -3111,7 +3111,7 @@ minted by `installFavicon()` (main.js:834, currently draws the `x/2` glyph at 64
   **[A]-only** (`manifest.webmanifest`, `index.html`, `main.js` `installFavicon`, the committed PNG assets, tests).
   *(Unblocks the icon half of T168; the Play-Store `.aab` icon reuses the same 512 asset.)*
 
-### T192 — [B] **Hoard visual overhaul — cell-shaded CYLINDER coins + a taller, wall-banked pile** · status: OPEN · owner-reported (screenshot, `ee118d3`)
+### T192 — [B] **Hoard visual overhaul — cell-shaded CYLINDER coins + a taller, wall-banked pile** · status: DONE (`61efcc6`) · APPROVED · ✅ owner "looks a bit better" (refinement → T195)
 **Owner (2026-06-22, screenshot of the now-visible 1T hoard): three things.** (1) *"it doesn't stack to the ceiling
 or even near"* — at 1T it's a low pile; should climb much higher. (2) *"the stack shape doesn't look organic — I
 think it would collect and pile up against the SIDES of the screen (imagine they are walls)"* — not a single
@@ -3135,6 +3135,32 @@ where the surface and edge have different colours."*
   (face ≠ edge colour) at varied rotations; works on the **WebGL/WebGPU 2D overlay** (the owner's device) AND the
   CPU still; existing non-hoard scenes byte-identical; `golden-fx`/`fxgl`/`hoard-wiring` green (update goldens, note
   it); `node -c` clean; **owner device-confirms** the new look. **[B]-only** (`fxgl.js`, tests).
+
+### T195 — [B] **Hoard FILTER pass — dither + pixelate the pile to match the scene, + many fine gradation steps** · status: OPEN · owner-reported (follow-up to T192)
+**Owner (2026-06-22, on T192 `61efcc6`): "looks a bit better. I think what it needs is a filter pass — dithering
+and pixelation — e.g. along the lines of filters in brickmap. Also I think we need a lot of steps of gradation to
+the pile, not just (for example) 5 big steps — not sure exactly how it's done currently."**
+- **✅ ROOT CAUSE (Babysitter-verified):** the engine renders the whole scene with **ordered 4×4 Bayer dithering +
+  palette quantisation** (per the `fxgl.js` header / `palette.wgsl`), but the **HOARD silhouette does NOT** — it
+  draws a **smooth analog gradient** (`drawHoard`: `shade(base, 0.25 - depth*0.6)` over `step≈W/160` cells). So the
+  pile reads *smooth* against a *dithered pixel* scene — out of place. (*"brickmap filters"* reads as the classic
+  ordered-dither + pixelation pixel-art look — which the engine already has; the hoard is the odd one out.)
+- **Filter pass (`drawHoard`):** bring the pile into the **same ordered-Bayer dither + pixel-quantised** look as the
+  scene — a **chunkier pixel grid** (pixelation) and **Bayer-threshold dithering** between a **multi-tone gold
+  ramp** (crest-light → base-dark), instead of the smooth gradient. Reuse the engine's existing dither machinery /
+  Bayer matrix rather than inventing a new one, so the pile matches the biome behind it. (Apply to the silhouette;
+  the flat cell-shaded cylinders can stay, but make sure they sit cohesively in the dithered field.)
+- **Lots of gradation steps:** (a) shade the pile across a **many-tone gold ramp** dithered (not ~5 flat bands) →
+  fine pixel gradation crest→base; (b) raise **`HOARD_TIERS`** (currently **8** — the coin-buffer re-seed
+  granularity) to ~**24–32** so the pile/coins grow in **many fine increments** with wealth, not coarse jumps.
+  *(NB: the dev gold-setter's ~5 discrete buttons are just test points — the real `hoardLevel` curve is continuous;
+  the visible "big steps" are the smooth-gradient banding + the coarse tier count, which this fixes.)*
+- **DoD:** the pile is **dithered + pixelated to match the scene** (ordered Bayer, palette-quantised — no smooth
+  analog gradient), with **many fine gradation steps** (multi-tone dithered shading + finer `HOARD_TIERS`); reads
+  cohesive with the biome on the **WebGL/WebGPU 2D overlay** (owner's device) AND CPU still; scenes byte-identical
+  when no hoard; `golden-fx`/`fxgl`/`hoard-wiring` green (update goldens, note it); `node -c` clean; **owner
+  device-confirms**. **[B]-only** (`fxgl.js`, tests). *(If "brickmap" means a specific filter beyond ordered-dither
+  + pixelation, the owner will refine.)*
 
 ### T193 — [B] **Money-gain celebration = the same spinning cell-shaded CYLINDER coins** (not square/disc particles) · status: OPEN · owner-reported
 **Owner (2026-06-22): "I'd like to see the same rotating cell-shaded cylinders in the money-gain celebrations.
