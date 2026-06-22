@@ -57,7 +57,7 @@ ok(G.tierGold(10, 2) === 2 * G.tierGold(10, 1), "(b) the mult scales every earn 
 
 // ---- (c) the Hoard Multiplier: g^(bosses defeated) --------------------------
 const g = G.HOARD_G;
-ok(g >= 2.0 && g <= 2.2, "(c) the boss multiplier g is in the sim-recommended 2.0–2.2 band (" + g + ")");
+ok(g >= 2.0 && g <= 2.6, "(c) the boss multiplier g is in the owner-set 2.0–2.6 band (sim floor 2.0, owner dialled 2.5) (" + g + ")");
 const RS = E.REGION_SIZE, bossTiers = []; for(let t = RS; t <= E.TIER_COUNT; t += RS) bossTiers.push(t);
 ok(bossTiers.length === 10, "(c) there are 10 region bosses (every " + RS + "th tier)");
 function withBosses(k){ const col = {}; for(let i = 0; i < k; i++) col["tier:" + bossTiers[i]] = { ts:1 }; return col; }

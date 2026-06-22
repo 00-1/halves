@@ -105,8 +105,9 @@
   // trillions — the Cookie-Clicker comedy). g^(region bosses defeated): early game
   // has no bosses → ×1 (earning unchanged), and each of the 10 region bosses felled
   // multiplies wealth, so late-game Arena wins pay millions. Sim-recommended g≈2.0–2.2
-  // (docs/agent/economy-sim.js); decoupled from Arena difficulty (gold ≠ foe def).
-  const HOARD_G = 2.1;
+  // (docs/agent/economy-sim.js); owner dialled it to 2.5 for a steeper hoard ramp.
+  // Decoupled from Arena difficulty (gold ≠ foe def).
+  const HOARD_G = 2.5;
   function bossesDefeated(col){
     const E = window.Enemies, RS = (E && E.REGION_SIZE) || 12, TC = (E && E.TIER_COUNT) || 120;
     let n = 0; for(let t = RS; t <= TC; t += RS) if(col && col["tier:" + t]) n++; return n;

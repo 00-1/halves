@@ -5365,3 +5365,13 @@ notes: `g` is a single tunable constant for the owner to dial the final feel. **
   `GOLD_FULL` (the pile "fills" at the 1M "Gold Hoard" milestone while the NUMBER explodes past it) is set in
   the T173 wiring (blocked on B's T172 engine). Next per `NEXT.md`: content `T60`/`T61` (re-scoped — Metric +
   Sequences) → T173.
+
+---
+### [A] T178 follow-up — owner dialled HOARD_G 2.1 → 2.5 (steeper hoard ramp)
+what: per the `NEXT.md` quick pointer, bumped the single Hoard-Multiplier constant `HOARD_G` from `2.1` to
+**`2.5`** (`main.js`). Mechanism unchanged (`goldMult = additive base × g^(region bosses defeated)`); only the
+value moved. Full-clear hoard is now ×g^10 = **9537×** (was 1668×), and a completionist tier-120 win pays
+**287M** (was 50.3M) — a sharper absurd-wealth curve.
+verified: widened the `gold.test` `g`-band assertion to the owner-set 2.0–2.6 (sim floor 2.0, owner dial 2.5);
+**all 22 gold checks pass**; Arena still decoupled (`enemies.js` never reads goldMult). [A]-only (`main.js`,
+`test/gold.test.js`). Pushed first per the absolute pointer, then continuing content `T60`/`T61`.
