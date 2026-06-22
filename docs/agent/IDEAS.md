@@ -109,6 +109,14 @@ not a rebuild. **Reinforces: keep content cleanly separated from the engine/meta
 task** — finish game 1 first. When the owner says go, this promotes to a "franchise-ready" refactor pass (ensure
 the question-bank is a clean swappable layer) + the two new content packs.
 
+## I0b — LORE note (owner, 2026-06-22): the player is NOT a goblin
+**"Goblin Gold" is the CURRENCY, not the player's species.** The player is an **adventurer/mage** — rises through
+arcane ranks (Adept → Battle Mage → Archmage → Runelord → Sage → Grandmaster), fields a **party of heroes**
+(Shadowmancer, …), and climbs the Arena from the **Goblin Warren** (region 1, **Goblin King** = first boss) up to
+**The Void Throne** (**Void Sovereign**). So **goblins are the world/enemies**, and **Goblin Gold = the gold you
+plunder** (the in-game currency). **Don't write flavour/art that makes the player a goblin.** The absurd-wealth
+humour (T178/hoard) = an *adventurer* amassing an inordinate pile of goblin gold — still lands.
+
 ## I1 — Events — ✅ PROMOTED to BACKLOG (Phase 6.5, T78–T81) on 2026-06-21
 
 > **No longer a parked idea.** The owner brought Events forward ("I decided I like it a

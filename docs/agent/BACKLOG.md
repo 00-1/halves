@@ -2816,7 +2816,9 @@ no-op, defence-in-depth with T164).
 **Owner (2026-06-22): "I'd like coins to reach higher numbers than 500K — at least millions, but billions/
 trillions would be funny too. This is part of the humour/character — building up inordinate/pointless wealth. So
 ramp up the wealth accumulation in MID/LATE game. Early accumulation is already good."** *(Cookie-Clicker /
-AdVenture-Capitalist absurd-number comedy, on-brand for a gold-hoarding goblin.)*
+AdVenture-Capitalist absurd-number comedy. The PLAYER is an adventurer/mage (rises Adept→Archmage→Runelord,
+fields a hero party) — **NOT a goblin**; "Goblin Gold" is just the **currency** (gold plundered from goblins —
+Goblin King/Warren are the first foes). The comedy = an adventurer amassing an absurd pile of goblin gold.)*
 - **The infra ALREADY supports it** (no new plumbing): `fmtGold` suffix ladder goes **K→M→B→T→Qa…Qad (~10⁴⁵)**;
   the wealth **milestones already climb to 1e15** ("Coin Purse" 1K → "Gold Hoard" 1M → "Croesus" 1B → "Midas
   Touch" 1T → "Cosmic Fortune" 1e15). **Only the EARNING RATE is the bottleneck:** `goldMult` is **additive/linear**
