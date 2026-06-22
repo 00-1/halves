@@ -3151,7 +3151,7 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
-### T207 — [B] **Coin SHINE — animated glints on the pile + the shower; clearer coin rotation** · status: OPEN · owner-requested
+### T207 — [B] **Coin SHINE — animated glints on the pile + the shower; clearer coin rotation** · status: DONE (`2300ac6`) · APPROVED · owner device-confirm
 **Owner (2026-06-22): "occasional glints appearing in the pile of coins; glints on the shower of coins; ideally
 some of the showered coins would also have a rotation animation."**
 - **(1) Shower-coin glints:** `drawCoinParticle` currently passes **`glint = 0`** to `drawCoin` (no shine). Add an
@@ -3176,7 +3176,7 @@ some of the showered coins would also have a rotation animation."**
   clean; `golden-fx`/`fxgl`/`fx-wiring` green (note goldens — animated glint may need a fixed-time gate); **owner
   device-confirms**. **[B]-only** (`fxgl.js`, tests).
 
-### T205 — [B] **Trim emblems to the 3 creatures + fix their sizing** (scrap the other 6; they move to Collector awards) · status: OPEN · owner-requested
+### T205 — [B] **Trim emblems to the 3 creatures + fix their sizing** (scrap the other 6; they move to Collector awards) · status: DONE (`26e45a4`) · APPROVED
 **Owner (2026-06-22): "the final 3 emblems are nice — the rest I think we can scrap. … Make sure the new awards
 match the size of the existing ones visually, cos in the emblems screen they look like they need cropping."**
 - **Scrap 6, keep 3:** remove `coin`/`crowncoin`/`hoard`/`goblin`/`voidthrone`/`sigil` from `emblems.js` (the abstract
@@ -3190,7 +3190,7 @@ match the size of the existing ones visually, cos in the emblems screen they loo
   same visual size as the other collectible icons**; `emblems.test` updated + green; `node -c` clean. **[B]-only**
   (`emblems.js`, `test/emblems.test.js`). *(Pairs with T206 [A], which consumes these as awards.)*
 
-### T208 — [A] **Entry fixes: kill the `x/2` flash + ADD the "The Void Throne" subtitle** · status: OPEN · owner-reported
+### T208 — [A] **Entry fixes: kill the `x/2` flash + ADD the "The Void Throne" subtitle** · status: DONE (`034a6c5`) · APPROVED
 **Owner (2026-06-22): "I see Magnar now, that's good. There's still a flash of x/2 though, which I don't want.
 Also we're missing the subtitle under Goblin Gold."** + clarification: *"mental-maths-drills text is there, that
 can stay. By subtitle I mean THE VOID THRONE."*
@@ -3211,7 +3211,23 @@ can stay. By subtitle I mean THE VOID THRONE."*
   the maths tag, in that order; no layout jump; `node -c` clean; entry/icon tests green; **owner device-confirms**.
   **[A]-only** (`index.html`, `main.js`, `styles.css`).
 
-### T209 — [A] **Stylise the title block — "Goblin Gold" pixel-GOLD + "The Void Throne" dithered PURPLE/BLACK; occasional glints** · status: OPEN · owner-requested
+### T210 — [A] **Title refinements: 3× bigger, lighten the Void Throne, drop its sparkle** · status: OPEN · owner-reported
+**Owner (2026-06-22, on T209 `632804d`): "title text looks good, but let's 3× the size of both. Void Throne needs
+lightening. Void Throne doesn't need the same sparkle."** Refines T209's `paintPixelTitle`/`renderTitles` (main.js).
+- **3× size — both lines:** make "Goblin Gold" AND "The Void Throne" **~3× their current rendered size** (bump the
+  title canvas display size / scale; keep nearest-neighbour crisp; mind the splash layout doesn't overflow — reflow
+  the stack so Magnar + the bigger titles + tag + buttons still fit). Keep proportions (Void Throne smaller than
+  Goblin Gold, just both 3×).
+- **Lighten the Void Throne:** the void ramp (`TITLE_VOID`, purple→black) reads **too dark**. Shift it **lighter** —
+  weight toward the brand purple (`#9a5cf6` / `#cda9ff`) over black, so the subtitle is clearly legible/luminous,
+  not near-black. (Still dithered/void-themed, just brighter.)
+- **No sparkle on the Void Throne:** **remove the glint sweep from the subtitle** (drop `TITLE_VOID_GLINT` / pass no
+  glint for the void line). **Keep the gold glint on "Goblin Gold."** Only the gold title sparkles.
+- **DoD:** both title lines ~3× bigger (crisp, no layout overflow); the Void Throne is **lighter/legible**; **no
+  glint on the Void Throne**, gold glint stays on "Goblin Gold"; maths tag + rest unchanged; `node -c` clean; entry
+  tests green; **owner device-confirms**. **[A]-only** (`main.js`, `styles.css`/`index.html` for sizing/layout).
+
+### T209 — [A] **Stylise the title block — "Goblin Gold" pixel-GOLD + "The Void Throne" dithered PURPLE/BLACK; occasional glints** · status: DONE (`632804d`) · APPROVED · refinements → T210
 **Owner (2026-06-22): "the title text, at least Goblin Gold, could be more stylised and pixelated… built out of the
 gold in our stacks, including animated/occasional glinting"** + **"The Void Throne could be stylised too — nice
 dithered purple/black."** Only the **two title lines** change; the **maths tag, buttons, and all other text stay
@@ -3232,7 +3248,7 @@ clean/readable** (current `--display` font).
   clean; tests green; **owner device-confirms**. **[A]-only** (`main.js`, `index.html`, `styles.css`; may share the
   ramp/Bayer/glint helper with `fxgl`/T207). *(After T208 places the text.)*
 
-### T206 — [A] **Collector awards: recalibrate to the real catalogue + absorb the 3 creature awards → 15 total** · status: OPEN · owner-requested
+### T206 — [A] **Collector awards: recalibrate to the real catalogue + absorb the 3 creature awards → 15 total** · status: DONE (`4c7426c`) · APPROVED
 **Owner (2026-06-22): "move those last three emblems to collector awards, so we have 15 in total. And rejig the
 collector awards to match our actual item count — I don't think it'll increase much now we're nearing the end. The
 final collector award could be 1900."**

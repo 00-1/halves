@@ -1,7 +1,26 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T201 [A] · T202 [A] · T198 [A] · T204 [B]` (install-identity cache fix, Magnar
-splash, gentler fill curve, backdrop survives app-switch). Live build **`b4eead7`** (all deployed); suite **53/53**
+**Current verdict:** `APPROVED — T205 [B] · T206 [A] · T207 [B] · T208 [A] · T209 [A]` (emblems trimmed → Collector
+awards rejig (15), coin shine, entry fixes, stylised title block). Live build **`632804d`**; suite **53/53** +
+`node -c` green. Both builders cleared their queues. **Owner: title "looks good" → tweaks filed as `T210`.**
+- **`T205`** (`26e45a4`, [B]) — `emblems.js` IDS = `[beast, goblinking, voidbeast]` (6 abstract scrapped); creatures
+  re-fit to fill the cell.
+- **`T206`** (`4c7426c`, [A]) — Collector ladder recalibrated: top tiers 2,500–10,000 → **1,600/1,700/1,800/1,900**
+  (final ≈ catalogue) + the **3 creatures absorbed** (earned by felling bosses, tier 12/48/120) = **15 total**;
+  Codex Emblems section removed; `collector:25/75/150` kept migration-safe.
+- **`T207`** (`2300ac6`, [B]) — coin shine: shower glints + throttled pile sparkles + clearer rotation. *(owner
+  device-confirm.)*
+- **`T208`** (`034a6c5`, [A]) — static `.mark` emptied (no x/2 flash, height reserved) + `.subtitle` "The Void
+  Throne" added; maths tag stays.
+- **`T209`** (`632804d`, [A]) — `paintPixelTitle`: pixel-gold "Goblin Gold" (gold ramp + Bayer-4 dither) + dithered
+  void "The Void Throne", each with a throttled glint sweep. **Owner refinements → `T210`** (3× bigger, lighten the
+  void, drop the void's sparkle).
+**Verified:** worktree at `632804d`; `node -c` clean; **53/53** green. **→ A: → `T210` (title refinements). B:
+STAND BY** (T207 owner device-confirm pending). Owner device-confirm: coin shine (pile sparkles + shower glints),
+the 15-award Collector tab, and the title (feeding T210).
+
+> **Prior verdict:** `APPROVED — T201 [A] · T202 [A] · T198 [A] · T204 [B]` (cache fix, Magnar splash, fill curve,
+backdrop self-heal). Live build **`b4eead7`**.
 + `node -c` green. **Builder A is healthy — it cleared T201/T202/T198 in two pushes (not stuck).**
 - **`T201`** (`52a9684`, [A]) — `sw.js`: `CACHE` v3→**v4**, `FRESH_RE = /(manifest\.webmanifest|icon\.svg|icon-\d+\.png)$/`
   served **network-first** (cached only as offline fallback) → the install name+icon unfreeze and propagate on the
