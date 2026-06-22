@@ -4655,3 +4655,35 @@ how I verified: **arena.test (29→38)** — the live DOM-boot now proves: the *
   (incl. `arena3` T88 invariants, `ui-restyle` pixel-radius, `fx-wiring` win-burst). [A]-owned only.
 notes: **babysitter browser-verify** — pick 1, 2, then 3 heroes (4th blocked), see the enemy team of 3 with
   matchups, Fight resolves to the team result. **Next: `T90`** (watchable turn-by-turn playout of the same sim).
+
+---
+
+## Builder A — T90: Arena 3v3 watchable deterministic turn playout
+commit: (this commit) — [A], roadmap (Phase 6.10, closes the Arena 3v3 trio T88→T89→T90). Makes the fight
+*readable*: the 3v3 resolves turn-by-turn, calmly, then reveals the result.
+changed:
+  - **`enemies.js`** (A-owned): `simulateTeams` gained an opt-in **`recordLog`** flag — purely additive (same
+    code path → byte-identical outcome) that also returns the starting **`units`** (max HP) + a turn-by-turn
+    **`log`** (each strike: actor/target/dmg/remaining-HP/KO). Off by default, so the load-time calibration +
+    `teamBattle` pay zero overhead. New public **`teamBattleLog(party, tier, col)`** returns the SAME
+    `{win,heroesAlive,foesAlive,rounds,tier}` as `teamBattle` PLUS `units`/`log`. Exported.
+  - **`main.js`**: the Fight now **plays out** before applying the result. `startBattle` builds the logged sim
+    and (unless reduced-motion / no-RAF → instant) calls **`playBattle`**, which renders HP-bar combatant cells
+    (party vs enemy team), then steps the EXACT log on a **single cancelable RAF** — HP bars drain, KO'd units
+    dim, a status line narrates each strike. **Skippable** (`.bp-skip` → jump to result). On natural end OR skip,
+    `endPlayout → finishBattle` applies grants + reveals the result card (the existing celebration/sting/loot
+    path, unchanged). The RAF is cancelled on a new fight, on leaving the Arena (`show()`), and on re-entering
+    it — **no leak**. The frame tolerates a missing/garbage timestamp (always progresses + terminates).
+  - **`styles.css`**: `.battle-play` panel, `.bp-unit`/`.bp-port`/`.bp-hpbar`/`.bp-hp` (mint for the party, red
+    for foes), `.bp-status`, `.bp-skip` — classic + `[data-ui="pixel"]` variants.
+how I verified: **arena.test (38→44)** — the live boot now proves the Fight shows a **watchable playout** (6
+  combatants, 6 HP bars, a Skip control), the result is **NOT applied until the playout finishes**, and **Skip**
+  finalises into the SAME deterministic Victory (+tier progress). **arena3.test (24→27)** — a Node check sweeps
+  tiers × team sizes × loadouts asserting **`teamBattleLog`'s outcome EQUALS `teamBattle`** (no re-roll) and the
+  log is internally consistent (HP never < 0; win == ≥1 hero alive). The four boot harnesses that win a fight
+  (fx-wiring win-burst, synth-wiring victory-sting, nav-icons result portrait, wayfinding region-clear) now skip
+  the playout to reach the result. `perf.test` green — **no RAF/listener leak** (Skip reuses the delegated
+  handler; the playout RAF cancels on leave). `node -c` clean; **full suite green**. [A]-owned only.
+notes: **babysitter browser-verify** — Fight → watch HP bars drain + KOs over ~2.6s (or tap Skip) → the result
+  card. Reduced-motion resolves instantly. Arena 3v3 (T88→T89→T90) is now complete. Next per `NEXT.md`:
+  content `T58`–`T61` → `T72` (held for owner creds).

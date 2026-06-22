@@ -68,6 +68,8 @@ ok(!!heroId, "a hero card is offered");
 // pick the hero + fight → result header should carry the chosen hero's portrait
 (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
 (els.arenaFight._h.click||[]).forEach(f=>f({}));
+// T90: the Fight now plays out turn-by-turn — skip to the result card
+(els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".bp-skip" ? {} : null) } }));
 const res = els.arenaBody._html;
 ok(/ar-port/.test(res) && new RegExp('ar-port[^>]*data-hero="' + heroId + '"').test(res),
    "result header shows the chosen hero's portrait (" + heroId + ")");

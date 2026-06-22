@@ -168,13 +168,21 @@ ok(E.canAttempt(2, { "tier:1": 1 }) === true, "tier 2 attemptable once tier 1 cl
   ok(badges() === 2, "T89: tapping a selected hero removes it from the party (1–3 allowed)");
   pick(heroIds[0]);   // back to a full party of 3 for the fight
   ok(badges() === 3, "T89: re-adding refills the party to 3");
-  // ---- the team fight resolves instantly via the sim (no maths round) --------
+  // ---- T90: the Fight first PLAYS OUT turn-by-turn (watchable), no round -----
   const gameActiveBefore = els.game.classList.contains("active");
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
   ok(els.game.classList.contains("active") === false && gameActiveBefore === false, "Fight never activates the game screen (no question round)");
   ok(els.arena.classList.contains("active"), "after Fight, still on the Arena screen");
+  ok(/battle-play/.test(els.arenaBody._html), "T90: the Fight shows a watchable battle playout");
+  ok((els.arenaBody._html.match(/class="bp-unit/g) || []).length === 6, "T90: the playout renders all 6 combatants (party + enemy team)");
+  ok((els.arenaBody._html.match(/class="bp-hp"/g) || []).length === 6, "T90: each combatant has an HP bar");
+  ok(/bp-skip/.test(els.arenaBody._html), "T90: the playout is skippable");
+  ok(!JSON.parse(store["halves.collected"])["tier:1"], "T90: the result is NOT applied until the playout finishes");
+  // skip → the playout finalises into the result (the SAME deterministic outcome)
+  (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".bp-skip" ? {} : null) } }));
+  ok(els.arena.classList.contains("active"), "after the playout, still on the Arena screen");
   ok(els.arenaBody.scrollTop === 0, "after a fight the Arena scrolls back to the top (T65)");
-  ok(/Victory!/.test(els.arenaBody._html), "instant Victory shown");
+  ok(/Victory!/.test(els.arenaBody._html), "Victory shown after the playout resolves");
   ok((els.arenaBody._html.match(/class="pix ar-port"/g) || []).length === 3, "T89: the result shows all 3 party heroes");
   ok(/standing/.test(els.arenaBody._html) && /rounds/.test(els.arenaBody._html), "T89: the result summarises the team-sim outcome (heroes standing · rounds)");
   ok(JSON.parse(store["halves.collected"])["tier:1"], "win granted tier:1 marker");

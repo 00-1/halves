@@ -193,6 +193,8 @@ ok(/test\/fx-wiring\.test\.js/.test(wf), "(4) this wiring gate test/fx-wiring.te
   (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
   const celebsBeforeWin = fx.celebrates.length;
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
+  // T90: the Fight plays out turn-by-turn — skip to the result, which fires the win celebration
+  (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".bp-skip" ? {} : null) } }));
   ok(fx.celebrates.length > celebsBeforeWin, "boot: T125 — a real Arena WIN fires a BIG celebration (victory + loot), not a faint burst");
   const cw = fx.celebrates[fx.celebrates.length - 1];
   ok(cw && typeof cw.o.x === "number" && typeof cw.o.y === "number" && cw.o.count > 0 && cw.o.seed, "boot: the WIN celebration carries {x,y,count,seed} (deterministic, positioned)");

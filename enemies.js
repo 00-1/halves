@@ -227,10 +227,17 @@
   function teamProduct(team){ let a = 0, h = 0; for(const c of team){ a += c.atk; h += c.hp; } return a * h; }
 
   // Pure deterministic sim. heroes/foes = combatant arrays. Returns the outcome.
-  function simulateTeams(heroes, foes){
+  // `recordLog` (T90): when true, also returns `units` (the starting roster with
+  // max HP) and a turn-by-turn `log` of every strike — purely additive, the
+  // outcome is byte-identical (same code path), so the watchable playout can
+  // replay the EXACT sim with no extra RNG. Off by default (calibration/teamBattle
+  // run thousands of sims at load — no log overhead unless asked).
+  function simulateTeams(heroes, foes, recordLog){
     const all = heroes.map((c, i) => ({ atk:c.atk, hp:c.hp, spd:c.spd, type:c.type, side:0, ord:i }))
       .concat(foes.map((c, i) => ({ atk:c.atk, hp:c.hp, spd:c.spd, type:c.type, side:1, ord:100 + i })));
     const order = all.slice().sort((a, b) => b.spd - a.spd || a.ord - b.ord);
+    const units = recordLog ? all.map(c => ({ side:c.side, ord:c.ord, type:c.type, maxHp:c.hp })) : null;
+    const log = recordLog ? [] : null;
     let guard = 0;
     const aliveOn = side => all.some(c => c.side === side && c.hp > 0);
     while(aliveOn(0) && aliveOn(1) && guard < 4000){
@@ -241,15 +248,20 @@
         if(!foesAlive.length) break;
         const tgt = foesAlive.sort((x, y) =>
           H.matchup(actor.type, y.type) - H.matchup(actor.type, x.type) || x.hp - y.hp || x.ord - y.ord)[0];
-        tgt.hp -= Math.max(1, Math.round(actor.atk * H.matchup(actor.type, tgt.type)));
+        const dmg = Math.max(1, Math.round(actor.atk * H.matchup(actor.type, tgt.type)));
+        tgt.hp -= dmg;
+        if(log) log.push({ round:guard, aSide:actor.side, aOrd:actor.ord, tSide:tgt.side, tOrd:tgt.ord,
+          dmg:dmg, tHp:Math.max(0, tgt.hp), ko:tgt.hp <= 0 });
       }
     }
-    return {
+    const res = {
       win: all.some(c => c.side === 0 && c.hp > 0),
       heroesAlive: all.filter(c => c.side === 0 && c.hp > 0).length,
       foesAlive: all.filter(c => c.side === 1 && c.hp > 0).length,
       rounds: guard
     };
+    if(recordLog){ res.units = units; res.log = log; }
+    return res;
   }
 
   // ---- re-calibrated enemy-team curve (computed at load, so it auto-scales as
@@ -319,6 +331,18 @@
     const res = simulateTeams(list, enemyTeamFromBudget(FOE_BUDGET, tierObj.n));
     return { win: res.win, heroesAlive: res.heroesAlive, foesAlive: res.foesAlive, rounds: res.rounds, tier: tierObj.n };
   }
+  // Public (T90): the SAME deterministic resolution as teamBattle, but with the
+  // turn-by-turn `log` + the starting `units` (max HP) so the UI can replay the
+  // fight. The {win,heroesAlive,foesAlive,rounds} fields MATCH teamBattle exactly
+  // (identical sim) — the playout is a pure visualisation, never a re-roll.
+  function teamBattleLog(heroes, tier, collected){
+    const list = (Array.isArray(heroes) ? heroes : [heroes]).slice(0, 3)
+      .map(h => heroCombatant((typeof h === "string") ? H.byId(h) : h, collected || {}));
+    const tierObj = (typeof tier === "number") ? byTier(tier) : tier;
+    const res = simulateTeams(list, enemyTeamFromBudget(FOE_BUDGET, tierObj.n), true);
+    res.tier = tierObj.n;
+    return res;
+  }
 
   // ---- public api ---------------------------------------------------------
   function byTier(n){ return TIERS[n - 1] || null; }
@@ -339,7 +363,7 @@
     TIERS, TIER_COUNT, REGION_SIZE,
     byTier, tierLoot, tierRegion, regionLabel, canAttempt, currentTier,
     statBattle,
-    teamBattle, enemyTeam, enemyTeamMeta, simulateTeams, heroCombatant,   // T88 — 3v3 deterministic sim; T89 — enemyTeamMeta for the team UI
+    teamBattle, teamBattleLog, enemyTeam, enemyTeamMeta, simulateTeams, heroCombatant,   // T88 — 3v3 sim; T89 — enemyTeamMeta; T90 — teamBattleLog (watchable playout)
     matchup: H.matchup, beats: H.beats
   };
 })();

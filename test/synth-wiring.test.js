@@ -169,6 +169,8 @@ ok(/test\/synth-wiring\.test\.js/.test(wf), "(5) this wiring gate test/synth-wir
   (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
   const stingsBefore = sy.stings.length;
   (els.arenaFight._h.click||[]).forEach(f=>f({}));
+  // T90: skip the turn-by-turn playout → the win sting fires on the result
+  (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".bp-skip" ? {} : null) } }));
   ok(sy.stings.indexOf("victory") >= 0 && sy.stings.length > stingsBefore, "boot: T128 — a real Arena win fires Synth.sting('victory') (the wub + bell cue, not a self-ducked wub)");
 
   // T140 — the Audio-menu picker auditions B's 12 styles; each swaps the live music

@@ -165,5 +165,28 @@ function teamWins(collected, n, tier){ return E.simulateTeams(party(collected, n
   ok(JSON.stringify(big) === JSON.stringify(top3), "teamBattle caps the party at 3 heroes");
 })();
 
+// ---- T90: the watchable playout (teamBattleLog) is the SAME deterministic sim --
+// The UI replays res.log/res.units; its resolved outcome MUST equal teamBattle's
+// (no re-roll). Sample across tiers × team sizes × loadouts; the log must also be
+// internally consistent (every event's remaining HP ≥ 0; a win == ≥1 hero alive).
+(function(){
+  let outcomeMatch = true, logSane = true, gotLog = false;
+  const loadouts = [setOf([]), setOf(nearFullIds.slice(0, Math.floor(nearFullIds.length/2))), setOf(nearFullIds)];
+  [1, 5, 30, 60, 90, 120].forEach(t => {
+    [1, 2, 3].forEach(sz => loadouts.forEach(load => {
+      const ids = H.HEROES.slice(0, sz).map(h => h.id);
+      const a = E.teamBattle(ids, t, load), b = E.teamBattleLog(ids, t, load);
+      if(!(a.win === b.win && a.heroesAlive === b.heroesAlive && a.foesAlive === b.foesAlive && a.rounds === b.rounds && a.tier === b.tier)) outcomeMatch = false;
+      if(Array.isArray(b.log) && Array.isArray(b.units)){ gotLog = true;
+        b.log.forEach(ev => { if(ev.tHp < 0) logSane = false; });
+        if(b.win !== (b.heroesAlive >= 1)) logSane = false;
+      } else logSane = false;
+    }));
+  });
+  ok(gotLog, "T90: teamBattleLog returns a turn `log` + starting `units` (for the playout)");
+  ok(outcomeMatch, "T90: the playout's resolved outcome EQUALS teamBattle across tiers × team sizes × loadouts (no re-roll)");
+  ok(logSane, "T90: the log is internally consistent (HP never < 0; win == ≥1 hero alive)");
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " ARENA-3V3 CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

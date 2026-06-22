@@ -73,6 +73,8 @@ const heroId = (els.arenaBody._html.match(/data-hero="([^"]+)"/) || [])[1];
 ok(!!heroId, "a hero is available to fight the boss");
 (els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".arena-hero" ? { dataset:{ hero:heroId } } : null) } }));
 (els.arenaFight._h.click||[]).forEach(f=>f({}));
+// T90: skip the turn-by-turn playout to reach the result
+(els.arenaBody._h.click||[]).forEach(f=>f({ target:{ closest:s => (s===".bp-skip" ? {} : null) } }));
 ok(/Region conquered! Next:\s*Gallowmarch/.test(els.arenaBody._html), "beating the region boss shows a region-clear moment naming the next region");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " WAYFINDING CHECKS PASSED" : fails + "/" + checks + " FAILED"));

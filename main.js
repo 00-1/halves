@@ -404,6 +404,7 @@
     // stop the game clock RAF whenever we leave the game screen (e.g. browser
     // back mid-round), so it never loops on a hidden screen.
     if(name !== "game" && raf){ cancelAnimationFrame(raf); raf = 0; }
+    if(name !== "arena") cancelPlayout();        // T90: never leave the battle-playout RAF looping on a hidden screen
     if(name !== "audio") musicPreview = null;   // T129/T143: leaving the Audio menu drops the transient style preview → per-screen music resumes
     Object.values(screens).forEach(s => s.classList.remove("active"));
     screens[name].classList.add("active");
@@ -1387,16 +1388,107 @@
     $("arenaFight").textContent = cleared ? "Cleared" : (arenaParty.length ? "Fight! ("+arenaParty.length+")" : "Pick your party");
   }
 
-  // Fight resolves INSTANTLY through the T88 deterministic team sim (no maths
-  // round) — the 1–3 hero party vs the tier's 3-foe enemy team (T89).
+  // Fight resolves through the T88 deterministic team sim (no maths round) — the
+  // 1–3 hero party vs the tier's 3-foe enemy team (T89). T90: the resolution is
+  // first PLAYED OUT turn-by-turn (a calm, skippable visualisation of the SAME
+  // sim), then the result is applied. Reduced-motion / no-RAF → resolve instantly.
   function startBattle(){
     const E = window.Enemies, Hs = window.Heroes, col = loadCollected();
     if(!E || col["tier:" + E.TIER_COUNT]) return;                 // cleared
     const party = arenaParty.filter(id => Hs.isHeroUnlocked(id, col)).slice(0, PARTY_MAX);
     if(!party.length) return;
     const tier = E.currentTier(col);
-    const res = E.teamBattle(party, tier, col);
-    finishBattle(party, tier, res);
+    const res = E.teamBattleLog(party, tier, col);                // {win,…, units, log}
+    if(prefersReducedMotion() || typeof requestAnimationFrame !== "function" || !res.log || !res.log.length)
+      finishBattle(party, tier, res);                             // instant (a11y / headless)
+    else
+      playBattle(party, tier, res);                               // watchable turn-by-turn
+  }
+  function prefersReducedMotion(){
+    try{ return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }catch(e){ return false; }
+  }
+
+  // ---- T90: watchable deterministic turn playout --------------------------
+  // Visualises the EXACT sim log (Enemies.teamBattleLog) turn by turn — HP bars
+  // drain, KOs dim — then reveals the result via finishBattle. Pure visualisation
+  // (no new RNG); deterministic; skippable; single cancelable RAF (no leak).
+  let playRAF = 0, playToken = 0, pendingPlay = null;
+  function cancelPlayout(){
+    playToken++;                                   // invalidate any in-flight frame
+    if(playRAF && typeof cancelAnimationFrame === "function") cancelAnimationFrame(playRAF);
+    playRAF = 0; pendingPlay = null;
+  }
+  function playBattle(party, tier, res){
+    cancelPlayout();
+    const Hs = window.Heroes, E = window.Enemies;
+    pendingPlay = { party: party, tier: tier, res: res };
+    const myToken = playToken;
+    const foesMeta = E.enemyTeamMeta(tier.n);
+    const maxOf = {};                              // "side:ord" → max HP (for bar %)
+    (res.units || []).forEach(u => { maxOf[u.side + ":" + u.ord] = u.maxHp; });
+    const unitCell = (u) => {
+      const isHero = u.side === 0;
+      const disp = isHero ? (Hs.byId(party[u.ord]) || {}) : (foesMeta[u.ord - 100] || {});
+      const name = isHero ? (disp.name || party[u.ord]) : (foesMeta[u.ord - 100] && foesMeta[u.ord - 100].role === "foe" ? disp.name : "Support");
+      const cv = isHero
+        ? '<canvas class="pix bp-port" width="36" height="36" data-hero="'+esc(party[u.ord])+'" data-type="'+esc(disp.type||"Brawn")+'"></canvas>'
+        : '<canvas class="pix bp-port ar-enemy" width="36" height="36" data-tier="'+(disp.tierN||1)+'" data-tname="'+esc(disp.name||"")+'" data-ttype="'+esc(disp.type||"Brawn")+'"></canvas>';
+      return '<div class="bp-unit t-'+String((disp.type||"Brawn")).toLowerCase()+'" data-side="'+u.side+'" data-ord="'+u.ord+'">'+
+        cv+'<div class="bp-hpbar"><i class="bp-hp" style="width:100%"></i></div>'+
+        '<div class="bp-uname">'+esc(name)+'</div></div>';
+    };
+    const heroUnits = (res.units || []).filter(u => u.side === 0).map(unitCell).join("");
+    const foeUnits = (res.units || []).filter(u => u.side === 1).map(unitCell).join("");
+    $("arenaBody").innerHTML =
+      '<div class="battle-play">'+
+        '<div class="bp-head">'+ic("swords")+' Battle — '+esc(tier.name)+'</div>'+
+        '<div class="bp-teams"><div class="bp-side">'+heroUnits+'</div>'+
+          '<div class="bp-vs">vs</div>'+
+          '<div class="bp-side foe">'+foeUnits+'</div></div>'+
+        '<div class="bp-status">Round 1</div>'+
+        '<button class="bp-skip">Skip '+'▸</button>'+
+      '</div>';
+    // portraits (same draw paths as the rest of the Arena)
+    $("arenaBody").querySelectorAll(".bp-unit canvas[data-hero]").forEach(cv => {
+      if(cv.dataset.hero) C.drawIcon(cv, "hero:"+cv.dataset.hero, HERO_PAL[cv.dataset.type] || HERO_PAL.Brawn, "familiar");
+    });
+    if(window.Monsters) $("arenaBody").querySelectorAll(".bp-unit canvas.ar-enemy").forEach(cv => {
+      window.Monsters.draw(cv, { n: +cv.dataset.tier, name: cv.dataset.tname, type: cv.dataset.ttype });
+    });
+    const log = res.log, hpEl = {}, cellEl = {};
+    $("arenaBody").querySelectorAll(".bp-unit").forEach(el => {
+      const k = el.dataset.side + ":" + el.dataset.ord;
+      cellEl[k] = el; hpEl[k] = el.querySelector(".bp-hp");
+    });
+    const dispName = (side, ord) => side === 0 ? ((window.Heroes.byId(party[ord]) || {}).name || party[ord])
+      : (foesMeta[ord - 100] && foesMeta[ord - 100].role === "foe" ? foesMeta[ord - 100].name : "Support");
+    function applyEvent(ev){
+      const k = ev.tSide + ":" + ev.tOrd, mx = maxOf[k] || 1;
+      const bar = hpEl[k]; if(bar) bar.style.width = Math.max(0, Math.min(100, (ev.tHp / mx) * 100)) + "%";
+      if(ev.ko && cellEl[k]) cellEl[k].classList.add("ko");
+      const st = $("arenaBody").querySelector(".bp-status");
+      if(st) st.textContent = dispName(ev.aSide, ev.aOrd) + " hits " + dispName(ev.tSide, ev.tOrd) +
+        " for " + ev.dmg + (ev.ko ? " — down!" : "");
+    }
+    // pace: the whole fight in ~2.6s, but never faster than 90ms/step (calm)
+    const STEP_MS = Math.max(90, Math.min(360, Math.round(2600 / log.length)));
+    let i = 0, last = -1, acc = 0;
+    function frame(ts){
+      if(myToken !== playToken) return;            // superseded/cancelled
+      // tolerate a missing/garbage timestamp (clamp to one synthetic step) so the
+      // loop always makes forward progress and terminates — never spins.
+      const t = (typeof ts === "number" && isFinite(ts)) ? ts : (last < 0 ? 0 : last + STEP_MS);
+      if(last < 0){ last = t; applyEvent(log[i++]); }              // show the first strike at once
+      else { acc += Math.max(0, t - last); last = t; while(acc >= STEP_MS && i < log.length){ applyEvent(log[i++]); acc -= STEP_MS; } }
+      if(i >= log.length){ endPlayout(); return; }
+      playRAF = requestAnimationFrame(frame);
+    }
+    playRAF = requestAnimationFrame(frame);
+  }
+  // Finalise the in-flight playout (natural end OR Skip) → apply + reveal result.
+  function endPlayout(){
+    const p = pendingPlay; cancelPlayout();
+    if(p) finishBattle(p.party, p.tier, p.res);
   }
 
   // Grant any hero/arena milestones now satisfied (unlock-all-heroes + tier
@@ -1948,7 +2040,7 @@
       if(renderHeroDetail(h.slice(5))) show("heroDetail");
       else { location.hash = "#/heroes"; return; }   // unknown/locked → back to the list
     }
-    else if(h === "arena"){ lastBattle = null; arenaParty = []; arenaMapOpen = false; renderArena(); show("arena"); }
+    else if(h === "arena"){ cancelPlayout(); lastBattle = null; arenaParty = []; arenaMapOpen = false; renderArena(); show("arena"); }
     else if(h === "settings"){ renderSettings(); show("settings"); }
     else if(h === "audio"){ renderAudio(); show("audio"); }
     else if(h === "graphics"){ renderGraphics(); show("graphics"); }
@@ -1995,6 +2087,7 @@
   $("arenaBack").addEventListener("click", navStart);
   $("arenaFight").addEventListener("click", startBattle);
   $("arenaBody").addEventListener("click", e => {
+    if(e.target.closest(".bp-skip")){ endPlayout(); return; }   // T90: skip the playout → result
     if(e.target.closest(".arena-map-btn")){ arenaMapOpen = !arenaMapOpen; renderArena(); return; }
     const card = e.target.closest(".arena-hero"); if(!card) return;
     // T89: tap toggles a hero in/out of the party; adding is capped at PARTY_MAX,
