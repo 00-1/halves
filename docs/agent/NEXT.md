@@ -26,9 +26,12 @@ cutting fully on/off (add brief whole-line dropouts on top of the cell re-roll),
   Then continue **2b-part-2/2c**: `fractions` 1/16 → Part-2, `rounding` 560 tie, `sequences` nth-term split,
   `cubes`+roots, de-dup + harness gate. (Detail: `QUESTION-QUALITY-AUDIT.md` round 2.)
 After each batch: Babysitter re-assesses → loop until clean. [A] (`modes.js`, `guides.js`, tests).
-- **Then `T219`** — build the PLANNED-BUT-UNBUILT topics (BODMAS, ×-tricks, Primes, Roman→number, Negatives P1 only,
-  Algebra/function-machines, + Roots): each a full P1/P2 generator + guide + explain + the assessment loop; Negatives
-  P2 deferred (needs minus input). Sizeable content add. *(BACKLOG T219.)*
+- **Then `T219` (BIG — now 15 new topics, owner: build NOW not v1.1)** — PART 1 the original 7 (BODMAS, ×-tricks,
+  Primes, Roman→number, Negatives P1 only, Algebra/function-machines, Roots) + **PART 2 the 8 coverage-pass additions
+  (`COVERAGE-PASS.md` §A, owner "don't drop"): Area&Perimeter, Volume, Angles (NEW Geometry group), Speed-Distance-
+  Time, Median/Mode/Range, F↔D↔P conversions, Percentage-increase, Prime-factorisation/factors&multiples.** Each a
+  full P1/P2 generator + guide + explain + the assessment loop; **build+push in BATCHES by group** so the Babysitter
+  re-assesses each. Negatives P2 deferred (needs minus input). *(BACKLOG T219; Tier-B nice-to-haves parked.)*
 - **Then `T218`** — notification BADGES on nav items (new loot → Items, new hero → Heroes; clears on view; persists). A
   core/shell feature GG2 inherits (crops-ready). [A] (`main.js`/`index.html`/`styles.css`, tests). Then **`T168`** (held on Play ID-verify).
 **Re-read this line fresh before each task + push.**

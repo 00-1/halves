@@ -3151,11 +3151,17 @@ Swap it for **Magnar** so the splash matches the new app icon (T194).
   icon; the "Goblin Gold" brand + tag unchanged; no layout shift; `node -c` clean; icon/entry tests green; **owner
   device-confirms**. **[A]-only** (`main.js`, maybe `styles.css`/`index.html`). *(Reuses T194's Magnar art.)*
 
-### T219 — [A] **Build the PLANNED-BUT-UNBUILT topics** (BODMAS, Negatives, Roman, ×-tricks, Primes, Algebra + Roots) · status: OPEN · owner-requested
+### T219 — [A] **Build the PLANNED-BUT-UNBUILT topics** (BODMAS, Negatives, Roman, ×-tricks, Primes, Algebra, Roots + the 8 coverage-pass additions) · status: OPEN · owner-requested
 **Owner (2026-06-22): "we want all those… are there more planned but not built topics? seems like we should build
-them unless there's a good reason not to."** Babysitter compared the `research-11plus.md` plan (25 topics + the
-priority table) against the 30 built topics. **Gaps to build, each as a full topic (P1 + locked P2 + guide +
-`explain()` + the T213 assessment loop):**
+them unless there's a good reason not to."** → then ran the DEEP coverage pass (`COVERAGE-PASS.md`) → owner: **"no
+we'll do it now. can't launch until Google approve me anyway"** + (on the 8 found gaps, re: dropping
+Speed-Distance-Time) **"don't drop."** So this task = the original 7 **PLUS all 8 Tier-A coverage additions**.
+Babysitter compared the `research-11plus.md` plan AND the full GL/CEM/ISEB syllabus against the 32 built topics.
+
+**BUILD-TIMING (owner-decided): build NOW, not as a v1.1 — launch is gated on Google ID-verify regardless.**
+
+**PART 1 — the original planned-but-unbuilt 7** (each a full topic: P1 + locked P2 + guide + `explain()` + the
+T213 assessment loop):
 - **BODMAS** (plan 24): P1 `2+3×4=14` (two ops, precedence) → P2 brackets/÷ `2×(3+4)=14`. Numpad-safe.
 - **Multiply tricks** (plan 22): P1 ×11 of 2-digit (`23×11=253`) → P2 ×25/×9/×99. Numpad-safe.
 - **Primes** (plan 21, the missing half of "Factors & primes"; `lcmhcf` did HCF/LCM): P1 smallest prime factor /
@@ -3170,15 +3176,37 @@ priority table) against the 30 built topics. **Gaps to build, each as a full top
   (answers are numbers). The atoms exist (`balance`, `sequences`) but no explicit algebra topic — this adds it.
 - **Roots** (plan 20, the missing half of "Cubes & roots") — already in the T213 list; fold here or there: `√≤225`,
   `∛≤1000`. Numpad-safe.
-- *(Minor/optional: Time **unit-convert** `3h→180min` — only elapsed/`timegap` built. F↔%-to-% framing — already
-  effectively covered by `fractions` decimal form; skip.)*
-- **Each topic:** wire into the topic chain (`requires`/`unlockedBy`), a calibrated curated pool (~21, matching the
-  research ranges), a guide + `explain()`, the music/glyph hooks, and run the **enumeration-harness + assessment
-  loop** (correct, numpad-safe, no degenerate items) before it's done.
-- **DoD:** the 6 new topics (+ Roots) live, calibrated, each with a guide; Negatives P2 explicitly deferred (noted);
-  assessment-clean; all gates green; `node -c` clean; **owner spot-confirms**. **[A]** (`modes.js`, `guides.js`,
-  music/glyph maps, tests). **NB (launch timing):** sizeable add — owner's call whether GG1 ships with these or
-  ships at 30 + adds them as a v1.1 content update. *(Queue after the T213 polish loop converges.)*
+**PART 2 — the 8 Tier-A coverage-pass additions** (`COVERAGE-PASS.md` §A — high-frequency, genuinely 11+-tested,
+cleanly numpad-drillable; owner: **"don't drop"** → all 8 in, incl. Speed-Distance-Time). Same full-topic treatment:
+- **Area & Perimeter** (Measures, Tier 3): P1 rectangle area + perimeter (dims in prompt) → P2 triangle area
+  `½·b·h` + compound. Numpad-safe (one positive number).
+- **Volume** (Measures, Tier 2–3): P1 cuboid `l×w×h` → P2 larger/missing-edge. Numpad-safe.
+- **Angles — find the missing angle** (NEW **Geometry** group, Tier 3): P1 on a line (180−x) / around a point
+  (360−…) → P2 triangle sum (180−a−b) + simple parallel-line. Answer = one positive integer. Numpad-safe.
+- **Speed–Distance–Time** (Measures, Tier 4 — the hard one, owner said KEEP): P1 `D=S×T` clean numbers → P2 the
+  rearrangements (`S=D/T`, `T=D/S`). Numpad-safe. Calibrate hard — keep numbers clean so it stays mental.
+- **Median · Mode · Range** (Reasoning — extend the `mean` family): P1 range + mode of a small set → P2 median
+  (odd then even count). All single-integer answers. Numpad-safe.
+- **F↔D↔P conversions** (Fractions & %, Tier 2 — we only do F→D): P1 %→decimal / decimal→% → P2 fraction→%
+  (`⅗→60`) + the three-way. Answers are whole-% or clean decimals. Numpad-safe.
+- **Percentage increase** (Fractions & %, Tier 3 — `percentoff` only does decrease): P1 find the new total
+  (`200 +15% → 230`) → P2 trickier rates/2-step. Numpad-safe.
+- **Prime factorisation / factors & multiples** (Number, Tier 3 — `lcmhcf`+`primes` don't cover this): P1
+  "#factors of N" / "next multiple of N after M" → P2 product-of-prime-factors / factorise-count. Numpad-safe.
+
+*(Tier-B nice-to-haves in `COVERAGE-PASS.md` §B — indices, fraction-equivalence-as-integer, probability→decimal,
+24h/am-pm, round-to-1dp, shape-property counts, express-as-% — are PARKED, owner can green-light any later. Tier-C
+format-blocked = confirmed deliberate omissions.)*
+
+- **Each topic** (both parts): wire into the topic chain (`requires`/`unlockedBy`), a calibrated curated pool (~21,
+  matching the research/syllabus ranges), a guide + `explain()`, the music/glyph hooks, and run the
+  **enumeration-harness + assessment loop** (correct, numpad-safe, no degenerate items) before it's done. Reasoning/
+  multi-step topics first (they need the guide most). **Build + push in BATCHES (by group) so the Babysitter can
+  re-assess each** — don't land all 15 in one push.
+- **DoD:** all **15 new topics** live (7 Part-1 + 8 Part-2), calibrated, each with a guide + `explain()`; Negatives
+  P2 explicitly deferred (noted, needs minus-key input); a NEW "Geometry" group exists for Angles; assessment-clean
+  per batch; all gates green; `node -c` clean; **owner spot-confirms**. **[A]** (`modes.js`, `guides.js`, music/glyph
+  maps, tests). **Build NOW** (owner-decided, not v1.1). *(Queue after the T213 polish loop converges + T220.)*
 
 ### T218 — [A] **Notification BADGES on nav menu items (new / "there's something here")** · status: OPEN · owner-requested
 **Owner (2026-06-22): "we're missing alert bubbles on menu items where there's something new. GG1 should have it —
