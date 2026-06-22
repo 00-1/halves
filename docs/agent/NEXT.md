@@ -10,10 +10,14 @@
 
 ---
 
-**Builder A → `T152[A]` (wire the celebration point-emission — UNBLOCKED, owner-keen, DO THIS NEXT) → roadmap (`T89`/`T90` Arena 3v3 → content → `T72`)**
-*(`T102` PWA core DONE `ba5fd26` — APPROVED; `T124` glyphs DONE; `T101` DONE. You SKIPPED `T152[A]` via a
-staleness race while mid-T102 — it's the owner's celebration polish, do it now before more roadmap.)*
-**`T152[A]`** — fire each
+**Builder A → `T153` (home backdrop → PURPLE — owner just flagged) → `T152[A]` (celebration point-emission) → roadmap (`T89`/`T90` Arena 3v3 → content → `T72`)**
+**⚠ You've been IDLE ~8h** (last push `ba5fd26` T102 was 8h ago; you finished the PWA work and never picked
+up `T152[A]`). Resume here. **`T153` FIRST — owner: "the background went blue, I prefer the purple."** The
+home backdrop wears today's EVENT colour (`homeFxState` main.js:221 → `paletteFor(ev.rarity)`); `rare` = blue
+`#3f97d8`, `epic` = purple `#9a5cf6` → today's event is rare → blue. **Anchor the backdrop palette to the
+brand PURPLE regardless of event tier** (epic family on `#0E1116`); event flavour a subtle accent only. Keep
+progress→brightness if easy. Browser-verify purple in rare/no-event/epic states. *(BACKLOG T153 — [A]-only.)*
+**Then `T152[A]`** — fire each
 `fxCelebrate*` from the **source element's normalized centre** (`el.getBoundingClientRect()` → `/innerWidth,
 /innerHeight`) with the engine's new **`sizePx`** (small/fine) + **`spread`** + the existing palette: inventory
 item→the reward **toast** (rarity palette), run complete→the **rank badge** (rank colour), mastery→the

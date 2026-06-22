@@ -2661,6 +2661,25 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
+### T153 — [A] Home backdrop went BLUE — anchor it to the brand PURPLE regardless of event tier · status: OPEN · OWNER-PRIORITY
+Owner: **"the background went blue, I prefer the purple."** **Diagnosed (no recent code change):** the home
+backdrop "wears today's event colours" — `homeFxState()` (`main.js:221`) passes `["#0E1116", pal.body,
+pal.accent]` from `collectibles.paletteFor(ev.rarity)`, and `fxgl homePalette()` uses that event palette when
+present. The rarity colours: `epic` = **#9a5cf6 purple**, `rare` = **#3f97d8 BLUE**. So the backdrop is purple
+when today's event is epic and **blue when it's rare** (today's). (No-event default is a cool blue-slate dawn
+ramp too.) The owner wants it **purple consistently**.
+- **Fix ([A]-only, no collision — the input lives in `main.js`):** in `homeFxState()` anchor the backdrop
+  palette to the **brand purple** (the epic family `#9a5cf6`/`#cda9ff` on the `#0E1116` base) **regardless of
+  event tier**, so the backdrop always reads purple. Keep the event's flavour as a **subtle accent** only
+  (e.g. one accent stop), not the dominant hue — or drop it from the backdrop entirely (the event banner
+  already shows event colours). Preserve the momentum/progress brightness semantic if easy (hue = purple,
+  brightness = progress).
+- **DoD (browser-verified):** the home backdrop renders **purple** for a rare/blue event AND a no-event state
+  AND an epic event (a screenshot in each state shows purple-dominant, not blue/green); `node -c` clean; all
+  gates green; [A]-owned (`main.js`; maybe a small `fxgl` default tweak only if the no-event ramp must also go
+  purple — flag [B] if so, else keep [A]-only by always passing the purple palette). (Babysitter browser-
+  verifies + owner confirms the purple is back.)
+
 ### T152 — [A]+[B] Celebration particles: small size + emit from the point of interest + colour by context (PLANNED) · status: [B] DONE (`a2f9475`) · [A] OPEN (unblocked) · OWNER-PRIORITY
 **[B] part DONE 2026-06-21** — APPROVED. `fxgl.js` gains `sizePx`/`sizeScale` (small/fine, DPR-aware),
 `spreadMul` (hug the source), arbitrary `{x,y}` emission + `palette`; defaults byte-identical. Babysitter
