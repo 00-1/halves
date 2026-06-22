@@ -6,6 +6,38 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T207 — coin SHINE: glints on the shower + occasional pile sparkles + clearer rotation ([B], owner-requested)
+
+Owner: *"occasional glints in the pile of coins; glints on the shower of coins; ideally some
+showered coins would also rotate."* All in `fxgl.js`:
+- **Specular glint in `drawCoin`** (pixel path): a new `hi` (0..1) flashes the brightest face cells
+  near the lit pole to a near-white-gold specular tone (`shade(rgb,0.78)`), the flash growing with
+  `hi` — a small sparkle, not the whole face. Gated (none at `hi=0`); the glint cells stay WITHIN
+  the coin face so a glint-off redraw fully restores it (needed for the cheap pile pass).
+- **Shower glints (`drawCoinParticle`):** passes `hi = p.shine · max(0, cos(lt·wob + phase))` — so
+  each flying coin flashes as it turns face-on, varied per coin by `p.shine` (seeded in `seedBurst`,
+  0 under reduced-motion) → they don't sparkle in unison.
+- **Clearer rotation:** `seedBurst` coin `spin` is now `lerp(3,20, rng·rng)·±1` (skewed) — most
+  coins tumble briskly, some barely, so the spin reads clearly + varied instead of a uniform blur.
+- **Pile sparkles (`_pileGlint`, throttled ~5 Hz from `_frame`):** the settled pile is a static
+  still by design, so this repaints ONLY the coins (opaque → they restore the previous tick's
+  glints in place; the silhouette is never redrawn → cheap) with a **sparse, per-coin time-phased**
+  flash (`sin(t·2.4 + coin.glint·3.1) > 0.985` → only a handful peak at once, cycling). Gated to
+  the GL/GPU overlay + ambient loop + not-bursting; **reduced-motion / CPU-still stay static**.
+  (Perf: ~a few k fillRects/s; the upcoming T103 perf pass is the budget gate — if it flags, the
+  repaint can shrink to just the glinting subset.)
+- 🌐 **Browser-verified on WebGL2**: bright sparkle flecks across the shower coins; occasional
+  cycling sparkles on the settled pile (`shine-t207-shower.png`, `shine-t207-pile-{a,b}.png`).
+
+Verify: `node -c` clean; **golden-fx 112** (+12 T207 assertions — glint→specular cells gated on
+`hi` + a small sparkle (teeth); shower coins carry varied `shine` + varied `spin` + none when
+reduced; `_pileGlint` repaints coins WITHOUT a full clear, is deterministic, CYCLES across time,
+and is a no-op under reduced-motion); full Node suite green (fxgl 135 / fx-wiring 84 / hoard-wiring
+47 / synth 177 / emblems 34); render/visual/audio gates green; scenes byte-identical when no hoard
+(drawCoin `hi` defaults to 0). B-only (`fxgl.js`, `test/golden-fx.test.js`). Owner device-confirms.
+
+---
+
 ## T205 — trim emblems to the 3 creatures + fix their sizing (fill the cell) ([B], owner-requested)
 
 Owner: *"the final 3 emblems are nice — the rest we can scrap … in the emblems screen they look

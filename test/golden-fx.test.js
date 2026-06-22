@@ -513,5 +513,48 @@ ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell rende
      "T203: the gate HAS TEETH — the generic confetti still fountains UP (mean vy " + mean(conf, p => p.vy).toFixed(2) + " < 0) at its small size (unchanged)");
 })();
 
+// T207 — coin SHINE: animated glints on the shower + occasional sparkles on the settled pile,
+// with clearer/varied rotation.
+(function(){
+  // (A) drawCoin paints a SPECULAR glint flash when hi>0, gated (none at hi=0), as a small sparkle.
+  function recCtx(){ const f = []; let fs = "#000"; return { ctx: { get fillStyle(){ return fs; }, set fillStyle(v){ fs = v; }, globalAlpha: 1, fillRect(){ f.push(fs); } }, fills: f }; }
+  const rgb = [212, 158, 46], cell = 8, spec = FXGL.toHex(FXGL.shade(rgb, 0.78));
+  const lit = recCtx(); FXGL.drawCoin(lit.ctx, 200, 200, 40, 0, 0.95, rgb, 0.9, cell);
+  const dim = recCtx(); FXGL.drawCoin(dim.ctx, 200, 200, 40, 0, 0.95, rgb, 0, cell);
+  ok(lit.fills.indexOf(spec) >= 0, "T207: a glinting coin (hi>0) paints SPECULAR highlight cells (a flash brighter than its own gold)");
+  ok(dim.fills.indexOf(spec) < 0, "T207: with NO glint (hi=0) the coin has no specular cells — teeth: the flash is gated on hi");
+  const specN = lit.fills.filter(c => c === spec).length;
+  ok(specN > 0 && specN < lit.fills.length * 0.5, "T207: the glint is a small SPARKLE near the lit pole (" + specN + "/" + lit.fills.length + " cells), not the whole face");
+
+  // (B) shower coins carry a VARIED per-coin glint strength + VARIED spin (clear, not synchronized).
+  const sc = FXGL.seedBurst({ look: "coin", count: 60, seed: 5 }, false, FXGL.BURST_CAP);
+  ok(sc.every(p => p.shine > 0), "T207: every shower coin carries a glint strength (shine) that flashes as it spins");
+  ok(new Set(sc.map(p => Math.round(p.shine * 20))).size > 5, "T207: the shine VARIES per coin (they don't all flash together)");
+  const sp = sc.map(p => Math.abs(p.spin));
+  ok(Math.max.apply(null, sp) > 12 && Math.min.apply(null, sp) < 6, "T207: spin VARIES — some coins tumble fast, some barely (clear, varied rotation: " + Math.min.apply(null, sp).toFixed(1) + "…" + Math.max.apply(null, sp).toFixed(1) + ")");
+  ok(FXGL.seedBurst({ look: "coin", count: 12, seed: 5 }, true, FXGL.BURST_CAP).every(p => p.shine === 0), "T207: reduced-motion shower coins don't glint");
+
+  // (C) the pile sparkles via a cheap, throttled, cycling glint pass (no full overlay clear), and
+  //     is reduced-motion-safe.
+  function mk(reduced){
+    const ovr = (function(){ const f = []; let fs = "#000", cleared = 0; return { _f: f, _cleared: () => cleared, get fillStyle(){ return fs; }, set fillStyle(v){ fs = v; }, globalAlpha: 1, fillRect(x, y){ f.push(fs + "@" + (x | 0) + "," + (y | 0)); }, clearRect(){ cleared++; } }; })();
+    const c = new FXGL.Controller(stubCanvas(390, 844), { backend: "2d", ctx2d: { fillRect(){}, clearRect(){}, createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }), putImageData(){} }, raf: () => 1, caf: () => {}, width: 390, height: 844, dpr: 2, quality: 2, reducedMotion: reduced });
+    c.backend = { name: "webgl2", w: 780, h: 1688, pxScale: 2 };
+    c.derived = FXGL.deriveScene({ grid: [[[20, 20, 30]]], seed: 5, hoard: { level: 1, seed: 9 } }, 200);
+    c._hoardCtx = ovr; c._hoardCv = { width: 780, height: 1688 };
+    return { c: c, o: ovr };
+  }
+  const m = mk(false);
+  m.c._pileGlint(0.30); const a = m.o._f.slice();
+  ok(a.length > 0, "T207: _pileGlint repaints the pile coins (" + a.length + " cell fills)");
+  ok(m.o._cleared() === 0, "T207: the sparkle pass does NOT clear/redraw the whole overlay — cheap (silhouette untouched, coins repaint in place)");
+  m.o._f.length = 0; m.c._pileGlint(0.30); const a2 = m.o._f.slice();
+  ok(JSON.stringify(a) === JSON.stringify(a2), "T207: the sparkle is deterministic (same time → same coins)");
+  m.o._f.length = 0; m.c._pileGlint(1.70); const b = m.o._f.slice();
+  ok(JSON.stringify(a) !== JSON.stringify(b), "T207: the sparkle CYCLES — a different moment glints a different set of pile coins (occasional, moving)");
+  const mr = mk(true); mr.c._pileGlint(0.30);
+  ok(mr.o._f.length === 0, "T207: reduced-motion → the pile does NOT sparkle (static, safe)");
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FX-GOLDEN CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

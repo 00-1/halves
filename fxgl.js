@@ -280,8 +280,11 @@
         p.look = 1;
         p.grav = BURST_GRAVITY * 1.9;          // T203: coin-specific extra gravity (NOT the global shader uniform)
         p.rot = rng() * TAU;
-        p.spin = (reduced ? 0.6 : 1) * lerp(6, 15, rng()) * (rng() < 0.5 ? -1 : 1);   // tumble as it flies
+        // T207 — VARIED tumble: most coins spin briskly, some barely (a per-coin amplitude) so the
+        // rotation reads clearly and isn't a uniform blur.
+        p.spin = (reduced ? 0.6 : 1) * lerp(3, 20, rng() * rng()) * (rng() < 0.5 ? -1 : 1);   // skewed → variety
         p.wob = lerp(7, 16, rng()); p.phase = rng() * TAU;                            // face↔edge tip rate + phase
+        p.shine = reduced ? 0 : 0.55 + 0.45 * rng();                                  // T207: per-coin glint strength
       }
       out[i] = p;
     }
@@ -1245,6 +1248,11 @@
     // read-back → cheap enough for the per-frame gain-burst coins.
     if(cell && cell >= 2 && ctx.fillRect){
       const ramp = [edge, rgb, shade(rgb, 0.42)];                    // dark→light, the coin's own 3 tones
+      // T207 — a SPECULAR glint: when `hi`>0 (a rotation/sparkle flash), the brightest face cells
+      // near the lit pole flash near-white-gold; the bright band grows with `hi` so it reads as a
+      // shine that catches the light as the coin turns. The glint cells stay WITHIN the coin face
+      // (so a glint-off redraw fully restores it — used by the throttled pile sparkle).
+      const glint = hi > 0 ? Math.min(1, hi) : 0, spec = shade(rgb, 0.78);
       const cos = Math.cos(rot || 0), sin = Math.sin(rot || 0);
       const reach = Math.ceil(r + edgeH) + cell;                     // screen-px bounding radius
       const gx0 = Math.floor((cx - reach) / cell), gx1 = Math.ceil((cx + reach) / cell);
@@ -1257,6 +1265,9 @@
         let v;
         if((lx * lx) / r2 + (ly * ly) / ry2 <= 1){                   // on the TOP FACE → lit, hi toward upper-left
           v = clamp01(0.55 + 0.5 * (-lx / r) + 0.35 * (-ly / ry));
+          if(glint > 0 && v > 1 - 0.30 * glint){                     // T207: a small specular flash near the lit pole
+            ctx.fillStyle = toHex(spec); ctx.fillRect(gx * cell, gy * cell, cell + 1, cell + 1); continue;
+          }
         } else if((Math.abs(lx) <= r && ly >= 0 && ly <= edgeH) ||   // the side band …
                   ((lx * lx) / r2 + ((ly - edgeH) * (ly - edgeH)) / ry2 <= 1 && ly >= 0)){   // … + its rounded bottom
           v = 0.12;                                                  // the dark cylinder SIDE
@@ -1336,7 +1347,10 @@
     const aspect = p.spin ? (0.22 + 0.72 * Math.abs(Math.cos(lt * (p.wob || 10) + (p.phase || 0)))) : (p.aspect || 1);
     if(ctx.globalAlpha != null) ctx.globalAlpha = bp.alpha;
     const cell = Math.max(2, Math.round((scale || 1) * 3));   // T197: same pixel lattice as the pile
-    drawCoin(ctx, bp.x * W, bp.y * H, px / 2, rot, aspect, [p.r, p.g, p.b], 0, cell);
+    // T207 — a specular glint that FLASHES as the coin turns face-on (tied to the wob phase), varied
+    // per coin by p.shine so they don't all sparkle together.
+    const glint = (p.shine || 0) * Math.max(0, Math.cos(lt * (p.wob || 10) + (p.phase || 0)));
+    drawCoin(ctx, bp.x * W, bp.y * H, px / 2, rot, aspect, [p.r, p.g, p.b], glint, cell);
   }
   function CPUBackend(ctx2d){ this.name = "cpu-still"; this.ctx = ctx2d; this.w = 1; this.h = 1; this.burst = null; this.pxScale = 1; }
   CPUBackend.prototype.setData = function(derived){ this.derived = derived; };
@@ -1576,8 +1590,12 @@
       this.burst_.elapsed = (ts - this.burst_.startTs) / 1000;
     }
     this.backend.renderFrame({ sceneOn: sceneOn, sceneTime: sceneTime, burstOn: this.burst_.active, burstTime: this.burst_.elapsed });
-    // T193 — on GL/GPU, composite the spinning coin burst onto the 2D overlay each frame.
-    if(this.backend.name !== "cpu-still") this._syncOverlay(this.burst_.elapsed);
+    if(this.backend.name !== "cpu-still"){
+      // T193 — during a burst, composite the spinning coin shower onto the 2D overlay each frame.
+      if(this.burst_.active) this._syncOverlay(this.burst_.elapsed);
+      // T207 — otherwise, sparkle the settled pile at a low THROTTLE (~5 Hz, not per-frame).
+      else if(this._ambientLoops() && (sceneTime - (this._glintT || 0)) >= 0.2){ this._glintT = sceneTime; this._pileGlint(sceneTime); }
+    }
     // auto-stop the burst once its last particle has expired (no RAF leak)
     if(this.burst_.active && this.burst_.elapsed > this.burst_.maxDeath){
       this.burst_.active = false; this.burst_.startTs = 0; this.burst_.elapsed = 0; this.burst_.maxDeath = 0; this.burst_.parts = [];
@@ -1695,6 +1713,25 @@
       const t = (burstTime == null) ? this.burst_.elapsed : burstTime;
       for(const p of coins) drawCoinParticle(ctx, p, t, W, H, scale);
       if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
+    }
+  };
+  // T207 — occasional SPARKLES on the settled pile: a cheap, THROTTLED glint pass (driven at a low
+  // rate from _frame, NOT 60fps). The silhouette is already painted by _syncOverlay and never
+  // changes between ticks, so we repaint ONLY the coins (opaque → they restore last tick's glints
+  // in-place; the silhouette under/between them is untouched). A sparse, per-coin time-phased flash
+  // means just a handful sparkle at once, cycling. Reduced-motion / CPU-still / mid-burst → skip.
+  Controller.prototype._pileGlint = function(glintT){
+    const be = this.backend, d = this.derived;
+    if(!be || be.name === "cpu-still" || this.reduced || this.burst_.active) return;
+    const hoard = (d && d.hoard && d.hoard.level > 0) ? d.hoard : null;
+    if(!hoard || !hoard.coins.length || !this._hoardCtx) return;
+    const ctx = this._hoardCtx, W = be.w | 0, H = be.h | 0, scale = be.pxScale || 1, cell = Math.max(2, Math.round(scale * 3));
+    if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
+    for(const c of hoard.coins){
+      let hi = 0;
+      if(c.glint){ const s = Math.sin(glintT * 2.4 + c.glint * 3.1); if(s > 0.985) hi = (s - 0.985) / 0.015; }   // sparse: only a few peak at once
+      const r = Math.max(2, Math.round(c.size * scale)) / 2;
+      drawCoin(ctx, c.x * W, c.y * H, r, c.rot || 0, c.aspect || 1, [c.r, c.g, c.b], hi, cell);
     }
   };
   // Semantic home backdrop (T95): derive a calm ambient scene from live home
