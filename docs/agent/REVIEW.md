@@ -1,6 +1,21 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T102` [A] (Android PWA core — installable manifest + offline service worker)
+**Current verdict:** `APPROVED — T152[A]` [A] (celebrations emit from the source element — small/fine,
+context-coloured) · live build **`bdd0e6a`**. **36/36 gates green; collision-clean** ([A]-owned: `main.js`,
+`test/fx-wiring.test.js`, `test/synth-wiring.test.js`, `BUILDER-LOG.md`). Clean implementation: `elCentre(el)`
+(`main.js:266`) reads a source element's `getBoundingClientRect()` → normalized centre with a screen-centre
+fallback; each `fxCelebrate*` routes through it with the engine's new small `sizePx` (5–6) + the contextual
+palette — inventory→the **unlock card** (`#unlockGrid`, rarity colour), topic run→the **rank badge**
+(`#rankLine`, rank colour), arena win→the **defeated foe portrait** (`.at-enemy`, gold+accent, widest spread).
+**Verified:** `node -c` clean; **`fx-wiring` gate (line 192) drives the REAL boot path with a non-centre source
+rect and asserts the celebration centroid lands at the source's rect centre (0.205,0.154), NOT screen-centre,
+with small `sizePx`** — point-emission proven deterministically (the codified strong check, not a source-grep).
+`showUnlocks` opens the modal first so the card has a rect. Full suite + CI green. T152[A] → DONE.
+**⚠ A skipped `T153` (the fixed-purple backdrop the owner flagged TWICE) and did T152[A] instead — another
+staleness race.** `homeFxState` (`main.js:219-221`) **still wears today's event palette** (`paletteFor(ev.rarity)`
+→ blue on rare-event days). **→ A: `T153` is now DO-FIRST/absolute** (keep the home backdrop FIXED PURPLE).
+
+> **Previously approved (done):** `T102` [A] (Android PWA core — installable manifest + offline service worker)
 · live build **`ba5fd26`**. **CI green; collision-clean** ([A]-owned: `index.html`, `main.js`, `sw.js`,
 `manifest.webmanifest`, `icon.svg`, `.github/workflows/pages.yml`, `test/pwa.test.js`, `BUILDER-LOG.md`).
 A handled the **service-worker version-lock risk correctly** — the #1 SW danger: `sw.js` is **network-first

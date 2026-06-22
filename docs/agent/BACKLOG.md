@@ -2661,6 +2661,30 @@ genuinely characterful, not parameter nudges.
   files only**. **The Babysitter surfaces the proposed palette to the owner for a quick thumbs-up before
   T139 builds it** (owner may swap a style). Then → **T139** implements.
 
+### T154 — [B] Key-screen VISUAL-REGRESSION gate (extend the T150 browser harness) · status: OPEN · proactive (catches the owner's recurring class)
+B's engine queue is exhausted; this is the high-value structural follow-up to T150. The whole session's
+recurring pain is **visual things regressing that only the owner notices** (the blue backdrop today; the
+celebration `0×0`; layout clips). T150's `render.test.js` proved the browser can catch these — generalise it
+into a **per-key-screen visual-regression gate**.
+- **Render each key screen in the real browser** (via the existing `test/browser/_harness.js`) at a fixed
+  viewport + dpr 2.75 + a seeded/mocked state: **home (`#start`), the Audio menu, Arena, Results**.
+- **Capture a ROBUST signature per screen — NOT a brittle full-image pixel diff** (those are noisy): e.g.
+  (a) **dominant colour per region** (top band / backdrop / content column — downsampled average or a small
+  histogram), (b) **presence + bounding box of critical elements** (the topic-tree nodes, the Start button,
+  the nav row, the music picker, …), (c) overall lit/coverage. Commit these as goldens; an `UPDATE_*` env
+  re-blesses (intentional changes like T153 just re-bless).
+- **Flagship invariant (would've caught today):** the **home backdrop's dominant hue** — sample the backdrop
+  canvas region and assert it matches the committed baseline; a hue drift (e.g. purple→blue) FAILS. *(Baseline
+  the home backdrop as PURPLE only after [A] `T153` lands — until then it's event-coloured; coordinate by
+  blessing the home golden post-T153.)*
+- **Save screenshots as artifacts** (for eyeballing); **skip clean with no browser** (like T150 — Node-only
+  CI unaffected).
+- **DoD:** a runnable visual-regression gate over the 4 key screens with robust per-region signatures (incl.
+  home-backdrop hue) that **FAILS on a colour/layout regression** — prove the teeth (tamper a baseline / mock a
+  blue backdrop → it fails); screenshots saved; `node -c` clean; B-owned (`test/browser/*` only); never touch
+  existing Halves files. *(This is the structural guard so the owner stops being the visual-regression
+  detector.)*
+
 ### T153 — [A] Home backdrop = FIXED brand purple (no event-based colour at all) · status: OPEN · OWNER-PRIORITY
 Owner (refined): **"I prefer the background just to stay purple rather than being event based. Maybe an event-
 specific screen could change like that, but let's keep the main screen fixed purple."** **Diagnosed:** the
@@ -2681,7 +2705,7 @@ not state/event-driven.**
   AND an epic-event state (it no longer changes with the event); `node -c` clean; all gates green; [A]-owned
   (`main.js` only). (Babysitter browser-verifies purple across states + owner confirms.)
 
-### T152 — [A]+[B] Celebration particles: small size + emit from the point of interest + colour by context (PLANNED) · status: [B] DONE (`a2f9475`) · [A] OPEN (unblocked) · OWNER-PRIORITY
+### T152 — [A]+[B] Celebration particles: small size + emit from the point of interest + colour by context (PLANNED) · status: [B] DONE (`a2f9475`) · [A] DONE (`bdd0e6a`) · OWNER-PRIORITY
 **[B] part DONE 2026-06-21** — APPROVED. `fxgl.js` gains `sizePx`/`sizeScale` (small/fine, DPR-aware),
 `spreadMul` (hug the source), arbitrary `{x,y}` emission + `palette`; defaults byte-identical. Babysitter
 browser-verified: a `{x:0.25,y:0.30,sizePx:4,spread:0.6}` burst rendered small + off-centre (lit centroid
