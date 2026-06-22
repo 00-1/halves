@@ -1,7 +1,26 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T219 batch 2 + batch 3` · `🔴 CHANGES — T221 (void line UNREADABLE)` — live
-`e523996`; **58/58 tests + `node -c` clean** (verified at a detached worktree). Also: **T222 was SKIPPED** — see below.
+**Current verdict:** `APPROVED — T222 (franchise restructure)` — live `16c441a`; **59/59 tests + `node -c` clean**
+(verified at a detached worktree). Built out of order (A jumped to T222 before the queued T221-fix/T224 — NEXT.md had
+a stale contradictory block, now rewritten to one clean ordered queue; **A's current task is `T221` readability**).
+- **🟢 `T222` (`9ea9046`+`16c441a`) — APPROVED.** Multi-app GHP restructure per `FRANCHISE-HOSTING.md`. Verified:
+  layout `gg1/dev` (app, git-mv history preserved) + `gg1/prod` (lean, no test/scripts — TWA target) + `gg2/dev`
+  placeholder + root **franchise landing** (`index.html` reads `apps.json` → each app's `manifest.webmanifest` for
+  name/icon; unregisters the legacy root SW). **Storage isolated** per scope (`SCOPE`-derived prefix; transparent
+  `halves.*`→`<scope>.*` shadow; root→`halves` unchanged = byte-identical legacy; one-time **prod** migration from the
+  legacy save; **dev = clean room**; clear-data sweeps by prefix). **No cross-game gold** (per-game). **SW cache
+  scoped** (`<scope>-static-v4`; `activate` evicts only `SCOPE-*` — no cross-app wipe; handles `gg1/v1` too). CI:
+  test gates run from `gg1/dev/test/`, build.json stamped per app, cache-bust per app; new `franchise-landing.test.js`
+  gate; **59/59**. **NEW DEV URL: `https://00-1.github.io/halves/gg1/dev/`** (root = the landing now). `gg1/v1/` waits
+  for the tag (T223).
+- **🔴 `T221` still CHANGES (do now):** void line unreadable → ~2× height (see prior verdict + BACKLOG T221).
+- **`T224` (audio) still pending.** Both T221+T224 are owner-facing and were queued BEFORE T222 — A skipped them; they
+  are next (T221 first).
+
+---
+
+**Prior:** `APPROVED — T219 batch 2 + batch 3` · `🔴 CHANGES — T221 (void line UNREADABLE)` — live
+`e523996`; **58/58 tests + `node -c` clean** (verified at a detached worktree).
 
 - **🟢 `T219` batch 2 (`5b50266`) + batch 3 (`e523996`) — APPROVED.** Four new topics, all in the chain:
   **`pctup`** (Percent Increase), **`fdp`** (F·D·P conversions), **`bodmas`** (Order of Operations), **`algebra`**

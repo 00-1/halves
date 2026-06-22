@@ -3315,7 +3315,7 @@ pointer to an existing commit — NOT a write to the `main` branch — so it's w
   it; `gg1/v1/` holds that frozen build, excluded from further edits; recorded in REVIEW.md. **[Babysitter cuts the
   tag; A populates `gg1/v1/`].** *(Gate: ONLY when the Babysitter marks GG1 v1 all-approved AND the owner says go.)*
 
-### T222 — [A] **Multi-app GHP restructure** (gg1/{v1,dev,prod} + gg2/dev; landing page; per-app SW/save namespacing; GG1 migration) · status: OPEN · DO NOW (owner: "move all now") · owner-requested
+### T222 — [A] **Multi-app GHP restructure** (gg1/{v1,dev,prod} + gg2/dev; landing page; per-app SW/save namespacing; GG1 migration) · status: DONE (`16c441a`) · APPROVED — new dev URL `…/halves/gg1/dev/`; `gg1/v1/` populated at the tag (T223) · owner-requested
 **Owner: "add GHP folders so GG sequels live on the same site — GG1 v1 (tagged), a live dev folder, and a prod
 folder we promote to (Play Store points here); plus a GG2 dev folder. Root landing page with links to current
 folders (scan a manifest file). Saves isolated. Move all now."** Full plan + the two origin-shared gotchas in
