@@ -46,6 +46,8 @@ jobs:
         run: node test/toasts.test.js
       - name: Audio levels test (gate)
         run: node test/sound.test.js
+      - name: Audio resume (foghorn) test (gate)
+        run: node test/audio-resume.test.js
       - name: Hero detail test (gate)
         run: node test/hero-detail.test.js
       - name: Arena wayfinding test (gate)

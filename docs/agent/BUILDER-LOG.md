@@ -4819,3 +4819,33 @@ how I verified: **`pwa.test` (27)** — the behavioural SW sandbox now proves na
   purges the superseded cache. `node -c sw.js` clean; **full suite green**. [A]-only (`sw.js`, `test/pwa.test.js`).
 notes: pairs with T161 (now live) — with the truthful marker the owner can SEE Firefox advance to the deploy sha
   + 3v3 appear after a reload. Next per `NEXT.md`: **`T159`** (foghorn-on-resume) → `T160` (Arena death VFX).
+
+---
+
+## Builder A — T159: kill the foghorn on AudioContext resume (app-switch / cold start)
+commit: (this commit) — [A] wiring. Owner: "the foghorn came back on PWA when switching between apps." Repro:
+backgrounding the PWA suspends the shared AudioContext; on return the engine could schedule music into a
+still-suspended/resuming context → a surviving voice/reverb tail blasts as a sustained low drone.
+fix ([A], `main.js` — the wiring/timing; an engine `panic()` is the noted [B] follow-up):
+  - **`audioCtx()` / `ctxRunning()`** helpers — `ctxRunning` = the shared ctx is `state==="running"` AND
+    `sampleRate !== 0` (a garbage/0-rate context is treated as not-ready).
+  - **`startMusicWhenRunning()`** — starts the music ONLY when the ctx is running; if it's suspended (cold start
+    / returning) it `resume()`s first and starts on the resolve, never into a not-yet-running ctx. **Idempotent**:
+    a re-entrant call while a resume is in flight (`resumePending`) is a no-op, so rapid app-switches can't stack
+    a second droning start.
+  - **`resyncMusic()`** (the visibility-resume path) — `Synth.stop()` FIRST (drop any tail that survived the
+    suspend = a clean slate) then `startMusicWhenRunning()`.
+  - **`musicForScreen` guard** — bails if the ctx is `suspended`/`sampleRate 0`, so NO call site (incl. the
+    T101 `warmAudio` trailing start) can schedule into a bad context; the resume path restarts once running.
+  - The `visibilitychange` handler now calls `resyncMusic()` on return (was a bare `musicForScreen`); `audioUnlock`
+    starts via the running-guarded starter.
+how I verified: new **`audio-resume.test.js` (10 checks, gated)** boots `main.js` with a controllable
+  suspended→running ctx + stub Synth and proves: hide STOPS the scheduler; return STOPS first, RESUMES the ctx,
+  and re-syncs the music **only after it's running** (nothing scheduled while suspended); a re-entrant return
+  while resuming is a **no-op** (no duplicate resume/start); music re-syncs **exactly once**; and the
+  running-context guard lives in `musicForScreen`. `node -c` clean; **full suite green** (sound/synth-wiring
+  source-pattern checks updated for the new starter). [A]-only (`main.js` + tests).
+notes: **owner device-verify** — background/return the installed PWA repeatedly; the drone should not appear and
+  the music should resume cleanly. If the foghorn ever survives even this (a tail inside the engine), that's the
+  **[B] `synth.js panic()`/voice-cap** follow-up the babysitter flagged. Next per `NEXT.md`: **`T160`** (Arena
+  foe-KO death VFX + slower playout).

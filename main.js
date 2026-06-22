@@ -366,6 +366,9 @@
   function musicForScreen(name){
     curScreen = name;
     const Sy = window.Synth; if(!Sy || !synthWired) return;
+    // T159 — never schedule into a suspended / garbage (sampleRate 0) context (the
+    // foghorn). The resume path (audioUnlock / resyncMusic) restarts once running.
+    const c = audioCtx(); if(c && (c.state === "suspended" || c.sampleRate === 0)) return;
     try{
       if(musicPreview){ synthSwitchContext(musicPreview); return; }   // the Audio-menu picker is driving — don't fight it
       // T140 — route screens to B's 12 named styles (more styles than screens): a
@@ -396,7 +399,10 @@
   if(typeof document !== "undefined" && document.addEventListener){
     document.addEventListener("visibilitychange", function(){
       const Sy = window.Synth; if(!Sy) return;
-      try{ if(document.hidden){ if(Sy.stop) Sy.stop(); } else if(soundOn()){ musicForScreen(curScreen); } }catch(e){}
+      // T159 — on hide: stop the scheduler. On return (app-switch): re-sync CLEANLY
+      // (drop the surviving tail + restart only once the resumed ctx is running),
+      // never schedule straight into a still-suspended context (the resume foghorn).
+      try{ if(document.hidden){ if(Sy.stop) Sy.stop(); } else if(soundOn()){ resyncMusic(); } }catch(e){}
     });
   }
 
@@ -2232,12 +2238,43 @@
     if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(loadSfxVol() / 100);
     setMusicVolume(loadMusicVol());
   }
+  // T159 — the shared AudioContext (sound.js owns it; Synth mounts on it).
+  function audioCtx(){ try{ return (window.Sound && window.Sound.ctx && window.Sound.ctx()) || null; }catch(e){ return null; } }
+  // running == safe to schedule a note. A suspended/garbage (sampleRate 0) context
+  // is NOT — scheduling into it is what produced the foghorn drone on resume.
+  function ctxRunning(){ const c = audioCtx(); return !!(c && c.state === "running" && c.sampleRate !== 0); }
+  let resumePending = false;
+  // Start the music ONLY once the context is actually running. If it's suspended
+  // (cold start / returning from an app-switch), resume it first and start on the
+  // resolve — never into a not-yet-running context. Idempotent: a re-entrant call
+  // while a resume is in flight is a no-op (no stacked second start / drone).
+  function startMusicWhenRunning(){
+    if(!soundOn()) return;
+    const c = audioCtx();
+    if(!c){ musicForScreen(curScreen); return; }              // no Sound ctx (headless/Synth-only) → best effort
+    if(c.state === "running"){ musicForScreen(curScreen); return; }
+    if(c.state === "suspended" && c.resume && !resumePending){
+      resumePending = true;
+      try{
+        const p = c.resume();
+        const begin = () => { resumePending = false; if(soundOn() && ctxRunning()) musicForScreen(curScreen); };
+        if(p && p.then) p.then(begin, () => { resumePending = false; }); else begin();
+      }catch(e){ resumePending = false; }
+    }
+  }
+  // On an app-switch / visibility resume: drop any voice/reverb tail that survived
+  // the suspend (a clean slate) BEFORE re-syncing, so nothing blasts on resume.
+  function resyncMusic(){
+    const Sy = window.Synth; if(!Sy || !synthWired) return;
+    try{ if(Sy.stop) Sy.stop(); }catch(e){}
+    startMusicWhenRunning();
+  }
   // The user-gesture unlock: ready the engines and START music if it isn't already
   // playing (so it never RESTARTS mid-interaction — a drag/tap won't re-trigger it).
   function audioUnlock(){
     ensureAudioReady();
     const playing = window.Synth && window.Synth.musicPlaying && window.Synth.musicPlaying();
-    if(!playing) musicForScreen(curScreen);
+    if(!playing) startMusicWhenRunning();
   }
   function applySoundPref(){ const on = soundOn(); if(window.Sound && window.Sound.setMuted) window.Sound.setMuted(!on); if(window.Synth && window.Synth.setMuted) window.Synth.setMuted(!on); applyAudioPrefs(); }
   // T143 — SEPARATE Music + SFX volumes (the owner's "sounds are getting lost under

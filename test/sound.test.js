@@ -91,7 +91,7 @@ ok((hsrc.match(/class="settings-body scroll-body"/g) || []).length >= 2, "T143: 
 ok(/\.scroll-body\{[^}]*overflow-y:auto/.test(css143) && /\.scroll-body\{[^}]*min-height:0/.test(css143), "T143: .scroll-body scrolls within the screen (overflow-y:auto, min-height:0) so .res-actions/Back can't be pushed off");
 // the celebration tester unlocks audio WITHOUT restarting the music
 ok(/function fireCelebrationTest\([\s\S]{0,80}ensureAudioReady\(\)/.test(msrc) && /function ensureAudioReady\(\)\{[\s\S]{0,260}setupSynth\(\)/.test(msrc) && !/function ensureAudioReady\(\)\{[\s\S]{0,260}musicForScreen/.test(msrc), "T143(4): the celebration tester unlocks audio via ensureAudioReady (setupSynth, NO musicForScreen → no music restart)");
-ok(/function audioUnlock\(\)\{[\s\S]{0,160}musicPlaying[\s\S]{0,40}musicForScreen/.test(msrc), "T143: audioUnlock only STARTS music if it isn't already playing (no restart on drag/tap)");
+ok(/function audioUnlock\(\)\{[\s\S]{0,160}musicPlaying[\s\S]{0,60}startMusicWhenRunning/.test(msrc), "T143/T159: audioUnlock only STARTS music if it isn't already playing, via the running-context-guarded starter (no restart on drag/tap)");
 
 console.log("\n" + (fails === 0 ? "ALL " + checks + " SOUND CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

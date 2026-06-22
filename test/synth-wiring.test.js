@@ -30,7 +30,7 @@ ok(/musicForScreen\(name\)/.test(main) && !/Sound\.setMusic/.test(main), "(2) sh
 ok(/name === "game" \? \(eventCtx \? "bigroom" : "lofi"\) : name === "arena" \? "arena" : "menu"/.test(main), "(3) T140: screens route to B's named styles (game→lofi/bigroom, arena→arena, else→menu)");
 // T128(1): musicForScreen drives the engine's distinct context (setContext via
 // synthSwitchContext) — NOT the old flat musicSpec() that shared one default chord set
-ok(/function musicForScreen\([\s\S]{0,900}synthSwitchContext\(context/.test(main), "(3) T128: per-screen music drives the DISTINCT context (synthSwitchContext), not a flat spec");
+ok(/function musicForScreen\([\s\S]{0,1300}synthSwitchContext\(context/.test(main), "(3) T128: per-screen music drives the DISTINCT context (synthSwitchContext), not a flat spec");
 ok(!/function musicSpec\(/.test(main) && !/SYNTH_BPM/.test(main), "(3) T128: the old musicSpec()/SYNTH_BPM partial specs (no progression → same chords) are GONE");
 ok(/context === "lofi"[\s\S]{0,140}mode\.music/.test(main), "(3) T140: the calm solve (Lo-Fi) varies per topic (its seed mixes in mode.music)");
 ok(/function synthSwitchContext\([\s\S]{0,900}Sy\.swapNow\(\)/.test(main), "(3) T132: a switch swaps the generator NOW (Synth.swapNow) — instant, not a far phrase boundary");
