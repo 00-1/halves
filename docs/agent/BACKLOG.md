@@ -3088,6 +3088,29 @@ holding its **Back** button (`sumBack`, `menuBtn`, `invBack`, `practiceBack`, `a
   back row is the pinned bottom action row on the converted screens). **[A]-only** (`index.html`, `styles.css`,
   `main.js` if needed, tests).
 
+### T194 — [A] **App ICON = Magnar (hero `mo`)** — render his art into maskable icon assets + wire the manifest · status: OPEN · owner-decided
+**Owner (2026-06-22): "let's try Magnar (hero) for the icon."** Magnar = hero id **`mo`** (a Brawn hero; name in
+`collectibles.js` `HERO_NAMES`). His art is the generative "creature-blob portrait" drawn by
+`C.drawIcon(cv, "hero:mo", HERO_PAL.Brawn, "familiar")` (collectibles.js `heroSprite`). Today the icon is a
+placeholder **`x/2` mark**: static `icon.svg` (maskable SVG) in `manifest.webmanifest`, plus a runtime favicon
+minted by `installFavicon()` (main.js:834, currently draws the `x/2` glyph at 64px → data-URL). Swap it to Magnar.
+- **Compose a MASKABLE icon:** Magnar's portrait centred in the **~80% safe zone** on a **full-bleed brand
+  background** (the void-purple/dark brand — e.g. `#0E1116` field with the Goblin-Gold purple/gold accent), so it
+  survives circle/squircle crops. Crisp-scale the pixel art (nearest-neighbour) up to icon size — don't blur it.
+- **Produce STATIC raster assets** (the installed-PWA / Android / future-Play launcher icon is fetched from the
+  manifest at install time — a runtime data-URL is NOT enough): render `hero:mo` **offline** (via the existing
+  Playwright/headless harness, or a Node canvas) at **512 and 192** and **commit** `icon-512.png` / `icon-192.png`
+  (maskable). Keep an SVG/`icon.svg` fallback if practical.
+- **Wire it up:** point `manifest.webmanifest` `icons` at the new PNGs (192 `any`, 512 `any` + a 512 `maskable`);
+  update the `<link rel="apple-touch-icon">` / favicon links in `index.html`; update **`installFavicon()`** to
+  render `hero:mo` (Magnar) instead of the `x/2` glyph so the **browser-tab favicon matches** the launcher icon.
+- **DoD:** the PWA install icon **and** the browser favicon show **Magnar**, maskable-safe (survives a circular
+  crop, nothing important clipped), crisp (not blurred); static `icon-512`/`icon-192` committed and referenced by
+  the manifest; the existing icon tests (`icons`/`hero-icons`/`icon-variation`) green (+ a check the manifest
+  points at the new assets); `node -c` clean; **owner confirms** by (re)installing the PWA / viewing the icon.
+  **[A]-only** (`manifest.webmanifest`, `index.html`, `main.js` `installFavicon`, the committed PNG assets, tests).
+  *(Unblocks the icon half of T168; the Play-Store `.aab` icon reuses the same 512 asset.)*
+
 ### T192 — [B] **Hoard visual overhaul — cell-shaded CYLINDER coins + a taller, wall-banked pile** · status: OPEN · owner-reported (screenshot, `ee118d3`)
 **Owner (2026-06-22, screenshot of the now-visible 1T hoard): three things.** (1) *"it doesn't stack to the ceiling
 or even near"* — at 1T it's a low pile; should climb much higher. (2) *"the stack shape doesn't look organic — I

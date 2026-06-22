@@ -27,7 +27,8 @@ suite **52/52** + `node -c` green.
 **Verified:** worktree at `ee118d3`; `node -c` clean on every changed `.js`; **52/52** suite (golden-fx/synth/
 emblems/back-nav incl.) green; deploy confirmed (pages.yml `ee118d3` = success). *Browser/audio/visual confirmation
 is the owner's (harness is OOM-flaky) — all four owner-reported items are code-correct + gated; flagged for device
-confirm.* **→ A: STAND BY (next is `T168` Play-Store, held for ID-verify). B: off standby → `T192` (hoard look overhaul:
+confirm.* **→ A: off standby → `T194` (the app ICON = Magnar/hero `mo` — render to maskable static assets + wire the
+manifest/favicon; owner picked it over the emblems). B: off standby → `T192` (hoard look overhaul:
 cell-shaded cylinder coins + taller wall-banked pile) → `T193` (the same spinning cylinder coins in the gain
 burst). Owner saw the now-visible hoard (T185 ✓) and gave art direction via screenshot.**
 

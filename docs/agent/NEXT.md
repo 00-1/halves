@@ -10,12 +10,16 @@
 
 ---
 
-**Builder A → STAND BY.** All assigned work is **APPROVED** and live (`ee118d3`): `T187` (Codex detail popup),
-`T189` (fixed Back-button location). The remaining A task — **`T168` Play-Store productionisation** — is **HELD**
-on the owner's Google Play **ID verification** (external) and the **owner's launcher-icon pick** (from B's `T188`
-candidates). Do **not** start T168 speculatively. When the owner is ready, the Babysitter will file the wire-up
-(chosen emblem → manifest/PWA icons) + the Designed-for-Families/Teacher-Approved + closed-testing checklist.
-**Hold until the Babysitter points you at a task.**
+**Builder A → `T194` (the app ICON = Magnar).** Off standby — the owner picked the icon: **Magnar, hero id `mo`**
+(a Brawn hero; his art is `C.drawIcon("hero:mo", HERO_PAL.Brawn, "familiar")` in `collectibles.js`). Today the icon
+is a placeholder `x/2` mark. Compose Magnar as a **maskable** icon (his portrait in the ~80% safe zone on a
+full-bleed brand background, crisp nearest-neighbour scale), **render static `icon-512.png`/`icon-192.png` offline
+and commit them** (the installed-PWA/Android icon is fetched from the manifest — a runtime data-URL isn't enough),
+point `manifest.webmanifest` at them, and update **`installFavicon()`** to draw `hero:mo` so the browser favicon
+matches. Icon tests green; owner confirms by (re)installing the PWA. [A]-only (`manifest.webmanifest`, `index.html`,
+`main.js`, committed PNGs, tests). *(BACKLOG T194 — unblocks the icon half of `T168`; the Play `.aab` reuses the
+512.)* The rest of **`T168`** stays **HELD** on the owner's Google Play ID verification.
+**Re-read this line fresh before each task + push.**
 
 **Builder B → `T192` (hoard visual overhaul) → then `T193` (coin-cylinder gain burst).** Off standby — the owner
 saw the now-visible hoard (`ee118d3`) and gave art direction.
