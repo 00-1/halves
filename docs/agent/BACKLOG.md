@@ -3332,6 +3332,29 @@ can stay. By subtitle I mean THE VOID THRONE."*
   behaviour unaffected; `node -c` clean; `fxgl`/`fx-wiring` green (+ a check the overlay hides when the controller
   stops); **owner device-confirms**. **[B]-only** (`fxgl.js`, tests; tiny CSS only if B picks the CSS route).
 
+### T220 — [A] **Void Throne: stretch the text VERTICALLY + faster, more random on/off flicker** · status: OPEN · owner-requested
+**Owner (2026-06-22, screenshot on `cc1f202`): "maybe let's stretch the Void Throne text vertically, and make the
+animation more rapidly/randomly flickering on and off."** Further refines the void subtitle (`paintPixelTitle`/
+`renderTitles` in `main.js` — the JetBrains-Mono ALL-CAPS corrupted line from T217). The GOLD "Goblin Gold" line is
+unchanged.
+- **Vertical stretch:** today every cell is drawn `PX × PX` square (`PX = 2`). Make the **void line taller** — draw
+  its cells with a **larger vertical scale than horizontal** (e.g. a separate `PXY` ≈ `PX × 1.4–1.6` for the void
+  line only, or vertically scale the `disp` canvas), so "THE VOID THRONE" reads as elongated/condensed-tall. Keep the
+  horizontal size ~as-is so it still fits the splash width; re-verify legibility and that the dot-of-the-"i"/letters
+  don't merge. Gold line keeps square cells.
+- **Faster, more random flicker on/off:** today the interference is occasional bursts (~11 fps re-roll for 0.4–1.2 s,
+  then idle 2.2–5 s — the T217 `burst()` loop). Owner wants it **more rapid and more random** — shorten + randomise
+  the cadence so the line flickers in and out more often and less predictably. "On and off" implies the whole line
+  should sometimes **cut/blank entirely** (a brief full-dropout frame), not only re-roll cells — add occasional
+  whole-line visibility flicker (random short blanks) on top of the cell re-roll, at a faster, jittered interval.
+  Keep it **legible overall** (dropouts are brief), **reduced-motion → fully static** (no flicker, no blanks), and
+  paused off the entry splash (as now). Watch perf — faster re-roll must stay on the idle-between-bursts pattern, not
+  a continual every-frame redraw.
+- **DoD:** the void line is **vertically stretched** (taller than wide cells) and its glitch **flickers faster + more
+  randomly, cutting fully on/off** at times; still legible; gold line unchanged + still square; fits the splash width;
+  fully static under reduced-motion; `node -c` clean; entry tests green; **owner device-confirms**. **[A]-only**
+  (`main.js`, maybe `styles.css`). *(Quick visual iteration — before resuming T213 Phase 2.)*
+
 ### T217 — [A] **Void Throne: ALL CAPS + INTERMITTENT interference (glitch bursts on/off, not continual)** · status: DONE (`cc1f202`) · APPROVED · owner device-confirm
 **Owner (2026-06-22, on T216 `2f55fad`): "the Void Throne text — could try making it ALL CAPS. Also let's have the
 animated noise we just added come ON and OFF occasionally — rather than being continual. Like interference."**

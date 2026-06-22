@@ -6,8 +6,11 @@
 
 ---
 
-**Builder A → `T213` Phase 2 (content quality — HIGH PRIORITY).** `T217` (void caps + intermittent glitch)
-**APPROVED** (live `cc1f202`); the splash title work is DONE. Now the big one: fix the question/guide issues in
+**Builder A → `T220` FIRST (quick splash tweak), THEN back to `T213` Phase 2.** `T217` (void caps + intermittent
+glitch) **APPROVED** (live `cc1f202`). Owner sent ONE more void-line iteration → **`T220`: stretch "THE VOID THRONE"
+VERTICALLY (taller-than-wide cells, void line only — gold unchanged) + make the glitch flicker FASTER + MORE RANDOMLY,
+cutting fully on/off (add brief whole-line dropouts on top of the cell re-roll), reduced-motion → fully static.** Quick
+`main.js` change — push on its own for owner device-confirm. *(BACKLOG T220.)* THEN the big one: fix the question/guide issues in
 `docs/agent/QUESTION-QUALITY-AUDIT.md`, in BATCHES so the Babysitter can re-assess each:
 - **2a — the 11 missing guides + `explain()` cases** (scaling/percentoff/partwhole/balance/lcmhcf/mean/timegap/
   ratioshare/cubes/money/digitsum). Reasoning topics first. **Push this batch on its own.**
