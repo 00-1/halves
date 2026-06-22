@@ -6,6 +6,27 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T191 — declick the engine-wide crackle/popping ([B], owner-reported, low-severity)
+
+Owner: "the audio can have some crackling/popping, not terrible though." Two safe,
+textbook fixes for the named causes (envelope discontinuity + clipping-into-the-limiter):
+- **True-zero release in `adsr`:** exponential ramps can't reach 0 (they stop at 1e-4), so
+  added a tiny linear tail to **TRUE 0** before the voice is torn down → no end-of-note
+  discontinuity. Applies to every music voice AND drum (all use `adsr`).
+- **Soft limiter knee (0 → 6 dB):** the master limiter was a hard brickwall; hard-clamping
+  transient peaks on dense styles is the most likely "engine-wide" crackle. A 6 dB knee
+  rounds the limiting so busy sums compress gently instead of hard-clipping (still ratio 20
+  @ LIMIT_DB — bounded, T175 stability via the reverb-return compressor + decay cap is
+  untouched). Attack nudged 3→4 ms.
+
+Verify: `node -c` clean; `synth.test` 176 (ADSR test updated for the declick tail);
+`golden-synth` unchanged (scores are note events, not envelopes); the T175 real-audio
+stability gate green (×2, stable); full Node suite + all 3 browser gates green. B-owned
+(`synth.js` + tests). **Owner device-confirms** the crackle is gone (can't reproduce the
+analog crackle headlessly; these are the standard, can't-regress declick fixes).
+
+---
+
 ## T190 — Lo-Fi still dark/stressful: IMPLEMENT the research (major + resolve home) ([B], owner-reported)
 
 Owner rejected the T183 "blind nudge" (it only lifted pitch/reverb, **left the mode minor**).

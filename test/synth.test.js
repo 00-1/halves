@@ -76,11 +76,12 @@ ok(c[0][0] === "cancel", "ADSR cancels prior automation at note-on");
 ok(c[1][0] === "set" && Math.abs(c[1][1] - 1e-4) < 1e-9 && c[1][2] === 10, "ADSR starts from ~0 at t0");
 ok(c[2][0] === "exp" && Math.abs(c[2][1] - 0.8) < 1e-9 && Math.abs(c[2][2] - 10.02) < 1e-6, "attack ramps to peak at t0+a");
 ok(c[3][0] === "exp" && Math.abs(c[3][1] - 0.4) < 1e-9 && Math.abs(c[3][2] - 10.12) < 1e-6, "decay ramps to sustain (peak*s) at t0+a+d");
-ok(c[c.length - 1][0] === "exp" && Math.abs(c[c.length - 1][1] - 1e-4) < 1e-9, "release ramps back to ~0");
-ok(Math.abs(end - 10.7) < 1e-6, "ADSR returns the release-end time (hold dur=0.5 + r=0.2)");
+ok(c[c.length - 2][0] === "exp" && Math.abs(c[c.length - 2][1] - 1e-4) < 1e-9, "release ramps back to ~0");
+ok(c[c.length - 1][0] === "lin" && c[c.length - 1][1] === 0, "T191 declick: a tiny linear tail settles to TRUE zero (no end-of-note pop)");
+ok(Math.abs(end - 10.706) < 1e-6, "ADSR returns the release-end time incl. the declick tail (0.5 + 0.2 + 0.006)");
 // a very short note still completes attack+decay (hold = max(a+d, dur))
 const p2 = mkParam(); const end2 = Synth.adsr(p2, 0, 0.01, { a: 0.05, d: 0.1, s: 0.5, r: 0.1, peak: 1 });
-ok(Math.abs(end2 - 0.25) < 1e-6, "a short note still completes attack+decay before release");
+ok(Math.abs(end2 - 0.256) < 1e-6, "a short note still completes attack+decay before release (+ declick tail)");
 
 // =====================================================================
 // 3) Patch → graph: each engine type builds the right nodes

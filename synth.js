@@ -62,7 +62,10 @@
     param.exponentialRampToValueAtTime(sus, t0 + a + d);
     param.setValueAtTime(sus, tHold);
     param.exponentialRampToValueAtTime(1e-4, tHold + r);
-    return tHold + r;
+    // T191 — DECLICK: exp ramps can't reach 0, so settle to TRUE zero with a tiny linear
+    // tail before the voice is torn down → no end-of-note discontinuity (pop).
+    if(param.linearRampToValueAtTime) param.linearRampToValueAtTime(0, tHold + r + 0.006);
+    return tHold + r + 0.006;
   }
 
   // ---- the patch table -------------------------------------------------------
@@ -668,7 +671,10 @@
     E.master = ctx.createGain(); E.master.gain.value = E.muted ? 0 : MASTER_VOL;
     if(ctx.createDynamicsCompressor){
       E.limiter = ctx.createDynamicsCompressor();
-      try{ E.limiter.threshold.value = LIMIT_DB; E.limiter.knee.value = 0; E.limiter.ratio.value = 20; E.limiter.attack.value = 0.003; E.limiter.release.value = 0.25; }catch(e){}
+      // T191 — a SOFT knee (was 0 = hard brickwall): hard-clamping transient peaks on busy
+      // styles crackled; a 6 dB knee rounds the limiting so dense sums compress gently
+      // instead of clipping. Still ratio 20 @ LIMIT_DB (bounded), just no hard-clip pop.
+      try{ E.limiter.threshold.value = LIMIT_DB; E.limiter.knee.value = 6; E.limiter.ratio.value = 20; E.limiter.attack.value = 0.004; E.limiter.release.value = 0.25; }catch(e){}
       E.master.connect(E.limiter); E.limiter.connect(ctx.destination);
     } else {
       E.master.connect(ctx.destination);
