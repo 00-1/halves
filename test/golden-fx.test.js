@@ -230,5 +230,71 @@ const mutated = JSON.parse(JSON.stringify(sample)); mutated[0][0] = [255, 0, 255
 const neg = compareValues(JSON.stringify(sample, null, 1), mutated);
 ok(!neg.match && /first change/.test(neg.hint || ""), "harness: a one-cell render change is CAUGHT (with a diff hint)");
 
+// ---- T172: gold-hoard engine — pure math + the rendered pile + the earn burst ----
+// The owner's Smaug/Scrooge pile. Per the T174 research: a saturating gold→level curve
+// drives a mound silhouette + a crest-weighted SURFACE-coin scatter; the earn burst
+// CONVERGES coins from the earn-point into the hoard. All opt-in (existing scenes
+// byte-identical, asserted above by the unchanged scene goldens).
+(function(){
+  // (1) saturating curve: 0 at 0, monotonic ↑, →1, never over 1 (no cap blow-out).
+  const L = FXGL.hoardLevel;
+  ok(L(0) === 0 && L(FXGL.HOARD_K) === 0.5 && L(1e9) < 1 && L(1e9) > 0.99, "hoardLevel saturates (0→0, K→0.5, →1)");
+  ok(L(100) < L(1000) && L(1000) < L(1e6), "hoardLevel is monotonic in gold");
+  ok(FXGL.hoardTier(0, 8) === 0 && FXGL.hoardTier(1, 8) === 8 && FXGL.hoardTier(0.5, 8) === 4, "hoardTier quantises the level (re-seed only on a tier change)");
+  // (2) mound profile: 0 at the edges + level 0, peaks at the centre, bounded, grows with level.
+  ok(FXGL.moundProfile(0, 1, 1) === 0 && FXGL.moundProfile(1, 1, 1) === 0, "mound is 0 at the screen edges (a footprint, not full-width)");
+  ok(FXGL.moundProfile(0.5, 0, 1) === 0, "mound is 0 at level 0 (no gold → no pile)");
+  ok(FXGL.moundProfile(0.5, 1, 1) > FXGL.moundProfile(0.5, 0.3, 1) && FXGL.moundProfile(0.5, 1, 1) <= FXGL.HOARD_MAX_H, "the mound grows with level, capped at HOARD_MAX_H");
+  // (3) surface-coin scatter: count rides level (capped), coins on the lower-half surface,
+  //     deterministic, each a beveled coin with a varied angle/squash.
+  const big = FXGL.seedHoard({ level: 1, seed: 7 }, false, FXGL.HOARD_CAP);
+  const small = FXGL.seedHoard({ level: 0.3, seed: 7 }, false, FXGL.HOARD_CAP);
+  ok(big.length === FXGL.HOARD_CAP && small.length < big.length && small.length > 0, "coin count scales with level + is capped at HOARD_CAP (" + small.length + " < " + big.length + ")");
+  ok(big.every(c => c.x >= 0 && c.x <= 1 && c.y >= 0.5 && c.y <= 1), "every surface coin sits in the lower-half, in-bounds (a settled pile)");
+  ok(big.every(c => c.look === 1 && c.aspect < 1 && c.rot >= 0), "each coin is beveled (look) with a squash + rotation (varied angles)");
+  ok(new Set(big.slice(0, 40).map(c => Math.round(c.rot * 100))).size > 20 && new Set(big.slice(0, 40).map(c => Math.round(c.aspect * 100))).size > 20, "coin angles + squashes genuinely vary (not uniform discs)");
+  ok(JSON.stringify(FXGL.seedHoard({ level: 1, seed: 7 }, false, FXGL.HOARD_CAP)) === JSON.stringify(big), "the hoard scatter is deterministic for its (level, seed)");
+  ok(FXGL.seedHoard({ level: 1, seed: 7 }, true, FXGL.HOARD_CAP).length < big.length, "reduced-motion → a smaller (calmer) pile");
+  gold("fx_hoard_scatter", { n: big.length, at_0_3: small.length, cap: FXGL.HOARD_CAP, maxH: FXGL.HOARD_MAX_H, sample: { x: Math.round(big[0].x * 100), y: Math.round(big[0].y * 100), look: big[0].look } });
+  // (4) converge path: starts at the earn-point, ends absorbed at the hoard target, in-bounds.
+  const cv = FXGL.seedConverge({ x: 0.2, y: 0.2, tx: 0.5, ty: 0.9, count: 24, seed: 3 }, false, FXGL.BURST_CAP);
+  const p0 = FXGL.convergePos(cv[0], 0), pe = FXGL.convergePos(cv[0], cv[0].life);
+  ok(Math.abs(p0.x - cv[0].x0) < 0.01 && Math.abs(p0.y - cv[0].y0) < 0.01, "the earn coin starts AT the earn-point");
+  ok(Math.abs(pe.x - cv[0].tx) < 1e-6 && Math.abs(pe.y - cv[0].ty) < 1e-6 && !pe.alive, "the earn coin ENDS absorbed at the hoard target (converged, not dispersed)");
+  let inb = true; for(let u = 0; u <= 1; u += 0.1){ const p = FXGL.convergePos(cv[0], cv[0].life * u); if(p.x < -0.05 || p.x > 1.05 || p.y < -0.3 || p.y > 1.05) inb = false; }
+  ok(inb, "the converge path stays in-bounds the whole arc");
+  ok(JSON.stringify(FXGL.seedConverge({ x: 0.2, y: 0.2, tx: 0.5, ty: 0.9, count: 24, seed: 3 }, false, FXGL.BURST_CAP)) === JSON.stringify(cv), "the earn burst is deterministic for its seed");
+})();
+// the hoard actually RENDERS over the home backdrop (raster, like the T138/T152 checks):
+// a level-0.8 pile paints a real, in-bounds, lower-half mass; level 0 paints nothing extra.
+(function(){
+  function hoardLit(level){
+    const w = 400, h = 800, dpr = 2, W = Math.round(w * dpr), H = Math.round(h * dpr);
+    const r = rasterCtx(W, H);
+    const ov = new FXGL.Controller(stubCanvas(w, h), { backend: "2d", ctx2d: r.ctx, raf: () => 1, caf: () => {}, width: w, height: h, dpr: dpr, quality: 2, reducedMotion: false });
+    ov.setScene({ grid: [[[20, 20, 30], [20, 20, 30]], [[20, 20, 30], [20, 20, 30]]], seed: 5, hoard: level ? { level: level, seed: 9 } : undefined });
+    ov.backend.renderFrame({ sceneOn: true, burstOn: false });
+    const cov = r.cov; let lower = 0, upper = 0; const half = (H / 2) | 0;
+    for(let y = 0; y < H; y++) for(let x = 0; x < W; x++) if(cov[y * W + x] > 0.02){ if(y >= half) lower++; else upper++; }
+    return { lower: lower, upper: upper };
+  }
+  const on = hoardLit(0.8);
+  ok(on.lower > 2000, "T172: a level-0.8 hoard paints a REAL lower-half pile (" + on.lower + " lit px — mound + surface coins)");
+  ok(on.lower > on.upper * 2, "T172: the pile is concentrated in the LOWER half (settled at the bottom, not floating)");
+})();
+// the earn burst converges toward the hoard (coins move from the earn-point downward over time)
+(function(){
+  const w = 400, h = 800, dpr = 2, W = Math.round(w * dpr), H = Math.round(h * dpr);
+  function litCentroidY(t){ const r = rasterCtx(W, H);
+    const ov = new FXGL.Controller(stubCanvas(w, h), { backend: "2d", ctx2d: r.ctx, raf: () => 1, caf: () => {}, width: w, height: h, dpr: dpr, quality: 2, reducedMotion: false });
+    ov.earnBurst({ x: 0.5, y: 0.15, tx: 0.5, ty: 0.9, count: 40, seed: 4 });
+    ov.backend.renderFrame({ sceneOn: false, burstOn: true, burstTime: t });
+    let sum = 0, wy = 0; for(let y = 0; y < H; y++) for(let x = 0; x < W; x++){ const c = r.cov[y * W + x]; if(c > 0.02){ sum += c; wy += c * y; } }
+    return sum > 0 ? wy / sum / H : -1;
+  }
+  const early = litCentroidY(0.1), late = litCentroidY(0.7);
+  ok(early > 0 && late > early, "T172: the earn burst CONVERGES — lit centroid moves from the earn-point (y≈" + early.toFixed(2) + ") toward the hoard (y≈" + late.toFixed(2) + ")");
+})();
+
 console.log("\n" + (fails === 0 ? "ALL " + checks + " FX-GOLDEN CHECKS PASSED" : fails + "/" + checks + " FAILED"));
 process.exit(fails ? 1 : 0);

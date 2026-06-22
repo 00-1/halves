@@ -332,16 +332,145 @@
     return m;
   }
 
+  // ===========================================================================
+  // GOLD HOARD (T172) — the owner's Smaug/Scrooge pile. Per the T174 research pass
+  // (docs/research-coin-hoard.md): IMPRESSION, not physics — imply the bulk with a
+  // shaped, lit mound SILHOUETTE + dither shading, and render only the SURFACE coins
+  // (scattered, per-coin varied: angle/squash/tone/glint) you'd actually see; never
+  // the buried interior. All opt-in (`scene.hoard` / `look:"coin"`); existing scenes
+  // stay byte-identical. Fits PARTICLE_CAP (512) + the degrade ladder; reduced-motion
+  // → a static pile. Pure math here is headless-tested like the other fxgl maths.
+  // ===========================================================================
+  const HOARD_CAP = 340;            // surface-coin ceiling at full level (≪ PARTICLE_CAP 512)
+  const HOARD_K = 600;              // saturating-curve constant: gold==K → level 0.5
+  const HOARD_MAX_H = 0.34;         // tallest mound = 34% of the backdrop height
+  const HOARD_TIERS = 8;            // re-seed the static coin buffer only when the tier changes
+  // gold highlight / mid / shadow — a lit metal ramp (the bevel reads from these).
+  const GOLD_TONES = [[255, 214, 110], [212, 158, 46], [120, 84, 22]];
+
+  // gold total → hoard LEVEL (0..1): saturating, so early gold visibly shows and big
+  // totals plateau gracefully (no cap blow-out). level = gold/(gold+K).
+  function hoardLevel(gold, k){ gold = Math.max(0, gold || 0); k = (k == null ? HOARD_K : k) || 1; return gold / (gold + k); }
+  // quantise the level to a tier (the static buffer only re-seeds on a tier change).
+  function hoardTier(level, tiers){ return Math.round(clamp01(level) * ((tiers || HOARD_TIERS) | 0)); }
+  // a small positional hash (organic micro-roughness without a sequential RNG).
+  function hash01i(i, salt){ let h = ((i | 0) * 374761393 + (salt | 0) * 668265263) >>> 0; h = (h ^ (h >>> 13)) >>> 0; h = (h * 1274126177) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
+  // The mound HEIGHT (0..HOARD_MAX_H, fraction of screen) at normalised column x∈[0,1]:
+  // a smooth centred dome whose half-width + height grow with `level`, plus hashed
+  // micro-roughness so the crest reads organic, not a parabola. 0 outside the footprint.
+  function moundProfile(x, level, seed){
+    level = clamp01(level);
+    if(level <= 0) return 0;
+    const spread = 0.16 + 0.34 * level;                 // footprint half-width grows with level
+    const d = Math.abs(x - 0.5) / spread;
+    if(d >= 1) return 0;
+    let hump = Math.pow(1 - d * d, 1.4);                // smooth dome, 0 at the edges
+    hump *= 0.82 + 0.30 * hash01i(Math.floor(x * 48), (seed | 0) ^ 0x9e37);   // organic roughness
+    return clamp01(level * HOARD_MAX_H * hump);
+  }
+  // Seed the SURFACE coins of the hoard (T172): a crest-weighted scatter ON the mound
+  // surface, each coin carrying position + size + rotation + aspect(squash) + a gold
+  // tone + a glint phase. Count rides `level` (capped); deterministic from `seed`;
+  // reduced-motion → fewer, no glint. Only the surface is ever emitted (impression).
+  function seedHoard(opts, reduced, cap){
+    opts = opts || {};
+    const level = clamp01(opts.level != null ? opts.level : 1);
+    const seed = (opts.seed | 0) || 0x601d;
+    const ceil = Math.max(0, Math.min((cap == null ? HOARD_CAP : cap) | 0, HOARD_CAP));
+    const want = Math.round(ceil * level * (reduced ? 0.6 : 1));
+    const n = Math.max(0, Math.min(ceil, want));
+    const rng = makeRng(seed);
+    let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor) : GOLD_TONES;
+    if(!pool.length) pool = [[255, 255, 255]];
+    const out = new Array(n);
+    for(let i = 0; i < n; i++){
+      // crest-weighted x: average two uniforms → triangular bias toward the centre/crest
+      const x = clamp01(0.5 + ((rng() + rng()) / 2 - 0.5) * (0.32 + 0.62 * level));
+      const h = moundProfile(x, level, seed);
+      const surfaceY = 1 - h;                                  // y=1 is the bottom of the backdrop
+      const band = 0.018 + 0.05 * h;                           // coins sit in a thin surface band
+      const y = clamp01(surfaceY + rng() * band);              // just below the silhouette top
+      const col = pool[(rng() * pool.length) | 0];
+      out[i] = {
+        x: x, y: y,
+        size: lerp(reduced ? 4 : 5, reduced ? 7 : 11, rng()),  // screen px (DPR-scaled by pxScale)
+        rot: rng() * TAU,                                      // varied coin angle
+        aspect: lerp(0.45, 0.92, rng()),                       // vertical squash → coins lie at angles
+        r: col[0], g: col[1], b: col[2],
+        glint: reduced ? 0 : rng() * TAU,                      // specular twinkle phase (0 = static)
+        look: 1                                                // 1 = coin (beveled), for the renderers
+      };
+    }
+    return out;
+  }
+
+  // Closed-form CONVERGE path (T172(d)) — the earn burst: a coin emitted at (x0,y0)
+  // eases toward the hoard target (tx,ty) over its life with a small lob, then lands
+  // (absorbed → alpha 0). The GLSL/WGSL VS computes the identical path; this documents
+  // + bounds it. Returns normalised pos, alpha, liveness.
+  function convergePos(p, t){
+    const lt = t - (p.birth || 0);
+    if(lt < 0) return { x: p.x0, y: p.y0, alpha: 0, alive: false };
+    if(lt >= p.life) return { x: p.tx, y: p.ty, alpha: 0, alive: false };   // landed → absorbed into the mound
+    const u = lt / p.life, e = u * u * (3 - 2 * u);            // smoothstep ease-in-out
+    const x = p.x0 + (p.tx - p.x0) * e;
+    const y = p.y0 + (p.ty - p.y0) * e - (p.arc || 0) * Math.sin(Math.PI * u);   // a gentle lob
+    const fadeIn = Math.min(1, lt / 0.06);
+    const fadeOut = u > 0.75 ? Math.max(0, 1 - (u - 0.75) / 0.25) : 1;   // fade as it lands
+    return { x: x, y: y, alpha: clamp01(fadeIn * fadeOut), alive: true };
+  }
+  // Seed the earn burst: `count` coins fly from {x,y} toward the hoard {tx,ty} (each
+  // jittered + lobbed), settle, and are absorbed. Deterministic; reduced-motion → a
+  // small, calm puff (the caller may skip it entirely for a static pile).
+  function seedConverge(opts, reduced, cap){
+    opts = opts || {};
+    const x0 = clamp01(opts.x != null ? opts.x : 0.5), y0 = clamp01(opts.y != null ? opts.y : 0.3);
+    const tx = clamp01(opts.tx != null ? opts.tx : 0.5), ty = clamp01(opts.ty != null ? opts.ty : 0.9);
+    const want = (opts.count != null ? opts.count : 24) | 0;
+    const n = Math.max(0, Math.min((cap == null ? BURST_CAP : cap) | 0, Math.round(want * (reduced ? 0.4 : 1))));
+    const rng = makeRng((opts.seed | 0) || 0xc01d);
+    let pool = (opts.palette && opts.palette.length) ? opts.palette.map(parseColor) : GOLD_TONES;
+    if(!pool.length) pool = [[255, 255, 255]];
+    const lMax = reduced ? 0.7 : 1.1;
+    const out = new Array(n);
+    for(let i = 0; i < n; i++){
+      const col = pool[(rng() * pool.length) | 0];
+      out[i] = {
+        x0: clamp01(x0 + (rng() - 0.5) * 0.06), y0: clamp01(y0 + (rng() - 0.5) * 0.06),
+        tx: clamp01(tx + (rng() - 0.5) * (0.10 + 0.30 * (opts.spread || 1))),   // spread across the hoard top
+        ty: clamp01(ty + (rng() - 0.5) * 0.04),
+        arc: lerp(0.06, reduced ? 0.12 : 0.22, rng()),         // lob height
+        size: lerp(reduced ? 4 : 5, reduced ? 7 : 10, rng()),
+        rot: rng() * TAU, aspect: lerp(0.45, 0.92, rng()),
+        r: col[0], g: col[1], b: col[2],
+        life: lerp(0.6, lMax, rng()), glint: 0, look: 1,
+        birth: 0
+      };
+    }
+    return out;
+  }
+
   // Precompute the per-scene render data shared by every backend (pure).
   function deriveScene(scene, cap){
     if(!scene || !scene.grid || !scene.grid.length) throw new Error("FXGL.setScene needs a grid");
     const ramp = buildRamp(scene.palette && scene.palette.length ? scene.palette : gridColors(scene.grid), scene.steps || 8);
-    return {
+    const d = {
       ramp: ramp,
       image: gridToImage(scene.grid),
       particles: seedParticles(scene, ramp, cap),
       dither: (scene.dither == null) ? 1 : scene.dither
     };
+    // T172 — opt-in GOLD HOARD: `scene.hoard` = a level 0..1 (or {level,seed,palette}).
+    // Derives the settled surface-coin scatter + the mound params (the renderers draw a
+    // dithered mound silhouette + the beveled coins on top). Absent → byte-identical.
+    const hv = (scene.hoard != null && typeof scene.hoard === "object") ? scene.hoard
+             : (typeof scene.hoard === "number") ? { level: scene.hoard } : null;
+    if(hv){
+      const level = clamp01(hv.level || 0), seed = (hv.seed != null ? hv.seed : (scene.seed | 0)) | 0;
+      d.hoard = { level: level, seed: seed, palette: hv.palette || null,
+                  coins: seedHoard({ level: level, seed: seed, palette: hv.palette }, false, hv.cap) };
+    }
+    return d;
   }
 
   // =========================================================================
@@ -427,13 +556,23 @@
     state = state || {};
     const cols = state.cols || 28, rows = state.rows || 16;
     const palette = homePalette(state);
-    return {
+    const scene = {
       grid: homeGrid(state, palette, cols, rows),
       palette: palette,
       particles: homeParticles(state, palette),
       seed: seedFromHome(state),
       dither: 1
     };
+    // T172 — the gold hoard rides the home backdrop. [A]'s T173 feeds `state.hoard`
+    // (a saturating gold→level 0..1, or {level,seed,palette}); absent → no pile (the
+    // home stays exactly as before). The level re-seeds only on a tier change.
+    if(state.hoard != null){
+      const lvl = (typeof state.hoard === "object") ? clamp01(state.hoard.level || 0) : clamp01(state.hoard);
+      const tier = hoardTier(lvl);   // quantise so the static buffer is stable between earns
+      scene.hoard = { level: lvl, seed: (scene.seed ^ (0x60_1d + tier)) | 0,
+                      palette: (typeof state.hoard === "object" && state.hoard.palette) || null };
+    }
+    return scene;
   }
 
   // =========================================================================
@@ -1015,6 +1154,29 @@
   // =========================================================================
   // CPU still backend — the no-GPU / reduced-motion fallback (a static still)
   // =========================================================================
+  // T172 — draw one beveled COIN (the hoard look) at buffer-px centre (cx,cy), radius
+  // `r` (buffer px), rotated `rot`, vertically squashed by `aspect` (→ a coin at an
+  // angle). Real 2D canvas → a lit disc (rim/shadow ring + mid body + inner highlight +
+  // optional specular glint). A context WITHOUT the path API (the headless test raster)
+  // → an axis-aligned squashed rect (mid body + highlight) so coverage + a bevel still
+  // read and the draw stays measurable.
+  function shade(c, f){ return f >= 0 ? [c[0] + (255 - c[0]) * f | 0, c[1] + (255 - c[1]) * f | 0, c[2] + (255 - c[2]) * f | 0] : [c[0] * (1 + f) | 0, c[1] * (1 + f) | 0, c[2] * (1 + f) | 0]; }
+  function drawCoin(ctx, cx, cy, r, rot, aspect, rgb, glint){
+    r = Math.max(1, r); aspect = aspect || 1;
+    if(ctx.beginPath && ctx.ellipse && ctx.fill && ctx.save){
+      ctx.save(); ctx.translate(cx, cy); if(rot) ctx.rotate(rot); ctx.scale(1, aspect);
+      ctx.beginPath(); ctx.ellipse(0, 0, r, r, 0, 0, TAU); ctx.fillStyle = toHex(shade(rgb, -0.45)); ctx.fill();            // rim / shadow
+      ctx.beginPath(); ctx.ellipse(0, 0, r * 0.82, r * 0.82, 0, 0, TAU); ctx.fillStyle = toHex(rgb); ctx.fill();           // mid body
+      ctx.beginPath(); ctx.ellipse(-r * 0.16, -r * 0.16, r * 0.44, r * 0.44, 0, 0, TAU); ctx.fillStyle = toHex(shade(rgb, 0.5)); ctx.fill();   // inner highlight
+      if(glint > 0){ ctx.beginPath(); ctx.ellipse(-r * 0.3, -r * 0.3, r * 0.16, r * 0.16, 0, 0, TAU); ctx.fillStyle = "rgba(255,255,255," + Math.min(0.9, glint).toFixed(2) + ")"; ctx.fill(); }
+      ctx.restore();
+    } else {
+      const w = Math.max(2, Math.round(r * 2)), h = Math.max(2, Math.round(r * 2 * aspect));
+      ctx.fillStyle = toHex(rgb); ctx.fillRect((cx - w / 2) | 0, (cy - h / 2) | 0, w, h);
+      const hw = Math.max(1, (w * 0.5) | 0), hh = Math.max(1, (h * 0.5) | 0);
+      ctx.fillStyle = toHex(shade(rgb, 0.5)); ctx.fillRect((cx - hw / 2) | 0, (cy - hh / 2) | 0, hw, hh);
+    }
+  }
   function CPUBackend(ctx2d){ this.name = "cpu-still"; this.ctx = ctx2d; this.w = 1; this.h = 1; this.burst = null; this.pxScale = 1; }
   CPUBackend.prototype.setData = function(derived){ this.derived = derived; };
   CPUBackend.prototype.setBurst = function(parts){ this.burst = parts; this.burstCount = parts.length; };
@@ -1028,17 +1190,24 @@
     if(o.sceneOn && this.derived) this._still();
     else if(!o.sceneOn && ctx.clearRect) ctx.clearRect(0, 0, this.w, this.h);
     if(o.burstOn && this.burst && this.burst.length && ctx.fillRect){
-      const W = this.w, H = this.h, t = o.burstTime || 0;
+      const W = this.w, H = this.h, t = o.burstTime || 0, scale = this.pxScale || 1;
       for(let i = 0; i < this.burst.length; i++){
-        const bp = burstPos(this.burst[i], t, BURST_GRAVITY, BURST_DRAG);
+        const p = this.burst[i];
+        // converge particles (T172 earn-burst) carry a target `tx`; everything else
+        // is the ballistic burst. Both are closed-form (see convergePos / burstPos).
+        const bp = (p.tx != null) ? convergePos(p, t) : burstPos(p, t, BURST_GRAVITY, BURST_DRAG);
         if(!bp.alive || bp.alpha <= 0.01) continue;
-        const s = this.burst[i].size;
+        // size up by the buffer/CSS factor so it shows at `size` SCREEN px after the
+        // browser's downscale (T138); floor at 2 screen px.
+        const px = Math.max(2, Math.round(p.size * scale));
         if(ctx.globalAlpha != null) ctx.globalAlpha = bp.alpha;
-        ctx.fillStyle = toHex([this.burst[i].r, this.burst[i].g, this.burst[i].b]);
-        // size up by the buffer/CSS factor so it shows at `s` SCREEN px (visible) after
-        // the browser's downscale — not s/dpr (≈1–3px = invisible). Floor at 2 screen px.
-        const px = Math.max(2, Math.round(s * (this.pxScale || 1)));
-        ctx.fillRect((bp.x * W - px / 2) | 0, (bp.y * H - px / 2) | 0, px, px);
+        if(p.look === 1){   // T172 — a beveled COIN (rim + inner highlight + glint)
+          const glint = p.glint ? (0.35 + 0.45 * (0.5 + 0.5 * Math.sin(t * 4 + p.glint))) : 0;
+          drawCoin(ctx, bp.x * W, bp.y * H, px / 2, p.rot || 0, p.aspect || 1, [p.r, p.g, p.b], glint);
+        } else {
+          ctx.fillStyle = toHex([p.r, p.g, p.b]);
+          ctx.fillRect((bp.x * W - px / 2) | 0, (bp.y * H - px / 2) | 0, px, px);
+        }
       }
       if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
     }
@@ -1068,6 +1237,34 @@
         const px = quantizePixel([img.data[so], img.data[so + 1], img.data[so + 2]], c * 4, r * 4, d.ramp, d.dither);
         ctx.fillStyle = toHex(px); ctx.fillRect((c * cw) | 0, (r * ch) | 0, Math.ceil(cw) + 1, Math.ceil(ch) + 1);
       }
+    }
+    if(d.hoard && d.hoard.level > 0) this._hoard(d.hoard);   // T172: the gold pile, over the scene
+  };
+  // T172 — render the settled hoard over the scene still: (1) a dithered gold mound
+  // SILHOUETTE (the implied bulk, drawn as a shaded shape — not particles), then
+  // (2) the beveled SURFACE coins on top. The eye infers "amassed" from the lit
+  // silhouette; only the surface is ever drawn.
+  CPUBackend.prototype._hoard = function(h){
+    const ctx = this.ctx, W = this.w, H = this.h; if(!ctx.fillRect) return;
+    const base = h.palette && h.palette.length ? parseColor(h.palette[1] || h.palette[0]) : GOLD_TONES[1];
+    if(ctx.globalAlpha != null) ctx.globalAlpha = 1;
+    const step = Math.max(2, Math.round(W / 160));   // column width for the silhouette fill
+    for(let px = 0; px < W; px += step){
+      const x = (px + step / 2) / W, mh = moundProfile(x, h.level, h.seed);
+      if(mh <= 0) continue;
+      const top = Math.round((1 - mh) * H);
+      // depth shade: darker toward the base (fake AO), brighter near the crest
+      for(let y = top; y < H; y += step){
+        const depth = (y - top) / Math.max(1, H - top);     // 0 crest → 1 base
+        ctx.fillStyle = toHex(shade(base, 0.25 - depth * 0.6));
+        ctx.fillRect(px, y, step + 1, step + 1);
+      }
+    }
+    // surface coins (static settled pile — the WebGL backdrop shimmers; the still is calm)
+    const scale = this.pxScale || 1;
+    for(const c of h.coins){
+      const r = Math.max(2, Math.round(c.size * scale)) / 2;
+      drawCoin(ctx, c.x * W, c.y * H, r, c.rot || 0, c.aspect || 1, [c.r, c.g, c.b], 0);
     }
   };
   CPUBackend.prototype.dispose = function(){};
@@ -1328,6 +1525,14 @@
     const cap = Math.max(0, Math.min(CELEBRATE_CAP, Math.round(CELEBRATE_CAP * q.particles)));
     return this._ignite(seedCelebrate(opts, this.reduced, cap));
   };
+  // T172 — the EARN burst: coins fly from the earn-point {x,y} and CONVERGE on the
+  // hoard {tx,ty}, then settle (absorbed). Rides the same burst machinery + auto-stop
+  // as celebrate(), but the particles carry a target so the renderers use convergePos
+  // (directed) instead of the dispersing burstPos. reduced-motion → a small calm puff.
+  Controller.prototype.earnBurst = function(opts){
+    if(!this.ready || !this.backend) return this;
+    return this._ignite(seedConverge(opts, this.reduced, BURST_CAP));
+  };
   Controller.prototype.resize = function(){ this._applyResize(); if(this.backend && this._isStill() && this.derived) this._renderOnce(); return this; };
   Controller.prototype.dispose = function(){ this.stop(); this.burst_.active = false; if(this.rafId){ this.caf(this.rafId); this.rafId = 0; } if(this.backend) this.backend.dispose(); this.backend = null; this.ready = false; return this; };
   Controller.prototype.isAnimating = function(){ return this._ambientLoops(); };
@@ -1367,6 +1572,10 @@
     gridToImage: gridToImage, gridColors: gridColors,
     makeRng: makeRng, seedParticles: seedParticles, animateParticle: animateParticle,
     seedBurst: seedBurst, seedCelebrate: seedCelebrate, burstPos: burstPos, burstMaxDeath: burstMaxDeath,
+    // gold hoard (T172)
+    HOARD_CAP: HOARD_CAP, HOARD_K: HOARD_K, HOARD_MAX_H: HOARD_MAX_H, HOARD_TIERS: HOARD_TIERS, GOLD_TONES: GOLD_TONES,
+    hoardLevel: hoardLevel, hoardTier: hoardTier, moundProfile: moundProfile, hash01i: hash01i,
+    seedHoard: seedHoard, convergePos: convergePos, seedConverge: seedConverge,
     deriveScene: deriveScene, deriveHomeScene: deriveHomeScene, seedFromHome: seedFromHome,
     deriveArenaScene: deriveArenaScene, seedFromArena: seedFromArena, arenaIntensity: arenaIntensity, ARENA_PARTICLE_MAX: ARENA_PARTICLE_MAX, ARENA_REGIONS: ARENA_REGIONS,
     // shader sources (so a wiring task / tests can inspect them)

@@ -6,6 +6,49 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## T172 — gold-hoard ENGINE: beveled-coin splat + hoard scene mode + converge earn-burst ([B])
+
+Built the owner-blessed T174 technique into `fxgl.js`. IMPRESSION, not physics: imply the
+bulk with a shaded mound SILHOUETTE + render only the SURFACE coins. All **opt-in**
+(existing scenes byte-identical — the scene goldens are unchanged).
+
+### The four capabilities (all pure-math headless-tested)
+- **(a) beveled coin** — `drawCoin()`: a lit disc (rim/shadow ring + mid body + inner
+  highlight + specular glint) on a real 2D ctx; an axis-aligned squashed-rect fallback on
+  a path-less ctx (so the test raster measures it). `look:1` on the particle opts in.
+- **(b) per-coin rotation + aspect (squash)** → coins lie at varied angles (asserted: 40
+  coins span >20 distinct rots + squashes).
+- **(c) hoard scene mode** — `scene.hoard = level|{level,seed,palette}` → `deriveScene`
+  seeds the crest-weighted surface coins (`seedHoard`) on a `moundProfile` heightfield;
+  the CPU `_still` renders a **dithered gold mound silhouette** (fake-AO, darker at the
+  base) + the coins on top. Count rides a **saturating** `hoardLevel = gold/(gold+K)`
+  (early gold shows, big totals plateau), quantised to 8 **tiers** (re-seed only on a tier
+  change). Capped at `HOARD_CAP 340 ≪ PARTICLE_CAP 512`; reduced-motion → a smaller static
+  pile. `deriveHomeScene` passes `state.hoard` through for [A]'s T173.
+- **(d) converge earn-burst** — `controller.earnBurst({x,y,tx,ty})` + `convergePos()`: coins
+  fly from the earn-point, ease+lob toward the hoard target, and **land (absorbed)** —
+  directed, not dispersed. Rides the existing burst machinery/auto-stop.
+
+### Renders on the 2D/CPU path — by design (the T133/T138 lesson)
+The hoard renders via the **2D/CPU path**, NOT a 2nd WebGL context. The home backdrop
+already holds the 1st WebGL context, and mobile GPUs **refuse a 2nd** (exactly why T133/
+T138 moved the celebration to a 2D overlay — "a 2D context always presents"). So the
+reliable, presents-everywhere home for the hoard is a 2D overlay, which is what this
+implements + tests. **[A] T173 hand-off:** mount a 2D hoard overlay (a `backend:"2d"`
+`FXGL.Controller`, like `#fxBurst`) **behind the UI** (z between the backdrop and the
+tree/buttons), feed it `setScene({…, hoard: FXGL.hoardLevel(gold)})` (re-render on gold
+change), and fire `earnBurst({x,y from the earn-point, tx,ty over the hoard})` on
+`addGold`. Keep it low + behind the UI (home a11y contrast bar); reduced-motion → static.
+
+### Verify
+- `node -c` clean; `golden-fx` **55** (was 35; +20 for the hoard math + the rendered-pile
+  raster + the converge check), `fxgl.test` + full Node suite + all 3 browser gates green;
+  existing scene goldens unchanged (opt-in proven). New golden `fx_hoard_scatter`. B-owned
+  (`fxgl.js` + tests). Babysitter browser-verifies the 2D-overlay render once [A] wires it;
+  owner tunes the feel (mound shape/height, coin size, glint, the K curve).
+
+---
+
 ## T175 — the FOGHORN is back: a sustained TONAL pad ramps the reverb to a rail ([B], 🔴 DO-FIRST)
 
 Owner (totally reproducible): **every** song starts nice then **ramps up to foghorn/pain**
