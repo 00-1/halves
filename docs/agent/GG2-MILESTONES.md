@@ -120,3 +120,68 @@ topics with no guide.)*
 - Final topic count for VR (target ~GG1's 30).
 
 *Living doc — refine as P0 lands and decisions are made. Babysitter-owned. Cross-ref: FRANCHISE-DESIGN.md.*
+
+---
+
+## COMPLETENESS PASS — does this truly bring the project to completion? (Babysitter, 2026-06-22)
+Owner asked, while prepping the GG2 unattended long run: *"does the milestones doc truly bring the project
+to completion?"* Verdict: **the P0–M11 spine builds GG2-the-game well, but it had GAPS for (a) the
+multi-game FRANCHISE glue and (b) the discipline an UNATTENDED run needs to self-verify and not stall.**
+Below: the gaps found + the milestones added/amended to close them. (Hosting detail: `FRANCHISE-HOSTING.md`.)
+
+### Gaps found → fixes
+1. **🔴 Repo/hosting structure was missing entirely.** GG2 can't be "built on the same GHP" until the
+   folder split + per-app SW-cache namespacing + localStorage namespacing exist. → **folded into P0 as
+   P0.3/P0.4/P0.5** (below). This is prerequisite, not late.
+2. **🔴 The "gold carries across every game" mechanic had no plumbing.** FRANCHISE-DESIGN locks it but no
+   milestone built it. Because localStorage is origin-shared, it needs a deliberate **shared franchise
+   wallet** namespace. → **P0.4**.
+3. **🔴 GG1 save migration through the core refactor / URL move** was unspecified — players must not lose
+   gold/collection when GG1 moves under `gg1/prod/` and `halves.*`→`gg1.*`. → **P0.5**.
+4. **🟠 Inter-game linking / cross-promotion + the parental gate** (owner discussed earlier: linking to
+   sibling GG games is allowed but needs a non-maths press-and-hold gate) had no milestone. → **new M12**.
+5. **🟠 No explicit per-milestone EXIT CRITERIA / DoD.** For an unattended run the agents must be able to
+   self-check "is this milestone actually done?" → **every milestone gets a one-line DoD** as P0 is picked
+   up (tracked as a standing convention below); **M11 carries the full launch checklist** (mirror GG1's).
+6. **🟠 Core-evolution discipline** — once GG1 + GG2 both depend on extracted CORE, a core change must not
+   silently break GG1. → **P0.6** (core is versioned; GG1's pinned copy only moves via a deliberate
+   re-pin + its test suite green).
+7. **🟢 Deliberate omissions (record so they're not mistaken for gaps):** NO analytics/telemetry (kids
+   privacy — same as GG1); NO accounts/login; NO server (static PWA only); monetisation stays FREE/no-IAP
+   (FRANCHISE-DESIGN). These are intentional.
+
+### Added to P0 (engine foundation now also = franchise foundation)
+- **P0.3 — Multi-app GHP restructure.** The `gg1/{v1,dev,prod}` + `gg2/dev` folder layout; root
+  `index.html` → franchise landing/redirect; the dev→prod promote step. *(FRANCHISE-HOSTING.md.)*
+- **P0.4 — Per-app namespacing + the FRANCHISE WALLET.** SW cache names prefix-scoped (no cross-eviction);
+  per-game localStorage prefix; **`gg.wallet.gold` shared across all GG games** = the carry-over mechanic.
+- **P0.5 — GG1 save migration.** One-time `halves.*` → `gg1.*` (+ gold → the franchise wallet) so no live
+  player loses progress on the move; GG1 keeps running unchanged.
+- **P0.6 — Core versioning.** CORE is a pinned, separately-versioned unit; GG1 re-pins only deliberately
+  with its full suite green — so building GG2 on CORE can't regress GG1.
+
+### Added milestone
+- **M12 — Franchise hub & cross-promotion.** The root landing/hub that lists the GG games; in-app
+  "more GG games" links behind a **parental press-and-hold gate** (non-maths, per the earlier store
+  discussion); shared branding for the umbrella "Goblin Gold". *(Sequence: alongside M9/M10; needs the
+  hosting split from P0.3.)*
+
+### For the UNATTENDED run — operating rules (so it completes without stalling)
+- **Each milestone is DONE only when:** its deliverable exists + builds + `node -c` clean + its tests green
+  + (content milestones) the enumeration-harness + assessment loop is clean. Write the milestone's DoD line
+  before starting it.
+- **Decision-points that need the OWNER (don't guess — ask, then proceed):** the GG2 subtitle + brand
+  creature (M9); #types in the matchup triangle (M6); grow-time curve + plot count (M7 balance); whether
+  the hoard visual is reflavoured (M4); final VR topic count (M2); the `FRANCHISE-HOSTING.md` Decisions
+  1–3. Batch these early so the run isn't blocked mid-way.
+- **Babysitter cadence carries over:** Builders push in batches; the Babysitter independently verifies +
+  re-assesses each (same 3-agent protocol). The post-build deep quality pass (T213-style) runs per content
+  milestone.
+
+**Revised completeness verdict:** with P0.3–P0.6 + M12 + the per-milestone DoD convention + the flagged
+owner-decision batch, the roadmap now covers **GG2 the game AND the franchise glue AND an unattended run's
+self-verification** → it reaches a genuine "GG2 live + the franchise can keep growing on one GHP" end state.
+Remaining true unknowns are the *creative* decisions (above), which are owner calls, not roadmap gaps.
+
+*Updated 2026-06-22 after the franchise-hosting design. Re-fold P0.3–P0.6 into the P0 section proper when
+the run kicks off.*

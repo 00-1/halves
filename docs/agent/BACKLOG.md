@@ -3245,6 +3245,40 @@ ready → Plants badge).
   **[A]-only** (`main.js`, `index.html`, `styles.css`, tests). *(Queue: after T213; a nice pre-launch retention
   touch. Also note in GG2-MILESTONES as a CORE feature.)*
 
+### T223 — [A] **Tag + freeze GG1 v1** (cut `gg1-v1`, snapshot to `gg1/v1/`) · status: BLOCKED (do at "GG1 v1 done") · owner-requested
+**Owner: "create a tag for GG1 v1 once the current work is done."** When GG1 v1 is COMPLETE — current splash
+iterations (T220/T221…) + T219 (all topics + Collector rebalance) + the post-T219 deep quality pass all APPROVED —
+cut an **annotated git tag `gg1-v1`** on `main` at that commit, then (as part of T222's restructure) copy that exact
+tree into `gg1/v1/` as the never-touched frozen snapshot.
+- **DoD:** `gg1-v1` tag exists on `main` at the agreed "v1 done" commit (annotated, dated); `gg1/v1/` holds that
+  frozen build and is excluded from further edits; recorded in REVIEW.md. **[A]/owner** (tag = a pointer, not a
+  Babysitter write to main). *(Gate: ONLY when the Babysitter marks GG1 v1 content+polish all-approved.)*
+
+### T222 — [A] **Multi-app GHP restructure** (gg1/{v1,dev,prod} + gg2/dev; per-app SW/save namespacing; franchise wallet; GG1 migration) · status: BLOCKED (do at the `gg1-v1` cut) · owner-requested
+**Owner: "add GHP folders so GG sequels live on the same site — GG1 v1 (tagged), a live dev folder, and a prod
+folder we promote to (Play Store points here); plus a GG2 dev folder."** Full plan + the two origin-shared gotchas in
+**`docs/agent/FRANCHISE-HOSTING.md`** — READ IT FIRST. The app is already relative-path scoped, so files move with NO
+per-file path edits; the real work is the namespacing + migration + promote flow.
+- **Layout:** move the live app into **`gg1/dev/`**; create **`gg1/prod/`** (promoted copy — the TWA target) +
+  **`gg1/v1/`** (the T223 frozen snapshot) + **`gg2/dev/`** (empty/template for the GG2 run). Root `index.html` →
+  **franchise landing/redirect** (owner Decision 1 — default: redirect to `gg1/prod/`).
+- **🔴 SW cache namespacing (`sw.js`):** replace the origin-global `activate` cleanup
+  (`keys.filter(k=>k!==CACHE).delete`) with a **prefix-scoped** one (delete only `k.startsWith(MY_PREFIX) &&
+  k!==CACHE`); give each app a unique cache prefix (`gg1-dev-…`, `gg1-prod-…`, `gg2-dev-…`) so variants don't
+  cross-evict.
+- **🔴 localStorage namespacing + FRANCHISE WALLET:** per-game key prefix (GG1 `gg1.*`, GG1-dev isolated `gg1dev.*`
+  per Decision 2; GG2 `gg2.*`); **gold → a shared `gg.wallet.gold`** read/written by every GG game (= the
+  carry-over mechanic).
+- **🔴 GG1 migration:** one-time `halves.*` → `gg1.*` (+ gold → the wallet) if the new keys are empty, so no live
+  player loses progress on the URL/prefix move.
+- **Promote flow:** a dumb **dev→prod sync** (copy `gg1/dev/*`→`gg1/prod/*` + stamp `prod/build.json`), run only on
+  owner approval.
+- **DoD:** all four scopes serve + install independently (no SW cross-eviction, no save collision); gold persists
+  across scopes via the wallet; an existing GG1 save survives the move (migration verified); dev→prod promote works;
+  root redirects/lands per Decision 1; `node -c` + tests green; **owner confirms on device** (install prod, check
+  identity + saved progress). **[A]** (`sw.js`, save layer in `main.js`, new folders, a promote script). *(Gate: at
+  the `gg1-v1` cut — it moves the dev URL, so NOT mid-flight. Decisions 1–3 in FRANCHISE-HOSTING.md needed first.)*
+
 ### T213 — **DEEP QUALITY PASS over every QUESTION + all GUIDE/static text** (iterative: assess ↔ fix until perfect) · status: DONE (`efb1abf`) · APPROVED — loop CONVERGED (round 1 + round 2 all resolved; regression gate added) · owner: "as perfect as we can get it" · *(post-T219-landing: re-run this loop over the expanded set)*
 **Owner (2026-06-22): "queue up a quality pass for the questions and guides/questions text — a DEEP pass where
 every question and piece of text gets looked over by an AI agent and assessed on various criteria to make sure
