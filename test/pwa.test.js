@@ -57,12 +57,17 @@ if(mani){
   ok(/const cellsH = 26/.test(mn) && /span = Math\.max\(1, yMax - yMin\), PX = 2/.test(mn), "(a2) T212: raster res cellsH 18→26 (the 'i' dot/stem separate), PX 3→2");
   ok(/letterSpacing = "-1\.5px"/.test(mn), "(a2) T212: tighter letter-spacing on the title raster");
   ok(/if\(corrupt\)\{[\s\S]{0,260}continue;[\s\S]{0,160}ox \+=/.test(mn), "(a2) T212: a corruption pass (dropped + displaced cells) glitches the void line");
-  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true\)/.test(mn), "(a2) T212: the void line is corrupted (4th arg true); gold stays clean + glinting");
+  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true/.test(mn), "(a2) T212: the void line is corrupted (4th arg true); gold stays clean + glinting");
   // T214 — more corruption + transparency dither + tighter gap + action block at the bottom
   ok(/r < 12\) continue;/.test(mn) && /r < 28\) ox \+=/.test(mn), "(a2) T214: the void line is corrupted FURTHER (~12% dropped / ~16% displaced)");
-  ok(/BAYER4\[y & 3\]\[x & 3\] >= 11\) alpha = 0\.4/.test(mn) && /rgba\(/.test(mn), "(a2) T214: ordered-Bayer TRANSPARENCY dither dissolves void cells (alpha < 1 → rgba)");
+  ok(/alpha = 0\.4/.test(mn) && /rgba\(/.test(mn), "(a2) T214: TRANSPARENCY dither dissolves void cells (alpha < 1 → rgba)");
   ok(/\.subtitle\{[^}]*margin-top:-6px/.test(cssT), "(a2) T214: the brand↔subtitle gap is tightened");
-  ok(/\.tag\{[^}]*margin-top:auto/.test(cssT) && /#entry\{[^}]*justify-content:flex-start/.test(cssT), "(a2) T214: the tag + action block is pushed to the BOTTOM (title group gets the top space)");
+  ok(/\.tag\{[^}]*margin-top:auto/.test(cssT), "(a2) T214: the tag + action block is pushed to the BOTTOM");
+  // T216 — distinct void font, animated glitch, title back to upper-centre
+  ok(/paintPixelTitle\(e\.querySelector\("\.subtitle"\), TITLE_VOID, null, true, "'JetBrains Mono'/.test(mn), "(a2) T216: the Void Throne uses a DISTINCT self-hosted face (JetBrains Mono)");
+  ok(/Math\.imul\(cseed \| 0, 2654435761\)/.test(mn), "(a2) T216: the corruption pattern re-rolls per frame (cseed in the hash) — animated glitch");
+  ok(/if\(corrupt && !prefersReducedMotion\(\)[\s\S]{0,260}cseed = \(Math\.imul\(cseed/.test(mn), "(a2) T216: a throttled re-roll tick animates the glitch (reduced-motion → static)");
+  ok(/#entry\{[^}]*padding:clamp\(40px,11vh,120px\)/.test(cssT), "(a2) T216: the title is back upper-centre (space above via padding-top); actions stay at the bottom");
 }
 
 // ---- (b) the head wires the manifest + the icon ----------------------------

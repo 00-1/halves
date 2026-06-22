@@ -859,14 +859,15 @@
   // mid-purple (no near-black shadow).
   const TITLE_VOID = [[205,169,255],[154,92,246],[74,47,122]];
   const TITLE_GOLD_GLINT = [255,248,214];                        // T210 — gold glints; the void line gets NO sparkle
-  function paintPixelTitle(el, ramp, glint, corrupt){
+  function paintPixelTitle(el, ramp, glint, corrupt, fontOverride){
     if(!el || !document.createElement) return;
     const text = (el.dataset && el.dataset.title) || el.textContent; if(!text) return;
     try{
       if(el.dataset) el.dataset.title = text;                    // remember it (textContent gets replaced by the canvas)
       // T212 — raster at a HIGHER base res (cellsH 18→26) so the "i"/"l" dot+stem
       // separate (was merging → "Goblln"/"Vold"); PX 3→2 keeps the display size.
-      const cellsH = 26, weight = 800, fontFam = "'Space Grotesk',system-ui,sans-serif";
+      // T216 — the void line uses a visibly DISTINCT (self-hosted JetBrains Mono) face.
+      const cellsH = 26, weight = 800, fontFam = fontOverride || "'Space Grotesk',system-ui,sans-serif";
       const off = document.createElement("canvas"); const m = off.getContext && off.getContext("2d");
       if(!m || !m.measureText || !m.getImageData) return;        // headless/no-2d → keep the CSS text
       const font = weight + " " + cellsH + "px " + fontFam;
@@ -882,7 +883,7 @@
       const span = Math.max(1, yMax - yMin), PX = 2;
       const disp = document.createElement("canvas"); disp.width = w * PX; disp.height = h * PX; disp.className = "pixtitle";
       const d = disp.getContext("2d"); if(!d) return;
-      const draw = glintX => {
+      const draw = (glintX, cseed) => {
         d.clearRect(0, 0, disp.width, disp.height);
         for(let y = 0; y < h; y++) for(let x = 0; x < w; x++){
           if(data[(y*w+x)*4+3] <= 96) continue;
@@ -890,16 +891,17 @@
           v = v < 0 ? 0 : v > 1 ? 1 : v;
           let col = ramp[Math.min(ramp.length - 1, (v * ramp.length) | 0)];
           if(glintX != null && Math.abs(x - glintX) < 1.6) col = glint;
-          // T212/T214 — a static CORRUPTION pass on the void line: deterministic
+          // T212/T214/T216 — the CORRUPTION pass on the void line: deterministic
           // dropped + displaced cells AND ordered-Bayer transparency dither, so the
-          // lettering dissolves in patches (half-there/glitchy) — still legible. Gold
+          // lettering dissolves in patches (half-there/glitchy) — still legible. The
+          // `cseed` re-rolls the pattern each frame (T216 — ANIMATED glitch). Gold
           // line: corrupt=false → solid.
           let ox = x, oy = y, alpha = 1;
           if(corrupt){
-            const hsh = ((x * 73856093) ^ (y * 19349663)) >>> 0, r = hsh % 100;
+            const hsh = ((x * 73856093) ^ (y * 19349663) ^ Math.imul(cseed | 0, 2654435761)) >>> 0, r = hsh % 100;
             if(r < 12) continue;                                 // ~12% dropped cells (glitch holes)
             else if(r < 28) ox += ((hsh >> 5) & 1) ? 1 : -1;     // ~16% displaced ±1 cell
-            if(BAYER4[y & 3][x & 3] >= 11) alpha = 0.4;          // ordered transparency dither (~31% half-there)
+            if(((hsh >> 9) & 15) >= 11) alpha = 0.4;             // ~31% transparency-dithered (re-rolls with cseed)
           }
           d.fillStyle = alpha < 1 ? "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + alpha + ")"
                                   : "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
@@ -923,14 +925,25 @@
         };
         setTimeout(sweep, 1800 + Math.random() * 1500);
       }
+      // T216 — ANIMATE the void corruption: re-roll the dropped/displaced/alpha cells
+      // on a throttled ~7fps timer so the glitch flickers/shifts (cheap; the canvas is
+      // tiny). Pauses while off the entry splash; reduced-motion → static (no re-roll).
+      if(corrupt && !prefersReducedMotion() && typeof requestAnimationFrame === "function"){
+        const onEntry = () => { try{ return screens.entry && screens.entry.classList.contains("active"); }catch(e){ return false; } };
+        let cseed = 1;
+        (function tick(){
+          if(onEntry()){ cseed = (Math.imul(cseed, 1103515245) + 12345) >>> 0; draw(null, cseed); }
+          setTimeout(tick, onEntry() ? 150 : 600);
+        })();
+      }
     }catch(e){ /* keep the plain CSS text on any failure */ }
   }
   // Stylise the entry title pair (gold wordmark + void subtitle); re-runs once fonts
   // load so the pixel shapes use the real display face, not a fallback.
   function renderTitles(){
     const e = screens.entry; if(!e) return;
-    paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT, false);   // gold: clean + glint
-    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, null, true);             // void: corrupted/glitchy, no glint (T212)
+    paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT, false);   // gold: Space Grotesk, clean + glint
+    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, null, true, "'JetBrains Mono',ui-monospace,monospace");   // void: a DISTINCT mono face, animated glitch (T216)
   }
 
   // Mint the favicon / home-screen icon from the same pixel renderer: draw the

@@ -71,9 +71,11 @@ body{
 .screen.active{opacity:1;pointer-events:auto}
 
 /* ---------- ENTRY ---------- */
-/* T214 — top-align so the big title group sits up top; the bottom group (tag +
-   buttons + sound) is pushed to the bottom via .tag's margin-top:auto. */
-#entry{justify-content:flex-start;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:24px 8px}
+/* T214/T216 — the big title group sits UPPER-CENTRE with breathing room ABOVE
+   (padding-top), and the bottom group (tag + buttons + sound) is pushed to the bottom
+   via .tag's margin-top:auto. (T216: the title had pinned to the very top; the
+   padding-top brings it back down into the upper-centre.) */
+#entry{justify-content:flex-start;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:clamp(40px,11vh,120px) 8px 24px}
 .entry-actions{display:flex;flex-direction:column;align-items:center;margin-top:18px}
 .entry-actions .btn{margin-top:0}
 .entry-actions .linkbtn{margin-top:14px}

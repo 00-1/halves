@@ -5768,3 +5768,20 @@ splash. Then T168 stays HELD on Play ID verification.
 verified: `pwa.test` 48→52 (the heavier corruption thresholds, the alpha/rgba transparency dither, the tightened
 subtitle gap, and the bottom-pushed action block). Full suite 53/53. [A]-only (main.js, styles.css). Owner
 verifies the live splash. T168 stays HELD on Play ID verification.
+
+---
+### [A] T216 — entry: reposition title + distinct/animated void font
+- **Title back to UPPER-CENTRE.** T214's flex-start had pinned it to the very top with a big gap. Added breathing
+  room ABOVE via `#entry{padding:clamp(40px,11vh,120px) 8px 24px}` so the title group sits upper-centre; the
+  bottom group (tag + buttons + Sound) stays pinned to the bottom (`.tag{margin-top:auto}`).
+- **Distinct void FONT.** The void line now renders in the self-hosted **JetBrains Mono** (`paintPixelTitle` gained
+  a font-override param) — visibly distinct from the gold line's Space Grotesk, and guaranteed to load (already
+  shipped via @font-face, weight 800). The gold line is unchanged.
+- **ANIMATED glitch.** The void corruption (dropped/displaced/alpha cells) now re-rolls each frame: the per-cell
+  hash mixes a `cseed` that a throttled ~7fps `setTimeout` tick re-rolls, so the glitch flickers/shifts over time
+  (cheap — the canvas is tiny; pauses off the entry splash). **reduced-motion → static** (no tick). The alpha
+  dither is now hash-based (re-rolls with the seed) instead of a fixed Bayer cell, so the dissolve animates too.
+verified: `pwa.test` 52→56 (the JetBrains-Mono void call, the cseed-in-hash re-roll, the throttled
+reduced-motion-gated tick, and the upper-centre padding-top). The headless boot tests stay green (paintPixelTitle
+early-returns without a real 2D ctx, so the tick never starts). Full suite 53/53. [A]-only (main.js, styles.css).
+Owner verifies the live splash. Then queued: T213 Phase-2 content fixes; T168 held on Play ID-verify.
