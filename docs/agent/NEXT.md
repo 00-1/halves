@@ -10,25 +10,28 @@
 
 ---
 
-**Builder A → bump `T178` g→2.5 (one line) → content `T60`/`T61` → `T173` (hoard wiring, after B's `T172`)**
-- **`T178` CHANGES (quick):** the economy ramp landed (`e55cf47`) but `HOARD_G = 2.1` — **owner chose 2.5**. Bump
-  the constant to **2.5** + re-run `gold.test`. (Mechanism is correct; just the value.) *(BACKLOG T178.)*
-- **Then content `T60`** (Measures: Money/Time/Metric) → **`T61`** (Reasoning: Ratio/Mean/Sequences) — Wave-2
-  batches, each a fixed `{p,a}` set + a Node logic gate, per the existing pattern.
-- **`T173`** (hoard WIRING) unblocks **once B's `T172` engine lands** (now in progress — the foghorn cleared). It
-  includes: gold→`homeFxState` via `GOLD_FULL`≈1e10, the **amount-scaled spinning-coin earn-burst** (no settle),
-  the **Graphics-menu tier testers**, and the **`?dev` gold-setter**. [A]-only.
+**Builder A → 2 small `T173` fixes → `T179` (Codex/bestiary) → `T180` (`?dev` reveal-all)**
+**Gold hoard + economy + content all DONE+APPROVED:** `T172` engine (`7283fad`), `T173` wiring (`1d1f193`),
+`T178` g=2.5 (`7c3a14d`), `T60`/`T61` content (`4f3113c`). **2 small T173 follow-ups first:**
+1. **Earn-burst: make it STANDALONE outward, not converging to the hoard.** It currently flies coins DOWN to
+   `tx:0.5,ty:0.93` (the pile) — but the owner **dropped converge/settle** ("coins flying *out* already evoke it;
+   we're off the home screen when we earn"). It fires on results (off-home). **Drop the `tx/ty` converge → a
+   spinning-coin burst that flies OUT from the earn-point + fades.**
+2. **Gate the dev gold-setter behind `?dev`.** It's an always-active `?gold=<n>` param — gate it (`?dev` required)
+   so it's inert in production (the owner: remove/gate before publish; it's on the T168 checklist). Put it with
+   T180's reveal-all in one `?dev` panel.
+- **Then `T179` (Codex):** the bestiary tab on Inventory — Beasts (region×type ~30) / Bosses (10) / Realms (10,
+  full-lit) / Events (14), encounter-unlocked (locked=silhouette), **reusing the existing generators**
+  (`Monsters`/`Scenery`/`eventart`). *(BACKLOG T179.)*
+- **Then `T180`** (`?dev` reveal-all collections — heroes/inventory/Codex, view-only override for art review).
+- *(`T168` Play-Store held for ID-verify.)*
 **Re-read this line fresh before each task + push.**
 
-**Builder B → `T172` (gold-hoard ENGINE) — the foghorn is FIXED + the hoard is owner-greenlit.**
-`T175` foghorn DONE+APPROVED (`2072b22` — decay cap 0.66 + reverb-return safety compressor + an extended tonal
-long-render gate; measured bounded). **Now build `T172`** per `docs/agent/GOLD-HOARD-DESIGN.md` §engine + the
-T174 research: (a) **beveled-coin splat** (`look:"coin"` — must read as a coin, opt-in), (b) per-coin rotation+
-squash (angles) **+ animated SPIN for the earn-burst coins**, (c) **hoard scene mode** (silhouette + surface-
-scatter on a saturating curve, ≤340 coins, cap-safe), (d) a **standalone spinning-coin burst** (NO attractor/
-settle — owner dropped it), **scaled by gain amount** (log/saturating + capped; juice-not-count past the cap).
-Reduced-motion → static; headless-test the pure math; defaults byte-identical (opt-in). Then `T173` is the [A]
-wiring. **B-owned (`fxgl.js` + tests; brickmap) only.** *(BACKLOG T172.)*
+**Builder B → STAND BY (gold-hoard engine done; Codex is [A]).** `T172` DONE+APPROVED (`7283fad` — research-
+faithful: mound silhouette + surface beveled coins, cap 340, opt-in). Nothing engine-side queued. Hold for a real
+engine need — e.g. if the owner wants the **app-icon candidates** rendered in the generative style (the Coin /
+Goblin / Hoard / Void Throne — I'll file it if he greenlights), or a Codex art tweak (e.g. a lit-`Scenery` gallery
+mode) that turns out to need the engine. I'll point this line at it. **B-owned only; never push `claude/agent`.**
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

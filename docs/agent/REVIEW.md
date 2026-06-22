@@ -1,6 +1,30 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T175 [B]` (the recurring foghorn — KILLED) · `CHANGES — T178 [A]` (one-line: g
+**Current verdict:** `APPROVED — T172 [B] · T173 · T178 · T60 · T61 [A]` (the GOLD HOARD is built + the absurd
+economy + content), with **2 small T173 follow-ups for [A]**. Live build **`1d1f193`**; full suite + `node -c` green.
+- **`T172`** (`7283fad`, [B]) — gold-hoard ENGINE, **faithful to the T174 research**: impression-not-physics
+  (dithered mound silhouette + crest-scattered SURFACE coins only), beveled coins (per-coin angle/squash/tone/
+  glint), `HOARD_CAP` 340 (≪ 512), 8 re-seed tiers, opt-in (`scene.hoard`/`look:"coin"`; existing scenes
+  byte-identical). Clean.
+- **`T178`** (`7c3a14d`, [A]) — **`HOARD_G` = 2.5** ✓ (the changes-requested bump). Economy ramp complete.
+- **`T173`** (`1d1f193`, [A]) — hoard WIRING: `hoardLevel = (gold/GOLD_FULL)^0.4`, `GOLD_FULL = 1e10` ✓; the
+  **amount-scaled spinning-coin earn-burst** (`earnBurstSpec`: log-count capped at 88, 4 juice tiers, wider
+  spread+brighter palette past the cap) ✓; a **Graphics-menu `#hoardTest` tester** (fire levels) ✓. **2 FOLLOW-UPS:**
+  1. ⚠ **The earn-burst CONVERGES to the hoard** (`tx:0.5, ty:0.93` — coins fly DOWN to bottom-centre) — but the
+     **owner DROPPED converge/settle** ("coins flying *out* already evoke it; we're not on the home screen when we
+     earn"). It fires on **results** (off-home), so coins fly down to a hoard that isn't shown. **[A]: make it a
+     standalone OUTWARD spinning-coin burst from the earn-point (drop `tx/ty` converge).** *(Owner can also judge
+     on-device — but it contradicts the explicit spec, so default to fixing it.)*
+  2. ⚠ **The dev gold-setter is an always-active `?gold=<n>` param** ("harmless in production" — but the owner
+     said **gate/remove before publish**, and it lets any user set their gold). **[A]: gate it behind `?dev`** (so
+     it's inert in production) — same `?dev` panel as T180's reveal-all. (Already on the T168 publish checklist.)
+- **`T60`/`T61`** (`4f3113c`, [A]) — Wave-2 content: Metric + Sequences spine topics; suite green.
+**Verified:** node -c clean; full suite green; the engine/wiring/economy inspected. **Owner device-verify:** the
+hoard renders + grows (try `?gold=1e9`), the earn-burst feel, the tiers are performant. All → DONE; the 2 T173
+follow-ups are small [A] fixes. **→ A: the 2 T173 fixes → `T179` Codex → `T180` dev-reveal. → B: hoard engine
+done → STAND BY (Codex is [A]); hold for an engine need.**
+
+> **Previously approved (done):** `T175 [B]` (the recurring foghorn — KILLED) · `T178` g→2.5 etc.
 2.1→2.5). Live build **`e55cf47`**; full suite + `node -c` green.
 - **`T175`** (`2072b22`, [B]) — **the recurring foghorn is fixed, and B MEASURED the exact cause** (validating the
   "every song ramps up" diagnosis): the 0.78 FDN decay cap was **noise-safe but TONAL-marginal** — a *sustained

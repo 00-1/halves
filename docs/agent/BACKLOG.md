@@ -2812,7 +2812,7 @@ no-op, defence-in-depth with T164).
   switch transient via OfflineAudioContext when the harness is up. Pairs with **T164** (A stops the needless
   switches).
 
-### T178 — [A] Economy: ramp mid/late-game wealth to ABSURD levels (millions → billions/trillions) — the goblin-hoard humour · status: OPEN · ⚠ CHANGES: HOARD_G is 2.1, owner chose 2.5 — bump it· owner-feature (pairs with the hoard)
+### T178 — [A] Economy: ramp mid/late-game wealth to ABSURD levels (millions → billions/trillions) — the goblin-hoard humour · status: DONE (`7c3a14d`) · APPROVED· ⚠ CHANGES: HOARD_G is 2.1, owner chose 2.5 — bump it· owner-feature (pairs with the hoard)
 **Owner (2026-06-22): "I'd like coins to reach higher numbers than 500K — at least millions, but billions/
 trillions would be funny too. This is part of the humour/character — building up inordinate/pointless wealth. So
 ramp up the wealth accumulation in MID/LATE game. Early accumulation is already good."** *(Cookie-Clicker /
@@ -2978,7 +2978,7 @@ generative art without grinding to unlock it.
   absent"); `node -c` clean; **[A]-only** (`main.js`, tests). *(Useful now for heroes/inventory; extends to the
   Codex once T179 lands.)*
 
-### T172 — [B] Gold-hoard ENGINE: beveled-coin splat + hoard scene mode + attractor burst (`fxgl.js`) · status: OPEN · after T174 + owner-bless
+### T172 — [B] Gold-hoard ENGINE: beveled-coin splat + hoard scene mode + attractor burst (`fxgl.js`) · status: DONE (`7283fad`) · APPROVED· after T174 + owner-bless
 Build the **owner-blessed** technique from T174 into `fxgl.js` (spec in `GOLD-HOARD-DESIGN.md` §engine): (a)
 **beveled-coin splat** (enhance the disc-mask fragment — rim highlight + inner gradient + specular glint, gold
 palette; opt-in `look:"coin"`), (b) **per-particle rotation + aspect/squash** (coins at varied angles), (c) a
@@ -2989,7 +2989,7 @@ DPR-crisp. **DoD:** headless tests on the pure math (coin instance attrs, satura
 the other `fxgl` tests; defaults for existing scenes byte-identical (opt-in); `golden-fx` updated as needed;
 **B-owned (`fxgl.js` + tests) only.** Babysitter browser-verifies it renders + is bounded; owner tunes the feel.
 
-### T173 — [A] Gold-hoard WIRING: feed gold→hoard + fire the earn-burst from the earn-point (`main.js`) · status: OPEN · after T172
+### T173 — [A] Gold-hoard WIRING: feed gold→hoard + fire the earn-burst from the earn-point (`main.js`) · status: DONE (`1d1f193`) · APPROVED· after T172
 Wire B's gold-hoard engine into the home backdrop (spec in `GOLD-HOARD-DESIGN.md` §wiring): add the **hoard level**
 to `homeFxState` (a saturating curve over `loadGold()`), pass it into the home scene so the mound renders + grows;
 on `addGold(amount)` fire the **standalone spinning-coin burst from the earn-point** (gold pill / answer point /
@@ -4445,7 +4445,7 @@ remainders-as-decimals where appropriate — numeric, numpad-enterable).
   (Babysitter re-runs the arena buff-gating suite + hints scan on the new questions and
   checks the new icon category/names are actually new.)
 
-### T60 — Wave-2 topics, Batch B: Measures — Money, Time, Metric (with new content) · status: OPEN
+### T60 — Wave-2 topics, Batch B: Measures — Money, Time, Metric (with new content) · status: DONE (`4f3113c`) · APPROVED
 As T59, for the **measures** group: **Money** (£/p, change, totals), **Time** (durations
 in minutes, elapsed — numeric/minutes per the existing no-colon-key constraint), and
 **Metric units** (mm/cm/m/km, g/kg, ml/l conversions — numeric). Same per-topic
@@ -4454,7 +4454,7 @@ batch), and the **same re-verification of all gates**. DoD mirrors T59. (Babysit
 checks the answers are numpad-enterable and the time/metric framings respect the
 numeric-only numpad — no colon/unit keys.)
 
-### T61 — Wave-2 topics, Batch C: Reasoning — Ratio, Mean, Sequences (with new content) · status: OPEN
+### T61 — Wave-2 topics, Batch C: Reasoning — Ratio, Mean, Sequences (with new content) · status: DONE (`4f3113c`) · APPROVED
 As T59, for the **reasoning** group: **Ratio** (simplify / share in a ratio → numeric
 parts), **Mean** (average of a small set), and **Sequences** (next term / nth-term
 value — numeric). Same per-topic deliverables, the **anti-dilution new-content rule**
