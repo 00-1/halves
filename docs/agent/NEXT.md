@@ -35,6 +35,12 @@ backdrop / below the buttons), reusing the existing `_hoard` + `drawCoin` 2D cod
 redraws it on `setData`. DoD: pile visible **on the WebGL2/WebGPU backends** (not just CPU); scenes byte-identical
 when `scene.hoard` absent; `fxgl`/`fx-wiring`/`hoard-wiring` green. B-owned (`fxgl.js`, `index.html`, tests).
 *(BACKLOG T185.)*
+- **Then `T188` — MORE icon candidates, in the BEASTS/HEROES style.** The owner reviewed the live emblems: they're
+  fine but **heroes/beasts/bosses are the preferred icon direction.** Add ≈3–5 **character-forward** candidates to
+  `emblems.js` (so they show in Codex ▸ Emblems) in the `monsters.js` generative LOOK — a 16×16 role-grid pixel
+  creature/hero (body/accent/outline/eye, bold type-colour, glinting eye), composed as a **maskable** app icon
+  (full-bleed, centred, legible small + 512px). Keep `emblems.js` self-contained (re-implement the style; no
+  imports). Keep the existing 6. `emblems.test` extended + green. [B]-only. *(BACKLOG T188.)*
 
 ---
 *Maintained by the Babysitter on `claude/agent`, updated on every review.*

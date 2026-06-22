@@ -3002,6 +3002,28 @@ popup** mirroring the existing inventory `openModal` pattern (:1012) — the sam
   regression to the existing inventory-item popups; `node -c` clean; `codex` test green (+ a check the Codex click
   path resolves a cell to its art/label). **[A]-only** (`main.js`, maybe `index.html`/`styles.css`, tests).
 
+### T188 — [B] **More icon candidates — in the BEASTS/HEROES generative style** (into `emblems.js` / Codex Emblems) · status: OPEN · owner-requested
+**Owner (2026-06-22, after reviewing the live emblems): "now I see the emblems. they could be useful for
+something. but honestly I think heroes or beasts/bosses are still our best bet. you could do one more pass at
+generating something interesting — put it in emblems too. with the direction that we prefer the heroes/beasts
+style of generation."** The existing 6 emblems (`coin`/`crowncoin`/`hoard`/`goblin`/`voidthrone`/`sigil`) are
+**abstract/mark-forward**; the owner wants the app icon to be **character-forward**, in the style of the
+**bestiary creatures** (`monsters.js`: a 16×16 role-grid pixel creature — `body`/`accent`/`outline`/`eye`, lumpy
+vertically-symmetric blob, horns/antennae, bold per-type palette) and/or the **heroes**.
+- **Build:** add a **new batch of icon candidates** (≈3–5) to `emblems.js` — **bold, centred, character-forward
+  creature/hero portraits** composed as **maskable app icons** (full-bleed background so the safe-zone/mask is
+  safe; readable at 48 px AND as a 512 px launcher icon). Borrow the `monsters.js` generative LOOK (role-grid
+  creature silhouette, glinting eye, type-coloured body, a heroic/menacing read — e.g. a Void-throne beast, a
+  goblin-king bust, a hero sigil-creature) but keep `emblems.js` **self-contained** (it mirrors `glyphs.js`: pure
+  + deterministic `cells(id)` → `draw`; no module deps — re-implement the creature style inside it, don't import
+  Monsters). Keep the existing 6 (they "could be useful for something").
+- **Surface:** the new ids join `Emblems.IDS` → they render in the **Codex ▸ Emblems** section automatically (and
+  are the owner's icon-review surface; dev reveal-all shows them all). Pick the launcher icon from these later.
+- **DoD:** ≥3 new character-forward candidates in the beasts/heroes style, maskable-safe (full-bleed, centred,
+  safe-zone respected), legible small + large; `emblems.test` extended + green (new ids covered, draw is
+  non-empty/deterministic, BG full-bleed); `node -c` clean; the Codex Emblems count reflects the additions.
+  **[B]-only** (`emblems.js`, `test/emblems.test.js`). *(Builds on T181; after the T185 hoard-render bug.)*
+
 ### T184 — [A] **DEV MODE in the config — enabled from the MENU, no URLs** (houses all dev tools) · status: DONE (`d47685d`) · APPROVED
 **Owner (2026-06-22): "I see the Codex but no way to turn everything on. I don't want to edit URLs — make sure I
 can do all the dev-mode stuff in the config now. We'll disable dev mode later."** Replace the `?dev` URL gate with
