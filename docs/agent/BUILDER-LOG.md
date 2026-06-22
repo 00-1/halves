@@ -5337,3 +5337,31 @@ how I verified: **`install-display.test` (14→18)** — the harness now capture
 notes: the robust fix is the TWA's native **immersive-sticky** mode (survives minimise with no gesture) — for
   the packaging track (T168/T72). For the raw PWA, (1)+(2) is the best achievable. **Owner device-verify**:
   minimise → return → tap → fullscreen restores; and the manual fullscreen toggle is back in Setup.
+
+---
+
+## Builder A — T178: economy — exponential mid/late wealth ramp (absurd goblin-hoard)
+commit: (this commit) — [A], owner-feature (pairs with the hoard). Owner: "I'd like coins to reach higher
+numbers than 500K — millions at least, billions/trillions would be funny." The absurd-wealth comedy (the player
+is an adventurer/mage amassing a pointless pile of plundered goblin gold).
+root cause: `goldMult` was purely ADDITIVE/linear (max ~145) → you'd crawl to a few M but never reach the
+B/T the wealth milestones already promise. The fmtGold ladder (K→…→Qad) + the 1e15 milestones already exist —
+only the EARNING RATE was the bottleneck.
+fix ([A], `main.js`): a multiplicative **Hoard Multiplier** = **`g^(region bosses defeated)`** (`HOARD_G = 2.1`,
+the sim-recommended 2.0–2.2 mid) multiplied onto the existing additive base. Early game has no bosses → ×1
+(earning UNCHANGED); each of the 10 region bosses (every 12th tier) multiplies wealth, so late-game Arena wins
+pay millions → cumulative billions/trillions. **Decoupled from Arena difficulty** — `goldMult` is never read by
+`enemies.js`/`FOE_BUDGET`, so ramping gold can't unbalance the Arena. Exposed `hoardMult`/`bossesDefeated`/
+`HOARD_G` on `window.Gold`.
+how I verified: **NEW `test/gold.test.js` (22 checks, gated)** — there was no gold test before; this pins it.
+  (a) `fmtGold` renders K/M/B/T/Qa + clamps negatives/NaN; (b) the per-event formulas (questionGold/roundBonus/
+  tierGold) are stable + scale linearly with mult; (c) `hoardMult == g^bosses` (×1 early, ×g^10≈1668 at full
+  clear), `bossesDefeated` counts the 10 boss tiers, and **goldMult == additive base × g^bosses exactly** at
+  every depth; (d) a **completionist tier-120 win pays 50.3M** (≥ millions — the ramp works), and `enemies.js`
+  never references the gold multiplier (Arena untouched). `node -c` clean; **full suite green** (collector/
+  events reward tests unaffected — milestones are reached sooner, thresholds unchanged). [A]-only (`main.js`,
+  `test/gold.test.js`).
+notes: `g` is a single tunable constant for the owner to dial the final feel. **Feeds T173** — the hoard's
+  `GOLD_FULL` (the pile "fills" at the 1M "Gold Hoard" milestone while the NUMBER explodes past it) is set in
+  the T173 wiring (blocked on B's T172 engine). Next per `NEXT.md`: content `T60`/`T61` (re-scoped — Metric +
+  Sequences) → T173.

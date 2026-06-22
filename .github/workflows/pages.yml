@@ -46,6 +46,8 @@ jobs:
         run: node test/toasts.test.js
       - name: Audio levels test (gate)
         run: node test/sound.test.js
+      - name: Gold economy (T178 ramp) test (gate)
+        run: node test/gold.test.js
       - name: Audio resume (foghorn) test (gate)
         run: node test/audio-resume.test.js
       - name: Music idempotent switch (T164) test (gate)

@@ -100,13 +100,28 @@
   function questionGold(target, dt, combo, mult){ return (2 + Math.max(0, Math.round(target - dt))) * (1 + combo * 0.1) * mult; }
   function roundBonusGold(score, rankIdx, mult){ return (score + rankIdx * 2) * mult; }
   function tierGold(n, mult){ return Math.round(10 * (1 + n / 10)) * mult; }
-  // Escalating global multiplier — grows with everything you've collected.
+  // T178 — the "Hoard Multiplier": an EXPONENTIAL mid/late wealth ramp so a
+  // committed player amasses an absurd goblin-gold pile (millions → billions →
+  // trillions — the Cookie-Clicker comedy). g^(region bosses defeated): early game
+  // has no bosses → ×1 (earning unchanged), and each of the 10 region bosses felled
+  // multiplies wealth, so late-game Arena wins pay millions. Sim-recommended g≈2.0–2.2
+  // (docs/agent/economy-sim.js); decoupled from Arena difficulty (gold ≠ foe def).
+  const HOARD_G = 2.1;
+  function bossesDefeated(col){
+    const E = window.Enemies, RS = (E && E.REGION_SIZE) || 12, TC = (E && E.TIER_COUNT) || 120;
+    let n = 0; for(let t = RS; t <= TC; t += RS) if(col && col["tier:" + t]) n++; return n;
+  }
+  function hoardMult(col){ return Math.pow(HOARD_G, bossesDefeated(col)); }
+  // Escalating global multiplier — the linear/additive base (early game) × the
+  // exponential Hoard Multiplier (mid/late). The base grows with everything you've
+  // collected; the hoard factor makes deep Arena progress the real wealth engine.
   function goldMult(col){
     const items = C.CATALOG.filter(it => col[it.id]).length;
     let mastered = 0, tiers = 0;
     for(const k in col){ if(k.indexOf("mastery:") === 0) mastered++; else if(/^tier:\d+$/.test(k)) tiers++; }
     const heroes = window.Heroes ? window.Heroes.HEROES.filter(h => window.Heroes.isHeroUnlocked(h, col)).length : 0;
-    return 1 + items * 0.05 + mastered * 0.5 + heroes * 0.5 + tiers * 1;
+    const base = 1 + items * 0.05 + mastered * 0.5 + heroes * 0.5 + tiers * 1;
+    return base * hoardMult(col);
   }
   // Add gold, persist, and grant any newly-crossed wealth milestones (into col).
   function earnGold(amount, col){
@@ -2667,6 +2682,7 @@
   // Goblin Gold module API (also used by the Node tests).
   window.Gold = { label: GOLD_LABEL, fmtGold: fmtGold, mult: goldMult,
     questionGold: questionGold, roundBonus: roundBonusGold, tierGold: tierGold,
+    hoardMult: hoardMult, bossesDefeated: bossesDefeated, HOARD_G: HOARD_G,   // T178 — the exponential mid/late ramp
     load: loadGold, evaluate: (total, has) => C.evaluateGold(total, has) };
   // Momentum module API (pure reducer + helpers, also used by the Node tests).
   window.Momentum = { label: MOMENTUM_LABEL, MAX: MOMENTUM_MAX, reduce: reduceMomentum,
