@@ -113,6 +113,63 @@ const modesOut = MODES.map(m => {
 const vectorsOut = {};
 MODES.forEach(m => { vectorsOut[m.id] = parityVectors(m); });
 
+// ---- 5b) T230 — guides + collectibles ---------------------------------------
+// Load the wider module set (collectibles needs modes+events; guides is standalone)
+// into one window stub and read their exposed data.
+function loadFull(){
+  const w = {};
+  ["modes.js", "events.js", "collectibles.js", "guides.js"].forEach(f =>
+    new Function("window", fs.readFileSync(path.join(ROOT, "gg1/dev", f), "utf8"))(w));
+  return w;
+}
+const full = loadFull();
+const Guides = full.Guides, Collectibles = full.Collectibles;
+if(!Guides || !Collectibles) throw new Error("could not load window.Guides / window.Collectibles");
+
+// guides.json — per-topic guide prose, plus explain() captured AS DATA: for EVERY
+// real question (the parity vectors) the exact method hint the runtime renders.
+const guidesOut = (function(){
+  const topics = {};
+  Guides.ids().forEach(id => { topics[id] = Guides.get(id); });
+  const explain = {};
+  MODES.forEach(m => {
+    const byPrompt = {};
+    vectorsOut[m.id].forEach(q => { byPrompt[q.p] = Guides.explain(m.id, { p: q.p, a: q.a }); });
+    explain[m.id] = byPrompt;
+  });
+  return { topics, explain };
+})();
+
+// collectibles.json — the full catalogue as data (minus the `test` unlock predicate,
+// which is behaviour, like a transform), category counts, and the Collector ladder
+// with its capstone-below-total reachability invariant.
+const collectiblesOut = (function(){
+  const CATALOG = Collectibles.CATALOG;
+  const strip = it => { const o = {}; Object.keys(it).forEach(k => { if(typeof it[k] !== "function") o[k] = it[k]; }); return o; };
+  // CATALOG order is runtime-non-deterministic for the Beat/Spark tiers (their prompts
+  // are sorted by numeric-collation, which TIES values like "0.5"/"0.05", and build()
+  // shuffles, so tied items land in random order). The id SET is stable + unique, so
+  // sort by id for a deterministic export (the drift gate needs byte-stability).
+  const catalog = CATALOG.map(strip).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const categories = {};
+  CATALOG.forEach(it => { categories[it.cat] = (categories[it.cat] || 0) + 1; });
+  const coll = CATALOG.filter(it => it.cat === "Collector");
+  const tiers = coll.filter(it => it.n != null).map(it => ({ id: it.id, n: it.n, name: it.name, rarity: it.rarity })).sort((a, b) => a.n - b.n);
+  const emblems = coll.filter(it => it.emblem).map(it => ({ id: it.id, name: it.name, emblem: it.emblem, meta: it.meta || null }));
+  const capstone = tiers.length ? tiers[tiers.length - 1].n : null;
+  return {
+    total: CATALOG.length,
+    categories,
+    collectorLadder: {
+      tiers, emblems, capstone,
+      catalogTotal: CATALOG.length,
+      capstoneReachable: capstone != null && capstone < CATALOG.length   // the T219-LAST invariant
+    },
+    catalog
+  };
+})();
+
+
 // transforms.md — every distinct transform (named fn source, or inline arrow) + the
 // one shared helper (shuffle, order-only) the port must NOT reproduce literally.
 function transformsDoc(){
@@ -169,6 +226,15 @@ function readmeDoc(){
 "- **`parity-vectors.json`** — per mode, the FULL deterministic `{ p, a }` set (sorted). A",
 "  re-implementation is correct iff `sort(map(transform, pool))` equals this exactly.",
 "- **`transforms.md`** — the source of every transform fn + the (order-only) shuffle helper.",
+"- **`guides.json`** — `{ topics, explain }`. `topics[id]` is the per-topic guide",
+"  (`{ intro, tips, example }`); `explain[modeId][prompt]` is the exact method hint the",
+"  runtime shows for EVERY real question (captured by running `explain()` over the parity",
+"  vectors) — answer-free, so it's a safe lookup table a port can use verbatim.",
+"- **`collectibles.json`** — `{ total, categories, collectorLadder, catalog }`. `catalog`",
+"  is every award as data (minus its `test` unlock predicate, which is behaviour);",
+"  `collectorLadder` carries the 12 count-tiers + 3 boss emblems + the capstone and its",
+"  `capstoneReachable` (capstone < catalogTotal) invariant.",
+"  *(Tuning constants — gold, enemy tiers, hero stats — are the follow-on `balance.json`.)*",
 "",
 "## Regenerate",
 "```sh",
@@ -180,6 +246,8 @@ function readmeDoc(){
 "## Counts",
 "- modes: " + modesOut.length,
 "- parity vectors: " + Object.values(vectorsOut).reduce((n, v) => n + v.length, 0) + " total `{p,a}` pairs",
+"- guide topics: " + Object.keys(guidesOut.topics).length + " (+ " + Object.values(guidesOut.explain).reduce((n, e) => n + Object.keys(e).length, 0) + " explain entries)",
+"- collectibles: " + collectiblesOut.total + " across " + Object.keys(collectiblesOut.categories).length + " categories",
 ""
   ].join("\n");
 }
@@ -190,10 +258,15 @@ function readmeDoc(){
 const OUT_FILES = {
   "modes.json": JSON.stringify(modesOut, null, 2) + "\n",
   "parity-vectors.json": JSON.stringify(vectorsOut, null, 2) + "\n",
+  "guides.json": JSON.stringify(guidesOut, null, 2) + "\n",
+  "collectibles.json": JSON.stringify(collectiblesOut, null, 2) + "\n",
   "transforms.md": transformsDoc(),
   "README.md": readmeDoc()
 };
-module.exports = { OUT_DIR, OUT_FILES, buildExport: () => ({ modes: modesOut, vectors: vectorsOut }) };
+module.exports = {
+  OUT_DIR, OUT_FILES,
+  buildExport: () => ({ modes: modesOut, vectors: vectorsOut, guides: guidesOut, collectibles: collectiblesOut })
+};
 
 if(require.main === module){
   fs.mkdirSync(OUT_DIR, { recursive: true });

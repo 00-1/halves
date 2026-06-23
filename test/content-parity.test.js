@@ -34,6 +34,36 @@ ok(total === 959, "(2) the full deterministic question set is 959 {p,a} pairs ("
 ok(Object.values(vectors).every(v => v.every(q => typeof q.p === "string" && q.p.length > 0 && typeof q.a === "number" && isFinite(q.a))),
    "(2) every parity pair is a non-empty prompt + a finite numeric answer");
 
+// ---- (2b) T230 — guides.json: topics + answer-free explain-as-data -----------
+const guides = fresh.guides;
+ok(guides && Object.keys(guides.topics).length === 46, "(2b) guides.json has all 46 topic guides (" + (guides ? Object.keys(guides.topics).length : 0) + ")");
+ok(Object.values(guides.topics).every(g => g && g.intro && Array.isArray(g.tips) && g.tips.length && g.example),
+   "(2b) every guide has intro + tips[] + example");
+ok(Object.keys(guides.explain).length === 46, "(2b) explain-as-data covers all 46 modes");
+const explainTotal = Object.values(guides.explain).reduce((n, e) => n + Object.keys(e).length, 0);
+ok(explainTotal >= 900, "(2b) explain captured for ~every question (" + explainTotal + " entries)");
+ok(Object.values(guides.explain).every(e => Object.values(e).every(s => typeof s === "string" && s.length > 0)),
+   "(2b) every explain entry is a non-empty string");
+// answer-free invariant: the exported hint for a question never contains its answer as a token
+let leak = 0;
+modes.forEach(m => (vectors[m.id] || []).forEach(q => {
+  const h = guides.explain[m.id] && guides.explain[m.id][q.p];
+  if(h && (h.match(/\d+(?:\.\d+)?/g) || []).map(Number).some(t => t === q.a)) leak++;
+}));
+ok(leak === 0, "(2b) every exported explain hint is answer-free (no leak in " + explainTotal + " entries)");
+
+// ---- (2c) T230 — collectibles.json: catalogue + Collector-ladder invariant ----
+const coll = fresh.collectibles;
+ok(coll && coll.total === 2352, "(2c) collectibles.json catalogues the full " + (coll ? coll.total : "?") + "-item set");
+ok(coll.catalog.length === coll.total && coll.catalog.every(it => !("test" in it)),
+   "(2c) every catalogue item is serialised WITHOUT its `test` predicate (behaviour stays in code)");
+ok(Object.values(coll.categories).reduce((n, c) => n + c, 0) === coll.total, "(2c) category counts sum to the total");
+const tiers = coll.collectorLadder.tiers;
+ok(tiers.length === 12 && tiers.every((t, i) => i === 0 || t.n > tiers[i - 1].n), "(2c) the Collector ladder is 12 strictly-ascending tiers");
+ok(coll.collectorLadder.emblems.length === 3, "(2c) the 3 boss emblems are recorded");
+ok(coll.collectorLadder.capstone < coll.collectorLadder.catalogTotal && coll.collectorLadder.capstoneReachable === true,
+   "(2c) the capstone (" + coll.collectorLadder.capstone + ") is below the catalogue total (" + coll.collectorLadder.catalogTotal + ") — reachable invariant holds");
+
 // ---- (3) the committed vectors are reproducible from the LIVE build() --------
 // Independent of the export object: load modes.js afresh, run build(), sort, compare.
 global.window = {};

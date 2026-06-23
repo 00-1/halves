@@ -6364,3 +6364,30 @@ browser-handoff fragility ("Open with" / address bar). **NEW files only — the 
 verified: purely additive (git: only `capacitor/` + the new workflow; `pages.yml`/`gg1/` untouched); runtime suite
 still **64/64**; content-parity green. **Owner: set the 4 `CAP_EXP_*` secrets, run the "Capacitor Android
 (experiment)" workflow, then judge the artifact on-device** against the README checklist. [A]-only, additive.
+
+---
+### [A] T230 — GG1 content export part 2: guides + collectibles
+Resumes the T229 content seam (deferred during the Capacitor spike). **Same non-destructive/additive rules — the
+runtime is untouched and the gg1/dev/test suite stays 64/64.** Extends `tools/content-export.js` + the parity gate.
+- **`content/gg1/guides.json`** = `{ topics, explain }`. `topics[id]` is each topic's `{intro, tips, example}` (46
+  topics). `explain[modeId][prompt]` captures `explain()` **as data** — the exact method hint the runtime renders for
+  **every real question** (run over the 959 parity vectors). The export is answer-free by construction and the gate
+  re-proves it (0 leaks across 959 entries), so a port can use it as a verbatim lookup table.
+- **`content/gg1/collectibles.json`** = `{ total, categories, collectorLadder, catalog }`. `catalog` is all **2,352**
+  awards as data, each minus its `test` unlock predicate (that's behaviour, like a transform — stays in code).
+  `collectorLadder` carries the 12 ascending count-tiers + the 3 boss emblems + `capstone` (2300) and its
+  `capstoneReachable` (capstone < catalogTotal) — the T219-LAST invariant, now gate-enforced as data.
+- **Determinism fix:** `collectibles.js`'s CATALOG order is runtime-non-deterministic for the Beat/Spark tiers — their
+  prompts sort by numeric-collation which TIES values like `0.5`/`0.05` (the decimal reads as a separator), and
+  `build()` shuffles, so tied items land in random order. The id SET is stable + unique, so the export sorts the
+  catalog by `id` → byte-stable across regenerations (verified: two runs diff-clean), which the drift gate requires.
+- **`test/content-parity.test.js`** extended (32 checks): the existing drift loop auto-covers the two new files
+  (committed == fresh regeneration), plus structural assertions — 46 guides with intro/tips/example, 46-mode explain
+  coverage (959 entries, all non-empty + answer-free), 2,352-item catalogue with no `test` leaked, category counts
+  summing to total, the 12-tier strictly-ascending ladder, 3 emblems, and the capstone-reachable invariant.
+- **`balance.json` DEFERRED** (the spec's stretch — "fine to split if large"): hero stats export cleanly
+  (`Heroes.HEROES`), but `enemies.js` doesn't load standalone (needs monster/scenery deps) and the gold earn/spend
+  constants need `main.js` spelunking — a focused follow-on, not bundled here to keep this additive + clean.
+verified: export deterministic across runs; `content-parity.test.js` 32/32; **runtime suite still 64/64; runtime
+untouched** (git: only `tools/`, `content/`, `test/`; `gg1/` + `pages.yml` unchanged — the existing parity gate
+already covers the new files). DoD met: guides.json + collectibles.json committed + parity-gated. [A]-only, additive.
