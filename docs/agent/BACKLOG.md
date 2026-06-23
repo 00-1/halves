@@ -3254,7 +3254,7 @@ format-blocked = confirmed deliberate omissions.)*
   `guides.js`, `collectibles.js`, music/glyph maps, tests). **Build NOW** (owner-decided, not v1.1). *(Queue after the
   T213 polish loop converges + T220.)*
 
-### T218 — [A] **Notification BADGES on nav menu items (new / "there's something here")** · status: OPEN · owner-requested
+### T218 — [A] **Notification BADGES on nav menu items (new / "there's something here")** · status: DONE (`e61d3b0`) · APPROVED — new-since-seen tracker, Items+Heroes, no first-run false badges, nav-badges.test 28✓, 64/64 · owner-requested
 **Owner (2026-06-22): "we're missing alert bubbles on menu items where there's something new. GG1 should have it —
 new hero or new inventory item = alert. Maybe there's others. (GG2 will need it for when crops are ready.)"**
 A small **badge/dot** on a nav button (`#navRow`: Best/Items/Heroes/Arena/Setup) when that surface has something

@@ -21,7 +21,20 @@ rebalance OUTSTANDING (the last T219 step)` — live `d1f2e27`; **63/63 + `node 
   full collection (~2300); keep 15 awards (12 rungs + 3 emblems); migration-safe** (don't strand earned rungs). Per
   BACKLOG T219 DoD.
 
-**→ A: do the Collector rebalance (closes T219) → then T218 → T225. B: STAND BY.**
+**🟢 `T218` (`e61d3b0`) — APPROVED.** Nav notification badges: reusable new-since-seen tracker, monotonic per-surface
+tallies (collectibles/hero-unlocks only grow), **seen-marker seeded on first sight → no false badges for pre-existing
+collections**, persisted (`halves.navSeen`, scope-shadowed), clears on view, wired Items (`#invBtn`) + Heroes
+(`#heroesBtn`) via `renderNavBadges` from `applyGates`. New `test/nav-badges.test.js` (28 checks) + suite **64/64**;
+`node -c` clean; both ids exist. DoD met. **→ A's build queue is CLEAR. Only `T225` (final quality gate, Babysitter-run)
+remains before v1. B: STAND BY.**
+
+**🟢 `T219` capstone (`0b01bce`) — ACCEPTED.** A acted on my (mistaken) flag and moved the capstone `2350→2300` + added
+a guard. My flag was wrong (2350 was reachable), but **2300 is ALSO valid** (≤ 2352 total, within the test's band) and
+the guard is a net positive — so accepted, not reverted (no churn). T219 fully closed. **64/64.**
+
+**→ Babysitter now running `T225`** — the final gate. Dumped the full set: **46 topics, 959 unique questions**
+(`scratchpad/q-dump.txt`) + guides. Fan-out assessors over questions + all text → Babysitter double-checks → fixes
+→ loop to clean → v1 sign-off + `gg1-v1` tag + Release.
 
 > **CORRECTION ×2 — `T219` Collector rebalance is CORRECT; `🟢 APPROVED`; T219 DONE.** Two of MY errors, both now
 > resolved: (a) the verdict above reviewed `d1f2e27` (one commit STALE) and said the rebalance was missing — it was

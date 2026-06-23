@@ -38,14 +38,15 @@ multi-hour runs the environment can't deliver.)*
 
 ## Builder A — work the TOP ⏳ item ONLY. Do not skip or reorder. Push it alone → wait for review → next.
 
-**▶ CURRENT TASK = `T218` (nav notification badges).** Everything below is the full ordered queue.
+**▶ CURRENT TASK = `T225` (FINAL quality gate — Babysitter-run). Builder A's build queue is CLEAR.**
 
-- ✅ **DONE/approved:** T213, T220, T222, T221, **T224 (audio)**, **T219 COMPLETE** (all ~15 topics + the Collector
-  capstone rebalanced to 2350 = reachable, total 2352, test guard passes). App lives in `gg1/dev/`. **GG1 v1 content
-  is feature-complete.**
-- ⏳ **`T218` ← DO THIS NOW.** Nav notification BADGES: a dot/count on a nav button when that surface has something NEW
-  (Items: new loot; Heroes: new hero; + agreed others), clears on view, persists across reload, no false positives on
-  first run. A CORE/shell feature GG2 inherits (crops-ready). `main.js`/`index.html`/`styles.css` + test. *(BACKLOG T218.)*
+- ✅ **DONE/approved:** T213, T220, T222, T221, **T224 (audio)**, **T219 COMPLETE** (all ~15 topics + Collector
+  capstone = 2300, reachable, total 2352), **T218 (nav badges)**. App in `gg1/dev/`. **GG1 v1 is feature-complete.**
+- ⏳ **`T225` ← IN PROGRESS (Babysitter).** Final pass over **all 959 questions (46 topics) + every text string**:
+  fan-out AI assessors → Babysitter double-checks each finding → any fixes to [A] (or Babysitter takes over) → loop
+  to clean. **Only when clean → v1 SIGN-OFF + `gg1-v1` tag + Release → GG2 P0.** *(BACKLOG T225.)*
+
+**Builder A: STAND BY** — build queue clear; await any T225 fix items the Babysitter routes.
 - ⏳ **`T218`** — nav notification BADGES (new loot → Items, new hero → Heroes; clears on view; persists). *(BACKLOG T218.)*
 - ⏳ **`T225`** — the FINAL quality pass (TERMINAL v1 gate): **Babysitter-run** (agent assesses every question + text,
   Babysitter double-checks); **A only fixes** what comes back. *(BACKLOG T225.)*
