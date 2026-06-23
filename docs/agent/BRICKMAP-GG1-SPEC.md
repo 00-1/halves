@@ -56,8 +56,23 @@ data → audio re-author → polish.
 
 ## Effort (research estimate, engineering-days, SPIKE ONLY)
 Font/SDF path **4–7d** (the long pole — pick SDF vs baked-TTF first) · minimal UI + keypad **3–5d** ·
-`goblin-gold` skeleton + drill loop **~2–3d** · golden-PNG harness **~2–3d**. **≈ 2–3 weeks.** A real
-but bounded investment that de-risks the whole programme.
+`goblin-gold` skeleton + 2-D scene + one drill + input **3–4d** · golden-PNG harness **2–3d** ·
+APK/web/CI wiring for the new crate (mostly copy `scraped-again`) **1–2d**. **≈ 13–21 eng-days
+(~3–4 weeks).** A real but bounded investment that de-risks the whole programme. **The FULL port after
+a GO is weeks-to-months** (re-implement logic in Rust, re-author audio, build text+UI+save+a11y) —
+budget it as a re-platform, not a port.
+
+## Risks to call before committing to the full port (research §D4)
+1. **Font legibility is a hard dependency** — if SDF/TTF in this stack is fussier than expected, a
+   text-heavy game wobbles. **The spike must clear this first** (gate #1).
+2. **a11y regression for schools** — opaque canvas vs accessible DOM; owner decision, and may require
+   the DOM-mirror/AccessKit work *to even ship to the audience*. (Proposal: defer unless school
+   distribution becomes a goal.)
+3. **Audio parity is perceptual, not vector-provable** — re-author to a music/SFX spec and A/B by ear;
+   accept **"faithful, not bit-identical."** (Unlike the logic, which IS provable via parity vectors.)
+4. **Scope honesty** — this is a **re-platform**, not a port. Payoff is real (engine hardened by 2
+   games, self-verifiable rendering, native APK, GG2-native foundation) but it's weeks-to-months. The
+   spike + go/no-go gate exist precisely to learn this in 3–4 weeks rather than 3 months.
 
 ## Deliverable
 B builds the spike in `00-1/brickmap` (`crates/goblin-gold` + the engine font/UI/golden additions),
