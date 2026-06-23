@@ -6,6 +6,37 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 spike — mini-gate #2: keypad + one drill over the T229 DATA SEAM ([B], GO)
+
+Babysitter gated #1→#2 (GO). Built the second mini-gate in `00-1/brickmap:crates/goblin-gold`
+(commit `227c5e8`, pushed to `main` + the feature branch): an **on-screen numeric keypad** plus a
+**single-topic drill loop**, with the questions **consumed from T229's content data seam**
+(`data/gg1/{modes.json,parity-vectors.json}`, one-way synced) — so the cross-repo **DATA seam is
+proven end to end** (research §"share DATA, not code").
+- **Drill (`drill.rs`):** `Drill::from_seam(mode)` reads the mode **name/tag from `modes.json`** and
+  the **`{p,a}` questions from `parity-vectors.json`**. The JS `transform` is **never executed** —
+  the parity vectors ARE the correctness contract. `press`/`submit` mark **right/wrong**; a correct
+  answer advances. **The seam IS the test:** a unit test types **every** halves vector's expected
+  answer (incl. `.5` decimals) and asserts each is accepted (27/27), plus a wrong answer is marked
+  Wrong + doesn't advance, and a *second* topic (`times`, with `×` prompts) loads — proving it's
+  data-driven, not hardcoded. **CI-green, no GPU.**
+- **Keypad (`keypad.rs`):** a **data-free** 3-col widget (`1-9 / . 0 ⌫ / Enter` bar) — layout +
+  hit-test + char-mapping, **no game/topic literals** (honours the one-way no-leakage rule, so it
+  sinks into `bm-render` later). Engine-candidate.
+- **Painter (`render.rs`):** a small reusable headless 2-D painter (flat rects + AA text) through the
+  **real wgpu path** — the engine-candidate UI surface; `font_proto` was refactored onto it.
+- **Evidence:** the `drill_proto` bin drives the **real model + keypad layout** and snapshots three
+  screen states to PNG via lavapipe — **mid-entry** (neutral), **correct** (green "50" / "Correct!" /
+  1·27), **wrong** (red "99" / "Try again"). The framed question reads **"Half of 100"** — drawn
+  straight from the first parity vector (`100→50`), i.e. the seam is *visibly* live. Same wgpu
+  pipeline as web/APK; owner does the final on-phone eyeball. (Backspace renders as `<` — the
+  documented ASCII fallback, since the embedded face lacks `⌫`.)
+- CI-parity green: `fmt` + `clippy -D warnings` + all tests (9) pass; no engine/voxel code touched.
+- Keypad+drill screenshots delivered to the owner. **HOLD for the Babysitter to gate → #3 golden-PNG
+  FX · #4 clean APK.**
+
+---
+
 ## BRICKMAP-GG1 spike — mini-gate #1: legible font path PROVEN ([B], GO)
 
 Owner approved the spike (font prototype-first). Built `00-1/brickmap:crates/goblin-gold` (commit
