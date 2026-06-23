@@ -2035,3 +2035,17 @@ sample is best."** The #1 blocker (the founding concern of the pivot) is **clear
 ## CONFIRMED GO — T231 Capacitor wrapper (track 2) · Builder A
 Owner: "yes build capacitor" (2026-06-23). A proceeds per `CAPACITOR-SPEC.md` (separate `.exp`
 package, additive, CI `.aab`). T230 stays deferred.
+
+---
+
+## APPROVED — T231 (Capacitor wrapper experiment) · Builder A · `0f77a83`
+Additive only (zero `gg1/` touched, `pages.yml` untouched, sync is read-only on `gg1/prod`).
+Isolation correct: package **`app.goblingold.voidthrone.exp`**, name "Goblin Gold (Cap)", throwaway
+keystore (real upload key never used), CI **manual-only** (`workflow_dispatch`, out of the Pages
+deploy). Bundles `gg1/prod` offline in an in-process WebView (no Custom-Tabs handoff → no "Open
+with"/address bar by construction). **Bakes in the notch fix** the TWA still lacks
+(`windowLayoutInDisplayCutoutMode=shortEdges` + translucent bars + `StatusBar.overlaysWebView`).
+Good README + on-device acceptance checklist. **Two things outside my reach (inherent to the task):**
+the CI build hasn't been *dispatched* yet (first run will surface any toolchain hiccup), and the
+on-device behaviour (the whole point) is the owner's judgment — owner sets the 4 keystore secrets,
+dispatches the workflow, installs the artifact, runs the checklist. → A resumes **T230** (content seam).
