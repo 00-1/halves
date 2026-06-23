@@ -70,9 +70,13 @@ un-parks it after the store launch). Do NOT start GG2 now.
 
 **Builder A → `T226` → `T168`. (GG2 parked.)**
 
-**Builder B → STAND BY.** `T103` (perf pass) + `T211`/`T207` **APPROVED** (live `951e532`); queue clear. Hold until
-the Babysitter points you at a task. *(Open thread: the perf **on-device measurement plan** in `PERF-RESEARCH-2.md`
-is for the OWNER to run on a low-end phone; if it surfaces jank, the follow-up fixes come back to B.)*
+**Builder B → `BRICKMAP-GG1` RESEARCH PASS (research only — no code).** Investigate the `00-1/brickmap` repo and
+answer every open question in **`BRICKMAP-GG1.md`** (engine capability matrix · "Scraped Again" engine↔game boundary
+· can we run JS/Node and is it a bad idea · best port path for GG logic/audio/generative-images · build+CI for web &
+native APK · headless self-verify · a11y · proposed spike scope + effort). **Deliverable = a research report pushed
+to the brickmap repo (`docs/gg1-port-research.md`) + a one-line pointer in `BUILDER-LOG-FX.md`.** NO engine/game code
+changes this pass. The Babysitter reviews it, then writes `BRICKMAP-GG1-SPEC.md` for owner approval before any build.
+*(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 
 ---
