@@ -93,23 +93,15 @@ is greenlit (it's brickmap-port-only value). Other A work is owner-gated too: TW
 GG1 store (ship paused), Capacitor on-device test (your keystore+CI dispatch). So A holds until the go/no-go or you
 point it somewhere. *(If you want A busy now regardless, `T232` balance.json is the one clean additive task available.)*
 
-**Builder B → 🔴 FIX the mini-gate #4 launch crash — ROOT CAUSE FOUND (on-device logcat).** **`app.rs:448`** —
-`create_buffer_init{ contents: bytemuck::cast_slice(&v) }` for the **text vertex buffer** panics **"buffer slices can
-not be empty"** when a text element has **zero quads** (empty string). On the drill's FIRST frame the **answer box is
-empty** (and/or the verdict banner before submit) → empty `v` → panic → abort (the wgpu-hal swapchain-semaphore panic
-is just secondary Drop-unwind fallout). **Never caught because the headless bins rendered only non-empty states
-(mid/correct/wrong); the live `app.rs` render path was unexercised until the device.** Device: Adreno 735, Vulkan.
-**FIX:** (1) in the `for t in texts` loop, **skip empties:** `if t.quads.is_empty() { continue; }` (or guard
-`if v.is_empty()` before `create_buffer_init`). (2) **Audit the same pattern for EVERY dynamic buffer in the live
-render** — particle instances (empty until a correct answer!), rect instances, any `create_buffer_init`/`write_buffer`
-with a `Vec` that can be empty → guard each. (3) **Add a headless golden for the INITIAL drill frame** (empty answer
-box, no FX) so this untested state is covered and can't regress. ✅ #1/#2/#3 stand.
-**THEN (ungated per the autonomy grant): once the fix lands AND the initial-frame golden verifies the crashing path
-headlessly, the Babysitter declares gate #4 PASS (code+golden, no device) + brickmap GO → B proceeds to the FULL PORT,
-phase 1: bank the engine services (`bm-render` legible-text + the keypad/2-D-UI surface + a `bm-platform` save
-abstraction). Then phase 2 logic re-impl vs the T229 parity vectors, phase 3 content via T229/T230, phase 4 audio
-re-author, phase 5 polish. Gate every phase on tests/goldens. APK installs + audio-by-ear → the OWNER-EYEBALL-ON-RETURN
-list, don't block.** *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
+**Builder B → GO full-port PHASE 2: re-implement GG1 logic in Rust vs the T229 parity vectors.** ✅ **#4 crash FIXED**
+& self-verified (empty-buffer guard in the live `render()` + `drill-initial` golden under lavapipe; live render now
+unified with the golden via `drill_frame()`; on-device launch confirm → `OWNER-EYEBALL.md`). ✅ **Phase 1 APPROVED**
+— engine services banked (`bm-render::text2d`/`ui2d` + `bm-platform::save`; behavior-preserving, scraped-again
+unaffected). **Now phase 2:** port the ~40 pure transforms (`datum→{p,a}`) + the unlock-chain/mastery mechanics to
+Rust, **proven against `content/gg1/parity-vectors.json`** (every committed `{p,a}` must reproduce) — share DATA not
+code. Metagame (collector ladder / arena / events) = later sub-phases vs the T230 data + `GG1-INVENTORY.md`. Gate on
+the parity tests. → phase 3 content · 4 audio re-author · 5 polish. APK installs + audio-by-ear → OWNER-EYEBALL.
+*(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 
 ---

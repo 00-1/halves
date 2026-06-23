@@ -2127,3 +2127,16 @@ secondary Drop-unwind. **Why headless missed it:** the `*_proto` bins rendered o
 B: guard `if t.quads.is_empty(){continue}` + audit all dynamic buffers (esp. particle instances, empty until a
 correct answer) + add an initial-frame golden. **Testing-gap lesson for the spike: gate the LIVE render path's
 empty/initial states, not just the populated snapshots.**
+
+---
+
+## GATE #4 PASS (code+golden, ungated per autonomy grant) + PHASE 1 APPROVED · Builder B · `ba383ae`/`8d8f1da`/`a3c6876`/`010e631`
+**#4 crash FIXED & self-verified (Babysitter read the code):** `if t.quads.is_empty(){continue}` guards the live
+`render()` before `create_buffer_init`; FX sparks are guarded `RectRun`s (no empty particle buffer); on-device
+renderer + headless golden share `drill_frame()`, and new golden `drill-initial.png` (the exact crash state) passes
+under lavapipe (no panic + match). The root gap (live render path untested) is closed by unifying it with the golden.
+On-device launch confirm → OWNER-EYEBALL (non-blocking). **Phase 1 (engine services) APPROVED:** `bm-render::text2d`
+(TTF→AA prose, the #1 dep), `bm-render::ui2d` (RectRun/TextRun + shared UI_SHADER + data-free keypad), `bm-platform::
+save` (FileStore native/Android + WebStore localStorage). Behavior-preserving — both GPU goldens still match;
+`scraped-again` unaffected; 28/11/5 tests + clippy -D warnings/fmt clean (native, wasm32 save, aarch64 goblin-gold).
+Boundary respected (font face stays game content). → B GO phase 2 (logic re-impl vs T229 parity vectors).
