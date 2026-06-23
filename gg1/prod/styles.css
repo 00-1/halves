@@ -75,7 +75,7 @@ body{
    (padding-top), and the bottom group (tag + buttons + sound) is pushed to the bottom
    via .tag's margin-top:auto. (T216: the title had pinned to the very top; the
    padding-top brings it back down into the upper-centre.) */
-#entry{justify-content:flex-start;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:clamp(40px,11vh,120px) 8px 24px}
+#entry{justify-content:center;align-items:center;text-align:center;gap:0;overflow-y:auto;padding:clamp(20px,6vh,72px) 8px 24px}
 .entry-actions{display:flex;flex-direction:column;align-items:center;margin-top:18px}
 .entry-actions .btn{margin-top:0}
 .entry-actions .linkbtn{margin-top:14px}
@@ -101,10 +101,10 @@ body{
   font-size:clamp(56px,20vw,100px);
   background:linear-gradient(180deg,var(--text),var(--muted));-webkit-background-clip:text;background-clip:text;color:transparent;
   display:flex;align-items:center;gap:.04em;justify-content:center;
-  min-height:clamp(54px,18vw,92px)}   /* T208 — reserve the painted-mark height so the empty static mark never jumps */
+  min-height:clamp(150px,42vw,250px)}   /* splash hero — Magnar large + centred (matches the TWA native splash) */
 .mark .slash{color:var(--amber);-webkit-text-fill-color:var(--amber);font-weight:400;transform:translateY(-.02em)}
 /* T56 — procedural pixel-font glyph (canvas) replaces the typographic mark. */
-.mark canvas{height:clamp(54px,18vw,92px);width:auto;image-rendering:pixelated;display:block}
+.mark canvas{height:clamp(150px,42vw,250px);width:auto;image-rendering:pixelated;display:block}   /* splash hero — big Magnar */
 .g-glyph canvas{height:22px;width:auto;image-rendering:pixelated;vertical-align:-4px;display:inline-block}
 .t-glyph canvas{height:24px;width:auto;image-rendering:pixelated;display:block}
 /* T171 — the product wordmark "Goblin Gold" under the x/2 topic mark (the mark
@@ -117,16 +117,45 @@ body{
    subtitle between the wordmark and the maths tag. Plain gold/amber for now —
    T209 stylises it (pixel-gold name / dithered-purple void line). */
 .subtitle{font-family:var(--display);font-weight:600;font-size:clamp(30px,9.8vw,46px);letter-spacing:.02em;
-  color:var(--amber-2,#e0a93c);margin-top:clamp(44px,14vh,130px);line-height:1.05;opacity:.92}   /* T221 — drop the void title down toward the screen centre (owner) */
+  color:var(--amber-2,#e0a93c);margin-top:clamp(-8px,-1.4vh,0px);line-height:1.05;opacity:.92}   /* splash — void title nudged up, closer under the wordmark (owner) */
+
+/* Splash sequence (owner): Magnar appears IMMEDIATELY (continuous with the native TWA
+   splash); the wordmark, void title, tag and buttons then fade up a beat later. */
+#entry .brand,#entry .subtitle,#entry .tag,#entry .entry-actions,#entry #soundBtn{opacity:0;animation:splashIn .55s ease both}
+#entry .brand{animation-delay:.45s}
+#entry .subtitle{animation-delay:.58s}
+#entry .tag{animation-delay:.74s}
+#entry .entry-actions{animation-delay:.86s}
+#entry #soundBtn{animation-delay:.98s}
+@keyframes splashIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  #entry .brand,#entry .subtitle,#entry .tag,#entry .entry-actions,#entry #soundBtn{opacity:1;animation:none}
+}
 /* T209 — the pixel-art title canvas (gold wordmark / void subtitle) replaces the text
    node; sized to the parent line's font-size, crisp nearest-neighbour. */
 .pixtitle{height:1.25em;width:auto;max-width:100%;image-rendering:pixelated;display:block;margin:0 auto}   /* gold wordmark — sized to the parent line's font-size */
 /* T221 — the void title is a chunky TWO-LINE pixel canvas stretched to FILL a box
    under the wordmark (owner-chosen mockup); natural ~1.67:1 aspect, centred, crisp. */
-.voidtitle{width:min(74vw,340px);max-width:92vw;height:auto;image-rendering:pixelated;display:block;margin:10px auto 0}
+.voidtitle{width:min(74vw,340px);max-width:92vw;height:auto;image-rendering:pixelated;display:block;margin:10px auto 0;
+  transform:translateY(clamp(-28px,-5vw,-12px))}   /* splash — move ONLY the void text up to the wordmark; fog (::after) + layout stay put (owner) */
+/* Splash — drifting fog OVER the void title (echoes the backdrop's atmospheric band).
+   Soft purple haze on a ::after, screen-blended so it glows over the dark pixels;
+   pointer-events:none, owner-tunable (colour/opacity/speed). */
+#entry .subtitle{position:relative}
+#entry .subtitle::after{content:"";position:absolute;inset:-40% -14%;pointer-events:none;z-index:3;
+  background:
+    radial-gradient(58% 80% at 22% 42%, rgba(150,112,224,.34), transparent 62%),
+    radial-gradient(50% 70% at 76% 60%, rgba(120,92,206,.28), transparent 62%),
+    radial-gradient(72% 62% at 50% 28%, rgba(186,156,255,.20), transparent 66%);
+  filter:blur(12px);mix-blend-mode:screen;opacity:.85;
+  animation:voidFog 16s ease-in-out infinite alternate}
+@keyframes voidFog{
+  from{transform:translate3d(-7%,3%,0) scale(1.06)}
+  to{transform:translate3d(9%,-4%,0) scale(1.18)}}
+@media (prefers-reduced-motion:reduce){#entry .subtitle::after{animation:none}}
 /* T214 — margin-top:auto pushes the tag + the action buttons + Sound to the BOTTOM
    of the splash, giving the big title group room up top. */
-.tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:auto;padding-top:18px;font-weight:500}
+.tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:clamp(18px,4vh,34px);font-weight:500}   /* splash redesign — centred hero stack (was margin-top:auto bottom-pin) */
 /* T81/T91 — COMPACT home-screen event banner: a short, bounded strip so it stays
    prominent but never dominates the one-screen #start layout. Small emblem ·
    tag+name+countdown · an inline Play CTA. The full blurb lives on the play screen. */

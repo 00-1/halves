@@ -310,6 +310,10 @@
   // screen to stay purple, NOT wear today's event colour (a rare event used to
   // turn it blue). The epic-rarity family on the app base: #0E1116 → body → accent.
   const HOME_PALETTE = ["#0E1116", "#9a5cf6", "#cda9ff"];
+  // T-splash — the ENTRY/splash backdrop: same animated purple as home but DARKER +
+  // more muted (a Gallowmarch-ish deep grey-purple), and NO hoard. Owner-tunable.
+  const ENTRY_PALETTE = ["#08080d", "#3a2a5c", "#5a4488"];
+  function entryFxState(){ return { event: { palette: ENTRY_PALETTE }, progress: 0.22, streak: 0, hoard: 0 }; }
   // LIVE home state for the backdrop — the HUE is fixed purple; only the player's
   // own collection progress (0–1) and daily Momentum streak modulate it (brightness/
   // particle count). The event is deliberately NOT read here, so the home backdrop
@@ -347,6 +351,7 @@
     if(!fxBg) return;
     try{
       if(name === "start"){ fxShowBackdrop(true); fxBg.setHomeState(homeFxState()); fxBg.start(); if(fxBg.resize) fxBg.resize(); }
+      else if(name === "entry"){ fxShowBackdrop(true); fxBg.setHomeState(entryFxState()); fxBg.start(); if(fxBg.resize) fxBg.resize(); }
       else if(name === "arena"){ fxShowBackdrop(true); fxBg.setArenaState(arenaFxState()); fxBg.start(); if(fxBg.resize) fxBg.resize(); }
       else { fxBg.stop(); fxShowBackdrop(false); }
     }catch(e){}
@@ -2915,6 +2920,65 @@
     const dg = $("devGoldRow"); if(dg) dg.classList.toggle("hidden", !devMode);
     const rr = $("devRevealRow"); if(rr) rr.classList.toggle("hidden", !devMode);
     syncDevRevealBtn(); }
+  // T168 — generate the Play-Store FEATURE GRAPHIC (exactly 1024×500) using the LIVE
+  // render engine: the splash gold wordmark (`paintPixelTitle`) + the void title
+  // (`paintVoidThrone`) + the brand icon, composited onto a void backdrop, then
+  // offered as a PNG download. Runs from the dev menu so it uses the real browser
+  // canvas (the Babysitter's sandbox can't rasterise). Only ADDS — touches nothing live.
+  function generateFeatureGraphic(){
+    const render = () => {
+      try{
+        const W = 1024, H = 500;
+        const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+        const g = cv.getContext("2d"); if(!g){ devToast("No canvas"); return; }
+        // void backdrop: radial gradient + sparse violet dither dots
+        const grd = g.createRadialGradient(W*0.18, H*0.5, 0, W*0.18, H*0.5, W*1.15);
+        grd.addColorStop(0, "#1b1430"); grd.addColorStop(0.55, "#0E1116"); grd.addColorStop(1, "#07090d");
+        g.fillStyle = grd; g.fillRect(0, 0, W, H);
+        g.fillStyle = "rgba(205,169,255,0.05)";
+        for(let y = 0; y < H; y += 6) for(let x = 0; x < W; x += 6) g.fillRect(x, y, 1, 1);
+        // pixel titles from the LIVE engine (render into detached els, lift the canvases)
+        const tmpG = document.createElement("div"); tmpG.textContent = "Goblin Gold";
+        paintPixelTitle(tmpG, TITLE_GOLD, TITLE_GOLD_GLINT);
+        const goldC = tmpG.querySelector("canvas.pixtitle");
+        const tmpV = document.createElement("div"); tmpV.textContent = "The Void Throne";
+        paintVoidThrone(tmpV);
+        const voidC = tmpV.querySelector("canvas.voidtitle");
+        const compose = () => {
+          g.imageSmoothingEnabled = false;   // keep the pixel titles crisp when scaled
+          const TX = 430;
+          // auto-stack the right column (gold title, void title, tagline, two meta
+          // lines), vertically centred — robust to the exact engine canvas sizes.
+          const gw = 440, gh = goldC ? goldC.height * (gw / goldC.width) : 0;
+          const vw = 300, vh = voidC ? voidC.height * (vw / voidC.width) : 0;
+          const gap1 = 4, gap2 = 30, line1 = 34, line2 = 26, line3 = 22;
+          let y = Math.max(26, (H - (gh + gap1 + vh + gap2 + line1 + line2 + line3)) / 2);
+          if(goldC){ g.drawImage(goldC, TX, y, gw, gh); } y += gh + gap1;
+          if(voidC){ g.drawImage(voidC, TX - 4, y, vw, vh); } y += vh + gap2;
+          g.imageSmoothingEnabled = true; g.textBaseline = "alphabetic";
+          g.fillStyle = "#e9ecf1"; g.font = "600 26px 'Space Grotesk',system-ui,sans-serif";
+          g.fillText("Fast mental-maths drills", TX + 2, y); y += line2;
+          g.font = "700 18px 'Space Grotesk',system-ui,sans-serif"; g.fillStyle = "#e9c46a";
+          g.fillText("No ads · No data collected · No in-app purchases", TX + 2, y); y += line3;
+          g.font = "600 16px 'Space Grotesk',system-ui,sans-serif"; g.fillStyle = "#9aa3b2";
+          g.fillText("Works offline · no account needed", TX + 2, y);
+          cv.toBlob((b) => {
+            if(!b){ devToast("Export failed"); return; }
+            const url = URL.createObjectURL(b);
+            const link = document.createElement("a"); link.href = url; link.download = "goblin-gold-feature-graphic.png";
+            document.body.appendChild(link); link.click(); link.remove();
+            setTimeout(() => { try{ URL.revokeObjectURL(url); }catch(e){} }, 1500);
+            devToast("Feature graphic downloaded (1024×500)");
+          }, "image/png");
+        };
+        const icon = new Image();
+        icon.onload = () => { try{ g.drawImage(icon, 78, 100, 300, 300); }catch(e){} compose(); };
+        icon.onerror = () => compose();   // export without the icon rather than fail
+        icon.src = "icon-512.png";
+      }catch(e){ try{ devToast("Banner render failed"); }catch(_){ } }
+    };
+    if(document.fonts && document.fonts.ready && document.fonts.ready.then) document.fonts.ready.then(render); else render();
+  }
   function syncDevRevealBtn(){ const b = $("devRevealBtn"); if(b) b.textContent = devReveal ? "On" : "Off"; const v = $("setDevRevealVal"); if(v) v.textContent = devReveal ? "revealing all" : "off"; }
   // A minimal self-contained toast (the dev affordances don't go through the unlock queue).
   function devToast(msg){
@@ -2954,6 +3018,7 @@
   }
   { const og = $("openGraphics"); if(og) og.addEventListener("click", () => { location.hash = "#/graphics"; }); }
   { const gb = $("graphicsBack"); if(gb) gb.addEventListener("click", () => { location.hash = "#/settings"; }); }
+  { const bb = $("bannerBtn"); if(bb) bb.addEventListener("click", () => { try{ devToast("Rendering banner…"); generateFeatureGraphic(); }catch(e){} }); }
   { const ss = $("setSound"); if(ss) ss.addEventListener("click", toggleSound); }
   // T143 — live audio controls: separate Music + SFX volume sliders (drag → hear it),
   // tempo, the style picker, and the celebration tester. None RESTART the music (they
