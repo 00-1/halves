@@ -128,3 +128,19 @@ correct methods, arithmetic recomputed + matches the questions, age-appropriate.
   `sequences` nth-term → locked Part-2 (structural); `cubes` + roots (add content); de-dup pool slots + harness gate.
 
 **→ Round-2 actions for A:** fix `digitsum` (HIGH) + `partwhole` (LOW) guides, then continue 2b-part-2 / 2c.
+
+---
+
+## T225 — FINAL quality gate (the v1 sign-off gate) · 2026-06-23 · commit `525ba87`
+Method: enumerated the FULL set (**46 topics, 959 unique questions** → `scratchpad/q-dump.txt`) + all text (guides,
+`explain()`, tags/eyebrows). 3 AI assessors (Q topics 1–23, Q topics 24–46, all text), then Babysitter
+double-checked every finding (recompute / re-read in context).
+- **Questions — CLEAN: 0 issues across all 959.** Every answer independently recomputed correct; all numpad-safe
+  (non-negative, terminating, unambiguous; no duplicate-prompt/different-answer). Only LOW notation-key polish notes
+  (ratioshare `→bigger`, angles `point`, factors `biggest prime`, digitsum two-mechanic) — non-blocking.
+- **Text — 2 issues, both FIXED in `525ba87`:**
+  - 🔴 `cubes` guide tip chained `"4³ = 4 × 4 = 16"` (falsely states 4³=16) → `"for 4³, do 4 × 4 = 16, then × 4 = 64"`.
+  - 🟠 `area` perimeter tip `"6 × 4 → 2 × 10 = 20"` (reads as 24) → `"A 6 by 4 rectangle → 2 × 10 = 20"`.
+  - All guide examples / explain methods / BODMAS / digit-sum-÷9 / roman / formulas re-verified correct; British
+    English clean; no typos; no stale/placeholder text.
+- **Result: GG1 v1 SIGNED OFF.** Tag `gg1-v1` to be cut by the owner at `525ba87` (Babysitter lacks tag-push perms).

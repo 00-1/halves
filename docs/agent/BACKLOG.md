@@ -3276,7 +3276,7 @@ ready → Plants badge).
   **[A]-only** (`main.js`, `index.html`, `styles.css`, tests). *(Queue: after T213; a nice pre-launch retention
   touch. Also note in GG2-MILESTONES as a CORE feature.)*
 
-### T225 — **FINAL deep quality pass — EVERY question + EVERY doc/question text** (agent assesses → Babysitter double-checks) · status: OPEN (runs LAST — the FINAL GATE before v1 sign-off) · owner-requested
+### T225 — **FINAL deep quality pass — EVERY question + EVERY doc/question text** (agent assesses → Babysitter double-checks) · status: DONE (`525ba87`) · CLEAN — 959 Qs 0 issues; 2 text fixes applied; **GG1 v1 SIGNED OFF** · owner-requested
 **Owner (2026-06-22): "a final deep quality pass on every individual question and document/question text. Performed by
 an agent then double-checked by you. Add it to the END of the queue. Final gate before v1 sign-off."** This is the
 LAST thing before the `gg1-v1` tag — runs only after the whole v1 queue (T221, T224, T222, T219 incl. Collector
@@ -3301,7 +3301,12 @@ rebalance, T218) is APPROVED.
   (`QUESTION-QUALITY-AUDIT.md` final section). **Only when this is clean does the Babysitter record "GG1 v1 SIGNED
   OFF" → then T223 (tag + release).** *(Babysitter-run assessment; fixes = [A]. The terminal v1 gate.)*
 
-### T223 — **Tag + freeze GG1 v1** (cut `gg1-v1`, snapshot to `gg1/v1/`) · status: BLOCKED (do at "GG1 v1 done") · owner-requested
+### T223 — **Tag + freeze GG1 v1** (cut `gg1-v1`, snapshot to `gg1/v1/`) · status: 🔴 NEEDS OWNER — Babysitter CANNOT push tags (git 403; no MCP create-tag/release). v1 is SIGNED OFF at `525ba87`; owner cuts the tag · owner-requested
+**UPDATE 2026-06-23:** GG1 v1 is quality-signed-off (T225 clean) at commit **`525ba87`**. The Babysitter tried to cut
+`gg1-v1` and **cannot** — `git push origin <tag>` returns **HTTP 403** (branch-push only), and the GitHub MCP exposes
+no create-tag/create-release tool. **→ OWNER ACTION:** create the tag/release on `525ba87` (GitHub UI: Releases →
+Draft a new release → tag `gg1-v1`, target `525ba87`; or `git tag -a gg1-v1 525ba87 && git push origin gg1-v1`).
+Then `gg1/v1/` snapshot + `gg1/dev→gg1/prod` promote = [A] deploy follow-ups (not live-blocking — Play held on ID).
 **Owner (2026-06-22): "GG1 v1 is ready as soon as the current queue clears. YOU make the final call on that, then
 make the tag + release and immediately start moving on GG2."** So the Babysitter OWNS the v1 sign-off + the tag +
 release — **no owner action needed.** When the whole v1 queue is APPROVED — splash (T220/T221) + T224 + T222

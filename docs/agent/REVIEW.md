@@ -32,9 +32,24 @@ remains before v1. B: STAND BY.**
 a guard. My flag was wrong (2350 was reachable), but **2300 is ALSO valid** (≤ 2352 total, within the test's band) and
 the guard is a net positive — so accepted, not reverted (no churn). T219 fully closed. **64/64.**
 
-**→ Babysitter now running `T225`** — the final gate. Dumped the full set: **46 topics, 959 unique questions**
-(`scratchpad/q-dump.txt`) + guides. Fan-out assessors over questions + all text → Babysitter double-checks → fixes
-→ loop to clean → v1 sign-off + `gg1-v1` tag + Release.
+**🟢 `T225` — DONE, the final gate is CLEAN. ✅ GG1 v1 SIGNED OFF (Babysitter, owner-delegated), commit `525ba87`.**
+Ran 3 fan-out assessors (questions 1–23, questions 24–46, all text) over **46 topics / 959 questions** + every guide/
+explain/tag, then double-checked every finding myself:
+- **Questions: ZERO issues.** All 959 answers independently recomputed correct, all numpad-safe (no negative/
+  non-terminating/ambiguous answers; negatives topic shows negative operands but answers ≥0). Only minor LOW
+  notation-key polish suggestions (ratioshare `→bigger`, angles `point`, factors `biggest prime`) — non-blocking.
+- **Text: 2 issues found → both FIXED (Babysitter take-over, `525ba87`, owner-authorised):** 🔴 `cubes` guide tip
+  `"4³ = 4 × 4 = 16…"` falsely chained `4³ = 16` → `"for 4³, do 4 × 4 = 16, then × 4 = 64"`; 🟠 `area` perimeter tip
+  `"6 × 4 → 2 × 10 = 20"` (reads as 24) → `"A 6 by 4 rectangle → …"`. Re-verified: 64/64 + `node -c` clean; text pass
+  now clean.
+- **🔴 `T223` TAG/RELEASE — BLOCKED, needs the OWNER.** I cannot create the tag: `git push origin gg1-v1` → **HTTP
+  403** (I have branch-push, NOT tag-push access), and the GitHub MCP has **no create-tag/create-release** tool (read
+  only). **Owner must cut `gg1-v1` at `525ba87`** (GitHub UI → Releases → Draft → tag `gg1-v1`, target `525ba87`; or
+  `git tag -a gg1-v1 525ba87 && git push origin gg1-v1` from an authed env). The v1 SIGN-OFF + the commit are
+  recorded; the tag is the only outstanding piece and it's the owner's to push.
+- **Deploy follow-ups (not v1-blocking; Play not live yet):** promote `gg1/dev → gg1/prod` to the v1 build; populate
+  the frozen `gg1/v1/` snapshot. → [A]/next.
+- **→ Next: GG2 P0** (`GG2-MILESTONES.md` → `GG2-P0-EXTRACTION.md` + `GG2-P0-INPUT.md`).
 
 > **CORRECTION ×2 — `T219` Collector rebalance is CORRECT; `🟢 APPROVED`; T219 DONE.** Two of MY errors, both now
 > resolved: (a) the verdict above reviewed `d1f2e27` (one commit STALE) and said the rebalance was missing — it was
