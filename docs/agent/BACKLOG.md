@@ -3301,25 +3301,31 @@ rebalance, T218) is APPROVED.
   (`QUESTION-QUALITY-AUDIT.md` final section). **Only when this is clean does the Babysitter record "GG1 v1 SIGNED
   OFF" → then T223 (tag + release).** *(Babysitter-run assessment; fixes = [A]. The terminal v1 gate.)*
 
-### T226 — [A] **Deploy v1 to GHP: populate the frozen `gg1/v1/` snapshot (+ promote `gg1/dev → gg1/prod`)** · status: OPEN · owner-requested
-**Owner (2026-06-23): wants the `v1.0.0` GitHub Release body to link to the PLAYABLE v1 build on GitHub Pages — which
-means the frozen `gg1/v1/` snapshot must be live at `https://00-1.github.io/halves/gg1/v1/`.** Currently `gg1/v1/`
-doesn't exist (held since T222 for the tag, now cut as `v1.0.0` @ `525ba87`).
-- **Populate `gg1/v1/`** = the v1 RUNTIME files copied from the `525ba87` `gg1/dev/` tree (index.html, all `*.js`,
-  `*.css`, `manifest.webmanifest`, `sw.js`, icons, fonts) — **NOT** `test/`, `scripts/`, or `docs/` (lean, like
-  `gg1/prod`). The path-derived scope (`gg1v1` in `main.js`/`sw.js`) already exists → it auto-isolates.
-- **Wire it into the deploy CORRECTLY (the risky bit):** `.github/workflows/pages.yml` stamps `build.json` + runs
-  `cachebust.js` ONLY over `gg1/dev gg1/prod`. For a FROZEN snapshot, **one-time stamp** `gg1/v1/` with a fixed
-  `build.json` (sha `525ba87` / `v1.0.0`) and a fixed `?v=525ba87` cache-bust on its `index.html`+`styles.css`, and
-  **DO NOT add it to the per-deploy CI loop** (so it never re-stamps and stays truly frozen). Verify the existing
-  dev/prod deploy + `cache-bust.test.js` are unaffected.
-- **Add to `apps.json`** so the franchise landing lists it (`{"path":"gg1/v1/","name":"Goblin Gold","tag":"v1.0.0"}`).
+### T226 — [A] **Deploy v1 to GHP: frozen `gg1/v1.0.0/` snapshot + GENERIC per-folder scope (+ promote `gg1/dev → gg1/prod`)** · status: OPEN · owner-requested
+**Owner (2026-06-23): wants the `v1.0.0` GitHub Release body to link to the PLAYABLE v1 build on GitHub Pages.** Owner
+also chose a **VERSIONED folder** (`gg1/v1.0.0/`, NOT `gg1/v1/`) so future tagged releases (v1.1.0, v2.0.0 …) each get
+their own frozen archive. Target: `https://00-1.github.io/halves/gg1/v1.0.0/`.
+- **🔴 Make per-folder scope GENERIC first (enables versioned folders).** Today `main.js`/`sw.js` derive the
+  save/cache scope via HARDCODED path checks (`/gg1/dev/`→`gg1dev`, `/gg1/prod/`→`gg1prod`, `/gg2/dev/`→`gg2dev`,
+  root→`halves`). Replace with a **generic deriver** from the path segments under `/halves/` (e.g. `gg1/v1.0.0/` →
+  `gg1v1.0.0`), so any release folder auto-isolates. **MIGRATION-CRITICAL: the existing folders MUST keep the SAME
+  scope strings** (`gg1/dev`→`gg1dev`, `gg1/prod`→`gg1prod`, `gg2/dev`→`gg2dev`, root→`halves` unchanged) or live
+  saves break — verify with a test. Apply identically in `sw.js` (cache prefix).
+- **Populate `gg1/v1.0.0/`** = the v1 RUNTIME files from the `525ba87` `gg1/dev/` tree (index.html, all `*.js`,
+  `*.css`, `manifest.webmanifest`, `sw.js`, icons, fonts) — **NOT** `test/`, `scripts/`, `docs/` (lean, like `gg1/prod`).
+- **Wire it into the deploy FROZEN (the risky bit):** `pages.yml` stamps `build.json` + runs `cachebust.js` ONLY over
+  `gg1/dev gg1/prod`. For the frozen snapshot, **one-time stamp** `gg1/v1.0.0/` with a fixed `build.json`
+  (`v1.0.0`/`525ba87`) + a fixed `?v=525ba87` cache-bust on its `index.html`+`styles.css`, and **DO NOT add it to the
+  per-deploy CI loop** (stays truly frozen). Verify dev/prod deploy + `cache-bust.test.js` unaffected.
+- **Add to `apps.json`** so the landing lists it (`{"path":"gg1/v1.0.0/","name":"Goblin Gold","tag":"v1.0.0"}`).
 - **Also: promote `gg1/dev → gg1/prod`** (the v1 build — prod is stale from `16c441a`) via the T222 promote step, so
   the TWA/prod URL is v1 too.
-- **DoD:** `https://00-1.github.io/halves/gg1/v1/` serves the playable v1 build (loads, installs, scope-isolated);
-  `gg1/prod` = v1; landing lists v1; dev/prod deploy + all CI gates still green; `node -c` clean. **[A]** (`gg1/v1/*`
-  new, `pages.yml`, `apps.json`). *(Babysitter will then give the owner the link to add to the Release body — the
-  owner edits the Release; Babysitter has no release-write perm.)*
+- **DoD:** scope deriver is generic + existing folders unchanged (test proves `gg1/dev`→`gg1dev` etc. + a version
+  folder isolates); `https://00-1.github.io/halves/gg1/v1.0.0/` serves the playable v1 build (loads, installs,
+  scope-isolated, frozen `?v=525ba87`); `gg1/prod` = v1; landing lists v1.0.0; dev/prod deploy + all CI gates still
+  green; `node -c` clean. **[A]** (`main.js`+`sw.js` scope deriver, `gg1/v1.0.0/*` new, `pages.yml`, `apps.json`,
+  test). *(Babysitter will then give the owner the link to add to the Release body — owner edits the Release;
+  Babysitter has no release-write perm.)*
 
 ### T223 — **Tag + freeze GG1 v1** · status: ✅ DONE — owner published Release **`v1.0.0`** at `525ba87` (verified: tag ref → 525ba87) · owner-requested
 **2026-06-23:** GG1 v1 quality-signed-off (T225 clean) at `525ba87`; the **owner cut the tag/Release `v1.0.0`** (the
