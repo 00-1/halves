@@ -30,3 +30,5 @@ Built for UK 11+ (GL-style) maths, useful for any child strengthening mental ari
 - App icon: gg1/dev/icon-512.png (512×512, the crimson emblem — ready to upload).
 - Feature graphic: feature-graphic.html → feature-graphic.png (1024×500) via capture.js or a browser screenshot.
 - Phone screenshots: best captured on a real device (home · a drill mid-round · the topic tree · an Arena battle · the results/celebration), or via capture.js for splash/home.
+
+**Support email:** jppgpnng@gmail.com
