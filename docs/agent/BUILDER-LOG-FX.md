@@ -6,6 +6,39 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 spike — mini-gate #3: engine-native correct-answer FX + golden-PNG diff ([B], GO)
+
+Babysitter gated #2→#3 (GO). Built the third mini-gate in `00-1/brickmap:crates/goblin-gold`
+(commit `f0c6879`, pushed to `main` + the feature branch): a **correct-answer FX flourish** built
+on brickmap's **OWN render recipes — NOT a port of the web `fxgl.js`** — and **asserted by a
+headless golden-PNG diff that is itself proven to catch a regression**.
+- **The flourish (`fx.rs`):** a **gold spark burst** from the engine's CPU
+  `bm-render::particles::ParticleSystem` (its gravity/lifetime/fade), composited over the answer,
+  then the whole frame recoloured by the engine's **palette-dither post**
+  `bm-render::palette::PalettePass` — Bayer-4×4 luminance map over a curated gold ramp. On a
+  correct answer the screen blooms into dithered gold with a shower of bright flecks (the
+  engine-native "expose the tech" look). **Deterministic** (fixed seed + fixed sim slice) so it
+  renders pixel-stably.
+- **Golden-diff (`headless.rs`, renamed from `render.rs`):** the `Painter` gains `paint_palettized`
+  (scene → the engine palette pass → sRGB target → readback RGBA) + a **pure-CPU golden layer**
+  (`rgba_from_png`/`diff`/`matches`) so the *comparator runs in CI without a GPU*.
+- **Test the test (`tests/golden.rs`):** (1) **pure / CI-safe** — loads the committed golden and
+  proves the comparator catches an injected tint (teeth, no GPU); (2) **`#[ignore]` GPU (lavapipe)**
+  — re-renders the FX moment, asserts it **matches** the golden, AND asserts the **two injected
+  regressions** (burst suppressed / palette collapsed to one tone) **FAIL** the match. Both pass.
+- **Evidence:** `fx_proto` renders the FX moment + the two regression frames; `GG_BLESS=1`
+  (re)writes the committed golden (`tests/goldens/fx-correct.png`, ~12 KB; full-frame dither but the
+  periodic Bayer compresses well). FX screenshot delivered to the owner.
+- CI-parity green: `fmt` + `clippy -D warnings` (**workspace-wide**) + tests (14 pure pass; GPU
+  golden passes under lavapipe). No engine/voxel code touched — `bm-render` consumed as a
+  dependency, not modified. The `Painter` + palette/particle usage is the reusable engine-candidate
+  UI/FX surface.
+- **HOLD for the Babysitter to gate → #4 clean APK (the final spike gate — owner device-judges).**
+  *(Heads-up for #4: halves `main` carries the `T231` Capacitor scaffold — relevant to reconciling
+  the APK path.)*
+
+---
+
 ## BRICKMAP-GG1 spike — mini-gate #2: keypad + one drill over the T229 DATA SEAM ([B], GO)
 
 Babysitter gated #1→#2 (GO). Built the second mini-gate in `00-1/brickmap:crates/goblin-gold`
