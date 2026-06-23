@@ -32,19 +32,15 @@ responding you may have to take over the work yourself."** So the Babysitter now
 
 ## Builder A — work the TOP ⏳ item ONLY. Do not skip or reorder. Push it alone → wait for review → next.
 
-**▶ CURRENT TASK = `T224` (audio settings overhaul).** Everything below is the full ordered queue with live status.
+**▶ CURRENT TASK = `T219` Collector-ladder REBALANCE (closes T219).** Everything below is the full ordered queue.
 
-- ✅ **DONE/approved:** T213, T220, T219 batch 1–3 (Roman, Primes, %-Increase, F·D·P, BODMAS, Function-Machines;
-  Roots via Cubes), **T222** (restructure — app now in `gg1/dev/`, dev URL `…/halves/gg1/dev/`), **T221** (void title
-  = chunky two-line pixel block from the owner's mockup; owner-directed + device-confirming).
-- ⏳ **`T224` ← DO THIS NOW.** AUDIO overhaul: REMOVE the tempo slider (lock tempo 1.0×); both volume sliders → ONE
-  shared **0–11** integer scale (drop the `×`); fresh-install **defaults at the MIDPOINT** (music ≈0.10× gain, SFX
-  ≈0.50× gain), 11≈2× louder, 0=silent; migrate existing prefs safely; keep live-preview + persistence + style
-  picker. *(BACKLOG T224.)*
-- ⏳ **`T219` remaining topics** — Part-1 **×-tricks, Negatives-P1**; Part-2 **Area&Perimeter, Volume, Angles (new
-  Geometry group), Speed-Distance-Time, Median/Mode/Range, Prime-factorisation**; then the **Collector-ladder
-  rebalance LAST**. Batch by group; push each batch alone. Each topic: curated pool (~21, calibrated), guide +
-  `explain()`, chain-gating. *(BACKLOG T219.)*
+- ✅ **DONE/approved:** T213, T220, T222, T221, **T224 (audio)**, **all T219 TOPICS** (Roman, Primes, %-Inc, F·D·P,
+  BODMAS, Function-Machines, ×-tricks, Negatives-P1, Area&Perimeter, Volume, Angles, Median/Mode/Range,
+  Speed·Distance·Time, Factors/prime-factorisation; Roots via Cubes). App lives in `gg1/dev/`.
+- ⏳ **`T219` Collector REBALANCE ← DO THIS NOW.** Catalogue is now **2310 items** (was ~1900) but the Collector ladder
+  still tops at **1900** → the "full collection" award unlocks ~410 items early. **Re-space the 12 count-rungs so the
+  TOP ≈ the full collection (~2300); keep 15 awards (12 rungs + 3 emblems); migration-safe** (don't strand a rung a
+  player already earned). `collectibles.js` + test. *(BACKLOG T219 DoD; closes T219.)*
 - ⏳ **`T218`** — nav notification BADGES (new loot → Items, new hero → Heroes; clears on view; persists). *(BACKLOG T218.)*
 - ⏳ **`T225`** — the FINAL quality pass (TERMINAL v1 gate): **Babysitter-run** (agent assesses every question + text,
   Babysitter double-checks); **A only fixes** what comes back. *(BACKLOG T225.)*

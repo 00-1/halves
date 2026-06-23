@@ -1,12 +1,27 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
-**Current verdict:** `APPROVED — T221 (Void Throne redesign, owner-directed)` — live `d21bb30`; **59/59 + `node -c`
-clean** (verified @ worktree, in `gg1/dev/`). After two single-line skew attempts streaked/sized wrong, the **owner
-sent A a pixel MOCKUP directly** and A rebuilt the void title as a **chunky built-in pixel font** rendering "THE VOID"
-/ "THRONE" as a **two-line block filling the box** under the wordmark (VOID_RAMP luminous-violet kept), then dropped it
-toward screen-centre (`d21bb30`). Technically clean, no regressions; **the look is owner-directed + owner is
-device-confirming live** (so the visual judgment is the owner's, not mine — I verify safety + advance). T221 DONE;
-**A → T224 (audio)** next. *(Further micro-tweaks the owner sends A directly are fine; I'll verify each.)*
+**Current verdict:** `APPROVED — T224 (audio) + T219 topics (batches 4–7, ALL ~10)` · `⚠ T219 Collector-ladder
+rebalance OUTSTANDING (the last T219 step)` — live `d1f2e27`; **63/63 + `node -c` clean** (verified @ worktree, in
+`gg1/dev/`). A pushed a big run; verified independently:
+- **🟢 `T224` (`0dc3067`) — APPROVED, exactly per spec.** Tempo slider REMOVED + `synthTempoMult()→1`; both volumes on
+  ONE `0–11` scale (`fmtLevel`→"N / 11", no `×`); fresh default **6 = midpoint** → `musicGain 0.20×6/11 = 0.109`
+  (≈0.10×) and `sfxGain 1.0×6/11 = 0.545` (≈0.50×) = the screenshot levels; `11`≈2× the midpoint, `0`=silent;
+  per-level keys + migration. Matches the owner's screenshot.
+- **🟢 `T219` topics — batch 4 `959b5fa` (×-tricks, Negatives-P1), batch 5 `8d019ef` (NEW Geometry: Area&Perimeter,
+  Volume, Angles), batch 6 `7ffe23e` (Median·Mode·Range, Speed·Distance·Time), batch 7 `d1f2e27`
+  (Factors&Multiples/prime-factorisation) — APPROVED.** Enumerated all 8 pools (21 each), **every answer recomputed
+  by hand** — all correct, unambiguous, numpad-safe. **`negatives` is correctly P1-safe** (prompts show negative
+  intermediates like `−5+17`, `6−11+9`; every ANSWER ≥ 0). `mmr` medians use odd-count sets (clean middle, no
+  fractions); `sdt` all clean integers; `area` covers rectangles + `△` triangles; `angles` line/point/triangle. All 8
+  have guide + `explain()` (coverage 15/15). Batch 4 also hardened **arena monotonicity** — arena tests green.
+- **⚠ `T219` Collector-ladder REBALANCE — NOT DONE (route back to A — the final T219 step before T219 closes).** The
+  catalogue is now **2310 items** (Rank 23 · Initiation 46 · Flawless 46 · Speed 184 · Mastery 46 · Solved 959 ·
+  Spark 959 · Milestone 32 · Collector 15), but the Collector ladder still tops at **1900** ("Keeper of the Myriad" =
+  "the full collection"). So the top award unlocks ~410 items early. **A: re-space the 12 count-rungs so the top ≈ the
+  full collection (~2300); keep 15 awards (12 rungs + 3 emblems); migration-safe** (don't strand earned rungs). Per
+  BACKLOG T219 DoD.
+
+**→ A: do the Collector rebalance (closes T219) → then T218 → T225. B: STAND BY.**
 
 ---
 
