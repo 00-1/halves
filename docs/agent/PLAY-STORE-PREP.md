@@ -78,9 +78,9 @@
 > third-party SDKs**. We do not profile users or share data with anyone.
 >
 > **Network use:** The app downloads its own program files to run, and checks a small version file
-> (`build.json`) to know when an update is available. These requests do not include any personal data. [If fonts
-> are self-hosted per the recommendation, the app makes no third-party requests; otherwise: "The app loads web
-> fonts from Google Fonts; Google may receive your device's IP address as part of serving those fonts."]
+> (`build.json`) to know when an update is available. These requests do not include any personal data. **The app
+> makes no third-party requests** — all fonts and assets are self-hosted; there is no advertising, analytics, or
+> third-party SDK.
 >
 > **Children's privacy:** Halves is intended for children and complies with COPPA and UK/EU GDPR-K by collecting
 > no personal data whatsoever.
@@ -98,10 +98,8 @@
   clearing app data / uninstalling.
 - **Designed for Families / target audience:** include children (~9–11); declare the app is suitable and follows
   the Families policy.
-- ⚠ **The ONE honesty caveat:** if the **Google Fonts CDN** is still in use at submit time, the device sends its
-  IP to Google to fetch fonts. That is not "data collection by the app," but for the cleanest kids-privacy
-  posture **self-host the fonts** (see §8 / T169) so the answer is unambiguously "no data shared, no third-party
-  requests."
+- ✅ **No caveats — fonts are SELF-HOSTED (T169 DONE `d6fbae3`).** Zero third-party requests; the data-safety answer
+  is unambiguously **"no data collected, no data shared, no third-party SDKs/requests."**
 
 ## 5. Content rating (IARC questionnaire) — draft answers
 - Violence: **Fantasy/cartoon only, non-graphic** — the Arena is turn-based pixel-monster battles with no blood,
