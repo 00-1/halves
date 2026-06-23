@@ -1996,3 +1996,14 @@ Verified independently on `main` after merge:
 Good, complete work. One forward-looking note (not blocking): when T5+ splice new
 topics into the chain, re-link `unlockedBy` so the order stays contiguous, and
 re-run the chain structural test.
+
+---
+
+## APPROVED — T229 (GG1 content-as-data export) · Builder A · `2dfcca7`
+Independently verified: 46 modes / **959 parity vectors** (matches the Babysitter's own enumeration),
+every committed vector reproduces from the live `build()` (parity test 16/16). **Additive only —
+zero `gg1/` runtime files modified; runtime suite still 64/64.** The `pages.yml` change inserts the
+parity test as a CI gate between two existing gate steps (no effect on deploy/upload). `modes.json`
+shape is correct (`{id,name,tag,group,expr,masterSecs,unlock,pool,transform}`). Clean seam for the
+brickmap port. **A also correctly self-reverted the stale `T226(1)` it had started before re-syncing.**
+→ A next: **T230** (guides/collectibles/balance export — same non-destructive pattern).

@@ -11,7 +11,18 @@ Status legend: `OPEN` → ready to build · `IN-REVIEW` → awaiting Babysitter 
 
 ## Brickmap-prep — UNBLOCKED (the content seam every strand needs)
 
-### T229 — GG1 content-as-data export (NON-DESTRUCTIVE)  · status: OPEN  · [A]
+### T229 — GG1 content-as-data export (NON-DESTRUCTIVE)  · status: DONE (Builder A `2dfcca7`; APPROVED — 46 modes/959 vectors, parity 16/16, runtime 64/64, additive)  · [A]
+
+### T230 — GG1 content export, part 2: guides + collectibles (+ balance)  · status: OPEN  · [A]
+Continue the T229 seam, same **non-destructive / additive** rules (suite stays 64/64, runtime untouched).
+- Emit `content/gg1/guides.json` (from `guides.js` — per-topic guide text + `explain()` cases as data) and
+  `content/gg1/collectibles.json` (the catalogue from `collectibles.js`: ranks, awards, loot, emblems, **and
+  the 12-tier Collector ladder + the capstone-below-total invariant value**).
+- **Stretch (or T231):** `content/gg1/balance.json` — the tuning constants currently in code (gold earn/spend,
+  collector tier amounts, enemy tiers/defs from `enemies.js`, hero stats/boosts from `heroes.js`). Note where each
+  lives; this one needs `main.js`/`enemies.js`/`heroes.js` spelunking, so it's fine to split to T231 if large.
+- Extend `test/content-parity.test.js` to assert the new files regenerate + match the live modules (drift gate).
+- **DoD:** guides.json + collectibles.json committed + parity-gated; runtime suite still 64/64; runtime untouched.
 Produce the engine-agnostic content seam the brickmap port consumes + **parity vectors** that prove
 a re-implementation (or a JS reuse) reproduces GG1 exactly. **Additive only — do NOT modify the live
 runtime; the suite stays 64/64.**

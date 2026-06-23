@@ -77,9 +77,9 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → `T229` — GG1 content-as-data export (NON-DESTRUCTIVE, additive only; suite stays 64/64).** The content
-seam the brickmap port consumes (modes.json + parity-vectors.json + transforms catalogue) — unblocked, A's domain,
-pure upside for all strands. Do NOT touch the live runtime. *(BACKLOG T229.)* Capacitor stays parked (owner GO required).
+**Builder A → `T230` — content export part 2: guides + collectibles (+ balance).** ✅ `T229` DONE/APPROVED (`2dfcca7`
+— 46 modes/959 vectors, parity 16/16, runtime 64/64). Continue the seam, **same non-destructive/additive rules**
+(suite stays 64/64; runtime untouched). *(BACKLOG T230.)* Capacitor stays parked (owner GO required).
 
 **Builder B → `BRICKMAP-GG1` RESEARCH PASS (research only — no code).** Investigate the `00-1/brickmap` repo and
 answer every open question in **`BRICKMAP-GG1.md`** (engine capability matrix · "Scraped Again" engine↔game boundary
