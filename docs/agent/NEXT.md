@@ -84,14 +84,13 @@ DONE/APPROVED (`0f77a83` — additive, `.exp` package, manual CI, notch fix bake
 `content-parity.test.js`. *(BACKLOG T230.)* — Capacitor on-device test is now in the OWNER's hands (keystore secrets
 → dispatch the manual CI workflow → install the `.exp` artifact → run the acceptance checklist vs the TWA).
 
-**Builder B → GO: spike mini-gate #4 — CLEAN APK (the FINAL spike gate; owner device-judges).** ✅ #1 font (owner
-"all readable, 3rd best") · ✅ #2 keypad+drill over the T229 seam (`227c5e8`, proven by tests) · ✅ #3 self-verified
-golden-PNG FX (`f0c6879`, "test-the-test" catches 2 injected regressions). **Now build #4:** a `goblin-gold` **APK**
-(via `cargo-apk`, following the existing `android.yml` / `scraped-again` pattern — add the crate to the Android
-build) that boots the **drill + keypad + FX FULLSCREEN on a real phone**, no voxel world. **Keep its package id
-DISTINCT** from the halves Capacitor `.exp` experiment (these are two separate experiments). Deliver an installable
-**APK artifact** + the package id for the owner to install & judge. Then → the **full go/no-go decision** (owner +
-Babysitter).
+**Builder B → HOLD for the GO/NO-GO. Spike COMPLETE — all 4 mini-gates delivered.** ✅ #1 font (owner "all readable,
+3rd best") · ✅ #2 keypad+drill over the T229 seam (`227c5e8`, proven by tests) · ✅ #3 self-verified golden-PNG FX
+(`f0c6879`, test-the-test catches 2 injected regressions) · ✅ #4 native APK **`dev.brickmap.goblingold`** (`14a9aa8`,
+built+signed in CI, Android-compile-verified) — **awaiting owner on-device install/judgment.** **Do NOT start the
+full port.** The remaining step is the owner installing the APK + the **full go/no-go decision (owner + Babysitter)**.
+If GO: phase the full port (engine text/UI/save services → logic re-impl vs parity vectors → content via T229/T230 →
+audio re-author → polish). Hold.
 *(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 

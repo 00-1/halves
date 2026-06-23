@@ -2077,3 +2077,17 @@ GPU golden (lavapipe); clippy -D warnings workspace-wide; no engine/voxel code t
 the test evidence (self-verifying by definition).** → B GO mini-gate #4 (clean APK — the FINAL spike
 gate, owner device-judges). Note B's heads-up: keep the brickmap APK package distinct from the halves
 Capacitor `.exp` experiment.
+
+---
+
+## GATE (owner-judged) — BRICKMAP-GG1 spike mini-gate #4 (native APK, FINAL gate) · Builder B · `00-1/brickmap:14a9aa8`
+Final piece: a winit+wgpu **surface** runtime booting **drill + keypad + correct-answer FX fullscreen**
+(the same engine-native recipes #3's golden self-verifies, now live), packaged by `cargo-apk` into a
+native APK — no voxel world. Package id **`dev.brickmap.goblingold`** (distinct from `scraped-again` +
+the halves Capacitor `.exp` → 3 apps install side by side). `android.yml` now a **matrix**
+{scraped-again, goblin-gold}, each → a signed arm64 APK artifact + the `dev` prerelease. Compile-verified
+for `aarch64-linux-android` (cargo check + clippy -D warnings); fmt/tests green; #3 GPU golden still
+passes; CI Android build triggered on push. **INHERENTLY owner-device-judged — I can't pass it from
+here.** Code + CI delivered & Android-compile-verified; **awaiting owner install of `dev.brickmap.goblingold`
+(brickmap `dev` prerelease / the Android-APK workflow run).** → then the **full go/no-go decision**
+(owner + Babysitter). **Spike complete: #1 ✅ · #2 ✅ · #3 ✅ · #4 delivered (awaiting device).**
