@@ -1,9 +1,11 @@
-# Play-Store submission package — PREP (Babysitter draft, for owner sign-off)
+# Play-Store submission package — PREP (Babysitter notes)
 
-> Built while identity verification clears, so submission is paste-and-upload. Defaults: app name **"Halves"**,
-> **free / non-trader** (no ads, no IAP → name+country public, NOT address). Owner: correct either if wrong.
-> On sign-off this promotes into the real artifacts (privacy.html on Pages, the listing fields, the .aab) via the
-> [A] task **T168**.
+> **➡ OWNER-FACING SINGLE SOURCE OF TRUTH (on `main`): `store-assets/SUBMISSION-CHECKLIST.md`** — every value, every
+> Console answer, the PWABuilder walkthrough, the assetlinks swap, the testing/production steps. Plus `store-assets/
+> listing.md` (copy) + `store-assets/feature-graphic.html` (graphic) + live `privacy.html`. This file is the babysitter's
+> working notes behind that. App = **Goblin Gold: The Void Throne**, free/non-trader, no ads/IAP. LIVE artifacts now
+> exist (privacy.html, store-assets/) — the §3 draft below is superseded by the deployed `privacy.html` (Goblin-Gold
+> branded, email `jppgpnng@gmail.com`).
 
 ---
 
@@ -24,7 +26,7 @@
 - **Category:** Education  ·  **Tags:** education, maths, kids, 11+
 - **Default language:** English (UK)
 - **Content / target age:** designed for ~9–11 (**Designed for Families** policy applies)
-- **Support email (public):** `<the new Gmail you're creating>` — drop it in before submit
+- **Support email (public):** `jppgpnng@gmail.com` (locked 2026-06-23)
 - **App URL (TWA target — POST-RESTRUCTURE, owner-confirmed):** **`https://00-1.github.io/halves/gg1/prod/`** (the
   promoted PROD build = v1; T226 makes prod = v1). The PWABuilder/.aab + the manifest `start_url`/`scope` all resolve
   here (manifest is relative `./`, so it just works under the prod path).
