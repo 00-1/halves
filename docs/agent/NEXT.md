@@ -85,16 +85,17 @@ GG1 store (ship paused), Capacitor on-device test (your keystore+CI dispatch). S
 point it somewhere. *(If you want A busy now regardless, `T232` balance.json is the one clean additive task available.)*
 
 **Builder B → 🔴 FIX the mini-gate #4 LAUNCH CRASH (device-only; gate #4 NOT passed).** `dev.brickmap.goblingold`
-v0.0.1 **force-closes on launch** on a real phone (Xiaomi/POCO, Android 16, arm64) — a **Rust `panic → abort` in
-`libgoblin_gold.so` on a SPAWNED startup thread** (`Thread::new::thread_start`), so `panic=abort` kills the process.
-All headless/CI was green; this is device-only (real GPU surface / Android window lifecycle / APK asset paths ≠
-llvmpipe) — exactly what gate #4 exists to catch. **FIX:** (1) **get the panic MESSAGE first** — android_logger is
-wired, so `adb logcat` (or a panic hook that logs the payload) names the cause instantly. (2) Top suspects: **(a)
-data/font loaded from a FILESYSTEM PATH** (`std::fs`/`File::open` on `modes.json`/`parity-vectors.json`/the TTF) that
-doesn't exist inside the APK → `unwrap` panics — fix with `include_bytes!`/`include_str!`; **(b) wgpu surface created/
-configured before the Android window exists** (not gated on `Event::Resumed`) — only create/config the surface on
-Resumed, don't `unwrap` adapter/surface. (3) Check any boot worker thread for a desktop-only `unwrap`. Rebuild APK in
-CI → owner re-installs. ✅ #1/#2/#3 still passed.
+v0.0.1 **force-closes on launch** (Xiaomi/POCO, Android 16, arm64) — Rust **`panic → abort` in `libgoblin_gold.so`**
+on the `android_main` app thread during startup. **Babysitter narrowed it (read the public repo):** ❌ NOT assets —
+data is `include_str!`, font is `include_bytes!` (both embedded). ❌ NOT the shared engine — **`scraped-again` runs on
+this exact phone**, so surface/wgpu/palette/particles are proven. **⇒ it's a goblin-gold-specific panic in the
+wgpu-init / first-render path.** **FIX:** (1) **get the panic MESSAGE — definitive:** add `std::panic::set_hook` that
+`log::error!`s the payload+location via the wired `android_logger`, rebuild, owner runs `adb logcat` → names the exact
+`expect`/`unwrap`. (2) Prime suspects (`app.rs`): `.expect("no GPU adapter")` / `.expect("device")` (request_device
+uses `downlevel_defaults().using_resolution(...)` — check Adreno meets it), the scene/atlas **R8Unorm** + sRGB
+surface-format texture/bind-group/pipeline setup vs what scraped-again actually exercises, and `text.rs`
+`atlas.glyphs.get(&'a').expect("'a'")`. (3) Compare goblin-gold's `resumed()`/init ordering against scraped-again's
+(working) pattern. Rebuild APK in CI → owner re-installs. ✅ #1/#2/#3 still pass.
 *(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 
