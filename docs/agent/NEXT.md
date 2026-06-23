@@ -84,18 +84,17 @@ is greenlit (it's brickmap-port-only value). Other A work is owner-gated too: TW
 GG1 store (ship paused), Capacitor on-device test (your keystore+CI dispatch). So A holds until the go/no-go or you
 point it somewhere. *(If you want A busy now regardless, `T232` balance.json is the one clean additive task available.)*
 
-**Builder B → 🔴 FIX the mini-gate #4 LAUNCH CRASH (device-only; gate #4 NOT passed).** `dev.brickmap.goblingold`
-v0.0.1 **force-closes on launch** (Xiaomi/POCO, Android 16, arm64) — Rust **`panic → abort` in `libgoblin_gold.so`**
-on the `android_main` app thread during startup. **Babysitter narrowed it (read the public repo):** ❌ NOT assets —
-data is `include_str!`, font is `include_bytes!` (both embedded). ❌ NOT the shared engine — **`scraped-again` runs on
-this exact phone**, so surface/wgpu/palette/particles are proven. **⇒ it's a goblin-gold-specific panic in the
-wgpu-init / first-render path.** **FIX:** (1) **get the panic MESSAGE — definitive:** add `std::panic::set_hook` that
-`log::error!`s the payload+location via the wired `android_logger`, rebuild, owner runs `adb logcat` → names the exact
-`expect`/`unwrap`. (2) Prime suspects (`app.rs`): `.expect("no GPU adapter")` / `.expect("device")` (request_device
-uses `downlevel_defaults().using_resolution(...)` — check Adreno meets it), the scene/atlas **R8Unorm** + sRGB
-surface-format texture/bind-group/pipeline setup vs what scraped-again actually exercises, and `text.rs`
-`atlas.glyphs.get(&'a').expect("'a'")`. (3) Compare goblin-gold's `resumed()`/init ordering against scraped-again's
-(working) pattern. Rebuild APK in CI → owner re-installs. ✅ #1/#2/#3 still pass.
+**Builder B → 🔴 FIX the mini-gate #4 launch crash — ROOT CAUSE FOUND (on-device logcat).** **`app.rs:448`** —
+`create_buffer_init{ contents: bytemuck::cast_slice(&v) }` for the **text vertex buffer** panics **"buffer slices can
+not be empty"** when a text element has **zero quads** (empty string). On the drill's FIRST frame the **answer box is
+empty** (and/or the verdict banner before submit) → empty `v` → panic → abort (the wgpu-hal swapchain-semaphore panic
+is just secondary Drop-unwind fallout). **Never caught because the headless bins rendered only non-empty states
+(mid/correct/wrong); the live `app.rs` render path was unexercised until the device.** Device: Adreno 735, Vulkan.
+**FIX:** (1) in the `for t in texts` loop, **skip empties:** `if t.quads.is_empty() { continue; }` (or guard
+`if v.is_empty()` before `create_buffer_init`). (2) **Audit the same pattern for EVERY dynamic buffer in the live
+render** — particle instances (empty until a correct answer!), rect instances, any `create_buffer_init`/`write_buffer`
+with a `Vec` that can be empty → guard each. (3) **Add a headless golden for the INITIAL drill frame** (empty answer
+box, no FX) so this untested state is covered and can't regress. Rebuild APK → owner re-installs. ✅ #1/#2/#3 stand.
 *(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 

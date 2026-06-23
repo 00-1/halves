@@ -2115,3 +2115,15 @@ APK asset paths ≠ headless). **Gate #4 working as designed — it caught a rea
 get the panic message (android_logger/logcat) first; top suspects = (a) data/font read from an fs PATH not in
 the APK → use `include_bytes!`; (b) wgpu surface created before `Event::Resumed`. #1/#2/#3 stand. Gate #4
 re-opens after the fix + a re-install.
+
+---
+
+## ROOT CAUSE FOUND — #4 launch crash · `app.rs:448` (on-device logcat via owner's Termux/Claude)
+`create_buffer_init{contents: cast_slice(&v)}` for the **text vertex buffer** panics **"buffer slices can not
+be empty"** when a text element has **zero quads** (empty string). Drill frame 1 has an empty answer box (+
+verdict banner pre-submit) → empty `v` → panic → abort. The wgpu-hal SwapchainAcquireSemaphore panic is just
+secondary Drop-unwind. **Why headless missed it:** the `*_proto` bins rendered only non-empty states; the live
+`app.rs` windowed render path ran for the first time on the device. (Adreno 735, Vulkan, SIGABRT.) Fix routed to
+B: guard `if t.quads.is_empty(){continue}` + audit all dynamic buffers (esp. particle instances, empty until a
+correct answer) + add an initial-frame golden. **Testing-gap lesson for the spike: gate the LIVE render path's
+empty/initial states, not just the populated snapshots.**
