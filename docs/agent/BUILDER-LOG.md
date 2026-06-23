@@ -6193,3 +6193,30 @@ it's meant to be.
 verified: `test/collector.test.js` 26/26; `node -c collectibles.js`; full suite **63/63**. [A]-only (collectibles.js,
 collector.test.js). **This closes out T219 entirely** (all 15 content topics + the ladder rebalance). Next in the
 queue: **T218** (nav notification badges), then **T225** (final quality gate).
+
+---
+### [A] T218 — nav notification BADGES ("something new here" on the home nav)
+A small coral count-badge appears on a home nav button when that surface has something the user hasn't seen yet,
+and clears when they open it — the retention "alert bubble" the owner asked for (and a CORE shell feature GG2
+inherits for "crops ready").
+- **Reusable new-since-seen tracker.** Each surface owns a MONOTONIC tally (collectibles and hero-unlocks only ever
+  grow), and the badge is the growth in that tally SINCE the user last opened the surface. The "seen" marker is
+  **seeded to the current tally the first time we look** — so an existing collection gathered before this feature
+  shipped never false-badges — then persisted in `halves.navSeen` (scope-namespaced, survives reload) and re-set to
+  the current tally when the surface is opened (clears the dot). Count clamps ≥ 0; display caps at "9+".
+- **GG1 triggers wired (the DoD's required pair):** **Items** (`#invBtn`) = newly-collected catalogue items not yet
+  viewed; **Heroes** (`#heroesBtn`) = newly-unlocked heroes not yet viewed. `renderNavBadges()` runs from
+  `applyGates()` (the home render), so after a round the return-home (`location.hash="#/"`→`applyRoute`→`applyGates`)
+  shows the badge live, not just on reload. Feature-gated — a still-locked surface never badges. Acknowledged in the
+  `inventory`/`heroes` route branches (the single source of truth for "the user is now viewing X", so deep-links and
+  system-back clear it too). Accessible (`aria-label "N new"`); the coral pill is pinned to the button's top-right
+  corner and doesn't disturb the nav layout.
+- **Proposed "others" (owner said "maybe others") — NOT built, flagged for the Babysitter:** the tracker is generic
+  (add a `{surface,btn,feature}` row + a `navTally` case), so **Arena** (a new realm/tier/boss reachable), **Best**
+  (a newly-unlocked topic) and **Codex** (new discovery, within Items) are each ~3 lines if wanted. Held back to keep
+  this push to the for-sure pair and avoid false-positive risk until those tallies are specced.
+verified: new `test/nav-badges.test.js` (28/28 — the new-since-seen algorithm over a faithful mock store: seed→0 /
+growth→delta / mark→0 / reload-persist / per-surface independence / never-negative / "9+" cap; plus strict main.js
+wiring + the badge style/structure); `node -c main.js`; contrast gate still green (badge text ≥10px); full suite
+**64/64**. [A]-only (main.js, styles.css, test, pages.yml). **Owner device-confirm pending.** Next: **T225** (final
+quality gate, Babysitter-run) is the only remaining v1 queue item.

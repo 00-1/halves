@@ -680,8 +680,50 @@
     { feature:"earnings",    el:["goldBar","momentumBar"], msg:"Goblin Gold & Momentum are now tracking",       cond:hasEarned },
     { feature:"eventbanner", el:[],                         msg:"Daily Events unlocked — a new challenge each day", cond:enoughRuns }
   ];
+  // ---- T218: nav "new-since-seen" notification badges ----------------------
+  // A reusable tracker: each surface owns a MONOTONIC tally (collectibles and
+  // hero-unlocks only ever grow), and we badge the nav button with how much that
+  // tally has grown SINCE the user last opened that surface. The "seen" marker is
+  // SEEDED to the current tally the first time we look (so an existing collection
+  // — gathered before this feature shipped — never false-badges), persisted in
+  // localStorage (survives reload, scope-namespaced like every other key), and
+  // re-set to the current tally when the user opens the surface (clears the dot).
+  const NAV_BADGES = [
+    { surface:"items",  btn:"invBtn",    feature:"inventory" },
+    { surface:"heroes", btn:"heroesBtn", feature:"heroes" }
+  ];
+  function navTally(surface){
+    const c = loadCollected();
+    if(surface === "items")  return Object.keys(c).filter(k => C.byId(k)).length;   // owned catalogue items
+    if(surface === "heroes"){ const Hs = window.Heroes; return Hs ? Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, c)).length : 0; }
+    return 0;
+  }
+  function loadNavSeen(){ try{ const v = JSON.parse(localStorage.getItem("halves.navSeen")); return (v && typeof v === "object") ? v : {}; }catch(e){ return {}; } }
+  function saveNavSeen(o){ try{ localStorage.setItem("halves.navSeen", JSON.stringify(o)); }catch(e){} }
+  // New-since-seen count; seeds the marker to the current tally on first sight → 0.
+  function navNewCount(surface){
+    const seen = loadNavSeen(), cur = navTally(surface);
+    if(seen[surface] == null){ seen[surface] = cur; saveNavSeen(seen); return 0; }   // seed → no false positive
+    return Math.max(0, cur - seen[surface]);
+  }
+  // Acknowledge: the user opened the surface → clear its badge.
+  function markNavSeen(surface){ const seen = loadNavSeen(); seen[surface] = navTally(surface); saveNavSeen(seen); }
+  function renderNavBadges(){
+    NAV_BADGES.forEach(cfg => {
+      const btn = $(cfg.btn); if(!btn) return;
+      const n = isFeatureUnlocked(cfg.feature) ? navNewCount(cfg.surface) : 0;
+      let badge = btn.querySelector(".nav-badge");
+      if(n > 0){
+        if(!badge){ badge = document.createElement("span"); badge.className = "nav-badge"; btn.appendChild(badge); }
+        badge.textContent = n > 9 ? "9+" : String(n);
+        badge.setAttribute("aria-label", n + " new");
+        btn.classList.add("has-badge");
+      } else if(badge){ badge.remove(); btn.classList.remove("has-badge"); }
+    });
+  }
   function applyGates(){
     GATED.forEach(g => { const on = isFeatureUnlocked(g.feature); g.el.forEach(id => { const b = $(id); if(b) b.classList.toggle("hidden", !on); }); });
+    renderNavBadges();
   }
   // Evaluate the milestone conditions; unlock + queue a highlight for any newly met.
   function checkGates(){
@@ -2536,9 +2578,9 @@
     if(h === "heroes" && !isFeatureUnlocked("heroes")){ location.hash = "#/"; return; }
     if(h === "arena" && !isFeatureUnlocked("arena")){ location.hash = "#/"; return; }
     if(h.indexOf("hero/") === 0 && !isFeatureUnlocked("heroes")){ location.hash = "#/"; return; }
-    if(h === "inventory"){ renderInventory(); show("inventory"); }
+    if(h === "inventory"){ renderInventory(); show("inventory"); markNavSeen("items"); }   // T218 — viewing clears the badge
     else if(h === "best-times"){ renderSummary(); show("summary"); }
-    else if(h === "heroes"){ renderHeroes(); show("heroes"); }
+    else if(h === "heroes"){ renderHeroes(); show("heroes"); markNavSeen("heroes"); }       // T218
     else if(h.indexOf("hero/") === 0){
       if(renderHeroDetail(h.slice(5))) show("heroDetail");
       else { location.hash = "#/heroes"; return; }   // unknown/locked → back to the list
