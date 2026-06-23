@@ -37,10 +37,10 @@ responding you may have to take over the work yourself."** So the Babysitter now
 - ✅ **DONE/approved:** T213, T220, T222, T221, **T224 (audio)**, **all T219 TOPICS** (Roman, Primes, %-Inc, F·D·P,
   BODMAS, Function-Machines, ×-tricks, Negatives-P1, Area&Perimeter, Volume, Angles, Median/Mode/Range,
   Speed·Distance·Time, Factors/prime-factorisation; Roots via Cubes). App lives in `gg1/dev/`.
-- ⏳ **`T219` Collector REBALANCE ← DO THIS NOW.** Catalogue is now **2310 items** (was ~1900) but the Collector ladder
-  still tops at **1900** → the "full collection" award unlocks ~410 items early. **Re-space the 12 count-rungs so the
-  TOP ≈ the full collection (~2300); keep 15 awards (12 rungs + 3 emblems); migration-safe** (don't strand a rung a
-  player already earned). `collectibles.js` + test. *(BACKLOG T219 DoD; closes T219.)*
+- ⏳ **`T219` Collector capstone FIX ← DO THIS NOW.** A rebalanced the capstone to **2350** (`c5151e5`) but that's
+  **UNREACHABLE** — the real catalogue is **2310** items, so the top award can never be earned. **Set the capstone to
+  a reachable value ≤ ~2300** (must be `< 2310`); keep the other rungs (migration-safe); **add a `collector` test that
+  asserts capstone ≤ total catalogue count** (regression guard). `collectibles.js` + test. *(Closes T219.)*
 - ⏳ **`T218`** — nav notification BADGES (new loot → Items, new hero → Heroes; clears on view; persists). *(BACKLOG T218.)*
 - ⏳ **`T225`** — the FINAL quality pass (TERMINAL v1 gate): **Babysitter-run** (agent assesses every question + text,
   Babysitter double-checks); **A only fixes** what comes back. *(BACKLOG T225.)*

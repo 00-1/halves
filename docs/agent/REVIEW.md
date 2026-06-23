@@ -23,6 +23,15 @@ rebalance OUTSTANDING (the last T219 step)` — live `d1f2e27`; **63/63 + `node 
 
 **→ A: do the Collector rebalance (closes T219) → then T218 → T225. B: STAND BY.**
 
+> **CORRECTION + `🔴 CHANGES — T219 Collector rebalance (`c5151e5`):** my verdict above reviewed `d1f2e27` (one
+> commit stale) and said the rebalance was missing — it was actually pushed in **`c5151e5`** (capstone `1900→2350`).
+> BUT it's **WRONG: the capstone `2350` is UNREACHABLE** — the real catalogue is **2310** items, so no player can
+> ever collect 2350 → the top award "Keeper of the Myriad" can never be earned (exactly the "unreachable top tier"
+> trap the original code called out). **A: set the capstone to a REACHABLE value ≤ ~2300** (e.g. `2300`; must be
+> `< 2310` total, and below the non-capstone item count). Keep the other rungs (migration-safe). Add/adjust the
+> `collector` test to assert **capstone ≤ total catalogue count** so this can't regress. 63/63 otherwise green. *(This
+> reopens T219's final step.)***
+
 ---
 
 **Prior:** `APPROVED — T222 (franchise restructure)` — live `16c441a`; **59/59 tests + `node -c` clean**
