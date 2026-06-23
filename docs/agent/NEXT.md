@@ -64,6 +64,15 @@ multi-hour runs the environment can't deliver.)*
    whack-a-mole + "mask slips" web fragility); brickmap already renders on web + native APK and needs text/menus
    anyway. GG2 is intended brickmap-native; GG1-on-brickmap is the proving ground.
 
+> ⚡ **AUTONOMY GRANT — owner stepped away (2026-06-23 eve): "continue unattended and ungated; don't gate steps on my
+> approval; I'm happy this will work out — and we have the web version if not."** ⇒ **brickmap = GO** (full port,
+> owner pre-approved). **Babysitter drives ungated, gating each step on SELF-VERIFICATION (tests / goldens / code
+> review read off the public brickmap repo) — NOT owner approval.** The Babysitter has **no device**, so: (a) where a
+> headless golden/test can cover it (incl. the live render path's empty/initial states), gate on THAT; (b) genuinely
+> device-only / aesthetic / audio-by-ear checks → **QUEUE for the owner's return (don't block)** in an "OWNER EYEBALL
+> ON RETURN" list. Web GG1 is the fallback. **Reality:** no scheduler/self-wake — the Babysitter progresses on each
+> builder push (background watch wakes it); between pushes it idles. Drive the brickmap port phases on every B review.
+
 - ✅ **GG1 v1 COMPLETE & RELEASED** (46 topics, T225 clean, tag `v1.0.0`).
 - ✅ **`T226` — DONE / CLOSED.** (2) `gg1/v1.0.0/` archive + `apps.json` ✅ on `main`. (3) `gg1/dev → gg1/prod`
   promoted to v1 ✅ (prod == dev). (1) **generic path-derived scope — DROPPED:** the hardcoded per-folder scope
@@ -94,8 +103,13 @@ is just secondary Drop-unwind fallout). **Never caught because the headless bins
 `if v.is_empty()` before `create_buffer_init`). (2) **Audit the same pattern for EVERY dynamic buffer in the live
 render** — particle instances (empty until a correct answer!), rect instances, any `create_buffer_init`/`write_buffer`
 with a `Vec` that can be empty → guard each. (3) **Add a headless golden for the INITIAL drill frame** (empty answer
-box, no FX) so this untested state is covered and can't regress. Rebuild APK → owner re-installs. ✅ #1/#2/#3 stand.
-*(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
+box, no FX) so this untested state is covered and can't regress. ✅ #1/#2/#3 stand.
+**THEN (ungated per the autonomy grant): once the fix lands AND the initial-frame golden verifies the crashing path
+headlessly, the Babysitter declares gate #4 PASS (code+golden, no device) + brickmap GO → B proceeds to the FULL PORT,
+phase 1: bank the engine services (`bm-render` legible-text + the keypad/2-D-UI surface + a `bm-platform` save
+abstraction). Then phase 2 logic re-impl vs the T229 parity vectors, phase 3 content via T229/T230, phase 4 audio
+re-author, phase 5 polish. Gate every phase on tests/goldens. APK installs + audio-by-ear → the OWNER-EYEBALL-ON-RETURN
+list, don't block.** *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 
 ---
