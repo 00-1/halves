@@ -38,27 +38,25 @@ multi-hour runs the environment can't deliver.)*
 
 ## Builder A — work the TOP ⏳ item ONLY. Do not skip or reorder. Push it alone → wait for review → next.
 
-**▶ GG1 v1 SHIPPED — Release `v1.0.0` @ `525ba87` (owner-published, verified). Next: deploy follow-ups + GG2 P0.**
+**▶ FOCUS = PLAY STORE SUBMISSION. GG2 is PARKED (owner, 2026-06-23).** GG1 v1 is shipped (Release `v1.0.0` @
+`525ba87`). The whole point now: get GG1 onto the Play Store. **The TWA/store app wraps the PROD URL
+`https://00-1.github.io/halves/gg1/prod/`** (owner confirmed: it points at /prod), so prod MUST be the v1 build first.
 
-- ✅ **GG1 v1 COMPLETE & RELEASED.** All ~46 topics + audio + nav badges + restructure + splash; T225 final gate clean
-  (959 Qs, 0 issues); tag/Release `v1.0.0`.
-- ⏳ **`T226` ← Builder A's CURRENT task: deploy v1 to GHP (VERSIONED folder).** (1) Make per-folder scope GENERIC
-  (path-derived; existing `gg1dev`/`gg1prod`/`gg2dev`/`halves` scopes UNCHANGED — migration-critical + a test). (2)
-  Populate frozen **`gg1/v1.0.0/`** (v1 runtime from `525ba87` `gg1/dev`, lean) + wire FROZEN into `pages.yml`
-  (one-time `build.json` + fixed `?v=525ba87`, NOT in the per-deploy loop) + add to `apps.json`. (3) Promote
-  `gg1/dev → gg1/prod`. Makes `https://00-1.github.io/halves/gg1/v1.0.0/` live for the Release-body link. *(BACKLOG T226.)*
-- ⏳ **GG2 P0 — engine foundation** (`GG2-MILESTONES.md` P0 → `GG2-P0-EXTRACTION.md` + `GG2-P0-INPUT.md`): core/pack
-  split, pluggable input (MCQ first). **Awaiting owner go** (hold vs start now). Creative calls → defaults +
-  `GG2-CREATIVE-LOG.md`.
+- ✅ **GG1 v1 COMPLETE & RELEASED** (46 topics, T225 clean, tag `v1.0.0`).
+- ⏳ **`T226` ← CURRENT (gates the store URL).** (1) Generic path-derived per-folder scope (existing
+  `gg1dev`/`gg1prod`/`gg2dev`/`halves` scopes UNCHANGED — migration-critical + test). (2) Frozen **`gg1/v1.0.0/`**
+  archive (lean v1 runtime from `525ba87`, fixed `?v=525ba87`, NOT in the per-deploy loop) + `apps.json`. (3)
+  **Promote `gg1/dev → gg1/prod` to v1** — this makes the **store URL `…/gg1/prod/`** correct + live. *(BACKLOG T226.)*
+- ⏳ **`T168` — Play-Store productionisation (UNBLOCKED — owner Play ID verified).** privacy.html on Pages;
+  **`assetlinks.json` at the ORIGIN ROOT** `00-1.github.io/.well-known/` (🔴 needs the `00-1.github.io` user-pages repo
+  or a custom domain — owner decision); the **.aab** via PWABuilder pointed at **`…/halves/gg1/prod/`**; store listing
+  assets/copy (drafted in `PLAY-STORE-PREP.md` — **update its URLs to the `/gg1/prod/` path**). Then closed testing
+  (12 testers / 14 continuous days — schedule long pole). *(BACKLOG T168 + PLAY-STORE-PREP.md.)*
 
-**Builder A → `T226` (deploy v1 to GHP), then STAND BY for GG2 P0.**
-- ⏳ **`T218`** — nav notification BADGES (new loot → Items, new hero → Heroes; clears on view; persists). *(BACKLOG T218.)*
-- ⏳ **`T225`** — the FINAL quality pass (TERMINAL v1 gate): **Babysitter-run** (agent assesses every question + text,
-  Babysitter double-checks); **A only fixes** what comes back. *(BACKLOG T225.)*
+**GG2 P0 — PARKED** (`GG2-MILESTONES.md` / `GG2-P0-EXTRACTION.md` / `GG2-P0-INPUT.md` stand ready for when the owner
+un-parks it after the store launch). Do NOT start GG2 now.
 
-**After the queue clears → v1 sign-off is Babysitter-owned (owner delegated):** Babysitter records "v1 SIGNED OFF",
-cuts + pushes **`gg1-v1`** + a GitHub Release (`T223`), A populates `gg1/v1/`, then **GG2 P0 kicks off**
-(`GG2-MILESTONES.md` → `GG2-P0-EXTRACTION.md` + `GG2-P0-INPUT.md`). *(T168 Play-Store is NOT a v1 blocker.)*
+**Builder A → `T226` → `T168`. (GG2 parked.)**
 
 **Builder B → STAND BY.** `T103` (perf pass) + `T211`/`T207` **APPROVED** (live `951e532`); queue clear. Hold until
 the Babysitter points you at a task. *(Open thread: the perf **on-device measurement plan** in `PERF-RESEARCH-2.md`

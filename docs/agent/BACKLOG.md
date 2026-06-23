@@ -4149,7 +4149,16 @@ requests** — the kids-privacy / Data-Safety "no data shared" story is airtight
   gate clean (cachebust verifier still passes — no bare refs); **[A]-only** (`index.html`, `styles.css`, the
   font files, maybe `sw.js`/cachebust). **Verify:** no network request to `fonts.g*` on load.
 
-### T168 — [A] Play-Store productionisation (privacy page, assets, .aab, assetlinks) · status: OPEN · HELD until ID-verify + name decided
+### T168 — [A] Play-Store productionisation (privacy page, assets, .aab, assetlinks) · status: OPEN — UNBLOCKED (owner Play ID verified 2026-06-22; title locked "Goblin Gold: The Void Throne") · owner-requested
+**2026-06-23: Google Play identity VERIFIED → T168 unblocked.** Path: (a) `gg1/prod` = v1 (T226 promote) — the TWA
+target; (b) **privacy.html** on Pages; (c) **.aab** via PWABuilder pointed at the prod URL (owner downloads + uploads);
+(d) **`assetlinks.json`** for the TWA — **🔴 GOTCHA: must live at the ORIGIN ROOT `https://00-1.github.io/.well-known/
+assetlinks.json`, NOT under `/halves/`** (TWA verifies the origin `00-1.github.io`, and this project repo only serves
+`/halves/*`). **→ owner decision: create the `00-1.github.io` user-pages repo (serves the domain root) OR use a custom
+domain** — otherwise the TWA can't verify (URL bar stays). (e) store listing assets/copy (mostly drafted in
+`PLAY-STORE-PREP.md`); (f) **closed testing: 12 testers actively engaged for 14 CONTINUOUS days** before production
+(new-personal-account rule) — the SCHEDULE LONG POLE, start ASAP. Owner-only: Play Console, .aab sign/upload, testers.
+A-prep: privacy.html, assetlinks.json content, listing assets, the PWABuilder/Bubblewrap config.
 Productionise the `docs/agent/PLAY-STORE-PREP.md` draft once the owner signs off the **app name** (rename pending
 — see the "Goblin…"-themed naming discussion) and ID verification clears. Scope: create **`privacy.html`** on
 Pages (from the prep §3 text), generate the **store assets** (512² icon, 1024×500 feature graphic, ≥2

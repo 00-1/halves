@@ -23,7 +23,13 @@
 - **Default language:** English (UK)
 - **Content / target age:** designed for ~9–11 (**Designed for Families** policy applies)
 - **Support email (public):** `<the new Gmail you're creating>` — drop it in before submit
-- **Privacy policy URL:** `https://00-1.github.io/halves/privacy.html` (hosted on the existing Pages site — see §3)
+- **App URL (TWA target — POST-RESTRUCTURE, owner-confirmed):** **`https://00-1.github.io/halves/gg1/prod/`** (the
+  promoted PROD build = v1; T226 makes prod = v1). The PWABuilder/.aab + the manifest `start_url`/`scope` all resolve
+  here (manifest is relative `./`, so it just works under the prod path).
+- **Privacy policy URL:** `https://00-1.github.io/halves/gg1/prod/privacy.html` (in the prod build) — or
+  `https://00-1.github.io/halves/privacy.html` at the `/halves/` root (either works for the listing; keep it stable).
+  *(NB: the TWA **assetlinks.json** is DIFFERENT — it must be at the ORIGIN ROOT `00-1.github.io/.well-known/`, not
+  under /halves/ — see §7/§3; needs the `00-1.github.io` user-pages repo or a custom domain.)*
 
 ## 2. Store listing copy
 **Short description (≤80 chars):**
@@ -110,13 +116,19 @@
   celebration. Capture at a phone viewport via the Playwright harness (when up) → PNG.
 
 ## 7. The Android App Bundle (.aab)
-- **Recommended (no SDK):** **PWABuilder.com** → point at `https://00-1.github.io/halves/` → download a signed
-  **.aab** (+ a test **.apk** for sideload, + `assetlinks.json`). Owner uploads the .aab.
+- **Recommended (no SDK):** **PWABuilder.com** → point at **`https://00-1.github.io/halves/gg1/prod/`** (the v1 PROD
+  build — NOT the old root) → download a signed **.aab** (+ a test **.apk** for sideload, + `assetlinks.json`). Owner
+  uploads the .aab. *(Requires T226's prod-promote done first so prod = v1.)*
 - **In-env alternative:** **Bubblewrap** — JDK 21 + Gradle are present; it would need to fetch the Android SDK
   (network-policy permitting). Configure **`display: fullscreen` / immersive** so the packaged app launches
   edge-to-edge (the T167 TWA branch). Babysitter can attempt this; PWABuilder is the reliable fallback.
-- **Digital Asset Links:** host the generated `assetlinks.json` at `/.well-known/assetlinks.json` on Pages so the
-  TWA verifies (removes the URL bar). [A] task.
+- **Digital Asset Links (🔴 the structural gotcha):** the TWA verifies the **ORIGIN** `https://00-1.github.io`, so
+  `assetlinks.json` MUST be served at **`https://00-1.github.io/.well-known/assetlinks.json`** — the DOMAIN ROOT, NOT
+  under `/halves/`. This project repo (`00-1/halves`) only serves `/halves/*`, so it **cannot** host the well-known
+  file. **→ Owner decision (needed before the TWA verifies):** (a) create a **`00-1.github.io` user-pages repo**
+  (serves the domain root) and put `.well-known/assetlinks.json` there [simplest], or (b) move the app to a **custom
+  domain** you control. Without this the app installs but keeps the browser URL bar (un-verified TWA). [A] generates
+  the assetlinks.json content (from the .aab signing fingerprint); owner hosts it at the origin root.
 - **Play App Signing:** opt in — Google holds the signing key; you only manage an upload key. Recommended.
 
 ## 8. Recommended pre-submit code cleanups (small [A] tasks)
