@@ -1,6 +1,6 @@
 # CAPACITOR-SPEC — alternative Android wrapper for GG1 (parallel experiment)
 
-> **Status: DRAFT — awaiting owner approval before assigning to Builder A.**
+> **Status: ✅ APPROVED / GO — assigned to Builder A (owner, 2026-06-23) = T231.**
 > Strand 2 of the post-launch architecture plan (owner, 2026-06-23). **TWA remains the
 > shipping path and is NOT deprecated.** Capacitor is a parallel experiment to see whether an
 > in-process WebView wrapper removes the TWA browser-handoff fragility (the "Open with /

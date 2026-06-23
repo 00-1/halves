@@ -77,9 +77,13 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → `T230` — content export part 2: guides + collectibles (+ balance).** ✅ `T229` DONE/APPROVED (`2dfcca7`
-— 46 modes/959 vectors, parity 16/16, runtime 64/64). Continue the seam, **same non-destructive/additive rules**
-(suite stays 64/64; runtime untouched). *(BACKLOG T230.)* Capacitor stays parked (owner GO required).
+**Builder A → `T231` — Capacitor wrapper experiment (track 2, owner GO 2026-06-23).** Build the in-process-WebView
+Android wrapper per **`CAPACITOR-SPEC.md`** — **NEW files only** (a `capacitor/` dir + a CI Android-build workflow);
+do NOT touch the web app or the TWA flow; use a **SEPARATE experiment package** (`app.goblingold.voidthrone.exp`) +
+separate internal-testing app so the real listing is untouched. Goal: a signed `.aab` (built in CI) that launches
+the existing `gg1/prod` in a WebView — **no "Open with" chooser, no address bar** — to compare against the TWA.
+*(Owner uploads the artifact to a separate internal-testing app to judge on-device.)* **`T230` (content export pt2)
+DEFERRED** — resume after Capacitor; it feeds the brickmap port, which is still at the font-prototype gate (no rush).
 
 **Builder B → GO: spike mini-gate #1 — the FONT PROTOTYPE (owner-approved 2026-06-23).** Research DONE/APPROVED;
 spec = **`BRICKMAP-GG1-SPEC.md`** (a11y DEFERRED, JS-reuse rejected, font = prototype-first). **Do ONLY mini-gate #1

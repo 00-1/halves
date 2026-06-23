@@ -13,7 +13,13 @@ Status legend: `OPEN` → ready to build · `IN-REVIEW` → awaiting Babysitter 
 
 ### T229 — GG1 content-as-data export (NON-DESTRUCTIVE)  · status: DONE (Builder A `2dfcca7`; APPROVED — 46 modes/959 vectors, parity 16/16, runtime 64/64, additive)  · [A]
 
-### T230 — GG1 content export, part 2: guides + collectibles (+ balance)  · status: OPEN  · [A]
+### T231 — Capacitor wrapper experiment (track 2)  · status: OPEN (owner GO 2026-06-23)  · [A]
+Full spec = **`CAPACITOR-SPEC.md`**. In-process-WebView Android wrapper for `gg1/prod`; NEW files only
+(`capacitor/` + CI Android build); **separate experiment package** `app.goblingold.voidthrone.exp` + separate
+internal-testing app (real listing untouched); goal = a CI-built signed `.aab` that launches fullscreen with **no
+"Open with"/address bar**, to compare against the TWA on-device. DoD in the spec.
+
+### T230 — GG1 content export, part 2: guides + collectibles (+ balance)  · status: DEFERRED (resume after T231; non-urgent brickmap-prep)  · [A]
 Continue the T229 seam, same **non-destructive / additive** rules (suite stays 64/64, runtime untouched).
 - Emit `content/gg1/guides.json` (from `guides.js` — per-topic guide text + `explain()` cases as data) and
   `content/gg1/collectibles.json` (the catalogue from `collectibles.js`: ranks, awards, loot, emblems, **and
