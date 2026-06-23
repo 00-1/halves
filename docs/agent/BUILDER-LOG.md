@@ -6296,3 +6296,14 @@ beat AFTER Magnar; reduced-motion shows all immediately. Void title margin tight
 `.tag` margin-top:auto bottom-pin removed (centred stack). Updated `pwa.test.js` (the 2 old-layout assertions →
 new-design assertions). node -c clean; 64/64. **FIRST CUT — owner device-confirms + tunes (Magnar size, backdrop
 darkness, reveal timing); precise TWA-splash match best finalised once the .aab exists to compare side-by-side.**
+
+---
+
+**T227 — Splash horizontal-scroll fix (Babysitter take-over, 2026-06-23; builders in outage, owner-directed).**
+`#entry` had `overflow-y:auto` with no `overflow-x`, so per CSS the x-axis `visible` computed to `auto` and the
+void-glow `#entry .subtitle::after{inset:-40% -14% … voidFog}` (intentionally bleeding 14% past each side + drifting)
+became horizontally scrollable — owner saw "Goblin Gold" clip at the left edge. Fix: add `overflow-x:hidden` to
+`#entry` (dev + prod) so the glow clips to the viewport edge (still bleeds, no scroll). Headless-verified @412×915
+dpr2.75: `#entry` overflowX=hidden, scrollWidth==clientWidth (380==380), no page-level h-scroll (412==412). 64/64
+suites green. Flows to the installed TWA via the next prod deploy. (T228 notch-fill/toast remains parked — needs the
+.aab rebuild first; see BACKLOG.)
