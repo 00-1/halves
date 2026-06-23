@@ -4,6 +4,13 @@
 > `origin/claude/agent` and re-read this IMMEDIATELY before each task and before you
 > push.** Rationale/details live in `REVIEW.md` / `BACKLOG.md`.
 
+> 🛑 **FRESHNESS CHECK (as of 2026-06-23, post-pivot — `git show origin/claude/agent`).** If your copy says
+> **"Builder A → T226 → T168"** or **"Builder B → STAND BY"**, it is **STALE — `git fetch origin claude/agent` and
+> re-read.** Current truth: **GG1 ship is PAUSED**; the project has PIVOTED to **3 parallel strands** (TWA ships /
+> Capacitor experiment / **GG1-on-brickmap**). **Builder A = HOLD** (T226 done/closed, T168 paused; Capacitor awaits
+> owner approval). **Builder B = the `BRICKMAP-GG1` research pass** (NOT "done" — read your line below). GG2-on-web is
+> dead. *(This block exists because A nearly rebuilt the dropped T226(1) and B thought it was idle — both from stale reads.)*
+
 ---
 
 ## ⚡ STANDING ORDER — AUTONOMOUS MODE (owner grant, 2026-06-22) — read EVERY cycle
@@ -58,20 +65,21 @@ multi-hour runs the environment can't deliver.)*
    anyway. GG2 is intended brickmap-native; GG1-on-brickmap is the proving ground.
 
 - ✅ **GG1 v1 COMPLETE & RELEASED** (46 topics, T225 clean, tag `v1.0.0`).
-- ⏳ **`T226` ← CURRENT (gates the store URL).** (1) Generic path-derived per-folder scope (existing
-  `gg1dev`/`gg1prod`/`gg2dev`/`halves` scopes UNCHANGED — migration-critical + test). (2) Frozen **`gg1/v1.0.0/`**
-  archive (lean v1 runtime from `525ba87`, fixed `?v=525ba87`, NOT in the per-deploy loop) + `apps.json`. (3)
-  **Promote `gg1/dev → gg1/prod` to v1** — this makes the **store URL `…/gg1/prod/`** correct + live. *(BACKLOG T226.)*
-- ⏳ **`T168` — Play-Store productionisation (UNBLOCKED — owner Play ID verified).** privacy.html on Pages;
-  **`assetlinks.json` at the ORIGIN ROOT** `00-1.github.io/.well-known/` (🔴 needs the `00-1.github.io` user-pages repo
-  or a custom domain — owner decision); the **.aab** via PWABuilder pointed at **`…/halves/gg1/prod/`**; store listing
-  assets/copy (drafted in `PLAY-STORE-PREP.md` — **update its URLs to the `/gg1/prod/` path**). Then closed testing
-  (12 testers / 14 continuous days — schedule long pole). *(BACKLOG T168 + PLAY-STORE-PREP.md.)*
+- ✅ **`T226` — DONE / CLOSED.** (2) `gg1/v1.0.0/` archive + `apps.json` ✅ on `main`. (3) `gg1/dev → gg1/prod`
+  promoted to v1 ✅ (prod == dev). (1) **generic path-derived scope — DROPPED:** the hardcoded per-folder scope
+  (`/gg1/dev/→gg1dev`, …) works and is migration-safe, and the **brickmap pivot means there are NO future *web*
+  apps (gg2/dev…) to generalise for** — refactoring migration-critical scope code would be pure risk for zero value.
+- ⏸ **`T168` — Play-Store productionisation — PAUSED (owner paused GG1 ship, 2026-06-23).** Already DONE & verified:
+  privacy.html, `assetlinks.json` (both fingerprints live), the `.aab` built + uploaded to Internal testing,
+  asset-links verified (fullscreen). REMAINING (on hold until un-pause): store listing copy/assets, App-content
+  declarations, closed testing (12/14). Plus the parked TWA polish `T227`(done)/`T228`.
 
-**GG2 P0 — PARKED** (`GG2-MILESTONES.md` / `GG2-P0-EXTRACTION.md` / `GG2-P0-INPUT.md` stand ready for when the owner
-un-parks it after the store launch). Do NOT start GG2 now.
+**GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
+carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → `T226` → `T168`. (GG2 parked.)**
+**Builder A → HOLD / STAND DOWN. Nothing to build right now.** Do **NOT** build `T226`(1) (DROPPED) or resume `T168`
+(PAUSED). Your next item is the **Capacitor experiment (strand 2) — but it is AWAITING OWNER APPROVAL of
+`CAPACITOR-SPEC.md`; do NOT start it until the Babysitter flips it to GO** in this line. Until then: hold.
 
 **Builder B → `BRICKMAP-GG1` RESEARCH PASS (research only — no code).** Investigate the `00-1/brickmap` repo and
 answer every open question in **`BRICKMAP-GG1.md`** (engine capability matrix · "Scraped Again" engine↔game boundary
