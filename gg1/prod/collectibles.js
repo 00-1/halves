@@ -172,11 +172,19 @@
     desc:"Reach 100% on every topic." });
 
   // collector (evaluated against how much you've collected; handled separately)
-  // T206 — RECALIBRATED to the real catalogue (~1,900 items incl. Arena loot). The
-  // old top tiers (2,500/5,000/7,500/10,000) were UNREACHABLE, so they're dropped and
-  // the top four re-spaced to reachable thresholds culminating ≈ the full collection.
+  // T206 — RECALIBRATED to the real catalogue. The old top tiers
+  // (2,500/5,000/7,500/10,000) were UNREACHABLE, so they're dropped and the top four
+  // re-spaced to reachable thresholds culminating ≈ the full collection.
   // The reachable ids (25…1500) keep their rarity — migration-safe; the 4 dropped ids
   // were never earnable, so removing them strands no saved unlock.
+  // T219 LAST — the catalogue grew (the new Part-1/Part-2 topics added their per-mode
+  // collectibles → 2,352 items total), so the "collect ≈ everything" CAPSTONE is
+  // retargeted from 1,900 to track the real total. It must stay REACHABLE: the ladder
+  // count is the number of owned catalogue ids, capped at the catalogue size, so the
+  // capstone sits a safe margin BELOW the full 2,352 (a completionist clears it without
+  // needing literally every last item). Only that top id moves; every lower tier
+  // (25…1800) is an absolute collection-count milestone (catalogue-size independent)
+  // and is preserved exactly — migration-safe.
   const comma = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   [
     [25,   "rare",      "Curator"],
@@ -190,7 +198,7 @@
     [1600, "legendary", "Hoard-Lord"],
     [1700, "legendary", "Treasure Dragon"],
     [1800, "legendary", "Grand Conservator"],
-    [1900, "legendary", "Keeper of the Myriad"]   // ≈ the full ~1,900-item catalogue (live with Arena loot)
+    [2300, "legendary", "Keeper of the Myriad"]   // CAPSTONE — ≈ the full collection, safely below the 2,352 total (reachable; T219 LAST)
   ].forEach(([n,r,nm]) =>
     add({ id:"collector:"+n, name:nm, rarity:r, cat:"Collector", modeId:null, n:n,
       desc:"Collect "+comma(n)+" items." }));

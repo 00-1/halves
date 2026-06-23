@@ -462,6 +462,26 @@
     ["5 → ×4 → −6", 14], ["10 → −4 → ×3", 18], ["6 → ÷2 → ×5", 15], ["9 → ×2 → +4", 22], ["4 → ×5 → ÷2", 10]
   ];
 
+  // ---- T219 batch 4 (Number group) — ×-tricks + negatives-P1 -----------------
+  // `xtricks` — mental MULTIPLICATION shortcuts (×11, ×25, ×9, ×99, ×5). Each entry
+  // [a, b, A] with A = a·b; the "trick" is the method (guide/explain), the answer a
+  // clean product.
+  const XTRICKS_SRC = [
+    [23,11,253],[34,11,374],[52,11,572],[18,11,198],[45,11,495],[27,11,297],   // ×11
+    [16,25,400],[12,25,300],[24,25,600],[8,25,200],[28,25,700],                // ×25
+    [7,9,63],[13,9,117],[15,9,135],[24,9,216],                                 // ×9
+    [6,99,594],[8,99,792],[12,99,1188],                                        // ×99
+    [18,5,90],[46,5,230],[24,5,120]                                            // ×5
+  ];
+  // `negatives` (P1) — add/subtract crossing zero, ALWAYS landing on a NON-negative
+  // answer (the numpad has no minus key, so P2 — negative answers — is deferred).
+  // The curated expression string is the prompt; A ≥ 0.
+  const NEG_SRC = [
+    ["−5 + 8",3],["−3 + 10",7],["−8 + 8",0],["−6 + 15",9],["−12 + 20",8],["−4 + 9",5],["−9 + 11",2],
+    ["−7 + 17",10],["−15 + 18",3],["−10 + 16",6],["−2 + 13",11],["−14 + 14",0],["−5 + 17",12],
+    ["3 − 8 + 9",4],["5 − 12 + 10",3],["2 − 7 + 6",1],["6 − 11 + 9",4],["8 − 15 + 12",5],["4 − 10 + 14",8],["1 − 6 + 7",2],["7 − 13 + 8",2]
+  ];
+
   // ---- T59 — Wave-2 Batch A: Rounding + Larger ×/÷ (genuinely NEW topics; no
   // overlap with the T162 mock modes). Specs from docs/research-11plus.md.
   // `rounding` — round N to the nearest 10/100/1000. Each entry [N, unit, A] with
@@ -578,8 +598,68 @@
   // Roman numeral: show the numeral, answer the value. Prime: "next prime > n".
   function romanItem(e){ return { p: e[0], a: e[1] }; }
   function primeItem(e){ return { p: "next prime > " + e[0], a: e[1] }; }
-  // BODMAS / function machine: the curated expression string IS the prompt.
+  // BODMAS / function machine / negatives: the curated expression string IS the prompt.
   function exprItem(e){ return { p: e[0], a: e[1] }; }
+  // ×-tricks: "a × b" (the trick is the method); answer = the product.
+  function xtrickItem(e){ return { p: e[0] + " × " + e[1], a: e[2] }; }
+  // T219 batch 5 (Geometry) — area/perimeter, volume, angles.
+  const AREA_SRC = [
+    ["ar",6,4,24],["ar",7,5,35],["ar",9,3,27],["ar",8,8,64],["ar",12,5,60],["ar",10,7,70],["ar",11,4,44],   // rectangle area
+    ["pr",6,4,20],["pr",7,5,24],["pr",9,3,24],["pr",10,6,32],["pr",12,8,40],["pr",5,5,20],["pr",11,4,30],     // rectangle perimeter
+    ["at",8,5,20],["at",6,4,12],["at",10,3,15],["at",7,4,14],["at",12,5,30],["at",9,6,27],["at",4,4,8]         // triangle area (½·b·h)
+  ];
+  function areaItem(e){
+    if(e[0] === "ar") return { p: "area " + e[1] + "×" + e[2], a: e[3] };
+    if(e[0] === "pr") return { p: "perim " + e[1] + "×" + e[2], a: e[3] };
+    return { p: "△ " + e[1] + "×" + e[2], a: e[3] };
+  }
+  const VOLUME_SRC = [
+    [2,3,4,24],[3,3,3,27],[5,2,4,40],[6,2,3,36],[4,4,2,32],[5,5,2,50],[10,2,2,40],
+    [2,2,2,8],[3,4,5,60],[6,3,2,36],[4,3,3,36],[7,2,3,42],[8,2,2,32],[5,4,3,60],
+    [2,5,6,60],[3,3,4,36],[10,3,2,60],[4,5,5,100],[6,4,2,48],[2,2,5,20],[3,5,4,60]
+  ];
+  function volItem(e){ return { p: "vol " + e[0] + "×" + e[1] + "×" + e[2], a: e[3] }; }
+  const ANGLES_SRC = [
+    ["L",110,70],["L",45,135],["L",125,55],["L",90,90],["L",155,25],["L",72,108],["L",30,150],     // on a line (180)
+    ["P",250,110],["P",200,160],["P",300,60],["P",145,215],["P",90,270],["P",215,145],["P",260,100], // round a point (360)
+    ["T",60,70,50],["T",90,45,45],["T",50,50,80],["T",100,40,40],["T",35,85,60],["T",75,75,30],["T",110,30,40] // triangle (180)
+  ];
+  function angleItem(e){
+    if(e[0] === "L") return { p: "line " + e[1] + " + ?", a: e[2] };
+    if(e[0] === "P") return { p: "point " + e[1] + " + ?", a: e[2] };
+    return { p: "△ " + e[1] + ", " + e[2] + " → ?", a: e[3] };
+  }
+  // T219 batch 6 — median/mode/range (the other averages) + speed-distance-time.
+  const MMR_SRC = [
+    ["med",[3,7,5],5],["med",[8,2,6,4,10],6],["med",[12,9,15],12],["med",[5,1,9,3,7],5],["med",[20,14,18],18],["med",[6,2,4,8,10],6],["med",[11,7,9,13,5],9],
+    ["mod",[4,7,4,2,9],4],["mod",[3,3,8,5,3],3],["mod",[6,1,6,9,6],6],["mod",[2,5,5,8,1],5],["mod",[7,7,2,4,9],7],["mod",[10,3,10,1,10],10],["mod",[8,8,4,4,8],8],
+    ["rng",[3,9,5,7],6],["rng",[12,4,8,20],16],["rng",[15,6,11,9],9],["rng",[2,18,10,5],16],["rng",[7,7,7,12],5],["rng",[14,3,9,21],18],["rng",[5,8,2,6],6]
+  ];
+  function mmrItem(e){ const label = e[0] === "med" ? "median" : e[0] === "mod" ? "mode" : "range"; return { p: label + " of " + e[1].join(","), a: e[2] }; }
+  const SDT_SRC = [
+    ["d",60,2,120],["d",50,3,150],["d",40,4,160],["d",70,2,140],["d",30,5,150],["d",80,3,240],["d",45,2,90],   // distance = speed × time
+    ["s",120,2,60],["s",150,3,50],["s",200,4,50],["s",180,3,60],["s",90,2,45],["s",240,4,60],["s",160,2,80],     // speed = distance ÷ time
+    ["t",120,40,3],["t",150,50,3],["t",200,50,4],["t",100,25,4],["t",180,60,3],["t",90,45,2],["t",240,80,3]       // time = distance ÷ speed
+  ];
+  function sdtItem(e){
+    if(e[0] === "d") return { p: "dist: " + e[1] + "km/h × " + e[2] + "h", a: e[3] };
+    if(e[0] === "s") return { p: "speed: " + e[1] + "km in " + e[2] + "h", a: e[3] };
+    return { p: "time: " + e[1] + "km at " + e[2] + "km/h", a: e[3] };
+  }
+  // T219 batch 7 — factors & multiples / prime factorisation (the LAST T219 topic).
+  //   ["nf", N, A]    → "# factors of N"        (A = count of divisors)
+  //   ["nm", k, N, A] → "next ×k > N"           (A = least multiple of k strictly above N)
+  //   ["pf", N, A]    → "biggest prime of N"    (A = largest prime factor)
+  const FACTORS_SRC = [
+    ["nf",12,6],["nf",18,6],["nf",16,5],["nf",24,8],["nf",36,9],["nf",10,4],["nf",28,6],
+    ["nm",7,30,35],["nm",6,40,42],["nm",9,50,54],["nm",8,60,64],["nm",5,33,35],["nm",4,50,52],["nm",11,70,77],
+    ["pf",12,3],["pf",30,5],["pf",45,5],["pf",28,7],["pf",60,5],["pf",99,11],["pf",50,5]
+  ];
+  function factorsItem(e){
+    if(e[0] === "nf") return { p: "# factors of " + e[1], a: e[2] };
+    if(e[0] === "nm") return { p: "next ×" + e[1] + " > " + e[2], a: e[3] };
+    return { p: "biggest prime of " + e[1], a: e[2] };
+  }
   // Percent increase: "base + pct%" → the new total. F↔D↔P: three conversion shapes.
   function pctUpItem(e){ return { p: e[1] + " + " + e[0] + "%", a: e[2] }; }
   function fdpItem(e){
@@ -912,11 +992,79 @@
       glyph:'n<span class="slash">±</span>k',
       eyebrow:'in → out <b>↓</b>', expr:true, requires:"mastery:bodmas", masterSecs:9, group:"Reasoning",
       build(){ return shuffle(ALGEBRA_SRC).map(exprItem); }
+    },
+    // ---- T219 batch 4 (Number group) — ×-tricks + negatives-P1 -----------------
+    {
+      // ×-tricks — mental multiplication shortcuts. Branches off `largermd` (the
+      // bigger-×/÷ leaf); group Number.
+      id:"xtricks", name:"×-Tricks", tag:"×11 · ×25 · ×9 · ×99 · ×5.",
+      glyph:'<span class="slash">×</span>k',
+      eyebrow:'use the trick <b>↓</b>', expr:true, requires:"mastery:largermd", masterSecs:7, group:"Number",
+      build(){ return shuffle(XTRICKS_SRC).map(xtrickItem); }
+    },
+    {
+      // Negatives P1 — add/subtract across zero, non-negative answers only. Branches
+      // off `doubles` (a free Number leaf); group Number.
+      id:"negatives", name:"Negatives", tag:"Cross zero (answer ≥ 0).",
+      glyph:'<span class="slash">−</span>n',
+      eyebrow:'answer is 0 or more <b>↓</b>', expr:true, requires:"mastery:doubles", masterSecs:8, group:"Number",
+      build(){ return shuffle(NEG_SRC).map(exprItem); }
+    },
+    // ---- T219 batch 5 (NEW Geometry group) — area/perim, volume, angles --------
+    {
+      // Area & Perimeter — rectangle area/perimeter + triangle area (dims in the
+      // prompt). Opens the Geometry chain off `metric` (measurement → geometry).
+      id:"area", name:"Area & Perimeter", tag:"Rectangles & triangles.",
+      glyph:'a<span class="slash">×</span>b',
+      eyebrow:'work it out <b>↓</b>', expr:true, requires:"mastery:metric", masterSecs:9, group:"Geometry",
+      build(){ return shuffle(AREA_SRC).map(areaItem); }
+    },
+    {
+      // Volume — cuboid l×w×h. Branches off `area` (the Geometry chain stays linear:
+      // metric → area → volume → angles, within the 4-abreast limit).
+      id:"volume", name:"Volume", tag:"Cuboids: l×w×h.",
+      glyph:'<span class="slash">×</span>³',
+      eyebrow:'volume <b>↓</b>', expr:true, requires:"mastery:area", masterSecs:8, group:"Geometry",
+      build(){ return shuffle(VOLUME_SRC).map(volItem); }
+    },
+    {
+      // Angles — the missing angle on a line (180), round a point (360), in a
+      // triangle (180). Branches off `volume` (Geometry chain).
+      id:"angles", name:"Angles", tag:"Find the missing angle.",
+      glyph:'n<span class="slash">−</span>k',
+      eyebrow:'missing angle <b>↓</b>', expr:false, requires:"mastery:volume", masterSecs:8, group:"Geometry",
+      build(){ return shuffle(ANGLES_SRC).map(angleItem); }
+    },
+    // ---- T219 batch 6 — Median/Mode/Range (Reasoning) + Speed-Distance-Time -----
+    {
+      // Median/Mode/Range — the other averages. Branches off `timegap` (the free
+      // Reasoning leaf with room); group Reasoning.
+      id:"mmr", name:"Median · Mode · Range", tag:"The other averages.",
+      glyph:'a<span class="slash">−</span>b',
+      eyebrow:'find it <b>↓</b>', expr:false, requires:"mastery:timegap", masterSecs:8, group:"Reasoning",
+      build(){ return shuffle(MMR_SRC).map(mmrItem); }
+    },
+    {
+      // Speed-Distance-Time — D = S × T and its rearrangements. Branches off `money`
+      // (the closest free applied-number leaf with room); group Measures.
+      id:"sdt", name:"Speed · Distance · Time", tag:"D = S × T.",
+      glyph:'a<span class="slash">÷</span>n',
+      eyebrow:'solve <b>↓</b>', expr:false, requires:"mastery:money", masterSecs:9, group:"Measures",
+      build(){ return shuffle(SDT_SRC).map(sdtItem); }
+    },
+    {
+      // Factors & Multiples / prime factorisation — count factors, next multiple,
+      // biggest prime factor. Branches off `xtricks` (Number multiplication family);
+      // group Number. The last T219 topic.
+      id:"factors", name:"Factors & Multiples", tag:"Count factors · primes · multiples.",
+      glyph:'n<span class="slash">÷</span>b',
+      eyebrow:'solve <b>↓</b>', expr:false, requires:"mastery:xtricks", masterSecs:9, group:"Number",
+      build(){ return shuffle(FACTORS_SRC).map(factorsItem); }
     }
   ];
 
   // Mode-picker section order. Empty sections are skipped by the picker.
-  const MODE_GROUPS = ["Core", "Number", "Fractions & %", "Measures", "Reasoning"];
+  const MODE_GROUPS = ["Core", "Number", "Fractions & %", "Measures", "Geometry", "Reasoning"];   // T219 — new Geometry group
 
   // Thematic chiptune style per topic — an explicit `music` field on each mode
   // (index into Sound.STYLES 0..14; see T17/T71). Every topic maps to a DISTINCT
@@ -985,7 +1133,18 @@
     fdp:          ["f12","*%"],        // ½% — fraction ↔ decimal ↔ percent
     // T219 batch 3 — Reasoning eval topics (distinct grids).
     bodmas:       ["*×","+"],          // ×+ — × before + (order of operations)
-    algebra:      ["n","*±","k"]       // n±k — a function machine transforming n
+    algebra:      ["n","*±","k"],      // n±k — a function machine transforming n
+    // T219 batch 4 — Number additions (distinct grids).
+    xtricks:      ["*×","k"],          // ×k — a multiplication trick
+    negatives:    ["*−","n"],          // −n — crossing below zero (answer ≥ 0)
+    // T219 batch 5 — Geometry group (distinct grids).
+    area:         ["k","*×","b"],      // k×b — a rectangle's two sides
+    volume:       ["b","*×","x"],      // b×x — three dimensions multiplied
+    angles:       ["n","*−","b"],      // n−b — the angle left over (to 180 / 360)
+    // T219 batch 6 — averages + speed.
+    mmr:          ["a","*−","b"],      // a−b — the range (max − min) stands in for the trio
+    sdt:          ["a","*÷","n"],      // a÷n — distance ÷ time (speed)
+    factors:      ["n","*÷","b"]       // n÷b — what divides n (factors / primes)
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 

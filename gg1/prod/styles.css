@@ -117,10 +117,13 @@ body{
    subtitle between the wordmark and the maths tag. Plain gold/amber for now —
    T209 stylises it (pixel-gold name / dithered-purple void line). */
 .subtitle{font-family:var(--display);font-weight:600;font-size:clamp(30px,9.8vw,46px);letter-spacing:.02em;
-  color:var(--amber-2,#e0a93c);margin-top:-6px;line-height:1.05;opacity:.92}   /* T217 — smaller so the wider mono ALL-CAPS "THE VOID THRONE" fits the splash width */
+  color:var(--amber-2,#e0a93c);margin-top:clamp(44px,14vh,130px);line-height:1.05;opacity:.92}   /* T221 — drop the void title down toward the screen centre (owner) */
 /* T209 — the pixel-art title canvas (gold wordmark / void subtitle) replaces the text
    node; sized to the parent line's font-size, crisp nearest-neighbour. */
-.pixtitle{height:1.25em;width:auto;max-width:100%;image-rendering:pixelated;display:block;margin:0 auto}   /* T221 — max-width:100% guarantees no clip at 360px (the wide-spaced void line scales to fit) */
+.pixtitle{height:1.25em;width:auto;max-width:100%;image-rendering:pixelated;display:block;margin:0 auto}   /* gold wordmark — sized to the parent line's font-size */
+/* T221 — the void title is a chunky TWO-LINE pixel canvas stretched to FILL a box
+   under the wordmark (owner-chosen mockup); natural ~1.67:1 aspect, centred, crisp. */
+.voidtitle{width:min(74vw,340px);max-width:92vw;height:auto;image-rendering:pixelated;display:block;margin:10px auto 0}
 /* T214 — margin-top:auto pushes the tag + the action buttons + Sound to the BOTTOM
    of the splash, giving the big title group room up top. */
 .tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:auto;padding-top:18px;font-weight:500}
@@ -231,10 +234,16 @@ body{
 /* T111 — uniform wider buttons (min-width 60) so the seven nav buttons wrap to a
    balanced, centred 4+3 / 5+2 under the 360px cap — never a lone orphan row. */
 .navrow{display:flex;align-items:flex-start;justify-content:center;gap:6px;flex-wrap:wrap;width:100%;max-width:360px;margin-top:14px}
-.navbtn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:60px;
+.navbtn{position:relative;flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:60px;
   background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:7px 5px;cursor:pointer;
   font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--muted);
   transition:color .15s,border-color .15s}
+/* T218 — "something new here" badge: a small coral pill pinned to the button's
+   top-right corner (a count, capped "9+"), the pixel/clean aesthetic. */
+.navbtn .nav-badge{position:absolute;top:-6px;right:-5px;min-width:16px;height:16px;box-sizing:border-box;
+  padding:0 3px;display:flex;align-items:center;justify-content:center;
+  background:var(--coral);color:#2A0F0F;border:1px solid var(--bg);border-radius:8px;
+  font-family:var(--mono);font-size:10px;font-weight:700;line-height:1;letter-spacing:0;pointer-events:none}
 .navbtn:hover,.navbtn:active{color:var(--amber);border-color:var(--amber)}
 /* T99 — Sound/Settings/Fullscreen are now labelled like the four primary buttons:
    an emoji "icon" line (sized to match the 18px pixel-icon canvas) + a text label,

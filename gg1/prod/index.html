@@ -233,17 +233,14 @@
     <div class="res-label">Audio</div>
     <div class="settings-body scroll-body">
       <button class="set-row" id="setSound"><span>Sound</span><span class="set-val" id="setSoundVal">On</span></button>
+      <!-- T224 — both volumes on ONE 0–11 scale (default 6); the tempo slider was removed. -->
       <div class="set-row set-slider">
         <label for="musicVolRange"><span>Music volume</span><span class="set-val" id="setMusicVolVal">—</span></label>
-        <input type="range" id="musicVolRange" min="0" max="10" step="1" value="5" aria-label="Music volume">
+        <input type="range" id="musicVolRange" min="0" max="11" step="1" value="6" aria-label="Music volume">
       </div>
       <div class="set-row set-slider">
         <label for="sfxVolRange"><span>Sound FX volume</span><span class="set-val" id="setSfxVolVal">—</span></label>
-        <input type="range" id="sfxVolRange" min="0" max="100" step="5" value="60" aria-label="Sound FX volume">
-      </div>
-      <div class="set-row set-slider">
-        <label for="tempoRange"><span>Music tempo</span><span class="set-val" id="setTempoVal">—</span></label>
-        <input type="range" id="tempoRange" min="40" max="100" step="5" value="50" aria-label="Music tempo">
+        <input type="range" id="sfxVolRange" min="0" max="11" step="1" value="6" aria-label="Sound FX volume">
       </div>
       <div class="set-row set-music">
         <label id="musicLabel"><span>Music style</span><span class="set-val" id="setMusicVal">Auto</span></label>

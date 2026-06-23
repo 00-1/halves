@@ -6249,3 +6249,14 @@ clear; owner authorised take-over to keep momentum to v1):
 - `guides.js` area perimeter tip — `"6 × 4 → 2 × 10 = 20"` (the `6 × 4` reads as 24) → `"A 6 by 4 rectangle → 2 ×
   10 = 20"`. MED (clarity).
 verified: `node -c` clean; full suite **64/64**. [Babysitter] (guides.js). T225 text pass clean after this → v1 sign-off.
+
+---
+### [BABYSITTER TAKE-OVER] T226 (part 1/2) — promote gg1/dev → gg1/prod to v1
+The Play-Store TWA wraps the PROD URL `…/halves/gg1/prod/`, so prod must be the v1 build before the .aab is generated.
+A hadn't started T226 and the owner is actively on the store path, so the Babysitter did the prod promote (a pure
+file sync — CI already cache-busts/stamps gg1/prod, so NO pages.yml change → low blast radius). Synced gg1/dev runtime
+→ gg1/prod (excluded test/, scripts/); `diff -rq` confirms gg1/prod is now IDENTICAL to gg1/dev @ 525ba87 (v1). 7
+stale files updated (collectibles, enemies, guides, index.html, main.js, modes, styles.css). node -c clean; full
+suite 64/64. **`…/halves/gg1/prod/` is now the v1 build → PWABuilder can target it.**
+**T226 REMAINDER (still for [A], lower urgency — for the release-body link, not the .aab):** generic path-derived
+scope + the frozen `gg1/v1.0.0/` archive wired into pages.yml + apps.json.

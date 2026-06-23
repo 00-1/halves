@@ -485,15 +485,21 @@
       // (mute-only) → limiter. SFX route through sound.js's separate sfx bus.
       if(out && sMaster){
         try{ out.disconnect(); }catch(e){}
-        try{ musicGain = ctx.createGain(); musicGain.gain.value = loadMusicVol() / 100; out.connect(musicGain); musicGain.connect(sMaster); }
+        try{ musicGain = ctx.createGain(); musicGain.gain.value = musicGainFor(loadMusicLevel()); out.connect(musicGain); musicGain.connect(sMaster); }
         catch(e){ musicGain = null; out.connect(sMaster); }
       }
       Sy.setMuted(!soundOn());
       synthWired = true;
     }catch(e){ synthWired = false; }
   }
-  function setMusicVolume(slider){ const g = Math.max(0, Math.min(10, slider)) / 100; if(musicGain){ try{ musicGain.gain.value = g; }catch(e){} } return g; }
-  function synthTempoMult(){ const v = loadTempo() / 100; return isFinite(v) ? v : 1; }
+  // T224 — ONE shared 0–11 integer level scale for both buses; the per-bus MAX gain
+  // differs (music sits quieter under the master). level 0 = silent, 11 ≈ 2× the
+  // midpoint (the fresh default 6), gain ramps linearly. The tempo slider is gone.
+  const VOL_MAX = 11, MUSIC_MAX_GAIN = 0.20, SFX_MAX_GAIN = 1.0;
+  function musicGainFor(level){ return MUSIC_MAX_GAIN * Math.max(0, Math.min(VOL_MAX, level)) / VOL_MAX; }
+  function sfxGainFor(level){ return SFX_MAX_GAIN * Math.max(0, Math.min(VOL_MAX, level)) / VOL_MAX; }
+  function setMusicVolume(level){ const g = musicGainFor(level); if(musicGain){ try{ musicGain.gain.value = g; }catch(e){} } return g; }
+  function synthTempoMult(){ return 1; }   // T224 — tempo locked to the engine's native BPM (the user tempo slider was removed)
   // T128(1) — drive the engine's DISTINCT built-in context (its own progression /
   // patches / reverb — incl. the Arena's wub bass + dark Aeolian) via
   // Synth.setContext, with the T113 tempo multiplier on top. This REPLACES the old
@@ -674,8 +680,50 @@
     { feature:"earnings",    el:["goldBar","momentumBar"], msg:"Goblin Gold & Momentum are now tracking",       cond:hasEarned },
     { feature:"eventbanner", el:[],                         msg:"Daily Events unlocked — a new challenge each day", cond:enoughRuns }
   ];
+  // ---- T218: nav "new-since-seen" notification badges ----------------------
+  // A reusable tracker: each surface owns a MONOTONIC tally (collectibles and
+  // hero-unlocks only ever grow), and we badge the nav button with how much that
+  // tally has grown SINCE the user last opened that surface. The "seen" marker is
+  // SEEDED to the current tally the first time we look (so an existing collection
+  // — gathered before this feature shipped — never false-badges), persisted in
+  // localStorage (survives reload, scope-namespaced like every other key), and
+  // re-set to the current tally when the user opens the surface (clears the dot).
+  const NAV_BADGES = [
+    { surface:"items",  btn:"invBtn",    feature:"inventory" },
+    { surface:"heroes", btn:"heroesBtn", feature:"heroes" }
+  ];
+  function navTally(surface){
+    const c = loadCollected();
+    if(surface === "items")  return Object.keys(c).filter(k => C.byId(k)).length;   // owned catalogue items
+    if(surface === "heroes"){ const Hs = window.Heroes; return Hs ? Hs.HEROES.filter(h => Hs.isHeroUnlocked(h, c)).length : 0; }
+    return 0;
+  }
+  function loadNavSeen(){ try{ const v = JSON.parse(localStorage.getItem("halves.navSeen")); return (v && typeof v === "object") ? v : {}; }catch(e){ return {}; } }
+  function saveNavSeen(o){ try{ localStorage.setItem("halves.navSeen", JSON.stringify(o)); }catch(e){} }
+  // New-since-seen count; seeds the marker to the current tally on first sight → 0.
+  function navNewCount(surface){
+    const seen = loadNavSeen(), cur = navTally(surface);
+    if(seen[surface] == null){ seen[surface] = cur; saveNavSeen(seen); return 0; }   // seed → no false positive
+    return Math.max(0, cur - seen[surface]);
+  }
+  // Acknowledge: the user opened the surface → clear its badge.
+  function markNavSeen(surface){ const seen = loadNavSeen(); seen[surface] = navTally(surface); saveNavSeen(seen); }
+  function renderNavBadges(){
+    NAV_BADGES.forEach(cfg => {
+      const btn = $(cfg.btn); if(!btn) return;
+      const n = isFeatureUnlocked(cfg.feature) ? navNewCount(cfg.surface) : 0;
+      let badge = btn.querySelector(".nav-badge");
+      if(n > 0){
+        if(!badge){ badge = document.createElement("span"); badge.className = "nav-badge"; btn.appendChild(badge); }
+        badge.textContent = n > 9 ? "9+" : String(n);
+        badge.setAttribute("aria-label", n + " new");
+        btn.classList.add("has-badge");
+      } else if(badge){ badge.remove(); btn.classList.remove("has-badge"); }
+    });
+  }
   function applyGates(){
     GATED.forEach(g => { const on = isFeatureUnlocked(g.feature); g.el.forEach(id => { const b = $(id); if(b) b.classList.toggle("hidden", !on); }); });
+    renderNavBadges();
   }
   // Evaluate the milestone conditions; unlock + queue a highlight for any newly met.
   function checkGates(){
@@ -895,41 +943,31 @@
   // text on any failure (the element keeps its text until a canvas is built).
   const BAYER4 = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
   const TITLE_GOLD = [[255,224,140],[226,168,52],[120,84,22]];   // highlight → mid → shadow (hoard gold)
-  // T210 — lightened toward the brand purple (#cda9ff/#9a5cf6) so the void line is
-  // luminous/legible (was purple→near-black, too dark): light-violet → brand-violet →
-  // mid-purple (no near-black shadow).
-  const TITLE_VOID = [[205,169,255],[154,92,246],[74,47,122]];
-  const TITLE_GOLD_GLINT = [255,248,214];                        // T210 — gold glints; the void line gets NO sparkle
-  function paintPixelTitle(el, ramp, glint, corrupt, fontOverride, upper){
+  const TITLE_GOLD_GLINT = [255,248,214];                        // T210 — gold glints; the void line gets NO sparkle (its own VOID_RAMP below)
+  function paintPixelTitle(el, ramp, glint){
     if(!el || !document.createElement) return;
     const src = (el.dataset && el.dataset.title) || el.textContent; if(!src) return;
     try{
       if(el.dataset) el.dataset.title = src;                     // remember the ORIGINAL (textContent gets replaced by the canvas)
-      const text = upper ? src.toUpperCase() : src;             // T217 — the void line is ALL CAPS
-      // T212 — raster at a HIGHER base res (cellsH 18→26) so the "i"/"l" dot+stem
-      // separate (was merging → "Goblln"/"Vold"); PX 3→2 keeps the display size.
-      // T216 — the void line uses a visibly DISTINCT (self-hosted JetBrains Mono) face.
-      const cellsH = 26, weight = 800, fontFam = fontOverride || "'Space Grotesk',system-ui,sans-serif";
+      // Raster the GOLD wordmark in Space Grotesk at cellsH 26 (the "i"/"l" dot+stem
+      // separate), upscaled PX 2, with a vertical 3-tone ramp + Bayer dither + glint.
+      const cellsH = 26, weight = 800, fontFam = "'Space Grotesk',system-ui,sans-serif";
       const off = document.createElement("canvas"); const m = off.getContext && off.getContext("2d");
       if(!m || !m.measureText || !m.getImageData) return;        // headless/no-2d → keep the CSS text
       const font = weight + " " + cellsH + "px " + fontFam;
-      // T212 tight gold; T221 — the void line gets WIDE positive letter-spacing.
-      const ls = corrupt ? "2px" : "-1.5px";
-      m.font = font; try{ m.letterSpacing = ls; }catch(e){}
-      const w = Math.max(1, Math.ceil(m.measureText(text).width) + 2), h = Math.ceil(cellsH * 1.4);
+      m.font = font; try{ m.letterSpacing = "-1.5px"; }catch(e){}
+      const w = Math.max(1, Math.ceil(m.measureText(src).width) + 2), h = Math.ceil(cellsH * 1.4);
       off.width = w; off.height = h;
-      const c = off.getContext("2d"); c.font = font; try{ c.letterSpacing = ls; }catch(e){}
+      const c = off.getContext("2d"); c.font = font; try{ c.letterSpacing = "-1.5px"; }catch(e){}
       c.textBaseline = "middle"; c.fillStyle = "#fff";
-      c.fillText(text, 1, h / 2);
+      c.fillText(src, 1, h / 2);
       const data = c.getImageData(0, 0, w, h).data;
       let yMin = h, yMax = 0;
       for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(data[(y*w+x)*4+3] > 96){ if(y<yMin)yMin=y; if(y>yMax)yMax=y; }
-      // T220 — the void line gets TALLER-THAN-WIDE cells (vertical stretch); the gold
-      // wordmark stays square. width:auto on .pixtitle keeps it fitting the splash.
-      const span = Math.max(1, yMax - yMin), PXX = 2, PXY = corrupt ? 3 : 2, cx = w / 2;
-      const disp = document.createElement("canvas"); disp.width = w * PXX; disp.height = h * PXY; disp.className = "pixtitle";
+      const span = Math.max(1, yMax - yMin), PX = 2;
+      const disp = document.createElement("canvas"); disp.width = w * PX; disp.height = h * PX; disp.className = "pixtitle";
       const d = disp.getContext("2d"); if(!d) return;
-      const draw = (glintX, cseed) => {
+      const draw = (glintX) => {
         d.clearRect(0, 0, disp.width, disp.height);
         for(let y = 0; y < h; y++) for(let x = 0; x < w; x++){
           if(data[(y*w+x)*4+3] <= 96) continue;
@@ -937,35 +975,13 @@
           v = v < 0 ? 0 : v > 1 ? 1 : v;
           let col = ramp[Math.min(ramp.length - 1, (v * ramp.length) | 0)];
           if(glintX != null && Math.abs(x - glintX) < 1.6) col = glint;
-          // T212/T214/T216 — the CORRUPTION pass on the void line: deterministic
-          // dropped + displaced cells AND ordered-Bayer transparency dither, so the
-          // lettering dissolves in patches (half-there/glitchy) — still legible. The
-          // `cseed` re-rolls the pattern each frame (T216 — ANIMATED glitch). Gold
-          // line: corrupt=false → solid.
-          let ox = x, oy = y, alpha = 1;
-          if(corrupt){
-            const hsh = ((x * 73856093) ^ (y * 19349663) ^ Math.imul(cseed | 0, 2654435761)) >>> 0, r = hsh % 100;
-            if(r < 12) continue;                                 // ~12% dropped cells (glitch holes)
-            else if(r < 28) ox += ((hsh >> 5) & 1) ? 1 : -1;     // ~16% displaced ±1 cell
-            if(((hsh >> 9) & 15) >= 11) alpha = 0.4;             // ~31% transparency-dithered (re-rolls with cseed)
-          }
-          d.fillStyle = alpha < 1 ? "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + alpha + ")"
-                                  : "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
-          if(corrupt){
-            // T221 — Star-Wars perspective skew: each row's horizontal scale ramps
-            // with depth about the centre, so the bottom is wider than the top. Cells
-            // in a row share one scale → they stay contiguous (+0.6 closes seams).
-            const rs = 0.6 + 0.4 * ((y - yMin) / span);   // top 0.6× → bottom full width
-            d.fillRect((cx + (ox - cx) * rs) * PXX, oy * PXY, PXX * rs + 0.6, PXY);
-          } else {
-            d.fillRect(ox * PXX, oy * PXY, PXX, PXY);
-          }
+          d.fillStyle = "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+          d.fillRect(x * PX, y * PX, PX, PX);
         }
       };
       draw(null);
       el.innerHTML = ""; el.appendChild(disp);
-      // throttled glint: a ~0.6s sweep every ~5s, animated only DURING the sweep (idle
-      // via setTimeout between), and only while the entry splash is showing.
+      // throttled glint: a ~0.6s sweep every ~5s, animated only DURING the sweep.
       if(glint && !prefersReducedMotion() && typeof requestAnimationFrame === "function"){
         const onEntry = () => { try{ return screens.entry && screens.entry.classList.contains("active"); }catch(e){ return false; } };
         const sweep = () => {
@@ -979,38 +995,95 @@
         };
         setTimeout(sweep, 1800 + Math.random() * 1500);
       }
-      // T217/T220 — INTERMITTENT interference (not continual). The void line sits on
-      // ONE settled frame (the cseed=0 draw above) most of the time; occasionally it
-      // "cuts in" for a short BURST then settles + idles before the next. T220 makes
-      // the burst FASTER + more RANDOM and cuts the line fully ON/OFF: most ticks
-      // re-roll the corrupted cells, but ~1-in-5 the WHOLE line drops out for a tick
-      // (a brief blackout), like a signal breaking up. Pauses off the entry splash;
-      // reduced-motion → fully static (this whole block is skipped).
-      if(corrupt && !prefersReducedMotion() && typeof requestAnimationFrame === "function"){
+    }catch(e){ /* keep the plain CSS text on any failure */ }
+  }
+  // T221 (owner redesign) — the VOID line is a chunky TWO-LINE pixel title
+  // ("THE VOID" / "THRONE") that fills a box under the wordmark, with a gentle
+  // Star-Wars skew (each line's bottom wider than its top) + a luminous purple
+  // top→dark gradient + the intermittent interference. A built-in bold pixel font
+  // (owner picked the pixel mockup directly over the JetBrains-Mono raster).
+  const VOID_FONT = {
+    T:["11111","00100","00100","00100","00100","00100","00100"],
+    H:["10001","10001","10001","11111","10001","10001","10001"],
+    E:["11111","10000","10000","11110","10000","10000","11111"],
+    V:["10001","10001","10001","10001","10001","01010","00100"],
+    O:["01110","10001","10001","10001","10001","10001","01110"],
+    I:["11111","00100","00100","00100","00100","00100","11111"],
+    D:["11110","10001","10001","10001","10001","10001","11110"],
+    R:["11110","10001","10001","11110","10100","10010","10001"],
+    N:["10001","11001","10101","10011","11001","10001","10001"],
+    " ":["00000","00000","00000","00000","00000","00000","00000"]
+  };
+  function voidCols(text){
+    const out = [];
+    for(let i = 0; i < text.length; i++){ const ch = text[i], g = VOID_FONT[ch] || VOID_FONT[" "], wide = ch === " " ? 3 : 5;
+      for(let x = 0; x < wide; x++){ const col = []; for(let y = 0; y < 7; y++) col.push(ch === " " ? 0 : +g[y][x]); out.push(col); }
+      out.push([0,0,0,0,0,0,0]); }   // 1px gap between letters
+    return out;
+  }
+  const VOID_RAMP = [[212,180,255],[152,98,242],[98,62,158]];   // luminous violet → mid → deep
+  function paintVoidThrone(el){
+    if(!el || !document.createElement) return;
+    try{
+      if(el.dataset && !el.dataset.title) el.dataset.title = el.textContent || "The Void Throne";
+      const disp = document.createElement("canvas"); disp.width = 600; disp.height = 360; disp.className = "voidtitle";
+      const d = disp.getContext && disp.getContext("2d");
+      if(!d || typeof d.getImageData !== "function") return;     // headless/no-2d → keep the CSS text
+      const W = 600, H = 360, L1 = voidCols("THE VOID"), L2 = voidCols("THRONE");
+      const ramp = t => { t = t < 0 ? 0 : t > 1 ? 1 : t; return VOID_RAMP[Math.min(2, (t * 3) | 0)]; };
+      // one text line, stretched across the box width with a per-row skew (top scaled
+      // to `ts`, bottom to full width) + a top→dark gradient.
+      const drawLine = (cols, y0, y1, ts, cseed) => {
+        const n = cols.length, bandH = (y1 - y0) / 7;
+        for(let sy = 0; sy < 7; sy++){
+          const dep = sy / 6, rs = ts + (1 - ts) * dep, oy = y0 + sy * bandH;
+          const rw = W * rs, left = W * (1 - rs) / 2, cw = rw / n, col = ramp(dep);
+          for(let sx = 0; sx < n; sx++){
+            if(!cols[sx][sy]) continue;
+            let ox = sx, alpha = 1;
+            if(cseed != null){   // intermittent interference: dropped / displaced / dithered cells
+              const hsh = ((sx * 73856093) ^ ((sy + (y0 | 0)) * 19349663) ^ Math.imul(cseed | 0, 2654435761)) >>> 0, r = hsh % 100;
+              if(r < 9) continue;
+              else if(r < 22) ox += ((hsh >> 5) & 1) ? 1 : -1;
+              if(((hsh >> 9) & 15) >= 11) alpha = 0.45;
+            }
+            d.fillStyle = alpha < 1 ? "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + alpha + ")" : "rgb(" + col[0] + "," + col[1] + "," + col[2] + ")";
+            d.fillRect(left + ox * cw, oy, cw + 0.8, bandH + 0.8);   // +0.8 closes sub-pixel seams
+          }
+        }
+      };
+      const draw = (cseed) => {
+        d.clearRect(0, 0, W, H);
+        drawLine(L1, 16, H / 2 - 4, 0.86, cseed);     // THE VOID — gentle skew (top 0.86×)
+        drawLine(L2, H / 2 + 4, H - 16, 0.72, cseed); // THRONE — slightly wider base
+      };
+      draw(null);
+      el.innerHTML = ""; el.appendChild(disp);
+      // intermittent interference: settled = the clean two-line title; reduced-motion → static.
+      if(!prefersReducedMotion() && typeof requestAnimationFrame === "function"){
         const onEntry = () => { try{ return screens.entry && screens.entry.classList.contains("active"); }catch(e){ return false; } };
         const clk = () => (performance && performance.now) ? performance.now() : Date.now();
-        const blankLine = () => d.clearRect(0, 0, disp.width, disp.height);   // T220 — full dropout
         let cseed = 1;
         const burst = () => {
           if(!onEntry()){ setTimeout(burst, 1200); return; }
-          const dur = 350 + Math.random() * 750, t0 = clk();   // active interference: ~0.35–1.1s
+          const dur = 350 + Math.random() * 750, t0 = clk();
           (function flick(){
-            if(Math.random() < 0.2) blankLine();                                       // ~20% whole-line dropout (cut OFF)
-            else { cseed = (Math.imul(cseed, 1103515245) + 12345) >>> 0; draw(null, cseed); }   // else re-roll the cells
-            if(clk() - t0 >= dur){ draw(null); setTimeout(burst, 1600 + Math.random() * 2600); return; }   // settle → idle ~1.6–4.2s
-            setTimeout(flick, 35 + Math.random() * 70);   // ~9–28fps, JITTERY (faster + more random)
+            if(Math.random() < 0.18) d.clearRect(0, 0, W, H);   // brief whole-line dropout (cut OFF)
+            else { cseed = (Math.imul(cseed, 1103515245) + 12345) >>> 0; draw(cseed); }
+            if(clk() - t0 >= dur){ draw(null); setTimeout(burst, 1700 + Math.random() * 2600); return; }   // settle → idle
+            setTimeout(flick, 38 + Math.random() * 70);   // ~9–26fps, jittery
           })();
         };
-        setTimeout(burst, 1200 + Math.random() * 1400);
+        setTimeout(burst, 1300 + Math.random() * 1400);
       }
     }catch(e){ /* keep the plain CSS text on any failure */ }
   }
-  // Stylise the entry title pair (gold wordmark + void subtitle); re-runs once fonts
-  // load so the pixel shapes use the real display face, not a fallback.
+  // Stylise the entry title pair (gold wordmark + void two-line title); re-runs once
+  // fonts load so the gold pixel shapes use the real display face.
   function renderTitles(){
     const e = screens.entry; if(!e) return;
-    paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT, false);   // gold: Space Grotesk, clean + glint
-    paintPixelTitle(e.querySelector(".subtitle"), TITLE_VOID, null, true, "'JetBrains Mono',ui-monospace,monospace", true);   // void: a DISTINCT mono face, ALL CAPS, intermittent glitch (T217)
+    paintPixelTitle(e.querySelector(".brand"), TITLE_GOLD, TITLE_GOLD_GLINT);   // gold: Space Grotesk, clean + glint
+    paintVoidThrone(e.querySelector(".subtitle"));                              // void: chunky two-line "THE VOID / THRONE" (T221)
   }
 
   // Mint the favicon / home-screen icon from the same pixel renderer: draw the
@@ -2505,9 +2578,9 @@
     if(h === "heroes" && !isFeatureUnlocked("heroes")){ location.hash = "#/"; return; }
     if(h === "arena" && !isFeatureUnlocked("arena")){ location.hash = "#/"; return; }
     if(h.indexOf("hero/") === 0 && !isFeatureUnlocked("heroes")){ location.hash = "#/"; return; }
-    if(h === "inventory"){ renderInventory(); show("inventory"); }
+    if(h === "inventory"){ renderInventory(); show("inventory"); markNavSeen("items"); }   // T218 — viewing clears the badge
     else if(h === "best-times"){ renderSummary(); show("summary"); }
-    else if(h === "heroes"){ renderHeroes(); show("heroes"); }
+    else if(h === "heroes"){ renderHeroes(); show("heroes"); markNavSeen("heroes"); }       // T218
     else if(h.indexOf("hero/") === 0){
       if(renderHeroDetail(h.slice(5))) show("heroDetail");
       else { location.hash = "#/heroes"; return; }   // unknown/locked → back to the list
@@ -2724,8 +2797,8 @@
   function ensureAudioReady(){
     if(window.Sound && window.Sound.unlock) window.Sound.unlock();
     setupSynth();
-    if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(loadSfxVol() / 100);
-    setMusicVolume(loadMusicVol());
+    if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(sfxGainFor(loadSfxLevel()));
+    setMusicVolume(loadMusicLevel());
   }
   // T159 — the shared AudioContext (sound.js owns it; Synth mounts on it).
   function audioCtx(){ try{ return (window.Sound && window.Sound.ctx && window.Sound.ctx()) || null; }catch(e){ return null; } }
@@ -2773,28 +2846,29 @@
   // music. Migrate the old single `halves.vol`: a stale OLD-scale value (>10, e.g.
   // 300=3.0×) → the new defaults; a valid in-range one → the music level. Tempo
   // stored 40–100 (→ ×0.40..1.00), default 50. A saved pref otherwise wins.
-  function migVol(){ const v = parseInt(localStorage.getItem("halves.vol"), 10); return (isFinite(v) && v >= 0 && v <= 10) ? v : null; }
-  function loadMusicVol(){ const v = parseInt(localStorage.getItem("halves.musicVol"), 10); if(isFinite(v) && v >= 0 && v <= 10) return v; const m = migVol(); return m == null ? 5 : m; }
-  // T148 — the SFX slider now maps to the REAL SFX range (0→SFX_MAX=1.0× via /100,
-  // not the music's 0.10× scale): the sfxBus had ~10× unused headroom, so SFX were
-  // way too quiet. Stored under a new 0–100 key (`halves.sfxLvl`); migrate T143's old
-  // 0–10 `halves.sfxVol` ×10 so returning users get the louder mapping (not 8/100).
-  // Louder default 60 (0.60×) — SFX clearly cut over the music; limiter keeps it safe.
-  function loadSfxVol(){
-    const v = parseInt(localStorage.getItem("halves.sfxLvl"), 10);
-    if(isFinite(v) && v >= 0 && v <= 100) return v;
-    const old = parseInt(localStorage.getItem("halves.sfxVol"), 10);   // T143's 0–10 → ×10 to the new 0–100 scale
-    if(isFinite(old) && old >= 0 && old <= 10) return Math.min(100, old * 10);
-    return 60;
+  // T224 — both volumes now live on ONE 0–11 integer scale under NEW keys
+  // (`halves.musLv11` / `halves.sfxLv11`), fresh default 6 (the midpoint: music
+  // ≈0.11× gain, SFX ≈0.55×). One-time migration of the old scales to a valid level:
+  // music `halves.musicVol` (0–10) and SFX `halves.sfxLvl` (0–100) / `halves.sfxVol`
+  // (0–10) → 0–11. The tempo slider/pref is gone (tempo locked to native).
+  function migLevel(v, oldMax){ return Math.max(0, Math.min(11, Math.round(v * 11 / oldMax))); }
+  function loadMusicLevel(){
+    const v = parseInt(localStorage.getItem("halves.musLv11"), 10); if(isFinite(v) && v >= 0 && v <= 11) return v;
+    const old = parseInt(localStorage.getItem("halves.musicVol"), 10); if(isFinite(old) && old >= 0 && old <= 10) return migLevel(old, 10);
+    return 6;
   }
-  function loadTempo(){ const v = parseInt(localStorage.getItem("halves.tempo"), 10); return isFinite(v) ? v : 50; }
-  function saveMusicVol(v){ try{ localStorage.setItem("halves.musicVol", String(v)); }catch(e){} }
-  function saveSfxVol(v){ try{ localStorage.setItem("halves.sfxLvl", String(v)); }catch(e){} }
-  function saveTempo(v){ try{ localStorage.setItem("halves.tempo", String(v)); }catch(e){} }
+  function loadSfxLevel(){
+    const v = parseInt(localStorage.getItem("halves.sfxLv11"), 10); if(isFinite(v) && v >= 0 && v <= 11) return v;
+    const a = parseInt(localStorage.getItem("halves.sfxLvl"), 10); if(isFinite(a) && a >= 0 && a <= 100) return migLevel(a, 100);
+    const b = parseInt(localStorage.getItem("halves.sfxVol"), 10); if(isFinite(b) && b >= 0 && b <= 10) return migLevel(b, 10);
+    return 6;
+  }
+  function saveMusicLevel(v){ try{ localStorage.setItem("halves.musLv11", String(v)); }catch(e){} }
+  function saveSfxLevel(v){ try{ localStorage.setItem("halves.sfxLv11", String(v)); }catch(e){} }
   function applyAudioPrefs(){
-    const S = window.Sound; if(S && S.setSfxVolume) S.setSfxVolume(loadSfxVol() / 100);   // SFX bus
-    setMusicVolume(loadMusicVol());                                                       // music gain
-    musicForScreen(curScreen);   // re-derive the current context at the new tempo
+    const S = window.Sound; if(S && S.setSfxVolume) S.setSfxVolume(sfxGainFor(loadSfxLevel()));   // SFX bus
+    setMusicVolume(loadMusicLevel());                                                             // music gain
+    musicForScreen(curScreen);
   }
   // Guarded SFX trigger — a no-op if the engine is absent or muted.
   const DUCK_SFX = { item:1, gold:1, mastery:1, topic100:1, topicUnlock:1 };
@@ -2810,15 +2884,13 @@
   { const sb = $("soundBtn"); if(sb) sb.addEventListener("click", toggleSound); }                         // entry → toggle mute
 
   // ---- Settings + Audio menus (T85/T143) + "Clear all data" --------------------
-  function fmtVol(slider){ return (slider / 100).toFixed(2) + "×"; }
-  function fmtTempo(slider){ return (slider / 100).toFixed(2) + "×"; }
+  function fmtLevel(level){ return String(level) + " / 11"; }   // T224 — show the 0–11 level (no × multiplier)
   function renderSettings(){ syncSoundButtons(); }
   function renderAudio(){
     syncSoundButtons();
-    const mr = $("musicVolRange"), sr = $("sfxVolRange"), tr = $("tempoRange");
-    if(mr){ mr.value = loadMusicVol(); const v = $("setMusicVolVal"); if(v) v.textContent = fmtVol(loadMusicVol()); }
-    if(sr){ sr.value = loadSfxVol(); const v = $("setSfxVolVal"); if(v) v.textContent = fmtVol(loadSfxVol()); }
-    if(tr){ tr.value = loadTempo(); const v = $("setTempoVal"); if(v) v.textContent = fmtTempo(loadTempo()); }
+    const mr = $("musicVolRange"), sr = $("sfxVolRange");
+    if(mr){ mr.value = loadMusicLevel(); const v = $("setMusicVolVal"); if(v) v.textContent = fmtLevel(loadMusicLevel()); }
+    if(sr){ sr.value = loadSfxLevel(); const v = $("setSfxVolVal"); if(v) v.textContent = fmtLevel(loadSfxLevel()); }
     musicPreview = null; syncMusicSwitch();   // T129: fresh entry → "Auto" (per-screen music), nothing pre-selected
   }
   // T129 — the music switcher: reflect the picked style (or "Auto").
@@ -2887,23 +2959,17 @@
   // tempo, the style picker, and the celebration tester. None RESTART the music (they
   // use audioUnlock, which only starts music if it isn't already playing).
   (function wireAudioControls(){
-    const mr = $("musicVolRange"), sr = $("sfxVolRange"), tr = $("tempoRange"), test = $("setTest");
+    const mr = $("musicVolRange"), sr = $("sfxVolRange"), test = $("setTest");
     if(mr) mr.addEventListener("input", () => {
-      const v = parseInt(mr.value, 10) || 0; saveMusicVol(v);
-      const el = $("setMusicVolVal"); if(el) el.textContent = fmtVol(v);
+      const v = parseInt(mr.value, 10) || 0; saveMusicLevel(v);
+      const el = $("setMusicVolVal"); if(el) el.textContent = fmtLevel(v);
       audioUnlock(); setMusicVolume(v);   // music gain only (independent of SFX)
     });
     if(sr) sr.addEventListener("input", () => {
-      const v = parseInt(sr.value, 10) || 0; saveSfxVol(v);
-      const el = $("setSfxVolVal"); if(el) el.textContent = fmtVol(v);
-      audioUnlock(); if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(v / 100);
+      const v = parseInt(sr.value, 10) || 0; saveSfxLevel(v);
+      const el = $("setSfxVolVal"); if(el) el.textContent = fmtLevel(v);
+      audioUnlock(); if(window.Sound && window.Sound.setSfxVolume) window.Sound.setSfxVolume(sfxGainFor(v));
       sfx("correct", 6);   // preview the SFX at the new level (so the balance is audible)
-    });
-    if(tr) tr.addEventListener("input", () => {
-      const v = parseInt(tr.value, 10) || 100; saveTempo(v);
-      const el = $("setTempoVal"); if(el) el.textContent = fmtTempo(v);
-      audioUnlock();
-      if(musicPreview) synthSwitchContext(musicPreview); else musicForScreen(curScreen);   // re-derive at the new tempo
     });
     if(test) test.addEventListener("click", () => { audioUnlock(); sfx("correct", 6); });
     const musGrp = $("musicSwitch");
@@ -3000,7 +3066,8 @@
   // drop the in-memory caches and reload so nothing survives.
   const KNOWN_KEYS = ["halves.collected","halves.stats","halves.gold","halves.streak",
     "halves.eventBest","halves.qbest","halves.mode","halves.pickerView","halves.sound",
-    "halves.vol","halves.tempo"];
+    "halves.vol","halves.tempo","halves.musicVol","halves.sfxLvl","halves.sfxVol",
+    "halves.musLv11","halves.sfxLv11","halves.dev","halves.devReveal","halves.unlocked"];
   function clearAllData(){
     try{
       const keys = [];

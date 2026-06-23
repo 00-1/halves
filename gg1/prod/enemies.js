@@ -287,7 +287,17 @@
     }
     const capEnv = advProd.slice();
     for(let i = capEnv.length - 2; i >= 0; i--) capEnv[i] = Math.min(capEnv[i], capEnv[i + 1]);
-    const build = lb0 => { const fb = []; for(let n = 1; n <= TIER_COUNT; n++) fb.push(Math.min(lb0 * Math.pow(LG, n - 1), capEnv[n - 1] * CAPF)); return fb; };
+    // T219 — frac-loadout monotonicity guard. The (f) invariant sweeps FRAC-of-catalog
+    // loadouts, where the greedy best-team is NON-monotone (a partial loadout can field
+    // a weaker trio than a smaller one, so a tier won at ~75% could re-LOSE at ~85%).
+    // Cap the budget below the weakest probed frac loadout (a flat ceiling — only the 3
+    // types × 2 fracs to compute, cheap) so a partial collection that clears a tier keeps
+    // clearing it as it grows. A flat ceiling keeps the curve non-decreasing; tier 120 is
+    // re-pinned ABOVE this below (the genuine near-max wall). Robust to catalogue growth.
+    const fracSet = f => { const all = DRILL_IDS.slice(), o = {}; all.slice(0, Math.floor(all.length * f)).forEach(id => o[id] = true); return o; };
+    let fracGuard = Infinity;
+    TYPES.forEach(ty => { for(const f of [0.75, 0.85]) fracGuard = Math.min(fracGuard, teamProduct(bestTeamVs(fracSet(f), 3, ty))); });
+    const build = lb0 => { const fb = []; for(let n = 1; n <= TIER_COUNT; n++) fb.push(Math.min(lb0 * Math.pow(LG, n - 1), capEnv[n - 1] * CAPF, fracGuard * CAPF)); return fb; };
     // owned-sets used for the early floor + final-tier calibration
     const bram = [heroCombatant(H.HEROES[0], {})];
     const nearFull = {}; DRILL_IDS.forEach(id => nearFull[id] = true);

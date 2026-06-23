@@ -277,7 +277,7 @@
     cubes: {
       intro: "Cubing multiplies a number by itself three times; a ROOT undoes it — ∛ finds the cube's source, √ the square's.",
       tips: [
-        "n³ means n × n × n: 4³ = 4 × 4 = 16, then × 4 = 64. (It is NOT n × 3.)",
+        "n³ means n × n × n: for 4³, do 4 × 4 = 16, then × 4 = 64. (It is NOT n × 3.)",
         "Learn the small cubes: 2³ = 8, 3³ = 27, 5³ = 125, 10³ = 1000.",
         "A root reads them backwards: ∛64 asks 'what cubed makes 64?' (4); √225 asks 'what squared makes 225?' (15).",
         "So know your squares and cubes and the roots come for free."
@@ -310,6 +310,79 @@
         "5 → ×2 → +3: 5 × 2 = 10, then 10 + 3 = 13."
       ],
       example: "6 → ×2 → −4 → 6 × 2 = 12, then 12 − 4 → 8."
+    },
+    xtricks: {
+      intro: "Some multiplications have a shortcut that's faster than the long way.",
+      tips: [
+        "×11 (2-digit): add the two digits and drop the sum in the middle. 23 × 11 → 2_(2+3)_3 = 253.",
+        "×25 = ×100 ÷ 4. 16 × 25 → 1600 ÷ 4 = 400.",
+        "×9 = ×10 − 1 lot; ×99 = ×100 − 1 lot. 13 × 9 → 130 − 13 = 117.",
+        "×5 = ×10 ÷ 2. 46 × 5 → 460 ÷ 2 = 230."
+      ],
+      example: "24 × 25 → 2400 ÷ 4 → 600."
+    },
+    negatives: {
+      intro: "Adding and subtracting can dip below zero and come back — track the running total.",
+      tips: [
+        "Start negative? Adding climbs back up: −5 + 8 means start at −5 and count up 8 → 3.",
+        "Going below zero mid-sum is fine if you end at zero or above.",
+        "Work left to right, keeping a running total."
+      ],
+      example: "3 − 8 + 9 → 3 − 8 = −5, then −5 + 9 → 4."
+    },
+    area: {
+      intro: "Area is the space inside a shape; perimeter is the distance all the way round.",
+      tips: [
+        "Rectangle area = length × width. 6 × 4 = 24.",
+        "Rectangle perimeter = 2 × (length + width). A 6 by 4 rectangle → 2 × 10 = 20.",
+        "Triangle area = ½ × base × height. 8 and 5 → 40 ÷ 2 = 20."
+      ],
+      example: "area 7×5 → 7 × 5 → 35 (square units)."
+    },
+    volume: {
+      intro: "The volume of a cuboid is how much space it fills — multiply its three sides.",
+      tips: [
+        "Volume = length × width × height. 2 × 3 × 4 = 24.",
+        "Multiply two sides first, then the third. 2 × 3 = 6, then × 4 = 24.",
+        "A cube is all three the same: 3 × 3 × 3 = 27."
+      ],
+      example: "vol 5×4×3 → 5 × 4 = 20, then × 3 → 60."
+    },
+    angles: {
+      intro: "Angles in a set position add up to a fixed total — subtract what you know to find the rest.",
+      tips: [
+        "On a straight line the angles make 180°. 110 → 180 − 110 = 70.",
+        "Round a point they make 360°. 250 → 360 − 250 = 110.",
+        "In a triangle the three angles make 180°. 60 + 70 → 180 − 130 = 50."
+      ],
+      example: "△ 60, 70 → 180 − 60 − 70 → 50."
+    },
+    mmr: {
+      intro: "Three more 'averages': the median (middle), the mode (most common) and the range (the spread).",
+      tips: [
+        "Median: put the numbers in order, then take the middle one.",
+        "Mode: the value that appears most often.",
+        "Range: the biggest minus the smallest."
+      ],
+      example: "median of 3, 7, 5 → in order 3, 5, 7 → the middle is 5."
+    },
+    sdt: {
+      intro: "Speed, distance and time link up: distance = speed × time. Rearrange for the one you need.",
+      tips: [
+        "Distance = speed × time. 60 km/h for 2 h → 120 km.",
+        "Speed = distance ÷ time. 120 km in 2 h → 60 km/h.",
+        "Time = distance ÷ speed. 120 km at 60 km/h → 2 h."
+      ],
+      example: "speed: 150 km in 3 h → 150 ÷ 3 → 50 km/h."
+    },
+    factors: {
+      intro: "Factors divide a number exactly; multiples are its times-table; prime factors are its prime building blocks.",
+      tips: [
+        "Count factors by pairing: 1 × N, 2 × …, up to the middle — count every divisor.",
+        "The next multiple of k: count up in k until you pass the number.",
+        "Prime-factorise by dividing out the smallest prime again and again (2, then 3, then 5…)."
+      ],
+      example: "# factors of 12 → 1,2,3,4,6,12 → 6 of them."
     },
     pctup: {
       intro: "A percentage INCREASE adds that slice ON — find the part, then add it to the original.",
@@ -566,6 +639,57 @@
       case "algebra":
         // METHOD only — feed it through the boxes, never the output.
         return "Run the number through the boxes left to right — each step's result is the next step's input.";
+      case "xtricks": { const m = p.match(/^(\d+) × (\d+)$/); if(!m) break; const b = +m[2];
+        if(b === 11) return "×11: add the two digits of " + m[1] + " and slot the sum between them (carry if it's 10+).";
+        if(b === 25) return "×25 is ×100 then ÷ 4 — put two zeros on " + m[1] + ", then quarter it.";
+        if(b === 9)  return "×9 is ×10 minus one lot — ten " + m[1] + "s, then take one " + m[1] + " away.";
+        if(b === 99) return "×99 is ×100 minus one lot — a hundred " + m[1] + "s, then take one " + m[1] + " away.";
+        if(b === 5)  return "×5 is ×10 then halve — ten " + m[1] + "s, then halve it.";
+        return "Use the shortcut for × " + b + "."; }
+      case "negatives":
+        // METHOD only — track the running total, never state it.
+        return "Work left to right, keeping a running total — it can dip below zero and climb back up.";
+      case "area": {
+        const ma = p.match(/^area (\d+)×(\d+)$/);
+        if(ma) return "Rectangle area = length × width — multiply " + ma[1] + " by " + ma[2] + ".";
+        const mp = p.match(/^perim (\d+)×(\d+)$/);
+        if(mp) return "Perimeter = twice (length + width) — add " + mp[1] + " and " + mp[2] + ", then double.";
+        const mt = p.match(/^△ (\d+)×(\d+)$/);
+        if(mt) return "Triangle area = half of base × height — multiply " + mt[1] + " by " + mt[2] + ", then halve.";
+        break; }
+      case "volume": { const m = p.match(/^vol (\d+)×(\d+)×(\d+)$/); if(!m) break;
+        return "Volume = the three sides multiplied — " + m[1] + " × " + m[2] + ", then × " + m[3] + "."; }
+      case "factors": {
+        // METHOD only — never the value. Biggest-prime answers can be 3/5/7, so
+        // never list example primes; describe the divide-down process instead.
+        const nf = p.match(/^# factors of (\d+)$/);
+        if(nf) return "Count every whole number that divides " + nf[1] + " exactly — pair them up (small × large) so none slip past.";
+        const nm = p.match(/^next ×(\d+) > (\d+)$/);
+        if(nm) return "Count up in " + nm[1] + "s from the nearest multiple just below " + nm[2] + " until you step past " + nm[2] + ".";
+        const pf = p.match(/^biggest prime of (\d+)$/);
+        if(pf) return "Keep dividing " + pf[1] + " by the smallest prime that fits, again and again — the largest prime you have to use is the answer.";
+        break; }
+      case "mmr": {
+        // METHOD only — describe how to find it, never the value.
+        if(/^median /.test(p)) return "Put the numbers in order, then take the one in the middle.";
+        if(/^mode /.test(p)) return "Find the value that appears most often in the list.";
+        if(/^range /.test(p)) return "Take the smallest number away from the largest.";
+        break; }
+      case "sdt": {
+        const md = p.match(/^dist: (\d+)km\/h × (\d+)h$/);
+        if(md) return "Distance = speed × time — multiply " + md[1] + " by " + md[2] + ".";
+        const ms = p.match(/^speed: (\d+)km in (\d+)h$/);
+        if(ms) return "Speed = distance ÷ time — divide " + ms[1] + " by " + ms[2] + ".";
+        const mt = p.match(/^time: (\d+)km at (\d+)km\/h$/);
+        if(mt) return "Time = distance ÷ speed — divide " + mt[1] + " by " + mt[2] + ".";
+        break; }
+      case "angles": {
+        // METHOD only — echo the fixed total (180/360, never an answer), not the
+        // given angle (which can equal the answer, e.g. line 90 → 90).
+        if(/^line /.test(p)) return "Angles on a straight line make 180° — take the angle you're given away from 180.";
+        if(/^point /.test(p)) return "Angles round a point make 360° — take the angle you're given away from 360.";
+        if(/^△ /.test(p)) return "A triangle's three angles make 180° — take the two given angles away from 180.";
+        break; }
       case "pctup": { const m = p.match(/^(\d+) \+ (\d+)%$/); if(!m) break; const base = +m[1], pct = +m[2];
         return "Find " + pct + "% of " + base + ", then add it on to " + base + " for the new total."; }
       case "fdp": {
