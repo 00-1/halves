@@ -6,6 +6,32 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 1: bank the engine services ([B], GO — autonomy grant)
+
+Gate #4 declared PASS (code+golden, no device — the crash fix landed `ba383ae` AND the initial-frame
+golden verifies the crashing path headlessly) → brickmap GO. Per the autonomy grant I proceeded
+(ungated) to the **full port, phase 1: bank the spike's proven UI/text/save into the engine crates**
+so they're reusable engine services (the research's "these sink into bm-render later").
+- **`bm-render::text2d`** (`8d8f1da`): the legible **2-D prose** service — bake a TTF face to an AA
+  coverage atlas + word-wrap (the #1 dependency). bm-render gains `ab_glyph`; the font FACE stays
+  game content (goblin-gold::text is now a re-export keeping the bake/layout tests by its asset).
+- **`bm-render::ui2d`** (`a3c6876`): the on-screen **2-D UI surface** contract — `RectRun`/`TextRun`
+  primitives, the shared quad `UI_SHADER`, and the data-free **keypad** widget (moved with its
+  tests). The headless golden painter + the app's surface renderer both build from these →
+  pixel-identical UI. **BOTH GPU goldens (fx-correct, drill-initial) still match under lavapipe** —
+  the bank is behavior-preserving.
+- **`bm-platform::save`** (`010e631`): a durable key→bytes `Store` trait — `FileStore`
+  (native/Android, atomic write+rename, path-traversal-safe keys) + `WebStore` (`localStorage`, hex).
+- goblin-gold is now a thin consumer of the engine services. Gates: bm-render **28** tests /
+  goblin-gold **11** / bm-platform **5** green; workspace `clippy -D warnings` + `fmt` clean on
+  native, `save` clean on wasm32 too, goblin-gold clean on aarch64-linux-android; `scraped-again`
+  (the other bm-render consumer) unaffected. Pushed to `main` + the feature branch.
+- **Next:** phase 2 (re-impl GG1 topic logic in Rust vs the T229 parity vectors), phase 3 (content
+  via T229/T230), phase 4 (audio re-author), phase 5 (polish) — each gated on tests/goldens; APK
+  installs + audio-by-ear → the owner-eyeball-on-return list, don't block.
+
+---
+
 ## BRICKMAP-GG1 spike — mini-gate #4: on-device LAUNCH CRASH fixed (empty vertex buffer) ([B], 🔴→GREEN)
 
 The APK force-closed on launch (Adreno 735, Android 16). Two cycles:
