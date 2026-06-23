@@ -84,14 +84,14 @@ DONE/APPROVED (`0f77a83` — additive, `.exp` package, manual CI, notch fix bake
 `content-parity.test.js`. *(BACKLOG T230.)* — Capacitor on-device test is now in the OWNER's hands (keystore secrets
 → dispatch the manual CI workflow → install the `.exp` artifact → run the acceptance checklist vs the TWA).
 
-**Builder B → GO: spike mini-gate #3 — SELF-VERIFIED FX (the founding reason for the pivot).** ✅ **#1 (font) PASSED**
-(owner: "all very readable, third sample best"). ✅ **#2 (keypad+drill) PASSED** — Babysitter-gated on test evidence
-(`227c5e8`): 27/27 halves vectors accepted, 2nd topic loads, wrong-answer handling; **the parity vectors ARE the
-correctness contract** (JS transform never executed). **Now build #3** in `crates/goblin-gold`: a correct-answer
-**palette/particle FX flourish** using `bm-render`'s recipes (`palette`/`splat`/`particles` — don't port `fxgl.js`),
-**ASSERTED by a headless golden-PNG diff test** — extend `headless.rs` with the golden-diff layer (bless a golden,
-assert match, and **prove it CATCHES an injected regression / "test the test"**). Then HOLD to gate → **#4 clean APK
-(the final spike gate — owner device-judges)**. Deliver: the golden test + an FX-moment screenshot.
+**Builder B → GO: spike mini-gate #4 — CLEAN APK (the FINAL spike gate; owner device-judges).** ✅ #1 font (owner
+"all readable, 3rd best") · ✅ #2 keypad+drill over the T229 seam (`227c5e8`, proven by tests) · ✅ #3 self-verified
+golden-PNG FX (`f0c6879`, "test-the-test" catches 2 injected regressions). **Now build #4:** a `goblin-gold` **APK**
+(via `cargo-apk`, following the existing `android.yml` / `scraped-again` pattern — add the crate to the Android
+build) that boots the **drill + keypad + FX FULLSCREEN on a real phone**, no voxel world. **Keep its package id
+DISTINCT** from the halves Capacitor `.exp` experiment (these are two separate experiments). Deliver an installable
+**APK artifact** + the package id for the owner to install & judge. Then → the **full go/no-go decision** (owner +
+Babysitter).
 *(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 

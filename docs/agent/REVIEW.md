@@ -2063,3 +2063,17 @@ Keypad = data-free no-leakage widget (engine-candidate). 2-D painter via real wg
 model; framed Q "Half of 100" = first vector `100→50`, seam visibly live. **Gated PASS on the test
 evidence (the cross-repo DATA SEAM is proven end-to-end) — owner's keypad screenshots are an optional
 feel-check, not a blocker.** → B GO mini-gate #3 (self-verified golden-PNG FX).
+
+---
+
+## GATE PASS — BRICKMAP-GG1 spike mini-gate #3 (engine-native FX + golden-PNG diff) · Builder B · `00-1/brickmap:f0c6879`
+**The self-verify keystone — the founding reason for the pivot, demonstrated.** Correct-answer FX =
+gold spark burst from `bm-render::particles::ParticleSystem` + `palette::PalettePass` (Bayer-4×4
+dither over a gold ramp) — **brickmap's OWN recipes, NOT an `fxgl.js` port** (per research). Deterministic
+(fixed seed/slice) → pixel-stable. Golden layer (`rgba_from_png`/`diff`/`matches`) runs **pure-CPU in
+CI**. **"Test the test" complete:** asserts the FX MATCHES the golden AND that **two injected regressions
+(burst suppressed / palette collapsed) FAIL** — proving the golden catches breakage. 14 pure tests +
+GPU golden (lavapipe); clippy -D warnings workspace-wide; no engine/voxel code touched. **Gated PASS on
+the test evidence (self-verifying by definition).** → B GO mini-gate #4 (clean APK — the FINAL spike
+gate, owner device-judges). Note B's heads-up: keep the brickmap APK package distinct from the halves
+Capacitor `.exp` experiment.
