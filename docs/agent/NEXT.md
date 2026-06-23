@@ -77,12 +77,12 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → `T230` — content export part 2: guides + collectibles (+ balance).** ✅ `T231` Capacitor scaffold
-DONE/APPROVED (`0f77a83` — additive, `.exp` package, manual CI, notch fix baked in; on-device validation = owner).
-✅ `T229` DONE. Now **resume the content seam**: emit `content/gg1/guides.json` + `content/gg1/collectibles.json`
-(+ stretch `balance.json`), **same non-destructive/additive rules** (suite stays 64/64; runtime untouched); extend
-`content-parity.test.js`. *(BACKLOG T230.)* — Capacitor on-device test is now in the OWNER's hands (keystore secrets
-→ dispatch the manual CI workflow → install the `.exp` artifact → run the acceptance checklist vs the TWA).
+**Builder A → HOLD pending the brickmap GO/NO-GO.** ✅ `T231` Capacitor scaffold · ✅ `T229` modes export · ✅ `T230`
+guides+collectibles export (`6b7387b`; parity 32/32, suite 64/64) — the **content-as-data seam is complete** for
+near-term needs. **Do NOT build more port-prep speculatively:** `T232` (`balance.json`) is **DEFERRED** until brickmap
+is greenlit (it's brickmap-port-only value). Other A work is owner-gated too: TWA polish `T228` (your `.aab` rebuild),
+GG1 store (ship paused), Capacitor on-device test (your keystore+CI dispatch). So A holds until the go/no-go or you
+point it somewhere. *(If you want A busy now regardless, `T232` balance.json is the one clean additive task available.)*
 
 **Builder B → HOLD for the GO/NO-GO. Spike COMPLETE — all 4 mini-gates delivered.** ✅ #1 font (owner "all readable,
 3rd best") · ✅ #2 keypad+drill over the T229 seam (`227c5e8`, proven by tests) · ✅ #3 self-verified golden-PNG FX

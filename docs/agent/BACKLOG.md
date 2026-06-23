@@ -19,7 +19,9 @@ Full spec = **`CAPACITOR-SPEC.md`**. In-process-WebView Android wrapper for `gg1
 internal-testing app (real listing untouched); goal = a CI-built signed `.aab` that launches fullscreen with **no
 "Open with"/address bar**, to compare against the TWA on-device. DoD in the spec.
 
-### T230 — GG1 content export, part 2: guides + collectibles (+ balance)  · status: OPEN — A RESUMES (T231 scaffold done)  · [A]
+### T232 — GG1 content export, part 3: balance.json (gold/enemy-tiers/hero-stats)  · status: DEFERRED (post-go/no-go; brickmap-port-only value — don't build speculatively)  · [A]
+
+### T230 — GG1 content export, part 2: guides + collectibles  · status: DONE (Builder A `6b7387b`; APPROVED — guides 46/46+explain, collectibles 2352 catalogue+ladder, parity 32/32, suite 64/64, additive)  · [A]
 Continue the T229 seam, same **non-destructive / additive** rules (suite stays 64/64, runtime untouched).
 - Emit `content/gg1/guides.json` (from `guides.js` — per-topic guide text + `explain()` cases as data) and
   `content/gg1/collectibles.json` (the catalogue from `collectibles.js`: ranks, awards, loot, emblems, **and

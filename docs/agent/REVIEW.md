@@ -2091,3 +2091,14 @@ passes; CI Android build triggered on push. **INHERENTLY owner-device-judged —
 here.** Code + CI delivered & Android-compile-verified; **awaiting owner install of `dev.brickmap.goblingold`
 (brickmap `dev` prerelease / the Android-APK workflow run).** → then the **full go/no-go decision**
 (owner + Babysitter). **Spike complete: #1 ✅ · #2 ✅ · #3 ✅ · #4 delivered (awaiting device).**
+
+---
+
+## APPROVED — T230 (content export pt2: guides + collectibles) · Builder A · `6b7387b`
+Additive (zero `gg1/` touched). `guides.json` = `{topics:{46}, explain:{46}}` — **all 46 topics + explain**.
+`collectibles.json` = `{total:2352, categories:{10}, collectorLadder:{5}, catalog:[2352]}` — full catalogue
++ ladder (total 2352 matches the live collector total). Parity test extended **16→32**, all pass; runtime
+suite **64/64**. The content-as-data **seam is complete** for near-term port needs (modes T229 + guides +
+collectibles T230). **`balance.json`** (gold/enemy-tiers/hero-stats tuning — needs `main.js`/`enemies.js`/
+`heroes.js` spelunking) **deferred to T232, post-go/no-go** — it's brickmap-port-only value, so don't build
+it speculatively before the owner decides on brickmap. → A HOLDS pending the go/no-go.
