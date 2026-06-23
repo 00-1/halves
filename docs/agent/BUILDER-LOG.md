@@ -6307,3 +6307,30 @@ became horizontally scrollable — owner saw "Goblin Gold" clip at the left edge
 dpr2.75: `#entry` overflowX=hidden, scrollWidth==clientWidth (380==380), no page-level h-scroll (412==412). 64/64
 suites green. Flows to the installed TWA via the next prod deploy. (T228 notch-fill/toast remains parked — needs the
 .aab rebuild first; see BACKLOG.)
+
+---
+### [A] T229 — GG1 content-as-data export (NON-DESTRUCTIVE)
+The engine-agnostic content seam the brickmap port (or any re-impl / JS reuse) consumes, + parity vectors that
+prove a re-implementation reproduces GG1 exactly. **Additive only — the live runtime is untouched.**
+- **`tools/content-export.js`** loads the LIVE `gg1/dev/modes.js` read-only (window-stub IIFE → `window.MODES`) and
+  emits the seam. To get each mode's RAW pool (`*_SRC`) and named transform fns WITHOUT fragile source-parsing, it
+  re-runs the same source with ONE injected line that captures those module-local bindings from their NATIVE scope
+  just before `window.MODES = MODES;` (so the pools/fns are the real runtime values, not re-evaled literals). Build
+  shape is uniform across all 46 modes — `shuffle(<POOL>).map(<named-fn | inline-arrow>)` — parsed by balanced-paren
+  scan.
+- **Emits `content/gg1/`:** `modes.json` (per mode `{id,name,tag,group,expr,masterSecs,unlock:{mastery|by}|null,
+  transform,pool}`) · `parity-vectors.json` (per mode the FULL deterministic `{p,a}` set, sorted — proven
+  deterministic by building twice and diffing) · `transforms.md` (every transform fn source + the shared `MINUS="−"`
+  constant + the order-only `shuffle` helper, flagged "do NOT port as content") · `README.md` (contract + `node
+  tools/content-export.js` regen). **46 modes, 959 parity pairs** (matches the T225 question count exactly).
+- **`test/content-parity.test.js`** (NEW top-level `test/`, kept OUT of the `gg1/dev/test/` runtime suite so that
+  stays exactly **64/64**) re-runs the export and asserts the COMMITTED files byte-match a fresh regeneration (the
+  drift gate), re-derives every vector straight from the live `build()` (46/46 reproduce), checks structure (46
+  modes, 959 pairs, valid unlocks), and asserts the exporter never writes into `gg1/dev`. Wired as a CI gate in
+  `pages.yml`. 16/16.
+- **Spot-verified** the exported vectors recompute correctly independently (e.g. factors: divisor-count /
+  next-multiple / largest-prime-factor all match).
+- guides/balance/collectibles export = the follow-on **T230** (out of scope here, per the spec).
+verified: `node -c` on both new JS files; `content-parity.test.js` 16/16; **runtime suite still 64/64, zero runtime
+files modified** (git: only the additive pages.yml gate + new `tools/`, `content/`, `test/`). DoD met: reproducible,
+committed, parity green, runtime untouched. [A]-only, additive.

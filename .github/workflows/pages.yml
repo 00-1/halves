@@ -152,6 +152,8 @@ jobs:
         run: node gg1/dev/test/golden-fx.test.js
       - name: Synth golden-score test (gate)
         run: node gg1/dev/test/golden-synth.test.js
+      - name: Content-as-data export parity (T229) test (gate)
+        run: node test/content-parity.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info (per app — each fetches its own ./build.json)
