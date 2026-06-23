@@ -6238,3 +6238,14 @@ Addressing the Babysitter's `🔴 CHANGES` on `c5151e5` (capstone `2350` flagged
   chosen per the review's reachable-with-margin guidance and is correct under either figure.
 verified: `collector.test.js` 27/27 (capstone 2300 < 2352, count 2299→11 rungs / 2300→12); `node -c`; full suite
 **64/64**. [A]-only (collectibles.js, collector.test.js). This re-closes T219's final step.
+
+---
+### [BABYSITTER TAKE-OVER] T225 fix — two guide-text corrections (owner-authorised)
+The Babysitter ran the T225 final quality gate (agent assessment of all 959 questions + all text, then double-check).
+Questions: 0 issues (all 959 recomputed correct + numpad-safe). Text: 2 fixes, applied here directly (A's queue was
+clear; owner authorised take-over to keep momentum to v1):
+- `guides.js` cubes tip — was `"4³ = 4 × 4 = 16, then × 4 = 64"` (the equals chain falsely reads 4³ = 16). → `"for
+  4³, do 4 × 4 = 16, then × 4 = 64"`. HIGH (teaching-correctness).
+- `guides.js` area perimeter tip — `"6 × 4 → 2 × 10 = 20"` (the `6 × 4` reads as 24) → `"A 6 by 4 rectangle → 2 ×
+  10 = 20"`. MED (clarity).
+verified: `node -c` clean; full suite **64/64**. [Babysitter] (guides.js). T225 text pass clean after this → v1 sign-off.

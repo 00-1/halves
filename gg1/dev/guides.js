@@ -277,7 +277,7 @@
     cubes: {
       intro: "Cubing multiplies a number by itself three times; a ROOT undoes it — ∛ finds the cube's source, √ the square's.",
       tips: [
-        "n³ means n × n × n: 4³ = 4 × 4 = 16, then × 4 = 64. (It is NOT n × 3.)",
+        "n³ means n × n × n: for 4³, do 4 × 4 = 16, then × 4 = 64. (It is NOT n × 3.)",
         "Learn the small cubes: 2³ = 8, 3³ = 27, 5³ = 125, 10³ = 1000.",
         "A root reads them backwards: ∛64 asks 'what cubed makes 64?' (4); √225 asks 'what squared makes 225?' (15).",
         "So know your squares and cubes and the roots come for free."
@@ -334,7 +334,7 @@
       intro: "Area is the space inside a shape; perimeter is the distance all the way round.",
       tips: [
         "Rectangle area = length × width. 6 × 4 = 24.",
-        "Rectangle perimeter = 2 × (length + width). 6 × 4 → 2 × 10 = 20.",
+        "Rectangle perimeter = 2 × (length + width). A 6 by 4 rectangle → 2 × 10 = 20.",
         "Triangle area = ½ × base × height. 8 and 5 → 40 ÷ 2 = 20."
       ],
       example: "area 7×5 → 7 × 5 → 35 (square units)."
