@@ -9,6 +9,39 @@ Status legend: `OPEN` → ready to build · `IN-REVIEW` → awaiting Babysitter 
 
 ---
 
+## TWA / splash polish — QUEUED but PARKED (owner, 2026-06-23: "do later")
+GG1 ship is paused; these are real shipping-TWA fixes, **not** to be started until the owner
+un-parks. Strand-1 (TWA) work — Builder A — flows to the installed app via a prod deploy.
+
+### T227 — Splash horizontal-scroll (the void-glow overflow)  · status: PARKED  · [A]
+The `#entry` splash scrolls sideways (visible: "Goblin Gold" clips at the left edge). **Root
+cause:** `#entry{overflow-y:auto}` (styles.css:78) makes the *other* axis's `visible` compute to
+`auto` (CSS spec), so the void-glow `#entry .subtitle::after{inset:-40% -14% … animation:voidFog}`
+(styles.css:145) — which intentionally bleeds 14% past each side and drifts — becomes horizontally
+**scrollable**.
+- **DoD:** add `overflow-x:hidden` to `#entry` (dev + prod) so the glow clips to the viewport edge
+  (still bleeds to the edges, no scroll). Verify: no horizontal scroll on the splash at phone
+  widths; the fog still reaches both edges; no vertical-scroll/centring regression; `pwa.test.js`
+  splash assertions still pass. Pure CSS.
+
+### T228 — TWA truly-immersive (notch fill) + drop the JS-fullscreen toast  · status: PARKED  · [A]+aab
+Two coupled symptoms: (a) the **"00-1.github.io went full screen" toast** (Android's Fullscreen-API
+disclosure) fires because the T167 entry-tap calls JS `requestFullscreen()` (`main.js` entry:
+`enter(isInstalledDisplay())`, ~line 3232 → `fsEnter()`); (b) the **black notch/status strip** until
+that JS-FS runs — i.e. the JS-FS is currently the *only* thing making the TWA draw edge-to-edge.
+**So they're one rope:** removing the JS-FS to kill the toast re-introduces the black strip.
+- **DoD (do in this order):** (1) make the TWA **natively immersive + draw into the display cutout**
+  — rebuild the `.aab` via PWABuilder with **Display mode = "Fullscreen sticky"** and/or a
+  display-cutout `shortEdges` config; verify on-device it's edge-to-edge (notch filled) with **no**
+  JS-FS. (2) THEN the web change: add `isTWA()` (`document.referrer` starts `android-app://`) and
+  make the entry tap `enter(isInstalledDisplay() && !isTWA())` + hide the Settings FS toggle in a
+  TWA → toast gone, notch still filled. Plain browser tabs / non-TWA installed PWAs keep the exact
+  T167 behaviour. (3) full suite green; owner device-verifies both (no toast, no black strip).
+- **Note:** the "Running in Chrome" first-launch toast is **Chrome's TWA disclosure, not ours** —
+  out of scope, unfixable, first-run-only.
+
+---
+
 ## Phase 1 — Engine (on the existing 5 modes)
 
 ### T1 — Topic-chain unlock  · status: DONE
