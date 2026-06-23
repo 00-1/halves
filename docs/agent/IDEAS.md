@@ -626,3 +626,16 @@ go deeper") and honest.
 *(Status: combined per owner 2026-06-21 — this analysis now feeds **BACKLOG T58** (the unified
 content blueprint), which designs the existing-topic rebalance + Part-3s **together with** the new
 Wave-2 topics. T58 is authoritative; T59–T61 re-batched to match.)*
+
+---
+
+## Post-launch / brickmap-era ideas (owner, 2026-06-23)
+
+- **Vocoder / Speak-&-Spell speech synthesis.** Owner: aesthetic-first (period-correct for a
+  retro pixel "void throne" game), accessibility-adjacent as a bonus. Strong fit for the
+  brickmap/native direction — explore as an engine or GG-brickmap feature (generative speech in
+  the same "all procedural, no asset files" ethos as our SFX/music). NOT a GG1-web task.
+- **Monetisation posture (decided).** **GG1 = free forever.** **GG2+ may be a paid up-front
+  purchase** (outright, still NO in-app purchases). Keeps the store/marketing "no in-app
+  purchases" line true even when a future game is paid. Affects GG2 store setup + the brickmap
+  business case; no change to GG1.
