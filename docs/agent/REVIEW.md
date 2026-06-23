@@ -2049,3 +2049,17 @@ Good README + on-device acceptance checklist. **Two things outside my reach (inh
 the CI build hasn't been *dispatched* yet (first run will surface any toolchain hiccup), and the
 on-device behaviour (the whole point) is the owner's judgment — owner sets the 4 keystore secrets,
 dispatches the workflow, installs the artifact, runs the checklist. → A resumes **T230** (content seam).
+
+---
+
+## GATE PASS — BRICKMAP-GG1 spike mini-gate #2 (keypad + drill over the T229 seam) · Builder B · `00-1/brickmap:227c5e8`
+Stronger than #1 — **mechanically proven, not just visual.** `Drill::from_seam` reads mode meta from
+`modes.json` + `{p,a}` from `parity-vectors.json`; **the JS transform is NEVER run — the parity
+vectors are the correctness contract** (exactly the designed architecture). The seam IS the test: a
+unit test feeds **every** halves vector's expected answer (incl `.5`) → 27/27 accepted; wrong answers
+marked Wrong + don't advance; a **2nd topic (`times`)** loads → proves data-driven not hardcoded.
+Keypad = data-free no-leakage widget (engine-candidate). 2-D painter via real wgpu. 9 tests, clippy
+-D warnings, fmt; no engine/voxel code touched. Evidence PNGs (mid/correct/wrong) snapshot the real
+model; framed Q "Half of 100" = first vector `100→50`, seam visibly live. **Gated PASS on the test
+evidence (the cross-repo DATA SEAM is proven end-to-end) — owner's keypad screenshots are an optional
+feel-check, not a blocker.** → B GO mini-gate #3 (self-verified golden-PNG FX).

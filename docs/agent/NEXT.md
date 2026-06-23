@@ -84,13 +84,14 @@ DONE/APPROVED (`0f77a83` — additive, `.exp` package, manual CI, notch fix bake
 `content-parity.test.js`. *(BACKLOG T230.)* — Capacitor on-device test is now in the OWNER's hands (keystore secrets
 → dispatch the manual CI workflow → install the `.exp` artifact → run the acceptance checklist vs the TWA).
 
-**Builder B → GO: spike mini-gate #2 — KEYPAD + ONE DRILL.** ✅ **Mini-gate #1 (font) PASSED** — owner confirmed the
-prose is "all very readable" on a real phone (2026-06-23); **"the third sample is best — use that as the prose
-baseline"** (B: map to whichever screenshot/size that was; baked-TTF/Instrument-Sans path approved). **Now build
-mini-gate #2** in `crates/goblin-gold`: an on-screen **numeric keypad** (touch + digit keys) + **one drill loop** for a
-single topic (e.g. `halves`), its questions **consumed from T229's `content/gg1/modes.json` + `parity-vectors.json`**
-(proves the cross-repo data seam) → mark right/wrong. UI banked into the engine (reusable); one-way deps + no-leakage
-grep gate. Then HOLD to gate → #3 golden-PNG FX · #4 clean APK. Deliver a phone screen-capture of the keypad+drill.
+**Builder B → GO: spike mini-gate #3 — SELF-VERIFIED FX (the founding reason for the pivot).** ✅ **#1 (font) PASSED**
+(owner: "all very readable, third sample best"). ✅ **#2 (keypad+drill) PASSED** — Babysitter-gated on test evidence
+(`227c5e8`): 27/27 halves vectors accepted, 2nd topic loads, wrong-answer handling; **the parity vectors ARE the
+correctness contract** (JS transform never executed). **Now build #3** in `crates/goblin-gold`: a correct-answer
+**palette/particle FX flourish** using `bm-render`'s recipes (`palette`/`splat`/`particles` — don't port `fxgl.js`),
+**ASSERTED by a headless golden-PNG diff test** — extend `headless.rs` with the golden-diff layer (bless a golden,
+assert match, and **prove it CATCHES an injected regression / "test the test"**). Then HOLD to gate → **#4 clean APK
+(the final spike gate — owner device-judges)**. Deliver: the golden test + an FX-moment screenshot.
 *(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 
