@@ -37,7 +37,7 @@ ok(/\.unregister\(\)/.test(land), "(3) the landing unregisters the legacy root-s
 
 // ---- (4) per-app SCOPE: storage + cache namespacing (the origin-share fixes) -
 const main = rd("gg1/dev/main.js"), sw = rd("gg1/dev/sw.js");
-ok(/SCOPE\s*=\s*\(function\(\)\{/.test(main) && /location\.pathname\.match\(\/\\\/\(gg\\d\+\)/.test(main), "(4) main.js derives a per-folder storage SCOPE from the path (T226: generic /gg<N>/<variant>/)");
+ok(/SCOPE\s*=\s*\(function\(\)\{/.test(main) && /"gg1dev"/.test(main) && /"gg1prod"/.test(main), "(4) main.js derives a per-folder storage SCOPE");
 ok(/SCOPE === "gg1prod"/.test(main) && /halves\.gold/.test(main), "(4) main.js does the one-time halves.*→gg1prod.* save migration");
 ok(/const CACHE = SCOPE \+ "-static-v4"/.test(sw) && /k\.indexOf\(SCOPE \+ "-"\) === 0 && k !== CACHE/.test(sw), "(4) sw.js namespaces the cache per scope + evicts only its own");
 

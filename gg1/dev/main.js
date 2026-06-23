@@ -16,18 +16,12 @@
   // gg1/prod, gg2/dev … never read or clobber each other's saves. At the root
   // (legacy) the scope stays "halves" → byte-for-byte the old behaviour.
   const REAL_LS = (function(){ try{ return window.localStorage; }catch(e){ return null; } })();
-  // Path-derived per-folder scope. An app folder `/gg<N>/<variant>/` maps to
-  // `gg<N>` + the alphanumeric-only variant — so `/gg1/dev/`→`gg1dev`,
-  // `/gg1/prod/`→`gg1prod`, `/gg2/dev/`→`gg2dev` EXACTLY as the old hard-coded list
-  // did (those variants are already alphanumeric, so the sanitiser is a no-op), while
-  // a NEW folder like the frozen `/gg1/v1.0.0/` archive now gets its OWN isolated
-  // bucket (`gg1v100`) instead of silently sharing the root `halves` save. Stripping
-  // non-alphanumerics also keeps the prefix dot-free, so `gg1v100.*` can never be
-  // mistaken for the `gg1v1.*` scope by the dot-delimited clear-data sweep. The root /
-  // any non-app path stays `halves` → byte-for-byte the original behaviour.
   const SCOPE = (function(){
-    try{ const m = location.pathname.match(/\/(gg\d+)\/([^\/]+)\//);
-      if(m) return m[1] + m[2].replace(/[^a-z0-9]/gi, "");
+    try{ const p = location.pathname;
+      if(p.indexOf("/gg1/dev/")  >= 0) return "gg1dev";
+      if(p.indexOf("/gg1/prod/") >= 0) return "gg1prod";
+      if(p.indexOf("/gg1/v1/")   >= 0) return "gg1v1";
+      if(p.indexOf("/gg2/dev/")  >= 0) return "gg2dev";
     }catch(e){}
     return "halves";   // root / unknown → the original prefix (no migration, no change)
   })();

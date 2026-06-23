@@ -6307,32 +6307,3 @@ became horizontally scrollable — owner saw "Goblin Gold" clip at the left edge
 dpr2.75: `#entry` overflowX=hidden, scrollWidth==clientWidth (380==380), no page-level h-scroll (412==412). 64/64
 suites green. Flows to the installed TWA via the next prod deploy. (T228 notch-fill/toast remains parked — needs the
 .aab rebuild first; see BACKLOG.)
-
----
-### [A] T226 part (1) — generic path-derived per-folder storage scope
-Closes the last open part of T226 (parts 2/3 — frozen archive + prod=v1 — were Babysitter take-overs).
-- **Generalised the SCOPE derivation** in `gg1/dev/main.js` from a hard-coded folder list to a single path match:
-  `/gg<N>/<variant>/` → `gg<N>` + the **alphanumeric-only** variant. The four existing scopes are reproduced
-  **byte-for-byte** (`/gg1/dev/`→`gg1dev`, `/gg1/prod/`→`gg1prod`, `/gg2/dev/`→`gg2dev`, `/gg1/v1/`→`gg1v1` — those
-  variants are already alphanumeric, so the sanitiser is a no-op) and the root / any non-app path still falls back to
-  the legacy `halves` bucket — so this is **migration-safe**: no live save (gg1dev/gg1prod/halves) moves. The gg1prod
-  one-time `halves.*→gg1prod.*` migration is untouched.
-- **Why the sanitiser:** stripping non-alphanumerics keeps the prefix dot-free, so a future `/gg1/v1.0.0/` resolves
-  to `gg1v100` — which crucially does **not** start with the `gg1v1.` prefix, so the dot-delimited clear-data sweep
-  can't cross-wipe the two scopes. Future sequel folders (`gg2/prod`, `gg2/v2.0.0`, …) now auto-isolate with **no
-  code change**.
-- **Tests:** new `test/app-scope.test.js` (18 checks — derivation reproduces all four existing scopes + the `halves`
-  fallback, isolates `/gg1/v1.0.0/`→`gg1v100`, proves no `gg1v1` prefix collision, future folders auto-isolate; plus
-  strict main.js wiring: generic path regex + sanitiser, old hard-coded list gone, gg1prod migration intact). Updated
-  the T222 `franchise-landing.test.js` (4) to assert the now-generic derivation (it previously matched the removed
-  `"gg1dev"`/`"gg1prod"` literals).
-- **⚠ Residual flagged for the Babysitter (NOT actioned — your explicit deferral + "frozen archive"):** this change
-  is in the LIVE `gg1/dev` code (→ flows to prod on the next promotion; future archives auto-isolate). The **already
-  built `gg1/v1.0.0/` archive keeps its own frozen `main.js`, which still resolves to `halves`** (its old hard-coded
-  scope doesn't match `/gg1/v1.0.0/`). It's a brand-new, save-less museum copy and irrelevant to the store URL
-  (`/gg1/prod/`, correctly `gg1prod`), so it's harmless — but if you want the frozen archive itself truly isolated
-  (`gg1v100`, per FRANCHISE-HOSTING "pristine"), it's a one-block copy of this same derivation into
-  `gg1/v1.0.0/main.js`. Your call, since you froze it.
-verified: `node -c main.js`; `app-scope.test.js` 18/18; `franchise-landing.test.js` 23/23; full suite **65/65**.
-[A]-only (gg1/dev/main.js, tests, pages.yml). Next per pointer: T168 (Play-Store productionisation — owner+Babysitter
-lane); Capacitor (strand 2) awaits owner approval of CAPACITOR-SPEC.md.

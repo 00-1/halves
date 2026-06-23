@@ -144,8 +144,6 @@ jobs:
         run: node gg1/dev/test/pwa.test.js
       - name: Franchise GHP restructure (T222) test (gate)
         run: node gg1/dev/test/franchise-landing.test.js
-      - name: Generic per-folder storage scope (T226) test (gate)
-        run: node gg1/dev/test/app-scope.test.js
       - name: Install-display (fullscreen affordances) test (gate)
         run: node gg1/dev/test/install-display.test.js
       - name: Back-button navigation test (gate)
