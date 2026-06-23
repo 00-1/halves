@@ -6271,3 +6271,15 @@ edits) and `pages.yml` (the archive is excluded from the CI cache-bust loop → 
 fine via the SW cache-first branch — verified the fetch handler). node -c clean (archive main.js + sw.js); full suite
 64/64 (franchise-landing + cache-bust green). **`…/halves/gg1/v1.0.0/` will be live after the Pages deploy.**
 *(Generic path-derived scope remains an optional future [A] nicety; not needed for a frozen archive.)*
+
+---
+### [BABYSITTER TAKE-OVER] T168 — in-game feature-graphic generator (dev menu, owner's idea)
+Owner: render the Play-Store feature graphic IN the game (real engine) + download from the dev menu — sidesteps the
+Babysitter sandbox having no rasteriser, and the titles match the splash exactly. Added (gg1/dev only): a "Store
+feature graphic → Download" row on the Developer screen (`#bannerBtn`) + `generateFeatureGraphic()` — composes a
+1024×500 canvas: void radial backdrop + dither, the brand icon (icon-512.png), the LIVE gold wordmark
+(`paintPixelTitle`) + void title (`paintVoidThrone`) lifted from detached temp els, auto-stacked (no overlap),
+tagline "Fast mental-maths drills" + amber "No ads · No tracking · No in-app purchases" + "Works offline · no account
+needed" (owner edits: dropped "11+"/"pixel RPG"; spelled out "in-app purchases"; added the no-data selling point).
+`toBlob` → PNG download. ADD-only (calls existing renders read-only; live splash untouched). node -c clean; 64/64.
+**Owner downloads from Dev ▸ Developer ▸ Store feature graphic and eyeballs — layout/size tweaks expected.**
