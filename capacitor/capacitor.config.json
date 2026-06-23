@@ -1,0 +1,25 @@
+{
+  "appId": "app.goblingold.voidthrone.exp",
+  "appName": "Goblin Gold (Cap)",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#0E1116",
+    "allowMixedContent": false
+  },
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "backgroundColor": "#0E1116",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DARK",
+      "backgroundColor": "#0E1116"
+    }
+  }
+}

@@ -6334,3 +6334,33 @@ prove a re-implementation reproduces GG1 exactly. **Additive only — the live r
 verified: `node -c` on both new JS files; `content-parity.test.js` 16/16; **runtime suite still 64/64, zero runtime
 files modified** (git: only the additive pages.yml gate + new `tools/`, `content/`, `test/`). DoD met: reproducible,
 committed, parity green, runtime untouched. [A]-only, additive.
+
+---
+### [A] T231 — Capacitor (in-process WebView) Android wrapper experiment (track 2, owner GO)
+Per `CAPACITOR-SPEC.md`: a parallel experiment to test whether an in-process WebView removes the TWA
+browser-handoff fragility ("Open with" / address bar). **NEW files only — the web app, the TWA flow, and
+`pages.yml` are all untouched (confirmed: purely additive, zero modified files).**
+- **`capacitor/`** — a Capacitor 6 project: `package.json` (core/cli/android + splash-screen/status-bar),
+  `capacitor.config.json` (appId **`app.goblingold.voidthrone.exp`**, name **"Goblin Gold (Cap)"**, `webDir:www`,
+  bundled-offline — no `server.url`, background `#0E1116`, status-bar overlay), `scripts/sync-www.mjs` (copies
+  `gg1/prod/*` → `www/` so prod stays the single source of truth — runtime-tested here, 26 files), an
+  `android-overrides/` fullscreen+display-cutout `styles.xml` (CI applies it after scaffold), a `.gitignore`
+  (www/android/node_modules/keys all CI-generated, never committed), and a README (secrets + on-device checks).
+- **`.github/workflows/capacitor-android.yml`** — MANUAL `workflow_dispatch` only, kept entirely OUT of the Pages
+  deploy. Sets up Node/JDK21/Android SDK → `npm install` → `sync:www` → `npx cap add android` (scaffolds natively in
+  CI, so no huge generated tree is committed) → applies the theme override → `cap sync` → Gradle
+  `bundleRelease`+`assembleRelease` → signs the `.aab` (jarsigner) + a sideload `.apk` (zipalign+apksigner) from a
+  base64 keystore secret (gracefully uploads UNSIGNED + warns if the secret is absent) → uploads
+  `goblin-gold-cap-android`. Separate experiment package + throwaway key keep the real `app.goblingold.voidthrone`
+  TWA listing untouched.
+- **Why no "Open with"/address bar:** inherent to a Capacitor in-process WebView (no Custom-Tabs handoff, no
+  asset-links) — the core win, free. Fullscreen/notch-fill is the experiment's analogue of the parked TWA T228 and
+  is the most likely on-device tuning point.
+- **Scope of verification:** all config/YAML/JSON/XML/scripts are syntactically validated (pyyaml-parsed workflow,
+  JSON.parse'd configs, balanced XML) and the www-sync is runtime-tested. **The Android Gradle build + signing run in
+  CI** (no Android SDK in this sandbox — exactly why the spec puts the build in Actions) and **on-device acceptance is
+  owner-run** (the README checklist). As with any build-pipeline first cut, the CI run may need a version-alignment
+  tweak; flagged honestly rather than claimed green.
+verified: purely additive (git: only `capacitor/` + the new workflow; `pages.yml`/`gg1/` untouched); runtime suite
+still **64/64**; content-parity green. **Owner: set the 4 `CAP_EXP_*` secrets, run the "Capacitor Android
+(experiment)" workflow, then judge the artifact on-device** against the README checklist. [A]-only, additive.

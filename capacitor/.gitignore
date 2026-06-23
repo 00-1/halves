@@ -1,0 +1,19 @@
+# Capacitor experiment — everything below is generated/synced in CI, never committed.
+# (gitignore has no inline comments — keep patterns on their own lines.)
+
+# npm install output
+node_modules/
+
+# synced copy of gg1/prod (scripts/sync-www.mjs) — gg1/prod is the source of truth
+www/
+
+# native Android platform, scaffolded in CI via `npx cap add android`
+android/
+
+# NEVER commit signing keys (the experiment key lives only as a base64 CI secret)
+*.keystore
+*.jks
+
+# CI resolves dependencies fresh
+package-lock.json
+out/

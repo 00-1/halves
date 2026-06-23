@@ -1,0 +1,98 @@
+name: Capacitor Android (experiment)
+
+# T231 — builds the Capacitor (in-process WebView) Android wrapper experiment.
+# MANUAL ONLY (workflow_dispatch) — this is NOT the shipping path and is kept
+# entirely OUT of the Pages deploy (pages.yml is untouched). It bundles gg1/prod
+# offline, scaffolds the Android platform, builds + signs a release .aab (+ a
+# sideload .apk), and uploads them as artifacts for the owner to test on-device
+# under the SEPARATE experiment package app.goblingold.voidthrone.exp.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: capacitor
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Capacitor (CLI + platforms)
+        run: npm install
+
+      - name: Sync gg1/prod into the web dir
+        run: npm run sync:www
+
+      - name: Scaffold the Android platform
+        run: npx cap add android
+
+      - name: Apply fullscreen / cutout theme override
+        run: cp android-overrides/res/values/styles.xml android/app/src/main/res/values/styles.xml
+
+      - name: Capacitor sync
+        run: npx cap sync android
+
+      - name: Gradle build (release bundle + apk)
+        working-directory: capacitor/android
+        run: ./gradlew bundleRelease assembleRelease --no-daemon --stacktrace
+
+      - name: Sign artifacts (if the experiment keystore secret is present)
+        env:
+          KS_B64: ${{ secrets.CAP_EXP_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.CAP_EXP_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.CAP_EXP_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.CAP_EXP_KEY_PASSWORD }}
+        run: |
+          set -e
+          if [ -z "$KS_B64" ]; then
+            echo "::warning::No CAP_EXP_KEYSTORE_B64 secret set — uploading UNSIGNED artifacts (Play upload needs a signed .aab; see capacitor/README.md)."
+            exit 0
+          fi
+          echo "$KS_B64" | base64 -d > exp.jks
+          AAB=$(find android -path '*/bundle/release/*.aab' | head -n1)
+          echo "signing bundle: $AAB"
+          jarsigner -keystore exp.jks -storepass "$KS_PASS" -keypass "$KEY_PASS" \
+            -sigalg SHA256withRSA -digestalg SHA-256 "$AAB" "$KEY_ALIAS"
+          jarsigner -verify "$AAB" && echo "AAB signature verified"
+          # Sideload APK: zipalign + apksigner (v2/v3) for direct on-device install.
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n1)
+          APK_IN=$(find android -path '*/apk/release/*.apk' | head -n1)
+          "$BT/zipalign" -f 4 "$APK_IN" app-release-aligned.apk
+          "$BT/apksigner" sign --ks exp.jks --ks-pass "pass:$KS_PASS" --key-pass "pass:$KEY_PASS" \
+            --ks-key-alias "$KEY_ALIAS" --out app-release-signed.apk app-release-aligned.apk
+          "$BT/apksigner" verify app-release-signed.apk && echo "APK signature verified"
+          rm -f exp.jks
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p out
+          find android -path '*/bundle/release/*.aab' -exec cp {} out/ \; || true
+          [ -f app-release-signed.apk ] && cp app-release-signed.apk out/ || \
+            find android -path '*/apk/release/*.apk' -exec cp {} out/ \; || true
+          ls -la out
+
+      - name: Upload .aab + .apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: goblin-gold-cap-android
+          path: capacitor/out/*
+          if-no-files-found: error

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  T231 — fullscreen / edge-to-edge theme for the Capacitor experiment.
+  Copied over the generated android/app/src/main/res/values/styles.xml by the
+  capacitor-android CI workflow AFTER `npx cap add android`. Matches Capacitor 6's
+  default structure (AppTheme + NoActionBarLaunch splash) and adds:
+    • windowLayoutInDisplayCutoutMode=shortEdges  → draw into the notch (fill it)
+    • translucent status/navigation bars            → edge-to-edge under the WebView
+  The @capacitor/status-bar plugin (overlaysWebView:true) then lets the page paint
+  to the very top. This is the experiment's analogue of the TWA "Fullscreen sticky"
+  + cutout fix (T228); tune on-device.
+-->
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/splash</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+
+</resources>
