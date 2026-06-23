@@ -148,3 +148,20 @@
 ---
 *Babysitter draft. On owner sign-off → [A] **T168** productionises (privacy.html, assetlinks, screenshots,
 .aab) and optionally **T169** self-hosts fonts; the listing text/answers above are paste-ready.*
+
+---
+
+## 7b. Asset-links hosting — DECISION (owner Q, 2026-06-23): user-pages repo, scales to the franchise
+- **Decision: option (a)** — a **`00-1.github.io` user-pages repo** hosting `.well-known/assetlinks.json` at the
+  domain ROOT (`https://00-1.github.io/.well-known/assetlinks.json`) + an empty **`.nojekyll`** in that repo (Jekyll
+  skips dot-folders otherwise → the file wouldn't publish). **No custom domain needed.** Existing
+  `00-1.github.io/halves/...` apps are untouched.
+- **Scales to GG2+:** `assetlinks.json` is a JSON **array** — append one statement per app
+  (`package_name` + the app's signing `sha256_cert_fingerprints`). One file covers every GG app on the origin.
+  Digital Asset Links are **per-origin, not per-path**, so the single root file verifies all subpath apps
+  (`/halves/gg1/prod/`, `/halves/gg2/prod/`, …).
+- **TWA launch:** no conflict — each app's icon opens its OWN start URL. **Deep-link path-scoping** (if ever wanted)
+  is per-app **Android-manifest intent-filters** (`/halves/gg1/*` vs `/halves/gg2/*`), NOT assetlinks — PWABuilder
+  configures it per app.
+- **Custom domain / per-game subdomains** = optional future (branding / per-app origins for cleaner deep-linking);
+  adoptable any time by re-pointing package ids + moving each app's assetlinks to its own origin root.
