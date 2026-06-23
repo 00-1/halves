@@ -3301,7 +3301,14 @@ rebalance, T218) is APPROVED.
   (`QUESTION-QUALITY-AUDIT.md` final section). **Only when this is clean does the Babysitter record "GG1 v1 SIGNED
   OFF" → then T223 (tag + release).** *(Babysitter-run assessment; fixes = [A]. The terminal v1 gate.)*
 
-### T226 — [A] **Deploy v1 to GHP: frozen `gg1/v1.0.0/` snapshot + GENERIC per-folder scope (+ promote `gg1/dev → gg1/prod`)** · status: OPEN · owner-requested
+### T226 — **Deploy v1 to GHP: frozen `gg1/v1.0.0/` snapshot (+ promote `gg1/dev → gg1/prod`)** · status: DONE (Babysitter take-over, `8a09384` + `6b4bd94`) — prod=v1, v1.0.0 archive live; 64/64 · owner-requested
+**DONE 2026-06-23 (Babysitter take-over — A idle, owner on the store path):** (1/2 `8a09384`) promoted `gg1/dev →
+gg1/prod` to v1 (pure file sync; prod now byte-identical to v1 @ `525ba87`) so the TWA URL `…/gg1/prod/` serves v1.
+(2/2 `6b4bd94`) built the frozen **`gg1/v1.0.0/`** archive as a true copy of prod(v1) + static `build.json` +
+`apps.json` entry; excluded from the CI cache-bust loop (stays frozen); serves via SW cache-first (verified). 64/64.
+**Deferred (optional, not needed): GENERIC path-derived scope** — the archive uses the harmless `halves` fallback
+scope (isolated from prod); a generic deriver is a future [A] nicety only if more version folders need own namespaces.
+**Live after Pages deploy:** `https://00-1.github.io/halves/gg1/prod/` (=v1, TWA target) + `…/gg1/v1.0.0/` (archive).
 **Owner (2026-06-23): wants the `v1.0.0` GitHub Release body to link to the PLAYABLE v1 build on GitHub Pages.** Owner
 also chose a **VERSIONED folder** (`gg1/v1.0.0/`, NOT `gg1/v1/`) so future tagged releases (v1.1.0, v2.0.0 …) each get
 their own frozen archive. Target: `https://00-1.github.io/halves/gg1/v1.0.0/`.
