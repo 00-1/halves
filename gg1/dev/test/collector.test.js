@@ -1,7 +1,8 @@
 /* T206 + T219-LAST — Collector awards rejig. The collect-N ladder is recalibrated to
  * the REAL catalogue: the old unreachable top tiers (2,500/5,000/7,500/10,000) are
  * dropped and the top tier tracks the live catalogue total (re-pointed from 1,900 to
- * ≈2,350 once the new T219 topics grew the catalogue); the reachable ids (25…1500) are
+ * 2,300 once the new T219 topics grew the catalogue to 2,352 — a safe, REACHABLE margin
+ * below the full total); the reachable ids (25…1500) are
  * preserved (migration-safe). B's 3
  * creature EMBLEMS (beast/goblinking/voidbeast, T205) are absorbed as Collector
  * awards — Collector now totals 12 + 3 = 15 — earned by felling region bosses (the
@@ -29,7 +30,12 @@ ok(ladder.length === 12, "(1) the collect-N ladder is 12 tiers (" + ladder.lengt
 ok(ladder[0] === 25, "(1) the ladder still starts at 25");
 ok(![2500,5000,7500,10000].some(n => ladder.includes(n)), "(1) the UNREACHABLE tiers (2,500/5,000/7,500/10,000) are dropped");
 const top = ladder[ladder.length-1], total = C.CATALOG.length;
-ok(top <= total && top >= total - 60, "(1) the top tier (" + top + ") tracks the full catalogue (" + total + ") — reachable at ≈100% collection");
+// The ladder count is the number of owned catalogue ids (capped at the catalogue
+// size), so the capstone MUST sit below the full total or it can never be earned —
+// the "unreachable top tier" trap the old 2,500/5,000/… tiers fell into. Assert it
+// stays strictly reachable AND still reads as "≈ the full collection".
+ok(top < total, "(1) the capstone (" + top + ") is REACHABLE — strictly below the full catalogue (" + total + ")");
+ok(top >= total * 0.9, "(1) …and still ≈ the full collection (≥90% of " + total + ")");
 ok(ladder.every((n,i)=> i===0 || n > ladder[i-1]), "(1) tiers strictly ascending, no dups");
 ok(["collector:25","collector:75","collector:150","collector:300","collector:500","collector:750","collector:1000","collector:1500"].every(id => C.byId(id)),
    "(1) all reachable existing ids (25…1500) are preserved (migration-safe)");

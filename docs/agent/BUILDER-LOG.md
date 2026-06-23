@@ -6220,3 +6220,21 @@ growth→delta / mark→0 / reload-persist / per-surface independence / never-ne
 wiring + the badge style/structure); `node -c main.js`; contrast gate still green (badge text ≥10px); full suite
 **64/64**. [A]-only (main.js, styles.css, test, pages.yml). **Owner device-confirm pending.** Next: **T225** (final
 quality gate, Babysitter-run) is the only remaining v1 queue item.
+
+---
+### [A] T219 Collector capstone — CHANGES fix (reachability) + count reconciliation
+Addressing the Babysitter's `🔴 CHANGES` on `c5151e5` (capstone `2350` flagged unreachable):
+- **Capstone `2350 → 2300`** (*Keeper of the Myriad*). 2,300 is a safe, clearly-reachable margin below the full
+  total and still ≈ the whole collection (~98%). Only the capstone id moves; every lower rung (25…1800) is preserved
+  exactly — migration-safe — as before.
+- **Test hardened to the reviewer's spec:** `collector.test.js` now asserts the capstone is **strictly below the
+  live `C.CATALOG.length`** (provably reachable — closes the "unreachable top tier" trap for good) AND still ≥90% of
+  it (still reads as "the full collection"). So any future catalogue change that strands the capstone fails the gate.
+- **Count reconciliation (FYI for the Babysitter):** the review computed the catalogue at **2,310**; the actual
+  `C.CATALOG.length` is **2,352**. The 42-item gap is exactly the **Events** category (42 daily-event rewards), which
+  the manual tally omitted — full breakdown: Rank 23 · Initiation 46 · Flawless 46 · Speed 184 · Mastery 46 ·
+  Solved 959 · Spark 959 · Milestone 32 · Collector 15 · **Events 42** = 2,352. The collect-count ladder counts
+  `Object.keys(col).length` (owned catalogue ids, incl. Events), so the true reachable max is 2,352 — but 2,300 was
+  chosen per the review's reachable-with-margin guidance and is correct under either figure.
+verified: `collector.test.js` 27/27 (capstone 2300 < 2352, count 2299→11 rungs / 2300→12); `node -c`; full suite
+**64/64**. [A]-only (collectibles.js, collector.test.js). This re-closes T219's final step.
