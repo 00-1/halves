@@ -38,9 +38,21 @@ multi-hour runs the environment can't deliver.)*
 
 ## Builder A — work the TOP ⏳ item ONLY. Do not skip or reorder. Push it alone → wait for review → next.
 
-**▶ FOCUS = PLAY STORE SUBMISSION. GG2 is PARKED (owner, 2026-06-23).** GG1 v1 is shipped (Release `v1.0.0` @
-`525ba87`). The whole point now: get GG1 onto the Play Store. **The TWA/store app wraps the PROD URL
-`https://00-1.github.io/halves/gg1/prod/`** (owner confirmed: it points at /prod), so prod MUST be the v1 build first.
+**▶ FOCUS = STORE LAUNCH + 3 PARALLEL ARCHITECTURE STRANDS (owner, 2026-06-23).** GG1 v1 is shipped (Release
+`v1.0.0` @ `525ba87`) and the **TWA `.aab` is built, uploaded to Internal testing, and asset-links–verified
+(launches fullscreen)**. The TWA wraps PROD `https://00-1.github.io/halves/gg1/prod/`.
+
+**Three strands now run in parallel — do NOT let any deprecate another:**
+1. **TWA = the shipping path. NOT deprecated.** Until further notice this is what we ship; keep prod = v1 and the
+   PWABuilder/assetlinks flow intact. (Known edge case: an "Open with"/work-profile chooser on the owner's own dual-
+   profile phone — does not affect normal single-profile users.)
+2. **Capacitor experiment (Builder A).** In-process-WebView wrapper to remove the TWA browser-handoff fragility.
+   **Spec drafted → `CAPACITOR-SPEC.md` (awaiting owner approval before A starts).** Parallel; may or may not adopt.
+3. **GG1-on-brickmap (Builder B).** Re-base GG1 on the brickmap render engine (native APK, engine-native aesthetic,
+   self-verifiable FX). **IN DISCUSSION with owner — not yet spec'd/assigned.** Architecture reassessment: the
+   original "stay on the web/DOM" call is now judged a mistake (we traded free text/deploy for unbounded game-feel
+   whack-a-mole + "mask slips" web fragility); brickmap already renders on web + native APK and needs text/menus
+   anyway. GG2 is intended brickmap-native; GG1-on-brickmap is the proving ground.
 
 - ✅ **GG1 v1 COMPLETE & RELEASED** (46 topics, T225 clean, tag `v1.0.0`).
 - ⏳ **`T226` ← CURRENT (gates the store URL).** (1) Generic path-derived per-folder scope (existing
