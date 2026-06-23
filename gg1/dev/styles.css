@@ -137,6 +137,21 @@ body{
 /* T221 — the void title is a chunky TWO-LINE pixel canvas stretched to FILL a box
    under the wordmark (owner-chosen mockup); natural ~1.67:1 aspect, centred, crisp. */
 .voidtitle{width:min(74vw,340px);max-width:92vw;height:auto;image-rendering:pixelated;display:block;margin:10px auto 0}
+/* Splash — drifting fog OVER the void title (echoes the backdrop's atmospheric band).
+   Soft purple haze on a ::after, screen-blended so it glows over the dark pixels;
+   pointer-events:none, owner-tunable (colour/opacity/speed). */
+#entry .subtitle{position:relative}
+#entry .subtitle::after{content:"";position:absolute;inset:-40% -14%;pointer-events:none;z-index:3;
+  background:
+    radial-gradient(58% 80% at 22% 42%, rgba(150,112,224,.34), transparent 62%),
+    radial-gradient(50% 70% at 76% 60%, rgba(120,92,206,.28), transparent 62%),
+    radial-gradient(72% 62% at 50% 28%, rgba(186,156,255,.20), transparent 66%);
+  filter:blur(12px);mix-blend-mode:screen;opacity:.85;
+  animation:voidFog 16s ease-in-out infinite alternate}
+@keyframes voidFog{
+  from{transform:translate3d(-7%,3%,0) scale(1.06)}
+  to{transform:translate3d(9%,-4%,0) scale(1.18)}}
+@media (prefers-reduced-motion:reduce){#entry .subtitle::after{animation:none}}
 /* T214 — margin-top:auto pushes the tag + the action buttons + Sound to the BOTTOM
    of the splash, giving the big title group room up top. */
 .tag{color:var(--muted);font-size:14px;letter-spacing:.18em;text-transform:uppercase;margin-top:clamp(18px,4vh,34px);font-weight:500}   /* splash redesign — centred hero stack (was margin-top:auto bottom-pin) */
