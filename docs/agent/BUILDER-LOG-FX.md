@@ -6,6 +6,34 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 spike — mini-gate #4: on-device LAUNCH CRASH fixed (empty vertex buffer) ([B], 🔴→GREEN)
+
+The APK force-closed on launch (Adreno 735, Android 16). Two cycles:
+1. **Made the cause visible** (`0b3174a`): Android's default Rust panic handler writes to **stderr**,
+   which `adb logcat` doesn't capture — so the `panic→abort` had no cause. Added a
+   `std::panic::set_hook` that `log::error!`s the payload+location via the wired `android_logger`,
+   plus surface-cap fallbacks. Owner's `adb logcat` then named it.
+2. **Root cause + fix** (`ba383ae`): the live render built a **vertex buffer per text run** via
+   `create_buffer_init`, which panics **"buffer slices can not be empty"** when a run has **zero
+   quads**. On the drill's **first frame the answer box is empty** → empty buffer → abort. Never
+   caught because the headless bins only rendered non-empty states; **the live `app.rs` path was
+   unexercised until the device** — exactly what gate #4 exists to catch.
+   - **Guard the whole class:** skip empty text runs before `create_buffer_init` in BOTH the live
+     `Gfx::render` AND `headless::build_drawables` (rects were already guarded; the FX sparks are
+     rects, so there's no separate particle buffer — audited per the directive).
+   - **Share the render:** `app.rs` now builds the frame from the **same** `headless`
+     `RectRun`/`TextRun` via a new `drill_frame(...)` builder used by **both** the device renderer
+     and a headless golden — so the exact on-device first frame is the one self-verified offscreen.
+   - **Regression lock:** new golden `drill-initial.png` (empty answer box, no FX) + a `#[ignore]`
+     GPU test that **re-renders the crash state under lavapipe** (proves no panic + matches golden),
+     plus a pure CI test. Native + `aarch64-linux-android` clippy -D warnings clean; fmt + 16 pure
+     tests green; both GPU goldens pass under lavapipe.
+- Rebuild triggered on the `main` push → new `goblin-gold-<sha>-android-arm64.apk` on the `dev`
+  prerelease / Android-APK run. **Owner re-installs `dev.brickmap.goblingold` + device-judges.** ✅
+  #1/#2/#3 stand. **HOLD for the owner re-test → go/no-go.**
+
+---
+
 ## BRICKMAP-GG1 spike — mini-gate #4: native APK (drill + keypad + FX, fullscreen) ([B], GO — FINAL gate)
 
 Babysitter gated #3→#4 (GO). Built the **final** mini-gate in `00-1/brickmap:crates/goblin-gold`
