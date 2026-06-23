@@ -117,7 +117,7 @@ body{
    subtitle between the wordmark and the maths tag. Plain gold/amber for now —
    T209 stylises it (pixel-gold name / dithered-purple void line). */
 .subtitle{font-family:var(--display);font-weight:600;font-size:clamp(30px,9.8vw,46px);letter-spacing:.02em;
-  color:var(--amber-2,#e0a93c);margin-top:clamp(6px,2vh,16px);line-height:1.05;opacity:.92}   /* splash redesign — Magnar is now the centred hero, so the void title sits just under the wordmark */
+  color:var(--amber-2,#e0a93c);margin-top:clamp(-8px,-1.4vh,0px);line-height:1.05;opacity:.92}   /* splash — void title nudged up, closer under the wordmark (owner) */
 
 /* Splash sequence (owner): Magnar appears IMMEDIATELY (continuous with the native TWA
    splash); the wordmark, void title, tag and buttons then fade up a beat later. */
