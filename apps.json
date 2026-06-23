@@ -1,4 +1,5 @@
 [
-  { "path": "gg1/prod/", "name": "Goblin Gold", "tag": "prod" },
-  { "path": "gg1/dev/",  "name": "Goblin Gold", "tag": "dev" }
+  { "path": "gg1/prod/",   "name": "Goblin Gold", "tag": "prod" },
+  { "path": "gg1/dev/",    "name": "Goblin Gold", "tag": "dev" },
+  { "path": "gg1/v1.0.0/", "name": "Goblin Gold", "tag": "v1.0.0" }
 ]

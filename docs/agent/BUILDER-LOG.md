@@ -6260,3 +6260,14 @@ stale files updated (collectibles, enemies, guides, index.html, main.js, modes, 
 suite 64/64. **`…/halves/gg1/prod/` is now the v1 build → PWABuilder can target it.**
 **T226 REMAINDER (still for [A], lower urgency — for the release-body link, not the .aab):** generic path-derived
 scope + the frozen `gg1/v1.0.0/` archive wired into pages.yml + apps.json.
+
+---
+### [BABYSITTER TAKE-OVER] T226 (part 2/2) — build the frozen gg1/v1.0.0 archive
+Owner noticed `gg1/v1.0.0/` was never built (the Release-body "Play v1.0.0" target). Built it as a TRUE byte-for-byte
+copy of `gg1/prod` (= v1 @ 525ba87) — `diff -rq` confirms identical (excl. build.json). Added a STATIC frozen
+`build.json` (sha 525ba87) and an `apps.json` entry (`gg1/v1.0.0/` tag `v1.0.0`). Deliberately NOT touched: the scope
+code (the archive uses the harmless `halves` fallback scope — isolated from prod; a true frozen copy, no app-code
+edits) and `pages.yml` (the archive is excluded from the CI cache-bust loop → stays frozen; its bare-URL assets serve
+fine via the SW cache-first branch — verified the fetch handler). node -c clean (archive main.js + sw.js); full suite
+64/64 (franchise-landing + cache-bust green). **`…/halves/gg1/v1.0.0/` will be live after the Pages deploy.**
+*(Generic path-derived scope remains an optional future [A] nicety; not needed for a frozen archive.)*
