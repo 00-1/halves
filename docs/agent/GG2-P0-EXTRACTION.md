@@ -1,3 +1,12 @@
+> ⚠️ **PARTIALLY SUPERSEDED (2026-06-23) — see `BRICKMAP-GG1.md`.** The *mechanism* here
+> ("extract a game-agnostic CORE from the GG1 **web** JS, incrementally, suite-green") is **dead**:
+> GG2 (and the GG1 re-base) move onto the **brickmap** engine, so we do not extract an engine from
+> the web app. **What SURVIVES intact and is carried into `BRICKMAP-GG1.md`:** (1) the **PACK
+> CONTRACT** below — the durable seam; (2) the **CORE/SPLIT/PACK boundary taxonomy**, re-cast as
+> *engine half → brickmap · framework half → future `gg-kit` · PACK → game data*; (3) the
+> **guardrails** (one-way deps, the no-leakage grep gate, save-namespacing). Read this for the
+> boundary analysis; read `BRICKMAP-GG1.md` for the current (brickmap) plan.
+
 # GG2 · P0 — CORE / PACK extraction plan (file-level) — Babysitter, 2026-06-22
 
 > Prep spec for milestone **P0.1** (the core/pack refactor) so the GG2 run starts on a concrete, buildable

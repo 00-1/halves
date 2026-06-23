@@ -17,9 +17,74 @@
 - **No strict requirement to use Rust exclusively.** Reusing GG-web code is on the table **if**
   it's actually a good idea — open question, see below.
 
+## Architecture decisions (2026-06-23, owner-aligned)
+
+### Where the port lives — same-repo, as a workspace
+- GG-brickmap lives **in the `00-1/brickmap` repo** (same call as "Scraped Again"): co-locate
+  engine + games, keep **Rust out of `halves`** (preserves the web app's no-build/Node-verify),
+  no new repo (avoids the publish-a-crate ceremony we deliberately skipped).
+- A **second** game is the trigger to make brickmap a **cargo workspace** — an `engine` crate +
+  a `scraped-again` crate + a `goblin-gold` crate (path deps, **no crates.io**). Same one repo,
+  but a clean engine↔game split, and it leaves a slot for a future `gg-kit` crate (below).
+  *(B to report the current structure: single crate vs workspace.)*
+
+### Three layers — NOT an engine-on-an-engine built up front
+The old GG2 plan "turn GG into an engine for GG2+" is **superseded** by re-platforming. The clean
+layering, built **bottom-up** (abstract from real cases, never speculatively):
+- **brickmap = the platform engine** — rendering, input, audio, text, menus, particles, save.
+  It absorbs anything *generic* (incl. the old-CORE "engine half"). Validated by **two** games
+  immediately (Scraped Again + GG1) — which is exactly why GG1 hardens the engine.
+- **GG1 = a plain game on brickmap** — **no framework built up front**. The only forward-reusable
+  thing carried now is the **content-as-data model** (data, not engine; cheap).
+- **gg-kit = the GG-genre framework, EXTRACTED LATER** (when GG2 supplies a *second* data point),
+  from GG1-brickmap + GG2 — not guessed. It will be **thin**, because brickmap ate the generic half.
+
+### The seam = the PACK CONTRACT (preserved from `GG2-P0-EXTRACTION.md`)
+The durable artifact of the old extraction plan survives intact — only its *mechanism*
+("extract CORE from the web JS") dies; the *boundary* is re-platform-invariant:
+```
+PACK = { id, name, version, topics, guides, input, collection, metagame, visuals, audio }
+```
+Re-cast of the old CORE/SPLIT/PACK tags for the brickmap world:
+- old CORE **engine half** (fxgl/fx/icons-render/sound+synth *engines*/shell-render) → **brickmap**
+- old CORE **framework half** (round loop, input dispatch [`GG2-P0-INPUT.md`], progression/mastery/
+  unlock-chain, collection-ladder math, the T218 nav-badge system, settings/update, **and the PACK
+  contract itself**) → **future `gg-kit`**
+- old **PACK** (modes/guides/catalogue/metagame/visuals/audio-styles) → **`gg1-pack` (game data)**
+- the SPLIT modules split *across that line*: engines→brickmap, frameworks→gg-kit, GG1 specifics→pack.
+
+### Design-for-extraction discipline (work this way NOW so the seam breaks cleanly later)
+Do **not** build `gg-kit` as a crate yet — build GG1-brickmap so the seam is **already real**, so
+extracting it later is a *move*, not a *refactor*. Five rules, all free:
+1. **Honor the PACK CONTRACT from day one** — framework-candidate code consumes `pack.*`; it never
+   reaches around the contract to touch GG1 directly.
+2. **One-way dependencies** — framework modules never import the pack; the *game* wires the pack
+   into the framework. (A crate can't have circular deps → the later split is mechanical.)
+3. **No-leakage grep gate** (port the old guardrail) — no `goblin`/topic-ids/hero-names/palette
+   literals inside framework modules; the gate is the regression test that the seam stays clean.
+4. **Data-drive content + theme** — the content-as-data model *is* the pack; the framework is
+   parameterised by data, never hardcoded to Goblin Gold.
+5. **Sink generic things DOWN into brickmap**, not sideways into gg-kit — keeps gg-kit thin and
+   genuinely GG-genre.
+Net: GG1-brickmap **ships as ONE crate** organised as `gg-kit-modules + gg1-pack-data`; when GG2
+validates the seam, extracting `gg-kit` into its own workspace crate = a file-move + a `Cargo.toml`.
+
+### Shared code/data between web-GG1 and brickmap-GG1
+- **Share DATA, not rendering.** The two versions share almost no executable UI/audio/FX code.
+  The overlap = content: lift `modes.json`/`guides.json`/`balance.json`/`collectibles.json` + a set
+  of **parity test vectors** (`input → expected {p,a}`, generated from the current JS) so the port
+  can *prove* it reproduces GG1 exactly.
+- **Canonical content stays in `halves` for now** (already built + tested, 959 questions); the
+  brickmap port consumes a **generated export** (one-way sync, no submodule ceremony). Flip the
+  canonical source into brickmap only if/when it becomes the *primary* GG1.
+- **Sharing the transform CODE (embed JS in brickmap) is DEFERRED to B's JS-feasibility finding.**
+  If yes → reuse the JS transform module; if no → re-implement transforms in the engine language
+  against the shared test vectors. (This is question #4 below.)
+
 ## Open questions for Builder B (RESEARCH ONLY — no engine/game code changes this pass)
 Builder B has **`00-1/brickmap` access**; the Babysitter does **not**. B investigates the repo
 and reports back so we can finalise the plan.
+
 
 ### A. Engine architecture & current capability inventory (have / partial / missing)
 1. Overall architecture: core crates/modules, the render pipeline (the WGSL `bm-render` core),
@@ -38,6 +103,13 @@ and reports back so we can finalise the plan.
      our generative images).
 3. **"Scraped Again"**: how is it structured against the engine? **Where is the engine↔game
    boundary?** This is the template for how GG1 would be built — describe it concretely.
+3b. **Repo structure:** is brickmap today a **single crate** or a **cargo workspace**? Feasibility
+   of an `engine` crate + per-game crates (path deps, no crates.io), and how much restructuring a
+   *second* game implies. *(Feeds the workspace decision above + the future `gg-kit` slot.)*
+3c. **Which old-CORE "engine half" items does brickmap ALREADY provide?** Map against the list:
+   text/font, menus/UI, input dispatch, particles/FX, audio bus+synth, save/persistence, the
+   shell/render framework. This **sizes how thin `gg-kit` gets** (anything brickmap already covers
+   sinks down and never enters gg-kit). Cross-ref the re-cast table in "Architecture decisions".
 
 ### B. Reuse feasibility — the owner's explicit questions
 4. **Can the web target run JavaScript?** Is there any JS interop (wasm-bindgen, an embedded JS
