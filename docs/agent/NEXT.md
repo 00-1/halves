@@ -38,15 +38,17 @@ multi-hour runs the environment can't deliver.)*
 
 ## Builder A — work the TOP ⏳ item ONLY. Do not skip or reorder. Push it alone → wait for review → next.
 
-**▶ CURRENT TASK = `T225` (FINAL quality gate — Babysitter-run). Builder A's build queue is CLEAR.**
+**▶ GG1 v1 SHIPPED — Release `v1.0.0` @ `525ba87` (owner-published, verified). Next: deploy follow-ups + GG2 P0.**
 
-- ✅ **DONE/approved:** T213, T220, T222, T221, **T224 (audio)**, **T219 COMPLETE** (all ~15 topics + Collector
-  capstone = 2300, reachable, total 2352), **T218 (nav badges)**. App in `gg1/dev/`. **GG1 v1 is feature-complete.**
-- ⏳ **`T225` ← IN PROGRESS (Babysitter).** Final pass over **all 959 questions (46 topics) + every text string**:
-  fan-out AI assessors → Babysitter double-checks each finding → any fixes to [A] (or Babysitter takes over) → loop
-  to clean. **Only when clean → v1 SIGN-OFF + `gg1-v1` tag + Release → GG2 P0.** *(BACKLOG T225.)*
+- ✅ **GG1 v1 COMPLETE & RELEASED.** All ~46 topics + audio + nav badges + restructure + splash; T225 final gate clean
+  (959 Qs, 0 issues); tag/Release `v1.0.0`.
+- ⏳ **Deploy follow-ups (NOT live-blocking — Play held on owner's Google ID):** promote `gg1/dev → gg1/prod` to the
+  v1 build (`gg1/prod` is stale from `16c441a`); populate the frozen `gg1/v1/` snapshot. [A] (or Babysitter take-over).
+- ⏳ **GG2 P0 — engine foundation** (`GG2-MILESTONES.md` P0 → `GG2-P0-EXTRACTION.md` + `GG2-P0-INPUT.md`): core/pack
+  split, pluggable input (MCQ first). **Awaiting owner go** (hold vs start now). Creative calls → defaults +
+  `GG2-CREATIVE-LOG.md`.
 
-**Builder A: STAND BY** — build queue clear; await any T225 fix items the Babysitter routes.
+**Builder A: STAND BY** — await the deploy-promote task and/or GG2 P0 assignment.
 - ⏳ **`T218`** — nav notification BADGES (new loot → Items, new hero → Heroes; clears on view; persists). *(BACKLOG T218.)*
 - ⏳ **`T225`** — the FINAL quality pass (TERMINAL v1 gate): **Babysitter-run** (agent assesses every question + text,
   Babysitter double-checks); **A only fixes** what comes back. *(BACKLOG T225.)*

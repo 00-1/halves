@@ -3301,12 +3301,11 @@ rebalance, T218) is APPROVED.
   (`QUESTION-QUALITY-AUDIT.md` final section). **Only when this is clean does the Babysitter record "GG1 v1 SIGNED
   OFF" → then T223 (tag + release).** *(Babysitter-run assessment; fixes = [A]. The terminal v1 gate.)*
 
-### T223 — **Tag + freeze GG1 v1** (cut `gg1-v1`, snapshot to `gg1/v1/`) · status: 🔴 NEEDS OWNER — Babysitter CANNOT push tags (git 403; no MCP create-tag/release). v1 is SIGNED OFF at `525ba87`; owner cuts the tag · owner-requested
-**UPDATE 2026-06-23:** GG1 v1 is quality-signed-off (T225 clean) at commit **`525ba87`**. The Babysitter tried to cut
-`gg1-v1` and **cannot** — `git push origin <tag>` returns **HTTP 403** (branch-push only), and the GitHub MCP exposes
-no create-tag/create-release tool. **→ OWNER ACTION:** create the tag/release on `525ba87` (GitHub UI: Releases →
-Draft a new release → tag `gg1-v1`, target `525ba87`; or `git tag -a gg1-v1 525ba87 && git push origin gg1-v1`).
-Then `gg1/v1/` snapshot + `gg1/dev→gg1/prod` promote = [A] deploy follow-ups (not live-blocking — Play held on ID).
+### T223 — **Tag + freeze GG1 v1** · status: ✅ DONE — owner published Release **`v1.0.0`** at `525ba87` (verified: tag ref → 525ba87) · owner-requested
+**2026-06-23:** GG1 v1 quality-signed-off (T225 clean) at `525ba87`; the **owner cut the tag/Release `v1.0.0`** (the
+Babysitter lacks tag-push perms). Verified via GitHub API: `refs/tags/v1.0.0` → `525ba87`, release published (not
+draft/prerelease). **GG1 v1 SHIPPED.** Remaining (deploy follow-ups, NOT live-blocking): `gg1/dev→gg1/prod` promote +
+populate the frozen `gg1/v1/` snapshot → [A]. *(Note: the tag is `v1.0.0`, not the originally-planned `gg1-v1`.)*
 **Owner (2026-06-22): "GG1 v1 is ready as soon as the current queue clears. YOU make the final call on that, then
 make the tag + release and immediately start moving on GG2."** So the Babysitter OWNS the v1 sign-off + the tag +
 release — **no owner action needed.** When the whole v1 queue is APPROVED — splash (T220/T221) + T224 + T222
