@@ -20,12 +20,19 @@ menus":** legible text (**the #1 blocker**), UI/menus/keypad, save, golden-diff,
   beside `scraped-again`. Workspace + engine↔game boundary already done (M9). **`gg-kit` deferred** —
   honour the PACK contract + one-way deps + the no-leakage grep gate from day one (already how
   `scraped-again` is built) so `gg-kit` extracts cleanly when GG2 is the 2nd data point.
-- 🟠 **a11y — OWNER DECISION.** brickmap renders to an opaque GPU canvas → no screen reader (a
-  regression vs GG-web's accessible DOM). Owner already said "no screen reader" for GG1.
-  **Proposal: DEFER a11y, accept the regression; revisit only if formal *school distribution* becomes
-  a goal** (B flags it may gate that). ← confirm.
-- 🟠 **Font path — spike sub-decision.** SDF-atlas (**recommended:** crisp at any size, scales) vs
-  baked-TTF atlas (simpler, fixed sizes). B prototypes in the spike; recommend SDF.
+- ✅ **JS reuse REJECTED** (research §B4) — "reuse JS" = *embed a JS runtime in the native binary*,
+  which re-imports the web stack + its fragility and **kills the self-verify win** (you'd test
+  JS-in-Rust, not native pixels) + forks behaviour web-vs-native. Re-implement GG logic in Rust
+  against **T229's parity vectors**; **share DATA not code.** *(Owner's parity concern answered: the
+  parity VECTORS are the behavioural contract — regenerate from the JS, CI goes red on any drift — so
+  parity is **enforced** without a shared runtime; and GG1 is **done** (no ongoing logic change) +
+  GG2 is brickmap-native (no web twin), so cross-platform drift never arises.)*
+- ✅ **a11y — DEFERRED (owner, 2026-06-23).** The **web version remains** and covers the accessibility
+  need for now; brickmap GG1 ships without a screen reader. Revisit only if formal *school
+  distribution* becomes a goal.
+- ✅ **Font path — PROTOTYPE FIRST (owner GO, 2026-06-23).** B's immediate task: prototype a legible
+  font path (try **SDF-atlas** [recommended] and/or baked-TTF) and prove crisp prose on a **real
+  phone**. This is the #1 blocker and the first mini-gate — clear it before the rest of the spike.
 
 ## The spike — "one legible drill, self-verified, on a phone"
 A `crates/goblin-gold` skeleton that, on **native + web + APK**, does ONLY:
@@ -54,13 +61,15 @@ better to learn it in a 2–3-week spike than a 3-month port). **On GO**, phase 
 services (text/UI/save/golden-harness) → logic re-impl vs parity vectors → content via T229/T230
 data → audio re-author → polish.
 
-## Effort (research estimate, engineering-days, SPIKE ONLY)
-Font/SDF path **4–7d** (the long pole — pick SDF vs baked-TTF first) · minimal UI + keypad **3–5d** ·
-`goblin-gold` skeleton + 2-D scene + one drill + input **3–4d** · golden-PNG harness **2–3d** ·
-APK/web/CI wiring for the new crate (mostly copy `scraped-again`) **1–2d**. **≈ 13–21 eng-days
-(~3–4 weeks).** A real but bounded investment that de-risks the whole programme. **The FULL port after
-a GO is weeks-to-months** (re-implement logic in Rust, re-author audio, build text+UI+save+a11y) —
-budget it as a re-platform, not a port.
+## Sequencing (NOT time-boxed — owner: disregard the day estimates; these agents work in *hours*, not weeks)
+The research gave engineering-day estimates (font 4–7d, UI/keypad 3–5d, crate+drill 3–4d, golden
+harness 2–3d, APK/CI 1–2d). **Treat these as RELATIVE effort/ordering only — wall-clock is far
+shorter here.** Run the spike as **ordered mini-gates**, font first:
+1. **Font prototype (DOING NOW)** — legible prose on a real phone (SDF and/or baked-TTF). The #1
+   blocker; if it can't be made crisp, stop and reassess before building anything else.
+2. then keypad + one drill (consuming T229 data) → 3. the golden-PNG-verified FX moment → 4. clean APK.
+The *full* port after a GO is still "more than the spike", but measured in this environment's hours —
+not the human weeks-to-months the research framed it as.
 
 ## Risks to call before committing to the full port (research §D4)
 1. **Font legibility is a hard dependency** — if SDF/TTF in this stack is fussier than expected, a

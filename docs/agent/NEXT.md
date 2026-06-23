@@ -81,12 +81,13 @@ carries a superseded banner). Do NOT start GG2-on-web.
 — 46 modes/959 vectors, parity 16/16, runtime 64/64). Continue the seam, **same non-destructive/additive rules**
 (suite stays 64/64; runtime untouched). *(BACKLOG T230.)* Capacitor stays parked (owner GO required).
 
-**Builder B → HOLD — research DONE/APPROVED; spike spec awaiting owner approval.** The `BRICKMAP-GG1` research pass
-is complete (`00-1/brickmap:docs/gg1-port-research.md`, APPROVED `REVIEW.md`). The Babysitter has written
-**`BRICKMAP-GG1-SPEC.md`** (the de-risking spike — "one legible drill, self-verified, on a phone" — + go/no-go gate).
-**Do NOT start building until the owner approves the spec + its 2 decisions (a11y stance, font path) and the
-Babysitter flips this line to GO.** When GO: build the spike in `00-1/brickmap` (`crates/goblin-gold` + engine
-font/UI/golden additions) per the spec; deliver an APK + golden-test + phone screenshots as gate evidence.
+**Builder B → GO: spike mini-gate #1 — the FONT PROTOTYPE (owner-approved 2026-06-23).** Research DONE/APPROVED;
+spec = **`BRICKMAP-GG1-SPEC.md`** (a11y DEFERRED, JS-reuse rejected, font = prototype-first). **Do ONLY mini-gate #1
+now:** in `00-1/brickmap`, build a **legible font path** (try **SDF-atlas** [recommended] and/or baked-TTF) and prove
+**crisp prose on a real phone** (web + APK). The #1 blocker — if it can't be made crisp, STOP and report before
+building anything else. Deliver **phone screenshots** of guide-length prose at reading size. Then HOLD for the
+Babysitter to gate → mini-gates #2 keypad+drill (consume T229 data) · #3 golden-PNG FX · #4 clean APK. *(Ignore the
+research's week estimates — ordered mini-gates, not time-boxed.)*
 *(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 
