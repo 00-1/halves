@@ -167,3 +167,11 @@
   configures it per app.
 - **Custom domain / per-game subdomains** = optional future (branding / per-app origins for cleaner deep-linking);
   adoptable any time by re-pointing package ids + moving each app's assetlinks to its own origin root.
+
+### 7b-status (2026-06-23): asset-links hosting DONE ✅
+The `00-1.github.io` user-pages repo is set up + Pages-live. Agent-verified:
+`https://00-1.github.io/.well-known/assetlinks.json` → **HTTP 200, application/json**, template body, default branch
+`main`, `.nojekyll` confirmed serving the dot-folder, `00-1/halves` untouched. *(Babysitter could NOT independently
+fetch — sandbox egress doesn't allowlist `00-1.github.io`; trusting the agent's specific success report + owner
+in-browser glance.)* **Remaining:** swap the `REPLACE_WITH_*` placeholders for the real `package_name`
+(`app.goblingold.voidthrone`) + the `.aab` SHA-256 fingerprint (from PWABuilder) — one commit to that repo.
