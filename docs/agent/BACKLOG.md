@@ -13,7 +13,7 @@ Status legend: `OPEN` → ready to build · `IN-REVIEW` → awaiting Babysitter 
 GG1 ship is paused; these are real shipping-TWA fixes, **not** to be started until the owner
 un-parks. Strand-1 (TWA) work — Builder A — flows to the installed app via a prod deploy.
 
-### T227 — Splash horizontal-scroll (the void-glow overflow)  · status: PARKED  · [A]
+### T227 — Splash horizontal-scroll (the void-glow overflow)  · status: DONE (Babysitter take-over `61650f5`)  · [A]
 The `#entry` splash scrolls sideways (visible: "Goblin Gold" clips at the left edge). **Root
 cause:** `#entry{overflow-y:auto}` (styles.css:78) makes the *other* axis's `visible` compute to
 `auto` (CSS spec), so the void-glow `#entry .subtitle::after{inset:-40% -14% … animation:voidFog}`

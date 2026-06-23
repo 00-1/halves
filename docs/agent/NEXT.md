@@ -45,10 +45,10 @@ multi-hour runs the environment can't deliver.)*
 **Three strands now run in parallel — do NOT let any deprecate another:**
 1. **TWA = the shipping path. NOT deprecated.** Until further notice this is what we ship; keep prod = v1 and the
    PWABuilder/assetlinks flow intact. (Known edge case: an "Open with"/work-profile chooser on the owner's own dual-
-   profile phone — does not affect normal single-profile users.) **Queued TWA/splash polish, PARKED until owner
-   un-parks (GG1 ship paused):** `T227` splash horizontal-scroll (void-glow `overflow-x`) · `T228` truly-immersive
-   notch-fill + drop the JS-fullscreen toast (coupled — needs an `.aab` rebuild with "Fullscreen sticky"/cutout
-   BEFORE dropping JS-FS, else the black notch strip returns). *(BACKLOG T227/T228.)*
+   profile phone — does not affect normal single-profile users.) **TWA/splash polish:** ✅ `T227` splash
+   horizontal-scroll FIXED (Babysitter take-over `61650f5`, headless-verified; reaches the TWA via prod deploy) ·
+   ⏸ `T228` truly-immersive notch-fill + drop the JS-fullscreen toast — **PARKED, needs the owner's `.aab` rebuild**
+   ("Fullscreen sticky"/cutout) BEFORE dropping JS-FS, else the black notch strip returns. *(BACKLOG T227 DONE / T228.)*
 2. **Capacitor experiment (Builder A).** In-process-WebView wrapper to remove the TWA browser-handoff fragility.
    **Spec drafted → `CAPACITOR-SPEC.md` (awaiting owner approval before A starts).** Parallel; may or may not adopt.
 3. **GG1-on-brickmap (Builder B).** Re-base GG1 on the brickmap render engine (native APK, engine-native aesthetic,
