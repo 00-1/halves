@@ -2019,3 +2019,19 @@ fills). Correctly frames it a **re-platform, not a port** (GG uses the presentat
 Real new ENGINE work = legible **text (#1 blocker)**, UI/menus/keypad, save, golden-diff, **a11y (an
 honest school-distribution risk)**. → Turned into **`BRICKMAP-GG1-SPEC.md`** (the de-risking spike +
 go/no-go gate), **awaiting owner approval + 2 owner decisions (a11y stance, font path)** before B builds.
+
+---
+
+## GATE PASS — BRICKMAP-GG1 spike mini-gate #1 (legible font path) · Builder B · `00-1/brickmap:5bf7ef0`
+Process evidence strong: baked-TTF (Instrument Sans, OFL) → AA grayscale coverage atlas + word-wrap,
+rendered through the **real wgpu path** (offscreen llvmpipe) at 28/34/42px on a 1080-wide canvas; CI
+green (CPU AA-bake + wrap unit tests, clippy -D warnings, fmt); **no engine/voxel code touched**;
+uses the reusable `bm-render::hud` texture pattern (sinks into the engine later). **Legibility is a
+visual call the Babysitter can't see (no brickmap access) → owner-confirmed: "all very readable, third
+sample is best."** The #1 blocker (the founding concern of the pivot) is **cleared.** → B GO mini-gate
+#2 (keypad + one drill via the T229 data seam); "third sample" = prose baseline. Font path choice
+(baked-TTF over SDF) accepted — right for GG's fixed reading sizes.
+
+## CONFIRMED GO — T231 Capacitor wrapper (track 2) · Builder A
+Owner: "yes build capacitor" (2026-06-23). A proceeds per `CAPACITOR-SPEC.md` (separate `.exp`
+package, additive, CI `.aab`). T230 stays deferred.

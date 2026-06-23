@@ -85,13 +85,13 @@ the existing `gg1/prod` in a WebView — **no "Open with" chooser, no address ba
 *(Owner uploads the artifact to a separate internal-testing app to judge on-device.)* **`T230` (content export pt2)
 DEFERRED** — resume after Capacitor; it feeds the brickmap port, which is still at the font-prototype gate (no rush).
 
-**Builder B → GO: spike mini-gate #1 — the FONT PROTOTYPE (owner-approved 2026-06-23).** Research DONE/APPROVED;
-spec = **`BRICKMAP-GG1-SPEC.md`** (a11y DEFERRED, JS-reuse rejected, font = prototype-first). **Do ONLY mini-gate #1
-now:** in `00-1/brickmap`, build a **legible font path** (try **SDF-atlas** [recommended] and/or baked-TTF) and prove
-**crisp prose on a real phone** (web + APK). The #1 blocker — if it can't be made crisp, STOP and report before
-building anything else. Deliver **phone screenshots** of guide-length prose at reading size. Then HOLD for the
-Babysitter to gate → mini-gates #2 keypad+drill (consume T229 data) · #3 golden-PNG FX · #4 clean APK. *(Ignore the
-research's week estimates — ordered mini-gates, not time-boxed.)*
+**Builder B → GO: spike mini-gate #2 — KEYPAD + ONE DRILL.** ✅ **Mini-gate #1 (font) PASSED** — owner confirmed the
+prose is "all very readable" on a real phone (2026-06-23); **"the third sample is best — use that as the prose
+baseline"** (B: map to whichever screenshot/size that was; baked-TTF/Instrument-Sans path approved). **Now build
+mini-gate #2** in `crates/goblin-gold`: an on-screen **numeric keypad** (touch + digit keys) + **one drill loop** for a
+single topic (e.g. `halves`), its questions **consumed from T229's `content/gg1/modes.json` + `parity-vectors.json`**
+(proves the cross-repo data seam) → mark right/wrong. UI banked into the engine (reusable); one-way deps + no-leakage
+grep gate. Then HOLD to gate → #3 golden-PNG FX · #4 clean APK. Deliver a phone screen-capture of the keypad+drill.
 *(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 
