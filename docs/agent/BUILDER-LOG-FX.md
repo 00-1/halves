@@ -6,6 +6,39 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 spike — mini-gate #4: native APK (drill + keypad + FX, fullscreen) ([B], GO — FINAL gate)
+
+Babysitter gated #3→#4 (GO). Built the **final** mini-gate in `00-1/brickmap:crates/goblin-gold`
+(commit `14a9aa8`, pushed to `main` + the feature branch): a **windowed runtime** that boots the
+**drill + keypad + correct-answer FX FULLSCREEN** through a real wgpu **surface**, packaged by
+`cargo-apk` into a **native Android APK** (no voxel world) — proving the re-platform runs
+**on-device**, not just headless.
+- **`app.rs`:** a winit `ApplicationHandler` + wgpu **surface** runtime. Each frame renders the
+  live drill screen (heading/progress, the framed question from the **T229 seam**, the answer box
+  with the typed value + verdict colour, the keypad, the banner); **touch** (Android) / left-click
+  (desktop) hit-tests the **data-free `Keypad`** and drives the `Drill`. A correct answer fires the
+  **engine-native FX**: an **animated gold spark burst** (`bm-render::particles`) under the engine
+  **palette-dither bloom** (`bm-render::palette` `PalettePass`) — the **same recipes #3's golden
+  self-verifies**, now on a live surface. Desktop `run()` + Android `android_main` entry points.
+- **`Cargo.toml`:** `cdylib` (what cargo-apk packages) + winit/android-native-activity +
+  android_logger; **`[package.metadata.android]` package id `dev.brickmap.goblingold`** — **DISTINCT**
+  from the `scraped-again` engine demo AND the halves Capacitor `.exp` (three separate apps, install
+  side by side). Signed with the committed `release.keystore`.
+- **`.github/workflows/android.yml`:** now a **matrix** over `{scraped-again, goblin-gold}` — each
+  builds its own signed arm64 APK, uploads a **workflow artifact**, and publishes to the rolling
+  **`dev` prerelease** (pruning only its own prefix, so the two coexist). *(This is how scraped-again
+  ships — "built blind in CI, the human installs + verifies on a phone".)*
+- **Local verification (no NDK here, so the APK binary is CI-built):** native **and**
+  `aarch64-linux-android` `cargo check` + `clippy -D warnings` both clean; `fmt` + tests green; #3's
+  GPU golden still passes under lavapipe. **CI Android build triggered on the `main` push** → the
+  signed `goblin-gold-<sha>-android-arm64.apk` lands as the run artifact + on the `dev` release.
+- **Deliverable for the owner:** install **`dev.brickmap.goblingold`** from the `dev` prerelease /
+  the Android-APK workflow run, and **device-judge** the drill + keypad + FX fullscreen. **This is
+  the FINAL spike gate → the full go/no-go decision (owner + Babysitter).** No engine/voxel code
+  touched. **HOLD for the go/no-go.**
+
+---
+
 ## BRICKMAP-GG1 spike — mini-gate #3: engine-native correct-answer FX + golden-PNG diff ([B], GO)
 
 Babysitter gated #2→#3 (GO). Built the third mini-gate in `00-1/brickmap:crates/goblin-gold`
