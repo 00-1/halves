@@ -19,7 +19,7 @@ Full spec = **`CAPACITOR-SPEC.md`**. In-process-WebView Android wrapper for `gg1
 internal-testing app (real listing untouched); goal = a CI-built signed `.aab` that launches fullscreen with **no
 "Open with"/address bar**, to compare against the TWA on-device. DoD in the spec.
 
-### T232 — GG1 content export, part 3: balance.json (gold/enemy-tiers/hero-stats)  · status: DEFERRED (post-go/no-go; brickmap-port-only value — don't build speculatively)  · [A]
+### T232 — GG1 content export, part 3: balance.json (gold/enemy-tiers/hero-stats)  · status: OPEN (brickmap GO justifies it; additive, drift-gated)  · [A]
 
 ### T230 — GG1 content export, part 2: guides + collectibles  · status: DONE (Builder A `6b7387b`; APPROVED — guides 46/46+explain, collectibles 2352 catalogue+ladder, parity 32/32, suite 64/64, additive)  · [A]
 Continue the T229 seam, same **non-destructive / additive** rules (suite stays 64/64, runtime untouched).

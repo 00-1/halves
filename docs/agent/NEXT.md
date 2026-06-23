@@ -4,12 +4,13 @@
 > `origin/claude/agent` and re-read this IMMEDIATELY before each task and before you
 > push.** Rationale/details live in `REVIEW.md` / `BACKLOG.md`.
 
-> 🛑 **FRESHNESS CHECK (as of 2026-06-23, post-pivot — `git show origin/claude/agent`).** If your copy says
-> **"Builder A → T226 → T168"** or **"Builder B → STAND BY"**, it is **STALE — `git fetch origin claude/agent` and
-> re-read.** Current truth: **GG1 ship is PAUSED**; the project has PIVOTED to **3 parallel strands** (TWA ships /
-> Capacitor experiment / **GG1-on-brickmap**). **Builder A = HOLD** (T226 done/closed, T168 paused; Capacitor awaits
-> owner approval). **Builder B = the `BRICKMAP-GG1` research pass** (NOT "done" — read your line below). GG2-on-web is
-> dead. *(This block exists because A nearly rebuilt the dropped T226(1) and B thought it was idle — both from stale reads.)*
+> 🛑 **FRESHNESS CHECK (updated 2026-06-23 eve — `git fetch origin claude/agent` before EVERY task).** **Current truth:**
+> GG1 ship PAUSED; **brickmap = GO (owner pre-approved, full port underway)**; Babysitter drives **ungated** (gates on
+> tests/goldens/code-review, not owner approval). **Builder B = the GG1-on-brickmap FULL PORT** (spike done & all 4
+> gates passed; now phase 2 = logic re-impl vs the T229 parity vectors — read your line below). **Builder A = `T232`
+> balance.json export** (the last content-seam piece, now justified by brickmap GO). Capacitor scaffold (`T231`) is
+> DONE; its on-device test is the owner's. GG2-on-web is dead. *(Stale markers that mean RE-FETCH: "A → T226/T168",
+> "B → STAND BY", "B → research pass", "Capacitor awaits approval".)*
 
 ---
 
@@ -57,12 +58,11 @@ multi-hour runs the environment can't deliver.)*
    ⏸ `T228` truly-immersive notch-fill + drop the JS-fullscreen toast — **PARKED, needs the owner's `.aab` rebuild**
    ("Fullscreen sticky"/cutout) BEFORE dropping JS-FS, else the black notch strip returns. *(BACKLOG T227 DONE / T228.)*
 2. **Capacitor experiment (Builder A).** In-process-WebView wrapper to remove the TWA browser-handoff fragility.
-   **Spec drafted → `CAPACITOR-SPEC.md` (awaiting owner approval before A starts).** Parallel; may or may not adopt.
-3. **GG1-on-brickmap (Builder B).** Re-base GG1 on the brickmap render engine (native APK, engine-native aesthetic,
-   self-verifiable FX). **IN DISCUSSION with owner — not yet spec'd/assigned.** Architecture reassessment: the
-   original "stay on the web/DOM" call is now judged a mistake (we traded free text/deploy for unbounded game-feel
-   whack-a-mole + "mask slips" web fragility); brickmap already renders on web + native APK and needs text/menus
-   anyway. GG2 is intended brickmap-native; GG1-on-brickmap is the proving ground.
+   **✅ scaffold DONE (`T231`, `0f77a83`) — on-device test = owner** (`OWNER-EYEBALL.md`). Parallel; may or may not adopt.
+3. **GG1-on-brickmap (Builder B) — ✅ GO, FULL PORT UNDERWAY.** Spike complete (all 4 mini-gates passed; #4 launch crash
+   fixed + self-verified). Now the full port, phase-gated on tests/goldens: ✅ phase 1 engine services banked
+   (`bm-render::text2d`/`ui2d` + `bm-platform::save`) → **phase 2 logic re-impl vs the T229 parity vectors** → phase 3
+   content → phase 4 audio → phase 5 polish. GG2 is brickmap-native; this is the proving ground (now proven).
 
 > ⚡ **AUTONOMY GRANT — owner stepped away (2026-06-23 eve): "continue unattended and ungated; don't gate steps on my
 > approval; I'm happy this will work out — and we have the web version if not."** ⇒ **brickmap = GO** (full port,
@@ -86,12 +86,13 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → HOLD pending the brickmap GO/NO-GO.** ✅ `T231` Capacitor scaffold · ✅ `T229` modes export · ✅ `T230`
-guides+collectibles export (`6b7387b`; parity 32/32, suite 64/64) — the **content-as-data seam is complete** for
-near-term needs. **Do NOT build more port-prep speculatively:** `T232` (`balance.json`) is **DEFERRED** until brickmap
-is greenlit (it's brickmap-port-only value). Other A work is owner-gated too: TWA polish `T228` (your `.aab` rebuild),
-GG1 store (ship paused), Capacitor on-device test (your keystore+CI dispatch). So A holds until the go/no-go or you
-point it somewhere. *(If you want A busy now regardless, `T232` balance.json is the one clean additive task available.)*
+**Builder A → `T232` — content export part 3: `balance.json` (NON-DESTRUCTIVE / additive; suite stays 64/64).**
+Brickmap is now **GO**, so the seam's last piece is justified (the port's phase-3 content + metagame will consume it).
+✅ `T229` modes · ✅ `T230` guides+collectibles · ✅ `T231` Capacitor scaffold. **Now emit `content/gg1/balance.json`** —
+the tuning constants currently in code: gold earn/spend rates, collector-tier reward amounts, enemy tiers/defs
+(`enemies.js`), hero stats/boosts (`heroes.js`), masterSecs (already in modes.json — cross-ref). Same additive rules
+(do NOT touch the live runtime); extend `content-parity.test.js` to drift-gate it against the live modules. *(BACKLOG
+T232.)* After T232: A holds / owner-gated items (TWA `T228` `.aab`, store paused, Capacitor on-device test).
 
 **Builder B → GO full-port PHASE 2: re-implement GG1 logic in Rust vs the T229 parity vectors.** ✅ **#4 crash FIXED**
 & self-verified (empty-buffer guard in the live `render()` + `drill-initial` golden under lavapipe; live render now
