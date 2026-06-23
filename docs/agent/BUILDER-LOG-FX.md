@@ -6,6 +6,26 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 spike — mini-gate #1: legible font path PROVEN ([B], GO)
+
+Owner approved the spike (font prototype-first). Built `00-1/brickmap:crates/goblin-gold` (commit
+`5bf7ef0`) — the spike crate's first piece: a `text` core that bakes a TrueType face (Instrument
+Sans, OFL) to an **anti-aliased grayscale coverage atlas** + word-wraps prose, and a `font_proto`
+bin that renders a real GG **guide + question screen** through the **actual wgpu path** (offscreen,
+software-Vulkan/llvmpipe) at phone reading sizes → PNG.
+- **Verdict: clear YES — the #1 blocker is cleared.** Crisp, fully legible reading-size prose at
+  28 / 34 / 42 px on a 1080-wide phone canvas (gold heading + question, light guide paragraph) —
+  categorically better than brickmap's `font8x8` 8×8 bitmap for guide/explain text. Same wgpu
+  pipeline as web/APK, so on-device pixels match; owner does the final on-phone eyeball.
+- The atlas→`R8` texture + textured-quad draw is the proven `bm-render::hud` pattern; this later
+  sinks into `bm-render` as the engine's reusable text service (per owner "bank reusable text").
+- CI-parity green: pure-CPU unit tests (AA bake + wrap) pass without a GPU; `clippy -D warnings` +
+  `fmt` clean; no engine/voxel code touched. Charset = printable ASCII for the prototype (extend later).
+- Evidence (phone-size prose screenshots) delivered to the owner. **HOLD for the Babysitter to gate
+  → #2 keypad+drill (T229 data seam) · #3 golden-PNG FX · #4 clean APK.**
+
+---
+
 ## BRICKMAP-GG1 — port research pass ([B], strand 3, research-only)
 
 GG1-on-brickmap research delivered → **`00-1/brickmap:docs/gg1-port-research.md`** (commit `fb020fa`).
