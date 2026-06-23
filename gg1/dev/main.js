@@ -2954,7 +2954,7 @@
           g.fillStyle = "#e9ecf1"; g.font = "600 26px 'Space Grotesk',system-ui,sans-serif";
           g.fillText("Fast mental-maths drills", TX + 2, y); y += line2;
           g.font = "700 18px 'Space Grotesk',system-ui,sans-serif"; g.fillStyle = "#e9c46a";
-          g.fillText("No ads · No tracking · No in-app purchases", TX + 2, y); y += line3;
+          g.fillText("No ads · No data collected · No in-app purchases", TX + 2, y); y += line3;
           g.font = "600 16px 'Space Grotesk',system-ui,sans-serif"; g.fillStyle = "#9aa3b2";
           g.fillText("Works offline · no account needed", TX + 2, y);
           cv.toBlob((b) => {
