@@ -81,12 +81,12 @@ carries a superseded banner). Do NOT start GG2-on-web.
 — 46 modes/959 vectors, parity 16/16, runtime 64/64). Continue the seam, **same non-destructive/additive rules**
 (suite stays 64/64; runtime untouched). *(BACKLOG T230.)* Capacitor stays parked (owner GO required).
 
-**Builder B → `BRICKMAP-GG1` RESEARCH PASS (research only — no code).** Investigate the `00-1/brickmap` repo and
-answer every open question in **`BRICKMAP-GG1.md`** (engine capability matrix · "Scraped Again" engine↔game boundary
-· can we run JS/Node and is it a bad idea · best port path for GG logic/audio/generative-images · build+CI for web &
-native APK · headless self-verify · a11y · proposed spike scope + effort). **Deliverable = a research report pushed
-to the brickmap repo (`docs/gg1-port-research.md`) + a one-line pointer in `BUILDER-LOG-FX.md`.** NO engine/game code
-changes this pass. The Babysitter reviews it, then writes `BRICKMAP-GG1-SPEC.md` for owner approval before any build.
+**Builder B → HOLD — research DONE/APPROVED; spike spec awaiting owner approval.** The `BRICKMAP-GG1` research pass
+is complete (`00-1/brickmap:docs/gg1-port-research.md`, APPROVED `REVIEW.md`). The Babysitter has written
+**`BRICKMAP-GG1-SPEC.md`** (the de-risking spike — "one legible drill, self-verified, on a phone" — + go/no-go gate).
+**Do NOT start building until the owner approves the spec + its 2 decisions (a11y stance, font path) and the
+Babysitter flips this line to GO.** When GO: build the spike in `00-1/brickmap` (`crates/goblin-gold` + engine
+font/UI/golden additions) per the spec; deliver an APK + golden-test + phone screenshots as gate evidence.
 *(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 

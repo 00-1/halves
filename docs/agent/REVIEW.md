@@ -2007,3 +2007,15 @@ parity test as a CI gate between two existing gate steps (no effect on deploy/up
 shape is correct (`{id,name,tag,group,expr,masterSecs,unlock,pool,transform}`). Clean seam for the
 brickmap port. **A also correctly self-reverted the stale `T226(1)` it had started before re-syncing.**
 → A next: **T230** (guides/collectibles/balance export — same non-destructive pattern).
+
+---
+
+## APPROVED — BRICKMAP-GG1 research pass · Builder B · `00-1/brickmap:docs/gg1-port-research.md`
+Excellent, honest, well-cited. Confirms the architecture bets: workspace + engine↔game boundary
+already done (M9); **share DATA not code — JS reuse rejected** (re-impl in Rust vs T229 parity
+vectors); `gg-kit` deferred; FX recipes are brickmap's originals (don't port `fxgl.js`); audio DSP
+(`Drone`) already in Rust; **headless render-to-PNG works today** (golden-diff layer is the gap GG-web
+fills). Correctly frames it a **re-platform, not a port** (GG uses the presentation half, not voxel).
+Real new ENGINE work = legible **text (#1 blocker)**, UI/menus/keypad, save, golden-diff, **a11y (an
+honest school-distribution risk)**. → Turned into **`BRICKMAP-GG1-SPEC.md`** (the de-risking spike +
+go/no-go gate), **awaiting owner approval + 2 owner decisions (a11y stance, font path)** before B builds.
