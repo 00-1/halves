@@ -310,6 +310,10 @@
   // screen to stay purple, NOT wear today's event colour (a rare event used to
   // turn it blue). The epic-rarity family on the app base: #0E1116 → body → accent.
   const HOME_PALETTE = ["#0E1116", "#9a5cf6", "#cda9ff"];
+  // T-splash — the ENTRY/splash backdrop: same animated purple as home but DARKER +
+  // more muted (a Gallowmarch-ish deep grey-purple), and NO hoard. Owner-tunable.
+  const ENTRY_PALETTE = ["#08080d", "#3a2a5c", "#5a4488"];
+  function entryFxState(){ return { event: { palette: ENTRY_PALETTE }, progress: 0.22, streak: 0, hoard: 0 }; }
   // LIVE home state for the backdrop — the HUE is fixed purple; only the player's
   // own collection progress (0–1) and daily Momentum streak modulate it (brightness/
   // particle count). The event is deliberately NOT read here, so the home backdrop
@@ -347,6 +351,7 @@
     if(!fxBg) return;
     try{
       if(name === "start"){ fxShowBackdrop(true); fxBg.setHomeState(homeFxState()); fxBg.start(); if(fxBg.resize) fxBg.resize(); }
+      else if(name === "entry"){ fxShowBackdrop(true); fxBg.setHomeState(entryFxState()); fxBg.start(); if(fxBg.resize) fxBg.resize(); }
       else if(name === "arena"){ fxShowBackdrop(true); fxBg.setArenaState(arenaFxState()); fxBg.start(); if(fxBg.resize) fxBg.resize(); }
       else { fxBg.stop(); fxShowBackdrop(false); }
     }catch(e){}

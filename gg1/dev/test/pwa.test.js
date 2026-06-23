@@ -53,8 +53,9 @@ if(mani){
   ok(/\.brand\{[^}]*font-size:clamp\(54px/.test(cssT), "(a2) T210: the wordmark is big (3×)");
   ok(/const cellsH = 26/.test(mn) && /span = Math\.max\(1, yMax - yMin\), PX = 2/.test(mn), "(a2) T212: gold raster res cellsH 26 / PX 2 (the 'i' dot/stem separate)");
   ok(/m\.letterSpacing = "-1\.5px"/.test(mn), "(a2) T212: the gold raster is tight (-1.5px letter-spacing)");
-  ok(/\.tag\{[^}]*margin-top:auto/.test(cssT), "(a2) T214: the tag + action block is pushed to the BOTTOM");
-  ok(/#entry\{[^}]*padding:clamp\(40px,11vh,120px\)/.test(cssT), "(a2) T216: the title is upper-centre (space above via padding-top); actions at the bottom");
+  ok(/#entry\{[^}]*justify-content:center/.test(cssT), "(a2) splash redesign: #entry is a vertically-centred hero stack");
+  ok(/@keyframes splashIn/.test(cssT) && /#entry \.brand[^{]*\{[^}]*animation:splashIn/.test(cssT), "(a2) splash redesign: titles/buttons fade in (splashIn) a beat after Magnar");
+  ok(/\.mark canvas\{height:clamp\(150px,42vw,250px\)/.test(cssT), "(a2) splash redesign: Magnar enlarged to the splash hero (matches the TWA native splash)");
   // T221 (owner redesign) — the VOID line is a chunky TWO-LINE pixel title filling a box, with the skew + gradient + intermittent interference
   ok(/paintVoidThrone\(e\.querySelector\("\.subtitle"\)\)/.test(mn), "(a2) T221: the void subtitle is rendered by paintVoidThrone (the two-line pixel title), NOT paintPixelTitle");
   ok(/const VOID_FONT = \{/.test(mn) && /function voidCols\(/.test(mn), "(a2) T221: a built-in chunky pixel FONT (VOID_FONT) — owner picked the mockup over the JetBrains-Mono raster");

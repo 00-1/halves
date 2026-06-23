@@ -6283,3 +6283,16 @@ tagline "Fast mental-maths drills" + amber "No ads · No tracking · No in-app p
 needed" (owner edits: dropped "11+"/"pixel RPG"; spelled out "in-app purchases"; added the no-data selling point).
 `toBlob` → PNG download. ADD-only (calls existing renders read-only; live splash untouched). node -c clean; 64/64.
 **Owner downloads from Dev ▸ Developer ▸ Store feature graphic and eyeballs — layout/size tweaks expected.**
+
+---
+### [BABYSITTER TAKE-OVER] splash redesign v2 (owner — backdrop + Magnar hero + reveal)
+Owner OK'd breaking the tuned splash layout. First cut (gg1/dev): (1) **animated dark backdrop** on the `#entry`
+splash — `fxSetScreen("entry")` now shows the fxgl backdrop with a darker/muted purple `ENTRY_PALETTE`
+(`["#08080d","#3a2a5c","#5a4488"]`, Gallowmarch-ish) via `entryFxState()` (no hoard). (2) **Magnar = hero** —
+`.mark canvas` height `clamp(54..92)`→`clamp(150px,42vw,250px)`, `#entry` now `justify-content:center` (centred stack,
+matches the native TWA splash so Magnar feels continuous). (3) **reveal** — `.brand/.subtitle/.tag/.entry-actions/
+#soundBtn` start `opacity:0` and fade up (`@keyframes splashIn`, staggered .45→.98s) so the text/buttons appear a
+beat AFTER Magnar; reduced-motion shows all immediately. Void title margin tightened (was the big centre-push);
+`.tag` margin-top:auto bottom-pin removed (centred stack). Updated `pwa.test.js` (the 2 old-layout assertions →
+new-design assertions). node -c clean; 64/64. **FIRST CUT — owner device-confirms + tunes (Magnar size, backdrop
+darkness, reveal timing); precise TWA-splash match best finalised once the .aab exists to compare side-by-side.**
