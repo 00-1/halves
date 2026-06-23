@@ -84,13 +84,17 @@ is greenlit (it's brickmap-port-only value). Other A work is owner-gated too: TW
 GG1 store (ship paused), Capacitor on-device test (your keystore+CI dispatch). So A holds until the go/no-go or you
 point it somewhere. *(If you want A busy now regardless, `T232` balance.json is the one clean additive task available.)*
 
-**Builder B → HOLD for the GO/NO-GO. Spike COMPLETE — all 4 mini-gates delivered.** ✅ #1 font (owner "all readable,
-3rd best") · ✅ #2 keypad+drill over the T229 seam (`227c5e8`, proven by tests) · ✅ #3 self-verified golden-PNG FX
-(`f0c6879`, test-the-test catches 2 injected regressions) · ✅ #4 native APK **`dev.brickmap.goblingold`** (`14a9aa8`,
-built+signed in CI, Android-compile-verified) — **awaiting owner on-device install/judgment.** **Do NOT start the
-full port.** The remaining step is the owner installing the APK + the **full go/no-go decision (owner + Babysitter)**.
-If GO: phase the full port (engine text/UI/save services → logic re-impl vs parity vectors → content via T229/T230 →
-audio re-author → polish). Hold.
+**Builder B → 🔴 FIX the mini-gate #4 LAUNCH CRASH (device-only; gate #4 NOT passed).** `dev.brickmap.goblingold`
+v0.0.1 **force-closes on launch** on a real phone (Xiaomi/POCO, Android 16, arm64) — a **Rust `panic → abort` in
+`libgoblin_gold.so` on a SPAWNED startup thread** (`Thread::new::thread_start`), so `panic=abort` kills the process.
+All headless/CI was green; this is device-only (real GPU surface / Android window lifecycle / APK asset paths ≠
+llvmpipe) — exactly what gate #4 exists to catch. **FIX:** (1) **get the panic MESSAGE first** — android_logger is
+wired, so `adb logcat` (or a panic hook that logs the payload) names the cause instantly. (2) Top suspects: **(a)
+data/font loaded from a FILESYSTEM PATH** (`std::fs`/`File::open` on `modes.json`/`parity-vectors.json`/the TTF) that
+doesn't exist inside the APK → `unwrap` panics — fix with `include_bytes!`/`include_str!`; **(b) wgpu surface created/
+configured before the Android window exists** (not gated on `Event::Resumed`) — only create/config the surface on
+Resumed, don't `unwrap` adapter/surface. (3) Check any boot worker thread for a desktop-only `unwrap`. Rebuild APK in
+CI → owner re-installs. ✅ #1/#2/#3 still passed.
 *(Prior B work: `T103`/`T211`/`T207` APPROVED, live `951e532`. Perf on-device plan deferred by owner.)*
 **Re-read this line fresh before each task + push.**
 

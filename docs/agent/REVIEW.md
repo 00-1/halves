@@ -2102,3 +2102,16 @@ suite **64/64**. The content-as-data **seam is complete** for near-term port nee
 collectibles T230). **`balance.json`** (gold/enemy-tiers/hero-stats tuning — needs `main.js`/`enemies.js`/
 `heroes.js` spelunking) **deferred to T232, post-go/no-go** — it's brickmap-port-only value, so don't build
 it speculatively before the owner decides on brickmap. → A HOLDS pending the go/no-go.
+
+---
+
+## GATE FAIL (device) — BRICKMAP-GG1 spike mini-gate #4 (native APK) · `dev.brickmap.goblingold` v0.0.1
+Owner installed the CI-built APK → **force-close on launch.** Native **Rust `panic → abort`** in
+`libgoblin_gold.so` (frames: abort ← abort_internal ← process::abort ← panic_with_hook ← rust_begin_unwind
+← app code @0x501370… ← `Thread::new::thread_start`) — i.e. a **panic on a spawned startup thread**, and
+`panic=abort` takes the whole process down. Device: Xiaomi/POCO, Android 16, arm64. **All headless/CI was
+green** (compiled arm64, llvmpipe render, golden-diff) — device-only failure (real surface/window-lifecycle/
+APK asset paths ≠ headless). **Gate #4 working as designed — it caught a real on-device crash.** Routed to B:
+get the panic message (android_logger/logcat) first; top suspects = (a) data/font read from an fs PATH not in
+the APK → use `include_bytes!`; (b) wgpu surface created before `Event::Resumed`. #1/#2/#3 stand. Gate #4
+re-opens after the fix + a re-install.
