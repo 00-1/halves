@@ -6,6 +6,22 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 — port research pass ([B], strand 3, research-only)
+
+GG1-on-brickmap research delivered → **`00-1/brickmap:docs/gg1-port-research.md`** (commit `fb020fa`).
+Verdict: feasible re-platform (not a port). GG1 is a 2-D text/UI/audio game → uses brickmap's
+*presentation half* (overlays/palette/particles/text/audio/input), not the voxel half; FX is
+"coming home" (`fxgl.js` was ported FROM `palette`/`splat` WGSL); audio DSP + cpal/web I/O already
+exist; headless render-to-PNG works (golden-diff is the gap GG brings). New engine work: a legible
+font path (SDF/TTF — the #1 dependency), a UI/menu/numeric-keypad layer, a save abstraction, a11y
+(regression risk for schools). Reuse verdict: re-implement logic in Rust vs T229 parity vectors,
+re-author audio onto the `Drone`-style synth, use `bm-render` recipes directly — **do NOT embed JS**.
+Includes a capability matrix, GG1→brickmap subsystem map, proposed `crates/goblin-gold` boundary,
+and a scoped spike (crisp text + one drill + self-verified FX + clean APK) ≈13–21 eng-days + a
+go/no-go gate. No engine/game code changed. Babysitter writes `BRICKMAP-GG1-SPEC.md` next.
+
+---
+
 ## T103 — low-end-Android PERF pass: audit + fix the render hot paths ([B], owner-mandated)
 
 Owner: the perf pass "is not optional." A measure-and-fix pass for Adreno-618/Poco-X3-class Android
