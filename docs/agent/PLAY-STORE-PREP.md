@@ -15,8 +15,10 @@
   names; Education category keeps it clear of the goblin idle-tycoon cluster. *(Currency is also "Goblin Gold" —
   intentional cohesion. The maths TOPIC "Halves" (x/2) keeps its name; only the PRODUCT is branded — see T171.)*
 - **Developer (public):** Joshua Bradshaw / United Kingdom (Individual, non-trader → no address shown)
-- **Package / application id (PERMANENT — cannot change after first publish):** proposed **`app.goblingold.maths`**
-  *(reverse-DNS, doesn't expose a name; owner can swap before first upload — e.g. `io.github.<user>.goblingold`)*
+- **Package / application id (PERMANENT — LOCKED 2026-06-23):** **`app.goblingold.voidthrone`** ✅ (owner entered it
+  in Play Console "Create app"). Subtitle-based (not subject-based) so each franchise game = `app.goblingold.<subtitle>`
+  and it never collides if there's ever a 2nd maths title. **MUST match downstream:** PWABuilder Application ID =
+  `app.goblingold.voidthrone`; `assetlinks.json` `package_name` = `app.goblingold.voidthrone`.
 - **TODO before lock:** optional UK IPO / EUIPO trademark glance on "Goblin Gold" (generic phrase → low risk,
   also low ownability — fine for a free app).
 - **Category:** Education  ·  **Tags:** education, maths, kids, 11+
