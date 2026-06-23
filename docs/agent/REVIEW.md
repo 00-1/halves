@@ -23,14 +23,15 @@ rebalance OUTSTANDING (the last T219 step)` — live `d1f2e27`; **63/63 + `node 
 
 **→ A: do the Collector rebalance (closes T219) → then T218 → T225. B: STAND BY.**
 
-> **CORRECTION + `🔴 CHANGES — T219 Collector rebalance (`c5151e5`):** my verdict above reviewed `d1f2e27` (one
-> commit stale) and said the rebalance was missing — it was actually pushed in **`c5151e5`** (capstone `1900→2350`).
-> BUT it's **WRONG: the capstone `2350` is UNREACHABLE** — the real catalogue is **2310** items, so no player can
-> ever collect 2350 → the top award "Keeper of the Myriad" can never be earned (exactly the "unreachable top tier"
-> trap the original code called out). **A: set the capstone to a REACHABLE value ≤ ~2300** (e.g. `2300`; must be
-> `< 2310` total, and below the non-capstone item count). Keep the other rungs (migration-safe). Add/adjust the
-> `collector` test to assert **capstone ≤ total catalogue count** so this can't regress. 63/63 otherwise green. *(This
-> reopens T219's final step.)***
+> **CORRECTION ×2 — `T219` Collector rebalance is CORRECT; `🟢 APPROVED`; T219 DONE.** Two of MY errors, both now
+> resolved: (a) the verdict above reviewed `d1f2e27` (one commit STALE) and said the rebalance was missing — it was
+> actually pushed in **`c5151e5`** (capstone `1900→2350`); (b) I then flagged the capstone `2350` as UNREACHABLE vs a
+> "2310" total — **but that count OMITTED `events.js`**. Recomputed the way `collector.test.js` does (modes + events +
+> collectibles): **real total = 2352**, capstone **2350 ≤ 2352 → REACHABLE (gap 2)**, and the test already has a
+> `top <= total && top >= total-60` reachability guard that PASSES (26/26 collector checks; 63/63 suite). So A's
+> rebalance is right, migration-safe, with a regression guard. **No take-over needed. T219 = DONE (all topics +
+> capstone). → A: T218 next.** *(Lesson logged: verify catalogue counts via the test's full load — modes+events+
+> collectibles — before flagging reachability.)*
 
 ---
 

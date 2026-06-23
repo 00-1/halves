@@ -3182,7 +3182,7 @@ confusing. Just use 0 to 11 as placeholders for the underlying values."** The au
   a valid level; `node -c` clean; every `$("…")` id still exists; an audio-settings test updated/added; **owner
   device-confirms.** **[A]-only** (`main.js`, `index.html`, maybe `styles.css`, tests). *(Quick-ish settings pass.)*
 
-### T219 — [A] **Build the PLANNED-BUT-UNBUILT topics** (BODMAS, Negatives, Roman, ×-tricks, Primes, Algebra, Roots + the 8 coverage-pass additions) · status: IN PROGRESS (batch 1 `efb1abf` APPROVED — Roman + Primes) · owner-requested
+### T219 — [A] **Build the PLANNED-BUT-UNBUILT topics** (BODMAS, Negatives, Roman, ×-tricks, Primes, Algebra, Roots + the 8 coverage-pass additions) · status: DONE (`c5151e5`) · APPROVED — all ~15 topics + Collector capstone rebalanced to 2350 (reachable; total 2352); 63/63 · owner-requested
 **PROGRESS:** ✅ **batch 1 (`efb1abf`): `roman` + `primes`** (group Number) — APPROVED. ✅ **`Roots` already delivered**
 via T213's `cubes`→"Cubes & Roots" (√/∛) — strike from the list below. **Remaining:** Part-1 BODMAS, ×-tricks,
 Negatives-P1, Algebra/function-machines; all 8 Part-2 coverage additions; then the Collector-ladder rebalance LAST.

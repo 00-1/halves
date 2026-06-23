@@ -26,21 +26,26 @@ responding you may have to take over the work yourself."** So the Babysitter now
 6. **Quality bar is absolute:** do NOT sign off v1 until T225 is genuinely clean (zero correctness errors, zero
    typos, no regressions). If not ready, HOLD the tag and record why — never ship to hit a deadline.
 
-*(The 15-min babysitter auto-review loop is the heartbeat that wakes the Babysitter to act on this standing order.)*
+⚠️ **SCHEDULING REALITY (corrected 2026-06-23):** there is **NO cron / ScheduleWakeup** in this environment — the
+Babysitter CANNOT self-wake on a timer, so **truly-unattended overnight operation is not achievable**. The only wake
+primitive is **`Monitor`** (an in-session poll of `origin/main`, best-effort while the session stays warm — it does
+NOT survive container reclamation during long idle). **Realistic model:** when the session is active/woken, drive
+HARD — review every pending push AND take over any stalled task immediately (don't leave work parked). Between active
+periods, progress pauses until the owner (or a Monitor event) wakes the session. *(Do not promise unattended
+multi-hour runs the environment can't deliver.)*
 
 ---
 
 ## Builder A — work the TOP ⏳ item ONLY. Do not skip or reorder. Push it alone → wait for review → next.
 
-**▶ CURRENT TASK = `T219` Collector-ladder REBALANCE (closes T219).** Everything below is the full ordered queue.
+**▶ CURRENT TASK = `T218` (nav notification badges).** Everything below is the full ordered queue.
 
-- ✅ **DONE/approved:** T213, T220, T222, T221, **T224 (audio)**, **all T219 TOPICS** (Roman, Primes, %-Inc, F·D·P,
-  BODMAS, Function-Machines, ×-tricks, Negatives-P1, Area&Perimeter, Volume, Angles, Median/Mode/Range,
-  Speed·Distance·Time, Factors/prime-factorisation; Roots via Cubes). App lives in `gg1/dev/`.
-- ⏳ **`T219` Collector capstone FIX ← DO THIS NOW.** A rebalanced the capstone to **2350** (`c5151e5`) but that's
-  **UNREACHABLE** — the real catalogue is **2310** items, so the top award can never be earned. **Set the capstone to
-  a reachable value ≤ ~2300** (must be `< 2310`); keep the other rungs (migration-safe); **add a `collector` test that
-  asserts capstone ≤ total catalogue count** (regression guard). `collectibles.js` + test. *(Closes T219.)*
+- ✅ **DONE/approved:** T213, T220, T222, T221, **T224 (audio)**, **T219 COMPLETE** (all ~15 topics + the Collector
+  capstone rebalanced to 2350 = reachable, total 2352, test guard passes). App lives in `gg1/dev/`. **GG1 v1 content
+  is feature-complete.**
+- ⏳ **`T218` ← DO THIS NOW.** Nav notification BADGES: a dot/count on a nav button when that surface has something NEW
+  (Items: new loot; Heroes: new hero; + agreed others), clears on view, persists across reload, no false positives on
+  first run. A CORE/shell feature GG2 inherits (crops-ready). `main.js`/`index.html`/`styles.css` + test. *(BACKLOG T218.)*
 - ⏳ **`T218`** — nav notification BADGES (new loot → Items, new hero → Heroes; clears on view; persists). *(BACKLOG T218.)*
 - ⏳ **`T225`** — the FINAL quality pass (TERMINAL v1 gate): **Babysitter-run** (agent assesses every question + text,
   Babysitter double-checks); **A only fixes** what comes back. *(BACKLOG T225.)*
