@@ -136,7 +136,8 @@ body{
 .pixtitle{height:1.25em;width:auto;max-width:100%;image-rendering:pixelated;display:block;margin:0 auto}   /* gold wordmark — sized to the parent line's font-size */
 /* T221 — the void title is a chunky TWO-LINE pixel canvas stretched to FILL a box
    under the wordmark (owner-chosen mockup); natural ~1.67:1 aspect, centred, crisp. */
-.voidtitle{width:min(74vw,340px);max-width:92vw;height:auto;image-rendering:pixelated;display:block;margin:10px auto 0}
+.voidtitle{width:min(74vw,340px);max-width:92vw;height:auto;image-rendering:pixelated;display:block;margin:10px auto 0;
+  transform:translateY(clamp(-58px,-10.5vw,-26px))}   /* splash — move ONLY the void text up to the wordmark; fog (::after) + layout stay put (owner) */
 /* Splash — drifting fog OVER the void title (echoes the backdrop's atmospheric band).
    Soft purple haze on a ::after, screen-blended so it glows over the dark pixels;
    pointer-events:none, owner-tunable (colour/opacity/speed). */
