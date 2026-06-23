@@ -129,12 +129,52 @@ under its time gate). `ms` = `masterSecs` (per-answer mastery target, sec). `n` 
 **Integration / shell (game, A-owned):** `main.js` (198 KB — all wiring, persistence, DOM,
 screens, splash, nav), `index.html`, `styles.css`, `sw.js` (offline cache), `manifest`.
 
-## 5. Persistence (what state the port must preserve)
-localStorage, per-scope namespaced (the `gg1dev`/`gg1prod`/… prefix). Holds: per-mode Hall of
-Fame best times, achievements (`init:`/`mastery:` per topic), gold balance, owned collectibles,
-owned hero items, Arena progress (tier reached), event completion (per UTC day), settings,
-last-played mode, install identity. **A save-schema enumeration is the main TODO for v2 of this
-doc** — needed for a faithful port and for any future save migration.
+## 5. Persistence — FULL save schema (v2, enumerated from source 2026-06-23)
+All state is **localStorage**, **per-scope namespaced**. In code every key is written as `halves.*`
+and rewritten to `<scope>.*` by a `localStorage` *shadow* (`resc()`); the **stored** prefix is
+`<scope>.` where `SCOPE` is path-derived: `gg1/dev/`→`gg1dev`, `gg1/prod/`→`gg1prod`,
+`gg1/v1/`→`gg1v1`, `gg2/dev/`→`gg2dev`, else `halves`. Every loader **degrades to an in-memory
+var** when storage is unavailable. The port must reproduce these keys + shapes (and ideally read
+the existing ones for a migration).
+
+**Progression / core state**
+| key (`<scope>.`…) | shape | meaning |
+|---|---|---|
+| `collected` | object `{ <entryKey>: {ts:number} }` | **THE central progression map** (achievements live here, NOT in separate keys). Entry keys: **`<collectibleId>`** (owned item) · **`init:<modeId>`** (topic played once → unlock gate) · **`mastery:<modeId>`** (topic mastered → harder gate + reward) · **`event:<id>` / `event:<id>:well` / `event:<id>:ace`** (event tiers) · **`tier:<n>`** (collector-ladder tier → boss trigger). |
+| `gold` | string(float ≥0) | Goblin Gold balance. |
+| `stats` | `{games:int, byMode:{}, flawless:{}}` | cumulative play stats. |
+| `streak` | `{count:int, lastDay:int\|null, best:int}` | daily Momentum (lastDay = local-day index). |
+| `unlocked` | object \| null | explicit access grants — an **ACCESS layer only**, *never re-gated*. |
+| `hof:<modeId>` | array `[{score,time,ts}]` | per-mode Hall of Fame; rank = score↓, time↑, ts↑. |
+| `qbest` | `{ <modeId>: { <promptString>: bestTimeMs } }` | per-question best solve times. |
+| `eventBest` | `{ <eventId>: {score,time,ts} }` | best event attempt, keyed by **event id** (survives the 14-day recurrence). |
+
+**UI / preferences**
+| key | shape | meaning |
+|---|---|---|
+| `mode` | string | last-played mode id (`LAST_KEY`). |
+| `navSeen` | object | nav-badge "new-since-seen" tracking (T218). |
+| `pickerView` | string | mode-picker view preference (tree / list). |
+
+**Audio / settings** (canonical + one-way value migration)
+| key | shape | meaning |
+|---|---|---|
+| `sound` | `"on"`/`"off"` | mute toggle (default on). |
+| `musLv11` | `"0"`..`"11"` | music level (canonical, default 6). Migrates from legacy `musicVol` (0–10). |
+| `sfxLv11` | `"0"`..`"11"` | SFX level (canonical, default 6). Migrates from legacy `sfxLvl` (0–100) or `sfxVol` (0–10). |
+| *legacy (read-only migration sources, no longer written)* | — | `musicVol`, `sfxLvl`, `sfxVol`, `vol`, `tempo`. |
+
+**Dev flags:** `dev` (`"1"` → developer mode) · `devReveal` (`"1"` → reveal-all view override).
+
+**Migrations to preserve:** (1) on `gg1prod` first run, if `gg1prod.gold` is absent but
+`halves.gold` exists, **all `halves.*` keys are copied to `gg1prod.*`** (keeps the original live
+player's save when prod went live). (2) Audio levels migrate old scales → 0–11 (above).
+**Reset** (`clearAllData`) removes every key with the scope prefix **plus** the per-mode `hof:<id>`
+board keys.
+
+> **Port note:** `collected` is the keystone — collectibles *and* all achievement/unlock state are
+> one map of `{key:{ts}}`. A faithful port models that single map + the eight other keys above.
+> Web-GG1 and brickmap-GG1 should share this schema so a player's save is portable between them.
 
 ## 6. Content-as-data spec (the seam shared by all three strands)
 Recommended portable format the engine consumes (web-GG1 can adopt it too, killing drift):
@@ -146,11 +186,12 @@ Recommended portable format the engine consumes (web-GG1 can adopt it too, killi
 - **Balance constants** (masterSecs, gold rewards, collector tiers, enemy tiers/defs, hero stats)
   → one `balance.json` so tuning is data, not code.
 
-## 7. Honest scope of this v1 + next passes
+## 7. Honest scope (v1 + v2 passes)
 - ✅ **Fully captured from source:** the 46-mode catalogue (metadata + pools + samples), the
-  unlock/mastery mechanics, the subsystem map, the procedural-asset fact.
-- 🔶 **Mapped, needs a depth pass for faithful port:** (a) the **save schema** (exact keys +
-  shapes); (b) **economy tuning** — gold earn/spend rates, the collector reward amounts per tier,
+  unlock/mastery mechanics, the subsystem map, the procedural-asset fact, **and (v2, 2026-06-23)
+  the full save schema (§5)**.
+- 🔶 **Still mapped-only, needs a depth pass for faithful port:** (b) **economy tuning** —
+  gold earn/spend rates, the collector reward amounts per tier,
   enemy tier defs, hero stats/boosts; (c) the **Arena** loop rules; (d) the **Events** roster
   specifics + reward table; (e) the **audio cue inventory** (which SFX/music fire when). Each is a
   bounded grep-and-document task — queue as v2 once B's brickmap capability matrix tells us which
