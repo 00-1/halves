@@ -9,6 +9,25 @@ Status legend: `OPEN` → ready to build · `IN-REVIEW` → awaiting Babysitter 
 
 ---
 
+## Brickmap-prep — UNBLOCKED (the content seam every strand needs)
+
+### T229 — GG1 content-as-data export (NON-DESTRUCTIVE)  · status: OPEN  · [A]
+Produce the engine-agnostic content seam the brickmap port consumes + **parity vectors** that prove
+a re-implementation (or a JS reuse) reproduces GG1 exactly. **Additive only — do NOT modify the live
+runtime; the suite stays 64/64.**
+- A Node export (`tools/content-export.js`) loads `gg1/dev` modules via a window-stub (eval
+  `modes.js`→`window.MODES`, etc.) and emits NEW files: `content/gg1/modes.json`
+  (`{id,name,tag,group,expr,masterSecs,unlock:{by|mastery},pool:[raw *_SRC], transform:"<fn>"}` per
+  mode) · `content/gg1/parity-vectors.json` (per mode, the FULL deterministic `{p,a}` set from
+  `build()`, sorted) · `content/gg1/transforms.md` (the ~40 pure `datum→{p,a}` fns + any global use)
+  · `content/gg1/README.md` (contract + regen).
+- `test/content-parity.test.js` re-loads `modes.js`, regenerates, asserts the committed data/vectors
+  still match (catches runtime↔export drift in CI).
+- **DoD:** reproducible; data files + parity test committed; parity green; **live suite still 64/64,
+  runtime untouched**. guides/balance/collectibles export = follow-on T230.
+
+---
+
 ## TWA / splash polish — QUEUED but PARKED (owner, 2026-06-23: "do later")
 GG1 ship is paused; these are real shipping-TWA fixes, **not** to be started until the owner
 un-parks. Strand-1 (TWA) work — Builder A — flows to the installed app via a prod deploy.

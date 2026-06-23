@@ -77,9 +77,9 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → HOLD / STAND DOWN. Nothing to build right now.** Do **NOT** build `T226`(1) (DROPPED) or resume `T168`
-(PAUSED). Your next item is the **Capacitor experiment (strand 2) — but it is AWAITING OWNER APPROVAL of
-`CAPACITOR-SPEC.md`; do NOT start it until the Babysitter flips it to GO** in this line. Until then: hold.
+**Builder A → `T229` — GG1 content-as-data export (NON-DESTRUCTIVE, additive only; suite stays 64/64).** The content
+seam the brickmap port consumes (modes.json + parity-vectors.json + transforms catalogue) — unblocked, A's domain,
+pure upside for all strands. Do NOT touch the live runtime. *(BACKLOG T229.)* Capacitor stays parked (owner GO required).
 
 **Builder B → `BRICKMAP-GG1` RESEARCH PASS (research only — no code).** Investigate the `00-1/brickmap` repo and
 answer every open question in **`BRICKMAP-GG1.md`** (engine capability matrix · "Scraped Again" engine↔game boundary
