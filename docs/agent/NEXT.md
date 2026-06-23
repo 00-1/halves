@@ -42,13 +42,15 @@ multi-hour runs the environment can't deliver.)*
 
 - ✅ **GG1 v1 COMPLETE & RELEASED.** All ~46 topics + audio + nav badges + restructure + splash; T225 final gate clean
   (959 Qs, 0 issues); tag/Release `v1.0.0`.
-- ⏳ **Deploy follow-ups (NOT live-blocking — Play held on owner's Google ID):** promote `gg1/dev → gg1/prod` to the
-  v1 build (`gg1/prod` is stale from `16c441a`); populate the frozen `gg1/v1/` snapshot. [A] (or Babysitter take-over).
+- ⏳ **`T226` ← Builder A's CURRENT task: deploy v1 to GHP.** Populate the frozen `gg1/v1/` snapshot (v1 runtime files
+  from `525ba87` `gg1/dev`, lean) + wire it FROZEN into `pages.yml` (one-time `build.json` + fixed `?v=525ba87`, NOT
+  in the per-deploy loop) + add to `apps.json`; also promote `gg1/dev → gg1/prod`. Makes
+  `https://00-1.github.io/halves/gg1/v1/` live so the owner can link it in the `v1.0.0` Release body. *(BACKLOG T226.)*
 - ⏳ **GG2 P0 — engine foundation** (`GG2-MILESTONES.md` P0 → `GG2-P0-EXTRACTION.md` + `GG2-P0-INPUT.md`): core/pack
   split, pluggable input (MCQ first). **Awaiting owner go** (hold vs start now). Creative calls → defaults +
   `GG2-CREATIVE-LOG.md`.
 
-**Builder A: STAND BY** — await the deploy-promote task and/or GG2 P0 assignment.
+**Builder A → `T226` (deploy v1 to GHP), then STAND BY for GG2 P0.**
 - ⏳ **`T218`** — nav notification BADGES (new loot → Items, new hero → Heroes; clears on view; persists). *(BACKLOG T218.)*
 - ⏳ **`T225`** — the FINAL quality pass (TERMINAL v1 gate): **Babysitter-run** (agent assesses every question + text,
   Babysitter double-checks); **A only fixes** what comes back. *(BACKLOG T225.)*
