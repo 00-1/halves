@@ -375,6 +375,15 @@
       ],
       example: "speed: 150 km in 3 h → 150 ÷ 3 → 50 km/h."
     },
+    factors: {
+      intro: "Factors divide a number exactly; multiples are its times-table; prime factors are its prime building blocks.",
+      tips: [
+        "Count factors by pairing: 1 × N, 2 × …, up to the middle — count every divisor.",
+        "The next multiple of k: count up in k until you pass the number.",
+        "Prime-factorise by dividing out the smallest prime again and again (2, then 3, then 5…)."
+      ],
+      example: "# factors of 12 → 1,2,3,4,6,12 → 6 of them."
+    },
     pctup: {
       intro: "A percentage INCREASE adds that slice ON — find the part, then add it to the original.",
       tips: [
@@ -650,6 +659,16 @@
         break; }
       case "volume": { const m = p.match(/^vol (\d+)×(\d+)×(\d+)$/); if(!m) break;
         return "Volume = the three sides multiplied — " + m[1] + " × " + m[2] + ", then × " + m[3] + "."; }
+      case "factors": {
+        // METHOD only — never the value. Biggest-prime answers can be 3/5/7, so
+        // never list example primes; describe the divide-down process instead.
+        const nf = p.match(/^# factors of (\d+)$/);
+        if(nf) return "Count every whole number that divides " + nf[1] + " exactly — pair them up (small × large) so none slip past.";
+        const nm = p.match(/^next ×(\d+) > (\d+)$/);
+        if(nm) return "Count up in " + nm[1] + "s from the nearest multiple just below " + nm[2] + " until you step past " + nm[2] + ".";
+        const pf = p.match(/^biggest prime of (\d+)$/);
+        if(pf) return "Keep dividing " + pf[1] + " by the smallest prime that fits, again and again — the largest prime you have to use is the answer.";
+        break; }
       case "mmr": {
         // METHOD only — describe how to find it, never the value.
         if(/^median /.test(p)) return "Put the numbers in order, then take the one in the middle.";

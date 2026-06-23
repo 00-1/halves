@@ -646,6 +646,20 @@
     if(e[0] === "s") return { p: "speed: " + e[1] + "km in " + e[2] + "h", a: e[3] };
     return { p: "time: " + e[1] + "km at " + e[2] + "km/h", a: e[3] };
   }
+  // T219 batch 7 — factors & multiples / prime factorisation (the LAST T219 topic).
+  //   ["nf", N, A]    → "# factors of N"        (A = count of divisors)
+  //   ["nm", k, N, A] → "next ×k > N"           (A = least multiple of k strictly above N)
+  //   ["pf", N, A]    → "biggest prime of N"    (A = largest prime factor)
+  const FACTORS_SRC = [
+    ["nf",12,6],["nf",18,6],["nf",16,5],["nf",24,8],["nf",36,9],["nf",10,4],["nf",28,6],
+    ["nm",7,30,35],["nm",6,40,42],["nm",9,50,54],["nm",8,60,64],["nm",5,33,35],["nm",4,50,52],["nm",11,70,77],
+    ["pf",12,3],["pf",30,5],["pf",45,5],["pf",28,7],["pf",60,5],["pf",99,11],["pf",50,5]
+  ];
+  function factorsItem(e){
+    if(e[0] === "nf") return { p: "# factors of " + e[1], a: e[2] };
+    if(e[0] === "nm") return { p: "next ×" + e[1] + " > " + e[2], a: e[3] };
+    return { p: "biggest prime of " + e[1], a: e[2] };
+  }
   // Percent increase: "base + pct%" → the new total. F↔D↔P: three conversion shapes.
   function pctUpItem(e){ return { p: e[1] + " + " + e[0] + "%", a: e[2] }; }
   function fdpItem(e){
@@ -1037,6 +1051,15 @@
       glyph:'a<span class="slash">÷</span>n',
       eyebrow:'solve <b>↓</b>', expr:false, requires:"mastery:money", masterSecs:9, group:"Measures",
       build(){ return shuffle(SDT_SRC).map(sdtItem); }
+    },
+    {
+      // Factors & Multiples / prime factorisation — count factors, next multiple,
+      // biggest prime factor. Branches off `xtricks` (Number multiplication family);
+      // group Number. The last T219 topic.
+      id:"factors", name:"Factors & Multiples", tag:"Count factors · primes · multiples.",
+      glyph:'n<span class="slash">÷</span>b',
+      eyebrow:'solve <b>↓</b>', expr:false, requires:"mastery:xtricks", masterSecs:9, group:"Number",
+      build(){ return shuffle(FACTORS_SRC).map(factorsItem); }
     }
   ];
 
@@ -1120,7 +1143,8 @@
     angles:       ["n","*−","b"],      // n−b — the angle left over (to 180 / 360)
     // T219 batch 6 — averages + speed.
     mmr:          ["a","*−","b"],      // a−b — the range (max − min) stands in for the trio
-    sdt:          ["a","*÷","n"]       // a÷n — distance ÷ time (speed)
+    sdt:          ["a","*÷","n"],      // a÷n — distance ÷ time (speed)
+    factors:      ["n","*÷","b"]       // n÷b — what divides n (factors / primes)
   };
   MODES.forEach(m => { if(TOPIC_GLYPHS[m.id]) m.glyphTokens = TOPIC_GLYPHS[m.id]; });
 

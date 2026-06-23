@@ -6156,3 +6156,20 @@ verified: new `test/t219-mmr-sdt.test.js`; arena3 still 0 monotonicity violation
 catalogue 2205 → 2303); glyphs + integrity + home-layout green; full suite **62/62**. [A]-only (modes.js,
 guides.js, tests, pages.yml). **T219 content nearly done** — only Prime-factorisation left, then the Collector
 rebalance LAST. Then T218 (nav badges), T225 (final quality pass).
+
+---
+### [A] T219 batch 7 — Factors & Multiples / prime factorisation (the LAST T219 content topic)
+- **`factors`** — three number-sense shapes: **# factors of N** (count every divisor by pairing small × large),
+  **next ×k > N** (the least multiple of k strictly above N), and **biggest prime of N** (largest prime factor by
+  dividing out the smallest prime again and again); 21 curated items, clean non-negative integer answers. Branches
+  off `xtricks`; group Number. Glyph `n÷b`. The test re-derives every answer independently (a brute divisor count,
+  `(⌊N/k⌋+1)·k`, and a trial-division largest-prime-factor) and additionally proves each next-multiple answer is
+  the *least* multiple above N. Explains are method-only — the biggest-prime explain never lists example primes
+  (answers can be 3/5/7), so it can't leak the answer.
+- This completes **all 15 T219 content topics** (roman, primes, pctup, fdp, bodmas, algebra, xtricks, negatives,
+  area, volume, angles, mmr, sdt, factors — plus the Geometry group introduced in batch 5). Only the Collector
+  ladder rebalance remains as the final T219 step.
+verified: new `test/t219-factors.test.js` (16/16); arena3 still 0 monotonicity violations (fracGuard robust through
+catalogue 2303 → 2352); guides-coverage + question-integrity + home-layout + tech-tree + glyphs + collector green;
+full suite **63/63**. [A]-only (modes.js, guides.js, tests, pages.yml). Next: the Collector rebalance (T219 LAST),
+then T218 (nav badges), T225 (final quality pass).
