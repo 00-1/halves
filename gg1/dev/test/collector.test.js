@@ -1,7 +1,8 @@
-/* T206 — Collector awards rejig. The collect-N ladder is recalibrated to the REAL
- * catalogue (~1,900 items): the old unreachable top tiers (2,500/5,000/7,500/10,000)
- * are dropped and the top four re-spaced to reachable thresholds ending ≈ the full
- * collection; the reachable ids (25…1500) are preserved (migration-safe). B's 3
+/* T206 + T219-LAST — Collector awards rejig. The collect-N ladder is recalibrated to
+ * the REAL catalogue: the old unreachable top tiers (2,500/5,000/7,500/10,000) are
+ * dropped and the top tier tracks the live catalogue total (re-pointed from 1,900 to
+ * ≈2,350 once the new T219 topics grew the catalogue); the reachable ids (25…1500) are
+ * preserved (migration-safe). B's 3
  * creature EMBLEMS (beast/goblinking/voidbeast, T205) are absorbed as Collector
  * awards — Collector now totals 12 + 3 = 15 — earned by felling region bosses (the
  * meta:{tier} evaluator), NOT the collect-count ladder, and rendered from
@@ -27,14 +28,15 @@ ok(collector.length === 15, "(1) Collector totals 15 (12 ladder + 3 emblems) —
 ok(ladder.length === 12, "(1) the collect-N ladder is 12 tiers (" + ladder.length + ")");
 ok(ladder[0] === 25, "(1) the ladder still starts at 25");
 ok(![2500,5000,7500,10000].some(n => ladder.includes(n)), "(1) the UNREACHABLE tiers (2,500/5,000/7,500/10,000) are dropped");
-ok(ladder[ladder.length-1] === 1900, "(1) the top tier (" + ladder[ladder.length-1] + ") is ≈ the full ~1,900-item catalogue (reachable)");
+const top = ladder[ladder.length-1], total = C.CATALOG.length;
+ok(top <= total && top >= total - 60, "(1) the top tier (" + top + ") tracks the full catalogue (" + total + ") — reachable at ≈100% collection");
 ok(ladder.every((n,i)=> i===0 || n > ladder[i-1]), "(1) tiers strictly ascending, no dups");
 ok(["collector:25","collector:75","collector:150","collector:300","collector:500","collector:750","collector:1000","collector:1500"].every(id => C.byId(id)),
    "(1) all reachable existing ids (25…1500) are preserved (migration-safe)");
 
 // ---- (2) the collect-count ladder grants exactly tiers ≤ count, never emblems --
 const grantedN = (count) => C.evaluateCollector(count, () => false).map(it => it.n).sort((a,b)=>a-b);
-[0, 24, 25, 1000, 1499, 1900, 99999].forEach(count => {
+[0, 24, 25, 1000, 1499, 1900, top - 1, top, 99999].forEach(count => {
   const got = grantedN(count), exp = ladder.filter(n => n <= count);
   ok(JSON.stringify(got) === JSON.stringify(exp), "(2) count " + count + " grants exactly the ladder tiers ≤ count (" + got.length + ")");
 });

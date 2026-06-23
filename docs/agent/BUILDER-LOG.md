@@ -6173,3 +6173,23 @@ verified: new `test/t219-factors.test.js` (16/16); arena3 still 0 monotonicity v
 catalogue 2303 → 2352); guides-coverage + question-integrity + home-layout + tech-tree + glyphs + collector green;
 full suite **63/63**. [A]-only (modes.js, guides.js, tests, pages.yml). Next: the Collector rebalance (T219 LAST),
 then T218 (nav badges), T225 (final quality pass).
+
+---
+### [A] T219 LAST — Collector-ladder rebalance (capstone retargeted to the grown catalogue)
+The new Part-1/Part-2 topics each contributed their per-mode collectibles, so the catalogue grew from the
+~1,900 the Collector ladder was calibrated against (T206) to **2,352**. That left the top "collect ≈ everything"
+award (`collector:1900`, *Keeper of the Myriad*) reachable well before a full collection — no longer the capstone
+it's meant to be.
+- **Retargeted ONLY the top tier** `1900 → 2350` (round, just below the 2,352 total → reachable at ≈100%
+  collection). The award keeps its name/identity (*Keeper of the Myriad*); it's the same "collect the whole
+  catalogue" capstone, recalibrated to the catalogue's true size — exactly the T206 move.
+- **Migration-safe:** every lower tier (25…1800) is an *absolute* collection-count milestone (catalogue-size
+  independent — collecting 500 items is 500 items regardless of catalogue size) and is preserved EXACTLY, so no
+  earned mid-ladder unlock is stranded. Only the single stale capstone id moves. Ladder stays 12 tiers; Collector
+  total stays 15 (12 ladder + 3 boss emblems).
+- **Test hardened:** the top-tier assertion no longer hard-codes a number — it now asserts the capstone tracks the
+  live `CATALOG.length` (within 60 below the total), so any future catalogue growth that strands the capstone fails
+  the gate automatically. Added top−1/top boundary counts to the grant-coverage sweep.
+verified: `test/collector.test.js` 26/26; `node -c collectibles.js`; full suite **63/63**. [A]-only (collectibles.js,
+collector.test.js). **This closes out T219 entirely** (all 15 content topics + the ladder rebalance). Next in the
+queue: **T218** (nav notification badges), then **T225** (final quality gate).
