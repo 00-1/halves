@@ -6,6 +6,28 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 4 (audio): the music RENDERER (score → audible) ([B], GO)
+
+Made the generative music **audible** — the note schedule stays the vector-proven `synth::score`;
+this is the perceptual synthesis half. `00-1/brickmap` `a961632`.
+- Refactored `synth.rs`'s `stepEvents` into structured `Voiced{role,midi,piece}` (score tokens now
+  derive from it — **the 12 goldens still pass unchanged**), exposing `voiced_score` + `tempo_of`.
+- **`music.rs`**: `render(scene, sr, seconds, volume)` → a mono buffer. A **first cut** — each lane is
+  a clean osc + ADSR + one-pole tone-shaping (pad held over the bar, plucky saw bass, short square
+  lead, procedural-noise drums) over the scene's 16th-note grid; `volume 0 ⇒ silence`. Recognisably
+  the right tune/groove/key; GG1's exact patch timbres (FM/unison/biquad-resonance/the wub LFO) are
+  the **refinement pass** once the owner's ear calibrates it.
+- Gated mechanically (determinism, no clipping, mute=silence, unknown=empty, scenes distinct).
+  goblin-gold **66** lib tests green; clippy -D warnings clean native + aarch64-linux-android.
+- **👂 OWNER BY-EAR:** `cargo run -p goblin-gold --bin music_proto -- <dir> [secs]` writes a WAV per
+  scene (`gg-music-*.wav`); `sfx_proto` does the SFX. A/B vs web-GG and flag timbres to refine.
+  (Babysitter: please fold into `OWNER-EYEBALL.md`.)
+- **Phase-4 audio now end-to-end audible:** ✅ SFX · ✅ music score (vector-proven) · ✅ music renderer
+  (first cut). **Remaining:** timbre fidelity (port the patch FM/unison/filter/LFO) + **playback
+  wiring** (native cpal / Web Audio) so it sounds in the live app. → phase 5 polish.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 4 (audio): the generative-music SCORE generator ([B], GO)
 
 The music half of phase 4 — and unlike the SFX it's **vector-provable**: each scene's per-step note
