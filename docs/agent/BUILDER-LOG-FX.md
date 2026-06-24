@@ -6,6 +6,28 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 4 (audio): faithful patch synthesis ([B], GO)
+
+Upgraded the music renderer from generic role voices to GG1's **actual instrument patches**
+(re-authored from `synth.js`'s `PATCHES` + `renderVoice`). `00-1/brickmap` `6959aa0`.
+- Each scene's `patches.{pad,bass,lead}` now drives the right instrument: engines **unison** (detuned
+  voices), **FM** (carrier+modulator), **sub**, **mono**; a **state-variable filter** (lowpass/
+  bandpass + resonance Q) with the documented cutoff envelope; and the **wub LFO** sweeping the
+  cutoff. So `padglass`/`padep`/`padpwm`/`padorgan`, FM `bell`, `croon`/`chip`/`lead`, `bass`, and the
+  `wub` render as their real timbres per scene.
+- Faithful-by-construction (the patch params are documented — not a guess); the SVF approximates Web
+  Audio's biquad (not byte-identical, which is fine — audio parity is by-ear). SVF cutoff capped to
+  its stable band + a finite-guard so a bright filter envelope can't diverge.
+- Mechanically gated (determinism, no clipping, mute=silence, distinct); goblin-gold **66** lib tests
+  green; clippy -D warnings clean native + aarch64-linux-android. Pushed to `main` + the feature
+  branch. The `music_proto`/`sfx_proto` WAVs now carry the real patches for the owner's A/B.
+- **Phase-4 audio — the synthesis is as faithful as it gets offline.** ✅ SFX · ✅ music score
+  (vector-proven) · ✅ renderer with GG1's real patches. **Only remaining:** **playback wiring**
+  (native cpal / Web Audio streaming in the live app) — device-side & built-blind (like immersive),
+  so it wants on-device confirmation. → phase 5 polish.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 4 (audio): the music RENDERER (score → audible) ([B], GO)
 
 Made the generative music **audible** — the note schedule stays the vector-proven `synth::score`;
