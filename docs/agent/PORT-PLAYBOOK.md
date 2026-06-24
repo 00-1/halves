@@ -23,7 +23,11 @@
    first pass exported the *catalogue* but not the *earning thresholds* (Speed/Rank/event tiers), blocking the
    reward port mid-stream. Extend the parity-vector trick to earning: run the live award evaluators over a synthetic
    `ctx` battery → `{ctx → awarded keys}` vectors. (A good builder will REFUSE to fabricate the missing rules — design
-   the export to feed it, don't make it guess.)
+   the export to feed it, don't make it guess.) **When the rules live in a NON-pure module** (the gold
+   formulas are inside `main.js`'s DOM-coupled IIFE, not an importable module), don't hand-copy them —
+   **LIFT the exact function source by name (brace-matched) and run it headlessly over the real loaded
+   modules**, so the vectors are generated FROM the source text and a `*.includes(formulaString)`
+   source-fidelity test forces a regen if the source ever changes (see `tools/gold-export.js`).
 3. **SPIKE-gate before committing** (`BRICKMAP-GG1-SPEC.md`). A tightly-scoped spike on the riskiest
    unknowns — **legible text · the core loop · one self-verified FX · a clean DEVICE launch** — with
    a go/no-go gate, BEFORE the full port. De-risks in hours, not the weeks the human estimate implied.
@@ -67,6 +71,18 @@
    `content/gg1/` from `origin/main` before declaring data "missing"** (a stale feature-branch tree
    caused a false blocker). Generally: **re-fetch `origin/main` + the task channel before acting** —
    a halted builder doesn't auto-resume; it needs a nudge.
+8. **Immersive built-blind fails QUIETLY because of the UI-THREAD rule, not bad flags.** The native
+   immersive code was thorough (FLAG_FULLSCREEN + legacy `setSystemUiVisibility` + API-30
+   `WindowInsetsController.hide`) and *still* left the bars visible on-device. Android requires
+   decor-view / window-insets calls to run on the **UI thread**, but the winit/android-activity game
+   loop runs on a **different** thread → `CalledFromWrongThreadException`, which the defensive
+   exception-clear swallowed → silent no-op. **FIX PATTERN: marshal UI calls onto the UI thread
+   (`runOnUiThread`); and don't only catch JNI exceptions — LOG them at warn (the owner's logcat is
+   the only window into built-blind native code).** Same "headless/host ≠ device" class as gotcha #1.
+9. **Put the BUILD SHA on-screen (watermark) from day one.** A small low-contrast corner watermark of
+   the short git SHA on *every* screen makes owner screenshots self-identifying — you know exactly
+   which build a "this looks wrong" shot came from, instead of guessing. Cheap (`env!`/`include_str!`
+   the SHA at build, one shared overlay helper); pays for itself the first time feedback arrives.
 8. **A halted builder needs a wake.** No scheduler/self-wake: when a builder hits a *stop* (blocker/
    question) it idles until nudged. Keep the unblock IN the channel (its task line) so a nudged
    builder self-resolves; don't rely on a relay.

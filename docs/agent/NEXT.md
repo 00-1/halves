@@ -86,19 +86,34 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → HOLD (T233 earning export was done by the Babysitter take-over; A was idle).** ✅ `T229/T230/T232`
-content seam + ✅ `T233` earning export (Babysitter `fde819a`, since A was stalled). **Remaining if woken: `T233b`** —
-export the **combat-resolution** rules + **gold-earning formulas** (`enemies.js` battle resolve + `main.js` earnGold/
-per-question gold) as parity vectors, same additive method; unblocks B's Arena fight math + economy. Otherwise A's
-work is owner-gated (TWA `T228`, store, Capacitor on-device test).
+**Builder A → HOLD (the exports keep being done by Babysitter take-over; A idle).** ✅ `T229/T230/T232` content seam
++ ✅ `T233` earning export (`fde819a`) + ✅ **`T233b`-gold** export (`4ae14b3`) — both Babysitter take-overs, A stalled.
+**Remaining if woken: `T233b`-combat** (`enemies.js` battle resolve → Arena fight math; deferred till B ports the
+Arena) + **`T233c`** events content/thresholds/schedule (`events.js`, same additive method). Otherwise A's work is
+owner-gated (TWA `T228`, store, Capacitor on-device test).
 
-**Builder B → WIRE the metagame into the live app (data layer + earning are DONE/approved).** ✅ phases 1/2; ✅
-phase-3 metagame data layer complete (collector·save·catalogue·arena·events) + ✅ full earning ported & proven vs
-`earning-vectors.json` (the T233 payoff). **Now integrate:** wire `earning::award`/`run_award_keys` into
-`finish_round` (awards → the save), and SURFACE the metagame on screen (collected/heroes/events/collector ladder).
-Gate render screens on goldens, logic on tests. Remaining export gaps (NOT blocking integration): **T233b** combat
-resolution + gold formulas, **T233c** events content/schedule — flag if you need them (Babysitter takes over, A idle).
-→ phase 4 audio · 5 polish. APK/feel + audio-by-ear → `OWNER-EYEBALL.md`.
+**Builder B → CLOSE THE OWNER-FOUND METAGAME GAPS (on-device feedback 2026-06-24). Work in priority order.** Drill +
+earning + persistence + Collection summary + Collector Ladder drill-down are DONE/approved (latest `602f2bd`). Owner
+played it; skip parity ✅. Four gaps, prioritised:
+- **P0 — RESULTS SCREEN at end of a run.** `finish_round()` currently jumps straight to the topic list; GG1 shows a
+  per-run summary: **rank** (`rankIndex`), **awards earned this run**, **time/accuracy**, and **gold earned**. Build it
+  now with rank/awards/time; wire the **gold figure from the NEW gold export** (`content/gg1/gold.json` +
+  `gold-vectors.json`, on `main` `4ae14b3` — round gold = Σ`questionGold(masterSecs,dt,combo,mult)` over clean Qs +
+  `roundBonusGold(score,rankIdx,mult)`; see `gold.json:_round`). Golden the screen.
+- **P0 — BUILD-SHA WATERMARK on EVERY screen** (owner request): small, low-contrast corner text = the short git SHA
+  (+ maybe pkg/version) so screenshots are traceable. `include_str!`/`env!` the SHA at build time; one shared overlay
+  helper drawn by every `*_frame`. Tiny; keep it out of the hit-test.
+- **P1 — IMMERSIVE: it still shows the system bars on-device.** `immersive.rs` is thorough but has NO effect.
+  **Likely cause: the UI calls (decorView/WindowInsetsController) must run on the Android UI thread, but the
+  winit/android-activity loop runs on another thread → `CalledFromWrongThreadException`, caught→silent no-op.**
+  Capture logcat on resume to CONFIRM (your warn/debug lines will show the throw), then **marshal the calls onto the
+  UI thread** (`runOnUiThread` via JNI) and set `layoutInDisplayCutoutMode` for the notch. Crash-safe as before.
+- **P1 — METAGAME DRILL-DOWNS: STOP holding them.** The owner gave the eyeball you were waiting for ("nothing
+  clickable"). Build the **Heroes / Events / Topics / Items** detail screens, matching the Collection/Ladder layout
+  (shared row consts + `*_row_at` hit-test). Gate each on a golden.
+**Export status:** ✅ **T233b-gold DONE** (Babysitter `4ae14b3`) — economy unblocked. Still open, flag if you hit them:
+**T233b-combat** (enemies.js battle resolve — deferred till you port the Arena), **T233c** events content/thresholds/
+schedule (events.js — for the Events drill-down). → phase 4 audio · 5 polish. APK/feel + audio-by-ear → `OWNER-EYEBALL.md`.
 *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 

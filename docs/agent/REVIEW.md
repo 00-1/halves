@@ -2291,3 +2291,42 @@ solve OR skip — faithful to GG1 qStart), `award_round` feeds them → `solve:<
 export SPARK). The **1918 per-question collectibles** now drop; earning integration COMPLETE — every drill-earnable
 category lands. 50 tests (award_round asserts solve+spark), clippy clean, goldens intact. Remaining: T233b/c exports,
 richer screens (optional), phase 4 audio, 5 polish.
+
+---
+
+## APPROVED — Collector Ladder drill-down · Builder B · `00-1/brickmap:602f2bd` (handoff `45c0bfd`)
+**Verified off the public brickmap source** (`app.rs@602f2bd`): `Screen::Ladder` + `ladder_frame(items,…)` (12 tiers,
+reached=green vs locked-dim against owned-item count) + `collection_row_at` hit-test, with the Collection row layout
+in **shared consts** (`COLLECTION_TOP/ROW/GAP_FRAC`) so frame + hit-test can't drift. `ladder.png` golden (pure +
+lavapipe GPU); existing screens/goldens untouched (additive). 50 tests, clippy clean native+aarch64. First clickable
+metagame drill-down — on the owner's "nothing clickable" gap.
+
+## OWNER ON-DEVICE (Collection screen) — 3 gaps routed to B + T233b-gold taken over (2026-06-24)
+Owner played the metagame APK. **Skip-button parity ✅ confirmed.** Four findings (the WebFetch of `app.rs` confirms
+the structural ones):
+1. **No results screen** — `finish_round()` returns straight to the topic list; GG1 shows a per-run summary
+   (rank + awards earned + time/accuracy + gold). **→ B P0.** Can build now with rank/awards/time; wire the gold
+   figure from the gold export below.
+2. **Metagame too shallow / "nothing clickable"** — only Collection summary + the new Ladder are interactive. B was
+   *holding* Heroes/Events/Topics/Items drill-downs "for owner eyeball" — **the owner just gave that eyeball: build
+   them** (match the Collection/Ladder layout already shipped). **→ B P1.**
+3. **Android system bars still overlaid** — `immersive::enable()` exists and is thorough (FLAG_FULLSCREEN + legacy
+   `setSystemUiVisibility` + API-30 `WindowInsetsController.hide`, logged not swallowed) yet has no effect on-device.
+   **Likely root cause: those calls touch the decor view / window, which Android requires on the UI thread, but the
+   winit/android-activity game loop runs on a different thread → `CalledFromWrongThreadException`, caught-and-cleared
+   → silent no-op.** **→ B P1:** capture logcat on resume (the warn/debug lines will confirm the throw), then
+   marshal the UI calls onto the main/UI thread (`runOnUiThread`); also set `layoutInDisplayCutoutMode` for the notch.
+4. **"Gold 0"** — gold earning wasn't ported (no rules existed). **→ Babysitter TAKE-OVER (A idle): `T233b` gold
+   export DONE on `main` `4ae14b3`.**
+
+## T233b (gold) — Babysitter take-over · `main` `4ae14b3`
+`tools/gold-export.js` lifts the gold formulas VERBATIM from `gg1/dev/main.js` (questionGold/roundBonusGold/tierGold/
+goldMult/hoardMult/bossesDefeated/hoardLevel) and runs them over the real loaded modules → **539 parity vectors**
+generated FROM source. `content/gg1/gold.json` carries the constants, the count-based `goldMult` formula
+(`(1 + items·0.05 + mastered·0.5 + heroes·0.5 + tiers·1)·2.5^bosses`), and the faithful round-end recipe (combo =
+clean-solve count; recompute mult per question; `earnGold` rounds + crosses wealth milestones via `evaluateGold`).
+`test/gold-parity.test.js` = drift gate + **source-fidelity** (the formula strings still live in main.js) + invariants
+(monotonic-in-dt, boss ramp, count-formula reconstruction, bounds); **test-the-test verified** (corrupt a vector →
+gate fails); wired to `pages.yml`. Runtime untouched. **Unblocks B's economy + the results-screen gold figure.**
+**Still open: T233b-combat** (enemies.js battle resolve) — deferred until B ports the Arena (not on screen yet);
+**T233c** events content/thresholds/schedule (events.js) — next export when the Events drill-down needs it.
