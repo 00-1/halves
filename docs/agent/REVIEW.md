@@ -2436,3 +2436,23 @@ native+aarch64. The `music_proto`/`sfx_proto` WAVs now carry the real patches fo
 **Phase-4 synthesis is as faithful as it gets offline** — ✅ SFX · ✅ score (vector-proven) · ✅ renderer with GG1's
 real patches. **Only remaining audio: playback wiring** (cpal / Web Audio) — device-side & built-blind (like immersive)
 → wants on-device confirm. → phase 5 polish.
+
+---
+
+## APPROVED — phase 4 audio COMPLETE (playback wiring via cpal) · Builder B · `f838fa9` (brickmap `main`, `audio.rs`)
+The last audio piece — and B took the right call shipping it built-blind (same crash-safe posture as immersive)
+rather than parking it. Verified off `audio.rs@main`:
+- **Crash-safe (the must-have for built-blind):** `Player::start()` returns `None` on no device (`.ok()?`/`?` chains)
+  → device-less/headless runs SILENT, never panics. ✓
+- **Testable half is tested:** pure `Mixer` (looping music bed `if pos>=len {pos=0}` + capped one-shot voices that
+  retire on `pos<len`, summed to mono) — unit-tested without a sound card (`empty_mixer_is_silent`,
+  `one_shot_plays_then_retires`, `music_bed_loops`, `empty_buffers_are_ignored`, `voices_are_capped`,
+  `output_is_clamped`). The cpal `Player` runs the Mixer in the callback over a mutex-guarded command queue.
+- **Seams wired faithfully:** `RoundStart` / combo-pitched `Correct` per solve (**combo resets on skip** — consistent
+  with the round-gold fix) / `Skip` / `RoundComplete`; bar-aligned, cached music beds per screen.
+- 73 lib tests (66+7), 7 GPU goldens (lavapipe, no visual regression), clippy `-D` clean native+aarch64-android, fmt.
+- **Creative call (logged, non-blocking, ACCEPTED):** drill→`menu` bed default — the export carries no screen→scene
+  map and GG1's in-play music is style-pickable, so a conservative default is correct (matches the "log defaults,
+  don't block" standing order). Revisit if the owner wants a specific in-drill track.
+**PHASE 4 AUDIO COMPLETE** (synthesis faithful + audible on device). On-device *feel* (beats/levels) → OWNER-EYEBALL.
+→ **phase 5 polish.**

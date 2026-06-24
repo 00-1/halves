@@ -20,6 +20,11 @@
       The music renderer is a deliberate **first cut** (right tune/groove/key; exact patch FM/unison/filter/wub-LFO
       timbres come in a refinement pass) — so flag *which scenes/voices* feel off to steer that pass. (On-device
       playback wiring lands separately — until then this is the WAV-export A/B.)
+
+- [ ] **Audio ON-DEVICE feel (playback wiring shipped `f838fa9`, built-blind via cpal/AAudio).** Now it actually
+      sounds in the live APK: do the **SFX blips land on the right beats** (combo chime rises with the solve streak,
+      resets after a skip)? Is the **menu/arena music bed pleasant under play and at the right level** vs the SFX?
+      Crash-safe (no device → silent), so worst case it's quiet, not broken. Flag levels/timbres to refine.
 - [x] **Keypad/drill/FX feel** — owner confirmed "looks good" (2026-06-23) from B's mini-gate #2/#3 shots.
 - [x] **Font legibility** — owner confirmed "all very readable, 3rd sample best" (mini-gate #1).
 

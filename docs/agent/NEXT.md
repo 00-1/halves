@@ -98,9 +98,11 @@ COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
   (`9143b35` — live `accrue_round` over `Play::Solve/Skip`, proven vs the `roundGold` vectors) · ✅ **P1 immersive**
   (UI-thread `run_on_java_main_thread` + cutout; built-blind → owner device-confirms) · ✅ **P1 drill-downs**
   (every Collection row clickable; new Heroes/Events/Items screens, golden-gated).
-- **▶ NOW: phase 4 — AUDIO.** Re-author GG1's music/SFX onto the Rust `Drone` synth (`scraped-again`). Parity here is
-  **perceptual (by-ear), not vector-provable** → gate what you can (synth golden buffers / no-crash / reduced-motion),
-  bank the A/B-vs-web-GG by-ear check for the owner (`OWNER-EYEBALL.md`). Then **phase 5 polish**.
+- ✅ **phase 4 — AUDIO COMPLETE** (`9ada429`→`f838fa9`): SFX + music score (vector-proven vs 12 goldens) + renderer
+  with GG1's real patches + cpal playback wiring, all approved. On-device feel + WAV A/B → `OWNER-EYEBALL.md`.
+- **▶ NOW: phase 5 — POLISH.** Final pass before the port is "done": tighten any rough screens/transitions, the
+  remaining `OWNER-EYEBALL` device items, and decide whether the two export gaps (T233b-combat, T233c) are needed for
+  v1-on-brickmap or deferred. Gate on goldens/tests as ever; bank device/by-ear items for the owner.
 **Export status — Babysitter-owned, flag if a feature needs them:** ✅ **T233b-gold DONE** (`4ae14b3`+`7c74439`).
 Open: **T233b-combat** (enemies.js battle resolve — when you port the Arena), **T233c** events content/thresholds/
 schedule (events.js — for richer Events content). APK feel + audio-by-ear + immersive device-confirm → `OWNER-EYEBALL.md`.
