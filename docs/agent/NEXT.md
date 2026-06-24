@@ -92,15 +92,21 @@ carries a superseded banner). Do NOT start GG2-on-web.
 remaining work is all owner-gated:** TWA `T228` (`.aab` rebuild), GG1 store (ship paused), Capacitor on-device test
 (`OWNER-EYEBALL.md`). A holds until the owner un-gates one or the Babysitter finds new additive [A] work.
 
-**Builder B → GO phase 3 part 2: the METAGAME — UNBLOCKED (the 'missing data' is a STALE SYNC, not missing).**
-✅ part 1 APPROVED (`14fe684`: all 46 topics drive + topic-select screen + 3 goldens). **Your blocker is a false
-alarm:** `content/gg1/{guides,collectibles,balance}.json` ALL EXIST on halves `main` (T230 `6b7387b` + T232 `e24ae3c`,
-approved) and `GG1-INVENTORY.md` is on `claude/agent`. **RE-SYNC `content/gg1/` from halves `main`** (re-run your
-one-way content sync) + `git show origin/claude/agent:docs/agent/GG1-INVENTORY.md` — then build the metagame
-data-driven (same as transforms/progression): **collector ladder** (re-impl `collectibles.js` init/flawless/speed/
-mastery + collector/topic ladders vs `collectibles.json`), **arena** (enemies+heroes vs `balance.json`), **events**,
-**save** via `bm-platform::save` (schema in `GG1-INVENTORY.md`). Gate on tests + goldens. → phase 4 audio · 5 polish.
-APK/feel + audio-by-ear → `OWNER-EYEBALL.md`. *(Re-sync/re-fetch before declaring data missing.)*
+**Builder B → phase 3: 2 OWNER-FOUND on-device PARITY BUGS first, then continue the metagame.** ✅ Gate #4 CONFIRMED
+on a real phone (boots+runs the drill, owner 2026-06-24). ✅ collector ladder done (`41ccf81`). **🔴 FIX FIRST (core
+drill faithfulness, owner on-device):**
+  1. **Solver auto-accept** — GG-web has NO Enter-to-submit: `press()`→`checkAuto()` (`gg1/dev/main.js:2294-2303`)
+     **auto-accepts the instant `parseFloat(input)==answer`** (checked after every digit); the bottom/Enter key is
+     **SKIP** (`main.js:2569`, reveals answer + advances, counts as a skip). Also: **5-digit length guard**
+     (`main.js:2293`, excl. the decimal) + **decimal-point** support (`2289`, `''→'0.'`). Remove the 'then Enter'
+     submit; re-blesss the affected goldens.
+  2. **Immersive fullscreen** — status bar + nav bar are overlaid; set Android **immersive-sticky** on the
+     goblin-gold activity (hide both system bars / draw edge-to-edge) — copy `scraped-again`'s setup if it has one;
+     same class as TWA `T228` / the Capacitor cutout fix.
+  **THEN continue the metagame** (UNBLOCKED — re-synced): rest of the catalogue (init/flawless/speed/mastery + rank/
+  milestone counts vs `collectibles.json`), Arena (enemies/heroes vs `balance.json`), events, save via
+  `bm-platform::save` (schema in `GG1-INVENTORY.md`). Gate on tests+goldens. → phase 4 audio · 5 polish.
+  APK/feel + audio-by-ear → `OWNER-EYEBALL.md`. *(Re-sync/re-fetch `origin/main`+`claude/agent` before declaring data missing.)*
 *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 

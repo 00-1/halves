@@ -3,10 +3,9 @@
 > Per the 2026-06-23 autonomy grant: the Babysitter drives ungated, gating on tests/goldens/code-review.
 > These are the checks that genuinely need a phone, eyes, or ears — **queued, NOT blocking.** Tick when done.
 
-- [ ] **Brickmap spike APK — final on-phone confirm.** After B's #4 fix lands (gated PASS by the
-      Babysitter via the initial-frame golden, no device), install the FRESH `dev.brickmap.goblingold`
-      (brickmap `dev` prerelease) and confirm it **boots into the drill fullscreen + feels right**. This is
-      the only remaining *real-device* confirmation of the spike; everything below it was self-verified.
+- [x] **Brickmap spike APK — on-phone confirm (2026-06-24): boots + runs the drill, "looks good".** Found 2 parity
+      bugs (now routed to B): solver needs auto-accept (no Enter-to-submit), and the app isn't immersive (system bars
+      overlaid). Re-confirm after B's parity fixes + once the metagame is in.
 - [ ] **Capacitor `.exp` wrapper test** (the TWA-fragility stopgap). Set the 4 repo secrets (throwaway
       keystore, see `capacitor/README.md`) → **Actions → "Capacitor Android (experiment)" → Run workflow**
       → install `goblin-gold-cap-android` → confirm **no "Open with"/address bar, notch filled** vs the TWA.

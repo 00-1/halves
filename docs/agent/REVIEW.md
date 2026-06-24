@@ -2187,3 +2187,14 @@ data-driven from `collectibles.json::collectorLadder`. **Verified vs the canonic
 invariant ported as a Rust test. 21 tests; clippy -D warnings native+aarch64. Phase 3 part 2 continues: rest of the
 catalogue (init/flawless/speed/mastery + rank/milestone counts), Arena (enemies/heroes vs `balance.json`), events,
 save via `bm-platform::save`. (B's NEXT.md line already covers this — no change.)
+
+---
+
+## OWNER ON-DEVICE (brickmap APK) — gate #4 CONFIRMED + 2 parity bugs routed to B (2026-06-24)
+Owner installed the fixed `dev.brickmap.goblingold` → **boots + runs the drill on a real phone** ("looks good") —
+gate #4 confirmed live (the golden-based pass holds on real hardware). Two parity bugs found, routed to B:
+1. **Solver auto-accept (faithfulness):** GG-web `press()`→`checkAuto()` (`main.js:2294-2303`) **auto-accepts the
+   instant the typed value == the answer — NO Enter**; Enter is **skip** (`main.js:2569`); 5-digit length guard
+   (`2293`) + decimal support (`2289`). The port's Enter-to-submit is wrong → make it auto-accept; bottom button = skip.
+2. **Immersive fullscreen:** status + nav bars overlaid; enable Android immersive-sticky (match `scraped-again` if it
+   does this) — same class as TWA T228 / the Capacitor cutout fix. Metagame still WIP (expected).
