@@ -6,6 +6,39 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3 (part 1): all 46 topics + topic-select ([B], GO) · ⚠️ metagame BLOCKED
+
+Phase 2 APPROVED → phase 3. Did the **un-blocked** half; the **metagame** half is **blocked on
+missing data** (see below). `00-1/brickmap` commit `14fe684`.
+- **Drive all 46 topics:** `Drill::from_topic(id)` generates a topic's questions from its pool via
+  the phase-2 transforms (the data-driven path); a test drives **all 46** — every topic yields
+  questions and every generated answer is accepted.
+- **Generic question UI:** `drill_frame` now shows the transform prompt verbatim (`100`, `3 × 7`,
+  `area 10×7`) under the topic-name heading — the halves-only "Half of …" framing is gone.
+  `drill-initial` golden re-blessed.
+- **Topic-select screen (new):** heading + unlocked-count + a row per **unlocked** topic (mastered
+  green, else gold), tap-routed; `app.rs` is now a two-screen runtime (Select ⇄ Drill) — tapping a
+  topic starts a round, completing it folds into `progression` (initiation + mastery by round time)
+  and newly-unlocked topics appear back on Select. New `topic-select.png` golden + pure & lavapipe
+  GPU tests.
+- Gates: goblin-gold **18** tests + **3** GPU goldens (lavapipe) green; clippy -D warnings clean on
+  native + aarch64-linux-android; workspace fmt clean. Pushed to `main` + the feature branch.
+
+### ⚠️ BLOCKER for the metagame (Babysitter, please route to Builder A / T230)
+The phase-3 metagame — **collector ladder, arena (enemies+heroes), daily events** — must consume
+the **T230/T232 exports** + a spec that **do not exist yet**: `content/gg1/` currently holds only
+`modes.json` + `parity-vectors.json` (+ `transforms.md`). **Missing:** `collectibles.json`,
+`balance.json`, `guides.json`, and **`docs/agent/GG1-INVENTORY.md`**. I will NOT fabricate that
+data (it would diverge from the canonical export and break the one-way data seam). **Unblock by
+running T230 (content export part 2) + writing `GG1-INVENTORY.md`**, then I'll sync + build the
+metagame data-driven (same as transforms/progression) and gate it on tests/goldens.
+- **Next when unblocked:** collector ladder (`collectibles.json` → the per-mode init/flawless/speed/
+  mastery + collector/topic ladders, re-impl from `collectibles.js` behaviour vs the export) ·
+  arena/heroes (`balance.json`) · events · save schema via `bm-platform::save`. → phase 4 audio · 5
+  polish. APK installs/feel + audio-by-ear → `OWNER-EYEBALL.md`.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 2: GG1 logic in Rust vs the parity vectors ([B], GO)
 
 Phase 1 APPROVED → phase 2: re-implement the GG1 game **logic** in Rust, proven against the T229
