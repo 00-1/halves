@@ -2233,3 +2233,14 @@ threshold; collector vs the ladder + 3 specials. **B correctly REFUSED to fabric
 thresholds aren't in the export (Speed tiers + Rank = `desc` prose only; Solved/Spark/Events not quantified) →
 count/structure-verified, flagged as a documented gap. 37 tests, clippy clean. → **GAP → T233 (A): export the earning
 rules.** B continues non-threshold metagame meanwhile (wire run_award_keys, Arena, events).
+
+---
+
+## APPROVED (incremental) — Port phase 3 part 2: Arena (bestiary+roster+boost bridge) · Builder B · `acf1386`
+`arena.rs`: bestiary (120 tiers, ascending def, 3 types, 10 region bosses @ regionSize 12) + roster (12 heroes, 4
+stats, 4-per-type), integrity-checked vs `balance.json`. **Collecting→combat bridge:** all 2352 items carry
+`boost:{hero,stat,amount}`; `hero_stats(id, collected)` = base + collected boosts (all boost ids verified real). 42
+tests, clippy clean. **HONEST (3rd time): refused to fabricate** the **combat resolution** (4-stat + type-triangle
+win math) + **gold formulas** — only in JS, not the export → modelled-not-resolved.
+**DECISION: Babysitter TAKES OVER T233 (autonomy grant — A idle/stalled, this is now B's critical path) and EXPANDS it**
+to export ALL the rules as parity vectors: earning + **combat resolution** + **gold formulas** + events roster.
