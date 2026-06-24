@@ -6,6 +6,29 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 (polish): topic-select grid fits ALL 46 topics ([B], GO)
+
+First phase-5 polish pass — a real "rough screen" bug. The topic-select list used a **fixed row
+height** (`h*0.075`) from `top=0.17h`, so only ~8 rows fit before the Collection button at `0.915h`.
+A progressed player who unlocked more than ~8 topics had the rest run **off the bottom and out of
+reach** — up to **38 of 46 topics unreachable** at full completion. `00-1/brickmap` `c64b23a`.
+- Replaced the fixed layout with an **adaptive multi-column grid** (`topic_rows`): 1 column while it
+  fits comfortably (≤12 topics — early/mid game keeps the exact old look), else 2 columns, with the
+  row height shrunk to the band so the **whole grid is always on-screen**. The label face steps down
+  (`q`→`body`→`tiny`) as rows densify so a full 2-column grid still reads. Renderer + hit-test
+  (`topic_at`) share `topic_rows`, so no topic can be stranded out of reach.
+- **Gated hard, not just visually:** two pure tests — every row of a fully-unlocked grid is on-screen
+  + within margins, and **every topic is tappable at its row centre** (reachability) — plus a
+  single-column-unchanged test. New `topic-select-full` golden (all 46) self-consistent + GPU-matched
+  under lavapipe; the initial `topic-select.png` is **byte-identical** (single-row case untouched).
+- goblin-gold **76** lib tests (73 + 3 layout), **8** GPU goldens green under lavapipe; clippy
+  `-D warnings` clean native + aarch64-linux-android; fmt clean. Pushed to `main` + the feature branch.
+- **OWNER EYEBALL ON RETURN:** at full unlock the 46-row 2-column grid has small rows (worst case) —
+  legible + tappable (gated), but if it feels cramped on device the next step is a **scrollable** list
+  (deferred: it's an input-plumbing feature, not a polish tweak — flag if you want it for v1).
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 4 (audio): PLAYBACK WIRING — SFX + music now sound ([B], GO)
 
 Wired the re-authored audio into the live app so it's actually **audible**: a cpal output stream
