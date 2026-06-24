@@ -92,14 +92,13 @@ export the **combat-resolution** rules + **gold-earning formulas** (`enemies.js`
 per-question gold) as parity vectors, same additive method; unblocks B's Arena fight math + economy. Otherwise A's
 work is owner-gated (TWA `T228`, store, Capacitor on-device test).
 
-**Builder B → continue the metagame + NOW port the EARNING (vectors landed).** Port phases 1/2 done; phase-3
-metagame underway (collector ladder · save · catalogue · Arena all done & approved). **NEW: `content/gg1/earning.json`
-+ `earning-vectors.json` now exist on `origin/main` (Babysitter `fde819a`) — RE-SYNC `content/gg1/`, then re-impl the
-full earning (Rank/Init/Flawless/Speed/Mastery/Solved/Spark/Milestone/Collector/Gold/Momentum) and PROVE it vs
-`earning-vectors.json` (same as the transforms — `{ctx → awarded keys}`; honour `mistakes==skipped==total−answered`).
-Also: wire `run_award_keys` into `finish_round`, daily **events** (events roster is in `events.json`). Combat
-resolution + gold-earning formula await **T233b**. Gate on tests/goldens. → phase 4 audio · 5 polish. APK/feel +
-audio-by-ear → `OWNER-EYEBALL.md`. *(Re-sync `origin/main` + re-fetch `claude/agent` before declaring data missing.)*
+**Builder B → WIRE the metagame into the live app (data layer + earning are DONE/approved).** ✅ phases 1/2; ✅
+phase-3 metagame data layer complete (collector·save·catalogue·arena·events) + ✅ full earning ported & proven vs
+`earning-vectors.json` (the T233 payoff). **Now integrate:** wire `earning::award`/`run_award_keys` into
+`finish_round` (awards → the save), and SURFACE the metagame on screen (collected/heroes/events/collector ladder).
+Gate render screens on goldens, logic on tests. Remaining export gaps (NOT blocking integration): **T233b** combat
+resolution + gold formulas, **T233c** events content/schedule — flag if you need them (Babysitter takes over, A idle).
+→ phase 4 audio · 5 polish. APK/feel + audio-by-ear → `OWNER-EYEBALL.md`.
 *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 

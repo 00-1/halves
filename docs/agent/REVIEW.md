@@ -2256,3 +2256,17 @@ bug** (ctx didn't honor `mistakes==skipped==total−answered`, and a non-determi
 gate) — both fixed; 14-check parity test (drift + faithfulness invariants) wired to CI; additive, runtime 64/64.
 → B can now port the full earning vs these vectors. **Remaining T233b: combat resolution + gold-earning formulas
 (enemies.js/main.js) — still A-domain when woken.**
+
+---
+
+## APPROVED ×2 — events (`d3e727a`) + the FULL earning port (`4347b0b`) · Builder B
+**Events:** `events.rs` derives the 14 events + the `event:<id>[:well|:ace]` reward keys — verified exactly the 42
+Events collectibles; 14-day rotation (`day mod 14`). Honest gaps (per-event content / well-ace thresholds / canonical
+schedule anchor are JS-only) → T233c. 46 tests. **Metagame DATA LAYER complete** (collector·save·catalogue·arena·events).
+**Earning port (the T233 payoff):** `earning.rs` reproduces the live `collectibles.js` award logic vs MY export —
+**all 732 rankIndex vectors + 46×13 scenarios + collector/topics/meta/gold/momentum**, honouring `mistakes==skipped==
+total−answered`. The vectors **caught a real bug** (collation-aware natural sort of prompts, `√36` vs `2³`) — exactly
+why parity vectors exist. 49 tests, clippy clean. **REMAINING export gaps (not blocking B's integration next):**
+T233b combat-resolution + gold formulas (enemies.js/main.js); T233c events content/thresholds/schedule (events.js).
+Babysitter-takeover candidates if they become B's critical path (A still idle). → B next: WIRE the metagame into the
+live app (`award`→save in finish_round, surface collected/heroes/events).

@@ -19,6 +19,11 @@ Full spec = **`CAPACITOR-SPEC.md`**. In-process-WebView Android wrapper for `gg1
 internal-testing app (real listing untouched); goal = a CI-built signed `.aab` that launches fullscreen with **no
 "Open with"/address bar**, to compare against the TWA on-device. DoD in the spec.
 
+### T233c — GG1 events content/threshold/schedule export  · status: OPEN (additive)  · [A]/takeover
+Per-event question mix (topics/transforms), the **well/ace** reward fractions, and the cycle's **canonical anchor/
+order** are JS-only (events.js) — B's events port is structurally faithful but not the canonical schedule/content.
+Export them (data + any vectors) so B completes faithful events. Additive; suite 64/64.
+
 ### T233 — GG1 EARNING rules export  · status: DONE (Babysitter take-over `fde819a` — thresholds + 1398 parity vectors from the live evaluators, faithful to mistakes==skips, drift-gated, additive). **T233b (combat resolution + gold-earning formulas from enemies.js/main.js) = REMAINING, [A].**  · [A]
 The content export captured catalogue STRUCTURE but not the EARNING thresholds/rules — B can't faithfully port
 Speed/Rank/Solved/Spark/event/meta earning without them (it correctly refused to fabricate). **Best technique
