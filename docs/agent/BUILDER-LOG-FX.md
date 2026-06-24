@@ -6,6 +6,36 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: Arena combat resolution, vector-proven ([B], GO)
+
+Owner overruled the defer — brickmap-v1 must ship web-GG1's Arena + event-play. Starting with the
+**Arena**: the vector-proven combat-resolution **logic core** (`crates/goblin-gold/src/combat.rs`),
+re-impl'd from `main.js finishBattle ← Enemies.teamBattle`. `00-1/brickmap` `196215e`. (The Arena
+*screen* + on-win grant is the next push — gate-the-sim-on-vectors / gate-the-screen-on-golden split.)
+- Synced the new exports `combat.json` (120-tier ladder + per-tier enemy combatants [full f64] + loot
+  + loot-boosts + constants) + `combat-vectors.json` into the brickmap data seam. Used the DATA
+  ladder/enemyTeams as-is — did NOT re-derive `FOE_BUDGET`.
+- **`effective_stats(hero, collected)`** = base + Σ catalogue boosts (the existing `arena::hero_stats`
+  bridge) + Σ combat loot-boosts for owned `loot:*` ids. Decoded the composition from the numbers
+  (bram `full` guard 561 = base 12 + 415 catalogue + 134 loot; loot ids aren't in the catalogue → no
+  double-count) and proved it for **all 36** effectiveStats vectors (empty / drillAll=all-catalogue /
+  full=all-catalogue+all-loot — all constructible).
+- **`hero_combatant`** (`atk=power+0.8·focus`, `hp=HB+guard·HG+power·HPP`, `spd=speed`) proven vs the
+  5 vectors. **Matchup** triangle Brawn▸Cunning▸Arcane▸Brawn — the cycle *direction* isn't a constant
+  in the export, but reproducing the turn-by-turn `teamBattleLog` pins it exactly.
+- **`simulate`** — ords party 0..2 / foes 100..102; turn order spd-desc, ord-asc (fixed); each round
+  every living actor picks a target by **max matchup → lowest hp → lowest ord**, deals
+  `max(1, round(atk·matchup))` (JS round-half-up); ends when a side is empty (4000-round guard).
+  **`team_battle`** wires effective-stats→combatant→`enemyTeams[tier]`→simulate.
+- **Proven vs ALL combat-vectors:** the **240** headline `teamBattle` {win,heroesAlive,foesAlive,rounds}
+  + the full `teamBattleLog` fixture + ladder completeness (120 tiers each have a team). goblin-gold
+  **81** lib tests (76 + 5 combat) green; clippy `-D warnings` clean native + aarch64-linux-android;
+  fmt clean. Pushed to `main` + the feature branch.
+- **Next:** the Arena SCREEN (party-pick ≤3 owned heroes → battle → on win grant `tier:n`+loot +
+  `tierGold` payoff + region-clear), golden-gated; then T233c event-play.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 (polish): screen audit + export-gap scope decision ([B], GO)
 
 Two phase-5 items the directive delegated: audit the remaining screens for "rough" layout, and
