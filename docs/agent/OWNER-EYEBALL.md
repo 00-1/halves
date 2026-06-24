@@ -12,11 +12,14 @@
 - [ ] **TWA notch (`T228`)** — when you want it: rebuild the `.aab` in PWABuilder with **Display mode =
       "Fullscreen sticky"** (+ cutout), verify edge-to-edge on-device; then the Babysitter does the web
       `isTWA()` JS-fullscreen suppression (kills the "went full screen" toast without losing the notch fill).
-- [ ] **Audio by-ear — SFX (phase 4, ready now).** B re-authored the 9 drill SFX in Rust (`sfx.rs`, constants
-      verified faithful to `sound.js`). Run `cargo run -p goblin-gold --bin sfx_proto -- <dir>` → writes a WAV per
-      effect (`gg-sfx-*.wav`); **A/B each against web-GG's blip** (correct / skip / item / gold / topicUnlock /
-      mastery / topic100 / roundStart / roundComplete) and flag any that feel off. (Music + on-device playback wiring
-      come next — then A/B the music too.)
+- [ ] **Audio by-ear — SFX + MUSIC (phase 4, ready now; perceptual half).** Note schedules are vector-proven; the
+      *timbres* need your ear. Export WAVs and A/B vs web-GG:
+      - SFX: `cargo run -p goblin-gold --bin sfx_proto -- <dir>` → `gg-sfx-*.wav` (correct/skip/item/gold/topicUnlock/
+        mastery/topic100/roundStart/roundComplete).
+      - Music: `cargo run -p goblin-gold --bin music_proto -- <dir> [secs]` → `gg-music-*.wav` (12 scenes).
+      The music renderer is a deliberate **first cut** (right tune/groove/key; exact patch FM/unison/filter/wub-LFO
+      timbres come in a refinement pass) — so flag *which scenes/voices* feel off to steer that pass. (On-device
+      playback wiring lands separately — until then this is the WAV-export A/B.)
 - [x] **Keypad/drill/FX feel** — owner confirmed "looks good" (2026-06-23) from B's mini-gate #2/#3 shots.
 - [x] **Font legibility** — owner confirmed "all very readable, 3rd sample best" (mini-gate #1).
 

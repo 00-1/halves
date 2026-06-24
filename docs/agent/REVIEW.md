@@ -2408,3 +2408,16 @@ The note-schedule half of music IS vector-provable, and B proved it. Verified of
 **Phase-4 audio: ✅ SFX (perceptual, owner by-ear) · ✅ music score (vector-proven).** Remaining: token SYNTHESIS
 (patches→buffers — perceptual, owner by-ear, folds into the SFX A/B) + playback wiring (cpal/Web Audio) so it sounds
 on device → phase 5 polish. No new owner item yet (score is proven; the by-ear comes with synthesis).
+
+---
+
+## APPROVED — phase 4 audio (music RENDERER, first cut) · Builder B · `44388b8` (brickmap `main`, `music.rs`)
+The risk here was the **refactor of the vector-proven `synth.rs`**; it's clean. Verified off `@main`: new
+`Voiced{role,midi,piece}` + `voiced_score()`; `score()` is now `voiced_score(...).map(token)` (a projection), and the
+**12-golden `assert_eq!(got, golden, …)` test is still present and gating** — so the proven score is unchanged, and
+the same `Voiced` data feeds the new renderer. `music.rs::render(scene,sr,seconds,volume)` is an honest FIRST CUT
+(osc+ADSR+one-pole tone per lane over the 16th grid; `volume 0 ⇒ silence`) — "recognisably the right tune/groove/key,"
+exact patch timbres (FM/unison/biquad/wub LFO) deferred to a refinement pass after the owner's ear calibrates.
+Gated mechanically (determinism/no-clip/mute=silence/unknown=empty/distinct); 66 lib tests, clippy clean. `music_proto`
+WAV-per-scene exporter for the owner A/B — **folded into OWNER-EYEBALL.md.** Remaining audio: timbre fidelity (the
+patch port) + playback wiring (cpal/Web Audio) so it sounds in the live app → phase 5 polish.
