@@ -86,13 +86,11 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → `T232` — content export part 3: `balance.json` (NON-DESTRUCTIVE / additive; suite stays 64/64).**
-Brickmap is now **GO**, so the seam's last piece is justified (the port's phase-3 content + metagame will consume it).
-✅ `T229` modes · ✅ `T230` guides+collectibles · ✅ `T231` Capacitor scaffold. **Now emit `content/gg1/balance.json`** —
-the tuning constants currently in code: gold earn/spend rates, collector-tier reward amounts, enemy tiers/defs
-(`enemies.js`), hero stats/boosts (`heroes.js`), masterSecs (already in modes.json — cross-ref). Same additive rules
-(do NOT touch the live runtime); extend `content-parity.test.js` to drift-gate it against the live modules. *(BACKLOG
-T232.)* After T232: A holds / owner-gated items (TWA `T228` `.aab`, store paused, Capacitor on-device test).
+**Builder A → HOLD — the content-as-data seam is COMPLETE.** ✅ `T229` modes · ✅ `T230` guides+collectibles ·
+✅ `T231` Capacitor scaffold · ✅ `T232` balance.json (`e24ae3c`; parity 42/42, suite 64/64). The full content seam
+(modes+guides+collectibles+balance, drift-gated) is done; the brickmap port (B) consumes it in port phase 3. **A's
+remaining work is all owner-gated:** TWA `T228` (`.aab` rebuild), GG1 store (ship paused), Capacitor on-device test
+(`OWNER-EYEBALL.md`). A holds until the owner un-gates one or the Babysitter finds new additive [A] work.
 
 **Builder B → GO full-port PHASE 2: re-implement GG1 logic in Rust vs the T229 parity vectors.** ✅ **#4 crash FIXED**
 & self-verified (empty-buffer guard in the live `render()` + `drill-initial` golden under lavapipe; live render now

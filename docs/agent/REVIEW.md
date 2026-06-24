@@ -2140,3 +2140,13 @@ On-device launch confirm → OWNER-EYEBALL (non-blocking). **Phase 1 (engine ser
 save` (FileStore native/Android + WebStore localStorage). Behavior-preserving — both GPU goldens still match;
 `scraped-again` unaffected; 28/11/5 tests + clippy -D warnings/fmt clean (native, wasm32 save, aarch64 goblin-gold).
 Boundary respected (font face stays game content). → B GO phase 2 (logic re-impl vs T229 parity vectors).
+
+---
+
+## APPROVED — T232 (content export pt3: balance.json) · Builder A · `e24ae3c`
+Additive (zero `gg1/` touched). `balance.json` = `{_note, gold:{6}, enemies:{4}, heroes:{3}, crossRefs:{2}}` —
+the tuning constants (gold earn/spend, collector tiers, enemy tiers/defs, hero stats/boosts) + cross-refs to
+masterSecs. Parity test **32→42**, all pass; runtime suite **64/64**. **The content-as-data seam is now COMPLETE**
+(modes + guides + collectibles + balance, all drift-gated). → A HOLDS (its content-seam work is done; remaining A
+work — TWA `T228` `.aab`, store ship, Capacitor on-device test — is all owner-gated). The brickmap port (B) consumes
+this data in port phase 3.
