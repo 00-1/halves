@@ -92,13 +92,16 @@ carries a superseded banner). Do NOT start GG2-on-web.
 remaining work is all owner-gated:** TWA `T228` (`.aab` rebuild), GG1 store (ship paused), Capacitor on-device test
 (`OWNER-EYEBALL.md`). A holds until the owner un-gates one or the Babysitter finds new additive [A] work.
 
-**Builder B → GO full-port PHASE 3: wire all 46 topics + the metagame, vs the T230/T232 data.** ✅ phase 2 APPROVED
-(`f7e6ea3` — 46/46 transforms reproduce the parity vectors exactly; init+mastery verified faithful vs GG1 source;
-unlock graph deadlock-free). **Now phase 3:** drive the drill across all 46 topics via `generate()`+`progression`,
-and build the **metagame** consuming the data — collector ladder (`collectibles.json`), arena/enemies+heroes
-(`balance.json`), daily events — per `GG1-INVENTORY.md` + the save schema (`bm-platform::save`). Gate on tests
-(+ goldens for any new rendered screens). → phase 4 audio re-author · 5 polish. APK installs/feel + audio-by-ear →
-`OWNER-EYEBALL.md`. *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
+**Builder B → GO phase 3 part 2: the METAGAME — UNBLOCKED (the 'missing data' is a STALE SYNC, not missing).**
+✅ part 1 APPROVED (`14fe684`: all 46 topics drive + topic-select screen + 3 goldens). **Your blocker is a false
+alarm:** `content/gg1/{guides,collectibles,balance}.json` ALL EXIST on halves `main` (T230 `6b7387b` + T232 `e24ae3c`,
+approved) and `GG1-INVENTORY.md` is on `claude/agent`. **RE-SYNC `content/gg1/` from halves `main`** (re-run your
+one-way content sync) + `git show origin/claude/agent:docs/agent/GG1-INVENTORY.md` — then build the metagame
+data-driven (same as transforms/progression): **collector ladder** (re-impl `collectibles.js` init/flawless/speed/
+mastery + collector/topic ladders vs `collectibles.json`), **arena** (enemies+heroes vs `balance.json`), **events**,
+**save** via `bm-platform::save` (schema in `GG1-INVENTORY.md`). Gate on tests + goldens. → phase 4 audio · 5 polish.
+APK/feel + audio-by-ear → `OWNER-EYEBALL.md`. *(Re-sync/re-fetch before declaring data missing.)*
+*(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 
 ---

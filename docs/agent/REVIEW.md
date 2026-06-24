@@ -2163,3 +2163,17 @@ the GG1 SOURCE (parity vectors don't cover it, so I checked the code):** init = 
 total−answered === B's skips()` ✅. Unlock graph proven **satisfiable (no deadlock)**. 17 tests; clippy -D warnings
 native + aarch64. → B GO phase 3 (wire all 46 topics via generate()/progression + the metagame — collector ladder/
 arena/events — vs the T230/T232 data).
+
+---
+
+## APPROVED (part 1) + BLOCKER RESOLVED (false alarm) — Port phase 3 part 1 · Builder B · `14fe684`
+**Part 1 APPROVED:** `Drill::from_topic` drives **all 46 topics** (test: every topic yields questions + every
+answer accepted); generic question UI (transform prompt verbatim, halves-only framing gone, `drill-initial`
+re-blessed); new **topic-select** screen (2-screen Select⇄Drill runtime; completion folds into `progression`;
+newly-unlocked topics reappear) + `topic-select.png` golden. 18 tests + 3 GPU goldens (lavapipe); clippy -D warnings
+native + aarch64.
+**BLOCKER = FALSE ALARM (stale data sync), resolved without A.** B reported `collectibles/balance/guides.json` +
+`GG1-INVENTORY.md` "missing" → they **ALL EXIST**: `content/gg1/{guides,collectibles,balance}.json` on halves `main`
+(T230 `6b7387b` + T232 `e24ae3c`, APPROVED) and `GG1-INVENTORY.md` on `claude/agent`. B's brickmap `content/gg1/`
+copy predates T230/T232. **Resolution: B re-syncs `content/gg1/` from halves `main` + re-reads `GG1-INVENTORY.md` from
+`origin/claude/agent` → metagame unblocked.** (Recurring lesson: re-sync/re-fetch before declaring data missing.)
