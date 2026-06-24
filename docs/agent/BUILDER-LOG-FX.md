@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): the SAVE model over the engine Store seam ([B], GO)
+
+The metagame's **keystone**, per `GG1-INVENTORY.md` §5: GG1 keeps *one* central `collected` map
+(`{<key>:{ts}}`) and derives everything from it — progression, the collector ladder, event/arena
+state. A new feature is a new key prefix, not a schema bump. `00-1/brickmap` `f910988`.
+- **`save.rs`** (`Save{collected, gold, last_mode}`) (de)serialising through any
+  `bm-platform::save::Store` — `FileStore` on native/Android, `WebStore` on web — so the game never
+  sees the platform. `gold` round-trips through the **string-float** shape the live runtime writes
+  on disk; a torn blob loads as `default` rather than bricking launch.
+- **`Save::progress()`** rebuilds `progression::Progress` from the `init:`/`mastery:` keys via a new
+  `Progress::from_collected` bridge — the save is the single source of truth for what's unlocked,
+  not a side table. `mark` keeps the *earliest* timestamp (a key is "first collected" once) and
+  reports newness.
+- goblin-gold **26** tests green (5 new: round-trip, derived progress, mark semantics, gold string
+  shape, corrupt-blob tolerance); clippy -D warnings clean native + aarch64-linux-android. Pushed to
+  `main` + the feature branch.
+- **Next (per NEXT.md, FIX-FIRST):** the 2 owner-found on-device parity bugs — **(1) solver
+  auto-accept** (no Enter-to-submit; auto-accept the instant `parseFloat(input)==answer`, bottom key
+  = SKIP, 5-digit guard + decimal point) and **(2) immersive-sticky fullscreen** on the goblin-gold
+  activity — *then* resume the metagame catalogue (init/flawless/speed/mastery + rank/milestone) ·
+  Arena · events.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): metagame UNBLOCKED — collector ladder ([B], GO)
 
 My earlier "missing data" blocker was a **false alarm** — I'd checked the stale feature-branch
