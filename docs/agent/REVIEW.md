@@ -2393,3 +2393,18 @@ right:** audio parity is perceptual (no web-rendered reference to diff), so the 
 native+aarch64. The `sfx_proto` WAV-per-effect binary for the owner's A/B is the correct way to close perceptual parity.
 **Folded the by-ear A/B into OWNER-EYEBALL.md** (B can't push `claude/agent`). Phase-4 continues: generative MUSIC
 (synth.js 10 tracks) → playback wiring (cpal/Web Audio) → phase 5 polish.
+
+---
+
+## APPROVED — phase 4 audio (music SCORE generator) · Builder B · `a7efdc6` (brickmap `main`, `synth.rs`)
+The note-schedule half of music IS vector-provable, and B proved it. Verified off `synth.rs@main`:
+- **PRNG fidelity (the make-or-break):** `mulberry32` uses **u32 wrapping** (`wrapping_add(0x6D2B79F5)`, `wrapping_mul`)
+  — the faithful translation of JS `Math.imul`/`>>>`. Get this wrong and every golden drifts; it's right.
+- **Byte-for-byte golden contract:** the test iterates all **12 `STYLE_IDS`**, loads each `synth_score_*.json`,
+  asserts `got == golden` (32 steps each) — the SAME 12 goldens that are the source-of-truth in `gg1/dev/test/golden/`
+  (ambient/arena/bigroom/boss8bit/chiptune/dnb/dubstep/lofi/menu/synthwave/techno/tropical). Plus a pairwise
+  distinctness assert (the "samey" guard). 63 lib tests, clippy clean native+aarch64.
+- Reproduces the modal harmony + voice-leading, Euclidean drum grooves, density-gated lead walk, phrase reseeding.
+**Phase-4 audio: ✅ SFX (perceptual, owner by-ear) · ✅ music score (vector-proven).** Remaining: token SYNTHESIS
+(patches→buffers — perceptual, owner by-ear, folds into the SFX A/B) + playback wiring (cpal/Web Audio) so it sounds
+on device → phase 5 polish. No new owner item yet (score is proven; the by-ear comes with synthesis).
