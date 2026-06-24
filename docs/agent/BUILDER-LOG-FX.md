@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 2: GG1 logic in Rust vs the parity vectors ([B], GO)
+
+Phase 1 APPROVED → phase 2: re-implement the GG1 game **logic** in Rust, proven against the T229
+data (share DATA not code — the JS is never run). `00-1/brickmap` commit `f7e6ea3`.
+- **`transforms.rs` — all 46 topic transforms** (`datum→{p,a}`), re-authored from the behaviour.
+  **THE GATE** (`every_mode_reproduces_its_parity_vectors`): for every mode, the `{p,a}` set our
+  Rust transform produces from the `pool` equals `parity-vectors.json` **exactly** — same count,
+  every vector matched (prompt byte-identical, answer within 1e-9), no extras. **All 46 pass.**
+  `generate(id)` yields a topic's questions; number→string mirrors JS `String(n)` so prompts match.
+- **`progression.rs` — unlock-chain + mastery.** Initiation ("played") = answered ≥ ⌈total·0.5⌉
+  (the spine `unlock:{by:X}` trigger); Mastery = **no skips AND totalTime ≤ masterSecs·total** (the
+  off-spine `unlock:{mastery:X}` trigger); `is_unlocked` = played | gate | always-open root. Tests:
+  graph loads all 46 with valid targets, **spine-gates-on-play vs offspine-gates-on-mastery**, the
+  init/mastery thresholds, and **the whole graph is satisfiable** (no deadlock — every topic
+  reachable + masterable from halves).
+- Pure logic (serde_json only, no engine dep). goblin-gold **17** tests green; clippy -D warnings
+  clean on native + aarch64-linux-android. Pushed to `main` + the feature branch.
+- **Next:** phase 3 content (T230 guides/collectibles + `GG1-INVENTORY.md`) · 4 audio re-author ·
+  5 polish; the metagame (collector ladder / arena / events) + wiring the drill to all 46 topics
+  via `generate()`/progression are the phase-3+ sub-phases. APK installs + audio-by-ear →
+  OWNER-EYEBALL.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 1: bank the engine services ([B], GO — autonomy grant)
 
 Gate #4 declared PASS (code+golden, no device — the crash fix landed `ba383ae` AND the initial-frame
