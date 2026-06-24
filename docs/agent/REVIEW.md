@@ -2150,3 +2150,16 @@ masterSecs. Parity test **32→42**, all pass; runtime suite **64/64**. **The co
 (modes + guides + collectibles + balance, all drift-gated). → A HOLDS (its content-seam work is done; remaining A
 work — TWA `T228` `.aab`, store ship, Capacitor on-device test — is all owner-gated). The brickmap port (B) consumes
 this data in port phase 3.
+
+---
+
+## APPROVED — Port phase 2 (GG1 logic in Rust vs parity vectors) · Builder B · `f7e6ea3`
+**THE GATE passes:** all **46 transforms reproduce `parity-vectors.json` exactly** (prompts byte-identical,
+answers <1e-9, no extras) — "share data not code" proven mechanically. **Progression verified faithful against
+the GG1 SOURCE (parity vectors don't cover it, so I checked the code):** init = `answered ≥ ceil(total*0.5)` ==
+`collectibles.js:113 initReached` ✅. **Mastery** = `skips==0 && totalTime ≤ masterSecs*total`. Looked like a bug
+(GG1's test is `ctx.mistakes===0`) but is EQUIVALENT — GG1's `mistakes` increments **only in `skip()`**
+(`main.js:2309`), never on a wrong answer (those live in `qMiss`/`t.miss`), so `mistakes === skipped ===
+total−answered === B's skips()` ✅. Unlock graph proven **satisfiable (no deadlock)**. 17 tests; clippy -D warnings
+native + aarch64. → B GO phase 3 (wire all 46 topics via generate()/progression + the metagame — collector ladder/
+arena/events — vs the T230/T232 data).

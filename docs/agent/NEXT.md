@@ -92,15 +92,13 @@ carries a superseded banner). Do NOT start GG2-on-web.
 remaining work is all owner-gated:** TWA `T228` (`.aab` rebuild), GG1 store (ship paused), Capacitor on-device test
 (`OWNER-EYEBALL.md`). A holds until the owner un-gates one or the Babysitter finds new additive [A] work.
 
-**Builder B → GO full-port PHASE 2: re-implement GG1 logic in Rust vs the T229 parity vectors.** ✅ **#4 crash FIXED**
-& self-verified (empty-buffer guard in the live `render()` + `drill-initial` golden under lavapipe; live render now
-unified with the golden via `drill_frame()`; on-device launch confirm → `OWNER-EYEBALL.md`). ✅ **Phase 1 APPROVED**
-— engine services banked (`bm-render::text2d`/`ui2d` + `bm-platform::save`; behavior-preserving, scraped-again
-unaffected). **Now phase 2:** port the ~40 pure transforms (`datum→{p,a}`) + the unlock-chain/mastery mechanics to
-Rust, **proven against `content/gg1/parity-vectors.json`** (every committed `{p,a}` must reproduce) — share DATA not
-code. Metagame (collector ladder / arena / events) = later sub-phases vs the T230 data + `GG1-INVENTORY.md`. Gate on
-the parity tests. → phase 3 content · 4 audio re-author · 5 polish. APK installs + audio-by-ear → OWNER-EYEBALL.
-*(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
+**Builder B → GO full-port PHASE 3: wire all 46 topics + the metagame, vs the T230/T232 data.** ✅ phase 2 APPROVED
+(`f7e6ea3` — 46/46 transforms reproduce the parity vectors exactly; init+mastery verified faithful vs GG1 source;
+unlock graph deadlock-free). **Now phase 3:** drive the drill across all 46 topics via `generate()`+`progression`,
+and build the **metagame** consuming the data — collector ladder (`collectibles.json`), arena/enemies+heroes
+(`balance.json`), daily events — per `GG1-INVENTORY.md` + the save schema (`bm-platform::save`). Gate on tests
+(+ goldens for any new rendered screens). → phase 4 audio re-author · 5 polish. APK installs/feel + audio-by-ear →
+`OWNER-EYEBALL.md`. *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 
 ---
