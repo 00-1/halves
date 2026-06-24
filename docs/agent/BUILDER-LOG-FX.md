@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): the ARENA (bestiary + roster + boost bridge) ([B], GO)
+
+Re-impl of the Arena's combatants over `balance.json`, and the payoff for all that collecting.
+`00-1/brickmap` `acf1386`. **The collecting→fight bridge:** every catalogue item carries a
+`boost:{hero,stat,amount}`, so a hero's **effective** stats = base + the boosts of everything the
+player has collected.
+- **`arena.rs`**: the **bestiary** (120 enemy tiers, ascending `def`, three types — Brawn/Arcane/
+  Cunning — a **boss** ending each region of `regionSize`=12 → 10 bosses) and the **roster** (12
+  heroes, 4 base stats power/guard/speed/focus, typed 4-per-type), loaded + integrity-checked.
+  `hero_stats(id, collected)` folds the earned items' boosts into the targeted hero (using
+  `catalogue::earned` + the new `boost` field); `bosses()`/`is_boss(n)` mark region capstones.
+- Added a `boost` field to `catalogue::Collectible` (all 2352 carry one; heroes balanced ~196 boosts
+  each, stats ~590 each — verified all reference real roster ids).
+- **Honest scope (data-seam rule — NOT fabricated):** the actual **combat resolution** (how the four
+  stats + the type triangle decide a win, and the gold-formula bodies) lives only in the JS, not the
+  export → modelled-not-resolved; the fight math awaits a rules export. Documented in the module.
+- goblin-gold **42** lib tests green (5 new); clippy -D warnings clean native + aarch64-linux-android.
+  Pushed to `main` + the feature branch.
+- **Next:** **events** (14 daily, UTC-day cycle) · wire `run_award_keys` into the app's
+  `finish_round` (drop awards into the save). → phase 4 audio · 5 polish. APK/feel + audio-by-ear →
+  `OWNER-EYEBALL.md`.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): the full collectible CATALOGUE (2352) ([B], GO)
 
 Re-impl of GG1's whole reward set over the T230/T232 export (`collectibles.json`). `00-1/brickmap`
