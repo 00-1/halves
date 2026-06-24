@@ -6,6 +6,31 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): daily EVENTS (14-event rotation) ([B], GO)
+
+The last pure-data metagame layer: GG1's daily events, re-impl'd over the `Events` collectibles.
+`00-1/brickmap` `d3e727a`. With this the metagame **data layer is complete** (collector · save ·
+catalogue · arena · events).
+- **`events.rs`**: derives the **14** events (id + prose title from the participation blurb) from the
+  `Events` category; `Event::reward_key(tier)` builds the `event:<id>[:well|:ace]` keys for the three
+  tiers (participation/well/ace) — verified to be **exactly the 42** Events collectibles (none
+  missing, none extra). `scheduled(utc_day)` = the **14-day rotation** (`day mod 14`);
+  `touched(collected)` maps earned keys back to events. Reward keys are `collected`-map keys (the
+  keystone), so earning = inserting them.
+- **Honest scope (data-seam rule):** per-event **content** (topics/transforms, the well/ace
+  thresholds) and the cycle's **canonical anchor/order** are JS-only (not exported) → the schedule
+  rotates the 14 in a stable catalogue order (structurally faithful, not the canonical phase); reward
+  keys + earned-state are fully data-backed. Documented in the module — a known gap, alongside the
+  Speed/Rank thresholds and the Arena combat formula.
+- goblin-gold **46** lib tests green (4 new); clippy -D warnings clean native + aarch64-linux-android.
+  Pushed to `main` + the feature branch.
+- **Next (integration):** wire the metagame into the live app — `run_award_keys` → the save in
+  `finish_round`, and surface collected/heroes/events on screen. Then phase 4 audio · 5 polish.
+  APK/feel + audio-by-ear → `OWNER-EYEBALL.md`. *(Data gaps to unblock when convenient: a thresholds/
+  schedule/combat-rules export for Speed/Rank/Events-content/Arena-fight.)*
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): the ARENA (bestiary + roster + boost bridge) ([B], GO)
 
 Re-impl of the Arena's combatants over `balance.json`, and the payoff for all that collecting.
