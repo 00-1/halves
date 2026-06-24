@@ -10,6 +10,24 @@
 
 ---
 
+## THE LOOP — render → compare → iterate (owner's idea, 2026-06-24)
+Visual parity is now a self-driven loop, not guess-then-owner-round-trip: **the builder renders its own
+screen headlessly (the golden path it already has), compares against a canonical web-GG1 REFERENCE, and
+iterates until it reads like the reference.** The references are committed:
+**`content/gg1/visual-ref/{heroes,inventory,arena,home}-web.png`** (+ README) — captured headless from web
+GG1 with a full collection seeded (everything unlocked/boosted), regeneratable via
+`tools/visual-ref-capture.js`. B's content sync pulls them.
+- **The compare is PERCEPTUAL/STRUCTURAL, not a pixel diff** (two different renderers — DOM/CSS vs brickmap
+  GPU — never match byte-for-byte). "Same elements, layout, type colours, portraits, ratings, chips,
+  drill-downs, in roughly the right places." B looks at its render + the reference and lists the gaps.
+- **Gate:** B goldens its result (locks it once it matches); the web-match itself is judged by eye (B's, and
+  the owner's final sign-off in `OWNER-EYEBALL.md`). The Babysitter specs each screen from the web SOURCE so
+  the target is precise, and reviews B's changes against it.
+- More reference screens (results, event-play, hero-detail) need a deeper played-through state to route to —
+  add them to `SCREENS` in the capture tool as those screens come up.
+
+---
+
 ## FOUNDATION (do FIRST — it unblocks portraits on EVERY screen)
 
 **F1 — port the procedural icon/portrait generator `drawIcon` (`collectibles.js:729`).** Web draws every

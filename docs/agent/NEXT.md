@@ -121,8 +121,10 @@ COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
   screen — the port shows a flat text list, and shows BASE stats where web shows EFFECTIVE = a real bug). **FOUNDATION
   first: the procedural icon generator `drawIcon` (`collectibles.js:729`)** — deterministic ⇒ vector-provable;
   **Babysitter is taking it over as the next export** (pixel-grid vectors), which unblocks portraits on every screen.
-  Then B: Heroes visual pass (per the spec) → Items → Collection → Events → Results. Gate render on goldens; the
-  web-match is the owner's eye. *(Don't treat this as optional polish — it's parity.)*
+  Then B: Heroes visual pass (per the spec) → Items → Collection → Events → Results. **THE LOOP (owner's idea):
+  render your screen headlessly → compare against the committed web reference `content/gg1/visual-ref/<screen>-web.png`
+  → iterate until it reads like it → golden it.** Perceptual compare (two renderers, not a pixel diff). Build the NEW
+  Arena/event-play screens against `arena-web.png` from the start. *(Not optional polish — it's parity.)*
 **Export status — Babysitter-owned, flag if a feature needs them:** ✅ **T233b-gold DONE** (`4ae14b3`+`7c74439`).
 Open: **T233b-combat** (enemies.js battle resolve — when you port the Arena), **T233c** events content/thresholds/
 schedule (events.js — for richer Events content). APK feel + audio-by-ear + immersive device-confirm → `OWNER-EYEBALL.md`.
