@@ -2270,3 +2270,15 @@ why parity vectors exist. 49 tests, clippy clean. **REMAINING export gaps (not b
 T233b combat-resolution + gold formulas (enemies.js/main.js); T233c events content/thresholds/schedule (events.js).
 Babysitter-takeover candidates if they become B's critical path (A still idle). → B next: WIRE the metagame into the
 live app (`award`→save in finish_round, surface collected/heroes/events).
+
+---
+
+## APPROVED — metagame INTEGRATION (earning→save wiring + Collection screen) · Builder B · `6763f5a`+`be8fa00`
+The full loop is live: `Save::award_round` runs `earning::award` over the finished round (stats derived from the
+`collected` keystone), marks awarded keys; `App` owns `Save`+`FileStore` (Android data dir / temp desktop / None→no
+persist, never crash); `finish_round` awards→save, rebuilds progression from save (single source of truth), persists
+best-effort, and **loads on startup → unlocks/achievements survive relaunch**. New `Screen::Collection` (golden
+`collection.png` + re-blessed `topic-select.png`) surfaces collected/2352 · collector tier · topics ×46 · heroes ·
+events · gold. 50 tests + 4 pure + 4 GPU goldens, clippy clean. **Port is functionally near-complete** (drill +
+earning + persistence + collection surface). Honest remaining: per-question **solve/spark** await per-question timing
+in the drill (empty qmap). Then richer screens (optional) · T233b/c export gaps · phase 4 audio · 5 polish.

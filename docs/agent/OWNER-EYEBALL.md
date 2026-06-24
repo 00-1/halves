@@ -22,4 +22,9 @@
       and (b) **status + nav bars are hidden** (immersive — built blind over JNI, so this one genuinely needs your
       eyes; it's crash-safe so worst case the bars just stay, no crash).
 
+- [ ] **Metagame on-device (after B's integration `d9a5a7b`)** — play a few rounds, then check: awards/unlocks
+      **persist across an app relaunch**, the new **Collection screen** (button on topic-select) shows collected/
+      ladder/topics/heroes/events/gold, and progression unlocks topics as you play. (Logic is test-proven; this is
+      the feel + the real-device persistence path.)
+
 *Babysitter appends here whenever a step's correctness bottoms out at "needs a human/phone/ears."*
