@@ -2488,3 +2488,23 @@ instant swaps → optional fade banked to OWNER-EYEBALL, not built blind. Correc
 BUT it ships brickmap-v1 WITHOUT two systems that shipped in web GG1 (interactive Arena combat + event-play) — a real
 parity gap and a "what is v1" call that's the owner's, not an execution step. Put to the owner. **Pending their answer;
 B's "no open self-verifiable work" status holds either way (next direction depends on the call).**
+
+---
+
+## OWNER SCOPE CALL — build for parity, NO defer (2026-06-24); T233b-combat + T233c taken over
+Owner overruled B's defer: **"we already proved it. don't defer. part of your job as babysitter is to push back on
+deferral. builders always want to defer."** Correct, and noted as a standing stance — the babysitter argues FOR
+completeness; a builder's "defer" is a starting position to test, not ratify. brickmap-v1 ships at parity with web GG1
+(Arena + events included). Owner confirmed the Arena is **3v3**. Both exports taken over (A idle):
+- **T233b-combat (`main` `cdedb6c`)** — the live 3v3 sim (Enemies.teamBattle). DATA: 120-tier ladder (def
+  non-decreasing) + per-tier 3-foe combatants at FULL f64 (the sim does round(atk·matchup) — truncation would
+  diverge) + loot + loot-only boosts (drill boosts already in collectibles.json). VECTORS (282): heroCombatant
+  formula, effectiveStats(base+boosts) per col, the headline teamBattle {win,heroesAlive,foesAlive,rounds}, + one
+  full turn-by-turn log. Drift + source-fidelity (formulas in enemies.js/heroes.js) + invariants (ladder monotone,
+  outcome self-consistency, log replays). Test-the-test verified, CI-wired.
+- **T233c (`main` `06a5d9d`)** — the 14-event roster + UTC-day schedule (anchor epochDay 0 → ROSTER[0], 14-day
+  rotation) + reward tiers (participation / well ≥0.7 / ace = flawless; no gold) + the deterministic `buildGauntlet`
+  (mulberry32 — already proven for synth). VECTORS: the byte-identical gauntlet per event (183 Q), the schedule sweep,
+  eventTiersEarned at the boundaries. Drift + source-fidelity + invariants (questionMix counts, rotation, thresholds).
+**No export gaps remain.** B's direction flipped from "wrap up" to **build the Arena + event-play screens** against
+these (NEXT.md). The port targets full web-GG1 parity, not a reduced "proved it" milestone.

@@ -86,11 +86,10 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → HOLD (the exports keep being done by Babysitter take-over; A idle).** ✅ `T229/T230/T232` content seam
-+ ✅ `T233` earning export (`fde819a`) + ✅ **`T233b`-gold** export (`4ae14b3`) — both Babysitter take-overs, A stalled.
-**Remaining if woken: `T233b`-combat** (`enemies.js` battle resolve → Arena fight math; deferred till B ports the
-Arena) + **`T233c`** events content/thresholds/schedule (`events.js`, same additive method). Otherwise A's work is
-owner-gated (TWA `T228`, store, Capacitor on-device test).
+**Builder A → HOLD (all exports done by Babysitter take-over; A idle).** ✅ `T229/T230/T232` content seam + ✅ `T233`
+earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-combat** (`cdedb6c`) + ✅ **`T233c`** events
+(`06a5d9d`) — all Babysitter take-overs, A stalled throughout. **No export gaps remain.** A's other work is owner-gated
+(TWA `T228`, store, Capacitor on-device test).
 
 **Builder B → ALL 4 OWNER-FOUND GAPS CLOSED & APPROVED (`9143b35`, brickmap `main`). Core port is functionally
 COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
@@ -100,9 +99,21 @@ COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
   (every Collection row clickable; new Heroes/Events/Items screens, golden-gated).
 - ✅ **phase 4 — AUDIO COMPLETE** (`9ada429`→`f838fa9`): SFX + music score (vector-proven vs 12 goldens) + renderer
   with GG1's real patches + cpal playback wiring, all approved. On-device feel + WAV A/B → `OWNER-EYEBALL.md`.
-- **▶ NOW: phase 5 — POLISH.** Final pass before the port is "done": tighten any rough screens/transitions, the
-  remaining `OWNER-EYEBALL` device items, and decide whether the two export gaps (T233b-combat, T233c) are needed for
-  v1-on-brickmap or deferred. Gate on goldens/tests as ever; bank device/by-ear items for the owner.
+- ✅ **phase 5 polish — topic grid fits 46** (`80a696c`) + screen audit (only topic-select was broken). APPROVED.
+- **▶ NOW: BUILD FOR PARITY — the Arena + event-play (owner overruled the defer, 2026-06-24).** Web GG1 ships both;
+  brickmap-v1 must too. Both exports are DONE + on `main`:
+  - **Arena (T233b-combat, `cdedb6c`)** — `content/gg1/combat.json` (120-tier ladder + per-tier enemy combatants
+    [full f64] + loot + loot-boosts; the resolution recipe) + `combat-vectors.json` (heroCombatant, effectiveStats,
+    the headline `teamBattle` {win,heroesAlive,foesAlive,rounds}, + one full turn-by-turn log). **Build the 3v3 Arena
+    screen:** party-pick (≤3 owned heroes) → `teamBattle` (reproduce effectiveStats→heroCombatant→simulateTeams,
+    prove vs the vectors) → on win grant `tier:n`+loot, `tierGold` payoff (gold.json), region-clear. Use the
+    DATA ladder/enemyTeams as-is (don't re-derive FOE_BUDGET). Gate the screen on a golden, the sim on the vectors.
+  - **Event-play (T233c, `06a5d9d`)** — `content/gg1/events.json` (14-event roster + questionMix + well/ace + the
+    UTC-day schedule) + `events-vectors.json` (the deterministic `buildGauntlet` per event [reproduce mulberry32 —
+    you already proved it for synth — + the total-order sort], the schedule sweep, reward tiers). **Build event-play:**
+    today's live event → its gauntlet → drill → `eventTiersEarned` (participation/well≥0.7/ace=flawless) into the
+    save; no gold (the reward IS the buff). Surface "today's event" entry + countdown.
+  Flag anything underspecified rather than guessing. → then any final polish. Device/by-ear → `OWNER-EYEBALL.md`.
 **Export status — Babysitter-owned, flag if a feature needs them:** ✅ **T233b-gold DONE** (`4ae14b3`+`7c74439`).
 Open: **T233b-combat** (enemies.js battle resolve — when you port the Arena), **T233c** events content/thresholds/
 schedule (events.js — for richer Events content). APK feel + audio-by-ear + immersive device-confirm → `OWNER-EYEBALL.md`.

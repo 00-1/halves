@@ -122,3 +122,14 @@
 - This findings log — extend it; don't relearn it.
 
 *Maintained by the Babysitter on `claude/agent`. Append findings as phases 4–5 + further device tests land.*
+
+## E. ORCHESTRATION STANCE (babysitter discipline)
+- **Push BACK on deferral by default — builders optimise for "done with my push," the babysitter holds the bar at
+  actually-complete.** A builder proposing to defer scope (here: "the Arena + events prove no new seam, defer to
+  post-v1") is a STARTING POSITION to test, not a verdict to relay. The owner: *"part of your job as babysitter is to
+  push back on deferral. builders always want to defer."* When a builder defers, the babysitter either argues the case
+  for completeness itself, or escalates the *scope* call to the owner with a recommendation — it does NOT silently
+  ratify. Reserve genuine deferral for things that truly don't belong in this version, not things that are merely more
+  work.
+- **Scope/"what is v1" decisions are the owner's** (vs execution, which the autonomy grant covers ungated). Escalate
+  those — but escalate with a POV, not neutrally.
