@@ -26,10 +26,11 @@
       Collector Ladder drill-down present. Found 4 gaps (routed to B / taken over): no results screen, drill-downs too
       shallow ("nothing clickable"), system bars still overlaid, "Gold 0". Re-check after B's next APK.
 
-- [ ] **NEXT brickmap APK — confirm the 2026-06-24 gap fixes:** (a) a **results screen** appears at end of a run
-      (rank + awards earned + time + gold), (b) the **build-SHA watermark** shows in a corner on every screen,
-      (c) **system bars are finally hidden** (B's UI-thread immersive fix — still device-only, crash-safe),
-      (d) **Heroes/Events/Topics/Items** drill-downs are now clickable like the Collector Ladder, (e) **gold accrues**
-      (no longer stuck at 0) and persists across relaunch.
+- [ ] **NEXT brickmap APK — confirm the 2026-06-24 gap fixes (all in code + test-gated; APK build → device check):**
+      (a) **results screen** at end of a run (rank + awards + time + gold), (b) **build-SHA watermark** in a corner on
+      every screen (use it to tell me which build a screenshot is from), (c) ⭐ **system bars finally hidden** — this is
+      the one that genuinely needs your eyes: B's immersive fix is built blind over JNI on the UI thread; crash-safe so
+      worst case the bars just stay, (d) **Heroes/Events/Topics/Items** drill-downs now clickable (like the Ladder),
+      (e) **gold accrues** (not stuck at 0), is correct after a mid-run skip (combo resets), and persists across relaunch.
 
 *Babysitter appends here whenever a step's correctness bottoms out at "needs a human/phone/ears."*

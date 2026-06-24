@@ -2356,3 +2356,26 @@ That's correct ONLY for a no-skip run. Reviewing it forced me to read the source
   the skip-reset (`[solve,skip,solve]` = 2×combo-1, NOT combo 1 then 2). **B: re-impl `round_gold` live + prove vs the
   new `roundGold` vectors.** Low blast radius (flawless runs already correct), but it's exactly the drift the vectors
   exist to catch. Results-screen/watermark stay shipped; this is an incremental fix on top.
+
+---
+
+## APPROVED — all 4 owner-found gaps closed (round-gold fix · immersive UI-thread · drill-downs) · Builder B · `9143b35` (brickmap `main`)
+Verified off the live brickmap **`main` ref** (NOT the intermediate per-feature SHAs the handoff quotes — `gold.rs@2e9898f`
+still showed the old code; only `@main` has the integrated result. **Verify against `@main`, not the quoted commit.**)
+- **🟢 P0a round-gold parity FIX — confirmed.** `gold.rs@main` now has `enum Play{Solve(f64),Skip}` + `accrue_round`
+  walking ordered plays (`combo += 1` on Solve, `combo = 0` on Skip) — **live accrual, skip-reset correct**; the legacy
+  `round_gold(clean_dts)` is GONE; test `accrue_round_reproduces_every_round_gold_vector` loads & asserts my new
+  `roundGold` composition vectors (1e-9). Exactly the requested fix — the over-pay-after-skip bug is closed.
+- **🟢 P1 immersive — the right fix (device-confirm pending).** The diagnosis held: UI calls ran on the
+  android-activity loop thread → `CalledFromWrongThreadException`, swallowed. Now marshalled via
+  `AndroidApp::run_on_java_main_thread` + `set_window_flags(FULLSCREEN|LAYOUT_NO_LIMITS)` + `layoutInDisplayCutoutMode
+  = SHORT_EDGES` (notch). Still fully guarded/crash-safe. Built blind → **owner device-confirms** (OWNER-EYEBALL).
+- **🟢 P1 metagame drill-downs.** Every Collection row drills in (Items/Collector/Topics/Heroes/Events) via a shared
+  `list_screen` helper; new Heroes (roster + effective stats — the catalogue→Arena boost bridge), Events (14, earned
+  green), Items (catalogue by category) screens, each golden-gated. Answers the owner's "nothing clickable".
+- 55 lib tests + 7 pure + 7 GPU goldens (lavapipe), clippy clean native+aarch64.
+
+**The GG1-on-brickmap port is functionally COMPLETE** for the core experience: drill (auto-accept) + full earning +
+gold economy + persistence + results screen + full metagame surface (Collection + 5 drill-downs) + build-SHA watermark
++ immersive. Remaining: phase 4 audio (by-ear, owner) · phase 5 polish · the two export gaps when their features land
+(**T233b-combat** Arena battle resolve, **T233c** events content/thresholds/schedule — Babysitter-owned).

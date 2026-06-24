@@ -92,28 +92,18 @@ carries a superseded banner). Do NOT start GG2-on-web.
 Arena) + **`T233c`** events content/thresholds/schedule (`events.js`, same additive method). Otherwise A's work is
 owner-gated (TWA `T228`, store, Capacitor on-device test).
 
-**Builder B → CLOSE THE OWNER-FOUND METAGAME GAPS (on-device feedback 2026-06-24). Work in priority order.** Drill +
-earning + persistence + Collection summary + Collector Ladder drill-down are DONE/approved (latest `602f2bd`). Owner
-played it; skip parity ✅. Four gaps, prioritised:
-- ✅ **P0 — RESULTS SCREEN** (`161f5fe`/brickmap `b1d553d`) — APPROVED (rank/accuracy/time/gold/new-items + Continue).
-- ✅ **P0 — BUILD-SHA WATERMARK** (`161f5fe`/brickmap `9249816`) — APPROVED (every-screen stamp, out of goldens+hit-test).
-- **P0a — FIX round-gold combo (parity).** `round_gold` composes post-hoc with `combo = i+1` over solved times —
-  correct only for a NO-SKIP run. `combo` RESETS to 0 on `skip()` and is accumulated LIVE in `correct()`; the
-  solved-times list doesn't record skips, so the reset is unrecoverable post-hoc → after any mid-run skip you OVER-pay.
-  **Accumulate round gold LIVE in the drill (combo++ on solve, combo=0 on skip)**, and prove vs the NEW **`roundGold`
-  composition vectors** in `gold-vectors.json` (re-exported `main` `7c74439`; see corrected `gold.json:_round`). (qMiss
-  is vestigial — every solve is "clean" — so gold-on-all-solves is right; only the combo sequencing needs the fix.)
-- **P1 — IMMERSIVE: it still shows the system bars on-device.** `immersive.rs` is thorough but has NO effect.
-  **Likely cause: the UI calls (decorView/WindowInsetsController) must run on the Android UI thread, but the
-  winit/android-activity loop runs on another thread → `CalledFromWrongThreadException`, caught→silent no-op.**
-  Capture logcat on resume to CONFIRM (your warn/debug lines will show the throw), then **marshal the calls onto the
-  UI thread** (`runOnUiThread` via JNI) and set `layoutInDisplayCutoutMode` for the notch. Crash-safe as before.
-- **P1 — METAGAME DRILL-DOWNS: STOP holding them.** The owner gave the eyeball you were waiting for ("nothing
-  clickable"). Build the **Heroes / Events / Topics / Items** detail screens, matching the Collection/Ladder layout
-  (shared row consts + `*_row_at` hit-test). Gate each on a golden.
-**Export status:** ✅ **T233b-gold DONE** (Babysitter `4ae14b3`) — economy unblocked. Still open, flag if you hit them:
-**T233b-combat** (enemies.js battle resolve — deferred till you port the Arena), **T233c** events content/thresholds/
-schedule (events.js — for the Events drill-down). → phase 4 audio · 5 polish. APK/feel + audio-by-ear → `OWNER-EYEBALL.md`.
+**Builder B → ALL 4 OWNER-FOUND GAPS CLOSED & APPROVED (`9143b35`, brickmap `main`). Core port is functionally
+COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
+- ✅ **P0 results screen** (`161f5fe`) · ✅ **P0 build-SHA watermark** (`161f5fe`) · ✅ **P0a round-gold parity fix**
+  (`9143b35` — live `accrue_round` over `Play::Solve/Skip`, proven vs the `roundGold` vectors) · ✅ **P1 immersive**
+  (UI-thread `run_on_java_main_thread` + cutout; built-blind → owner device-confirms) · ✅ **P1 drill-downs**
+  (every Collection row clickable; new Heroes/Events/Items screens, golden-gated).
+- **▶ NOW: phase 4 — AUDIO.** Re-author GG1's music/SFX onto the Rust `Drone` synth (`scraped-again`). Parity here is
+  **perceptual (by-ear), not vector-provable** → gate what you can (synth golden buffers / no-crash / reduced-motion),
+  bank the A/B-vs-web-GG by-ear check for the owner (`OWNER-EYEBALL.md`). Then **phase 5 polish**.
+**Export status — Babysitter-owned, flag if a feature needs them:** ✅ **T233b-gold DONE** (`4ae14b3`+`7c74439`).
+Open: **T233b-combat** (enemies.js battle resolve — when you port the Arena), **T233c** events content/thresholds/
+schedule (events.js — for richer Events content). APK feel + audio-by-ear + immersive device-confirm → `OWNER-EYEBALL.md`.
 *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 

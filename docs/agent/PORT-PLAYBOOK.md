@@ -86,6 +86,19 @@
 8. **A halted builder needs a wake.** No scheduler/self-wake: when a builder hits a *stop* (blocker/
    question) it idles until nudged. Keep the unblock IN the channel (its task line) so a nudged
    builder self-resolves; don't rely on a relay.
+9. **Cross-repo review: verify against the live `@main` ref, not the intermediate SHAs in the handoff.**
+   B's handoff quotes a per-feature commit per gap (`915cac4`, `2e9898f`…); those are NOT necessarily
+   the integrated `main` HEAD — `gold.rs@2e9898f` still showed the OLD code while `gold.rs@main` had the
+   fix (a later commit merged them). **Always fetch `raw.githubusercontent.com/<repo>/main/<path>`** to
+   review what actually shipped. (Cross-repo git is proxy-blocked here → `raw.githubusercontent` + WebFetch
+   is the read path; `@main` resolves on raw.)
+10. **The parity-vector method earns its keep on COMPOSITION, not just leaf formulas.** The pure
+   `questionGold`/etc. vectors all passed, yet the round payout was wrong: the per-question `combo` is a
+   LIVE, stateful sequence (resets on skip) that no leaf vector covered. Lesson: when leaf functions feed a
+   stateful accumulation, **add COMPOSITION vectors** (ordered input sequence → final total) — that's where
+   the subtle bugs hide (here: a post-hoc `combo=i+1` that over-paid after a mid-run skip). Also: a `_note`
+   in an export is a SPEC — under-specify it (we omitted the skip-reset) and a faithful builder reproduces
+   YOUR gap. Read the source to the point of certainty before writing the recipe.
 
 ## C. BRICKMAP-SPECIFIC (carries to the next brickmap game)
 
