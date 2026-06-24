@@ -113,7 +113,16 @@ COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
     you already proved it for synth — + the total-order sort], the schedule sweep, reward tiers). **Build event-play:**
     today's live event → its gauntlet → drill → `eventTiersEarned` (participation/well≥0.7/ace=flawless) into the
     save; no gold (the reward IS the buff). Surface "today's event" entry + countdown.
-  Flag anything underspecified rather than guessing. → then any final polish. Device/by-ear → `OWNER-EYEBALL.md`.
+  Flag anything underspecified rather than guessing. **Build these NEW screens to the VISUAL-PARITY bar from the
+  start** (hero/foe portraits, type colours, ratings — see below), not plain-then-redo. Device/by-ear → `OWNER-EYEBALL.md`.
+- **▶ NEW WORKSTREAM: VISUAL PARITY (owner-requested 2026-06-24) — see `VISUAL-PARITY.md`.** The data parity is good;
+  the screens are visually bare vs web GG1 (Heroes is the worked example: web has type section headers, pixel
+  portraits, type colours, `★rating`, effective-stat chips, `Boosted by N · tap for details ›` + a hero-detail
+  screen — the port shows a flat text list, and shows BASE stats where web shows EFFECTIVE = a real bug). **FOUNDATION
+  first: the procedural icon generator `drawIcon` (`collectibles.js:729`)** — deterministic ⇒ vector-provable;
+  **Babysitter is taking it over as the next export** (pixel-grid vectors), which unblocks portraits on every screen.
+  Then B: Heroes visual pass (per the spec) → Items → Collection → Events → Results. Gate render on goldens; the
+  web-match is the owner's eye. *(Don't treat this as optional polish — it's parity.)*
 **Export status — Babysitter-owned, flag if a feature needs them:** ✅ **T233b-gold DONE** (`4ae14b3`+`7c74439`).
 Open: **T233b-combat** (enemies.js battle resolve — when you port the Arena), **T233c** events content/thresholds/
 schedule (events.js — for richer Events content). APK feel + audio-by-ear + immersive device-confirm → `OWNER-EYEBALL.md`.

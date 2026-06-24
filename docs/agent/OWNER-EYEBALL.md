@@ -50,3 +50,8 @@
       a 2-column grid with smaller rows (every topic is on-screen + tappable — gated). Eyeball whether the dense
       46-topic case feels **cramped**; if so, say the word and B adds a **scrollable** list (deferred as input-plumbing,
       not a polish tweak).
+
+- [ ] **VISUAL PARITY (workstream, `VISUAL-PARITY.md`).** As each screen gets its visual pass, A/B it side-by-side
+      with web GG1 (your Heroes screenshot is the template). First up: the icon/portrait generator + the Heroes screen
+      (type headers, portraits, ★rating, effective-stat chips, boost-count, hero-detail drill-down). Flag any that
+      still read as "bare" vs web.
