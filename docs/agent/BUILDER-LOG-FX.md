@@ -6,6 +6,27 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 4 (audio): the generative-music SCORE generator ([B], GO)
+
+The music half of phase 4 — and unlike the SFX it's **vector-provable**: each scene's per-step note
+schedule is a golden contract. `00-1/brickmap` `92459ce`.
+- **`synth.rs`** re-implements `synth.js`'s deterministic **score generator** and **reproduces all 12
+  scene goldens byte-for-byte** (`synth_score_*.json`): the exact `mulberry32` PRNG (u32 wrapping
+  arithmetic), `hashStr`/`phraseSeed` seeding, modal harmony with voice-leading (8 modes, diatonic
+  triads, nearest-tone motion), Euclidean drum grooves, and the density-gated lead walk. `score(style,
+  steps)` → the `p:`/`b:`/`l:`/`d:` token lists; reseeds per phrase, melodic state persists. The 12
+  CONTEXTS' score-relevant fields are ported (tempo/reverb/swing/patch-names don't affect the
+  schedule).
+- Synced the 12 score goldens as fixtures (from `gg1/dev/test/golden/`); the test matches each
+  exactly + asserts determinism and mutual distinctness (the "samey" guard). goblin-gold **63** lib
+  tests green; clippy -D warnings clean native + aarch64-linux-android. Pushed to `main` + the feature
+  branch.
+- **Phase-4 audio status:** ✅ SFX (perceptual, owner by-ear via `sfx_proto` WAVs) · ✅ music **score**
+  (vector-proven). **Remaining:** **token synthesis** (patches → audio buffers — perceptual, by-ear)
+  and **playback wiring** (native cpal / Web Audio) so it actually sounds on device. → phase 5 polish.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 4 (audio): re-author the SFX in Rust ([B], GO)
 
 Core port approved & functionally complete → **phase 4 audio**. Started with the **SFX** (the
