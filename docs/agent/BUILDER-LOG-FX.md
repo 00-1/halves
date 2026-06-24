@@ -6,6 +6,33 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3: the FULL EARNING, proven vs earning-vectors ([B], GO)
+
+T233 landed `earning.json` + `earning-vectors.json` on halves `main` (`fde819a`), unblocking the
+whole award rule (retiring the Speed/Rank "data gap" I'd flagged). Re-synced into goblin-gold and
+**ported the full earning, proven against every vector** — same contract as transforms-vs-parity.
+`00-1/brickmap` `4347b0b`.
+- **`earning.rs`** re-implements the live logic (`gg1/dev/collectibles.js`) with tunables from
+  `earning.json`:
+  - `rank_index(score,total,time)` — accuracy brackets while imperfect, avg-seconds once perfect;
+    reproduces all **732** rankIndex vectors.
+  - `award(ctx)` — the per-round evaluator (ranks · init · flawless · speed · mastery · per-question
+    solve/spark · games/modes/flawless meta), honouring the ctx invariant
+    **`mistakes==skipped==total−answered`** (a *wrong* answer lowers score + marks the question but
+    is NOT a skip). Reproduces all **46 modes × 13 scenarios**, reconstructing each scenario's ctx
+    exactly as `tools/earning-export.js` does — including a **collation-aware natural sort** for the
+    first-prompt (symbols precede digits, matching JS `localeCompare` numeric; this was the one
+    initial miss — `cubes` `√36` vs `2³`).
+  - `collector/topics/meta/gold/momentum_awards` — the count/threshold evaluators; full families
+    reproduced.
+- goblin-gold **49** lib tests green (4 new earning proofs); clippy -D warnings clean native +
+  aarch64-linux-android. Pushed to `main` + the feature branch.
+- **Next (this directive's "Also"):** wire `earning::award` into the app's `finish_round` (awards →
+  the save), then surface them. Combat resolution + the gold-formula bodies still await **T233b**.
+  → phase 4 audio · 5 polish.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): daily EVENTS (14-event rotation) ([B], GO)
 
 The last pure-data metagame layer: GG1's daily events, re-impl'd over the `Events` collectibles.
