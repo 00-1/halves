@@ -2456,3 +2456,22 @@ rather than parking it. Verified off `audio.rs@main`:
   don't block" standing order). Revisit if the owner wants a specific in-drill track.
 **PHASE 4 AUDIO COMPLETE** (synthesis faithful + audible on device). On-device *feel* (beats/levels) → OWNER-EYEBALL.
 → **phase 5 polish.**
+
+---
+
+## APPROVED — phase 5 polish: topic-select grid fits all 46 topics · Builder B · `80a696c` (brickmap `main`)
+A real "rough screen" bug, well caught: the fixed row height (`h*0.075` from `0.17h`) fit only ~8 rows, so a
+progressed player had up to **38 of 46 topics off-screen and untappable**. Fixed with an adaptive grid; verified off
+`@main`:
+- **No-drift layout:** `topic_rows(...)` is shared by the renderer (`zip(topic_rows(...))`) AND the `topic_at`
+  hit-test (`topic_rows(...).into_iter().zip(...).find(...)`) — same source, so a topic can't be drawn where it can't
+  be tapped.
+- **Reachability gated, not just visual:** `every_unlocked_topic_is_tappable` asserts each topic's row-centre maps
+  back via `topic_at` (`assert_eq!(hit, Some(m.id))`); `topic_grid_fits_on_screen_when_fully_unlocked` asserts
+  `ry+rh <= by+0.5` (no overrun of the Collection button). 1-col ≤12 topics preserved
+  (`single_topic_keeps_the_comfortable_layout`); initial `topic-select.png` byte-identical.
+- New `topic-select-full` golden (46) GPU-matched (lavapipe). 76 lib tests (73+3), 8 GPU goldens, clippy clean
+  native+aarch64-android, fmt.
+- **Deferral (reasonable, flagged):** at full unlock the 2-col grid rows are small (legible+tappable, gated); if it
+  feels cramped on device the next step is a SCROLLABLE list — input-plumbing, not a polish tweak → owner flags if
+  wanted for v1. Logged to OWNER-EYEBALL.

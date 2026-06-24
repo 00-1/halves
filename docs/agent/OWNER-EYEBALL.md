@@ -45,3 +45,8 @@
       (e) **gold accrues** (not stuck at 0), is correct after a mid-run skip (combo resets), and persists across relaunch.
 
 *Babysitter appends here whenever a step's correctness bottoms out at "needs a human/phone/ears."*
+
+- [ ] **Topic grid at full/high unlock (phase 5, `80a696c`).** Once many topics are unlocked the select screen goes to
+      a 2-column grid with smaller rows (every topic is on-screen + tappable — gated). Eyeball whether the dense
+      46-topic case feels **cramped**; if so, say the word and B adds a **scrollable** list (deferred as input-plumbing,
+      not a polish tweak).
