@@ -6,6 +6,35 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3: INTEGRATE the metagame into the live app ([B], GO)
+
+The integration directive: wire earning into `finish_round` **and** surface the metagame on screen.
+`00-1/brickmap` `6763f5a` (wiring) + `be8fa00` (Collection screen).
+
+**Wiring (awards → the save):** `Save::award_round(mode, run, ts)` bumps the games counter, runs
+`earning::award` over the finished round (stats — games/modesCleared/flawless — derived from the
+`collected` keystone), and marks every awarded key. The live `App` now **owns a `Save` + a
+`FileStore`** (the platform data dir — `internal_data_path()` on Android, a temp dir on desktop;
+`None` ⇒ runs without persisting, never crashes). `finish_round` awards into the save, rebuilds
+progression from it (the save is the single source of truth), records the last topic, and persists
+best-effort; the save **loads on startup**, so unlocks/achievements survive a relaunch. (Per-question
+solve/spark await per-question timing in the drill — empty qmap for now; everything else lands.)
+
+**Surface (a Collection screen):** a new `Screen::Collection` summarises the save — items collected
+vs the 2352-item catalogue, the collector ladder's reached tier (or "next at N"), topics
+played/mastered (×46), the hero roster, events touched, and gold. Reached via a "Collection" button
+on topic-select; "Back" returns. Data-driven from the save via catalogue/collector/events/arena. New
+`collection.png` golden (pure + lavapipe GPU); re-blessed `topic-select.png` for its new button.
+
+- goblin-gold **50** lib tests + **4** pure goldens green; **4** GPU goldens pass under lavapipe;
+  clippy -D warnings clean native + aarch64-linux-android. Pushed to `main` + the feature branch.
+- **Next:** richer per-section screens (the full collector ladder / hero roster / events list) as
+  wanted; per-question timing → solve/spark awards. Export gaps still open (flagged, non-blocking):
+  **T233b** combat resolution + gold formulas, **T233c** events content/schedule. → phase 4 audio ·
+  5 polish. APK/feel + the metagame by-eye → `OWNER-EYEBALL.md`.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3: the FULL EARNING, proven vs earning-vectors ([B], GO)
 
 T233 landed `earning.json` + `earning-vectors.json` on halves `main` (`fde819a`), unblocking the
