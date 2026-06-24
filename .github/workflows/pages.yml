@@ -158,6 +158,8 @@ jobs:
         run: node test/earning-parity.test.js
       - name: Gold export parity (T233b) test (gate)
         run: node test/gold-parity.test.js
+      - name: Combat export parity (T233b-combat) test (gate)
+        run: node test/combat-parity.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info (per app — each fetches its own ./build.json)
