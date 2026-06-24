@@ -52,7 +52,10 @@
    code, don't trust variable names.**
 5. **Native fullscreen is explicit.** A winit/android-activity app shows the **status + nav bars**
    unless you set **immersive-sticky** on the activity. (Same class as the TWA notch / Capacitor
-   cutout fix — copy a working sibling like `scraped-again`.)
+   cutout fix.) **cargo-apk ships a bare `NativeActivity` with no Java of yours**, so set it from the native side
+   over **JNI** (`FLAG_FULLSCREEN` + legacy `setSystemUiVisibility(IMMERSIVE_STICKY)` + API-30 `WindowInsetsController
+   .hide(systemBars())`), re-applied on every `resumed` (flags clear on focus loss). **Guard every JNI call to no-op
+   on failure** (wrong-thread/missing-method/exception) so built-blind native code can't add a new launch crash.
 6. **Input-UX parity is subtle & surfaces on-device.** GG auto-accepts the instant `input==answer`
    (no submit button; "Enter"=skip), with a 5-digit guard + decimal support. Easy to miss until a
    real play session.

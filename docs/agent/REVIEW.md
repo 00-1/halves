@@ -2208,3 +2208,16 @@ native/Android, WebStore web); **gold = string-float** (matches the live runtime
 map — GG1's one-map-everything-derived architecture, exactly. `mark` keeps earliest ts + reports newness. 26 tests
 (5 new), clippy clean native+aarch64. B correctly logged the **2 owner parity bugs as FIX-FIRST next** (it just
 finished this keystone first — fine). Reinforced: those 2 fixes before more metagame.
+
+---
+
+## APPROVED — 2 owner parity fixes (auto-accept + immersive) · Builder B · `39ecb7c`
+**(1) Solver auto-accept — PASS (code-verified faithful + golden).** Read `drill.rs`: auto-checks every digit/dot,
+accepts instant `parseFloat(input)==answer`, 5-digit guard (decimal excluded), leading `.`→`0.`, bottom action =
+SKIP (not submit), **no wrong state** — matches GG-web `main.js:2283-2303/2569`. `answered=solved`, mastery still
+needs zero skips; round ends on solved+skipped. `drill-initial` golden re-blessed. Engine keypad widget stays
+data-free (game owns submit/skip). **(2) Immersive-sticky — code sound + CRASH-SAFE → owner device re-check.** No
+Java/theme (bare cargo-apk NativeActivity), so a new `immersive.rs` reaches the framework over **JNI** (FLAG_FULLSCREEN
++ legacy setSystemUiVisibility + API-30 WindowInsetsController.hide), re-applied on `resumed`; **every JNI call guarded
+→ no-op on failure, never crash** (learning from the #4 built-blind crash). Effect (bars hidden) is device-judged.
+31 lib tests + 3 GPU goldens (lavapipe); clippy clean native+aarch64. → B resumes metagame (catalogue/arena/events).

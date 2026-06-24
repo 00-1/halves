@@ -17,4 +17,9 @@
 - [x] **Keypad/drill/FX feel** — owner confirmed "looks good" (2026-06-23) from B's mini-gate #2/#3 shots.
 - [x] **Font legibility** — owner confirmed "all very readable, 3rd sample best" (mini-gate #1).
 
+- [ ] **Brickmap APK re-check after the 2 parity fixes (`39ecb7c`)** — install the fresh `dev.brickmap.goblingold`
+      and confirm: (a) **solver auto-accepts** the instant you type the right answer (no Enter; bottom bar = Skip),
+      and (b) **status + nav bars are hidden** (immersive — built blind over JNI, so this one genuinely needs your
+      eyes; it's crash-safe so worst case the bars just stay, no crash).
+
 *Babysitter appends here whenever a step's correctness bottoms out at "needs a human/phone/ears."*
