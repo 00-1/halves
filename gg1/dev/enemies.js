@@ -277,36 +277,22 @@
   // clears tiers 1–5; the final tier is pinned between the near-full and the
   // 85%-loadout edges so the top falls ONLY to a near-full collection.
   const FOE_BUDGET = (function calibrateTeamCurve(){
-    const advProd = [];
-    {
-      const owned = {}; DRILL_IDS.forEach(id => owned[id] = true);
-      for(let n = 1; n <= TIER_COUNT; n++){
-        advProd.push(teamProduct(bestTeamVs(owned, 3, TIERS[n - 1].type)));
-        lootByTier[n].forEach(id => owned[id] = true);
-      }
-    }
-    const capEnv = advProd.slice();
-    for(let i = capEnv.length - 2; i >= 0; i--) capEnv[i] = Math.min(capEnv[i], capEnv[i + 1]);
-    // T219 — frac-loadout monotonicity guard. The (f) invariant sweeps FRAC-of-catalog
-    // loadouts, where the greedy best-team is NON-monotone (a partial loadout can field
-    // a weaker trio than a smaller one, so a tier won at ~75% could re-LOSE at ~85%).
-    // Cap the budget below the weakest probed frac loadout (a flat ceiling — only the 3
-    // types × 2 fracs to compute, cheap) so a partial collection that clears a tier keeps
-    // clearing it as it grows. A flat ceiling keeps the curve non-decreasing; tier 120 is
-    // re-pinned ABOVE this below (the genuine near-max wall). Robust to catalogue growth.
-    const fracSet = f => { const all = DRILL_IDS.slice(), o = {}; all.slice(0, Math.floor(all.length * f)).forEach(id => o[id] = true); return o; };
-    let fracGuard = Infinity;
-    TYPES.forEach(ty => { for(const f of [0.75, 0.85]) fracGuard = Math.min(fracGuard, teamProduct(bestTeamVs(fracSet(f), 3, ty))); });
-    const build = lb0 => { const fb = []; for(let n = 1; n <= TIER_COUNT; n++) fb.push(Math.min(lb0 * Math.pow(LG, n - 1), capEnv[n - 1] * CAPF, fracGuard * CAPF)); return fb; };
-    // owned-sets used for the early floor + final-tier calibration
-    const bram = [heroCombatant(H.HEROES[0], {})];
+    // REBALANCED (arena balance pass — tools/analyze-arena.js). The old
+    // min(lb0·LG^n, capEnv·CAPF, fracGuard·CAPF) FLATLINED the foe budget across tiers ~80–119 (a
+    // plateau) and was so compressed (CAPF=0.07) that ONE topic cleared ~57 of 120 tiers. New shape: a
+    // STEEP-EARLY ramp from a tier-1 FLOOR to a near-full-reachable WALL across tiers 1..119 (no
+    // plateau); the boss (120) is pinned below. Tuned so depth tracks collection (1 topic ≈ 10 tiers,
+    // full ≈ 120). Monotonic by construction (FLOOR ≤ WALL, STEEP > 0). `analyze-arena.js` validates it.
+    const FLOOR = 107;       // tier-1 foe budget (tiers 1..5 trivial for your first heroes)
+    const WALL = 220000;     // tier-119 foe budget — near-full + accrued loot just clears it
+    const STEEP = 0.25;      // early-game steepness on normalized tier position (lower = steeper early)
     const nearFull = {}; DRILL_IDS.forEach(id => nearFull[id] = true);
     for(let k = 1; k < TIER_COUNT; k++) lootByTier[k].forEach(id => nearFull[id] = true);  // drill + loot 1..119
-    const tEarly = (fb, n) => simulateTeams(bram, enemyTeamFromBudget(fb, n)).win;
-    // pin lb0: max ramp scale at which one starter hero still clears tiers 1..5
-    let lo = 1, hi = 400;
-    for(let it = 0; it < 46; it++){ const mid = (lo + hi) / 2, fb = build(mid); let ok = true; for(let n = 1; n <= 5; n++) if(!tEarly(fb, n)) ok = false; if(ok) lo = mid; else hi = mid; }
-    const fb = build(lo * 0.9);
+    const fb = []; for(let n = 1; n <= TIER_COUNT; n++){
+      if(n === TIER_COUNT){ fb.push(0); continue; }                         // boss slot — pinned below
+      const x = (n - 1) / (TIER_COUNT - 2);                                 // 0..1 over tiers 1..119
+      fb.push(FLOOR * Math.pow(WALL / FLOOR, Math.pow(x, STEEP)));
+    }
     // final tier 120: place between the near-full edge and the 85%-loadout edge
     const fType = TIERS[TIER_COUNT - 1].type;
     const subset = frac => { const ids = Object.keys(nearFull); const o = {}; ids.slice(0, Math.floor(ids.length * frac)).forEach(id => o[id] = true); return o; };
