@@ -6,6 +6,41 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3: close owner-found gaps — P0a/P1s ([B], GO)
+
+The remaining owner-found gaps, all closed (P0s — results + watermark — already APPROVED).
+
+**P0a — round-gold combo parity FIX** (`915cac4`): the Babysitter caught a bug in my gold payout —
+`round_gold` composed post-hoc with `combo = i+1`, but in `main.js` combo **resets to 0 on a skip**
+and accrues live; skips aren't in the solved-times list, so post-hoc the reset is unrecoverable →
+after any mid-run skip the old code **over-paid**. Fixed: accrue gold **live** over the round's
+ordered steps. The drill records a `RoundStep` per question (`Solve{prompt,dt}` / `Skip`); `gold::Play`
++ `accrue_round` walk it (combo++ on solve, =0 on skip), **proven vs the new `roundGold` composition
+vectors** (re-synced, `main` `7c74439`). `award_round` takes the steps. (qMiss vestigial — every solve
+is clean — so gold-on-all-solves is unchanged; only the combo sequencing needed fixing.)
+
+**P1 — immersive fullscreen, the REAL fix** (`c70e80f`): the bars still showed because the
+decor-view/`WindowInsetsController` calls must run on the Android **UI thread**, but our resume
+handler runs on the android-activity loop thread → `CalledFromWrongThreadException`, swallowed →
+silent no-op (exactly the directive's diagnosis). Now marshalled via
+`AndroidApp::run_on_java_main_thread`, plus the thread-safe `set_window_flags(FULLSCREEN|LAYOUT_NO_LIMITS)`
+and a `layoutInDisplayCutoutMode = SHORT_EDGES` step for the notch. Still fully guarded; built blind →
+owner device-confirms.
+
+**P1 — metagame drill-downs** (`2e9898f`): owner said "nothing clickable". Every Collection row now
+drills in — Items→Items, Collector→Ladder, Topics→topic-select, Heroes→Heroes, Events→Events — via a
+shared `list_screen` helper. New **Heroes** (roster + effective stats, the catalogue→Arena boost
+bridge visible), **Events** (14, earned in green) and **Items** (catalogue by category) screens, each
+golden-gated.
+
+- goblin-gold **55** lib tests + **7** pure goldens green; **7** GPU goldens pass under lavapipe;
+  clippy -D warnings clean native + aarch64-linux-android. All pushed to `main` + the feature branch.
+- **All four owner-found gaps now closed.** Open export gaps (flagged, Babysitter-owned):
+  **T233b-combat** (Arena battle resolve), **T233c** (events content/thresholds/schedule). → phase 4
+  audio · 5 polish. APK/feel + the metagame by-eye → `OWNER-EYEBALL.md`.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3: close owner-found gaps — P0s (results screen + SHA watermark) ([B], GO)
 
 Owner played the on-device build (2026-06-24) and filed four gaps; working them in priority order.
