@@ -6,6 +6,44 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3: 2 OWNER-FOUND on-device PARITY BUGS fixed ([B], 🔴→GREEN)
+
+The two FIX-FIRST bugs the owner found on a real phone (core drill faithfulness). `00-1/brickmap`
+`39ecb7c`.
+
+**1. Solver auto-accept (no Enter-to-submit).** GG-web's `press()`→`checkAuto()` auto-accepts the
+instant `parseFloat(input)==answer` (checked after *every* keypress); the bottom bar is **SKIP**
+(reveals the answer + advances, counts as a skip); input is capped at **5 digits** (decimal
+excluded) and a **leading dot becomes `0.`**. Re-authored `drill.rs` to match the live runtime:
+- No submit, **no wrong state** — `Mark::{Right,Skipped}`; `press` auto-checks after each digit/dot
+  and the action bar skips (revealing the answer). 5-digit guard + `''→'0.'` implemented.
+- `app.rs`: the FX fires on the keypress that *solves*; the round ends on `solved+skipped` (not
+  `solved` alone); skips fold into progression (`answered = solved`, so initiation needs ≥half
+  *answered* and mastery still needs zero skips). Action-bar label → "Skip"; the banner reflects
+  auto-check/skip (the "Try again" wrong-state is gone). **`drill-initial` golden re-blessed.**
+- The engine keypad widget's `Enter` is now documented as a game-defined **action bar** (the widget
+  stays data-free; the game decides submit/skip).
+
+**2. Immersive-sticky fullscreen.** The status + nav bars overlaid the drill. `scraped-again` has no
+immersive setup to copy, and cargo-apk packages a bare `NativeActivity` (no Java of ours for a
+theme), so a new **`immersive.rs`** reaches the framework over **JNI** from the native side:
+`FLAG_FULLSCREEN` + legacy `setSystemUiVisibility(IMMERSIVE_STICKY|…)` + the API-30+
+`WindowInsetsController.hide(systemBars())`, re-applied on every `resumed` (the flags clear on focus
+loss). Every JNI call is **guarded so a wrong-thread / missing-method / thrown exception can only
+no-op (logged), never crash** — built blind (no NDK locally; owner device-judges), so it degrades
+gracefully rather than risking another launch crash. Pinned `jni 0.21` (classic `JNIEnv` API)
+alongside android-activity's rewritten 0.22.x — they only share the raw VM pointer (via
+`ndk-context`), so no entanglement.
+
+Gates: goblin-gold **31** lib tests + pure goldens green; **3** GPU goldens pass under lavapipe;
+clippy -D warnings clean on native + aarch64-linux-android. Pushed to `main` + the feature branch.
+- **Next:** owner re-checks the two fixes on-device (auto-accept feel + bars hidden) → then resume
+  the **metagame** — the rest of the catalogue (init/flawless/speed/mastery + rank/milestone counts
+  vs `collectibles.json`), **Arena** (enemies/heroes vs `balance.json`), **events**. → phase 4 audio
+  · 5 polish. APK/feel + audio-by-ear → `OWNER-EYEBALL.md`.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): the SAVE model over the engine Store seam ([B], GO)
 
 The metagame's **keystone**, per `GG1-INVENTORY.md` §5: GG1 keeps *one* central `collected` map
