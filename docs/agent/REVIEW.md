@@ -2198,3 +2198,13 @@ gate #4 confirmed live (the golden-based pass holds on real hardware). Two parit
    (`2293`) + decimal support (`2289`). The port's Enter-to-submit is wrong → make it auto-accept; bottom button = skip.
 2. **Immersive fullscreen:** status + nav bars overlaid; enable Android immersive-sticky (match `scraped-again` if it
    does this) — same class as TWA T228 / the Capacitor cutout fix. Metagame still WIP (expected).
+
+---
+
+## APPROVED (incremental) — Port phase 3 part 2: SAVE model over bm-platform::Store · Builder B · `f910988`
+Faithful to `GG1-INVENTORY §5`: `Save{collected, gold, last_mode}` (de)serialises through any `Store` (FileStore
+native/Android, WebStore web); **gold = string-float** (matches the live runtime), corrupt blob → default (no brick).
+`Save::progress()` **derives** `progression::Progress` from the `init:`/`mastery:` keys in the central `collected`
+map — GG1's one-map-everything-derived architecture, exactly. `mark` keeps earliest ts + reports newness. 26 tests
+(5 new), clippy clean native+aarch64. B correctly logged the **2 owner parity bugs as FIX-FIRST next** (it just
+finished this keystone first — fine). Reinforced: those 2 fixes before more metagame.
