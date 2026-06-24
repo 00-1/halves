@@ -2282,3 +2282,12 @@ best-effort, and **loads on startup → unlocks/achievements survive relaunch**.
 events · gold. 50 tests + 4 pure + 4 GPU goldens, clippy clean. **Port is functionally near-complete** (drill +
 earning + persistence + collection surface). Honest remaining: per-question **solve/spark** await per-question timing
 in the drill (empty qmap). Then richer screens (optional) · T233b/c export gaps · phase 4 audio · 5 polish.
+
+---
+
+## APPROVED (incremental) — Solved/Spark via per-question timing · Builder B · `8daba21`
+Closed B's own wiring gap: drill times each question, records (prompt, seconds) on clean auto-accept (clock resets on
+solve OR skip — faithful to GG1 qStart), `award_round` feeds them → `solve:<mode>:<prompt>` + `spark:…` (<1.5s, matches
+export SPARK). The **1918 per-question collectibles** now drop; earning integration COMPLETE — every drill-earnable
+category lands. 50 tests (award_round asserts solve+spark), clippy clean, goldens intact. Remaining: T233b/c exports,
+richer screens (optional), phase 4 audio, 5 polish.
