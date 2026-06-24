@@ -6,6 +6,34 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3: close owner-found gaps — P0s (results screen + SHA watermark) ([B], GO)
+
+Owner played the on-device build (2026-06-24) and filed four gaps; working them in priority order.
+Both **P0s** done.
+
+**P0 — Build-SHA watermark** (`9249816`): so screenshots are traceable. `build.rs` captures the short
+git SHA → `env!("GG_BUILD_SHA")`; `build_tag()` = `v<pkg> · <sha>`; a small low-contrast tiny-font
+stamp is drawn top-left on **every** screen via the live `draw()` path — kept OUT of goldens (so they
+don't churn per commit) and out of the hit-test.
+
+**P0 — Results screen + the GOLD economy** (`b1d553d`): a round used to jump straight to the topic
+list; now it shows a per-run summary, and the T233b gold economy is wired in.
+- **`gold.rs`** — the payout formulas re-impl'd from `main.js` (questionGold/roundBonusGold/tierGold/
+  goldMult/hoardLevel), **proven vs `gold-vectors.json`** (1e-9 abs; 1e-6 rel for goldMult's integer
+  power). `round_gold` composes them (combo rises per clean solve, faithful to `finish()`).
+- **`save.rs`** — `award_round` now accrues the round's gold (gold only grows) and returns a
+  `RoundOutcome` (rank + new keys + accuracy/time + gold).
+- **`app.rs`** — `Screen::Results`: rank (prominent, green), answered/accuracy/time, **gold earned**
+  (gold-tinted), new-collectible count, Continue (tap to return). New `results.png` golden.
+- goblin-gold **54** lib tests + **6** pure goldens green; **6** GPU goldens pass under lavapipe;
+  clippy -D warnings clean native + aarch64-linux-android. Both pushed to `main` + the feature branch.
+- **Next (P1s):** immersive still shows the system bars on-device — marshal the JNI calls onto the
+  Android **UI thread** (`runOnUiThread`) + set the cutout mode; then the **Heroes/Events/Topics/Items**
+  drill-downs (owner: "nothing clickable" — done holding). Export gaps open: **T233b-combat**,
+  **T233c** events content.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3: surface the Collector Ladder (tier detail) ([B], GO)
 
 Deepened the metagame surfacing (the directive names the "collector ladder" specifically). Tapping
