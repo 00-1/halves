@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: Arena backend (grant + tier progression) ([B], GO) · WIP-checkpoint
+
+Clean **checkpoint** between the vector-proven combat core and the Arena screen (paused mid-feature;
+resume = build the screen UI). `00-1/brickmap` `19204e3`. The backend wiring around the proven sim:
+- **`combat::next_tier`** (next tier = 1 past the highest cleared `tier:n`, capped at the ladder top)
+  + **`combat::foe_kinds`** (the tier's enemy types, for the screen's header).
+- **`Save::resolve_arena(party, ts) -> ArenaOutcome`** — fights the next tier via the proven
+  `team_battle`; on a win grants `tier:<n>` + the tier's loot into the keystone and accrues the
+  `tierGold` payoff (region-clear flag when a boss falls); on a loss nothing changes. Gold mult reuses
+  `award_round`'s policy (items+mastered); heroes/tiers/bosses contributions are a **documented
+  simplification pending the hero-unlock export** (see the flag below).
+- Tested: a maxed party clears tier 1 → `tier:1` + loot marked, gold accrues, next tier advances to 2.
+  goblin-gold **82** lib tests; clippy `-D warnings` clean native + aarch64-linux-android; fmt clean.
+  Pushed to `main` + the feature branch (main stays green — these are unused-until-the-screen additions).
+- **⚠️ Open flag (unchanged):** hero unlocks are prose hints only in the export (no machine-readable
+  predicate) → the screen will field **all 12 roster heroes (documented interim)**; needs a structured
+  `unlock` export for the real gate.
+- **▶ RESUME HERE:** build the Arena **screen** — evolve the "Heroes" roster drill-down (its subtitle
+  is already "the Arena roster") into the interactive Arena: tier header, tappable hero rows (party-pick
+  ≤3, showing effective stats), a Fight button → `resolve_arena`, a result banner, golden-gated. Then
+  T233c **event-play** (exports already synced to the data seam).
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: Arena combat resolution, vector-proven ([B], GO)
 
 Owner overruled the defer — brickmap-v1 must ship web-GG1's Arena + event-play. Starting with the
