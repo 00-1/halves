@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 4 (audio): re-author the SFX in Rust ([B], GO)
+
+Core port approved & functionally complete → **phase 4 audio**. Started with the **SFX** (the
+perceptually-central drill feedback), re-authored from `gg1/dev/sound.js`. `00-1/brickmap` `0fb1c93`.
+- **`sfx.rs`**: the 9 events — `correct` (pitch rises with the combo streak, +1 octave cap), `skip`,
+  `item` (rarity scales note count + pitch), `gold`(±big), `topicUnlock`, `mastery`, `topic100`,
+  `roundStart`, `roundComplete` — as oscillator voices (square/saw/triangle) with the exact 8ms-attack
+  → exp-decay envelope and the 0.16 SFX-bus gain, brick-wall clamped. `render(sfx, sr, volume)` → a
+  mono `f32` buffer; `volume 0 ⇒ silence` (the mute/sound-off pref path). Same DSP style as
+  scraped-again's `Drone` (pure sample-gen; playback is a separate hook).
+- **Gating:** audio parity is **perceptual, not vector-provable** (no web-rendered reference to diff),
+  so tests cover the mechanics — determinism, no clipping, correct length, mute=silence, distinct
+  events render distinctly, combo raises pitch, rarity scales the jingle. **5 new tests** (goblin-gold
+  **60** lib tests green); clippy -D warnings clean native + aarch64-linux-android.
+- **👂 OWNER BY-EAR (for `OWNER-EYEBALL.md`):** `cargo run -p goblin-gold --bin sfx_proto -- <dir>`
+  writes a WAV per effect (`gg-sfx-*.wav`) — **A/B each against web-GG's blip** (correct/skip/item/
+  gold/unlock/mastery/topic100/round-start/complete) and flag any that feel off. (Babysitter: please
+  fold this into `OWNER-EYEBALL.md` — I don't push `claude/agent`.)
+- **Next (phase 4 cont.):** the generative **MUSIC** scenes (`synth.js`'s 10 tracks — ambient/arena/
+  chiptune/dnb/dubstep/lofi/menu/…), then **playback wiring** (native cpal / Web Audio) so the SFX +
+  music actually sound on device, then **phase 5 polish**. Export gaps open: T233b-combat, T233c.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3: close owner-found gaps — P0a/P1s ([B], GO)
 
 The remaining owner-found gaps, all closed (P0s — results + watermark — already APPROVED).
