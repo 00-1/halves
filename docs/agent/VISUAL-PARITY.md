@@ -20,9 +20,17 @@ GG1 with a full collection seeded (everything unlocked/boosted), regeneratable v
 - **The compare is PERCEPTUAL/STRUCTURAL, not a pixel diff** (two different renderers — DOM/CSS vs brickmap
   GPU — never match byte-for-byte). "Same elements, layout, type colours, portraits, ratings, chips,
   drill-downs, in roughly the right places." B looks at its render + the reference and lists the gaps.
-- **Gate:** B goldens its result (locks it once it matches); the web-match itself is judged by eye (B's, and
-  the owner's final sign-off in `OWNER-EYEBALL.md`). The Babysitter specs each screen from the web SOURCE so
-  the target is precise, and reviews B's changes against it.
+- **B COMMITS ITS RENDER TO HALVES FOR REVIEW (owner, 2026-06-24).** When B thinks a screen has parity, it
+  renders that screen headlessly and **commits the PNG into halves** (B has write access — same as its logs)
+  as **`content/gg1/visual-ref/<screen>-brickmap.png`**, beside the `<screen>-web.png` target (overwrite the
+  same filename — don't accumulate versions). Then the **Babysitter fetches BOTH, views them side-by-side, and
+  reviews** — lists the remaining gaps or approves. This closes the loop with a real reviewer who can SEE the
+  port's render (the Babysitter can't pull brickmap's own goldens cross-repo, but it can read a PNG B commits
+  to halves). Render at the reference's aspect (430×880) so the side-by-side is fair; the compare stays
+  perceptual.
+- **Gate:** B goldens its result in brickmap (locks it once it matches) AND posts the render here for review;
+  the web-match is judged by eye (B's self-compare, the Babysitter's side-by-side review, the owner's final
+  sign-off in `OWNER-EYEBALL.md`). The Babysitter specs each screen from the web SOURCE so the target is precise.
 - More reference screens (results, event-play, hero-detail) need a deeper played-through state to route to —
   add them to `SCREENS` in the capture tool as those screens come up.
 
