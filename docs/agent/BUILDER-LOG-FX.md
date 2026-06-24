@@ -6,6 +6,25 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3: surface the Collector Ladder (tier detail) ([B], GO)
+
+Deepened the metagame surfacing (the directive names the "collector ladder" specifically). Tapping
+the Collection screen's **Collector** row now opens a **Ladder** screen: all 12 collect-N tiers,
+those reached in **green** vs locked dimmed, against the owned-item count, with Back.
+`00-1/brickmap` `602f2bd`.
+- `Screen::Ladder` + `ladder_frame` + `collection_row_at` (row hit-test; the Collection row layout
+  is now shared consts so frame + hit-test can't drift). New `ladder.png` golden (pure + lavapipe
+  GPU). No change to existing screens (their goldens untouched).
+- goblin-gold **50** lib tests + **5** pure goldens green; **5** GPU goldens pass under lavapipe;
+  clippy -D warnings clean native + aarch64-linux-android. Pushed to `main` + the feature branch.
+- **Surfacing now:** Collection summary (collected/collector/topics/heroes/events/gold) + the
+  Collector Ladder drill-down. **Heroes roster** + **events list** drill-downs are the obvious next
+  detail screens — holding them for owner eyeball so they match the wanted layout rather than
+  guessing. Export gaps still open (flagged): **T233b** combat/gold, **T233c** events content. →
+  phase 4 audio · 5 polish.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3: award Solved/Spark — per-question timing ([B], GO)
 
 Closed the gap in my own wiring: `finish_round` had been passing an empty qmap, so the per-question
