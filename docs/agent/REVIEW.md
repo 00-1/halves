@@ -2244,3 +2244,15 @@ tests, clippy clean. **HONEST (3rd time): refused to fabricate** the **combat re
 win math) + **gold formulas** — only in JS, not the export → modelled-not-resolved.
 **DECISION: Babysitter TAKES OVER T233 (autonomy grant — A idle/stalled, this is now B's critical path) and EXPANDS it**
 to export ALL the rules as parity vectors: earning + **combat resolution** + **gold formulas** + events roster.
+
+---
+
+## DONE (Babysitter take-over) — T233 earning export · `fde819a`
+A idle + B's critical path (3rd "won't fabricate" flag) → took it over per the autonomy grant. Extended the
+data-as-spec/parity-vector method to EARNING: `tools/earning-export.js` drives the live `collectibles.js` evaluators
+(evaluate/collector/topics/meta/gold/momentum + rankIndex) over a boundary-targeted synthetic ctx battery →
+`content/gg1/earning.json` (thresholds) + `earning-vectors.json` (1398 vectors). **Self-review caught a real battery
+bug** (ctx didn't honor `mistakes==skipped==total−answered`, and a non-deterministic shuffled sample broke the drift
+gate) — both fixed; 14-check parity test (drift + faithfulness invariants) wired to CI; additive, runtime 64/64.
+→ B can now port the full earning vs these vectors. **Remaining T233b: combat resolution + gold-earning formulas
+(enemies.js/main.js) — still A-domain when woken.**

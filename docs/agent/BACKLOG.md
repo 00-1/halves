@@ -19,7 +19,7 @@ Full spec = **`CAPACITOR-SPEC.md`**. In-process-WebView Android wrapper for `gg1
 internal-testing app (real listing untouched); goal = a CI-built signed `.aab` that launches fullscreen with **no
 "Open with"/address bar**, to compare against the TWA on-device. DoD in the spec.
 
-### T233 — GG1 content export, part 4: EARNING rules/vectors (unblocks the catalogue earning)  · status: OPEN (additive, drift-gated)  · [A]
+### T233 — GG1 EARNING rules export  · status: DONE (Babysitter take-over `fde819a` — thresholds + 1398 parity vectors from the live evaluators, faithful to mistakes==skips, drift-gated, additive). **T233b (combat resolution + gold-earning formulas from enemies.js/main.js) = REMAINING, [A].**  · [A]
 The content export captured catalogue STRUCTURE but not the EARNING thresholds/rules — B can't faithfully port
 Speed/Rank/Solved/Spark/event/meta earning without them (it correctly refused to fabricate). **Best technique
 (same as transforms): EARNING PARITY VECTORS.** Extend `tools/content-export.js` to run the LIVE collectibles.js

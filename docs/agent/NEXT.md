@@ -86,30 +86,20 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → `T233` — export the EARNING rules/vectors (un-held: a real gap surfaced in the port).** ✅ `T229/T230/
-T232` content seam done. B's catalogue port (`b4d35f8`) hit the gap: the export has catalogue STRUCTURE but not the
-EARNING thresholds (Speed/Rank/Solved/Spark/event/meta) — B correctly won't fabricate them. **Fix = EARNING PARITY
-VECTORS** (same technique as transforms): extend `tools/content-export.js` to run the live `collectibles.js`
-evaluators over a synthetic `ctx` battery → `content/gg1/earning-vectors.json`, + export `events.js` roster →
-`events.json`; drift-gate it. NON-DESTRUCTIVE/additive (suite stays 64/64). *(BACKLOG T233.)* **NOTE: A is currently
-IDLE — needs a wake to pick this up. Not blocking B (it continues Arena/events meanwhile); the Babysitter may take
-T233 over under the autonomy grant if A stays stalled and it becomes B's critical path.**
+**Builder A → HOLD (T233 earning export was done by the Babysitter take-over; A was idle).** ✅ `T229/T230/T232`
+content seam + ✅ `T233` earning export (Babysitter `fde819a`, since A was stalled). **Remaining if woken: `T233b`** —
+export the **combat-resolution** rules + **gold-earning formulas** (`enemies.js` battle resolve + `main.js` earnGold/
+per-question gold) as parity vectors, same additive method; unblocks B's Arena fight math + economy. Otherwise A's
+work is owner-gated (TWA `T228`, store, Capacitor on-device test).
 
-**Builder B → phase 3: 2 OWNER-FOUND on-device PARITY BUGS first, then continue the metagame.** ✅ Gate #4 CONFIRMED
-on a real phone (boots+runs the drill, owner 2026-06-24). ✅ collector ladder done (`41ccf81`). **🔴 FIX FIRST (core
-drill faithfulness, owner on-device):**
-  1. **Solver auto-accept** — GG-web has NO Enter-to-submit: `press()`→`checkAuto()` (`gg1/dev/main.js:2294-2303`)
-     **auto-accepts the instant `parseFloat(input)==answer`** (checked after every digit); the bottom/Enter key is
-     **SKIP** (`main.js:2569`, reveals answer + advances, counts as a skip). Also: **5-digit length guard**
-     (`main.js:2293`, excl. the decimal) + **decimal-point** support (`2289`, `''→'0.'`). Remove the 'then Enter'
-     submit; re-blesss the affected goldens.
-  2. **Immersive fullscreen** — status bar + nav bar are overlaid; set Android **immersive-sticky** on the
-     goblin-gold activity (hide both system bars / draw edge-to-edge) — copy `scraped-again`'s setup if it has one;
-     same class as TWA `T228` / the Capacitor cutout fix.
-  **THEN continue the metagame** (UNBLOCKED — re-synced): rest of the catalogue (init/flawless/speed/mastery + rank/
-  milestone counts vs `collectibles.json`), Arena (enemies/heroes vs `balance.json`), events, save via
-  `bm-platform::save` (schema in `GG1-INVENTORY.md`). Gate on tests+goldens. → phase 4 audio · 5 polish.
-  APK/feel + audio-by-ear → `OWNER-EYEBALL.md`. *(Re-sync/re-fetch `origin/main`+`claude/agent` before declaring data missing.)*
+**Builder B → continue the metagame + NOW port the EARNING (vectors landed).** Port phases 1/2 done; phase-3
+metagame underway (collector ladder · save · catalogue · Arena all done & approved). **NEW: `content/gg1/earning.json`
++ `earning-vectors.json` now exist on `origin/main` (Babysitter `fde819a`) — RE-SYNC `content/gg1/`, then re-impl the
+full earning (Rank/Init/Flawless/Speed/Mastery/Solved/Spark/Milestone/Collector/Gold/Momentum) and PROVE it vs
+`earning-vectors.json` (same as the transforms — `{ctx → awarded keys}`; honour `mistakes==skipped==total−answered`).
+Also: wire `run_award_keys` into `finish_round`, daily **events** (events roster is in `events.json`). Combat
+resolution + gold-earning formula await **T233b**. Gate on tests/goldens. → phase 4 audio · 5 polish. APK/feel +
+audio-by-ear → `OWNER-EYEBALL.md`. *(Re-sync `origin/main` + re-fetch `claude/agent` before declaring data missing.)*
 *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 
