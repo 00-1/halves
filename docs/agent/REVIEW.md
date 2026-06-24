@@ -2475,3 +2475,16 @@ progressed player had up to **38 of 46 topics off-screen and untappable**. Fixed
 - **Deferral (reasonable, flagged):** at full unlock the 2-col grid rows are small (legible+tappable, gated); if it
   feels cramped on device the next step is a SCROLLABLE list — input-plumbing, not a polish tweak → owner flags if
   wanted for v1. Logged to OWNER-EYEBALL.
+
+---
+
+## APPROVED (audit) + SCOPE DECISION TO OWNER — phase 5 screen audit + export-gap call · Builder B · `3197833`
+**Screen audit — APPROVED (sound).** B checked every fixed-layout screen against the bottom-button band for the
+topic-select overflow class: only topic-select was broken (fixed `80a696c`); Ladder (12 tiers fit, golden-proven),
+Collection (6), Results (5) fit; Heroes/Events/Items use the adaptive `list_screen` (can't overflow). Transitions =
+instant swaps → optional fade banked to OWNER-EYEBALL, not built blind. Correct audit, no new work needed there.
+**Export-gap deferral — NOT auto-ratified; ESCALATED to owner.** B recommends deferring T233b-combat (Arena) + T233c
+(event content) to post-v1, reasoning v1's job is to prove the re-platform (the complete loop does). Sound reasoning,
+BUT it ships brickmap-v1 WITHOUT two systems that shipped in web GG1 (interactive Arena combat + event-play) — a real
+parity gap and a "what is v1" call that's the owner's, not an execution step. Put to the owner. **Pending their answer;
+B's "no open self-verifiable work" status holds either way (next direction depends on the call).**
