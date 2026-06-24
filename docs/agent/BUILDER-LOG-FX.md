@@ -6,7 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## BRICKMAP-GG1 FULL PORT — phase 3 (part 1): all 46 topics + topic-select ([B], GO) · ⚠️ metagame BLOCKED
+## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): metagame UNBLOCKED — collector ladder ([B], GO)
+
+My earlier "missing data" blocker was a **false alarm** — I'd checked the stale feature-branch
+working tree, not `origin/main`. `content/gg1/{guides,collectibles,balance}.json` were on halves
+`main` all along (T230 `6b7387b` + T232 `e24ae3c`), `GG1-INVENTORY.md` on `claude/agent`. **Lesson
+logged: re-fetch + check `origin/main` before declaring data missing.** `00-1/brickmap` `41ccf81`.
+- **Re-synced `content/gg1/`** into goblin-gold `data/gg1/` (added `guides.json`, `collectibles.json`
+  — 2352-item catalogue + the collector ladder, `balance.json` — gold + Arena tuning). modes/parity
+  unchanged (parity test stays green).
+- **Banked the collector ladder** (`collector.rs`), data-driven from `collectibles.json`'s
+  `collectorLadder`: `ladder()` / `earned(count)` + GG1's `collector.test.js` invariant as a Rust
+  test — **the capstone (2300) must stay strictly below the catalogue total (2352) to be reachable**
+  (export's `catalogTotal`/`capstoneReachable` cross-checked). Ascending tiers, valid rarities/ids,
+  threshold-gated earning.
+- goblin-gold **21** tests green; clippy -D warnings clean on native + aarch64-linux-android. Pushed
+  to `main` + the feature branch.
+- **Continuing (phase 3 part 2):** the rest of the catalogue (init/flawless/speed/mastery + solved/
+  spark + rank/milestone counts vs `collectibles.json`), **Arena** (enemies/heroes vs `balance.json`),
+  **events**, **save** via `bm-platform::save` (schema in `GG1-INVENTORY.md`). → phase 4 audio · 5
+  polish. APK/feel + audio-by-ear → `OWNER-EYEBALL.md`.
+
+---
+
+## BRICKMAP-GG1 FULL PORT — phase 3 (part 1): all 46 topics + topic-select ([B], GO) · ⚠️ metagame BLOCKED (false alarm — see above)
 
 Phase 2 APPROVED → phase 3. Did the **un-blocked** half; the **metagame** half is **blocked on
 missing data** (see below). `00-1/brickmap` commit `14fe684`.
