@@ -95,14 +95,14 @@ owner-gated (TWA `T228`, store, Capacitor on-device test).
 **Builder B → CLOSE THE OWNER-FOUND METAGAME GAPS (on-device feedback 2026-06-24). Work in priority order.** Drill +
 earning + persistence + Collection summary + Collector Ladder drill-down are DONE/approved (latest `602f2bd`). Owner
 played it; skip parity ✅. Four gaps, prioritised:
-- **P0 — RESULTS SCREEN at end of a run.** `finish_round()` currently jumps straight to the topic list; GG1 shows a
-  per-run summary: **rank** (`rankIndex`), **awards earned this run**, **time/accuracy**, and **gold earned**. Build it
-  now with rank/awards/time; wire the **gold figure from the NEW gold export** (`content/gg1/gold.json` +
-  `gold-vectors.json`, on `main` `4ae14b3` — round gold = Σ`questionGold(masterSecs,dt,combo,mult)` over clean Qs +
-  `roundBonusGold(score,rankIdx,mult)`; see `gold.json:_round`). Golden the screen.
-- **P0 — BUILD-SHA WATERMARK on EVERY screen** (owner request): small, low-contrast corner text = the short git SHA
-  (+ maybe pkg/version) so screenshots are traceable. `include_str!`/`env!` the SHA at build time; one shared overlay
-  helper drawn by every `*_frame`. Tiny; keep it out of the hit-test.
+- ✅ **P0 — RESULTS SCREEN** (`161f5fe`/brickmap `b1d553d`) — APPROVED (rank/accuracy/time/gold/new-items + Continue).
+- ✅ **P0 — BUILD-SHA WATERMARK** (`161f5fe`/brickmap `9249816`) — APPROVED (every-screen stamp, out of goldens+hit-test).
+- **P0a — FIX round-gold combo (parity).** `round_gold` composes post-hoc with `combo = i+1` over solved times —
+  correct only for a NO-SKIP run. `combo` RESETS to 0 on `skip()` and is accumulated LIVE in `correct()`; the
+  solved-times list doesn't record skips, so the reset is unrecoverable post-hoc → after any mid-run skip you OVER-pay.
+  **Accumulate round gold LIVE in the drill (combo++ on solve, combo=0 on skip)**, and prove vs the NEW **`roundGold`
+  composition vectors** in `gold-vectors.json` (re-exported `main` `7c74439`; see corrected `gold.json:_round`). (qMiss
+  is vestigial — every solve is "clean" — so gold-on-all-solves is right; only the combo sequencing needs the fix.)
 - **P1 — IMMERSIVE: it still shows the system bars on-device.** `immersive.rs` is thorough but has NO effect.
   **Likely cause: the UI calls (decorView/WindowInsetsController) must run on the Android UI thread, but the
   winit/android-activity loop runs on another thread → `CalledFromWrongThreadException`, caught→silent no-op.**

@@ -2330,3 +2330,29 @@ clean-solve count; recompute mult per question; `earnGold` rounds + crosses weal
 gate fails); wired to `pages.yml`. Runtime untouched. **Unblocks B's economy + the results-screen gold figure.**
 **Still open: T233b-combat** (enemies.js battle resolve) — deferred until B ports the Arena (not on screen yet);
 **T233c** events content/thresholds/schedule (events.js) — next export when the Events drill-down needs it.
+
+---
+
+## APPROVED (screens) + 1 PARITY FIX — P0 gap-closers: results screen + SHA watermark · Builder B · `161f5fe` (brickmap `b1d553d`/`9249816`)
+**🟢 Results screen — APPROVED.** Verified off source (`app.rs@b1d553d`, `gold.rs`): `Screen::Results` shows rank
+(prominent/green) + answered/accuracy/time + **gold earned** (gold-tinted) + new-collectible count + Continue; new
+`results.png` golden. `gold.rs` re-impls questionGold/roundBonusGold/tierGold/goldMult/hoardLevel **proven vs my
+`gold-vectors.json`** at the documented tolerances (1e-9 abs; 1e-6 rel for goldMult's integer power). 54 tests, 6 pure
++ 6 GPU goldens, clippy clean native+aarch64. Economy is now on screen — the "Gold 0" is closed.
+**🟢 Build-SHA watermark — APPROVED.** `build.rs`→`env!("GG_BUILD_SHA")`→`build_tag()`; tiny low-contrast top-left
+stamp on every screen via the live `draw()` path, kept OUT of goldens (no per-commit churn) + out of the hit-test —
+exactly the right call.
+
+**🟠 PARITY FIX (round-gold combo) — `round_gold` composes post-hoc over the solved-times list with `combo = i+1`.**
+That's correct ONLY for a no-skip run. Reviewing it forced me to read the source exactly, and it corrected MY export note:
+- `qMiss` is **vestigial** (never incremented in main.js) → every solved question is "clean"; gold accrues on **all**
+  solves (B's `clean_dts` == all solves ✓, no issue there).
+- BUT `combo` **resets to 0 on `skip()`** (`main.js:2309`) and is accumulated **live** in `correct()`. GG1's `times`
+  array records only SOLVED questions (skips aren't stored), so the skip-reset is **unrecoverable post-hoc** — after
+  any mid-run skip, B's `i+1` combo keeps climbing and **over-pays gold**.
+- **FIX: accumulate round gold LIVE in the drill loop** (combo++ on solve, combo=0 on skip), mirroring correct()/skip()
+  — not post-hoc from the solved list. I re-exported: `gold.json:_round` now states the live-combo + skip-reset +
+  qMiss-vestigial semantics precisely, and added **28 `roundGold` composition vectors** (`main` `7c74439`) that prove
+  the skip-reset (`[solve,skip,solve]` = 2×combo-1, NOT combo 1 then 2). **B: re-impl `round_gold` live + prove vs the
+  new `roundGold` vectors.** Low blast radius (flawless runs already correct), but it's exactly the drift the vectors
+  exist to catch. Results-screen/watermark stay shipped; this is an incremental fix on top.
