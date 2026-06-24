@@ -6,6 +6,46 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 (polish): screen audit + export-gap scope decision ([B], GO)
+
+Two phase-5 items the directive delegated: audit the remaining screens for "rough" layout, and
+**decide whether the two open exports (T233b-combat, T233c) are needed for v1-on-brickmap.**
+
+**Screen audit (all fixed-layout screens, for the topic-select overflow class of bug).** Checked
+every screen's row math against the band above the bottom button (`0.915h`):
+- **Topic-select** — was broken (hid ~38/46 topics); FIXED last cycle (adaptive multi-column grid).
+- **Collector Ladder** — 12 tiers × `(0.055+0.008)h` from `0.155h` ends at ~`0.903h`: fits (its golden
+  proves all 12 visible). No change.
+- **Collection** (6 rows), **Results** (5 rows) — fixed small counts, fit comfortably. No change.
+- **Heroes / Events / Items** — already use the adaptive `list_screen` (shrinks row height + steps the
+  font down), so they can't overflow regardless of count. No change.
+- **Transitions** are instant screen swaps — standard + fine for a casual drill; a fade is aesthetic
+  and not golden-gatable → **banked as an optional OWNER-EYEBALL item**, not built blind.
+⇒ topic-select was the only genuinely-broken screen; the rest are sound.
+
+**DECISION — DEFER both T233b-combat and T233c for v1-on-brickmap.** (Owner-delegated call; logged,
+not blocking.)
+- **Rationale:** v1-on-brickmap's job is to **prove the re-platform** — GG1's full drill→earn→metagame
+  loop running native on brickmap's presentation services. That loop is complete + gated (vector-proven
+  earning/gold, byte-exact music score, 76 lib tests, 8 GPU goldens, audio wired). The Arena and Events
+  screens already exist as the **surfaces they were specced as**: Heroes = the catalogue→stat-boost
+  bridge (roster + effective stats); Events = the 14-event rotation with earned/locked status. Both
+  already exercise every brickmap path (list render, save-derived state, hit-test).
+- T233b-combat (interactive battle resolve) and T233c (richer event content/schedule) would add **new
+  interactive systems** (a battle loop; event-detail content) that prove **nothing new** about the
+  re-platform (no new engine seam), need two un-done exports + new gated screens (real scope/risk), and
+  are feature expansions better suited to **GG2-on-brickmap** (brickmap-native from the start).
+- **So:** v1-on-brickmap ships the proven loop + the existing metagame surfaces as-is. T233b-combat /
+  T233c stay **open as POST-v1**. **Trigger to revisit:** an explicit owner/Babysitter call that
+  v1-on-brickmap must include interactive combat or richer event content.
+
+⇒ With topic-select fixed and the export gaps resolved (deferred), the brickmap port has **no open
+functional/polish work** I can self-verify. Remaining is the OWNER-EYEBALL set (on-device feel, audio
+A/B, immersive confirm, optional transition fades). **The port is functionally + polish complete pending
+the owner's device pass.**
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 (polish): topic-select grid fits ALL 46 topics ([B], GO)
 
 First phase-5 polish pass — a real "rough screen" bug. The topic-select list used a **fixed row
