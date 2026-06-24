@@ -127,6 +127,8 @@ COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
   `content/gg1/visual-ref/<screen>-brickmap.png`** (you have write access; overwrite same filename; render at the
   430×880 aspect) **so the Babysitter can fetch both + review the side-by-side.** Perceptual compare (two renderers,
   not a pixel diff). Build the NEW Arena/event-play screens against `arena-web.png` from the start. *(Parity, not polish.)*
+- ⚠️ **ARENA REBALANCE landed (`main` `11ef041`) — RE-SYNC before/with the Arena screen.** The owner found the arena far too easy (1 topic cleared ~57/120 tiers); I rebalanced the foe curve (now ~9). **`content/gg1/combat.json` + `combat-vectors.json` changed — re-sync both into brickmap + re-run `combat.rs`** (reproduces from the data → re-passes; on the OLD data you'd ship the OLD easy arena). Analysis/retune tool: `tools/analyze-arena.js`.
+- **Hero-unlock export = Babysitter take-over (incoming)** — heroes' `unlock` predicates aren't in the export; until it lands, B's interim 'all 12 heroes' in the Arena roster is fine.
 **Export status — Babysitter-owned, flag if a feature needs them:** ✅ **T233b-gold DONE** (`4ae14b3`+`7c74439`).
 Open: **T233b-combat** (enemies.js battle resolve — when you port the Arena), **T233c** events content/thresholds/
 schedule (events.js — for richer Events content). APK feel + audio-by-ear + immersive device-confirm → `OWNER-EYEBALL.md`.

@@ -2524,3 +2524,17 @@ TARGETING + tie-break (max matchup → lowest hp → lowest ord) can be proven t
 with the 240 and leaves a compensating-tie-break-bug gap (small, given 240 diverse headlines pass, but the fixture is
 right there). **Replay it strike-by-strike** — cheap, makes the sim airtight. → next: the Arena SCREEN (party-pick →
 battle → grant tier/loot/`tierGold`/region-clear), built against `visual-ref/arena-web.png` + golden-gated.
+
+---
+
+## APPROVED (checkpoint) — Arena backend · Builder B · `43fbe88` (brickmap `19204e3`)
+Sound WIP checkpoint: `combat::next_tier`/`foe_kinds` + `Save::resolve_arena` (fights the next tier via the proven
+`team_battle`; win → grant `tier:n`+loot + `tierGold` payoff + region-clear; loss → no-op). 82 tests, clippy clean,
+main stays green (unused-until-screen). Resume = the Arena SCREEN. Two things now in front of it:
+1. **⚠ RE-SYNC the REBALANCED combat data (`main` `11ef041`).** I rebalanced the arena foe curve (owner: 1 topic was
+   clearing ~57/120 tiers → now ~9). `content/gg1/combat.json` + `combat-vectors.json` changed. **B must re-sync both
+   into the brickmap data seam and re-run `combat.rs`** (it reproduces outcomes from the data, so it re-passes — but
+   on the OLD data the port ships the OLD easy arena). This is the rebalance reaching the port. Non-optional.
+2. **Hero-unlock export (B-flagged gap) → Babysitter take-over (queued).** Heroes' `unlock` are predicate FUNCTIONS in
+   heroes.js (not serialised), so the Arena roster can't gate. I'll export them in a machine-readable form (count-prefix
+   / has-id predicates) so the screen fields only UNLOCKED heroes. Until then B's "all 12 (interim)" is acceptable.
