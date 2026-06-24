@@ -2508,3 +2508,19 @@ completeness; a builder's "defer" is a starting position to test, not ratify. br
   eventTiersEarned at the boundaries. Drift + source-fidelity + invariants (questionMix counts, rotation, thresholds).
 **No export gaps remain.** B's direction flipped from "wrap up" to **build the Arena + event-play screens** against
 these (NEXT.md). The port targets full web-GG1 parity, not a reduced "proved it" milestone.
+
+---
+
+## APPROVED (combat core) + 1 rigor nit — Arena combat resolution · Builder B · `c0d589e` (brickmap `main`, `combat.rs`)
+The hardest parity piece, and the vectors nailed it. Verified off `combat.rs@main`: the test iterates the **full 240**
+`teamBattle` vectors asserting {win,heroesAlive,foesAlive,rounds} == `team_battle()`; damage = `js_round(atk·matchup)
+.max(1)` (round-half-up, correct for positive dmg); `effective_stats` = base + catalogue + loot boosts proven vs all
+36 (B decoded the composition from the numbers — bram full guard 561 = 12+415+134, no double-count since loot ids
+aren't in the catalogue); heroCombatant vs 5; matchup triangle pinned via the log. 81 lib tests, clippy clean
+native+aarch64, fmt. The 3v3 sim is reproduced byte-identically — exactly the parity-vector payoff.
+**🟠 Rigor nit (fold into the Arena-screen push, non-blocking):** the `teamBattleLog` fixture is asserted only at the
+HEADLINE, not replayed per-strike. The log carries every strike (actor→target, dmg, resulting hp) precisely so the
+TARGETING + tie-break (max matchup → lowest hp → lowest ord) can be proven turn-by-turn; headline-only is redundant
+with the 240 and leaves a compensating-tie-break-bug gap (small, given 240 diverse headlines pass, but the fixture is
+right there). **Replay it strike-by-strike** — cheap, makes the sim airtight. → next: the Arena SCREEN (party-pick →
+battle → grant tier/loot/`tierGold`/region-clear), built against `visual-ref/arena-web.png` + golden-gated.
