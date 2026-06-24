@@ -4,13 +4,13 @@
 > `origin/claude/agent` and re-read this IMMEDIATELY before each task and before you
 > push.** Rationale/details live in `REVIEW.md` / `BACKLOG.md`.
 
-> 🛑 **FRESHNESS CHECK (updated 2026-06-23 eve — `git fetch origin claude/agent` before EVERY task).** **Current truth:**
-> GG1 ship PAUSED; **brickmap = GO (owner pre-approved, full port underway)**; Babysitter drives **ungated** (gates on
-> tests/goldens/code-review, not owner approval). **Builder B = the GG1-on-brickmap FULL PORT** (spike done & all 4
-> gates passed; now phase 2 = logic re-impl vs the T229 parity vectors — read your line below). **Builder A = `T232`
-> balance.json export** (the last content-seam piece, now justified by brickmap GO). Capacitor scaffold (`T231`) is
-> DONE; its on-device test is the owner's. GG2-on-web is dead. *(Stale markers that mean RE-FETCH: "A → T226/T168",
-> "B → STAND BY", "B → research pass", "Capacitor awaits approval".)*
+> 🛑 **FRESHNESS CHECK (`git fetch origin claude/agent` + check `origin/main` before EVERY task).** **Current truth:**
+> GG1 ship PAUSED; **brickmap = GO (owner pre-approved); the GG1-on-brickmap FULL PORT is IN PROGRESS** (spike done +
+> all 4 gates passed incl. on-device). Babysitter drives **ungated** (gates on tests/goldens/code-review). **Builder B
+> = the brickmap full port — read your line below for the CURRENT phase** (don't trust any phase number quoted up
+> here; it drifts). **Builder A = content seam DONE (T229/T230/T232) → holds; remaining A work owner-gated.** Capacitor
+> scaffold (`T231`) DONE; GG2-on-web is dead. *(Stale markers → RE-FETCH: "A→T226/T168", "B→STAND BY/research pass",
+> "Capacitor awaits approval", "metagame data missing" [it's a stale sync — re-sync `content/gg1/` from `origin/main`].)*
 
 ---
 
