@@ -6,6 +6,34 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3 (part 2): the full collectible CATALOGUE (2352) ([B], GO)
+
+Re-impl of GG1's whole reward set over the T230/T232 export (`collectibles.json`). `00-1/brickmap`
+`b4d35f8`. **Keystone:** a collectible's **`id` IS its key in the save's `collected` map** — so
+"earned" = "id is collected" and awarding = inserting the id (the design that lets progression /
+collector / catalogue all derive from one map).
+- **`catalogue.rs`** models all 2352 entries across 10 categories and proves the shape vs the
+  export's own `categories`/`total` + unique ids (mirrors GG1's `collectibles.test.js`).
+- **Earning re-implemented for what the export pins down**, verified vs the catalogue:
+  - **Initiation / Flawless / Mastery** as per-run awards (`run_award_keys`): init on ≥half answered,
+    flawless on a no-skip finish, mastery via progression's `masterSecs` gate — proven one-per-mode
+    across all **46** topics, every produced key a real catalogue id.
+  - **gold / momentum milestones** by their numeric thresholds (the entries' `gold`/`momentum`).
+  - **Collector** cross-checked against the collect-N ladder (`collector.rs`) + its 3 named specials
+    (`beast`/`goblinking`/`voidbeast`).
+- **Honest scope (data-seam rule — NOT fabricated):** **Speed** tiers and **Rank** thresholds live
+  only in the `desc` prose, and **Solved/Spark/Events** + `meta`/`topics` milestones are awarded by
+  gameplay events the export doesn't quantify → **count/structure-verified only**; their earning
+  awaits a thresholds export (or the JS). Documented in the module so it's a known gap, not a silent
+  one.
+- goblin-gold **37** lib tests green (6 new); clippy -D warnings clean native + aarch64-linux-android.
+  Pushed to `main` + the feature branch.
+- **Next:** wire `run_award_keys` into the app's `finish_round` (drop awards into the save) · **Arena**
+  (enemies/heroes vs `balance.json`) · **events** (14 daily, UTC-day cycle). → phase 4 audio · 5
+  polish. APK/feel + audio-by-ear → `OWNER-EYEBALL.md`.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3: 2 OWNER-FOUND on-device PARITY BUGS fixed ([B], 🔴→GREEN)
 
 The two FIX-FIRST bugs the owner found on a real phone (core drill faithfulness). `00-1/brickmap`
