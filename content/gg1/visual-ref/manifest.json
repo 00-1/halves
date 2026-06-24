@@ -1,0 +1,168 @@
+{
+ "_note": "web-GG1 visual-parity reference map (see README.md)",
+ "viewport": {
+  "width": 430,
+  "height": 880,
+  "deviceScaleFactor": 2
+ },
+ "captured": 26,
+ "total": 26,
+ "screens": {
+  "splash": {
+   "ok": true,
+   "bytes": 919056,
+   "state": "full",
+   "note": "splash / entry — the Magnar mark + tap-in"
+  },
+  "home": {
+   "ok": true,
+   "bytes": 524232,
+   "state": "full",
+   "note": "topic select — fully unlocked + gold + event banner"
+  },
+  "home-fresh": {
+   "ok": true,
+   "bytes": 737918,
+   "state": "empty",
+   "note": "new player — only the first topic unlocked"
+  },
+  "home-midprogress": {
+   "ok": true,
+   "bytes": 726630,
+   "state": "sample",
+   "note": "mid game — some topics unlocked, some locked"
+  },
+  "guide": {
+   "ok": true,
+   "bytes": 284244,
+   "state": "full",
+   "note": "the 'how to approach this' guide modal"
+  },
+  "heroes": {
+   "ok": true,
+   "bytes": 121940,
+   "state": "full",
+   "note": "Arena roster (all 12, boosted)"
+  },
+  "heroes-partial": {
+   "ok": true,
+   "bytes": 105405,
+   "state": "sample",
+   "note": "early game — some heroes still locked"
+  },
+  "hero-detail-brawn": {
+   "ok": true,
+   "bytes": 125336,
+   "state": "full",
+   "note": "hero detail + full boost list (Brawn)"
+  },
+  "hero-detail-arcane": {
+   "ok": true,
+   "bytes": 109137,
+   "state": "full",
+   "note": "hero detail (Arcane)"
+  },
+  "hero-detail-cunning": {
+   "ok": true,
+   "bytes": 119763,
+   "state": "full",
+   "note": "hero detail (Cunning)"
+  },
+  "inventory-topics": {
+   "ok": true,
+   "bytes": 84943,
+   "state": "full",
+   "note": "Items › Topics tab (per-topic collectibles)"
+  },
+  "inventory-awards": {
+   "ok": true,
+   "bytes": 85811,
+   "state": "full",
+   "note": "Items › Awards tab"
+  },
+  "inventory-loot": {
+   "ok": true,
+   "bytes": 116433,
+   "state": "full",
+   "note": "Items › Loot tab (Arena loot)"
+  },
+  "inventory-events": {
+   "ok": true,
+   "bytes": 132257,
+   "state": "full",
+   "note": "Items › Events tab"
+  },
+  "inventory-codex": {
+   "ok": true,
+   "bytes": 103900,
+   "state": "full",
+   "note": "Items › Codex tab (bestiary)"
+  },
+  "summary": {
+   "ok": true,
+   "bytes": 77178,
+   "state": "full",
+   "note": "best times per topic"
+  },
+  "arena-prefight": {
+   "ok": true,
+   "bytes": 240509,
+   "state": "partial",
+   "note": "3v3 pre-fight — tier/enemy team/party pick"
+  },
+  "arena-map": {
+   "ok": true,
+   "bytes": 281963,
+   "state": "partial",
+   "note": "the journey map (10 regions)"
+  },
+  "arena-cleared": {
+   "ok": true,
+   "bytes": 264584,
+   "state": "full",
+   "note": "arena fully cleared"
+  },
+  "settings": {
+   "ok": true,
+   "bytes": 56677,
+   "state": "full",
+   "note": "settings"
+  },
+  "audio": {
+   "ok": true,
+   "bytes": 72015,
+   "state": "full",
+   "note": "audio settings"
+  },
+  "graphics": {
+   "ok": true,
+   "bytes": 72440,
+   "state": "full",
+   "note": "graphics settings"
+  },
+  "drill": {
+   "ok": true,
+   "bytes": 33308,
+   "state": "full",
+   "note": "a live drill question (prompt/keypad/skip)"
+  },
+  "results": {
+   "ok": true,
+   "bytes": 54525,
+   "state": "full",
+   "note": "end-of-round results (rank/time/gold)"
+  },
+  "practice": {
+   "ok": true,
+   "bytes": 89808,
+   "state": "full",
+   "note": "practice mode (pick any question)"
+  },
+  "event-play": {
+   "ok": true,
+   "bytes": 40829,
+   "state": "full",
+   "note": "daily-event gauntlet (in play)"
+  }
+ }
+}
