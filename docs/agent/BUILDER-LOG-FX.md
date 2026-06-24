@@ -6,6 +6,21 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 3: award Solved/Spark — per-question timing ([B], GO)
+
+Closed the gap in my own wiring: `finish_round` had been passing an empty qmap, so the per-question
+**Solved/Spark** collectibles — **1918 of the 2352** catalogue — never dropped in-app. The drill now
+times each question; the app records `(prompt, seconds)` on every clean auto-accept (resetting the
+per-question clock on solve OR skip), and `Save::award_round` feeds them to the earning, so a clean
+solve earns `solve:<mode>:<prompt>` and an under-1.5s one also `spark:…`. The earning integration is
+now complete — every collectible category that a drill round can produce actually drops.
+`00-1/brickmap` `8daba21`.
+- goblin-gold **50** lib tests green (the `award_round` test now asserts solve+spark on a fast clean
+  solve); clippy -D warnings clean native + aarch64-linux-android; no render change (goldens intact).
+  Pushed to `main` + the feature branch.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 3: INTEGRATE the metagame into the live app ([B], GO)
 
 The integration directive: wire earning into `finish_round` **and** surface the metagame on screen.
