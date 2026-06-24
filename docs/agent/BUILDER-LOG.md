@@ -6417,3 +6417,15 @@ untouched, gg1/dev/test stays 64/64.** Emits `content/gg1/balance.json` + extend
 verified: deterministic regen; `content-parity.test.js` 42/42; **runtime suite still 64/64; runtime untouched**
 (git: only `tools/`, `content/`, `test/`; `gg1/` + `pages.yml` unchanged — the existing parity gate already covers
 the new file). DoD met: balance.json committed + drift-gated, additive. [A]-only.
+
+---
+
+**T233 — earning rules export (Babysitter take-over, 2026-06-24; A idle, B's critical path per autonomy grant).**
+B's catalogue/Arena ports correctly REFUSED to fabricate earning rules absent from the structural export. Fixed by
+extending the data-as-spec + parity-vector method to EARNING: new `tools/earning-export.js` loads the pure gg1/dev
+modules headlessly and drives the live `collectibles.js` evaluators (evaluate/collector/topics/meta/gold/momentum +
+rankIndex) over a boundary-targeted synthetic ctx battery → `content/gg1/earning.json` (thresholds) +
+`earning-vectors.json` (1398 input→awarded-keys vectors). **Faithful to the `mistakes==skipped==total−answered`
+invariant** (caught + fixed a battery bug where it wasn't). New `test/earning-parity.test.js` (14 checks: drift gate +
+faithfulness invariants) wired into the CI gate. Additive: zero gg1/ runtime files touched; runtime suite 64/64.
+**Remaining for T233 (combat resolution + gold-earning formulas from enemies.js/main.js) = follow-on.** [A]-domain, additive.
