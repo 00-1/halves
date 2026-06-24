@@ -2379,3 +2379,17 @@ still showed the old code; only `@main` has the integrated result. **Verify agai
 gold economy + persistence + results screen + full metagame surface (Collection + 5 drill-downs) + build-SHA watermark
 + immersive. Remaining: phase 4 audio (by-ear, owner) · phase 5 polish · the two export gaps when their features land
 (**T233b-combat** Arena battle resolve, **T233c** events content/thresholds/schedule — Babysitter-owned).
+
+---
+
+## APPROVED — phase 4 audio (SFX re-author) · Builder B · `9ada429` (brickmap `main`, `sfx.rs`)
+**Constants verified faithful to the source `gg1/dev/sound.js`** AND present in `sfx.rs@main`: SFX bus gain
+**0.16** (`SFX_VOL`); **8 ms attack** (`ATTACK=0.008`) + exp decay (matches `setValueAtTime→expRamp(...,t0+0.008)→
+expRamp(0.0001,t1)`); `correct` pitch **rises with combo, capped +12 = 1 octave** (`72.0 + combo.min(12)`, source
+`72 + min(max(combo,0),12)`); the **9 events** match exactly (correct/skip/item/gold/topicUnlock/mastery/topic100/
+roundStart/roundComplete); rarity→note-count + gold±big preserved; `volume<=0 ⇒ silence` (the mute path). **Gating is
+right:** audio parity is perceptual (no web-rendered reference to diff), so the 5 new tests cover MECHANICS
+(determinism, no-clip, length, mute=silence, distinct events, combo-pitch, rarity-scale) — 60 lib tests, clippy clean
+native+aarch64. The `sfx_proto` WAV-per-effect binary for the owner's A/B is the correct way to close perceptual parity.
+**Folded the by-ear A/B into OWNER-EYEBALL.md** (B can't push `claude/agent`). Phase-4 continues: generative MUSIC
+(synth.js 10 tracks) → playback wiring (cpal/Web Audio) → phase 5 polish.

@@ -12,8 +12,11 @@
 - [ ] **TWA notch (`T228`)** — when you want it: rebuild the `.aab` in PWABuilder with **Display mode =
       "Fullscreen sticky"** (+ cutout), verify edge-to-edge on-device; then the Babysitter does the web
       `isTWA()` JS-fullscreen suppression (kills the "went full screen" toast without losing the notch fill).
-- [ ] **Audio by-ear** — once the brickmap port re-authors GG's music/SFX onto the Rust `Drone` synth
-      (port phase 4), it's *perceptual* parity (not vector-provable) → A/B it against web GG by ear.
+- [ ] **Audio by-ear — SFX (phase 4, ready now).** B re-authored the 9 drill SFX in Rust (`sfx.rs`, constants
+      verified faithful to `sound.js`). Run `cargo run -p goblin-gold --bin sfx_proto -- <dir>` → writes a WAV per
+      effect (`gg-sfx-*.wav`); **A/B each against web-GG's blip** (correct / skip / item / gold / topicUnlock /
+      mastery / topic100 / roundStart / roundComplete) and flag any that feel off. (Music + on-device playback wiring
+      come next — then A/B the music too.)
 - [x] **Keypad/drill/FX feel** — owner confirmed "looks good" (2026-06-23) from B's mini-gate #2/#3 shots.
 - [x] **Font legibility** — owner confirmed "all very readable, 3rd sample best" (mini-gate #1).
 
