@@ -3,6 +3,10 @@
 > Strand 3 of the 2026-06-23 architecture plan. **GG1-on-brickmap.** This doc captures the
 > owner's direction and the **research-only** task for Builder B that must land **before** we
 > finalise the spike/port spec. NOT yet a build task — B answers the open questions first.
+>
+> 📒 **LIVING FINDINGS / REUSABLE METHOD → `PORT-PLAYBOOK.md`** (kept current as the port runs; the
+> reusable playbook + gotchas log for the NEXT port, GG2+). This file = the original plan; the
+> playbook = what we actually learned.
 
 ## Owner direction (2026-06-23)
 - **brickmap is an engine** with **one unfinished game ("Scraped Again")**. **GG1 would be the
