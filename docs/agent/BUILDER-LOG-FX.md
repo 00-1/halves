@@ -6,6 +6,37 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 4 (audio): PLAYBACK WIRING — SFX + music now sound ([B], GO)
+
+Wired the re-authored audio into the live app so it's actually **audible**: a cpal output stream
+(`crates/goblin-gold/src/audio.rs`) — desktop + Android's AAudio backend, the same path
+`scraped-again`'s drone uses. This was the last remaining phase-4 piece; I'd been holding it as
+"device-side", but it's the same posture as the immersive fix (built blind → owner confirms), so I
+shipped it rather than leave it parked.
+- **Split so the testable half is testable.** A pure `Mixer` core (one looping music bed + capped
+  one-shot SFX voices, summed to mono, fanned to the output channels) — its loop-wrap, voice-retire,
+  empty-buffer, voice-cap and clamp logic are **unit-tested without a sound card** (7 new tests).
+  Around it, the cpal `Player`: opens the default device, runs the `Mixer` in the audio callback,
+  takes UI→audio commands over a tiny mutex-guarded queue. Device-less machine → `start()` returns
+  `None` and the game runs silent (never crashes).
+- **Gameplay seams wired:** `RoundStart` on a new drill, the combo-pitched `Correct` chime per solve
+  (combo = trailing-solve streak, resets on skip), `Skip`, `RoundComplete` at the end. SFX rendered
+  off the audio thread at the stream's sample rate.
+- **Music bed per screen, using GG1's own scene names** — the `menu` bed under the UI/drill, the
+  `arena` bed on the hero roster. Beds are bar-aligned (loop seam on a downbeat) and cached, so
+  returning to a screen doesn't re-synthesise. (Beyond the literal `menu`/`arena` names the
+  drill→`menu` default is a conservative creative call — the export carries no screen→scene map; GG1's
+  in-play music is style-pickable. Logged, not blocking.)
+- Gates: goblin-gold **73** lib tests green (66 + 7 mixer tests); all **7** GPU goldens pass under
+  lavapipe (no visual regression); clippy `-D warnings` clean **native + aarch64-linux-android** (cpal
+  cross-compiles for Android); fmt clean. `00-1/brickmap` pushed to `main` + the feature branch.
+- **OWNER EYEBALL ON RETURN:** the SFX + music now play on device — A/B the *feel* vs web GG (do the
+  blips land on the right beats? is the menu/arena bed pleasant under play, at the right level?). The
+  `music_proto`/`sfx_proto` WAVs remain the offline reference. **Phase 4 audio is COMPLETE** (synthesis
+  faithful + now audible). → **phase 5 polish.**
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 4 (audio): faithful patch synthesis ([B], GO)
 
 Upgraded the music renderer from generic role voices to GG1's **actual instrument patches**
