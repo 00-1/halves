@@ -2177,3 +2177,13 @@ native + aarch64.
 (T230 `6b7387b` + T232 `e24ae3c`, APPROVED) and `GG1-INVENTORY.md` on `claude/agent`. B's brickmap `content/gg1/`
 copy predates T230/T232. **Resolution: B re-syncs `content/gg1/` from halves `main` + re-reads `GG1-INVENTORY.md` from
 `origin/claude/agent` → metagame unblocked.** (Recurring lesson: re-sync/re-fetch before declaring data missing.)
+
+---
+
+## APPROVED (incremental) — Port phase 3 part 2: metagame UNBLOCKED + collector ladder · Builder B · `41ccf81`
+B re-synced `content/gg1/` (false-alarm blocker self-corrected — lesson logged). Collector ladder (`collector.rs`)
+data-driven from `collectibles.json::collectorLadder`. **Verified vs the canonical data:** 12 ascending tiers
+(25…2300), **capstone 2300 < catalog total 2352 → reachable** (`capstoneReachable:true`) — GG1's `collector.test.js`
+invariant ported as a Rust test. 21 tests; clippy -D warnings native+aarch64. Phase 3 part 2 continues: rest of the
+catalogue (init/flawless/speed/mastery + rank/milestone counts), Arena (enemies/heroes vs `balance.json`), events,
+save via `bm-platform::save`. (B's NEXT.md line already covers this — no change.)
