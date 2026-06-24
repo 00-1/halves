@@ -64,6 +64,23 @@ ok(coll.collectorLadder.emblems.length === 3, "(2c) the 3 boss emblems are recor
 ok(coll.collectorLadder.capstone < coll.collectorLadder.catalogTotal && coll.collectorLadder.capstoneReachable === true,
    "(2c) the capstone (" + coll.collectorLadder.capstone + ") is below the catalogue total (" + coll.collectorLadder.catalogTotal + ") — reachable invariant holds");
 
+// ---- (2d) T232 — balance.json: gold tuning + enemy tiers + hero stats ---------
+const bal = fresh.balance;
+ok(bal && bal.gold && bal.enemies && bal.heroes, "(2d) balance.json has gold + enemies + heroes sections");
+ok(bal.gold.spending === "none", "(2d) gold is earn/hoard/display only (no spending, T26)");
+ok(bal.gold.scalars.HOARD_G === 2.5 && bal.gold.scalars.GOLD_EMPTY === 500 && bal.gold.scalars.GOLD_FULL === 1e15,
+   "(2d) gold scalars extracted from main.js (HOARD_G=2.5, EMPTY=500, FULL=1e15)");
+ok(["questionGold", "roundBonusGold", "tierGold", "goldMult", "hoardMult", "hoardLevel"].every(k => typeof bal.gold.formulas[k] === "string" && /^function /.test(bal.gold.formulas[k])),
+   "(2d) all 6 gold reward formulas captured as fn source");
+ok(bal.gold.firstTimeBonuses.mastery === 50 && bal.gold.firstTimeBonuses.topic100 === 100,
+   "(2d) first-time bonuses (mastery 50, topic100 100) extracted");
+ok(bal.enemies.tiers.length === 120 && bal.enemies.tierCount === 120 && bal.enemies.regionSize === 12,
+   "(2d) the 120-tier enemy ladder is captured (" + bal.enemies.tiers.length + ")");
+ok(bal.enemies.tiers.every((t, i) => t.n === i + 1 && t.name && t.type && typeof t.def === "number"),
+   "(2d) every enemy tier has n (ascending) + name + type + numeric def");
+ok(bal.heroes.roster.length === 12 && bal.heroes.roster.every(h => h.base && ["power", "guard", "speed", "focus"].every(s => typeof h.base[s] === "number")),
+   "(2d) all 12 heroes carry base power/guard/speed/focus stats");
+
 // ---- (3) the committed vectors are reproducible from the LIVE build() --------
 // Independent of the export object: load modes.js afresh, run build(), sort, compare.
 global.window = {};

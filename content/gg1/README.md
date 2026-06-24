@@ -21,7 +21,11 @@ regenerate instead. This export is NON-DESTRUCTIVE: it never touches the runtime
   is every award as data (minus its `test` unlock predicate, which is behaviour);
   `collectorLadder` carries the 12 count-tiers + 3 boss emblems + the capstone and its
   `capstoneReachable` (capstone < catalogTotal) invariant.
-  *(Tuning constants — gold, enemy tiers, hero stats — are the follow-on `balance.json`.)*
+- **`balance.json`** — `{ gold, enemies, heroes, crossRefs }`. `gold` is the tuning from
+  `main.js` (scalars `HOARD_G`/`GOLD_EMPTY`/`GOLD_FULL`, magnitude suffixes, first-time
+  bonuses, and the reward-formula fn sources — there is **no spending**, T26). `enemies` is
+  the 120-tier ladder (`{n,name,type,def}`); `heroes` is the 12-hero roster with base
+  `{power,guard,speed,focus}` stats. `masterSecs` + the Collector ladder are cross-refs.
 
 ## Regenerate
 ```sh
@@ -35,3 +39,4 @@ drift from the live runtime — so this data and `gg1/dev` can never silently di
 - parity vectors: 959 total `{p,a}` pairs
 - guide topics: 46 (+ 959 explain entries)
 - collectibles: 2352 across 10 categories
+- balance: 120 enemy tiers + 12 heroes + gold tuning

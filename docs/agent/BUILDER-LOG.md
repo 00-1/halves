@@ -6391,3 +6391,29 @@ runtime is untouched and the gg1/dev/test suite stays 64/64.** Extends `tools/co
 verified: export deterministic across runs; `content-parity.test.js` 32/32; **runtime suite still 64/64; runtime
 untouched** (git: only `tools/`, `content/`, `test/`; `gg1/` + `pages.yml` unchanged — the existing parity gate
 already covers the new files). DoD met: guides.json + collectibles.json committed + parity-gated. [A]-only, additive.
+
+---
+### [A] T232 — GG1 content export part 3: balance.json (the content seam's last piece)
+Un-deferred by the brickmap GO (the port's metagame consumes it). **Same non-destructive/additive rules — runtime
+untouched, gg1/dev/test stays 64/64.** Emits `content/gg1/balance.json` + extends the parity gate.
+- **`gold`** (from `main.js`, which is DOM-coupled so it's extracted from SOURCE, not eval'd): scalars
+  `HOARD_G=2.5` / `GOLD_EMPTY=500` / `GOLD_FULL=1e15`, the magnitude suffixes, the first-time bonuses
+  (`mastery=50`, `topic100=100`, regex-extracted so they drift-gate), and the six reward-formula function
+  **sources** (`questionGold`, `roundBonusGold`, `tierGold`, `goldMult`, `hoardMult`, `hoardLevel`) captured by a
+  brace-counted, string-aware scan. **No spending exists** (T26 — earn/hoard/display only), recorded as such.
+- **`enemies`** (from `enemies.js`, loaded with its monster/scenery deps): the full **120-tier** ladder
+  (`{n,name,type,def}`) + `tierCount`/`regionSize` — e.g. tier 1 Goblin Warren Runt (def 11) → tier 12 boss Goblin
+  King (def 19).
+- **`heroes`** (from `heroes.js`): the **12-hero** roster with base `{power,guard,speed,focus}` stats, type, display
+  name (resolved via `Collectibles.HERO_NAMES`), and unlock hint (the unlock predicate is a fn → omitted, like the
+  catalogue `test`).
+- **`crossRefs`**: per-mode `masterSecs` already lives in `modes.json`; the Collector reward ladder in
+  `collectibles.json` — noted rather than duplicated.
+- **`test/content-parity.test.js`** → 42 checks: the drift loop auto-covers `balance.json` (committed == fresh), plus
+  structural assertions (gold scalars/formulas/bonuses, no-spending, 120 ascending enemy tiers, 12 heroes with all
+  four base stats). Export verified deterministic across runs (formula-source capture + module loads are stable).
+- **This completes the GG1 content-as-data seam** (T229 modes/parity · T230 guides/collectibles · T232 balance) —
+  the engine-agnostic contract the brickmap port consumes end-to-end.
+verified: deterministic regen; `content-parity.test.js` 42/42; **runtime suite still 64/64; runtime untouched**
+(git: only `tools/`, `content/`, `test/`; `gg1/` + `pages.yml` unchanged — the existing parity gate already covers
+the new file). DoD met: balance.json committed + drift-gated, additive. [A]-only.

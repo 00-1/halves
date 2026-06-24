@@ -169,6 +169,75 @@ const collectiblesOut = (function(){
   };
 })();
 
+// ---- 5c) T232 — balance.json: gold tuning + enemy tiers + hero stats ----------
+// Combat/hero data comes from the live modules (enemies needs monster/scenery deps);
+// gold tuning is extracted from main.js source (it's DOM-coupled, can't be eval'd) —
+// scalar consts + the reward-formula fn sources + the first-time bonuses, with a
+// "where it lives" note. No spending exists (T26). masterSecs/collector cross-ref.
+const balanceOut = (function(){
+  const w = {};
+  ["modes.js", "events.js", "collectibles.js", "monsters.js", "scenery.js", "heroes.js", "enemies.js"].forEach(f =>
+    new Function("window", fs.readFileSync(path.join(ROOT, "gg1/dev", f), "utf8"))(w));
+  const Enemies = w.Enemies, Heroes = w.Heroes, Coll = w.Collectibles;
+  const M = fs.readFileSync(path.join(ROOT, "gg1/dev/main.js"), "utf8");
+  // brace-counted, string-aware capture of a top-level `function NAME(...){...}`
+  function captureFn(name){
+    const at = M.indexOf("function " + name + "(");
+    if(at < 0) return null;
+    let depth = 0, end = -1, str = null;
+    for(let j = M.indexOf("{", at); j < M.length; j++){
+      const c = M[j], p = M[j - 1];
+      if(str){ if(c === str && p !== "\\") str = null; continue; }
+      if(c === '"' || c === "'" || c === "`"){ str = c; continue; }
+      if(c === "{") depth++; else if(c === "}"){ if(--depth === 0){ end = j; break; } }
+    }
+    return end < 0 ? null : M.slice(at, end + 1);
+  }
+  const scalar = name => { const m = M.match(new RegExp("\\b" + name + "\\s*=\\s*([0-9.eE+]+)")); return m ? Number(m[1]) : null; };
+  const suffixes = (function(){ const m = M.match(/const GOLD_SUFFIX = (\[[^\]]*\])/); return m ? eval(m[1]) : null; })();
+  const bonuses = [...M.matchAll(/earn \+= (\d+) \* mult/g)].map(m => Number(m[1]));   // [mastery, topic100]
+  return {
+    _note: "GG1 tuning constants. Combat/hero data from the live modules; gold tuning extracted from gg1/dev/main.js (NO spending — earn/hoard/display only, T26). Cross-refs: per-mode masterSecs → modes.json; Collector reward ladder → collectibles.json.",
+    gold: {
+      source: "gg1/dev/main.js",
+      spending: "none",
+      scalars: { HOARD_G: scalar("HOARD_G"), GOLD_EMPTY: scalar("GOLD_EMPTY"), GOLD_FULL: scalar("GOLD_FULL") },
+      magnitudeSuffixes: suffixes,
+      firstTimeBonuses: { mastery: bonuses[0] != null ? bonuses[0] : null, topic100: bonuses[1] != null ? bonuses[1] : null },
+      formulas: {
+        questionGold: captureFn("questionGold"),
+        roundBonusGold: captureFn("roundBonusGold"),
+        tierGold: captureFn("tierGold"),
+        goldMult: captureFn("goldMult"),
+        hoardMult: captureFn("hoardMult"),
+        hoardLevel: captureFn("hoardLevel")
+      }
+    },
+    enemies: {
+      source: "gg1/dev/enemies.js",
+      tierCount: Enemies.TIER_COUNT,
+      regionSize: Enemies.REGION_SIZE,
+      tiers: Enemies.TIERS.map(t => ({ n: t.n, name: t.name, type: t.type, def: t.def }))
+    },
+    heroes: {
+      source: "gg1/dev/heroes.js",
+      stats: ["power", "guard", "speed", "focus"],
+      roster: Heroes.HEROES.map(h => ({
+        id: h.id,
+        name: (Coll.HERO_NAMES && Coll.HERO_NAMES[h.id]) || h.name,
+        type: h.type,
+        base: h.base,
+        unlockHint: h.unlockHint || null
+      }))
+    },
+    crossRefs: {
+      masterSecs: "content/gg1/modes.json — per-mode `masterSecs`",
+      collectorLadder: "content/gg1/collectibles.json — `collectorLadder` (tier reward thresholds)"
+    }
+  };
+})();
+
+
 
 // transforms.md — every distinct transform (named fn source, or inline arrow) + the
 // one shared helper (shuffle, order-only) the port must NOT reproduce literally.
@@ -234,7 +303,11 @@ function readmeDoc(){
 "  is every award as data (minus its `test` unlock predicate, which is behaviour);",
 "  `collectorLadder` carries the 12 count-tiers + 3 boss emblems + the capstone and its",
 "  `capstoneReachable` (capstone < catalogTotal) invariant.",
-"  *(Tuning constants — gold, enemy tiers, hero stats — are the follow-on `balance.json`.)*",
+"- **`balance.json`** — `{ gold, enemies, heroes, crossRefs }`. `gold` is the tuning from",
+"  `main.js` (scalars `HOARD_G`/`GOLD_EMPTY`/`GOLD_FULL`, magnitude suffixes, first-time",
+"  bonuses, and the reward-formula fn sources — there is **no spending**, T26). `enemies` is",
+"  the 120-tier ladder (`{n,name,type,def}`); `heroes` is the 12-hero roster with base",
+"  `{power,guard,speed,focus}` stats. `masterSecs` + the Collector ladder are cross-refs.",
 "",
 "## Regenerate",
 "```sh",
@@ -248,6 +321,7 @@ function readmeDoc(){
 "- parity vectors: " + Object.values(vectorsOut).reduce((n, v) => n + v.length, 0) + " total `{p,a}` pairs",
 "- guide topics: " + Object.keys(guidesOut.topics).length + " (+ " + Object.values(guidesOut.explain).reduce((n, e) => n + Object.keys(e).length, 0) + " explain entries)",
 "- collectibles: " + collectiblesOut.total + " across " + Object.keys(collectiblesOut.categories).length + " categories",
+"- balance: " + balanceOut.enemies.tiers.length + " enemy tiers + " + balanceOut.heroes.roster.length + " heroes + gold tuning",
 ""
   ].join("\n");
 }
@@ -260,12 +334,13 @@ const OUT_FILES = {
   "parity-vectors.json": JSON.stringify(vectorsOut, null, 2) + "\n",
   "guides.json": JSON.stringify(guidesOut, null, 2) + "\n",
   "collectibles.json": JSON.stringify(collectiblesOut, null, 2) + "\n",
+  "balance.json": JSON.stringify(balanceOut, null, 2) + "\n",
   "transforms.md": transformsDoc(),
   "README.md": readmeDoc()
 };
 module.exports = {
   OUT_DIR, OUT_FILES,
-  buildExport: () => ({ modes: modesOut, vectors: vectorsOut, guides: guidesOut, collectibles: collectiblesOut })
+  buildExport: () => ({ modes: modesOut, vectors: vectorsOut, guides: guidesOut, collectibles: collectiblesOut, balance: balanceOut })
 };
 
 if(require.main === module){
