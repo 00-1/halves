@@ -2421,3 +2421,18 @@ exact patch timbres (FM/unison/biquad/wub LFO) deferred to a refinement pass aft
 Gated mechanically (determinism/no-clip/mute=silence/unknown=empty/distinct); 66 lib tests, clippy clean. `music_proto`
 WAV-per-scene exporter for the owner A/B — **folded into OWNER-EYEBALL.md.** Remaining audio: timbre fidelity (the
 patch port) + playback wiring (cpal/Web Audio) so it sounds in the live app → phase 5 polish.
+
+---
+
+## APPROVED — phase 4 audio (faithful patch synthesis) · Builder B · `c58d476` (brickmap `main`, `music.rs`)
+The timbre-refinement pass. **Patch vocabulary verified against the source `gg1/dev/synth.js` `PATCHES`** — not
+invented: `pad/padglass/padep/padpwm/padorgan` (engines `unison`/`fm`), `pluck/croon/bass/lead/chip` (`mono`), `wub`
+(`sub`, resonant lowpass swept by its LFO), each with the documented filter type (lowpass/bandpass) + `q` resonance +
+cutoff `env`. B drives each scene's `patches.{pad,bass,lead}` to the right engine; the state-variable filter
+**approximates** Web Audio's biquad (honestly NOT byte-identical — correct, audio parity is by-ear), cutoff capped to
+its stable band + finite-guard so a bright envelope can't diverge. Can't affect the vector-proven note schedule (that's
+`synth::score`, untouched). Mechanically gated (determinism/no-clip/mute=silence/distinct); 66 lib tests, clippy clean
+native+aarch64. The `music_proto`/`sfx_proto` WAVs now carry the real patches for the owner's A/B (already queued).
+**Phase-4 synthesis is as faithful as it gets offline** — ✅ SFX · ✅ score (vector-proven) · ✅ renderer with GG1's
+real patches. **Only remaining audio: playback wiring** (cpal / Web Audio) — device-side & built-blind (like immersive)
+→ wants on-device confirm. → phase 5 polish.
