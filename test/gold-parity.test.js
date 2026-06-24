@@ -63,5 +63,23 @@ ok(hl.every(v => v.level >= 0 && v.level <= 1), "hoardLevel in [0,1]");
 ok(hl.find(v => v.gold === 499).level === 0 && hl.find(v => v.gold === gold.GOLD_FULL).level === 1,
    "hoardLevel: 0 below GOLD_EMPTY, 1 at GOLD_FULL");
 
+// roundGold composition: the live combo (combo++ on solve, =0 on skip) — the piece a post-hoc
+// solved-index combo gets WRONG. Prove the skip-reset directly.
+const rg = vectors.roundGold;
+const qg1 = (target, dt, combo, mult) => (2 + Math.max(0, Math.round(target - dt))) * (1 + combo * 0.1) * mult;
+ok(rg.length > 0, "roundGold composition vectors present");
+// [1.0,"skip",1.0] must equal TWO combo-1 solves (skip resets) — NOT combo 1 then 2.
+for(const t of [3.5, 4]) for(const m of [1, 2.5]){
+  const v = rg.find(r => r.target === t && r.mult === m && r.seq.length === 3 && r.seq[1] === "skip");
+  ok(Math.abs(v.total - 2 * qg1(t, 1.0, 1, m)) < 1e-9,
+     `roundGold skip-reset: [solve,skip,solve] = 2×combo1 (t${t} m${m})`);
+}
+// a no-skip sequence must equal the running-combo (i+1) sum — the case both impls agree on.
+for(const t of [3.5, 4]) for(const m of [1, 2.5]){
+  const v = rg.find(r => r.target === t && r.mult === m && r.seq.length === 5 && !r.seq.includes("skip"));
+  const want = v.seq.reduce((s, dt, i) => s + qg1(t, dt, i + 1, m), 0);
+  ok(Math.abs(v.total - want) < 1e-9, `roundGold no-skip = Σ combo(i+1) (t${t} m${m})`);
+}
+
 console.log(fails ? `\n${fails} FAIL` : "\nALL GOLD PARITY CHECKS PASS");
 process.exit(fails ? 1 : 0);

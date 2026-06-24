@@ -68,10 +68,15 @@ function generate(){
   // ---- (1) the cleanly-data constants (B implements the count-based formula from these)
   const gold = {
     _note: "GG1 goblin-gold earning rules (from main.js). Pure numeric formulas proven by gold-vectors.json.",
-    _round: "Round-end gold (faithful to main.js finish()): for each CLEANLY-solved question (qMiss===0) " +
-      "earn questionGold(mode.masterSecs, dt, combo, goldMult(col)); combo = running count of clean solves " +
-      "this round (0 at round start, ++ before each award); recompute goldMult(col) per question (col mutates " +
-      "as awards drop). Then earn += roundBonusGold(score, rankIndex(score,total,totalTime), goldMult(col)). " +
+    _round: "Round gold is accumulated LIVE during the drill, NOT composed post-hoc (faithful to main.js): " +
+      "combo starts 0 at round start; on each SOLVE (correct(), main.js:2316-2333) combo++ then earn " +
+      "questionGold(mode.masterSecs, dt, combo, goldMult(col)); on each SKIP (skip(), main.js:2309) combo RESETS " +
+      "to 0 and earns nothing. NOTE qMiss is vestigial — it is declared/reset/recorded but NEVER incremented in " +
+      "main.js, so EVERY solved question is 'clean' (gold accrues on all solves; there is no solved-with-miss). " +
+      "Do NOT derive combo from the solved-times list — skips aren't recorded there, so the skip-reset is " +
+      "unrecoverable post-hoc; accumulate live (see gold-vectors.json roundGold for proof sequences). " +
+      "Recompute goldMult(col) per question (col mutates as awards drop). At finish: earn += " +
+      "roundBonusGold(score, rankIndex(score,total,totalTime), goldMult(col)) where score = #solves. " +
       "Finally earnGold(round(earn)): total += round(earn); cross wealth milestones via evaluateGold (already " +
       "in earning-vectors.json). NO spending — gold only accrues.",
     _catalog: "goldMult's `items` counts EVERY owned C.CATALOG entry INCLUDING Arena loot — at runtime " +
@@ -92,7 +97,31 @@ function generate(){
   };
 
   // ---- (2) parity VECTORS (generated from the lifted source) ----------------
-  const vectors = { questionGold: [], roundBonusGold: [], tierGold: [], hoardLevel: [], goldMult: [] };
+  const vectors = { questionGold: [], roundBonusGold: [], tierGold: [], hoardLevel: [], goldMult: [], roundGold: [] };
+
+  // roundGold COMPOSITION — the faithful live accumulation (combo++ on solve, combo=0 on skip).
+  // This is the transcription of main.js correct()/skip(); it's the piece the pure-formula vectors
+  // DON'T cover, and the one that catches a post-hoc combo (no skip-reset). `seq` items: a number =
+  // a solve of that dt; "skip" = a skip. mult held fixed (goldMult is recomputed per-question live,
+  // tested separately). Output = the running total a faithful drill must reach.
+  const roundGoldSeq = (target, mult, seq) => {
+    let combo = 0, total = 0;
+    for(const o of seq){ if(o === "skip"){ combo = 0; } else { combo++; total += G.questionGold(target, o, combo, mult); } }
+    return total;
+  };
+  const SEQS = [
+    [1.0, 1.0, 1.0],                       // 3 clean solves (no skip → combo 1,2,3)
+    [1.0, "skip", 1.0],                    // skip resets: combos 1, -, 1  (NOT 1,_,2)
+    ["skip", 1.0, 1.0],                    // leading skip: combos -, 1, 2
+    [1.0, 1.0, "skip"],                    // trailing skip earns nothing
+    [2.0, "skip", "skip", 1.5, 1.0],       // double skip mid-run: combos 1, -, -, 1, 2
+    [0.5, 1.0, 1.5, 2.0, 2.5],             // 5 clean, rising dt: combos 1..5
+    [3.0, "skip", 0.5, "skip", 4.0],       // alternating: combos 1, -, 1, -, 1
+  ];
+  for(const target of [3.5, 4])
+    for(const mult of [1, 2.5])
+      for(const seq of SEQS)
+        vectors.roundGold.push({ target, mult, seq, total: roundGoldSeq(target, mult, seq) });
 
   // questionGold(target, dt, combo, mult): target = masterSecs band; dt across/under target
   for(const target of [3.5, 4])
@@ -155,7 +184,7 @@ if(require.main === module){
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "gold.json"), JSON.stringify(gold, null, 1) + "\n");
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "gold-vectors.json"), JSON.stringify(vectors) + "\n");
   const n = vectors.questionGold.length + vectors.roundBonusGold.length + vectors.tierGold.length
-    + vectors.hoardLevel.length + vectors.goldMult.length;
+    + vectors.hoardLevel.length + vectors.goldMult.length + vectors.roundGold.length;
   console.log("wrote content/gg1/gold.json + gold-vectors.json — HOARD_G", gold.HOARD_G, "vectors", n);
 }
 module.exports = { generate };
