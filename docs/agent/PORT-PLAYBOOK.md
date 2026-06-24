@@ -19,7 +19,11 @@
    `input → expected output` generated FROM the source. Re-implement logic in the target language;
    the vectors **prove byte-identical behaviour** (every `{p,a}` matched, answers <1e-9). **Share
    DATA, not code** — do NOT embed a JS runtime in the native binary (bloat, forks behaviour, kills
-   the self-verify win). Parity was proven for all 46 transforms this way.
+   the self-verify win). Parity was proven for all 46 transforms this way. **Export EARNING/economy rules too, not just content+structure** — the
+   first pass exported the *catalogue* but not the *earning thresholds* (Speed/Rank/event tiers), blocking the
+   reward port mid-stream. Extend the parity-vector trick to earning: run the live award evaluators over a synthetic
+   `ctx` battery → `{ctx → awarded keys}` vectors. (A good builder will REFUSE to fabricate the missing rules — design
+   the export to feed it, don't make it guess.)
 3. **SPIKE-gate before committing** (`BRICKMAP-GG1-SPEC.md`). A tightly-scoped spike on the riskiest
    unknowns — **legible text · the core loop · one self-verified FX · a clean DEVICE launch** — with
    a go/no-go gate, BEFORE the full port. De-risks in hours, not the weeks the human estimate implied.

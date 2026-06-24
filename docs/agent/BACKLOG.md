@@ -19,6 +19,16 @@ Full spec = **`CAPACITOR-SPEC.md`**. In-process-WebView Android wrapper for `gg1
 internal-testing app (real listing untouched); goal = a CI-built signed `.aab` that launches fullscreen with **no
 "Open with"/address bar**, to compare against the TWA on-device. DoD in the spec.
 
+### T233 — GG1 content export, part 4: EARNING rules/vectors (unblocks the catalogue earning)  · status: OPEN (additive, drift-gated)  · [A]
+The content export captured catalogue STRUCTURE but not the EARNING thresholds/rules — B can't faithfully port
+Speed/Rank/Solved/Spark/event/meta earning without them (it correctly refused to fabricate). **Best technique
+(same as transforms): EARNING PARITY VECTORS.** Extend `tools/content-export.js` to run the LIVE collectibles.js
+evaluators (`evaluate`/`evaluateTopics`/`evaluateCollector` + `grantMeta`) over a **synthetic `ctx` battery**
+(vary mode·answered·skipped·mistakes·totalTime·avg·score·rankIndex·stats·collected-count) and record
+`{ctx → awarded keys}` → `content/gg1/earning-vectors.json`; plus export the **events roster + reward tiers**
+(`events.js`) → `events.json`. Drift-gate via `content-parity.test.js`. Then B reproduces earning vs the vectors
+(provable parity, no fabrication). NON-DESTRUCTIVE/additive; suite stays 64/64.
+
 ### T232 — GG1 content export, part 3: balance.json (gold/enemy-tiers/hero-stats)  · status: DONE (Builder A `e24ae3c`; APPROVED — gold/enemies/heroes/crossRefs, parity 42/42, suite 64/64, additive). Content seam COMPLETE.  · [A]
 
 ### T230 — GG1 content export, part 2: guides + collectibles  · status: DONE (Builder A `6b7387b`; APPROVED — guides 46/46+explain, collectibles 2352 catalogue+ladder, parity 32/32, suite 64/64, additive)  · [A]

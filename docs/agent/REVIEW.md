@@ -2221,3 +2221,15 @@ Java/theme (bare cargo-apk NativeActivity), so a new `immersive.rs` reaches the 
 + legacy setSystemUiVisibility + API-30 WindowInsetsController.hide), re-applied on `resumed`; **every JNI call guarded
 → no-op on failure, never crash** (learning from the #4 built-blind crash). Effect (bars hidden) is device-judged.
 31 lib tests + 3 GPU goldens (lavapipe); clippy clean native+aarch64. → B resumes metagame (catalogue/arena/events).
+
+---
+
+## APPROVED (incremental) — Port phase 3 part 2: collectible catalogue (2352) · Builder B · `b4d35f8`
+`catalogue.rs` models all 2352 entries / 10 categories, shape-verified vs the export's `categories`/`total` + unique
+ids (mirrors `collectibles.test.js`). Keystone honored: **a collectible's `id` IS its key in the `collected` map**
+(earn = insert id) — the one-map architecture. Threshold-based earning the export pins down is re-impl'd + verified:
+init (≥half answered) / flawless (no-skip) / mastery (masterSecs gate) one-per-mode across all 46; gold+momentum by
+threshold; collector vs the ladder + 3 specials. **B correctly REFUSED to fabricate** the earning for entries whose
+thresholds aren't in the export (Speed tiers + Rank = `desc` prose only; Solved/Spark/Events not quantified) →
+count/structure-verified, flagged as a documented gap. 37 tests, clippy clean. → **GAP → T233 (A): export the earning
+rules.** B continues non-threshold metagame meanwhile (wire run_award_keys, Arena, events).

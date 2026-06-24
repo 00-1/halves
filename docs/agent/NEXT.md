@@ -86,11 +86,14 @@ multi-hour runs the environment can't deliver.)*
 **GG2 P0 — PARKED & its web-extraction plan SUPERSEDED** by the brickmap pivot (`BRICKMAP-GG1.md`; `GG2-P0-EXTRACTION.md`
 carries a superseded banner). Do NOT start GG2-on-web.
 
-**Builder A → HOLD — the content-as-data seam is COMPLETE.** ✅ `T229` modes · ✅ `T230` guides+collectibles ·
-✅ `T231` Capacitor scaffold · ✅ `T232` balance.json (`e24ae3c`; parity 42/42, suite 64/64). The full content seam
-(modes+guides+collectibles+balance, drift-gated) is done; the brickmap port (B) consumes it in port phase 3. **A's
-remaining work is all owner-gated:** TWA `T228` (`.aab` rebuild), GG1 store (ship paused), Capacitor on-device test
-(`OWNER-EYEBALL.md`). A holds until the owner un-gates one or the Babysitter finds new additive [A] work.
+**Builder A → `T233` — export the EARNING rules/vectors (un-held: a real gap surfaced in the port).** ✅ `T229/T230/
+T232` content seam done. B's catalogue port (`b4d35f8`) hit the gap: the export has catalogue STRUCTURE but not the
+EARNING thresholds (Speed/Rank/Solved/Spark/event/meta) — B correctly won't fabricate them. **Fix = EARNING PARITY
+VECTORS** (same technique as transforms): extend `tools/content-export.js` to run the live `collectibles.js`
+evaluators over a synthetic `ctx` battery → `content/gg1/earning-vectors.json`, + export `events.js` roster →
+`events.json`; drift-gate it. NON-DESTRUCTIVE/additive (suite stays 64/64). *(BACKLOG T233.)* **NOTE: A is currently
+IDLE — needs a wake to pick this up. Not blocking B (it continues Arena/events meanwhile); the Babysitter may take
+T233 over under the autonomy grant if A stays stalled and it becomes B's critical path.**
 
 **Builder B → phase 3: 2 OWNER-FOUND on-device PARITY BUGS first, then continue the metagame.** ✅ Gate #4 CONFIRMED
 on a real phone (boots+runs the drill, owner 2026-06-24). ✅ collector ladder done (`41ccf81`). **🔴 FIX FIRST (core
