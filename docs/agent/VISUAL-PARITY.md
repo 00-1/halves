@@ -31,8 +31,12 @@ GG1 with a full collection seeded (everything unlocked/boosted), regeneratable v
 - **Gate:** B goldens its result in brickmap (locks it once it matches) AND posts the render here for review;
   the web-match is judged by eye (B's self-compare, the Babysitter's side-by-side review, the owner's final
   sign-off in `OWNER-EYEBALL.md`). The Babysitter specs each screen from the web SOURCE so the target is precise.
-- More reference screens (results, event-play, hero-detail) need a deeper played-through state to route to —
-  add them to `SCREENS` in the capture tool as those screens come up.
+- **The reference map is now EXHAUSTIVE (26 screens/states, `content/gg1/visual-ref/` + `manifest.json`):** splash;
+  home full/fresh/midprogress; the guide modal; heroes + partial; hero-detail brawn/arcane/cunning; the 5 Items tabs
+  (topics/awards/loot/events/codex); best-times; arena pre-fight / journey-map / cleared; settings/audio/graphics;
+  drill; results (rank/time/gold); practice; event-play. Regenerate/extend via `tools/visual-ref-capture.js` (declarative
+  SCREEN MAP, per-screen retry, manifest). Known gaps (animated/flaky headless): arena battle playout/result,
+  earn-celebration overlay.
 
 ---
 
