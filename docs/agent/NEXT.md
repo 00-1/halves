@@ -45,6 +45,13 @@ multi-hour runs the environment can't deliver.)*
 ---
 
 > ⏸️ **BRICKMAP PARITY WORK PAUSED (owner, 2026-06-24).** We're actively updating gg-web (arena rebalance + combat/UI changes), so the port is a moving target — **B: HOLD brickmap porting** (don't build the Arena screen / event-play against shifting source). The Babysitter keeps the parity artifacts (combat/gold/earning/events exports + `combat.rs` vectors + docs) CURRENT as gg-web changes land, so resume is clean. Resume signal will be posted here.
+>
+> 🔧 **COMBAT MODEL REDESIGNED — `main` `b49e62b` (2026-06-25).** Bigger than the earlier rebalance: the 3v3 sim was reworked so **all 4 stats have one distinct role** and the **vestigial 1v1 path is fully gone**. **When the port resumes, re-sync `content/gg1/combat.json` + `combat-vectors.json` (both regenerated) into brickmap and re-run `combat.rs` — and update the Rust combatant/sim to the new model below.** What changed:
+> - **Combatant shape** `{atk,hp,spd,type}` → **`{pow,grd,spd,foc,hp,type}`**. Heroes: `{pow:power, grd:guard, spd:speed, foc:focus, hp:HP_FLAT(120), type}`. Foes: `{pow:√(budget/HPR), grd:0, spd:ESPD(4), foc:0, hp:√(budget·HPR), type}`.
+> - **Stat roles:** PWR = `round(pow·matchup)` damage · FOC = `round(foc·FOC_FLAT)` flat damage (matchup-independent floor) · GRD = per-hit mitigation `round(grd·MIT)` (min 1 through) over flat HP · SPD = one-time **opening strike** `round(speed·SPD_ALPHA·matchup)` for any HERO (side 0) that outspeeds its target, BEFORE the rounds.
+> - **Constants:** `HP_FLAT=120, MIT=0.6, FOC_FLAT=1.2, SPD_ALPHA=0.5`; foe-budget curve `FLOOR=300, WALL=240000, STEEP=0.18` (boss tier 120 auto-repinned). Damage per hit = `max(1, round(pow·mu) + round(foc·FOC_FLAT) − round(target.grd·MIT))`.
+> - **Log flags** for the playout: each entry now carries `{open, adv:matchup>1, blocked:mit≥half}` (animation callouts).
+> - **REMOVED:** `Enemies.statBattle`, the tier `def` field + its calibration, `def` in combat.json/balance.json tiers, and `arena.test.js`. The `combat.json` `constants.combat` block + `_resolution` doc are the authoritative recipe. Balance verified: ~1 topic → 9 tiers, full → 120, monotone; all 4 stats positive-leverage (tool: `tools/analyze-arena.js`).
 
 ## Builder A — work the TOP ⏳ item ONLY. Do not skip or reorder. Push it alone → wait for review → next.
 
@@ -129,7 +136,7 @@ COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
   `content/gg1/visual-ref/<screen>-brickmap.png`** (you have write access; overwrite same filename; render at the
   430×880 aspect) **so the Babysitter can fetch both + review the side-by-side.** Perceptual compare (two renderers,
   not a pixel diff). Build the NEW Arena/event-play screens against `arena-web.png` from the start. *(Parity, not polish.)*
-- ⚠️ **ARENA REBALANCE landed (`main` `11ef041`) — RE-SYNC before/with the Arena screen.** The owner found the arena far too easy (1 topic cleared ~57/120 tiers); I rebalanced the foe curve (now ~9). **`content/gg1/combat.json` + `combat-vectors.json` changed — re-sync both into brickmap + re-run `combat.rs`** (reproduces from the data → re-passes; on the OLD data you'd ship the OLD easy arena). Analysis/retune tool: `tools/analyze-arena.js`.
+- ⚠️ **ARENA COMBAT REDESIGN landed (`main` `b49e62b`, supersedes the `11ef041` rebalance) — RE-SYNC before/with the Arena screen.** First the owner found the arena far too easy (1 topic cleared ~57/120 → rebalanced to ~9); then we reworked the whole combat model so all 4 stats matter and removed the dead 1v1 path. **The combatant shape, stat roles, constants, and the export schema ALL changed — see the 🔧 COMBAT MODEL REDESIGNED block at the top of this file for the full new spec.** Re-sync `content/gg1/combat.json` + `combat-vectors.json` into brickmap, update `combat.rs` to the new `{pow,grd,spd,foc,hp}` sim, re-run (on the OLD data/model you'd ship the OLD arena). Analysis/retune tool: `tools/analyze-arena.js`.
 - **Hero-unlock export = Babysitter take-over (incoming)** — heroes' `unlock` predicates aren't in the export; until it lands, B's interim 'all 12 heroes' in the Arena roster is fine.
 **Export status — Babysitter-owned, flag if a feature needs them:** ✅ **T233b-gold DONE** (`4ae14b3`+`7c74439`).
 Open: **T233b-combat** (enemies.js battle resolve — when you port the Arena), **T233c** events content/thresholds/

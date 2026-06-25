@@ -2538,3 +2538,34 @@ main stays green (unused-until-screen). Resume = the Arena SCREEN. Two things no
 2. **Hero-unlock export (B-flagged gap) → Babysitter take-over (queued).** Heroes' `unlock` are predicate FUNCTIONS in
    heroes.js (not serialised), so the Arena roster can't gate. I'll export them in a machine-readable form (count-prefix
    / has-id predicates) so the screen fields only UNLOCKED heroes. Until then B's "all 12 (interim)" is acceptable.
+
+---
+
+## DONE (Babysitter take-over) — Arena combat redesign + 1v1 removal · `main` `b49e62b` (2026-06-25)
+Owner asked to "make the stats matter" + add a brief in-game primer + fix the misleading DEF display + enrich the
+party-pick UI + battle-animation callouts, **keeping balance** (master the drills before clearing the arena), and to
+"junk all" the 1v1 code now we're fully 3v3. All done on `main`, full suite **68/68** green, balance re-verified.
+
+**Combat model (each stat one role, was a single atk·hp product):**
+- PWR = `round(pow·matchup)` damage · FOC = `round(foc·FOC_FLAT)` flat damage (matchup-independent → your bad-matchup
+  floor) · GRD = per-hit mitigation `round(grd·MIT)` (min 1 through) over flat HP · SPD = one-time **opening strike**
+  `round(speed·SPD_ALPHA·matchup)` for any HERO that outspeeds its target, before the rounds.
+- Combatant `{atk,hp,spd,type}` → **`{pow,grd,spd,foc,hp,type}`**. Consts `HP_FLAT=120, MIT=0.6, FOC_FLAT=1.2,
+  SPD_ALPHA=0.5`; foe curve `FLOOR=300/WALL=240000/STEEP=0.18` (boss auto-repinned).
+- **Balance held** (tool `tools/analyze-arena.js`): fresh 0 · 1 topic 9 · 3 topics 11 · 10 topics 13 · 50% cat 37 ·
+  full 120, monotone (no plateau). Stat leverage all positive + niche-distinct: PWR/FOC strongest into advantage,
+  FOC best into disadvantage (the floor), GRD best in neutral, SPD positive in neutral/disadvantage.
+
+**1v1 junked (fully 3v3):** removed `Enemies.statBattle`, the tier `def` field + its calibration, the `def`/statBattle
+exports, the `def` columns in `combat.json`/`balance.json` tiers, and deleted `arena.test.js` (+ its CI step). Updated
+`combat-export.js` (`constants.combat` block, new combatant shape, new `_resolution` recipe), `content-export.js`
+(no `def`), and the parity/source-fidelity gates (`combat-parity` / `content-parity` / `arena3`) to the new formulas.
+
+**UI/animation:** tier card now shows the real lead-foe threat (PWR · HP) not "DEF n"; party-pick cards show each
+hero's PWR/GRD/SPD/FOC + the type-matchup badge; a collapsible "How battles work" primer (owner-approved wording)
+explains the 4 roles + the Brawn▸Cunning▸Arcane▸Brawn triangle; the playout reads the sim log's new `{open,adv,blocked}`
+flags for "Opening strike! / Advantage ×1.5 / Blocked / KO" callouts + an opening-strike spark.
+
+**→ Brickmap:** combat.json + combat-vectors.json regenerated (shape changed). When the (paused) port resumes, re-sync
+both and update `combat.rs` to the new `{pow,grd,spd,foc,hp}` sim — see the 🔧 block at the top of `NEXT.md` for the
+full spec. Supersedes the earlier `11ef041` re-sync note.
