@@ -6,6 +6,34 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: RE-SYNC to the redesigned combat model ([B], GO)
+
+Resumed after a pause to find the **Arena combat model was redesigned** (`main` `b49e62b`) — bigger
+than a rebalance: all 4 stats now have a distinct role and the 1v1 path is gone. Re-synced the
+regenerated `combat.json` + `combat-vectors.json` and **rewrote `combat.rs` to the new model** so the
+port ships the NEW arena, not the old one. `00-1/brickmap` `75051b8`.
+- **New combatant** `{pow,grd,spd,foc,hp,type}`. Heroes: the four stats verbatim + flat `hp=HP_FLAT(120)`
+  (so `hero_combatant` is a direct map now, not the old atk/hp formula). Foes: `{pow,hp}` from the
+  budget curve, `grd=foc=0`.
+- **Stat roles:** PWR `round(pow·mu)` typed dmg · FOC `round(foc·FOC_FLAT)` flat floor · GRD per-hit
+  mitigation `round(grd·MIT)` (min 1 through) · SPD a one-time **opening strike**
+  `round(spd·SPD_ALPHA·mu)` for any hero that outspeeds its target, before the rounds. Per-hit dmg
+  `= max(1, round(pow·mu)+round(foc·FOC_FLAT) − round(tgt.grd·MIT))`. Constants `HP_FLAT 120, MIT 0.6,
+  FOC_FLAT 1.2, SPD_ALPHA 0.5` from `constants.combat`. Removed `def`/1v1.
+- **Re-proven vs ALL the regenerated vectors:** 240 headline `teamBattle` (these exercise the opening
+  strikes + new damage across empty/drillAll/full), 36 `effectiveStats`, 5 `heroCombatant`
+  `{pow,grd,spd,foc,hp}`, the turn-by-turn log fixture, ladder completeness. `effective_stats`,
+  `next_tier`, `foe_kinds`, loot + `Save::resolve_arena` are model-agnostic and unchanged (the
+  resolve-arena win test still holds).
+- goblin-gold **82** lib tests; clippy `-D warnings` clean native + aarch64-linux-android; fmt clean.
+  Pushed to `main` + the feature branch.
+- **▶ NEXT:** the Arena **screen** to the VISUAL-PARITY bar (per `VISUAL-PARITY.md` + the
+  `arena-web.png` ref + the render→compare→golden loop). Portraits wait on the Babysitter's `drawIcon`
+  pixel-grid export; I'll build the structure/type-colours/ratings I can now and slot portraits when
+  that lands. Then T233c event-play.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: Arena backend (grant + tier progression) ([B], GO) · WIP-checkpoint
 
 Clean **checkpoint** between the vector-proven combat core and the Arena screen (paused mid-feature;
