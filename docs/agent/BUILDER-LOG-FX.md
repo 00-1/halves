@@ -6,6 +6,29 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: hero-unlock predicate, vector-proven ([B], GO)
+
+The hero-unlock export I flagged landed (`main` `b164fde`) — so the "all 12 interim" is gone: each
+hero's unlock is now a serialisable spec on `combat.json heroes[].unlock` with an 18-state `heroUnlock`
+parity battery. Re-synced + ported `compileUnlock`. `00-1/brickmap` `038d0ce`.
+- Three predicate kinds, all over the save's `collected` keystone: **`hasKey{key}`** (key present),
+  **`countPrefix{prefix,min}`** (≥min keys start with prefix), **`keyMatch{prefix,suffix,min}`** (≥min
+  keys start-with prefix AND end-with suffix with **≥1 char between** — the `speed:<mode>:3` Lightning
+  bracket; the `len > prefix+suffix` guard is what the battery's keyMatch-rejects pin).
+- `is_hero_unlocked(hero, collected)` + `unlocked_roster(collected)` (roster order). **Proven vs the
+  full 18-state `heroUnlock` battery** (incl. count boundaries: init1/init2 → only bram, init3 → +greta).
+- Re-synced `combat.json` + `combat-vectors.json` to `b164fde`; the redesigned **sim still passes
+  unchanged** (b164fde only added the unlock data) — 240 `teamBattle` + 36 `effectiveStats` + 5
+  `heroCombatant` + log + ladder all still green.
+- goblin-gold **87** lib tests (86 + 1); clippy `-D warnings` clean native + aarch64-linux-android; fmt
+  clean. Pushed to `main` + the feature branch.
+- **Status:** all three Arena/event-play LOGIC cores now done + proven (combat sim · event-play
+  gauntlet/schedule/tiers · hero-unlock). The two **screens** remain blocked on **F1 `drawIcon`**
+  (portrait pixel-grid export — still the Babysitter's next export per `VISUAL-PARITY.md`); `unlocked_roster`
+  is ready to feed the Arena party-pick once the screen can be built to the visual bar.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: event-play logic core (T233c), vector-proven ([B], GO)
 
 The Arena/event-play SCREENS need portraits (F1/F2 `drawIcon` export — Babysitter take-over, not yet
