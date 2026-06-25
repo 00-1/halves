@@ -47,722 +47,602 @@
       {
         "n": 1,
         "name": "Goblin Warren Runt",
-        "type": "Brawn",
-        "def": 11
+        "type": "Brawn"
       },
       {
         "n": 2,
         "name": "Goblin Warren Sentry",
-        "type": "Arcane",
-        "def": 12
+        "type": "Arcane"
       },
       {
         "n": 3,
         "name": "Goblin Warren Brute",
-        "type": "Cunning",
-        "def": 12
+        "type": "Cunning"
       },
       {
         "n": 4,
         "name": "Goblin Warren Raider",
-        "type": "Brawn",
-        "def": 13
+        "type": "Brawn"
       },
       {
         "n": 5,
         "name": "Goblin Warren Warden",
-        "type": "Arcane",
-        "def": 13
+        "type": "Arcane"
       },
       {
         "n": 6,
         "name": "Goblin Warren Champion",
-        "type": "Cunning",
-        "def": 14
+        "type": "Cunning"
       },
       {
         "n": 7,
         "name": "Goblin Warren Reaver",
-        "type": "Brawn",
-        "def": 15
+        "type": "Brawn"
       },
       {
         "n": 8,
         "name": "Goblin Warren Dread",
-        "type": "Arcane",
-        "def": 16
+        "type": "Arcane"
       },
       {
         "n": 9,
         "name": "Goblin Warren Warlord",
-        "type": "Cunning",
-        "def": 16
+        "type": "Cunning"
       },
       {
         "n": 10,
         "name": "Goblin Warren Overlord",
-        "type": "Brawn",
-        "def": 17
+        "type": "Brawn"
       },
       {
         "n": 11,
         "name": "Goblin Warren Tyrant",
-        "type": "Arcane",
-        "def": 18
+        "type": "Arcane"
       },
       {
         "n": 12,
         "name": "Goblin King",
-        "type": "Brawn",
-        "def": 19
+        "type": "Brawn"
       },
       {
         "n": 13,
         "name": "Gallowmarch Runt",
-        "type": "Brawn",
-        "def": 20
+        "type": "Brawn"
       },
       {
         "n": 14,
         "name": "Gallowmarch Sentry",
-        "type": "Arcane",
-        "def": 21
+        "type": "Arcane"
       },
       {
         "n": 15,
         "name": "Gallowmarch Brute",
-        "type": "Cunning",
-        "def": 22
+        "type": "Cunning"
       },
       {
         "n": 16,
         "name": "Gallowmarch Raider",
-        "type": "Brawn",
-        "def": 23
+        "type": "Brawn"
       },
       {
         "n": 17,
         "name": "Gallowmarch Warden",
-        "type": "Arcane",
-        "def": 24
+        "type": "Arcane"
       },
       {
         "n": 18,
         "name": "Gallowmarch Champion",
-        "type": "Cunning",
-        "def": 26
+        "type": "Cunning"
       },
       {
         "n": 19,
         "name": "Gallowmarch Reaver",
-        "type": "Brawn",
-        "def": 27
+        "type": "Brawn"
       },
       {
         "n": 20,
         "name": "Gallowmarch Dread",
-        "type": "Arcane",
-        "def": 28
+        "type": "Arcane"
       },
       {
         "n": 21,
         "name": "Gallowmarch Warlord",
-        "type": "Cunning",
-        "def": 30
+        "type": "Cunning"
       },
       {
         "n": 22,
         "name": "Gallowmarch Overlord",
-        "type": "Brawn",
-        "def": 31
+        "type": "Brawn"
       },
       {
         "n": 23,
         "name": "Gallowmarch Tyrant",
-        "type": "Arcane",
-        "def": 33
+        "type": "Arcane"
       },
       {
         "n": 24,
         "name": "The Highwayman",
-        "type": "Arcane",
-        "def": 35
+        "type": "Arcane"
       },
       {
         "n": 25,
         "name": "Gloamwood Runt",
-        "type": "Brawn",
-        "def": 36
+        "type": "Brawn"
       },
       {
         "n": 26,
         "name": "Gloamwood Sentry",
-        "type": "Arcane",
-        "def": 38
+        "type": "Arcane"
       },
       {
         "n": 27,
         "name": "Gloamwood Brute",
-        "type": "Cunning",
-        "def": 40
+        "type": "Cunning"
       },
       {
         "n": 28,
         "name": "Gloamwood Raider",
-        "type": "Brawn",
-        "def": 42
+        "type": "Brawn"
       },
       {
         "n": 29,
         "name": "Gloamwood Warden",
-        "type": "Arcane",
-        "def": 44
+        "type": "Arcane"
       },
       {
         "n": 30,
         "name": "Gloamwood Champion",
-        "type": "Cunning",
-        "def": 47
+        "type": "Cunning"
       },
       {
         "n": 31,
         "name": "Gloamwood Reaver",
-        "type": "Brawn",
-        "def": 49
+        "type": "Brawn"
       },
       {
         "n": 32,
         "name": "Gloamwood Dread",
-        "type": "Arcane",
-        "def": 51
+        "type": "Arcane"
       },
       {
         "n": 33,
         "name": "Gloamwood Warlord",
-        "type": "Cunning",
-        "def": 54
+        "type": "Cunning"
       },
       {
         "n": 34,
         "name": "Gloamwood Overlord",
-        "type": "Brawn",
-        "def": 57
+        "type": "Brawn"
       },
       {
         "n": 35,
         "name": "Gloamwood Tyrant",
-        "type": "Arcane",
-        "def": 60
+        "type": "Arcane"
       },
       {
         "n": 36,
         "name": "Old Mother Bramble",
-        "type": "Cunning",
-        "def": 63
+        "type": "Cunning"
       },
       {
         "n": 37,
         "name": "Haunted Marsh Runt",
-        "type": "Brawn",
-        "def": 66
+        "type": "Brawn"
       },
       {
         "n": 38,
         "name": "Haunted Marsh Sentry",
-        "type": "Arcane",
-        "def": 69
+        "type": "Arcane"
       },
       {
         "n": 39,
         "name": "Haunted Marsh Brute",
-        "type": "Cunning",
-        "def": 73
+        "type": "Cunning"
       },
       {
         "n": 40,
         "name": "Haunted Marsh Raider",
-        "type": "Brawn",
-        "def": 77
+        "type": "Brawn"
       },
       {
         "n": 41,
         "name": "Haunted Marsh Warden",
-        "type": "Arcane",
-        "def": 80
+        "type": "Arcane"
       },
       {
         "n": 42,
         "name": "Haunted Marsh Champion",
-        "type": "Cunning",
-        "def": 85
+        "type": "Cunning"
       },
       {
         "n": 43,
         "name": "Haunted Marsh Reaver",
-        "type": "Brawn",
-        "def": 89
+        "type": "Brawn"
       },
       {
         "n": 44,
         "name": "Haunted Marsh Dread",
-        "type": "Arcane",
-        "def": 93
+        "type": "Arcane"
       },
       {
         "n": 45,
         "name": "Haunted Marsh Warlord",
-        "type": "Cunning",
-        "def": 98
+        "type": "Cunning"
       },
       {
         "n": 46,
         "name": "Haunted Marsh Overlord",
-        "type": "Brawn",
-        "def": 103
+        "type": "Brawn"
       },
       {
         "n": 47,
         "name": "Haunted Marsh Tyrant",
-        "type": "Arcane",
-        "def": 108
+        "type": "Arcane"
       },
       {
         "n": 48,
         "name": "Gurgle, King of the Bog",
-        "type": "Brawn",
-        "def": 114
+        "type": "Brawn"
       },
       {
         "n": 49,
         "name": "Frostpeak Caverns Runt",
-        "type": "Brawn",
-        "def": 120
+        "type": "Brawn"
       },
       {
         "n": 50,
         "name": "Frostpeak Caverns Sentry",
-        "type": "Arcane",
-        "def": 126
+        "type": "Arcane"
       },
       {
         "n": 51,
         "name": "Frostpeak Caverns Brute",
-        "type": "Cunning",
-        "def": 132
+        "type": "Cunning"
       },
       {
         "n": 52,
         "name": "Frostpeak Caverns Raider",
-        "type": "Brawn",
-        "def": 139
+        "type": "Brawn"
       },
       {
         "n": 53,
         "name": "Frostpeak Caverns Warden",
-        "type": "Arcane",
-        "def": 146
+        "type": "Arcane"
       },
       {
         "n": 54,
         "name": "Frostpeak Caverns Champion",
-        "type": "Cunning",
-        "def": 154
+        "type": "Cunning"
       },
       {
         "n": 55,
         "name": "Frostpeak Caverns Reaver",
-        "type": "Brawn",
-        "def": 161
+        "type": "Brawn"
       },
       {
         "n": 56,
         "name": "Frostpeak Caverns Dread",
-        "type": "Arcane",
-        "def": 170
+        "type": "Arcane"
       },
       {
         "n": 57,
         "name": "Frostpeak Caverns Warlord",
-        "type": "Cunning",
-        "def": 178
+        "type": "Cunning"
       },
       {
         "n": 58,
         "name": "Frostpeak Caverns Overlord",
-        "type": "Brawn",
-        "def": 187
+        "type": "Brawn"
       },
       {
         "n": 59,
         "name": "Frostpeak Caverns Tyrant",
-        "type": "Arcane",
-        "def": 197
+        "type": "Arcane"
       },
       {
         "n": 60,
         "name": "The Frost Jarl",
-        "type": "Arcane",
-        "def": 207
+        "type": "Arcane"
       },
       {
         "n": 61,
         "name": "Drownholm Runt",
-        "type": "Brawn",
-        "def": 218
+        "type": "Brawn"
       },
       {
         "n": 62,
         "name": "Drownholm Sentry",
-        "type": "Arcane",
-        "def": 229
+        "type": "Arcane"
       },
       {
         "n": 63,
         "name": "Drownholm Brute",
-        "type": "Cunning",
-        "def": 240
+        "type": "Cunning"
       },
       {
         "n": 64,
         "name": "Drownholm Raider",
-        "type": "Brawn",
-        "def": 253
+        "type": "Brawn"
       },
       {
         "n": 65,
         "name": "Drownholm Warden",
-        "type": "Arcane",
-        "def": 265
+        "type": "Arcane"
       },
       {
         "n": 66,
         "name": "Drownholm Champion",
-        "type": "Cunning",
-        "def": 279
+        "type": "Cunning"
       },
       {
         "n": 67,
         "name": "Drownholm Reaver",
-        "type": "Brawn",
-        "def": 293
+        "type": "Brawn"
       },
       {
         "n": 68,
         "name": "Drownholm Dread",
-        "type": "Arcane",
-        "def": 308
+        "type": "Arcane"
       },
       {
         "n": 69,
         "name": "Drownholm Warlord",
-        "type": "Cunning",
-        "def": 324
+        "type": "Cunning"
       },
       {
         "n": 70,
         "name": "Drownholm Overlord",
-        "type": "Brawn",
-        "def": 340
+        "type": "Brawn"
       },
       {
         "n": 71,
         "name": "Drownholm Tyrant",
-        "type": "Arcane",
-        "def": 358
+        "type": "Arcane"
       },
       {
         "n": 72,
         "name": "Bonecaller",
-        "type": "Cunning",
-        "def": 376
+        "type": "Cunning"
       },
       {
         "n": 73,
         "name": "Cinderwaste Runt",
-        "type": "Brawn",
-        "def": 395
+        "type": "Brawn"
       },
       {
         "n": 74,
         "name": "Cinderwaste Sentry",
-        "type": "Arcane",
-        "def": 415
+        "type": "Arcane"
       },
       {
         "n": 75,
         "name": "Cinderwaste Brute",
-        "type": "Cunning",
-        "def": 437
+        "type": "Cunning"
       },
       {
         "n": 76,
         "name": "Cinderwaste Raider",
-        "type": "Brawn",
-        "def": 459
+        "type": "Brawn"
       },
       {
         "n": 77,
         "name": "Cinderwaste Warden",
-        "type": "Arcane",
-        "def": 482
+        "type": "Arcane"
       },
       {
         "n": 78,
         "name": "Cinderwaste Champion",
-        "type": "Cunning",
-        "def": 507
+        "type": "Cunning"
       },
       {
         "n": 79,
         "name": "Cinderwaste Reaver",
-        "type": "Brawn",
-        "def": 533
+        "type": "Brawn"
       },
       {
         "n": 80,
         "name": "Cinderwaste Dread",
-        "type": "Arcane",
-        "def": 560
+        "type": "Arcane"
       },
       {
         "n": 81,
         "name": "Cinderwaste Warlord",
-        "type": "Cunning",
-        "def": 581
+        "type": "Cunning"
       },
       {
         "n": 82,
         "name": "Cinderwaste Overlord",
-        "type": "Brawn",
-        "def": 581
+        "type": "Brawn"
       },
       {
         "n": 83,
         "name": "Cinderwaste Tyrant",
-        "type": "Arcane",
-        "def": 585
+        "type": "Arcane"
       },
       {
         "n": 84,
         "name": "Cindermaw",
-        "type": "Brawn",
-        "def": 585
+        "type": "Brawn"
       },
       {
         "n": 85,
         "name": "Stormspire Runt",
-        "type": "Brawn",
-        "def": 592
+        "type": "Brawn"
       },
       {
         "n": 86,
         "name": "Stormspire Sentry",
-        "type": "Arcane",
-        "def": 592
+        "type": "Arcane"
       },
       {
         "n": 87,
         "name": "Stormspire Brute",
-        "type": "Cunning",
-        "def": 592
+        "type": "Cunning"
       },
       {
         "n": 88,
         "name": "Stormspire Raider",
-        "type": "Brawn",
-        "def": 592
+        "type": "Brawn"
       },
       {
         "n": 89,
         "name": "Stormspire Warden",
-        "type": "Arcane",
-        "def": 603
+        "type": "Arcane"
       },
       {
         "n": 90,
         "name": "Stormspire Champion",
-        "type": "Cunning",
-        "def": 603
+        "type": "Cunning"
       },
       {
         "n": 91,
         "name": "Stormspire Reaver",
-        "type": "Brawn",
-        "def": 603
+        "type": "Brawn"
       },
       {
         "n": 92,
         "name": "Stormspire Dread",
-        "type": "Arcane",
-        "def": 603
+        "type": "Arcane"
       },
       {
         "n": 93,
         "name": "Stormspire Warlord",
-        "type": "Cunning",
-        "def": 603
+        "type": "Cunning"
       },
       {
         "n": 94,
         "name": "Stormspire Overlord",
-        "type": "Brawn",
-        "def": 603
+        "type": "Brawn"
       },
       {
         "n": 95,
         "name": "Stormspire Tyrant",
-        "type": "Arcane",
-        "def": 618
+        "type": "Arcane"
       },
       {
         "n": 96,
         "name": "Voltan, Lord of Storms",
-        "type": "Arcane",
-        "def": 618
+        "type": "Arcane"
       },
       {
         "n": 97,
         "name": "Dragon's Roost Runt",
-        "type": "Brawn",
-        "def": 618
+        "type": "Brawn"
       },
       {
         "n": 98,
         "name": "Dragon's Roost Sentry",
-        "type": "Arcane",
-        "def": 622
+        "type": "Arcane"
       },
       {
         "n": 99,
         "name": "Dragon's Roost Brute",
-        "type": "Cunning",
-        "def": 622
+        "type": "Cunning"
       },
       {
         "n": 100,
         "name": "Dragon's Roost Raider",
-        "type": "Brawn",
-        "def": 622
+        "type": "Brawn"
       },
       {
         "n": 101,
         "name": "Dragon's Roost Warden",
-        "type": "Arcane",
-        "def": 626
+        "type": "Arcane"
       },
       {
         "n": 102,
         "name": "Dragon's Roost Champion",
-        "type": "Cunning",
-        "def": 626
+        "type": "Cunning"
       },
       {
         "n": 103,
         "name": "Dragon's Roost Reaver",
-        "type": "Brawn",
-        "def": 626
+        "type": "Brawn"
       },
       {
         "n": 104,
         "name": "Dragon's Roost Dread",
-        "type": "Arcane",
-        "def": 637
+        "type": "Arcane"
       },
       {
         "n": 105,
         "name": "Dragon's Roost Warlord",
-        "type": "Cunning",
-        "def": 637
+        "type": "Cunning"
       },
       {
         "n": 106,
         "name": "Dragon's Roost Overlord",
-        "type": "Brawn",
-        "def": 637
+        "type": "Brawn"
       },
       {
         "n": 107,
         "name": "Dragon's Roost Tyrant",
-        "type": "Arcane",
-        "def": 644
+        "type": "Arcane"
       },
       {
         "n": 108,
         "name": "the Elder Wyrm",
-        "type": "Cunning",
-        "def": 644
+        "type": "Cunning"
       },
       {
         "n": 109,
         "name": "The Void Throne Runt",
-        "type": "Brawn",
-        "def": 644
+        "type": "Brawn"
       },
       {
         "n": 110,
         "name": "The Void Throne Sentry",
-        "type": "Arcane",
-        "def": 658
+        "type": "Arcane"
       },
       {
         "n": 111,
         "name": "The Void Throne Brute",
-        "type": "Cunning",
-        "def": 658
+        "type": "Cunning"
       },
       {
         "n": 112,
         "name": "The Void Throne Raider",
-        "type": "Brawn",
-        "def": 658
+        "type": "Brawn"
       },
       {
         "n": 113,
         "name": "The Void Throne Warden",
-        "type": "Arcane",
-        "def": 658
+        "type": "Arcane"
       },
       {
         "n": 114,
         "name": "The Void Throne Champion",
-        "type": "Cunning",
-        "def": 658
+        "type": "Cunning"
       },
       {
         "n": 115,
         "name": "The Void Throne Reaver",
-        "type": "Brawn",
-        "def": 658
+        "type": "Brawn"
       },
       {
         "n": 116,
         "name": "The Void Throne Dread",
-        "type": "Arcane",
-        "def": 662
+        "type": "Arcane"
       },
       {
         "n": 117,
         "name": "The Void Throne Warlord",
-        "type": "Cunning",
-        "def": 662
+        "type": "Cunning"
       },
       {
         "n": 118,
         "name": "The Void Throne Overlord",
-        "type": "Brawn",
-        "def": 662
+        "type": "Brawn"
       },
       {
         "n": 119,
         "name": "The Void Throne Tyrant",
-        "type": "Arcane",
-        "def": 669
+        "type": "Arcane"
       },
       {
         "n": 120,
         "name": "The Void Sovereign",
-        "type": "Arcane",
-        "def": 893
+        "type": "Arcane"
       }
     ]
   },

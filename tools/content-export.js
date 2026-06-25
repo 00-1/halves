@@ -217,7 +217,7 @@ const balanceOut = (function(){
       source: "gg1/dev/enemies.js",
       tierCount: Enemies.TIER_COUNT,
       regionSize: Enemies.REGION_SIZE,
-      tiers: Enemies.TIERS.map(t => ({ n: t.n, name: t.name, type: t.type, def: t.def }))
+      tiers: Enemies.TIERS.map(t => ({ n: t.n, name: t.name, type: t.type }))
     },
     heroes: {
       source: "gg1/dev/heroes.js",
@@ -306,7 +306,7 @@ function readmeDoc(){
 "- **`balance.json`** — `{ gold, enemies, heroes, crossRefs }`. `gold` is the tuning from",
 "  `main.js` (scalars `HOARD_G`/`GOLD_EMPTY`/`GOLD_FULL`, magnitude suffixes, first-time",
 "  bonuses, and the reward-formula fn sources — there is **no spending**, T26). `enemies` is",
-"  the 120-tier ladder (`{n,name,type,def}`); `heroes` is the 12-hero roster with base",
+"  the 120-tier ladder (`{n,name,type}`); `heroes` is the 12-hero roster with base",
 "  `{power,guard,speed,focus}` stats. `masterSecs` + the Collector ladder are cross-refs.",
 "",
 "## Regenerate",

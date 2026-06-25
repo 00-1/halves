@@ -41,42 +41,48 @@ function generate(){
   const combat = {
     _note: "GG1 3v3 Arena (main.js finishBattle ← Enemies.teamBattle, the T88 sim). DATA = ladder/enemyTeams/loot " +
       "(fixed, consume as-is — don't reproduce the FOE_BUDGET calibration). LOGIC proven by combat-vectors.json.",
-    _resolution: "teamBattle(party[1..3], tier, collected): each party hero → heroCombatant(effectiveStats(hero," +
-      "collected)); foes = combat.enemyTeams[tier]. simulateTeams: turn order = spd desc, ord asc (party ord 0..2, " +
-      "foes ord 100..102); each round, every still-alive actor in that order picks a target among the OTHER side's " +
-      "living units by max matchup(actor.type,tgt.type) → lowest hp → lowest ord, deals max(1, round(atk·matchup)); " +
-      "repeat rounds until one side is empty or guard 4000. Result {win = any party alive, heroesAlive, foesAlive, " +
-      "rounds = #rounds}. NO questions/RNG — pure payoff for what you've collected+climbed.",
+    _resolution: "teamBattle(party[1..3], tier, collected): each hero → combatant {pow:power, grd:guard, spd:speed, " +
+      "foc:focus, hp:HP_FLAT}; foes = combat.enemyTeams[tier] (grd=0, foc=0, hp/pow from budget). simulateTeams: order " +
+      "by spd desc, ord asc (party 0..2, foes 100..102). (1) OPENING STRIKE: each HERO (side 0) that OUTSPEEDS its " +
+      "target deals ONE hit of raw=round(speed·SPD_ALPHA·matchup). (2) Then rounds: every alive actor (that order) " +
+      "targets the other side by max matchup(type)→lowest hp→lowest ord, dealing dmg = max(1, [round(pow·matchup) + " +
+      "round(foc·FOC_FLAT)] − round(tgt.grd·MIT)). The opening uses its raw in place of the [pow/foc] bracket. Repeat " +
+      "until one side empty or guard 4000. Result {win=any hero alive, heroesAlive, foesAlive, rounds}. Each log entry " +
+      "adds {open, adv:matchup>1, blocked:mitigation≥half} for the playout. NO RNG.",
     _onWin: "main.js finishBattle: grant tier:<n> + combat.loot[n] (the loot ids) into collected, evaluate collector/" +
       "meta milestones, earn = tierGold(n, goldMult(col)) (see gold.json), earnGold crosses wealth. region cleared " +
       "when a boss (n % regionSize === 0) falls.",
     constants: { tierCount: TC, regionSize: RS, types: ["Brawn", "Arcane", "Cunning"],
       matchup: { same: 1.0, advantage: 1.5, disadvantage: 0.6 },                 // beats: Brawn>Cunning>Arcane>Brawn
-      hero: { HB: 22, HG: 1.4, HPP: 0.5, atk: "power + 0.8*focus", hp: "HB + guard*HG + power*HPP", spd: "speed" },
-      rating: "power*1.0 + focus*0.8 + speed*0.5 + guard*0.3   (display/odds only; the sim uses combatant atk/hp)" },
+      // COMBAT (each stat one role): PWR=damage·matchup · FOC=flat damage (matchup-independent) · GRD=mitigation · SPD=opening strike
+      combat: { HP_FLAT: 120, MIT: 0.6, FOC_FLAT: 1.2, SPD_ALPHA: 0.5,
+        hero: "{pow:power, grd:guard, spd:speed, foc:focus, hp:HP_FLAT}",
+        damage: "max(1, round(pow*matchup) + round(foc*FOC_FLAT) - round(target.grd*MIT))",
+        opening: "a hero that outspeeds its target → one hit of round(speed*SPD_ALPHA*matchup), then mitigated" },
+      rating: "power*1.0 + focus*0.8 + speed*0.5 + guard*0.3   (the auto party-picker's heuristic only; NOT the sim)" },
     heroes: H.HEROES.map(h => ({ id: h.id, type: h.type, base: h.base, unlockHint: h.unlockHint })),
     // effectiveStats(hero,col) = hero.base + Σ boost.amount over OWNED items whose boost.hero === hero.id, per stat.
     // The 2352 DRILL boosts already live in collectibles.json (`catalog[].boost`); combat.json adds ONLY the LOOT
     // boosts (loot is granted by Arena wins, so it's absent from the collectibles catalogue). Merge both maps.
     lootBoosts: C.CATALOG.filter(it => /^loot:/.test(it.id) && it.boost)
       .map(it => ({ id: it.id, hero: it.boost.hero, stat: it.boost.stat, amount: it.boost.amount })),
-    // the fixed 120-tier ladder + each tier's 3 enemy combatants (atk/hp/spd/type, FULL precision) + loot ids
+    // the fixed 120-tier ladder + each tier's 3 enemy combatants (pow/grd/spd/foc/hp/type, FULL precision) + loot ids
     tiers: [], enemyTeams: {}, loot: {},
   };
   for(let n = 1; n <= TC; n++){
     const t = E.byTier(n);
-    combat.tiers.push({ n, name: t.name, type: t.type, def: t.def, boss: n % RS === 0 });
-    combat.enemyTeams[n] = E.enemyTeam(n).map(c => ({ atk: c.atk, hp: c.hp, spd: c.spd, type: c.type }));
+    combat.tiers.push({ n, name: t.name, type: t.type, boss: n % RS === 0 });
+    combat.enemyTeams[n] = E.enemyTeam(n).map(c => ({ pow: c.pow, grd: c.grd, spd: c.spd, foc: c.foc, hp: c.hp, type: c.type }));
     combat.loot[n] = E.tierLoot(n);
   }
 
   // ---- (2) parity VECTORS (from the live sim) --------------------------------
   const vectors = { heroCombatant: [], effectiveStats: [], teamBattle: [], teamBattleLog: null };
 
-  // heroCombatant — pure formula proof: explicit stats → {atk,hp,spd} (no col)
+  // heroCombatant — the combatant a hero's effective stats produce (pow/grd/spd/foc carry through; hp is flat)
   for(const s of [{power:14,guard:12,speed:6,focus:6},{power:18,guard:8,speed:7,focus:5},
                   {power:7,guard:6,speed:10,focus:15},{power:11,guard:8,speed:17,focus:7},{power:0,guard:0,speed:0,focus:0}])
-    vectors.heroCombatant.push({ stats: s, atk: s.power + 0.8 * s.focus, hp: 22 + s.guard * 1.4 + s.power * 0.5, spd: s.speed });
+    vectors.heroCombatant.push({ stats: s, combatant: { pow: s.power, grd: s.guard, spd: s.speed, foc: s.focus, hp: 120 } });
 
   // effectiveStats — base + owned boosts, per hero per keyword col (proves the boost summation)
   for(const kw of KWS){ const col = colFor(kw);

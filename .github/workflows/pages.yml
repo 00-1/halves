@@ -36,8 +36,6 @@ jobs:
         run: node gg1/dev/test/codex.test.js
       - name: Developer mode + reveal-all (T184) test (gate)
         run: node gg1/dev/test/dev-reveal.test.js
-      - name: Arena stat-check test (gate)
-        run: node gg1/dev/test/arena.test.js
       - name: Practice hints test (gate)
         run: node gg1/dev/test/hints.test.js
       - name: Practice flow test (gate)

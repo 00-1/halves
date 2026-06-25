@@ -20,27 +20,32 @@ ok(read("content/gg1/combat-vectors.json") === JSON.stringify(vectors) + "\n", "
 // (2) source fidelity — the sim is generated from these exact lines
 const en = read("gg1/dev/enemies.js"), he = read("gg1/dev/heroes.js");
 [
-  ["enemies.js heroCombatant", en, "atk: s.power + 0.8 * s.focus, hp: HB + s.guard * HG + s.power * HPP"],
-  ["enemies.js dmg", en, "const dmg = Math.max(1, Math.round(actor.atk * H.matchup(actor.type, tgt.type)));"],
+  ["enemies.js heroCombatant", en, "return { pow: s.power, grd: s.guard, spd: s.speed, foc: s.focus, hp: HP_FLAT, type: hero.type };"],
+  ["enemies.js dmg", en, "const dmg = Math.max(1, pre - mit);"],
+  ["enemies.js offense", en, "Math.round(actor.pow * mu) + Math.round(actor.foc * FOC_FLAT)"],
+  ["enemies.js mitigation", en, "const mit = Math.round(tgt.grd * MIT), pre = Math.round(raw);"],
+  ["enemies.js opening", en, "resolve(actor, tgt, actor.spd * SPD_ALPHA * mu, mu, 0, true);"],
   ["enemies.js order", en, "all.slice().sort((a, b) => b.spd - a.spd || a.ord - b.ord)"],
-  ["enemies.js HB/HG/HPP", en, "const HB = 22, HG = 1.4, HPP = 0.5;"],
+  ["enemies.js combat consts", en, "const HP_FLAT = 120;"],
   ["heroes.js matchup", he, "function matchup(a, b){ return a === b ? 1.0 : (beats(a, b) ? 1.5 : 0.6); }"],
   ["heroes.js beats", he, 'function beats(a, b){ return (a==="Brawn"&&b==="Cunning") || (a==="Cunning"&&b==="Arcane") || (a==="Arcane"&&b==="Brawn"); }'],
   ["heroes.js ratingOf", he, "function ratingOf(s){ return s.power * 1.0 + s.focus * 0.8 + s.speed * 0.5 + s.guard * 0.3; }"],
 ].forEach(([label, src, s]) => ok(src.includes(s), "source fidelity: " + label));
 
-// (3a) ladder — 120 tiers, def NON-DECREASING (cap-envelope guarantee), tier1=11, boss every 12th
+// (3a) ladder — 120 tiers, foe budget NON-DECREASING (no easier-deeper tier), boss every 12th
 const T = combat.tiers;
+const budget = n => { const c = combat.enemyTeams[n][0]; return c.pow * c.pow + c.hp * c.hp; }; // monotone proxy on the lead foe
 ok(T.length === 120, "120 tiers");
-ok(T[0].def === 11, "tier 1 def === 11 (DEF_BASE)");
-ok(T.every((t, i) => i === 0 || t.def >= T[i - 1].def), "def is non-decreasing across the ladder (no easier-deeper tier)");
+ok(T.every((t, i) => i === 0 || budget(t.n) >= budget(T[i - 1].n) - 1e-6), "foe budget is non-decreasing across the ladder (no easier-deeper tier)");
 ok(T.every(t => (t.n % combat.constants.regionSize === 0) === t.boss), "boss flag === (n % regionSize === 0)");
 ok(T.every(t => combat.constants.types.includes(t.type)), "every tier type is a valid type");
+ok(T.every(t => !("def" in t)), "no vestigial 1v1 `def` field on tiers (fully 3v3)");
 
-// (3b) heroCombatant formula reconstruction (full f64)
-ok(vectors.heroCombatant.every(v =>
-  v.atk === v.stats.power + 0.8 * v.stats.focus && v.hp === 22 + v.stats.guard * 1.4 + v.stats.power * 0.5),
-  "heroCombatant: atk = power+0.8·focus, hp = 22+guard·1.4+power·0.5");
+// (3b) heroCombatant — the combatant carries pow/grd/spd/foc through; hp is flat (HP_FLAT)
+ok(vectors.heroCombatant.every(v => {
+  const c = v.combatant;
+  return c.pow === v.stats.power && c.grd === v.stats.guard && c.spd === v.stats.speed && c.foc === v.stats.focus && c.hp === 120;
+}), "heroCombatant: {pow,grd,spd,foc} = stats, hp = HP_FLAT(120)");
 
 // (3c) effectiveStats monotone in ownership (more owned ⇒ each stat ≥) for every hero
 for(const h of combat.heroes.map(x => x.id)){

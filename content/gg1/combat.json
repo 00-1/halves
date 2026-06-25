@@ -1,6 +1,6 @@
 {
  "_note": "GG1 3v3 Arena (main.js finishBattle ← Enemies.teamBattle, the T88 sim). DATA = ladder/enemyTeams/loot (fixed, consume as-is — don't reproduce the FOE_BUDGET calibration). LOGIC proven by combat-vectors.json.",
- "_resolution": "teamBattle(party[1..3], tier, collected): each party hero → heroCombatant(effectiveStats(hero,collected)); foes = combat.enemyTeams[tier]. simulateTeams: turn order = spd desc, ord asc (party ord 0..2, foes ord 100..102); each round, every still-alive actor in that order picks a target among the OTHER side's living units by max matchup(actor.type,tgt.type) → lowest hp → lowest ord, deals max(1, round(atk·matchup)); repeat rounds until one side is empty or guard 4000. Result {win = any party alive, heroesAlive, foesAlive, rounds = #rounds}. NO questions/RNG — pure payoff for what you've collected+climbed.",
+ "_resolution": "teamBattle(party[1..3], tier, collected): each hero → combatant {pow:power, grd:guard, spd:speed, foc:focus, hp:HP_FLAT}; foes = combat.enemyTeams[tier] (grd=0, foc=0, hp/pow from budget). simulateTeams: order by spd desc, ord asc (party 0..2, foes 100..102). (1) OPENING STRIKE: each HERO (side 0) that OUTSPEEDS its target deals ONE hit of raw=round(speed·SPD_ALPHA·matchup). (2) Then rounds: every alive actor (that order) targets the other side by max matchup(type)→lowest hp→lowest ord, dealing dmg = max(1, [round(pow·matchup) + round(foc·FOC_FLAT)] − round(tgt.grd·MIT)). The opening uses its raw in place of the [pow/foc] bracket. Repeat until one side empty or guard 4000. Result {win=any hero alive, heroesAlive, foesAlive, rounds}. Each log entry adds {open, adv:matchup>1, blocked:mitigation≥half} for the playout. NO RNG.",
  "_onWin": "main.js finishBattle: grant tier:<n> + combat.loot[n] (the loot ids) into collected, evaluate collector/meta milestones, earn = tierGold(n, goldMult(col)) (see gold.json), earnGold crosses wealth. region cleared when a boss (n % regionSize === 0) falls.",
  "constants": {
   "tierCount": 120,
@@ -15,15 +15,16 @@
    "advantage": 1.5,
    "disadvantage": 0.6
   },
-  "hero": {
-   "HB": 22,
-   "HG": 1.4,
-   "HPP": 0.5,
-   "atk": "power + 0.8*focus",
-   "hp": "HB + guard*HG + power*HPP",
-   "spd": "speed"
+  "combat": {
+   "HP_FLAT": 120,
+   "MIT": 0.6,
+   "FOC_FLAT": 1.2,
+   "SPD_ALPHA": 0.5,
+   "hero": "{pow:power, grd:guard, spd:speed, foc:focus, hp:HP_FLAT}",
+   "damage": "max(1, round(pow*matchup) + round(foc*FOC_FLAT) - round(target.grd*MIT))",
+   "opening": "a hero that outspeeds its target → one hit of round(speed*SPD_ALPHA*matchup), then mitigated"
   },
-  "rating": "power*1.0 + focus*0.8 + speed*0.5 + guard*0.3   (display/odds only; the sim uses combatant atk/hp)"
+  "rating": "power*1.0 + focus*0.8 + speed*0.5 + guard*0.3   (the auto party-picker's heuristic only; NOT the sim)"
  },
  "heroes": [
   {
@@ -2266,3241 +2267,3841 @@
    "n": 1,
    "name": "Goblin Warren Runt",
    "type": "Brawn",
-   "def": 11,
    "boss": false
   },
   {
    "n": 2,
    "name": "Goblin Warren Sentry",
    "type": "Arcane",
-   "def": 12,
    "boss": false
   },
   {
    "n": 3,
    "name": "Goblin Warren Brute",
    "type": "Cunning",
-   "def": 12,
    "boss": false
   },
   {
    "n": 4,
    "name": "Goblin Warren Raider",
    "type": "Brawn",
-   "def": 13,
    "boss": false
   },
   {
    "n": 5,
    "name": "Goblin Warren Warden",
    "type": "Arcane",
-   "def": 13,
    "boss": false
   },
   {
    "n": 6,
    "name": "Goblin Warren Champion",
    "type": "Cunning",
-   "def": 14,
    "boss": false
   },
   {
    "n": 7,
    "name": "Goblin Warren Reaver",
    "type": "Brawn",
-   "def": 15,
    "boss": false
   },
   {
    "n": 8,
    "name": "Goblin Warren Dread",
    "type": "Arcane",
-   "def": 16,
    "boss": false
   },
   {
    "n": 9,
    "name": "Goblin Warren Warlord",
    "type": "Cunning",
-   "def": 16,
    "boss": false
   },
   {
    "n": 10,
    "name": "Goblin Warren Overlord",
    "type": "Brawn",
-   "def": 17,
    "boss": false
   },
   {
    "n": 11,
    "name": "Goblin Warren Tyrant",
    "type": "Arcane",
-   "def": 18,
    "boss": false
   },
   {
    "n": 12,
    "name": "Goblin King",
    "type": "Brawn",
-   "def": 19,
    "boss": true
   },
   {
    "n": 13,
    "name": "Gallowmarch Runt",
    "type": "Brawn",
-   "def": 20,
    "boss": false
   },
   {
    "n": 14,
    "name": "Gallowmarch Sentry",
    "type": "Arcane",
-   "def": 21,
    "boss": false
   },
   {
    "n": 15,
    "name": "Gallowmarch Brute",
    "type": "Cunning",
-   "def": 22,
    "boss": false
   },
   {
    "n": 16,
    "name": "Gallowmarch Raider",
    "type": "Brawn",
-   "def": 23,
    "boss": false
   },
   {
    "n": 17,
    "name": "Gallowmarch Warden",
    "type": "Arcane",
-   "def": 24,
    "boss": false
   },
   {
    "n": 18,
    "name": "Gallowmarch Champion",
    "type": "Cunning",
-   "def": 26,
    "boss": false
   },
   {
    "n": 19,
    "name": "Gallowmarch Reaver",
    "type": "Brawn",
-   "def": 27,
    "boss": false
   },
   {
    "n": 20,
    "name": "Gallowmarch Dread",
    "type": "Arcane",
-   "def": 28,
    "boss": false
   },
   {
    "n": 21,
    "name": "Gallowmarch Warlord",
    "type": "Cunning",
-   "def": 30,
    "boss": false
   },
   {
    "n": 22,
    "name": "Gallowmarch Overlord",
    "type": "Brawn",
-   "def": 31,
    "boss": false
   },
   {
    "n": 23,
    "name": "Gallowmarch Tyrant",
    "type": "Arcane",
-   "def": 33,
    "boss": false
   },
   {
    "n": 24,
    "name": "The Highwayman",
    "type": "Arcane",
-   "def": 35,
    "boss": true
   },
   {
    "n": 25,
    "name": "Gloamwood Runt",
    "type": "Brawn",
-   "def": 36,
    "boss": false
   },
   {
    "n": 26,
    "name": "Gloamwood Sentry",
    "type": "Arcane",
-   "def": 38,
    "boss": false
   },
   {
    "n": 27,
    "name": "Gloamwood Brute",
    "type": "Cunning",
-   "def": 40,
    "boss": false
   },
   {
    "n": 28,
    "name": "Gloamwood Raider",
    "type": "Brawn",
-   "def": 42,
    "boss": false
   },
   {
    "n": 29,
    "name": "Gloamwood Warden",
    "type": "Arcane",
-   "def": 44,
    "boss": false
   },
   {
    "n": 30,
    "name": "Gloamwood Champion",
    "type": "Cunning",
-   "def": 47,
    "boss": false
   },
   {
    "n": 31,
    "name": "Gloamwood Reaver",
    "type": "Brawn",
-   "def": 49,
    "boss": false
   },
   {
    "n": 32,
    "name": "Gloamwood Dread",
    "type": "Arcane",
-   "def": 51,
    "boss": false
   },
   {
    "n": 33,
    "name": "Gloamwood Warlord",
    "type": "Cunning",
-   "def": 54,
    "boss": false
   },
   {
    "n": 34,
    "name": "Gloamwood Overlord",
    "type": "Brawn",
-   "def": 57,
    "boss": false
   },
   {
    "n": 35,
    "name": "Gloamwood Tyrant",
    "type": "Arcane",
-   "def": 60,
    "boss": false
   },
   {
    "n": 36,
    "name": "Old Mother Bramble",
    "type": "Cunning",
-   "def": 63,
    "boss": true
   },
   {
    "n": 37,
    "name": "Haunted Marsh Runt",
    "type": "Brawn",
-   "def": 66,
    "boss": false
   },
   {
    "n": 38,
    "name": "Haunted Marsh Sentry",
    "type": "Arcane",
-   "def": 69,
    "boss": false
   },
   {
    "n": 39,
    "name": "Haunted Marsh Brute",
    "type": "Cunning",
-   "def": 73,
    "boss": false
   },
   {
    "n": 40,
    "name": "Haunted Marsh Raider",
    "type": "Brawn",
-   "def": 77,
    "boss": false
   },
   {
    "n": 41,
    "name": "Haunted Marsh Warden",
    "type": "Arcane",
-   "def": 80,
    "boss": false
   },
   {
    "n": 42,
    "name": "Haunted Marsh Champion",
    "type": "Cunning",
-   "def": 85,
    "boss": false
   },
   {
    "n": 43,
    "name": "Haunted Marsh Reaver",
    "type": "Brawn",
-   "def": 89,
    "boss": false
   },
   {
    "n": 44,
    "name": "Haunted Marsh Dread",
    "type": "Arcane",
-   "def": 93,
    "boss": false
   },
   {
    "n": 45,
    "name": "Haunted Marsh Warlord",
    "type": "Cunning",
-   "def": 98,
    "boss": false
   },
   {
    "n": 46,
    "name": "Haunted Marsh Overlord",
    "type": "Brawn",
-   "def": 103,
    "boss": false
   },
   {
    "n": 47,
    "name": "Haunted Marsh Tyrant",
    "type": "Arcane",
-   "def": 108,
    "boss": false
   },
   {
    "n": 48,
    "name": "Gurgle, King of the Bog",
    "type": "Brawn",
-   "def": 114,
    "boss": true
   },
   {
    "n": 49,
    "name": "Frostpeak Caverns Runt",
    "type": "Brawn",
-   "def": 120,
    "boss": false
   },
   {
    "n": 50,
    "name": "Frostpeak Caverns Sentry",
    "type": "Arcane",
-   "def": 126,
    "boss": false
   },
   {
    "n": 51,
    "name": "Frostpeak Caverns Brute",
    "type": "Cunning",
-   "def": 132,
    "boss": false
   },
   {
    "n": 52,
    "name": "Frostpeak Caverns Raider",
    "type": "Brawn",
-   "def": 139,
    "boss": false
   },
   {
    "n": 53,
    "name": "Frostpeak Caverns Warden",
    "type": "Arcane",
-   "def": 146,
    "boss": false
   },
   {
    "n": 54,
    "name": "Frostpeak Caverns Champion",
    "type": "Cunning",
-   "def": 154,
    "boss": false
   },
   {
    "n": 55,
    "name": "Frostpeak Caverns Reaver",
    "type": "Brawn",
-   "def": 161,
    "boss": false
   },
   {
    "n": 56,
    "name": "Frostpeak Caverns Dread",
    "type": "Arcane",
-   "def": 170,
    "boss": false
   },
   {
    "n": 57,
    "name": "Frostpeak Caverns Warlord",
    "type": "Cunning",
-   "def": 178,
    "boss": false
   },
   {
    "n": 58,
    "name": "Frostpeak Caverns Overlord",
    "type": "Brawn",
-   "def": 187,
    "boss": false
   },
   {
    "n": 59,
    "name": "Frostpeak Caverns Tyrant",
    "type": "Arcane",
-   "def": 197,
    "boss": false
   },
   {
    "n": 60,
    "name": "The Frost Jarl",
    "type": "Arcane",
-   "def": 207,
    "boss": true
   },
   {
    "n": 61,
    "name": "Drownholm Runt",
    "type": "Brawn",
-   "def": 218,
    "boss": false
   },
   {
    "n": 62,
    "name": "Drownholm Sentry",
    "type": "Arcane",
-   "def": 229,
    "boss": false
   },
   {
    "n": 63,
    "name": "Drownholm Brute",
    "type": "Cunning",
-   "def": 240,
    "boss": false
   },
   {
    "n": 64,
    "name": "Drownholm Raider",
    "type": "Brawn",
-   "def": 253,
    "boss": false
   },
   {
    "n": 65,
    "name": "Drownholm Warden",
    "type": "Arcane",
-   "def": 265,
    "boss": false
   },
   {
    "n": 66,
    "name": "Drownholm Champion",
    "type": "Cunning",
-   "def": 279,
    "boss": false
   },
   {
    "n": 67,
    "name": "Drownholm Reaver",
    "type": "Brawn",
-   "def": 293,
    "boss": false
   },
   {
    "n": 68,
    "name": "Drownholm Dread",
    "type": "Arcane",
-   "def": 308,
    "boss": false
   },
   {
    "n": 69,
    "name": "Drownholm Warlord",
    "type": "Cunning",
-   "def": 324,
    "boss": false
   },
   {
    "n": 70,
    "name": "Drownholm Overlord",
    "type": "Brawn",
-   "def": 340,
    "boss": false
   },
   {
    "n": 71,
    "name": "Drownholm Tyrant",
    "type": "Arcane",
-   "def": 358,
    "boss": false
   },
   {
    "n": 72,
    "name": "Bonecaller",
    "type": "Cunning",
-   "def": 376,
    "boss": true
   },
   {
    "n": 73,
    "name": "Cinderwaste Runt",
    "type": "Brawn",
-   "def": 395,
    "boss": false
   },
   {
    "n": 74,
    "name": "Cinderwaste Sentry",
    "type": "Arcane",
-   "def": 415,
    "boss": false
   },
   {
    "n": 75,
    "name": "Cinderwaste Brute",
    "type": "Cunning",
-   "def": 437,
    "boss": false
   },
   {
    "n": 76,
    "name": "Cinderwaste Raider",
    "type": "Brawn",
-   "def": 459,
    "boss": false
   },
   {
    "n": 77,
    "name": "Cinderwaste Warden",
    "type": "Arcane",
-   "def": 482,
    "boss": false
   },
   {
    "n": 78,
    "name": "Cinderwaste Champion",
    "type": "Cunning",
-   "def": 507,
    "boss": false
   },
   {
    "n": 79,
    "name": "Cinderwaste Reaver",
    "type": "Brawn",
-   "def": 533,
    "boss": false
   },
   {
    "n": 80,
    "name": "Cinderwaste Dread",
    "type": "Arcane",
-   "def": 560,
    "boss": false
   },
   {
    "n": 81,
    "name": "Cinderwaste Warlord",
    "type": "Cunning",
-   "def": 581,
    "boss": false
   },
   {
    "n": 82,
    "name": "Cinderwaste Overlord",
    "type": "Brawn",
-   "def": 581,
    "boss": false
   },
   {
    "n": 83,
    "name": "Cinderwaste Tyrant",
    "type": "Arcane",
-   "def": 585,
    "boss": false
   },
   {
    "n": 84,
    "name": "Cindermaw",
    "type": "Brawn",
-   "def": 585,
    "boss": true
   },
   {
    "n": 85,
    "name": "Stormspire Runt",
    "type": "Brawn",
-   "def": 592,
    "boss": false
   },
   {
    "n": 86,
    "name": "Stormspire Sentry",
    "type": "Arcane",
-   "def": 592,
    "boss": false
   },
   {
    "n": 87,
    "name": "Stormspire Brute",
    "type": "Cunning",
-   "def": 592,
    "boss": false
   },
   {
    "n": 88,
    "name": "Stormspire Raider",
    "type": "Brawn",
-   "def": 592,
    "boss": false
   },
   {
    "n": 89,
    "name": "Stormspire Warden",
    "type": "Arcane",
-   "def": 603,
    "boss": false
   },
   {
    "n": 90,
    "name": "Stormspire Champion",
    "type": "Cunning",
-   "def": 603,
    "boss": false
   },
   {
    "n": 91,
    "name": "Stormspire Reaver",
    "type": "Brawn",
-   "def": 603,
    "boss": false
   },
   {
    "n": 92,
    "name": "Stormspire Dread",
    "type": "Arcane",
-   "def": 603,
    "boss": false
   },
   {
    "n": 93,
    "name": "Stormspire Warlord",
    "type": "Cunning",
-   "def": 603,
    "boss": false
   },
   {
    "n": 94,
    "name": "Stormspire Overlord",
    "type": "Brawn",
-   "def": 603,
    "boss": false
   },
   {
    "n": 95,
    "name": "Stormspire Tyrant",
    "type": "Arcane",
-   "def": 618,
    "boss": false
   },
   {
    "n": 96,
    "name": "Voltan, Lord of Storms",
    "type": "Arcane",
-   "def": 618,
    "boss": true
   },
   {
    "n": 97,
    "name": "Dragon's Roost Runt",
    "type": "Brawn",
-   "def": 618,
    "boss": false
   },
   {
    "n": 98,
    "name": "Dragon's Roost Sentry",
    "type": "Arcane",
-   "def": 622,
    "boss": false
   },
   {
    "n": 99,
    "name": "Dragon's Roost Brute",
    "type": "Cunning",
-   "def": 622,
    "boss": false
   },
   {
    "n": 100,
    "name": "Dragon's Roost Raider",
    "type": "Brawn",
-   "def": 622,
    "boss": false
   },
   {
    "n": 101,
    "name": "Dragon's Roost Warden",
    "type": "Arcane",
-   "def": 626,
    "boss": false
   },
   {
    "n": 102,
    "name": "Dragon's Roost Champion",
    "type": "Cunning",
-   "def": 626,
    "boss": false
   },
   {
    "n": 103,
    "name": "Dragon's Roost Reaver",
    "type": "Brawn",
-   "def": 626,
    "boss": false
   },
   {
    "n": 104,
    "name": "Dragon's Roost Dread",
    "type": "Arcane",
-   "def": 637,
    "boss": false
   },
   {
    "n": 105,
    "name": "Dragon's Roost Warlord",
    "type": "Cunning",
-   "def": 637,
    "boss": false
   },
   {
    "n": 106,
    "name": "Dragon's Roost Overlord",
    "type": "Brawn",
-   "def": 637,
    "boss": false
   },
   {
    "n": 107,
    "name": "Dragon's Roost Tyrant",
    "type": "Arcane",
-   "def": 644,
    "boss": false
   },
   {
    "n": 108,
    "name": "the Elder Wyrm",
    "type": "Cunning",
-   "def": 644,
    "boss": true
   },
   {
    "n": 109,
    "name": "The Void Throne Runt",
    "type": "Brawn",
-   "def": 644,
    "boss": false
   },
   {
    "n": 110,
    "name": "The Void Throne Sentry",
    "type": "Arcane",
-   "def": 658,
    "boss": false
   },
   {
    "n": 111,
    "name": "The Void Throne Brute",
    "type": "Cunning",
-   "def": 658,
    "boss": false
   },
   {
    "n": 112,
    "name": "The Void Throne Raider",
    "type": "Brawn",
-   "def": 658,
    "boss": false
   },
   {
    "n": 113,
    "name": "The Void Throne Warden",
    "type": "Arcane",
-   "def": 658,
    "boss": false
   },
   {
    "n": 114,
    "name": "The Void Throne Champion",
    "type": "Cunning",
-   "def": 658,
    "boss": false
   },
   {
    "n": 115,
    "name": "The Void Throne Reaver",
    "type": "Brawn",
-   "def": 658,
    "boss": false
   },
   {
    "n": 116,
    "name": "The Void Throne Dread",
    "type": "Arcane",
-   "def": 662,
    "boss": false
   },
   {
    "n": 117,
    "name": "The Void Throne Warlord",
    "type": "Cunning",
-   "def": 662,
    "boss": false
   },
   {
    "n": 118,
    "name": "The Void Throne Overlord",
    "type": "Brawn",
-   "def": 662,
    "boss": false
   },
   {
    "n": 119,
    "name": "The Void Throne Tyrant",
    "type": "Arcane",
-   "def": 669,
    "boss": false
   },
   {
    "n": 120,
    "name": "The Void Sovereign",
    "type": "Arcane",
-   "def": 893,
    "boss": true
   }
  ],
  "enemyTeams": {
   "1": [
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Brawn"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Arcane"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Cunning"
    }
   ],
   "2": [
    {
-    "atk": 22.18628876475014,
-    "hp": 48.809835282450315,
+    "pow": 48.12523132218018,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 105.87550890879639,
     "type": "Arcane"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Cunning"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Brawn"
    }
   ],
   "3": [
    {
-    "atk": 27.617282054687756,
-    "hp": 60.75802052031307,
+    "pow": 58.08975542682189,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 127.79746193900816,
     "type": "Cunning"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Brawn"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Arcane"
    }
   ],
   "4": [
    {
-    "atk": 31.984882534149083,
-    "hp": 70.36674157512799,
+    "pow": 65.59226332739519,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 144.30297932026943,
     "type": "Brawn"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Arcane"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Cunning"
    }
   ],
   "5": [
    {
-    "atk": 35.831921769493164,
-    "hp": 78.83022789288496,
+    "pow": 71.8929707372408,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 158.1645356219298,
     "type": "Arcane"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Cunning"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Brawn"
    }
   ],
   "6": [
    {
-    "atk": 39.359447722981876,
-    "hp": 86.59078499056012,
+    "pow": 77.45262588389086,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 170.3957769445599,
     "type": "Cunning"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Brawn"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Arcane"
    }
   ],
   "7": [
    {
-    "atk": 42.66762753251021,
-    "hp": 93.86878057152248,
+    "pow": 82.49916091964374,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 181.49815402321624,
     "type": "Brawn"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Arcane"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Cunning"
    }
   ],
   "8": [
    {
-    "atk": 45.814675845074454,
-    "hp": 100.79228685916381,
+    "pow": 87.16447655000447,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 191.76184841000986,
     "type": "Arcane"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Cunning"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Brawn"
    }
   ],
   "9": [
    {
-    "atk": 48.837850593322074,
-    "hp": 107.44327130530858,
+    "pow": 91.53277226556419,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 201.37209898424123,
     "type": "Cunning"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Brawn"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Arcane"
    }
   ],
   "10": [
    {
-    "atk": 51.762638780370345,
-    "hp": 113.87780531681477,
+    "pow": 95.66156428446634,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 210.45544142582597,
     "type": "Brawn"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Arcane"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Cunning"
    }
   ],
   "11": [
    {
-    "atk": 54.60734901130735,
-    "hp": 120.13616782487618,
+    "pow": 99.59214554993942,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 219.10272020986673,
     "type": "Arcane"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Cunning"
    },
    {
-    "atk": 6.973977605094788,
-    "hp": 15.342750731208534,
+    "pow": 11.677484162422843,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 25.69046515733026,
     "type": "Brawn"
    }
   ],
   "12": [
    {
-    "atk": 57.38563592254282,
-    "hp": 126.2483990295942,
+    "pow": 103.35531465546252,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 227.38169224201758,
     "type": "Brawn"
    },
    {
-    "atk": 22.18628876475014,
-    "hp": 48.809835282450315,
+    "pow": 48.12523132218018,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 105.87550890879639,
     "type": "Brawn"
    },
    {
-    "atk": 22.18628876475014,
-    "hp": 48.809835282450315,
+    "pow": 48.12523132218018,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 105.87550890879639,
     "type": "Arcane"
    }
   ],
   "13": [
    {
-    "atk": 60.10799029073379,
-    "hp": 132.23757863961433,
+    "pow": 106.97474772073863,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 235.34444498562502,
     "type": "Brawn"
    },
    {
-    "atk": 27.617282054687756,
-    "hp": 60.75802052031307,
+    "pow": 58.08975542682189,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 127.79746193900816,
     "type": "Arcane"
    },
    {
-    "atk": 27.617282054687756,
-    "hp": 60.75802052031307,
+    "pow": 58.08975542682189,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 127.79746193900816,
     "type": "Cunning"
    }
   ],
   "14": [
    {
-    "atk": 62.78266897464592,
-    "hp": 138.12187174422104,
+    "pow": 110.46909778974842,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 243.03201513744654,
     "type": "Arcane"
    },
    {
-    "atk": 31.984882534149083,
-    "hp": 70.36674157512799,
+    "pow": 65.59226332739519,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 144.30297932026943,
     "type": "Cunning"
    },
    {
-    "atk": 31.984882534149083,
-    "hp": 70.36674157512799,
+    "pow": 65.59226332739519,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 144.30297932026943,
     "type": "Brawn"
    }
   ],
   "15": [
    {
-    "atk": 65.41630186314524,
-    "hp": 143.91586409891954,
+    "pow": 113.85336246166577,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 250.47739741566468,
     "type": "Cunning"
    },
    {
-    "atk": 35.831921769493164,
-    "hp": 78.83022789288496,
+    "pow": 71.8929707372408,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 158.1645356219298,
     "type": "Brawn"
    },
    {
-    "atk": 35.831921769493164,
-    "hp": 78.83022789288496,
+    "pow": 71.8929707372408,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 158.1645356219298,
     "type": "Arcane"
    }
   ],
   "16": [
    {
-    "atk": 68.01430289400503,
-    "hp": 149.63146636681105,
+    "pow": 117.13980862231287,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 257.70757896908833,
     "type": "Brawn"
    },
    {
-    "atk": 39.359447722981876,
-    "hp": 86.59078499056012,
+    "pow": 77.45262588389086,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 170.3957769445599,
     "type": "Arcane"
    },
    {
-    "atk": 39.359447722981876,
-    "hp": 86.59078499056012,
+    "pow": 77.45262588389086,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 170.3957769445599,
     "type": "Cunning"
    }
   ],
   "17": [
    {
-    "atk": 70.58115712807601,
-    "hp": 155.27854568176724,
+    "pow": 120.33861752867828,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 264.74495856309227,
     "type": "Arcane"
    },
    {
-    "atk": 42.66762753251021,
-    "hp": 93.86878057152248,
+    "pow": 82.49916091964374,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 181.49815402321624,
     "type": "Cunning"
    },
    {
-    "atk": 42.66762753251021,
-    "hp": 93.86878057152248,
+    "pow": 82.49916091964374,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 181.49815402321624,
     "type": "Brawn"
    }
   ],
   "18": [
    {
-    "atk": 73.12062659670177,
-    "hp": 160.8653785127439,
+    "pow": 123.45834692237365,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 271.60836322922205,
     "type": "Cunning"
    },
    {
-    "atk": 45.814675845074454,
-    "hp": 100.79228685916381,
+    "pow": 87.16447655000447,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 191.76184841000986,
     "type": "Brawn"
    },
    {
-    "atk": 45.814675845074454,
-    "hp": 100.79228685916381,
+    "pow": 87.16447655000447,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 191.76184841000986,
     "type": "Arcane"
    }
   ],
   "19": [
    {
-    "atk": 75.6359012866972,
-    "hp": 166.39898283073384,
+    "pow": 126.50626972880467,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 278.3137934033703,
     "type": "Brawn"
    },
    {
-    "atk": 48.837850593322074,
-    "hp": 107.44327130530858,
+    "pow": 91.53277226556419,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 201.37209898424123,
     "type": "Arcane"
    },
    {
-    "atk": 48.837850593322074,
-    "hp": 107.44327130530858,
+    "pow": 91.53277226556419,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 201.37209898424123,
     "type": "Cunning"
    }
   ],
   "20": [
    {
-    "atk": 78.12971209061587,
-    "hp": 171.88536659935494,
+    "pow": 129.48862729515238,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 284.87498004933525,
     "type": "Arcane"
    },
    {
-    "atk": 51.762638780370345,
-    "hp": 113.87780531681477,
+    "pow": 95.66156428446634,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 210.45544142582597,
     "type": "Cunning"
    },
    {
-    "atk": 51.762638780370345,
-    "hp": 113.87780531681477,
+    "pow": 95.66156428446634,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 210.45544142582597,
     "type": "Brawn"
    }
   ],
   "21": [
    {
-    "atk": 80.60441678083242,
-    "hp": 177.32971691783135,
+    "pow": 132.41082207370198,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 291.3038085621444,
     "type": "Cunning"
    },
    {
-    "atk": 54.60734901130735,
-    "hp": 120.13616782487618,
+    "pow": 99.59214554993942,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 219.10272020986673,
     "type": "Brawn"
    },
    {
-    "atk": 54.60734901130735,
-    "hp": 120.13616782487618,
+    "pow": 99.59214554993942,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 219.10272020986673,
     "type": "Arcane"
    }
   ],
   "22": [
    {
-    "atk": 83.06206646266277,
-    "hp": 182.7365462178581,
+    "pow": 135.27756652105853,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 297.6106463463288,
     "type": "Brawn"
    },
    {
-    "atk": 57.38563592254282,
-    "hp": 126.2483990295942,
+    "pow": 103.35531465546252,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 227.38169224201758,
     "type": "Arcane"
    },
    {
-    "atk": 57.38563592254282,
-    "hp": 126.2483990295942,
+    "pow": 103.35531465546252,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 227.38169224201758,
     "type": "Cunning"
    }
   ],
   "23": [
    {
-    "atk": 85.50445764723212,
-    "hp": 188.10980682391067,
+    "pow": 138.09299976497746,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 303.80459948295044,
     "type": "Arcane"
    },
    {
-    "atk": 60.10799029073379,
-    "hp": 132.23757863961433,
+    "pow": 106.97474772073863,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 235.34444498562502,
     "type": "Cunning"
    },
    {
-    "atk": 60.10799029073379,
-    "hp": 132.23757863961433,
+    "pow": 106.97474772073863,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 235.34444498562502,
     "type": "Brawn"
    }
   ],
   "24": [
    {
-    "atk": 87.93317356075605,
-    "hp": 193.4529818336633,
+    "pow": 140.86078015830802,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 309.8937163482776,
     "type": "Arcane"
    },
    {
-    "atk": 62.78266897464592,
-    "hp": 138.12187174422104,
+    "pow": 110.46909778974842,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 243.03201513744654,
     "type": "Brawn"
    },
    {
-    "atk": 62.78266897464592,
-    "hp": 138.12187174422104,
+    "pow": 110.46909778974842,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 243.03201513744654,
     "type": "Arcane"
    }
   ],
   "25": [
    {
-    "atk": 90.34961728089134,
-    "hp": 198.76915801796093,
+    "pow": 143.58415953145058,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 315.88515096919133,
     "type": "Brawn"
    },
    {
-    "atk": 65.41630186314524,
-    "hp": 143.91586409891954,
+    "pow": 113.85336246166577,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 250.47739741566468,
     "type": "Arcane"
    },
    {
-    "atk": 65.41630186314524,
-    "hp": 143.91586409891954,
+    "pow": 113.85336246166577,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 250.47739741566468,
     "type": "Cunning"
    }
   ],
   "26": [
    {
-    "atk": 92.75503858622218,
-    "hp": 204.0610848896888,
+    "pow": 146.26604337124368,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 321.7852954167361,
     "type": "Arcane"
    },
    {
-    "atk": 68.01430289400503,
-    "hp": 149.63146636681105,
+    "pow": 117.13980862231287,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 257.70757896908833,
     "type": "Cunning"
    },
    {
-    "atk": 68.01430289400503,
-    "hp": 149.63146636681105,
+    "pow": 117.13980862231287,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 257.70757896908833,
     "type": "Brawn"
    }
   ],
   "27": [
    {
-    "atk": 95.1505559123205,
-    "hp": 209.33122300710514,
+    "pow": 148.90904004803653,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 327.5998881056804,
     "type": "Cunning"
    },
    {
-    "atk": 70.58115712807601,
-    "hp": 155.27854568176724,
+    "pow": 120.33861752867828,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 264.74495856309227,
     "type": "Brawn"
    },
    {
-    "atk": 70.58115712807601,
-    "hp": 155.27854568176724,
+    "pow": 120.33861752867828,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 264.74495856309227,
     "type": "Arcane"
    }
   ],
   "28": [
    {
-    "atk": 97.53717445773381,
-    "hp": 214.5817838070144,
+    "pow": 151.5155014272221,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 333.3341031398886,
     "type": "Brawn"
    },
    {
-    "atk": 73.12062659670177,
-    "hp": 160.8653785127439,
+    "pow": 123.45834692237365,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 271.60836322922205,
     "type": "Arcane"
    },
    {
-    "atk": 73.12062659670177,
-    "hp": 160.8653785127439,
+    "pow": 123.45834692237365,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 271.60836322922205,
     "type": "Cunning"
    }
   ],
   "29": [
    {
-    "atk": 99.9158012307428,
-    "hp": 219.81476270763417,
+    "pow": 154.08755663534072,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 338.9926245977496,
     "type": "Arcane"
    },
    {
-    "atk": 75.6359012866972,
-    "hp": 166.39898283073384,
+    "pow": 126.50626972880467,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 278.3137934033703,
     "type": "Cunning"
    },
    {
-    "atk": 75.6359012866972,
-    "hp": 166.39898283073384,
+    "pow": 126.50626972880467,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 278.3137934033703,
     "type": "Brawn"
    }
   ],
   "30": [
    {
-    "atk": 102.28725764310559,
-    "hp": 225.03196681483232,
+    "pow": 156.62714033715548,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 344.5797087417421,
     "type": "Cunning"
    },
    {
-    "atk": 78.12971209061587,
-    "hp": 171.88536659935494,
+    "pow": 129.48862729515238,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 284.87498004933525,
     "type": "Brawn"
    },
    {
-    "atk": 78.12971209061587,
-    "hp": 171.88536659935494,
+    "pow": 129.48862729515238,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 284.87498004933525,
     "type": "Arcane"
    }
   ],
   "31": [
    {
-    "atk": 104.65229012031405,
-    "hp": 230.23503826469093,
+    "pow": 159.13601657397157,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 350.0992364627375,
     "type": "Brawn"
    },
    {
-    "atk": 80.60441678083242,
-    "hp": 177.32971691783135,
+    "pow": 132.41082207370198,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 291.3038085621444,
     "type": "Arcane"
    },
    {
-    "atk": 80.60441678083242,
-    "hp": 177.32971691783135,
+    "pow": 132.41082207370198,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 291.3038085621444,
     "type": "Cunning"
    }
   ],
   "32": [
    {
-    "atk": 107.01157909551563,
-    "hp": 235.4254740101344,
+    "pow": 161.61579898430577,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 355.55475776547274,
     "type": "Arcane"
    },
    {
-    "atk": 83.06206646266277,
-    "hp": 182.7365462178581,
+    "pow": 135.27756652105853,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 297.6106463463288,
     "type": "Cunning"
    },
    {
-    "atk": 83.06206646266277,
-    "hp": 182.7365462178581,
+    "pow": 135.27756652105853,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 297.6106463463288,
     "type": "Brawn"
    }
   ],
   "33": [
    {
-    "atk": 109.36574667675775,
-    "hp": 240.60464268886707,
+    "pow": 164.0679680546046,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 360.9495297201301,
     "type": "Cunning"
    },
    {
-    "atk": 85.50445764723212,
-    "hp": 188.10980682391067,
+    "pow": 138.09299976497746,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 303.80459948295044,
     "type": "Brawn"
    },
    {
-    "atk": 85.50445764723212,
-    "hp": 188.10980682391067,
+    "pow": 138.09299976497746,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 303.80459948295044,
     "type": "Arcane"
    }
   ],
   "34": [
    {
-    "atk": 111.7153632179688,
-    "hp": 245.77379907953136,
+    "pow": 166.493885915185,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 366.286549013407,
     "type": "Brawn"
    },
    {
-    "atk": 87.93317356075605,
-    "hp": 193.4529818336633,
+    "pow": 140.86078015830802,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 309.8937163482776,
     "type": "Arcane"
    },
    {
-    "atk": 87.93317356075605,
-    "hp": 193.4529818336633,
+    "pow": 140.86078015830802,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 309.8937163482776,
     "type": "Cunning"
    }
   ],
   "35": [
    {
-    "atk": 114.06095297837162,
-    "hp": 250.93409655241757,
+    "pow": 168.89480909434536,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 371.56858000755983,
     "type": "Arcane"
    },
    {
-    "atk": 90.34961728089134,
-    "hp": 198.76915801796093,
+    "pow": 143.58415953145058,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 315.88515096919133,
     "type": "Cunning"
    },
    {
-    "atk": 90.34961728089134,
-    "hp": 198.76915801796093,
+    "pow": 143.58415953145058,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 315.88515096919133,
     "type": "Brawn"
    }
   ],
   "36": [
    {
-    "atk": 116.40299901945369,
-    "hp": 256.08659784279814,
+    "pow": 171.27189956405445,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 376.79817904091976,
     "type": "Cunning"
    },
    {
-    "atk": 92.75503858622218,
-    "hp": 204.0610848896888,
+    "pow": 146.26604337124368,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 321.7852954167361,
     "type": "Brawn"
    },
    {
-    "atk": 92.75503858622218,
-    "hp": 204.0610848896888,
+    "pow": 146.26604337124368,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 321.7852954167361,
     "type": "Arcane"
    }
   ],
   "37": [
    {
-    "atk": 118.74194746070178,
-    "hp": 261.23228441354394,
+    "pow": 173.62623434823718,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 381.9777155661218,
     "type": "Brawn"
    },
    {
-    "atk": 95.1505559123205,
-    "hp": 209.33122300710514,
+    "pow": 148.90904004803653,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 327.5998881056804,
     "type": "Arcane"
    },
    {
-    "atk": 95.1505559123205,
-    "hp": 209.33122300710514,
+    "pow": 148.90904004803653,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 327.5998881056804,
     "type": "Cunning"
    }
   ],
   "38": [
    {
-    "atk": 121.0782111932487,
-    "hp": 266.3720646251472,
+    "pow": 175.9588139153641,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 387.10939061380105,
     "type": "Arcane"
    },
    {
-    "atk": 97.53717445773381,
-    "hp": 214.5817838070144,
+    "pow": 151.5155014272221,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 333.3341031398886,
     "type": "Cunning"
    },
    {
-    "atk": 97.53717445773381,
-    "hp": 214.5817838070144,
+    "pow": 151.5155014272221,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 333.3341031398886,
     "type": "Brawn"
    }
   ],
   "39": [
    {
-    "atk": 123.41217313301357,
-    "hp": 271.5067808926298,
+    "pow": 178.27056953780206,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 392.19525298316455,
     "type": "Cunning"
    },
    {
-    "atk": 99.9158012307428,
-    "hp": 219.81476270763417,
+    "pow": 154.08755663534072,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 338.9926245977496,
     "type": "Brawn"
    },
    {
-    "atk": 99.9158012307428,
-    "hp": 219.81476270763417,
+    "pow": 154.08755663534072,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 338.9926245977496,
     "type": "Arcane"
    }
   ],
   "40": [
    {
-    "atk": 125.74418908084135,
-    "hp": 276.637215977851,
+    "pow": 180.56236976892598,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 397.2372134916372,
     "type": "Brawn"
    },
    {
-    "atk": 102.28725764310559,
-    "hp": 225.03196681483232,
+    "pow": 156.62714033715548,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 344.5797087417421,
     "type": "Arcane"
    },
    {
-    "atk": 102.28725764310559,
-    "hp": 225.03196681483232,
+    "pow": 156.62714033715548,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 344.5797087417421,
     "type": "Cunning"
    }
   ],
   "41": [
    {
-    "atk": 128.0745902457947,
-    "hp": 281.76409854074836,
+    "pow": 182.83502616362776,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 402.2370575599811,
     "type": "Arcane"
    },
    {
-    "atk": 104.65229012031405,
-    "hp": 230.23503826469093,
+    "pow": 159.13601657397157,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 350.0992364627375,
     "type": "Cunning"
    },
    {
-    "atk": 104.65229012031405,
-    "hp": 230.23503826469093,
+    "pow": 159.13601657397157,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 350.0992364627375,
     "type": "Brawn"
    }
   ],
   "42": [
    {
-    "atk": 130.40368547854192,
-    "hp": 286.88810805279223,
+    "pow": 185.08929834727928,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 407.19645636401447,
     "type": "Cunning"
    },
    {
-    "atk": 107.01157909551563,
-    "hp": 235.4254740101344,
+    "pow": 161.61579898430577,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 355.55475776547274,
     "type": "Brawn"
    },
    {
-    "atk": 107.01157909551563,
-    "hp": 235.4254740101344,
+    "pow": 161.61579898430577,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 355.55475776547274,
     "type": "Arcane"
    }
   ],
   "43": [
    {
-    "atk": 132.73176325427215,
-    "hp": 292.0098791593988,
+    "pow": 187.32589852141442,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 412.1169767471117,
     "type": "Brawn"
    },
    {
-    "atk": 109.36574667675775,
-    "hp": 240.60464268886707,
+    "pow": 164.0679680546046,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 360.9495297201301,
     "type": "Arcane"
    },
    {
-    "atk": 109.36574667675775,
-    "hp": 240.60464268886707,
+    "pow": 164.0679680546046,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 360.9495297201301,
     "type": "Cunning"
    }
   ],
   "44": [
    {
-    "atk": 135.0590934384048,
-    "hp": 297.13000556449055,
+    "pow": 189.54549548062894,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 417.0000900573837,
     "type": "Arcane"
    },
    {
-    "atk": 111.7153632179688,
-    "hp": 245.77379907953136,
+    "pow": 166.493885915185,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 366.286549013407,
     "type": "Cunning"
    },
    {
-    "atk": 111.7153632179688,
-    "hp": 245.77379907953136,
+    "pow": 166.493885915185,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 366.286549013407,
     "type": "Brawn"
    }
   ],
   "45": [
    {
-    "atk": 137.38592886328337,
-    "hp": 302.24904349922343,
+    "pow": 191.74871820383876,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 421.84718004844535,
     "type": "Cunning"
    },
    {
-    "atk": 114.06095297837162,
-    "hp": 250.93409655241757,
+    "pow": 168.89480909434536,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 371.56858000755983,
     "type": "Brawn"
    },
    {
-    "atk": 114.06095297837162,
-    "hp": 250.93409655241757,
+    "pow": 168.89480909434536,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 371.56858000755983,
     "type": "Arcane"
    }
   ],
   "46": [
    {
-    "atk": 139.71250673983374,
-    "hp": 307.36751482763424,
+    "pow": 193.93615907363628,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 426.65954996199986,
     "type": "Brawn"
    },
    {
-    "atk": 116.40299901945369,
-    "hp": 256.08659784279814,
+    "pow": 171.27189956405445,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 376.79817904091976,
     "type": "Arcane"
    },
    {
-    "atk": 116.40299901945369,
-    "hp": 256.08659784279814,
+    "pow": 171.27189956405445,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 376.79817904091976,
     "type": "Cunning"
    }
   ],
   "47": [
    {
-    "atk": 142.0390499246686,
-    "hp": 312.48590983427096,
+    "pow": 196.10837676965667,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 431.4384288932447,
     "type": "Arcane"
    },
    {
-    "atk": 118.74194746070178,
-    "hp": 261.23228441354394,
+    "pow": 173.62623434823718,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 381.9777155661218,
     "type": "Cunning"
    },
    {
-    "atk": 118.74194746070178,
-    "hp": 261.23228441354394,
+    "pow": 173.62623434823718,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 381.9777155661218,
     "type": "Brawn"
    }
   ],
   "48": [
    {
-    "atk": 144.36576806019224,
-    "hp": 317.6046897324229,
+    "pow": 198.26589887532526,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 436.1849775257156,
     "type": "Brawn"
    },
    {
-    "atk": 121.0782111932487,
-    "hp": 266.3720646251472,
+    "pow": 175.9588139153641,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 387.10939061380105,
     "type": "Brawn"
    },
    {
-    "atk": 121.0782111932487,
-    "hp": 266.3720646251472,
+    "pow": 175.9588139153641,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 387.10939061380105,
     "type": "Arcane"
    }
   ],
   "49": [
    {
-    "atk": 146.6928586028074,
-    "hp": 322.7242889261763,
+    "pow": 200.4092242318661,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 440.90029331010544,
     "type": "Brawn"
    },
    {
-    "atk": 123.41217313301357,
-    "hp": 271.5067808926298,
+    "pow": 178.27056953780206,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 392.19525298316455,
     "type": "Arcane"
    },
    {
-    "atk": 123.41217313301357,
-    "hp": 271.5067808926298,
+    "pow": 178.27056953780206,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 392.19525298316455,
     "type": "Cunning"
    }
   ],
   "50": [
    {
-    "atk": 149.0205077522547,
-    "hp": 327.8451170549603,
+    "pow": 202.5388250688256,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 445.5854151514163,
     "type": "Arcane"
    },
    {
-    "atk": 125.74418908084135,
-    "hp": 276.637215977851,
+    "pow": 180.56236976892598,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 397.2372134916372,
     "type": "Cunning"
    },
    {
-    "atk": 125.74418908084135,
-    "hp": 276.637215977851,
+    "pow": 180.56236976892598,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 397.2372134916372,
     "type": "Brawn"
    }
   ],
   "51": [
    {
-    "atk": 151.3488912933697,
-    "hp": 332.96756084541335,
+    "pow": 204.65514893645226,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 450.241327660195,
     "type": "Cunning"
    },
    {
-    "atk": 128.0745902457947,
-    "hp": 281.76409854074836,
+    "pow": 182.83502616362776,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 402.2370575599811,
     "type": "Brawn"
    },
    {
-    "atk": 128.0745902457947,
-    "hp": 281.76409854074836,
+    "pow": 182.83502616362776,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 402.2370575599811,
     "type": "Arcane"
    }
   ],
   "52": [
    {
-    "atk": 153.67817536005586,
-    "hp": 338.09198579212295,
+    "pow": 206.75862046195152,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 454.8689650162934,
     "type": "Brawn"
    },
    {
-    "atk": 130.40368547854192,
-    "hp": 286.88810805279223,
+    "pow": 185.08929834727928,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 407.19645636401447,
     "type": "Arcane"
    },
    {
-    "atk": 130.40368547854192,
-    "hp": 286.88810805279223,
+    "pow": 185.08929834727928,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 407.19645636401447,
     "type": "Cunning"
    }
   ],
   "53": [
    {
-    "atk": 156.00851713000844,
-    "hp": 343.2187376860186,
+    "pow": 208.8496429488034,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 459.4692144873675,
     "type": "Arcane"
    },
    {
-    "atk": 132.73176325427215,
-    "hp": 292.0098791593988,
+    "pow": 187.32589852141442,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 412.1169767471117,
     "type": "Cunning"
    },
    {
-    "atk": 132.73176325427215,
-    "hp": 292.0098791593988,
+    "pow": 187.32589852141442,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 412.1169767471117,
     "type": "Brawn"
    }
   ],
   "54": [
    {
-    "atk": 158.3400654576448,
-    "hp": 348.3481440068186,
+    "pow": 210.92859983591293,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 464.0429196390085,
     "type": "Cunning"
    },
    {
-    "atk": 135.0590934384048,
-    "hp": 297.13000556449055,
+    "pow": 189.54549548062894,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 417.0000900573837,
     "type": "Brawn"
    },
    {
-    "atk": 135.0590934384048,
-    "hp": 297.13000556449055,
+    "pow": 189.54549548062894,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 417.0000900573837,
     "type": "Arcane"
    }
   ],
   "55": [
    {
-    "atk": 160.67296145176965,
-    "hp": 353.48051519389327,
+    "pow": 212.99585603128887,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 468.5908832688355,
     "type": "Brawn"
    },
    {
-    "atk": 137.38592886328337,
-    "hp": 302.24904349922343,
+    "pow": 191.74871820383876,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 421.84718004844535,
     "type": "Arcane"
    },
    {
-    "atk": 137.38592886328337,
-    "hp": 302.24904349922343,
+    "pow": 191.74871820383876,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 421.84718004844535,
     "type": "Cunning"
    }
   ],
   "56": [
    {
-    "atk": 163.00733900370864,
-    "hp": 358.616145808159,
+    "pow": 215.05175913316188,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 473.1138700929562,
     "type": "Arcane"
    },
    {
-    "atk": 139.71250673983374,
-    "hp": 307.36751482763424,
+    "pow": 193.93615907363628,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 426.65954996199986,
     "type": "Cunning"
    },
    {
-    "atk": 139.71250673983374,
-    "hp": 307.36751482763424,
+    "pow": 193.93615907363628,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 426.65954996199986,
     "type": "Brawn"
    }
   ],
   "57": [
    {
-    "atk": 165.3433252709573,
-    "hp": 363.75531559610613,
+    "pow": 217.09664054991475,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 477.6126092098125,
     "type": "Cunning"
    },
    {
-    "atk": 142.0390499246686,
-    "hp": 312.48590983427096,
+    "pow": 196.10837676965667,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 431.4384288932447,
     "type": "Brawn"
    },
    {
-    "atk": 142.0390499246686,
-    "hp": 312.48590983427096,
+    "pow": 196.10837676965667,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 431.4384288932447,
     "type": "Arcane"
    }
   ],
   "58": [
    {
-    "atk": 167.68104112079757,
-    "hp": 368.8982904657547,
+    "pow": 219.13081652886495,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 482.08779636350295,
     "type": "Brawn"
    },
    {
-    "atk": 144.36576806019224,
-    "hp": 317.6046897324229,
+    "pow": 198.26589887532526,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 436.1849775257156,
     "type": "Arcane"
    },
    {
-    "atk": 144.36576806019224,
-    "hp": 317.6046897324229,
+    "pow": 198.26589887532526,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 436.1849775257156,
     "type": "Cunning"
    }
   ],
   "59": [
    {
-    "atk": 170.0206015378209,
-    "hp": 374.045323383206,
+    "pow": 221.15458910278628,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 486.54009602612985,
     "type": "Arcane"
    },
    {
-    "atk": 146.6928586028074,
-    "hp": 322.7242889261763,
+    "pow": 200.4092242318661,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 440.90029331010544,
     "type": "Cunning"
    },
    {
-    "atk": 146.6928586028074,
-    "hp": 322.7242889261763,
+    "pow": 200.4092242318661,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 440.90029331010544,
     "type": "Brawn"
    }
   ],
   "60": [
    {
-    "atk": 172.3621159988486,
-    "hp": 379.19665519746695,
+    "pow": 223.16824696205094,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 490.9701433165121,
     "type": "Arcane"
    },
    {
-    "atk": 149.0205077522547,
-    "hp": 327.8451170549603,
+    "pow": 202.5388250688256,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 445.5854151514163,
     "type": "Brawn"
    },
    {
-    "atk": 149.0205077522547,
-    "hp": 327.8451170549603,
+    "pow": 202.5388250688256,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 445.5854151514163,
     "type": "Arcane"
    }
   ],
   "61": [
    {
-    "atk": 174.70568881835007,
-    "hp": 384.3525154003702,
+    "pow": 225.17206625939835,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 495.37854577067634,
     "type": "Brawn"
    },
    {
-    "atk": 151.3488912933697,
-    "hp": 332.96756084541335,
+    "pow": 204.65514893645226,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 450.241327660195,
     "type": "Arcane"
    },
    {
-    "atk": 151.3488912933697,
-    "hp": 332.96756084541335,
+    "pow": 204.65514893645226,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 450.241327660195,
     "type": "Cunning"
    }
   ],
   "62": [
    {
-    "atk": 177.05141946711973,
-    "hp": 389.51312282766344,
+    "pow": 227.16631135356937,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 499.76588497785264,
     "type": "Arcane"
    },
    {
-    "atk": 153.67817536005586,
-    "hp": 338.09198579212295,
+    "pow": 206.75862046195152,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 454.8689650162934,
     "type": "Cunning"
    },
    {
-    "atk": 153.67817536005586,
-    "hp": 338.09198579212295,
+    "pow": 206.75862046195152,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 454.8689650162934,
     "type": "Brawn"
    }
   ],
   "63": [
    {
-    "atk": 179.39940286667292,
-    "hp": 394.6786863066805,
+    "pow": 229.15123549737743,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 504.1327180942304,
     "type": "Cunning"
    },
    {
-    "atk": 156.00851713000844,
-    "hp": 343.2187376860186,
+    "pow": 208.8496429488034,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 459.4692144873675,
     "type": "Brawn"
    },
    {
-    "atk": 156.00851713000844,
-    "hp": 343.2187376860186,
+    "pow": 208.8496429488034,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 459.4692144873675,
     "type": "Arcane"
    }
   ],
   "64": [
    {
-    "atk": 181.74972966156204,
-    "hp": 399.8494052554366,
+    "pow": 231.12708147519575,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 508.4795792454307,
     "type": "Brawn"
    },
    {
-    "atk": 158.3400654576448,
-    "hp": 348.3481440068186,
+    "pow": 210.92859983591293,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 464.0429196390085,
     "type": "Arcane"
    },
    {
-    "atk": 158.3400654576448,
-    "hp": 348.3481440068186,
+    "pow": 210.92859983591293,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 464.0429196390085,
     "type": "Cunning"
    }
   ],
   "65": [
    {
-    "atk": 184.10248647158187,
-    "hp": 405.02547023748014,
+    "pow": 233.09408219432302,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 512.8069808275106,
     "type": "Arcane"
    },
    {
-    "atk": 160.67296145176965,
-    "hp": 353.48051519389327,
+    "pow": 212.99585603128887,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 468.5908832688355,
     "type": "Cunning"
    },
    {
-    "atk": 160.67296145176965,
-    "hp": 353.48051519389327,
+    "pow": 212.99585603128887,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 468.5908832688355,
     "type": "Brawn"
    }
   ],
   "66": [
    {
-    "atk": 186.4577561256297,
-    "hp": 410.2070634763853,
+    "pow": 235.05246123423242,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 517.1154147153114,
     "type": "Cunning"
    },
    {
-    "atk": 163.00733900370864,
-    "hp": 358.616145808159,
+    "pow": 215.05175913316188,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 473.1138700929562,
     "type": "Brawn"
    },
    {
-    "atk": 163.00733900370864,
-    "hp": 358.616145808159,
+    "pow": 215.05175913316188,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 473.1138700929562,
     "type": "Arcane"
    }
   ],
   "67": [
    {
-    "atk": 188.81561787880824,
-    "hp": 415.3943593333782,
+    "pow": 237.00243335730613,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 521.4053533860736,
     "type": "Brawn"
    },
    {
-    "atk": 165.3433252709573,
-    "hp": 363.75531559610613,
+    "pow": 217.09664054991475,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 477.6126092098125,
     "type": "Arcane"
    },
    {
-    "atk": 165.3433252709573,
-    "hp": 363.75531559610613,
+    "pow": 217.09664054991475,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 477.6126092098125,
     "type": "Cunning"
    }
   ],
   "68": [
    {
-    "atk": 191.17614761419878,
-    "hp": 420.58752475123737,
+    "pow": 238.94420498429682,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 525.677250965453,
     "type": "Arcane"
    },
    {
-    "atk": 167.68104112079757,
-    "hp": 368.8982904657547,
+    "pow": 219.13081652886495,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 482.08779636350295,
     "type": "Cunning"
    },
    {
-    "atk": 167.68104112079757,
-    "hp": 368.8982904657547,
+    "pow": 219.13081652886495,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 482.08779636350295,
     "type": "Brawn"
    }
   ],
   "69": [
    {
-    "atk": 193.53941803059237,
-    "hp": 425.78671966730326,
+    "pow": 240.87797463744243,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 529.9315442023734,
     "type": "Cunning"
    },
    {
-    "atk": 170.0206015378209,
-    "hp": 374.045323383206,
+    "pow": 221.15458910278628,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 486.54009602612985,
     "type": "Brawn"
    },
    {
-    "atk": 170.0206015378209,
-    "hp": 374.045323383206,
+    "pow": 221.15458910278628,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 486.54009602612985,
     "type": "Arcane"
    }
   ],
   "70": [
    {
-    "atk": 195.90549881734105,
-    "hp": 430.99209739815035,
+    "pow": 242.8039333538797,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 534.1686533785354,
     "type": "Brawn"
    },
    {
-    "atk": 172.3621159988486,
-    "hp": 379.19665519746695,
+    "pow": 223.16824696205094,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 490.9701433165121,
     "type": "Arcane"
    },
    {
-    "atk": 172.3621159988486,
-    "hp": 379.19665519746695,
+    "pow": 223.16824696205094,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 490.9701433165121,
     "type": "Cunning"
    }
   ],
   "71": [
    {
-    "atk": 198.2744568173807,
-    "hp": 436.2038049982376,
+    "pow": 244.72226507174565,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 538.3889831578405,
     "type": "Arcane"
    },
    {
-    "atk": 174.70568881835007,
-    "hp": 384.3525154003702,
+    "pow": 225.17206625939835,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 495.37854577067634,
     "type": "Cunning"
    },
    {
-    "atk": 174.70568881835007,
-    "hp": 384.3525154003702,
+    "pow": 225.17206625939835,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 495.37854577067634,
     "type": "Brawn"
    }
   ],
   "72": [
    {
-    "atk": 200.64635617937662,
-    "hp": 441.42198359462867,
+    "pow": 246.6331469911389,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 542.5929233805057,
     "type": "Cunning"
    },
    {
-    "atk": 177.05141946711973,
-    "hp": 389.51312282766344,
+    "pow": 227.16631135356937,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 499.76588497785264,
     "type": "Brawn"
    },
    {
-    "atk": 177.05141946711973,
-    "hp": 389.51312282766344,
+    "pow": 227.16631135356937,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 499.76588497785264,
     "type": "Arcane"
    }
   ],
   "73": [
    {
-    "atk": 203.0212584998555,
-    "hp": 446.6467686996821,
+    "pow": 248.53674991190576,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 546.7808498061927,
     "type": "Brawn"
    },
    {
-    "atk": 179.39940286667292,
-    "hp": 394.6786863066805,
+    "pow": 229.15123549737743,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 504.1327180942304,
     "type": "Arcane"
    },
    {
-    "atk": 179.39940286667292,
-    "hp": 394.6786863066805,
+    "pow": 229.15123549737743,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 504.1327180942304,
     "type": "Cunning"
    }
   ],
   "74": [
    {
-    "atk": 205.39922295610768,
-    "hp": 451.878290503437,
+    "pow": 250.43323855004223,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 550.953124810093,
     "type": "Arcane"
    },
    {
-    "atk": 181.74972966156204,
-    "hp": 399.8494052554366,
+    "pow": 231.12708147519575,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 508.4795792454307,
     "type": "Cunning"
    },
    {
-    "atk": 181.74972966156204,
-    "hp": 399.8494052554366,
+    "pow": 231.12708147519575,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 508.4795792454307,
     "type": "Brawn"
    }
   ],
   "75": [
    {
-    "atk": 207.7803064305723,
-    "hp": 457.11667414725906,
+    "pow": 252.32277183433865,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 555.1100980355451,
     "type": "Cunning"
    },
    {
-    "atk": 184.10248647158187,
-    "hp": 405.02547023748014,
+    "pow": 233.09408219432302,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 512.8069808275106,
     "type": "Brawn"
    },
    {
-    "atk": 184.10248647158187,
-    "hp": 405.02547023748014,
+    "pow": 233.09408219432302,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 512.8069808275106,
     "type": "Arcane"
    }
   ],
   "76": [
    {
-    "atk": 210.16456362735457,
-    "hp": 462.3620399801801,
+    "pow": 254.2055031847521,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 559.2521070064547,
     "type": "Brawn"
    },
    {
-    "atk": 186.4577561256297,
-    "hp": 410.2070634763853,
+    "pow": 235.05246123423242,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 517.1154147153114,
     "type": "Arcane"
    },
    {
-    "atk": 186.4577561256297,
-    "hp": 410.2070634763853,
+    "pow": 235.05246123423242,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 517.1154147153114,
     "type": "Cunning"
    }
   ],
   "77": [
    {
-    "atk": 212.5520471814679,
-    "hp": 467.6145037992295,
+    "pow": 256.08158077385883,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 563.3794777024895,
     "type": "Arcane"
    },
    {
-    "atk": 188.81561787880824,
-    "hp": 415.3943593333782,
+    "pow": 237.00243335730613,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 521.4053533860736,
     "type": "Cunning"
    },
    {
-    "atk": 188.81561787880824,
-    "hp": 415.3943593333782,
+    "pow": 237.00243335730613,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 521.4053533860736,
     "type": "Brawn"
    }
   ],
   "78": [
    {
-    "atk": 214.94280776133945,
-    "hp": 472.87417707494683,
+    "pow": 257.9511477726264,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 567.4925250997782,
     "type": "Cunning"
    },
    {
-    "atk": 191.17614761419878,
-    "hp": 420.58752475123737,
+    "pow": 238.94420498429682,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 525.677250965453,
     "type": "Brawn"
    },
    {
-    "atk": 191.17614761419878,
-    "hp": 420.58752475123737,
+    "pow": 238.94420498429682,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 525.677250965453,
     "type": "Arcane"
    }
   ],
   "79": [
    {
-    "atk": 217.33689416507468,
-    "hp": 478.1411671631643,
+    "pow": 259.8143425816351,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 571.5915536795973,
     "type": "Brawn"
    },
    {
-    "atk": 193.53941803059237,
-    "hp": 425.78671966730326,
+    "pow": 240.87797463744243,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 529.9315442023734,
     "type": "Arcane"
    },
    {
-    "atk": 193.53941803059237,
-    "hp": 425.78671966730326,
+    "pow": 240.87797463744243,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 529.9315442023734,
     "type": "Cunning"
    }
   ],
   "80": [
    {
-    "atk": 219.73435341093233,
-    "hp": 483.41557750405116,
+    "pow": 261.67129904878755,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 575.6768579073326,
     "type": "Arcane"
    },
    {
-    "atk": 195.90549881734105,
-    "hp": 430.99209739815035,
+    "pow": 242.8039333538797,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 534.1686533785354,
     "type": "Cunning"
    },
    {
-    "atk": 195.90549881734105,
-    "hp": 430.99209739815035,
+    "pow": 242.8039333538797,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 534.1686533785354,
     "type": "Brawn"
    }
   ],
   "81": [
    {
-    "atk": 222.1352308224235,
-    "hp": 488.69750780933174,
+    "pow": 263.522146674455,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 579.748722683801,
     "type": "Cunning"
    },
    {
-    "atk": 198.2744568173807,
-    "hp": 436.2038049982376,
+    "pow": 244.72226507174565,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 538.3889831578405,
     "type": "Brawn"
    },
    {
-    "atk": 198.2744568173807,
-    "hp": 436.2038049982376,
+    "pow": 244.72226507174565,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 538.3889831578405,
     "type": "Arcane"
    }
   ],
   "82": [
    {
-    "atk": 224.53957010841506,
-    "hp": 493.9870542385131,
+    "pow": 265.36701080493526,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 583.8074237708577,
     "type": "Brawn"
    },
    {
-    "atk": 200.64635617937662,
-    "hp": 441.42198359462867,
+    "pow": 246.6331469911389,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 542.5929233805057,
     "type": "Arcane"
    },
    {
-    "atk": 200.64635617937662,
-    "hp": 441.42198359462867,
+    "pow": 246.6331469911389,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 542.5929233805057,
     "type": "Cunning"
    }
   ],
   "83": [
    {
-    "atk": 226.94741343858584,
-    "hp": 499.2843095648889,
+    "pow": 267.2060128150225,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 587.8532281930496,
     "type": "Arcane"
    },
    {
-    "atk": 203.0212584998555,
-    "hp": 446.6467686996821,
+    "pow": 248.53674991190576,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 546.7808498061927,
     "type": "Cunning"
    },
    {
-    "atk": 203.0212584998555,
-    "hp": 446.6467686996821,
+    "pow": 248.53674991190576,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 546.7808498061927,
     "type": "Brawn"
    }
   ],
   "84": [
    {
-    "atk": 229.35880151455638,
-    "hp": 504.58936333202405,
+    "pow": 269.03927028042835,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 591.8863946169424,
     "type": "Brawn"
    },
    {
-    "atk": 205.39922295610768,
-    "hp": 451.878290503437,
+    "pow": 250.43323855004223,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 550.953124810093,
     "type": "Brawn"
    },
    {
-    "atk": 205.39922295610768,
-    "hp": 451.878290503437,
+    "pow": 250.43323855004223,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 550.953124810093,
     "type": "Arcane"
    }
   ],
   "85": [
    {
-    "atk": 231.77377363698767,
-    "hp": 509.9023020013729,
+    "pow": 270.86689714073265,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 595.9071737096119,
     "type": "Brawn"
    },
    {
-    "atk": 207.7803064305723,
-    "hp": 457.11667414725906,
+    "pow": 252.32277183433865,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 555.1100980355451,
     "type": "Arcane"
    },
    {
-    "atk": 207.7803064305723,
-    "hp": 457.11667414725906,
+    "pow": 252.32277183433865,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 555.1100980355451,
     "type": "Cunning"
    }
   ],
   "86": [
    {
-    "atk": 234.19236776891842,
-    "hp": 515.2232090916206,
+    "pow": 272.6890038534919,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 599.9158084776822,
     "type": "Arcane"
    },
    {
-    "atk": 210.16456362735457,
-    "hp": 462.3620399801801,
+    "pow": 254.2055031847521,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 559.2521070064547,
     "type": "Cunning"
    },
    {
-    "atk": 210.16456362735457,
-    "hp": 462.3620399801801,
+    "pow": 254.2055031847521,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 559.2521070064547,
     "type": "Brawn"
    }
   ],
   "87": [
    {
-    "atk": 236.6146205955942,
-    "hp": 520.5521653103073,
+    "pow": 274.5056975400818,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 603.9125345881799,
     "type": "Cunning"
    },
    {
-    "atk": 212.5520471814679,
-    "hp": 467.6145037992295,
+    "pow": 256.08158077385883,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 563.3794777024895,
     "type": "Brawn"
    },
    {
-    "atk": 212.5520471814679,
-    "hp": 467.6145037992295,
+    "pow": 256.08158077385883,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 563.3794777024895,
     "type": "Arcane"
    }
   ],
   "88": [
    {
-    "atk": 239.0405675810181,
-    "hp": 525.8892486782398,
+    "pow": 276.31708212381,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 607.897580672382,
     "type": "Brawn"
    },
    {
-    "atk": 214.94280776133945,
-    "hp": 472.87417707494683,
+    "pow": 257.9511477726264,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 567.4925250997782,
     "type": "Arcane"
    },
    {
-    "atk": 214.94280776133945,
-    "hp": 472.87417707494683,
+    "pow": 257.9511477726264,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 567.4925250997782,
     "type": "Cunning"
    }
   ],
   "89": [
    {
-    "atk": 241.47024302143538,
-    "hp": 531.234534647158,
+    "pow": 278.1232584607919,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 611.8711686137422,
     "type": "Arcane"
    },
    {
-    "atk": 217.33689416507468,
-    "hp": 478.1411671631643,
+    "pow": 259.8143425816351,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 571.5915536795973,
     "type": "Cunning"
    },
    {
-    "atk": 217.33689416507468,
-    "hp": 478.1411671631643,
+    "pow": 259.8143425816351,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 571.5915536795973,
     "type": "Brawn"
    }
   ],
   "90": [
    {
-    "atk": 243.90368009595184,
-    "hp": 536.5880962110941,
+    "pow": 279.9243244640457,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 615.8335138209006,
     "type": "Cunning"
    },
    {
-    "atk": 219.73435341093233,
-    "hp": 483.41557750405116,
+    "pow": 261.67129904878755,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 575.6768579073326,
     "type": "Brawn"
    },
    {
-    "atk": 219.73435341093233,
-    "hp": 483.41557750405116,
+    "pow": 261.67129904878755,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 575.6768579073326,
     "type": "Arcane"
    }
   ],
   "91": [
    {
-    "atk": 246.34091091446703,
-    "hp": 541.9500040118274,
+    "pow": 281.72037522123316,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 619.784825486713,
     "type": "Brawn"
    },
    {
-    "atk": 222.1352308224235,
-    "hp": 488.69750780933174,
+    "pow": 263.522146674455,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 579.748722683801,
     "type": "Arcane"
    },
    {
-    "atk": 222.1352308224235,
-    "hp": 488.69750780933174,
+    "pow": 263.522146674455,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 579.748722683801,
     "type": "Cunning"
    }
   ],
   "92": [
    {
-    "atk": 248.7819665630916,
-    "hp": 547.3203264388015,
+    "pow": 283.51150310643396,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 623.7253068341548,
     "type": "Arcane"
    },
    {
-    "atk": 224.53957010841506,
-    "hp": 493.9870542385131,
+    "pow": 265.36701080493526,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 583.8074237708577,
     "type": "Cunning"
    },
    {
-    "atk": 224.53957010841506,
-    "hp": 493.9870542385131,
+    "pow": 265.36701080493526,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 583.8074237708577,
     "type": "Brawn"
    }
   ],
   "93": [
    {
-    "atk": 251.22687714720607,
-    "hp": 552.6991297238534,
+    "pow": 285.29779788632317,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 627.655155349911,
     "type": "Cunning"
    },
    {
-    "atk": 226.94741343858584,
-    "hp": 499.2843095648889,
+    "pow": 267.2060128150225,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 587.8532281930496,
     "type": "Brawn"
    },
    {
-    "atk": 226.94741343858584,
-    "hp": 499.2843095648889,
+    "pow": 267.2060128150225,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 587.8532281930496,
     "type": "Arcane"
    }
   ],
   "94": [
    {
-    "atk": 253.67567183230653,
-    "hp": 558.0864780310744,
+    "pow": 287.0793468210855,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 631.5745630063881,
     "type": "Brawn"
    },
    {
-    "atk": 229.35880151455638,
-    "hp": 504.58936333202405,
+    "pow": 269.03927028042835,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 591.8863946169424,
     "type": "Arcane"
    },
    {
-    "atk": 229.35880151455638,
-    "hp": 504.58936333202405,
+    "pow": 269.03927028042835,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 591.8863946169424,
     "type": "Cunning"
    }
   ],
   "95": [
    {
-    "atk": 256.1283788827721,
-    "hp": 563.4824335420985,
+    "pow": 288.8562347603838,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 635.4837164728444,
     "type": "Arcane"
    },
    {
-    "atk": 231.77377363698767,
-    "hp": 509.9023020013729,
+    "pow": 270.86689714073265,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 595.9071737096119,
     "type": "Cunning"
    },
    {
-    "atk": 231.77377363698767,
-    "hp": 509.9023020013729,
+    "pow": 270.86689714073265,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 595.9071737096119,
     "type": "Brawn"
    }
   ],
   "96": [
    {
-    "atk": 258.5850256986797,
-    "hp": 568.8870565370954,
+    "pow": 290.62854423467303,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 639.3827973162807,
     "type": "Arcane"
    },
    {
-    "atk": 234.19236776891842,
-    "hp": 515.2232090916206,
+    "pow": 272.6890038534919,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 599.9158084776822,
     "type": "Brawn"
    },
    {
-    "atk": 234.19236776891842,
-    "hp": 515.2232090916206,
+    "pow": 272.6890038534919,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 599.9158084776822,
     "type": "Arcane"
    }
   ],
   "97": [
    {
-    "atk": 261.0456388507831,
-    "hp": 574.3004054717229,
+    "pow": 292.3963555421324,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 643.2719821926914,
     "type": "Brawn"
    },
    {
-    "atk": 236.6146205955942,
-    "hp": 520.5521653103073,
+    "pow": 274.5056975400818,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 603.9125345881799,
     "type": "Arcane"
    },
    {
-    "atk": 236.6146205955942,
-    "hp": 520.5521653103073,
+    "pow": 274.5056975400818,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 603.9125345881799,
     "type": "Cunning"
    }
   ],
   "98": [
    {
-    "atk": 263.5102441137656,
-    "hp": 579.7225370502844,
+    "pow": 294.1597468314688,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 647.1514430292314,
     "type": "Arcane"
    },
    {
-    "atk": 239.0405675810181,
-    "hp": 525.8892486782398,
+    "pow": 276.31708212381,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 607.897580672382,
     "type": "Cunning"
    },
    {
-    "atk": 239.0405675810181,
-    "hp": 525.8892486782398,
+    "pow": 276.31708212381,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 607.897580672382,
     "type": "Brawn"
    }
   ],
   "99": [
    {
-    "atk": 265.9788664978653,
-    "hp": 585.1535062953037,
+    "pow": 295.9187941808293,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 651.0213471978245,
     "type": "Cunning"
    },
    {
-    "atk": 241.47024302143538,
-    "hp": 531.234534647158,
+    "pow": 278.1232584607919,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 611.8711686137422,
     "type": "Brawn"
    },
    {
-    "atk": 241.47024302143538,
-    "hp": 531.234534647158,
+    "pow": 278.1232584607919,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 611.8711686137422,
     "type": "Arcane"
    }
   ],
   "100": [
    {
-    "atk": 268.45153027897095,
-    "hp": 590.5933666137362,
+    "pow": 297.6735716730421,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 654.8818576806925,
     "type": "Brawn"
    },
    {
-    "atk": 243.90368009595184,
-    "hp": 536.5880962110941,
+    "pow": 279.9243244640457,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 615.8335138209006,
     "type": "Arcane"
    },
    {
-    "atk": 243.90368009595184,
-    "hp": 536.5880962110941,
+    "pow": 279.9243244640457,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 615.8335138209006,
     "type": "Cunning"
    }
   ],
   "101": [
    {
-    "atk": 270.9282590272726,
-    "hp": 596.0421698599997,
+    "pow": 299.42415146739273,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 658.733133228264,
     "type": "Arcane"
    },
    {
-    "atk": 246.34091091446703,
-    "hp": 541.9500040118274,
+    "pow": 281.72037522123316,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 619.784825486713,
     "type": "Cunning"
    },
    {
-    "atk": 246.34091091446703,
-    "hp": 541.9500040118274,
+    "pow": 281.72037522123316,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 619.784825486713,
     "type": "Brawn"
    }
   ],
   "102": [
    {
-    "atk": 273.40907563455187,
-    "hp": 601.4999663960142,
+    "pow": 301.1706038681278,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 662.5753285098813,
     "type": "Cunning"
    },
    {
-    "atk": 248.7819665630916,
-    "hp": 547.3203264388015,
+    "pow": 283.51150310643396,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 623.7253068341548,
     "type": "Brawn"
    },
    {
-    "atk": 248.7819665630916,
-    "hp": 547.3203264388015,
+    "pow": 283.51150310643396,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 623.7253068341548,
     "type": "Arcane"
    }
   ],
   "103": [
    {
-    "atk": 275.8940023401877,
-    "hp": 606.966805148413,
+    "pow": 302.91299738986777,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 666.4085942577092,
     "type": "Brawn"
    },
    {
-    "atk": 251.22687714720607,
-    "hp": 552.6991297238534,
+    "pow": 285.29779788632317,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 627.655155349911,
     "type": "Arcane"
    },
    {
-    "atk": 251.22687714720607,
-    "hp": 552.6991297238534,
+    "pow": 285.29779788632317,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 627.655155349911,
     "type": "Cunning"
    }
   ],
   "104": [
    {
-    "atk": 278.38306075594875,
-    "hp": 612.4427336630873,
+    "pow": 304.6513988200937,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 670.2330774042061,
     "type": "Arcane"
    },
    {
-    "atk": 253.67567183230653,
-    "hp": 558.0864780310744,
+    "pow": 287.0793468210855,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 631.5745630063881,
     "type": "Cunning"
    },
    {
-    "atk": 253.67567183230653,
-    "hp": 558.0864780310744,
+    "pow": 287.0793468210855,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 631.5745630063881,
     "type": "Brawn"
    }
   ],
   "105": [
    {
-    "atk": 280.87627188964115,
-    "hp": 617.9277981572105,
+    "pow": 306.3858732788705,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 674.0489212135152,
     "type": "Cunning"
    },
    {
-    "atk": 256.1283788827721,
-    "hp": 563.4824335420985,
+    "pow": 288.8562347603838,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 635.4837164728444,
     "type": "Brawn"
    },
    {
-    "atk": 256.1283788827721,
-    "hp": 563.4824335420985,
+    "pow": 288.8562347603838,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 635.4837164728444,
     "type": "Arcane"
    }
   ],
   "106": [
    {
-    "atk": 283.3736561676717,
-    "hp": 623.4220435688778,
+    "pow": 308.1164842759507,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 677.8562654070915,
     "type": "Brawn"
    },
    {
-    "atk": 258.5850256986797,
-    "hp": 568.8870565370954,
+    "pow": 290.62854423467303,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 639.3827973162807,
     "type": "Arcane"
    },
    {
-    "atk": 258.5850256986797,
-    "hp": 568.8870565370954,
+    "pow": 290.62854423467303,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 639.3827973162807,
     "type": "Cunning"
    }
   ],
   "107": [
    {
-    "atk": 285.8752334565888,
-    "hp": 628.9255136044953,
+    "pow": 309.84329376539904,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 681.6552462838779,
     "type": "Arcane"
    },
    {
-    "atk": 261.0456388507831,
-    "hp": 574.3004054717229,
+    "pow": 292.3963555421324,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 643.2719821926914,
     "type": "Cunning"
    },
    {
-    "atk": 261.0456388507831,
-    "hp": 574.3004054717229,
+    "pow": 292.3963555421324,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 643.2719821926914,
     "type": "Brawn"
    }
   ],
   "108": [
    {
-    "atk": 288.38102308365296,
-    "hp": 634.4382507840365,
+    "pow": 311.56636219786776,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 685.4459968353092,
     "type": "Cunning"
    },
    {
-    "atk": 263.5102441137656,
-    "hp": 579.7225370502844,
+    "pow": 294.1597468314688,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 647.1514430292314,
     "type": "Brawn"
    },
    {
-    "atk": 263.5102441137656,
-    "hp": 579.7225370502844,
+    "pow": 294.1597468314688,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 647.1514430292314,
     "type": "Arcane"
    }
   ],
   "109": [
    {
-    "atk": 290.89104385649125,
-    "hp": 639.9602964842809,
+    "pow": 313.28574857064405,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 689.228646855417,
     "type": "Brawn"
    },
    {
-    "atk": 265.9788664978653,
-    "hp": 585.1535062953037,
+    "pow": 295.9187941808293,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 651.0213471978245,
     "type": "Arcane"
    },
    {
-    "atk": 265.9788664978653,
-    "hp": 585.1535062953037,
+    "pow": 295.9187941808293,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 651.0213471978245,
     "type": "Cunning"
    }
   ],
   "110": [
    {
-    "atk": 293.40531408188167,
-    "hp": 645.4916909801398,
+    "pow": 315.0015104755856,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 693.0033230462883,
     "type": "Arcane"
    },
    {
-    "atk": 268.45153027897095,
-    "hp": 590.5933666137362,
+    "pow": 297.6735716730421,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 654.8818576806925,
     "type": "Cunning"
    },
    {
-    "atk": 268.45153027897095,
-    "hp": 590.5933666137362,
+    "pow": 297.6735716730421,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 654.8818576806925,
     "type": "Brawn"
    }
   ],
   "111": [
    {
-    "atk": 295.92385158371536,
-    "hp": 651.0324734841738,
+    "pow": 316.71370414505,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 696.77014911911,
     "type": "Cunning"
    },
    {
-    "atk": 270.9282590272726,
-    "hp": 596.0421698599997,
+    "pow": 299.42415146739273,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 658.733133228264,
     "type": "Brawn"
    },
    {
-    "atk": 270.9282590272726,
-    "hp": 596.0421698599997,
+    "pow": 299.42415146739273,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 658.733133228264,
     "type": "Arcane"
    }
   ],
   "112": [
    {
-    "atk": 298.44667372017744,
-    "hp": 656.5826821843905,
+    "pow": 318.4223844959211,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 700.5292458910264,
     "type": "Brawn"
    },
    {
-    "atk": 273.40907563455187,
-    "hp": 601.4999663960142,
+    "pow": 301.1706038681278,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 662.5753285098813,
     "type": "Arcane"
    },
    {
-    "atk": 273.40907563455187,
-    "hp": 601.4999663960142,
+    "pow": 301.1706038681278,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 662.5753285098813,
     "type": "Cunning"
    }
   ],
   "113": [
    {
-    "atk": 300.9737974001883,
-    "hp": 662.1423542804142,
+    "pow": 320.127605171827,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 704.2807313780195,
     "type": "Arcane"
    },
    {
-    "atk": 275.8940023401877,
-    "hp": 606.966805148413,
+    "pow": 302.91299738986777,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 666.4085942577092,
     "type": "Cunning"
    },
    {
-    "atk": 275.8940023401877,
-    "hp": 606.966805148413,
+    "pow": 302.91299738986777,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 666.4085942577092,
     "type": "Brawn"
    }
   ],
   "114": [
    {
-    "atk": 303.50523909914114,
-    "hp": 667.7115260181106,
+    "pow": 321.8294185836389,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 708.0247208840057,
     "type": "Cunning"
    },
    {
-    "atk": 278.38306075594875,
-    "hp": 612.4427336630873,
+    "pow": 304.6513988200937,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 670.2330774042061,
     "type": "Brawn"
    },
    {
-    "atk": 278.38306075594875,
-    "hp": 612.4427336630873,
+    "pow": 304.6513988200937,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 670.2330774042061,
     "type": "Arcane"
    }
   ],
   "115": [
    {
-    "atk": 306.04101487397446,
-    "hp": 673.2902327227439,
+    "pow": 323.5278759483366,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 711.7613270863407,
     "type": "Brawn"
    },
    {
-    "atk": 280.87627188964115,
-    "hp": 617.9277981572105,
+    "pow": 306.3858732788705,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 674.0489212135152,
     "type": "Arcane"
    },
    {
-    "atk": 280.87627188964115,
-    "hp": 617.9277981572105,
+    "pow": 306.3858732788705,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 674.0489212135152,
     "type": "Cunning"
    }
   ],
   "116": [
    {
-    "atk": 308.581140377609,
-    "hp": 678.8785088307399,
+    "pow": 325.2230273263186,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 715.490660117901,
     "type": "Arcane"
    },
    {
-    "atk": 283.3736561676717,
-    "hp": 623.4220435688778,
+    "pow": 308.1164842759507,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 677.8562654070915,
     "type": "Cunning"
    },
    {
-    "atk": 283.3736561676717,
-    "hp": 623.4220435688778,
+    "pow": 308.1164842759507,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 677.8562654070915,
     "type": "Brawn"
    }
   ],
   "117": [
    {
-    "atk": 311.12563087278363,
-    "hp": 684.476387920124,
+    "pow": 326.9149216572339,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 719.2128276459147,
     "type": "Cunning"
    },
    {
-    "atk": 285.8752334565888,
-    "hp": 628.9255136044953,
+    "pow": 309.84329376539904,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 681.6552462838779,
     "type": "Brawn"
    },
    {
-    "atk": 285.8752334565888,
-    "hp": 628.9255136044953,
+    "pow": 309.84329376539904,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 681.6552462838779,
     "type": "Arcane"
    }
   ],
   "118": [
    {
-    "atk": 313.67450124531933,
-    "hp": 690.0839027397026,
+    "pow": 328.60360679440475,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 722.9279349476906,
     "type": "Brawn"
    },
    {
-    "atk": 288.38102308365296,
-    "hp": 634.4382507840365,
+    "pow": 311.56636219786776,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 685.4459968353092,
     "type": "Arcane"
    },
    {
-    "atk": 288.38102308365296,
-    "hp": 634.4382507840365,
+    "pow": 311.56636219786776,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 685.4459968353092,
     "type": "Cunning"
    }
   ],
   "119": [
    {
-    "atk": 316.2277660168379,
-    "hp": 695.7010852370435,
+    "pow": 330.2891295379082,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 726.636084983398,
     "type": "Arcane"
    },
    {
-    "atk": 290.89104385649125,
-    "hp": 639.9602964842809,
+    "pow": 313.28574857064405,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 689.228646855417,
     "type": "Cunning"
    },
    {
-    "atk": 290.89104385649125,
-    "hp": 639.9602964842809,
+    "pow": 313.28574857064405,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 689.228646855417,
     "type": "Brawn"
    }
   ],
   "120": [
    {
-    "atk": 1303.8480872826951,
-    "hp": 2868.4657920219297,
+    "pow": 895.1661395268318,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 1969.3655069590302,
     "type": "Arcane"
    },
    {
-    "atk": 293.40531408188167,
-    "hp": 645.4916909801398,
+    "pow": 315.0015104755856,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 693.0033230462883,
     "type": "Brawn"
    },
    {
-    "atk": 293.40531408188167,
-    "hp": 645.4916909801398,
+    "pow": 315.0015104755856,
+    "grd": 0,
     "spd": 4,
+    "foc": 0,
+    "hp": 693.0033230462883,
     "type": "Arcane"
    }
   ]

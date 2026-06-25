@@ -5,7 +5,7 @@
  * {0, 25%, 50%, 75%, 85%, near-full, full}):
  *   (a) the sim is pure + deterministic — same combatant stats → same outcome,
  *       no RNG, no DOM, no clock; win == "≥1 hero still standing";
- *   (b) tiers 1–5 are winnable by a SINGLE starter hero (bram) at 0 items;
+ *   (b) tiers 1–5 are winnable by an early starting PARTY (team combat — not a lone hero);
  *   (c) the difficulty curve is strictly monotonic (foe-team budget never drops);
  *   (d) no tier is gated behind its OWN loot — beatable on drill items + the loot
  *       of EARLIER tiers by the best 3-hero party;
@@ -17,7 +17,7 @@
  *       a chunk of your collection flips the top tier to a loss (see BUILDER-LOG);
  *   (f) the outcome is MONOTONE in loadout AND in team size — more items / more
  *       heroes never turn a win into a loss, across every tier;
- *   (g) statBattle (the 1v1 stat check) is preserved unchanged (migration-safe).
+ *   (g) the Arena is fully 3v3 — the team API is exported and the old 1v1 statBattle is gone.
  * Run: node test/arena3.test.js
  */
 const fs = require("fs"), path = require("path");
@@ -31,8 +31,8 @@ global.document = { createElement(){ return { getContext(){ return {}; } }; } };
 const C = global.window.Collectibles, H = global.window.Heroes, E = global.window.Enemies;
 const N = E.TIER_COUNT;
 
-// ---- (g) + API shape: the 1v1 stat check is preserved; the team API exists ----
-ok(typeof E.statBattle === "function", "(g) statBattle (1v1 stat check) preserved — migration-safe");
+// ---- (g) API shape: fully 3v3 — the team API exists, the old 1v1 statBattle is gone ----
+ok(typeof E.statBattle === "undefined", "(g) statBattle (old 1v1 stat check) removed — fully 3v3");
 ok(typeof E.teamBattle === "function" && typeof E.enemyTeam === "function" &&
    typeof E.simulateTeams === "function" && typeof E.heroCombatant === "function",
    "the T88 team API is exported (teamBattle / enemyTeam / simulateTeams / heroCombatant)");
@@ -83,19 +83,23 @@ function teamWins(collected, n, tier){ return E.simulateTeams(party(collected, n
      "(a) a lone starter at 0 items LOSES tier 120 (the sim genuinely resolves losses)");
 })();
 
-// ---- (b) tiers 1–5 winnable by ONE starter hero at 0 items --------------------
+// ---- (b) the early arena is accessible: a starting PARTY clears tiers 1–5 ------
+// (combat is team-based now — you field up to 3 heroes, not a lone hero; a 1-topic player
+//  already fields ~3 heroes and clears ~9 tiers, so the early tiers must be winnable.)
 (function(){
-  const starter = H.HEROES[0];
-  ok(starter.id === "bram", "starter hero is bram (" + starter.id + ")");
-  const lone = [E.heroCombatant(starter, {})];
-  let allWin = true; for(let n = 1; n <= 5; n++) if(!E.simulateTeams(lone, E.enemyTeam(n)).win) allWin = false;
-  ok(allWin, "(b) tiers 1–5 winnable by a single starter hero with 0 items");
+  const topics = [...new Set(C.CATALOG.map(it => it.modeId).filter(Boolean))].slice(0, 2);
+  const col = {}; C.CATALOG.forEach(it => { if(topics.includes(it.modeId)) col[it.id] = { ts: 1 }; });
+  const party = H.HEROES.filter(h => H.isHeroUnlocked(h, col))
+    .map(h => ({ h, r: H.rating(h, col) })).sort((a, b) => b.r - a.r).slice(0, 3).map(x => E.heroCombatant(x.h, col));
+  ok(party.length >= 1, "(b) an early (2-topic) collection unlocks a startable party (" + party.length + " heroes)");
+  let allWin = true; for(let n = 1; n <= 5; n++) if(!E.simulateTeams(party, E.enemyTeam(n)).win) allWin = false;
+  ok(allWin, "(b) tiers 1–5 winnable by an early starting party");
 })();
 
 // ---- (c) the foe-team budget curve is strictly monotonic ----------------------
 (function(){
   // foe-team "budget" proxy = sum of foe atk·hp (the calibration's teamProduct).
-  function budget(t){ return E.enemyTeam(t).reduce((s, c) => s + c.atk * c.hp, 0); }
+  function budget(t){ return E.enemyTeam(t).reduce((s, c) => s + c.pow * c.hp, 0); }
   let mono = true, prev = -1, maxAt = 1, mx = -1;
   for(let t = 1; t <= N; t++){ const b = budget(t); if(b < prev - 1e-6) mono = false; prev = b; if(b > mx){ mx = b; maxAt = t; } }
   ok(mono, "(c) the enemy-team budget is non-decreasing across all " + N + " tiers");
@@ -145,7 +149,7 @@ function teamWins(collected, n, tier){ return E.simulateTeams(party(collected, n
   for(let t = 1; t <= N; t++){ const tm = E.enemyTeam(t);
     if(tm.length !== 3) shapeOk = false;
     if(tm[0].type !== E.byTier(t).type) typeOk = false;   // foe type matches what the player SEES
-    if(tm.some(c => !(c.atk > 0 && c.hp > 0 && c.spd > 0))) shapeOk = false;
+    if(tm.some(c => !(c.pow > 0 && c.hp > 0 && c.spd > 0))) shapeOk = false;
   }
   ok(shapeOk, "every tier fields a 3-foe team with positive atk/hp/spd");
   ok(typeOk, "the lead foe's type matches byTier(n).type (display/sim consistency)");

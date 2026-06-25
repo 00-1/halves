@@ -26,15 +26,8 @@
   const TIER_COUNT = 120;                          // 10 regions × 12 tiers (T66)
   const REGION_SIZE = 12;                          // tiers per region; boss at the 12th
   const TYPES = ["Brawn", "Arcane", "Cunning"];   // cycle order
-  const ADV_MULT = 1.5;                            // advantage matchup multiplier
-
-  // Difficulty ramp. `def` is min(geometric ramp, beatability cap). The ramp keeps
-  // the early game gentle (beatable by the starter hero); for deep tiers the cap —
-  // tied to the strongest hero you could field with pre-tier items — takes over so
-  // the climb genuinely tracks your collection. (Balance pass lives in T25.)
-  const DEF_BASE = 11;       // tier-1 ramp value
-  const DEF_GROWTH = 1.051;  // per-tier geometric growth (retuned to spread over 120 tiers)
-  const CAP_FRAC = 0.92;     // headroom under the theoretical max so wins don't need literal perfection
+  // (The Arena is FULLY 3v3 now — the old 1v1 stat-check `def` ladder + statBattle are removed.
+  //  Difficulty lives entirely in the 3v3 FOE_BUDGET curve below.)
 
   // ---- themed names (T44) -------------------------------------------------
   // Regions (weakest→strongest), the rank-title ladder within a region, and a
@@ -98,18 +91,7 @@
   // model "all drill items owned" independent of loot.
   const DRILL_IDS = C.CATALOG.map(it => it.id);
 
-  // Highest rating reachable against a tier of `type`, given an owned-set — using
-  // only heroes that hold the type ADVANTAGE (so the ×1.5 is actually attainable).
-  function bestAdvRating(type, owned){
-    let best = 0;
-    for(const hero of H.HEROES){
-      if(!H.beats(hero.type, type)) continue;
-      const r = H.rating(hero, owned);
-      if(r > best) best = r;
-    }
-    return best;
-  }
-  // Highest rating reachable by ANY hero given an owned-set, with the hero.
+  // Highest-rating hero given an owned-set (+ the hero) — used to pick the final boss's adaptive type.
   function bestRating(owned){
     let best = 0, bestHero = H.HEROES[0];
     for(const hero of H.HEROES){
@@ -119,118 +101,56 @@
     return { rating: best, hero: bestHero };
   }
 
-  // ---- build the ladder ---------------------------------------------------
-  // Register every tier's loot first (so all boosts exist in the catalogue), then
-  // compute each `def` against the owned-set obtainable strictly before that tier.
+  // ---- build the ladder: per-tier NAME + TYPE (the 3v3 reads `type` for matchup) ----
   const TIERS = [];
   const lootByTier = {};
   for(let n = 1; n <= TIER_COUNT; n++) lootByTier[n] = buildTierLoot(n);
-
-  // Forward pass: per-tier type, ramp value, and the honest beatability cap
-  // (the strongest battlePower a player could field with pre-tier items: best
-  // ADVANTAGE hero × ×1.5 × perfect perf). The owned-set accrues each tier's loot.
-  const types = [], ramps = [], caps = [];
-  {
-    const owned = {};
-    DRILL_IDS.forEach(id => owned[id] = true);
-    for(let n = 1; n <= TIER_COUNT; n++){
-      // T186 — region BOSSES (every REGION_SIZEth tier) used to land on a single type:
-      // (n-1)%3 with REGION_SIZE 12 (a multiple of 3) is always 2 (Cunning → all green).
-      // Vary the boss type by REGION so each boss reads as a distinct colour + matchup;
-      // the final boss (Void Sovereign) is re-typed adaptively by calibrateFinal below.
-      const isBoss = n % REGION_SIZE === 0;
-      const type = isBoss ? TYPES[Math.floor((n - 1) / REGION_SIZE) % TYPES.length]
-                          : TYPES[(n - 1) % TYPES.length];
-      types.push(type);
-      ramps.push(DEF_BASE * Math.pow(DEF_GROWTH, n - 1));
-      caps.push(bestAdvRating(type, owned) * ADV_MULT);
-      lootByTier[n].forEach(id => owned[id] = true);
-    }
-  }
-  // The raw cap wobbles tier-to-tier (the advantage-hero set changes as types
-  // cycle and loot spreads unevenly), which can make a deeper tier momentarily
-  // EASIER. Smooth it with a suffix-min envelope: capEnv[n] = min(cap[n..N]).
-  // This stays ≤ each tier's own cap (so no tier is gated behind its own loot)
-  // while being non-decreasing — so def, = min(rising ramp, non-decreasing
-  // capEnv×frac), climbs monotonically. (Finer balance is T25's pass.)
-  const capEnv = caps.slice();
-  for(let i = capEnv.length - 2; i >= 0; i--) capEnv[i] = Math.min(capEnv[i], capEnv[i + 1]);
-
   for(let n = 1; n <= TIER_COUNT; n++){
-    const def = Math.max(1, Math.round(Math.min(ramps[n - 1], capEnv[n - 1] * CAP_FRAC)));
-    TIERS.push({ n: n, name: tierName(n), type: types[n - 1], def: def });
+    // region BOSSES (every REGION_SIZEth tier) vary their type by region so each reads as a
+    // distinct colour/matchup; the final boss is re-typed adaptively by calibrateFinal below.
+    const isBoss = n % REGION_SIZE === 0;
+    const type = isBoss ? TYPES[Math.floor((n - 1) / REGION_SIZE) % TYPES.length]
+                        : TYPES[(n - 1) % TYPES.length];
+    TIERS.push({ n: n, name: tierName(n), type: type });
   }
-
-  // Final boss (tier 100): re-calibrate so it only falls at ~full collection.
-  // `owned` now holds every drill item + loot from tiers 1..99 (NOT tier-100 loot).
-  // Pick the strongest hero at that collection and set the boss's type so that hero
-  // holds the advantage; def = round(best rating × advantage).
+  // Final boss: re-type so the player's strongest hero (at a near-full collection) holds the advantage.
   (function calibrateFinal(){
-    // Owned-set = every drill item + loot from tiers 1..99 (NOT tier-100's loot).
     const exclFinal = {};
     DRILL_IDS.forEach(id => exclFinal[id] = true);
     for(let k = 1; k < TIER_COUNT; k++) lootByTier[k].forEach(id => exclFinal[id] = true);
-    const best = bestRating(exclFinal);
-    // the type our champion BEATS (so the champion has advantage against the boss)
-    const beaten = TYPES.filter(t => H.beats(best.hero.type, t))[0];
-    const boss = TIERS[TIER_COUNT - 1];
-    boss.type = beaten || boss.type;
-    boss.def = Math.round(best.rating * ADV_MULT);
+    const beaten = TYPES.filter(t => H.beats(bestRating(exclFinal).hero.type, t))[0];
+    if(beaten) TIERS[TIER_COUNT - 1].type = beaten;
   })();
 
-  // ---- battle resolution (pure) -------------------------------------------
-  // Pure stat check (Arena, T47): win iff effective power ≥ tier.def, where
-  //   power = round( rating(hero, collected) × matchup(hero.type, tier.type) ).
-  // No perf, no questions — the Arena is a payoff for what you've collected and
-  // climbed, not another maths drill. This is exactly the old battlePower at
-  // perf=1, so the T23/T43 def-calibration + buff-gating invariants are unchanged.
-  function statBattle(hero, tier, collected){
-    const heroObj = (typeof hero === "string") ? H.byId(hero) : hero;
-    const rating = H.rating(heroObj, collected || {});
-    const mu = H.matchup(heroObj.type, tier.type);
-    const power = Math.round(rating * mu);
-    return {
-      win: power >= tier.def,
-      power: power,
-      rating: rating,
-      matchup: mu,
-      def: tier.def,
-      hero: heroObj.id,
-      tier: tier.n
-    };
-  }
-
   // ---- 3v3 team battle: deterministic auto-resolve sim (T88) ---------------
-  // Generalises the single-hero stat check to a turn-based 1–3 vs 3 attrition
-  // fight with ZERO RNG (same inputs → same result), so the difficulty curve is
-  // re-derived and every invariant is re-proven by simulation (arena3.test.js).
-  // statBattle (above) is preserved as the 1v1 stat check (migration-safe; the
-  // live Arena still uses it until the team UI lands in T89).
-  //
-  // Combatant {atk, hp, spd, type}. Turn order by spd (fixed index tie-break). On
-  // a turn the actor targets by a FIXED rule (best type-matchup; tie → lowest hp;
-  // tie → index) and deals max(1, round(atk × matchup)); removed at hp ≤ 0; loop
-  // until one side is wiped. Win = ≥1 hero alive. Monotone in atk/hp/team-size.
-  const HB = 22, HG = 1.4, HPP = 0.5;   // hero combatant: hp = HB + guard·HG + power·HPP; atk = power + 0.8·focus
-  const HPR = 2.2, K = 10, ESPD = 4;    // enemy hp/atk ratio · add level offset (tier−K) · enemy fixed speed
-  const LG = 1.065, CAPF = 0.07;        // foe-budget ramp growth · cap fraction (enemy team ≪ beatable team product)
+  // A turn-based 1–3 heroes vs 3 foes attrition fight with ZERO RNG (same inputs → same result);
+  // every invariant is re-proven by simulation (arena3.test.js). (The old 1v1 statBattle/`def`
+  // ladder is gone — the live Arena is fully 3v3.)
+  // COMBAT REDESIGN (2026-06 — make all 4 stats matter; tools/proto-combat.js validates balance + leverage):
+  //   PWR = damage (× type matchup) · FOC = flat damage that IGNORES matchup (your bad-matchup floor) ·
+  //   GRD = mitigation (each incoming hit reduced by round(guard·MIT)) over a flat HP base ·
+  //   SPD = a one-time OPENING STRIKE (round(speed·SPD_ALPHA·matchup)) when you outspeed your target.
+  const HP_FLAT = 120;                  // every combatant's base HP (survivability comes from Guard mitigation)
+  const MIT = 0.6;                      // Guard: each incoming hit reduced by round(guard · MIT)
+  const FOC_FLAT = 1.2;                 // Focus: flat per-hit damage, matchup-independent
+  const SPD_ALPHA = 0.5;                // Speed: opening-strike scale
+  const HPR = 2.2, K = 10, ESPD = 4;    // enemy hp/atk ratio · add-level offset (tier−K) · enemy fixed speed
 
   function heroCombatant(hero, collected){
     const s = H.effectiveStats(hero, collected || {});
-    return { atk: s.power + 0.8 * s.focus, hp: HB + s.guard * HG + s.power * HPP, spd: s.speed, type: hero.type };
+    return { pow: s.power, grd: s.guard, spd: s.speed, foc: s.focus, hp: HP_FLAT, type: hero.type };
   }
   function enemyCombatant(budget, type){
-    return { atk: Math.sqrt(budget / HPR), hp: Math.sqrt(budget * HPR), spd: ESPD, type: type };
+    // foes derive ATK (pow) + HP from their budget; no Guard/Focus, fixed low speed
+    return { pow: Math.sqrt(budget / HPR), grd: 0, spd: ESPD, foc: 0, hp: Math.sqrt(budget * HPR), type: type };
   }
-  // Best N-hero team vs a foe type: the N heroes maximising rating × matchup (so
-  // the team can field the type counter — the team analog of bestAdvRating).
+  // Best N-hero team vs a foe type: the N heroes maximising rating × matchup (the team type-counter).
   function bestTeamVs(collected, n, foeType){
     return H.HEROES
       .map(h => ({ h: h, s: H.rating(h, collected) * H.matchup(h.type, foeType) }))
       .sort((a, b) => b.s - a.s).slice(0, n)
       .map(x => heroCombatant(x.h, collected));
   }
-  function teamProduct(team){ let a = 0, h = 0; for(const c of team){ a += c.atk; h += c.hp; } return a * h; }
 
   // Pure deterministic sim. heroes/foes = combatant arrays. Returns the outcome.
   // `recordLog` (T90): when true, also returns `units` (the starting roster with
@@ -239,25 +159,38 @@
   // replay the EXACT sim with no extra RNG. Off by default (calibration/teamBattle
   // run thousands of sims at load — no log overhead unless asked).
   function simulateTeams(heroes, foes, recordLog){
-    const all = heroes.map((c, i) => ({ atk:c.atk, hp:c.hp, spd:c.spd, type:c.type, side:0, ord:i }))
-      .concat(foes.map((c, i) => ({ atk:c.atk, hp:c.hp, spd:c.spd, type:c.type, side:1, ord:100 + i })));
+    const all = heroes.map((c, i) => ({ pow:c.pow, grd:c.grd, spd:c.spd, foc:c.foc, hp:c.hp, type:c.type, side:0, ord:i }))
+      .concat(foes.map((c, i) => ({ pow:c.pow, grd:c.grd, spd:c.spd, foc:c.foc, hp:c.hp, type:c.type, side:1, ord:100 + i })));
     const order = all.slice().sort((a, b) => b.spd - a.spd || a.ord - b.ord);
     const units = recordLog ? all.map(c => ({ side:c.side, ord:c.ord, type:c.type, maxHp:c.hp })) : null;
     const log = recordLog ? [] : null;
+    const pickTgt = actor => { const fa = all.filter(c => c.side !== actor.side && c.hp > 0); if(!fa.length) return null;
+      return fa.sort((x, y) => H.matchup(actor.type, y.type) - H.matchup(actor.type, x.type) || x.hp - y.hp || x.ord - y.ord)[0]; };
+    // resolve one hit: raw offense − target Guard mitigation, min 1 through. Records the playout flags.
+    const resolve = (actor, tgt, raw, mu, roundN, open) => {
+      const mit = Math.round(tgt.grd * MIT), pre = Math.round(raw);
+      const dmg = Math.max(1, pre - mit);
+      tgt.hp -= dmg;
+      if(log) log.push({ round:roundN, open:!!open, aSide:actor.side, aOrd:actor.ord, tSide:tgt.side, tOrd:tgt.ord,
+        dmg:dmg, tHp:Math.max(0, tgt.hp), ko:tgt.hp <= 0, adv: mu > 1, blocked: mit > 0 && mit >= pre * 0.5 });
+    };
+    // SPEED — one-time opening strike for any hero (side 0) that outspeeds its target
+    for(const actor of order){
+      if(actor.side !== 0 || actor.hp <= 0) continue;
+      const tgt = pickTgt(actor); if(!tgt || actor.spd <= tgt.spd) continue;
+      const mu = H.matchup(actor.type, tgt.type);
+      resolve(actor, tgt, actor.spd * SPD_ALPHA * mu, mu, 0, true);
+    }
     let guard = 0;
     const aliveOn = side => all.some(c => c.side === side && c.hp > 0);
     while(aliveOn(0) && aliveOn(1) && guard < 4000){
       guard++;
       for(const actor of order){
         if(actor.hp <= 0) continue;
-        const foesAlive = all.filter(c => c.side !== actor.side && c.hp > 0);
-        if(!foesAlive.length) break;
-        const tgt = foesAlive.sort((x, y) =>
-          H.matchup(actor.type, y.type) - H.matchup(actor.type, x.type) || x.hp - y.hp || x.ord - y.ord)[0];
-        const dmg = Math.max(1, Math.round(actor.atk * H.matchup(actor.type, tgt.type)));
-        tgt.hp -= dmg;
-        if(log) log.push({ round:guard, aSide:actor.side, aOrd:actor.ord, tSide:tgt.side, tOrd:tgt.ord,
-          dmg:dmg, tHp:Math.max(0, tgt.hp), ko:tgt.hp <= 0 });
+        const tgt = pickTgt(actor);
+        if(!tgt) break;
+        const mu = H.matchup(actor.type, tgt.type);
+        resolve(actor, tgt, Math.round(actor.pow * mu) + Math.round(actor.foc * FOC_FLAT), mu, guard, false);
       }
     }
     const res = {
@@ -283,9 +216,9 @@
     // STEEP-EARLY ramp from a tier-1 FLOOR to a near-full-reachable WALL across tiers 1..119 (no
     // plateau); the boss (120) is pinned below. Tuned so depth tracks collection (1 topic ≈ 10 tiers,
     // full ≈ 120). Monotonic by construction (FLOOR ≤ WALL, STEEP > 0). `analyze-arena.js` validates it.
-    const FLOOR = 107;       // tier-1 foe budget (tiers 1..5 trivial for your first heroes)
-    const WALL = 220000;     // tier-119 foe budget — near-full + accrued loot just clears it
-    const STEEP = 0.25;      // early-game steepness on normalized tier position (lower = steeper early)
+    const FLOOR = 300;       // tier-1 foe budget (tiers 1..5 trivial for your first heroes)
+    const WALL = 240000;     // tier-119 foe budget — near-full + accrued loot just clears it
+    const STEEP = 0.18;      // early-game steepness on normalized tier position (lower = steeper early)
     const nearFull = {}; DRILL_IDS.forEach(id => nearFull[id] = true);
     for(let k = 1; k < TIER_COUNT; k++) lootByTier[k].forEach(id => nearFull[id] = true);  // drill + loot 1..119
     const fb = []; for(let n = 1; n <= TIER_COUNT; n++){
@@ -380,7 +313,6 @@
   window.Enemies = {
     TIERS, TIER_COUNT, REGION_SIZE,
     byTier, tierLoot, tierRegion, regionLabel, canAttempt, currentTier,
-    statBattle,
     teamBattle, teamBattleLog, enemyTeam, enemyTeamMeta, simulateTeams, heroCombatant,   // T88 — 3v3 sim; T89 — enemyTeamMeta; T90 — teamBattleLog (watchable playout)
     matchup: H.matchup, beats: H.beats
   };

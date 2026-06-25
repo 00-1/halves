@@ -1728,15 +1728,15 @@
     });
   }
 
-  // ---- arena (T24, reworked T47) -----------------------------------------
-  // The Arena is a PURE STAT CHECK — no maths round. You win iff your hero's
-  // effective rating × type-matchup clears the tier's defence
-  // (Enemies.statBattle over the REAL collected set). Drilling the topics is
-  // where buffs are earned; the Arena is the payoff. Clearing it still demands a
-  // near-complete collection (the win == the old max-perf win, T23/T43).
-  // T89 — Arena 3v3: the player fields a PARTY of 1–3 owned heroes (ordered by
+  // ---- arena (T24, reworked T47, now fully 3v3) ---------------------------
+  // The Arena is a deterministic TEAM STAT CHECK — no maths round. Drilling the
+  // topics is where buffs are earned; the Arena is the payoff, and clearing it
+  // still demands a near-complete collection.
+  // Arena 3v3 (T89): the player fields a PARTY of 1–3 owned heroes (ordered by
   // pick) vs the tier's 3-foe enemy team; the fight resolves through the T88
-  // deterministic team sim (Enemies.teamBattle). `arenaParty` holds hero ids.
+  // deterministic team sim (Enemies.teamBattle) — each stat has a distinct role
+  // (PWR damage·matchup · GRD mitigation · FOC flat damage · SPD opening strike).
+  // `arenaParty` holds hero ids. (The old 1v1 statBattle/`def` check is gone.)
   const PARTY_MAX = 3;
   let arenaParty = [], lastBattle = null, practiceCtx = null, arenaMapOpen = false, eventCtx = null, introCtx = false;
 
@@ -1857,6 +1857,8 @@
     } else {
       const reg = E.tierRegion(tier.n), posInReg = ((tier.n - 1) % RS) + 1;
       const isBossNow = posInReg === RS, bossNext = posInReg === RS - 1;
+      const lead = E.enemyTeam(tier.n)[0] || { pow: 0, hp: 0 };   // lead foe → honest 3v3 threat (no more 1v1 "DEF")
+      const fPow = Math.round(lead.pow), fHp = Math.round(lead.hp);
       const pips = Array.from({length:RS}, (_, i) => {
         const at = reg * RS + i + 1, isB = (i + 1) === RS;
         const cl = col["tier:" + at] ? "done" : (at === tier.n ? "cur" : "");
@@ -1870,7 +1872,8 @@
         (isBossNow ? '<div class="at-boss now">'+ic("swords")+' Region boss — defeat '+esc(tier.name)+' to conquer '+esc(E.regionLabel(reg))+'</div>'
          : bossNext ? '<div class="at-boss next">'+ic("swords")+' Boss next: '+esc(bossNameOf(reg))+'</div>' : '')+
         '<div class="at-name"><i class="typedot"></i>'+esc(tier.name)+'</div>'+
-        '<div class="at-stats"><span class="at-type">'+esc(tier.type)+'</span><span class="at-def">DEF '+tier.def+'</span></div></div>';
+        '<div class="at-stats"><span class="at-type">'+esc(tier.type)+'</span>'+
+          '<span class="at-threat" title="Lead foe — attack power &amp; toughness">'+ic("swords")+' '+fPow+' PWR · '+fHp+' HP</span></div></div>';
       // ---- T89: the full 3-foe enemy team (tier foe + 2 weaker adds) with each
       // foe's BEST matchup vs the chosen party, so you can field advantage types.
       const foes = E.enemyTeamMeta(tier.n);
@@ -1885,6 +1888,17 @@
           '</div>';
       });
       html += '</div></div>';
+      // ---- a brief in-game primer: how the 4 stats + type matchup decide a fight --
+      html += '<details class="arena-info"><summary>'+ic("swords")+' How battles work</summary>'+
+        '<div class="ai-body"><p>Send up to 3 heroes against the tier&rsquo;s foes. Their stats decide it:</p>'+
+        '<ul class="ai-stats">'+
+          '<li><b>🗡 Power</b> — damage you deal</li>'+
+          '<li><b>🛡 Guard</b> — toughness; soak more hits before falling</li>'+
+          '<li><b>✦ Focus</b> — steady damage, even into a bad matchup</li>'+
+          '<li><b>⚡ Speed</b> — acts first; outspeed a foe to land an opening hit</li>'+
+        '</ul>'+
+        '<p class="ai-type">Type is king: Brawn ▸ Cunning ▸ Arcane ▸ Brawn. Beat a foe&rsquo;s type and you strike <b>×1.5</b> — field heroes that counter what they&rsquo;re facing.</p>'+
+        '</div></details>';
       if(!heroes.length){
         html += '<div class="arena-empty">Finish a drill round to unlock your first hero, then return to fight.</div>';
       } else {
@@ -1892,13 +1906,14 @@
         const cap = Math.min(PARTY_MAX, heroes.length);
         html += '<div class="arena-pick">Choose your party (1–'+cap+') <span class="ap-count">'+arenaParty.length+'/'+cap+'</span></div><div class="arena-heroes">';
         heroes.forEach(h => {
-          const rating = Math.round(Hs.rating(h, col)), mu = E.matchup(h.type, tier.type);
+          const st = Hs.effectiveStats(h, col), rating = Math.round(Hs.rating(h, col)), mu = E.matchup(h.type, tier.type);
           const idx = arenaParty.indexOf(h.id), sel = idx >= 0, blocked = !sel && arenaParty.length >= cap;
           html += '<div class="arena-hero t-'+h.type.toLowerCase()+(sel ? " sel" : "")+(blocked ? " blocked" : "")+'" data-hero="'+esc(h.id)+'">'+
             '<canvas class="pix ah-port" width="40" height="40"></canvas>'+
             (sel ? '<span class="ah-badge">'+(idx + 1)+'</span>' : '')+
             '<div class="ah-body"><div class="ah-top"><span class="ah-name"><i class="typedot"></i>'+esc(h.name)+'</span>'+
               '<span class="ah-rating">'+ic("star")+' '+rating+'</span></div>'+
+            '<div class="ah-stats">'+statChip("PWR",st.power)+statChip("GRD",st.guard)+statChip("SPD",st.speed)+statChip("FOC",st.focus)+'</div>'+
             '<div class="ah-mu">'+matchupLabel(mu)+'</div></div></div>';
         });
         html += '</div>';
@@ -1982,6 +1997,7 @@
           '<div class="bp-vs">vs</div>'+
           '<div class="bp-side foe">'+foeUnits+'</div></div>'+
         '<div class="bp-status">Round 1</div>'+
+        '<div class="bp-callout" aria-live="polite"></div>'+
         '<button class="bp-skip">Skip '+'▸</button>'+
       '</div>';
     // portraits (same draw paths as the rest of the Arena)
@@ -2001,6 +2017,14 @@
     function applyEvent(ev){
       const k = ev.tSide + ":" + ev.tOrd, mx = maxOf[k] || 1;
       const bar = hpEl[k]; if(bar) bar.style.width = Math.max(0, Math.min(100, (ev.tHp / mx) * 100)) + "%";
+      // T-combat: an OPENING STRIKE (a hero outspeeding) gets its own quick spark at
+      // the struck cell — distinct from the foe-KO burst — so "first blood" reads.
+      if(ev.open && cellEl[k]){
+        const ap = HERO_PAL[((window.Heroes.byId(party[ev.aOrd]) || {}).type)] || HERO_PAL.Brawn;
+        const cc = elCentre(cellEl[k]);
+        fxBigBurst({ x: cc.x, y: cc.y, count: 90, seed: ((ev.aOrd + 1) * 0x85ebca77 + ev.tOrd) >>> 0,
+          palette: [ap.body, ap.accent, "#ffffff"], sizePx: FX_SMALL, spread: 0.9 });
+      }
       if(ev.ko && cellEl[k]){
         cellEl[k].classList.add("ko");
         // T160 — a FOE going down gets a small, TIGHT impact burst right at its cell
@@ -2016,6 +2040,18 @@
       const st = $("arenaBody").querySelector(".bp-status");
       if(st) st.textContent = dispName(ev.aSide, ev.aOrd) + " hits " + dispName(ev.tSide, ev.tOrd) +
         " for " + ev.dmg + (ev.ko ? " — down!" : "");
+      // T-combat: a brief mechanic callout (opening strike / type advantage / blocked)
+      // pulled from the sim's own log flags, so the new stat roles read in the playout.
+      const co = $("arenaBody").querySelector(".bp-callout");
+      if(co){
+        let tag = "";
+        if(ev.open) tag = '<span class="co co-open">⚡ Opening strike!</span>';
+        else if(ev.adv) tag = '<span class="co co-adv">▲ Advantage ×1.5</span>';
+        else if(ev.blocked) tag = '<span class="co co-block">🛡 Blocked</span>';
+        if(ev.ko) tag += (tag ? ' ' : '') + '<span class="co co-ko">'+esc(dispName(ev.tSide, ev.tOrd))+' down!</span>';
+        co.innerHTML = tag;
+        if(tag){ co.classList.remove("show"); if(typeof co.offsetWidth === "number"){ void co.offsetWidth; } co.classList.add("show"); }
+      }
     }
     // pace: T160 — slower/calmer than the first cut. ~4s total, floor 130ms/step,
     // ceil 480ms so a short fight isn't a blur and each KO has room to read.
