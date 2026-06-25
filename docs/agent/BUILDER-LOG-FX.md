@@ -6,6 +6,36 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: event-play logic core (T233c), vector-proven ([B], GO)
+
+The Arena/event-play SCREENS need portraits (F1/F2 `drawIcon` export — Babysitter take-over, not yet
+landed; "don't ship plain then redo"), so I built the **unblocked, vector-provable event-play logic
+core** (`crates/goblin-gold/src/event_play.rs`), re-impl'd from `events.js`/`main.js`. `00-1/brickmap`
+`8dc2077`.
+- **schedule** — `epochDay = floor(now_ms/dayMs)`, `index = ((epochDay%14)+14)%14`, `roster[index]`
+  live. Proven vs all 15 schedule vectors (incl. negative days + far-future).
+- **reward tiers** (`event_tiers_earned`) — `event:<id>` always; `+:well` at ≥0.7 accuracy; `+:ace` on
+  a flawless run; no gold. Proven vs all 18 tier vectors.
+- **gauntlet** (`build_gauntlet`) — `seed = hashStr(id)^artSeed → mulberry32` (reused the synth PRNG,
+  now `pub(crate)`); per `questionMix {topic,n}` the topic pool (`transforms::generate`, parity-proven)
+  is sorted to a total order, seed-shuffled (Fisher–Yates backward), first `n` taken; the combined set
+  is seed-shuffled. **Proven byte-exact vs all 14 events' gauntlets.**
+- **The collation gotcha (solved):** the total-order sort is JS `localeCompare({numeric:true})`, which
+  uses ICU order, NOT codepoint — so `÷` sorts before `×` (and `²` after digits, before letters). My
+  existing `earning::natural_cmp` is codepoint-ordered and got it wrong. Wrote a dedicated
+  `gauntlet_cmp` with the exact ICU char rank for the GG1 prompt alphabet (derived by sorting the live
+  pools through node's real `localeCompare` — stdlib as a collation reference, not GG1 logic). All 14
+  gauntlets then matched.
+- goblin-gold **86** lib tests (82 + 4); clippy `-D warnings` clean native + aarch64-linux-android; fmt
+  clean. Pushed to `main` + the feature branch.
+- **▶ BLOCKED on F1/F2 for the SCREENS:** the Arena + event-play screens want hero/foe portraits from
+  the `drawIcon` pixel-grid export (Babysitter take-over, queued). Both logic cores (combat + event-play)
+  are now done + proven; the screens are the remaining work and need that export to hit the visual bar.
+  Flagging so the Babysitter can prioritise F1. (Interim screens without portraits would be "plain then
+  redo," which the directive says not to do.)
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: RE-SYNC to the redesigned combat model ([B], GO)
 
 Resumed after a pause to find the **Arena combat model was redesigned** (`main` `b49e62b`) — bigger
