@@ -60,7 +60,11 @@ function generate(){
         damage: "max(1, round(pow*matchup) + round(foc*FOC_FLAT) - round(target.grd*MIT))",
         opening: "a hero that outspeeds its target → one hit of round(speed*SPD_ALPHA*matchup), then mitigated" },
       rating: "power*1.0 + focus*0.8 + speed*0.5 + guard*0.3   (the auto party-picker's heuristic only; NOT the sim)" },
-    heroes: H.HEROES.map(h => ({ id: h.id, type: h.type, base: h.base, unlockHint: h.unlockHint })),
+    // unlock = a tiny serialisable spec (hasKey | countPrefix | keyMatch) over collected keys.
+    // B compiles it the same way (heroes.js compileUnlock) so the Arena fields only UNLOCKED heroes.
+    heroes: H.HEROES.map(h => ({ id: h.id, type: h.type, base: h.base, unlockHint: h.unlockHint, unlock: h.unlock })),
+    unlockKinds: "hasKey:{key} present · countPrefix:{prefix,min} ≥min keys start with prefix · " +
+      "keyMatch:{prefix,suffix,min} ≥min keys start-with prefix AND end-with suffix with ≥1 char between",
     // effectiveStats(hero,col) = hero.base + Σ boost.amount over OWNED items whose boost.hero === hero.id, per stat.
     // The 2352 DRILL boosts already live in collectibles.json (`catalog[].boost`); combat.json adds ONLY the LOOT
     // boosts (loot is granted by Arena wins, so it's absent from the collectibles catalogue). Merge both maps.
@@ -77,7 +81,33 @@ function generate(){
   }
 
   // ---- (2) parity VECTORS (from the live sim) --------------------------------
-  const vectors = { heroCombatant: [], effectiveStats: [], teamBattle: [], teamBattleLog: null };
+  const vectors = { heroCombatant: [], effectiveStats: [], heroUnlock: [], teamBattle: [], teamBattleLog: null };
+
+  // heroUnlock — isHeroUnlocked over a battery of collected states that toggle EACH
+  // hero's spec on/off (incl. count boundaries + the keyMatch empty-middle reject), so
+  // B's Rust spec-interpreter proves byte-identical gating. `collected` keys → presence.
+  const UNLOCK_BATTERY = [
+    ["empty", {}],
+    ["init1", {"init:a":1}],                                          // bram
+    ["init2", {"init:a":1,"init:b":1}],                              // still no greta (needs 3)
+    ["init3", {"init:a":1,"init:b":1,"init:c":1}],                   // bram + greta
+    ["mastery", {"mastery:fractions":1}],                            // tovar
+    ["darkwizard", {"rank:darkwizard":1}],                          // mo
+    ["collector25", {"collector:25":1}],                            // wisp
+    ["flawless2", {"flawless:a":1,"flawless:b":1}],                 // still no mira (needs 3)
+    ["flawless3", {"flawless:a":1,"flawless:b":1,"flawless:c":1}],  // mira
+    ["one100", {"topics:one100":1}],                               // nim
+    ["archmage", {"rank:archmage":1}],                             // zeph
+    ["speedWrongBracket", {"speed:add:2":1}],                      // NOT pip (suffix :2)
+    ["speedEmptyMiddle", {"speed::3":1}],                          // NOT pip (no char between)
+    ["speedLightning", {"speed:add:3":1}],                         // pip
+    ["allmodes", {"meta:allmodes":1}],                            // vex
+    ["collector75", {"collector:75":1}],                          // sela
+    ["tier10", {"tier:10":1}],                                    // roon
+    ["mixed", {"init:a":1,"init:b":1,"init:c":1,"rank:archmage":1,"tier:10":1,"speed:mul:3":1}],
+  ];
+  for(const [label, col] of UNLOCK_BATTERY)
+    vectors.heroUnlock.push({ label, collected: col, unlocked: H.HEROES.filter(h => H.isHeroUnlocked(h, col)).map(h => h.id) });
 
   // heroCombatant — the combatant a hero's effective stats produce (pow/grd/spd/foc carry through; hp is flat)
   for(const s of [{power:14,guard:12,speed:6,focus:6},{power:18,guard:8,speed:7,focus:5},
@@ -111,8 +141,8 @@ if(require.main === module){
   const { combat, vectors } = generate();
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "combat.json"), JSON.stringify(combat, null, 1) + "\n");
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "combat-vectors.json"), JSON.stringify(vectors) + "\n");
-  const n = vectors.heroCombatant.length + vectors.effectiveStats.length + vectors.teamBattle.length + 1;
+  const n = vectors.heroCombatant.length + vectors.effectiveStats.length + vectors.heroUnlock.length + vectors.teamBattle.length + 1;
   console.log("wrote content/gg1/combat.json + combat-vectors.json — tiers", combat.tiers.length,
-    "lootBoosts", combat.lootBoosts.length, "vectors", n);
+    "lootBoosts", combat.lootBoosts.length, "heroUnlock", vectors.heroUnlock.length, "vectors", n);
 }
 module.exports = { generate };

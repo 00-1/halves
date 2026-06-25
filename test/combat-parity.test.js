@@ -30,6 +30,8 @@ const en = read("gg1/dev/enemies.js"), he = read("gg1/dev/heroes.js");
   ["heroes.js matchup", he, "function matchup(a, b){ return a === b ? 1.0 : (beats(a, b) ? 1.5 : 0.6); }"],
   ["heroes.js beats", he, 'function beats(a, b){ return (a==="Brawn"&&b==="Cunning") || (a==="Cunning"&&b==="Arcane") || (a==="Arcane"&&b==="Brawn"); }'],
   ["heroes.js ratingOf", he, "function ratingOf(s){ return s.power * 1.0 + s.focus * 0.8 + s.speed * 0.5 + s.guard * 0.3; }"],
+  ["heroes.js isHeroUnlocked", he, "return !!h && h._unlock(collected || {});"],
+  ["heroes.js compileUnlock keyMatch", he, 'if(spec.kind === "keyMatch"){'],
 ].forEach(([label, src, s]) => ok(src.includes(s), "source fidelity: " + label));
 
 // (3a) ladder — 120 tiers, foe budget NON-DECREASING (no easier-deeper tier), boss every 12th
@@ -46,6 +48,30 @@ ok(vectors.heroCombatant.every(v => {
   const c = v.combatant;
   return c.pow === v.stats.power && c.grd === v.stats.guard && c.spd === v.stats.speed && c.foc === v.stats.focus && c.hp === 120;
 }), "heroCombatant: {pow,grd,spd,foc} = stats, hp = HP_FLAT(120)");
+
+// (3b2) heroUnlock — a LOCAL spec compiler (the Rust port mirror) reproduces the live
+//       isHeroUnlocked over the whole battery, purely from the exported `unlock` specs.
+const SPEC = {};
+combat.heroes.forEach(h => { SPEC[h.id] = h.unlock; });
+function unlockFromSpec(spec, col){
+  if(spec.kind === "hasKey") return !!col[spec.key];
+  if(spec.kind === "countPrefix"){ let n = 0; for(const k in col) if(k.indexOf(spec.prefix) === 0) n++; return n >= spec.min; }
+  if(spec.kind === "keyMatch"){ const minLen = spec.prefix.length + spec.suffix.length + 1; let n = 0;
+    for(const k in col){ if(k.length >= minLen && k.indexOf(spec.prefix) === 0 && k.slice(-spec.suffix.length) === spec.suffix){ if(++n >= spec.min) return true; } } return false; }
+  throw new Error("unknown unlock kind: " + spec.kind);
+}
+ok(combat.heroes.every(h => h.unlock && ["hasKey","countPrefix","keyMatch"].includes(h.unlock.kind)),
+   "every hero carries a serialisable unlock spec (hasKey|countPrefix|keyMatch)");
+ok(vectors.heroUnlock.length >= 12, "heroUnlock battery present (" + vectors.heroUnlock.length + " states)");
+ok(vectors.heroUnlock.every(v => {
+  const got = combat.heroes.filter(h => unlockFromSpec(SPEC[h.id], v.collected)).map(h => h.id);
+  return got.length === v.unlocked.length && got.every((id, i) => id === v.unlocked[i]);
+}), "heroUnlock: the spec compiler reproduces live isHeroUnlocked for every battery state");
+// the battery actually exercises each kind's edges (count boundary + keyMatch rejects)
+const byLabel = l => vectors.heroUnlock.find(v => v.label === l);
+ok(!byLabel("init2").unlocked.includes("greta") && byLabel("init3").unlocked.includes("greta"), "heroUnlock: greta gated at init: ≥3 (2 no, 3 yes)");
+ok(!byLabel("speedWrongBracket").unlocked.includes("pip") && !byLabel("speedEmptyMiddle").unlocked.includes("pip") && byLabel("speedLightning").unlocked.includes("pip"),
+   "heroUnlock: pip keyMatch needs prefix+suffix with a non-empty middle (speed:<x>:3)");
 
 // (3c) effectiveStats monotone in ownership (more owned ⇒ each stat ≥) for every hero
 for(const h of combat.heroes.map(x => x.id)){
