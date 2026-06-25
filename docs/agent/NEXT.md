@@ -44,6 +44,8 @@ multi-hour runs the environment can't deliver.)*
 
 ---
 
+> ⏸️ **BRICKMAP PARITY WORK PAUSED (owner, 2026-06-24).** We're actively updating gg-web (arena rebalance + combat/UI changes), so the port is a moving target — **B: HOLD brickmap porting** (don't build the Arena screen / event-play against shifting source). The Babysitter keeps the parity artifacts (combat/gold/earning/events exports + `combat.rs` vectors + docs) CURRENT as gg-web changes land, so resume is clean. Resume signal will be posted here.
+
 ## Builder A — work the TOP ⏳ item ONLY. Do not skip or reorder. Push it alone → wait for review → next.
 
 **▶ FOCUS = STORE LAUNCH + 3 PARALLEL ARCHITECTURE STRANDS (owner, 2026-06-23).** GG1 v1 is shipped (Release
