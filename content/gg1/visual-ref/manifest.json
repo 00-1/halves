@@ -5,8 +5,8 @@
   "height": 880,
   "deviceScaleFactor": 2
  },
- "captured": 26,
- "total": 26,
+ "captured": 1,
+ "total": 1,
  "screens": {
   "splash": {
    "ok": true,
@@ -106,7 +106,7 @@
   },
   "arena-prefight": {
    "ok": true,
-   "bytes": 240509,
+   "bytes": 242313,
    "state": "partial",
    "note": "3v3 pre-fight — tier/enemy team/party pick"
   },
