@@ -2569,3 +2569,25 @@ flags for "Opening strike! / Advantage ×1.5 / Blocked / KO" callouts + an openi
 **→ Brickmap:** combat.json + combat-vectors.json regenerated (shape changed). When the (paused) port resumes, re-sync
 both and update `combat.rs` to the new `{pow,grd,spd,foc,hp}` sim — see the 🔧 block at the top of `NEXT.md` for the
 full spec. Supersedes the earlier `11ef041` re-sync note.
+
+---
+
+## RESUME + DONE (Babysitter take-over) — brickmap parity GO; hero-unlock export · `main` `b164fde` (2026-06-25)
+Owner (leaving): **"push on with brickmap parity work until completion. I'll wake up builder b."** → brickmap PAUSE
+lifted; resume signal posted at the top of `NEXT.md`. All parity artifacts are current as of `main` `b164fde`. This
+session is now driving the port autonomously (review every B push w/ full independent verification; keep exports/docs
+current; take over [A] export gaps).
+
+**Hero-unlock export (was a queued take-over — the last known [A] export gap before the Arena screen):** hero unlock
+was a predicate FUNCTION (`cnt`/`has`/regex over collected) → not serialisable, so B fielded "all 12 interim". Unified
+each hero's unlock to a tiny DATA spec and compiled the live predicate from it (`heroes.js compileUnlock`) — one source
+of truth, zero drift, `isHeroUnlocked` behaviour-identical (full suite + every unlock-touching test green).
+- Spec kinds: `hasKey{key}` · `countPrefix{prefix,min}` · `keyMatch{prefix,suffix,min}` (≥1 char between prefix/suffix
+  — the `speed:<mode>:3` Lightning bracket). Exported on `combat.json` `heroes[].unlock` + `unlockKinds` doc.
+- Proof: `combat-vectors.json` `heroUnlock` = 18 collected states toggling each hero on/off (init:/flawless: count
+  boundaries; pip keyMatch wrong-suffix + empty-middle rejects). `combat-parity` adds a local Rust-mirror spec compiler
+  that reproduces live `isHeroUnlocked` from the exported specs for every state + source-fidelity on `compileUnlock`.
+- **B action:** re-sync `content/gg1/`, port `compileUnlock`, gate the Arena roster on it (drop 'all 12'), prove via
+  the `heroUnlock` battery. **68/68 green.**
+
+**No open [A] export gaps known.** Next Babysitter focus: review B's port pushes (Arena screen → event-play) as they land.
