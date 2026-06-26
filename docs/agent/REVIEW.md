@@ -2711,3 +2711,32 @@ pixel-perfect, but where there's deviation examine if we can improve parity." Bu
   `node tools/visual-compare.js <screen>` → iterate to ok). The gate activates per-screen as B commits renders; the
   Babysitter reviews each heat-map side-by-side and triages EXAMINE deviations (improve where we can, accept inherent
   engine diffs). This is the mechanism for the one area that ISN'T byte-provable (layout/appearance).
+
+---
+
+## APPROVED — B's 4 art-port handoffs (F1+F2, F3+F4, GPU render+contact-sheet, hardened-gate match) (Babysitter, 2026-06-25)
+Caught up on B's backlog (brickmap `main` through `6cd8dbc`), independently verified, **APPROVED**:
+1. **F1+F2 portrait generators (`0978f81`).** Heroes (mirrored creature-blob) + foes byte-proven vs art-vectors.json.
+2. **F3+F4 scenery+banner generators (`39f8c58`, `scenes.rs`).** Proven cell-by-cell vs all 10 scenery + 14 eventart
+   vectors (palette-packed reconstructed), incl. the exact `rnd()` short-circuit order in the rune loop. 94 lib tests.
+3. **GPU art renders + contact sheet (`9946362`).** Paint helpers (`paint_role`/`paint_colors`) + `render_art_sheet`
+   paints all 4 generators (12 heroes · 15 foes · 10 backdrops · 8 crests) through the real engine; new `art-sheet`
+   golden, GPU-matched under lavapipe — proves the art paints right on the GPU, not just in logic. 9 GPU goldens.
+4. **Hardened-gate match (`6cd8dbc`).** Re-synced to my hardened batteries. **Independently verified the strongest
+   claim cross-repo:** B's `art::foe_digest` MATCHES the export's `foeDigest 23f2c27b` — and I WebFetched `art.rs` to
+   confirm it's COMPUTED (iterates 1..=120, generates each `foe_grid`, rolls FNV-1a with the standard 0x811c9dc5/
+   0x01000193 constants, compares vs the JSON-loaded value), NOT a hardcoded hash. So all 120 foe grids are proven
+   byte-identical (the 104 unsampled passed first try). Per-strike: all 5 `teamBattleLogs` (opening strikes · loss ·
+   single-hero · region 5 · boss) replayed strike-by-strike (round/sides/ords/dmg/tHp/ko/adv/blocked). 96 lib tests,
+   clippy `-D warnings` clean native + aarch64-android, fmt clean.
+
+**Deferral accepted (correctly scoped):** B deferred the `itemDigest` (2702 item icons → needs `drawIcon`'s ARCH item
+branch) to the **Items-screen** visual pass. The Arena/event-play screens need hero portraits (F1 hero branch — all 12
+ported), foes (F2), scenery (F3), banners (F4) — ALL ported + proven. So this is honest scoping, not a DoD miss; the
+itemDigest gate stays dormant on B's side until the Items pass. (Our `bfe89b1e` export is ready when B ports it.)
+
+**ALL FOUR art generators + the GPU paint path are now ported, proven, and golden-gated.** ▶ B NEXT: assemble the
+**Arena + event-play SCREENS** (party-pick on `unlocked_roster` → battle playout with {open,adv,blocked} → grant;
+today's event → gauntlet → tiers), painting these grids, against `arena-web.png` / `event-play-web.png` — then the
+render→compare→commit loop using the new `tools/visual-compare.js` (commit `<screen>-brickmap.png`; target verdict
+`ok`, not DIVERGENT). No open [A] gaps; the visual-compare gate is armed and waiting for the first render.
