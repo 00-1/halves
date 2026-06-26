@@ -38,7 +38,7 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 | ID | Area | Issue | Sev | Owner | Status | Sign-off |
 |----|------|-------|-----|-------|--------|----------|
-| N1 | art / Items screen | `itemDigest` (all 2702 item icons, the `drawIcon` ARCH branch) NOT yet ported/proven — needed for the Items/inventory screen, not Arena/event-play. Export ready (`bfe89b1e`); B ports with the Items pass. | must | B | OPEN | |
+| N1 | art / Items + Results | `itemDigest` (all 2702 item icons, the `drawIcon` ARCH branch) NOT yet ported/proven. Export ready (`bfe89b1e`). **This ONE port unblocks BOTH the Items/inventory screen AND the Results "rank earned" portrait** (`renderResultRank` draws `rank:<id>` via the same ARCH item path — the 23 ranks are catalogue items). | must | B | OPEN | |
 | N2 | collectibles / determinism | `Collectibles.CATALOG` order is non-deterministic run-to-run (a few solve/spark ids reorder). Harmless today (gates sort; committed file is fixed; art vectors made order-independent), but a future export regen could reorder `collectibles.json`. Fix = stable `CATALOG.sort(by id)` + regenerate all + B re-sync, as one coordinated step. | low | Babysitter (owner-steer) | OPEN | |
 | N3 | audio | Music score is golden-proven (12 goldens); SFX synthesis is only partially verified (not byte-golden vs web). Confirm SFX parity or accept as by-ear. | med | B / Owner-ear | OPEN | |
 | N4 | animation / FX | Battle-playout pace + callouts, particle bursts, screen transitions are not cross-repo frame-verified (inherent: two render engines). Likely an ACCEPT once eyeballed on-device. | low | Owner-ear | OPEN | |

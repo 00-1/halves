@@ -2840,3 +2840,21 @@ dim name + unlock hint, unlocked render the full card; header counts unlocked/to
 **MILESTONE: §A is empty — every original visual issue (V1–V12) on the first 3 screens is RESOLVED.** Remaining on
 those screens: only **D1/D2 (owner-decide)**. Open elsewhere: N1–N4, N6 (low), and 22 un-started §D screens.
 ▶ B NEXT: Items / Collection / Results passes (seed each against `capture-states.json` per N5/N6).
+
+---
+
+## ⚑ ANSWER — B's next-screen export flags (Babysitter, 2026-06-25)
+B flagged 3 potential art-export gaps for Results/Collection/Items (good — flagging not fabricating). Triaged:
+1. **Results "rank earned" portrait — NOT a separate export.** `renderResultRank` (main.js:1279) draws
+   `drawIcon("rank:"+key, paletteFor(rarity))` with NO catId → the **ARCH ITEM path** (rank ids are catalogue items;
+   23 of them, in `itemDigest`). So it's covered by **N1** — porting the `drawIcon` ARCH item branch (export ready at
+   `bfe89b1e`) unblocks the Items screen AND the rank portrait in ONE port. No new export. (Ledger N1 updated.)
+2. **inventory itemDigest = N1** — confirmed, export ready (`bfe89b1e`).
+3. **Collection emblems = a REAL gap → DONE (F5, `main` `f2b8215`).** Exported `emblems.js` (3 collector emblems
+   beast/goblinking/voidbeast; 24×24 cells indexing an RGB PALETTE) to `art.json`/`art-vectors.json` + an art-parity
+   round-trip. Port `Em.cells`/`PALETTE`, prove vs the `emblems` vectors.
+4. **Collection hoard backdrop — NOT a new export.** It's the FXGL home-backdrop = Scenery (F3, exported) + your
+   ported FXGL engine + `hoardLevel(gold)` (already exported in `gold.json`). Compose those; nothing to add.
+
+**Net: ALL next-screen art is now available — port N1 (rank+items) + F5 (emblems); Results/Collection need no further
+export.** Proceed in whatever order unblocks fastest. No open [A] export gaps beyond N1's port being B's to do.
