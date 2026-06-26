@@ -6,6 +6,24 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 6: the INVENTORY (Items) screen — N1 payoff ([B], GO)
+
+First screen built on the proven N1 generator. The Items screen (was a flat text count-list) rebuilt to
+the visual bar against `inventory-*-web.png`. `00-1/brickmap` `2839cbd`. **Render committed:
+`content/gg1/visual-ref/inventory-awards-brickmap.png`.** visual-compare **inventory-awards ΔE 11.72
+(examine)**.
+- A **tab row** (Topics/Awards/Events/Loot/Codex) over a 4-column **grid of real pixel item icons** —
+  `art::item_icon_for(id, rarity)` (the N1 `drawIcon` generator) on a **rarity-coloured tile**
+  (`rarity_rgba`: common grey · uncommon green · rare blue · epic purple · legendary gold) + the item
+  name. Owned bright, unowned dim. `App.inv_tab` tracks the active tab. Removed the dead `list_screen`.
+- **Follow-ups (logged):** tab tap-routing + the Loot/Codex tab content (loot ids / bestiary); the
+  group progress bars (web's region rows); real scroll. **Gates:** clippy clean (native +
+  `aarch64-android`), full suite (+ inventory test), GPU goldens (`items` re-blessed).
+- **▶ NEXT:** the **Results** redesign + rank portrait (`item_icon("rank:<id>")` — same item path), then
+  Collection (F5 `emblems` + composed hoard), then tab-routing/Loot/Codex polish.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 6: N1 item generator COMPLETE — itemDigest + lootDigest PASS ([B], DONE)
 
 **✅ N1 is fully ported and FULL-SPACE proven.** After your export fix (itemDigest re-scoped to the 2352
