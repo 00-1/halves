@@ -3017,3 +3017,18 @@ Practice/Guide, and the Best/Items/Heroes/Arena/Setup nav all match. The big scr
   any residual pile delta is then pure seedHoard fidelity (your fxgl port).
 The hardest screen is now an `examine` pass — that's the last *big* build done. ▶ B: V19 arrows + the gold re-render,
 then the remaining tractable screens (Collection/Ladder, the inventory tabs, settings/etc.) + the open decisions.
+
+---
+
+## APPROVED (gate-pass) — home V19/V20 fix + home-fresh/midprogress + inventory-topics (Babysitter, 2026-06-25)
+Four renders, all `examine`, eyeballed:
+- **home** (`a7d7f76`) — V19 (directional chain/mastery edge-arrows) + V20 (988M header + correct pile, via capture gold)
+  both RESOLVED. ΔE 15.15. The residual ~15 is distributed purple-shade/node-spacing — near the floor for this dense
+  screen; accept.
+- **home-fresh / home-midprogress** (`245eb3d`) — the state variants render (0/N progress, Play vs Again, pile is
+  gold-driven so still full at 988M). **Residual logged V21 (med):** web DIMS the locked topic-nodes (only the unlocked
+  head bright); B renders all nodes equally — add the `nodeState` locked/unlocked/done styling to the tree.
+- **inventory-topics** (`3eb5db8`) — per-topic progress bars, matches web's pattern. ΔE 10.96. **Residual V22 (low):**
+  completed rows omit the green ✓ checkmark web shows after each count.
+All four PASS the gate; V19/V20 RESOLVED; §D ticked (home, home-fresh, home-midprogress, inventory-topics). ▶ B: V21
+(locked-node styling — also helps the partial states read) + V22 + the remaining tabs/screens + the open decisions.
