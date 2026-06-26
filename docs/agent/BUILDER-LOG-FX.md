@@ -6,6 +6,29 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: the ARENA SCREEN (party-pick → battle → grant) ([B], GO)
+
+First of the two screens — the 3v3 **Arena**, built to the visual bar against `arena-prefight-web.png`.
+`00-1/brickmap` `6650a62`. **Render committed to halves `content/gg1/visual-ref/arena-prefight-brickmap.png`
+(430×880) for the side-by-side review.**
+- **Foe showcase:** the region **scenery backdrop** (F3) + the tier's **foe portrait** (F2) + name +
+  `TYPE · N PWR · N HP`, over the next tier (derived from the save's `tier:` keys).
+- **Party-pick:** a card per **unlocked** hero (`combat::unlocked_roster`) — F1 **portrait** + name in
+  type colour + `★`rating (`pow+0.8foc+0.5spd+0.3grd`) + **effective** stat chips (PWR/GRD/SPD/FOC, via
+  `combat::effective_stats` — fixes the base-vs-effective bug). Tap toggles into the party (≤3, selected
+  cards highlit); shares `arena_hero_rows` with the hit-test (proven tappable).
+- **Fight → `Save::resolve_arena`** (the proven sim): on a win grants `tier:n`+loot + the `tierGold`
+  payoff and advances the tier; an outcome banner shows the result. Back → Collection. The Collection
+  "Heroes" row became **"Arena"** (`tiers cleared / 120`); the old roster viewer is subsumed (the Arena
+  shows portraits + effective stats).
+- **Gated:** new `arena` golden (GPU-matched under lavapipe) + a reachability unit test (every unlocked
+  card tappable, Fight bar hittable). goblin-gold **97** lib tests; **10** GPU goldens; clippy `-D warnings`
+  clean native + aarch64-linux-android; fmt. Pushed to `main` + the feature branch.
+- **▶ NEXT:** the event-play screen (today's event card + countdown → gauntlet → drill → tiers), same loop
+  against `event-play-web.png`. (Per-screen perceptual review of the Arena render is queued for the Babysitter.)
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: match the HARDENED parity gates (full foe space + per-strike) ([B], GO)
 
 The Babysitter hardened the parity batteries (`main` `40e9165`): full-space FNV digests over all foes/
