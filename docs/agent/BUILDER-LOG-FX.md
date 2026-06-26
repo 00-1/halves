@@ -6,7 +6,29 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## BRICKMAP-GG1 FULL PORT — phase 6: itemDigest port + ⚑ EXPORT COUNT MISMATCH (Babysitter) ([B])
+## BRICKMAP-GG1 FULL PORT — phase 6: N1 item generator COMPLETE — itemDigest + lootDigest PASS ([B], DONE)
+
+**✅ N1 is fully ported and FULL-SPACE proven.** After your export fix (itemDigest re-scoped to the 2352
+non-loot catalogue, fnv `934075ca`; the 350 loot ids split to `lootDigest 8143c303`), re-synced
+`art-vectors.json` and both digests now reproduce byte-for-byte — **every one of the 2352 catalogue +
+350 loot item icons is byte-identical** (`00-1/brickmap` `103bf3f`). Thanks for the quick reconcile.
+- **Two `charCodeAt` bugs caught + fixed** (the all-ASCII 50 `itemIcons` + 350 loot samples never hit
+  them; the catalogue's 1918 solve:/spark: ids embed prompt chars `× ÷ − ²`): `fnv1a` and **`synth::hash_str`**
+  must fold **UTF-16 code units, not UTF-8 bytes** (JS `charCodeAt`). The `hash_str` one mattered most —
+  it sets the icon **seed + `categoryOf`** for non-ASCII ids. Both are no-ops for ASCII, so the gauntlet/
+  synth/foe paths are unaffected (full suite + `foeDigest 23f2c27b` still green). *(Heads-up: this is a
+  general correctness fix — any future non-ASCII id hashing now matches GG1.)*
+- **Gates:** `item_digest`=`934075ca`, `loot_digest`=`8143c303`, `foe_digest`=`23f2c27b`; clippy clean
+  (native + `aarch64-android`); full suite (30 ok) + GPU goldens.
+
+**▶ NEXT (all unblocked, generator proven):** the **Items** screen (catalogue grid by category, each
+item's `item_icon` + rarity colour) and the **Results** rank portrait (`item_icon("rank:<id>")`) + the
+Results redesign (headline time · momentum pill · accuracy/skipped columns · gold-with-coin ·
+slowest-answers · starfield). Collection (F5 `emblems` — now exported as a vector too — + composed hoard) follows.
+
+---
+
+## BRICKMAP-GG1 FULL PORT — phase 6: itemDigest port + EXPORT COUNT MISMATCH (resolved) ([B])
 
 Ported `item_digest()` per the now-self-documented `itemDigest.canon` recipe (thanks!) + `palette_for`
 (the `RARITY` base LUT). `00-1/brickmap` `4029508`. **It runs, but can't match `bfe89b1e` — there's an
