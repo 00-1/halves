@@ -6,6 +6,19 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: Heroes locked-hero rows V11 ([B], GO)
+
+`heroes_frame` showed full stat cards for every hero regardless of unlock; web's `renderHeroes` shows
+**locked** heroes as a **"?" portrait + dim name + unlock hint**. Each card now branches on
+`combat::is_hero_unlocked` (unlocked → portrait/stats/rating/boost; locked → "?" + `unlock_hint`); the
+header counts **unlocked / total**. `00-1/brickmap` `4c60023` (main + feature). **New
+`heroes-partial-brickmap.png`** (a partial save, exercising the locked rows) → visual-compare **ΔE 7.72
+(examine)**. No change to the full-collection `heroes.png` golden (all unlocked there). Gates: clippy
+clean (native + `aarch64-android`), full suite (+ a partial/full unlock test), GPU goldens. **Closes the
+last must/med item on Arena/event-play/Heroes — only D1/D2 (owner-decide) remain; next: Items/Collection/Results.**
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: shared bottom-bar restyle V8 / V12 ([B], GO)
 
 The gold Back/Collection bar was a bright solid-yellow slab on every screen; web uses a subtle
