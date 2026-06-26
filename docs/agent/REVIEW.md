@@ -3003,3 +3003,17 @@ big gold coin-pile + a saturated purple bg. Triaged all 3 (home is tractable, no
    cross-repo seedHoard coin-array vector if you want a byte-target — say the word.)
 **Net: home is the big build but fully de-risked — no accept-by-eye, no blocking export.** Logged V18. ▶ B: tackle
 home now (everything's available), OR knock out the more tractable Collection/Ladder first — your call.
+
+---
+
+## APPROVED (structure) — HOME hub · brickmap `a05aa5d` (Babysitter, 2026-06-25)
+B rebuilt home from the triage — and it RECOVERED from DIVERGENT 22.4 → **examine 15.58**. Eyeballed vs web: nails all
+3 hard pieces — the topic TREE-GRAPH (glyph nodes + progress, the rows-with-spine layout) · the saturated PURPLE
+theme (HOME_PALETTE) · a real gold COIN-PILE mound at the bottom. Header, event banner, selected-topic strip, Start/
+Practice/Guide, and the Best/Items/Heroes/Arena/Setup nav all match. The big screen is structurally there. **V18 RESOLVED.**
+- **Residuals:** V19 (med) — tree EDGES: web draws per-edge directional arrows (vertical chain + horizontal mastery);
+  B drew one central spine. V20 (low) — the header gold + coin-pile partly differed because the capture `halves.gold`
+  (987654321) wasn't exported; FIXED at `main` `dd91c3b` (added to `capture-states.json`). B: seed the gold, re-render;
+  any residual pile delta is then pure seedHoard fidelity (your fxgl port).
+The hardest screen is now an `examine` pass — that's the last *big* build done. ▶ B: V19 arrows + the gold re-render,
+then the remaining tractable screens (Collection/Ladder, the inventory tabs, settings/etc.) + the open decisions.
