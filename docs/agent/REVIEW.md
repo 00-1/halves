@@ -3032,3 +3032,26 @@ Four renders, all `examine`, eyeballed:
   completed rows omit the green ✓ checkmark web shows after each count.
 All four PASS the gate; V19/V20 RESOLVED; §D ticked (home, home-fresh, home-midprogress, inventory-topics). ▶ B: V21
 (locked-node styling — also helps the partial states read) + V22 + the remaining tabs/screens + the open decisions.
+
+---
+
+## REVIEW — 13-render batch (home fixes + 10 new screens) (Babysitter, 2026-06-25)
+Big productive batch from B; all 21 rendered screens are `examine` (none DIVERGENT). 5 still awaiting (graphics/guide/
+practice/splash/summary). Eyeballed the new screen types + fix-verifications:
+- **V21/V22 RESOLVED** (`200d581`): home tree now DIMS locked nodes (verified home-fresh); inventory rows show the ✓
+  checkmark (verified codex/topics).
+- **inventory-codex** — F2 foe portraits in a bestiary grid + category bars w/ ✓. Clean (ΔE 10.13). Validates F2 on a screen.
+- **hero-detail ×3** — hero card + boost list (ΔE ~7.5). **Residual V23 (med):** the 4 stat chips overflow the card — the
+  4th ("6 FOC") is CLIPPED. Fit/wrap them.
+- **arena-cleared** — red region backdrop + cleared card, matches web (ΔE 9.07).
+- **⚑ arena-map — found a STALE REF.** B's render shows the OLD "DEF 47" (the removed 1v1 stat). Root cause: `arena-map-web.png`
+  predated the combat redesign (I re-captured arena-prefight then but MISSED arena-map/cleared) — B faithfully reproduced
+  the stale ref. The WEB CODE was already correct (PWR·HP). **Re-captured the arena refs (`main` `c0b453c`) → now show
+  ⚔ PWR·HP.** Logged **V24**: B updates the arena-map foe-showcase to PWR·HP, re-render. (Process lesson: re-capture the
+  affected visual-refs whenever web UI/logic changes, else B reproduces stale UI. The metric didn't catch it — the
+  eyeball did, again.)
+- **home/home-fresh/home-midprogress** — V19/V20/V21 all landed; the ~15 residual is distributed purple-shade/spacing,
+  near the floor for this dense screen — accept-by-eye.
+- **settings · audio · drill · inventory-loot · inventory-events** — pass the gate (examine 7.6–9.9, established patterns);
+  eyeball-confirm pending (flagged honestly in §D) — will close on the next pass or if B iterates.
+§D ticked. ▶ B: V23 (hero-detail chips) + V24 (arena-map PWR·HP) + the 5 remaining screens + the open decisions.
