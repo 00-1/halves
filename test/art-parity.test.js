@@ -15,6 +15,18 @@ const ok = (c, m) => { if(!c){ console.error("FAIL:", m); fails++; } else consol
 const read = f => fs.readFileSync(path.join(__dirname, "..", f), "utf8");
 const { art, vectors } = generate();
 
+// independent live load (the digest is re-derived here a SECOND way — what B's Rust does — so a bug
+// in the exporter's own digest accumulation can't pass; mirrors scene-parity's round-trip proof).
+function live(){
+  const window = { Emblems: { draw(){}, has: () => false, list: () => [] }, performance: { now: () => 0 } };
+  const load = n => new Function("window", read("gg1/dev/" + n + ".js"))(window);
+  ["modes","heroes","events","collectibles","enemies","monsters"].forEach(load);
+  return window;
+}
+const W = live();
+function fnv1a(s){ let h = 0x811c9dc5; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16).padStart(8, "0"); }
+const gridRows = g => g.map(r => r.join(""));
+
 // (1) drift
 ok(read("content/gg1/art.json") === JSON.stringify(art, null, 1) + "\n", "art.json matches regenerate");
 ok(read("content/gg1/art-vectors.json") === JSON.stringify(vectors) + "\n", "art-vectors.json matches regenerate");
@@ -26,9 +38,12 @@ const co = read("gg1/dev/collectibles.js"), mo = read("gg1/dev/monsters.js"), mn
   ["collectibles.js hero branch", co, 'if(typeof id === "string" && id.indexOf("hero:") === 0){'],
   ["collectibles.js heroSprite mirror", co, "g[y][x] = on; g[y][G-1-x] = on;"],
   ["collectibles.js iconPalette", co, "function iconPalette(id, basePal, catId){ const { shift } = buildIcon(id, catId);"],
+  ["collectibles.js applyLevers rTex seed", co, "rPick = mulberry32(seed), rTex = mulberry32((seed ^ 0x9e3779b9) >>> 0);"],
   ["monsters.js buildGrid seed", mo, "const rnd = mulberry32((hashStr(name) ^ Math.imul(n, 2654435761)) >>> 0);"],
   ["monsters.js setSym", mo, "function setSym(g,x,y){ set(g,x,y); set(g,G-1-x,y); }"],
   ["monsters.js boss flag", mo, "const boss = (n % REGION_SIZE === 0);"],
+  ["monsters.js region horns", mo, "const horns = region >= 9 ? 0 : (region >= 4 ? 2 : (rnd() < 0.45 ? 1 : 2));"],
+  ["monsters.js region eyes", mo, "let ec = 1 + Math.floor(rnd() * (region >= 8 ? 3 : 2));"],
   ["main.js HERO_PAL Brawn", mn, 'Brawn:   { body:"#d05a4a", accent:"#ff8a6e", outline:"#3a1410" }'],
 ].forEach(([label, src, s]) => ok(src.includes(s), "source fidelity: " + label));
 // the mirrored HERO_PAL constant equals main.js's
@@ -65,6 +80,29 @@ ok(vectors.foes.every(f => f.boss === (f.tier.n % art.constants.regionSize === 0
 ok(vectors.foes.some(f => f.boss) && vectors.foes.some(f => !f.boss), "F2: battery spans normal + boss foes");
 ok(vectors.foes.every(f => f.pal.body && f.pal.accent && f.pal.outline && f.pal.eye), "F2: each foe carries a typed {body,accent,outline,eye} palette");
 ok(["Brawn","Arcane","Cunning"].every(t => vectors.foes.some(f => f.tier.type === t)), "F2: battery spans all three foe types");
+ok(vectors.foes.some(f => f.region === 5), "F2: region 5 is sampled (was a gap)");
+
+// (4) FULL-SPACE DIGESTS — re-derive over EVERY item + EVERY foe from the live generators and
+// assert the committed rolled hash matches (proves the port must reproduce ALL of them, not the sample).
+const C = W.Collectibles, E = W.Enemies, M = W.Monsters;
+ok(/^[0-9a-f]{8}$/.test(vectors.itemDigest.fnv) && /^[0-9a-f]{8}$/.test(vectors.foeDigest.fnv), "digests are 8-hex FNV-1a");
+ok(vectors.itemDigest.count === C.CATALOG.length && vectors.itemDigest.count > 2000, "itemDigest covers the FULL catalogue (" + vectors.itemDigest.count + " items)");
+ok(vectors.foeDigest.count === E.TIER_COUNT && vectors.foeDigest.count === 120, "foeDigest covers ALL 120 foe tiers");
+(function(){
+  const itemLines = C.CATALOG.map(it => { const cat = C.categoryOf(it.id);
+    return it.id + "|" + gridRows(C.iconRoleGrid(it.id, cat)).join("") + "|" +
+      (p => p.body + p.accent + p.outline)(C.iconPalette(it.id, C.paletteFor(it.rarity || "common"), cat)); });
+  itemLines.sort();   // order-independent (CATALOG order is not guaranteed stable)
+  const itemAcc = itemLines.join("\n") + "\n";
+  ok(fnv1a(itemAcc) === vectors.itemDigest.fnv, "itemDigest re-derives from live over every item (sorted, order-independent)");
+  let foeAcc = "";
+  for(let n = 1; n <= E.TIER_COUNT; n++){ const gr = M.buildGrid(E.byTier(n));
+    foeAcc += n + "|" + gridRows(gr.role).join("") + "|" + gr.pal.body + gr.pal.accent + gr.pal.outline + gr.pal.eye + "\n"; }
+  ok(fnv1a(foeAcc) === vectors.foeDigest.fnv, "foeDigest re-derives from live over all 120 foes (tier order, deterministic)");
+  // sensitivity: a one-cell perturbation flips the digest (the hash actually guards the grids)
+  ok(fnv1a(itemAcc + " ") !== vectors.itemDigest.fnv && fnv1a(foeAcc.replace(/0/, "1")) !== vectors.foeDigest.fnv,
+     "digest is change-sensitive (any grid divergence flips it)");
+})();
 
 console.log(fails ? `\n${fails} FAIL` : "\nALL ART PARITY CHECKS PASS");
 process.exit(fails ? 1 : 0);

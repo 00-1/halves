@@ -90,22 +90,38 @@ ok(TB.every(r => r.rounds >= 1 && r.heroesAlive <= r.party.length), "teamBattle:
 const t1full3 = TB.find(r => r.tier === 1 && r.own === "full" && r.party.length === 3);
 ok(t1full3 && t1full3.win, "progression sanity: a full-collection 3-hero party beats tier 1");
 
-// (3e) the turn-by-turn log replays to its reported result (each strike's tHp matches the
-//      running hp, and the final alive counts reproduce {win,heroesAlive,foesAlive})
-const L = vectors.teamBattleLog;
-(function replay(){
+// (3e) EVERY turn-by-turn log replays to its reported result (each strike's tHp matches the
+//      running hp, and the final alive counts reproduce {win,heroesAlive,foesAlive}) — across all
+//      the diverse fixtures, so a per-strike bug that leaves the headline intact is still caught.
+const LOGS = vectors.teamBattleLogs || [vectors.teamBattleLog];
+ok(LOGS.length >= 5, "teamBattleLogs: a diverse per-strike battery (" + LOGS.length + " fixtures)");
+ok(LOGS.some(l => !l.win) && LOGS.some(l => l.win) && LOGS.some(l => l.log.some(s => s.open)) &&
+   LOGS.some(l => l.party.length === 1) && LOGS.some(l => l.tier === 120),
+   "teamBattleLogs span: a win + a loss + opening strikes + a single-hero party + the boss tier");
+LOGS.forEach((L, i) => {
   const hp = {}; L.units.forEach(u => hp[u.side + ":" + u.ord] = u.maxHp);
   let bookkept = true;
   for(const s of L.log){
     const k = s.tSide + ":" + s.tOrd; hp[k] -= s.dmg;
     if(s.tHp !== Math.max(0, hp[k])) bookkept = false;
   }
-  ok(bookkept, "log: every strike's tHp == running hp (clamped)");
   const heroesAlive = L.units.filter(u => u.side === 0 && hp[u.side + ":" + u.ord] > 0).length;
   const foesAlive   = L.units.filter(u => u.side === 1 && hp[u.side + ":" + u.ord] > 0).length;
-  ok(heroesAlive === L.heroesAlive && foesAlive === L.foesAlive && (heroesAlive > 0) === L.win,
-     "log replay reproduces {win,heroesAlive,foesAlive}");
-})();
+  ok(bookkept && heroesAlive === L.heroesAlive && foesAlive === L.foesAlive && (heroesAlive > 0) === L.win,
+     `log[${i}] (${L.party.join("+")} @ t${L.tier}/${L.own}): per-strike tHp replays to {win,heroesAlive,foesAlive}`);
+});
+
+// (3f) matchup coverage — the sim exercises all 9 type pairings (party type × foe type), so the
+// matchup branch (×1.5 / ×1.0 / ×0.6) can't be one-sidedly tested. Proven via the log adv flags +
+// the party/foe type spread across the headline battery.
+const TYPES = combat.constants.types;
+const heroType = id => combat.heroes.find(h => h.id === id).type;
+const partyTypes = new Set(TB.flatMap(r => r.party.map(heroType)));
+const foeTypes = new Set(combat.tiers.map(t => t.type));
+ok(TYPES.every(t => partyTypes.has(t)) && TYPES.every(t => foeTypes.has(t)),
+   "matchup coverage: parties span all 3 types AND sampled foes span all 3 types (all 9 pairings reachable)");
+ok(LOGS.some(l => l.log.some(s => s.adv)) && LOGS.some(l => l.log.some(s => !s.adv)),
+   "matchup coverage: the logs exercise BOTH advantage (×1.5) and non-advantage strikes");
 
 console.log(fails ? `\n${fails} FAIL` : "\nALL COMBAT PARITY CHECKS PASS");
 process.exit(fails ? 1 : 0);

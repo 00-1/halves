@@ -33,10 +33,16 @@ function build(){
 
 // a 16×16 int grid → 16 row strings of single digits (compact + diff-friendly)
 const rows = g => g.map(r => r.join(""));
+// FNV-1a 32-bit over a string → 8 hex. Portable (B writes the same in Rust). Any byte change
+// in the input flips the hash, so a rolled digest over EVERY element's canonical string proves
+// the whole space byte-identical in one value (closes the sampling hole on items + foes).
+function fnv1a(s){ let h = 0x811c9dc5; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16).padStart(8, "0"); }
+const iconCanon = (id, roleGrid, pal) => id + "|" + roleGrid.join("") + "|" + pal.body + pal.accent + pal.outline;
+const foeCanon = (n, roleGrid, pal) => n + "|" + roleGrid.join("") + "|" + pal.body + pal.accent + pal.outline + pal.eye;
 
 function generate(){
   const { C, H, E, M } = build();
-  const G = 16;
+  const G = 16, TC = E.TIER_COUNT;
 
   const art = {
     _note: "GG1 procedural portraits/icons (NO art assets). Two deterministic generators over a 16×16 grid: " +
@@ -61,7 +67,7 @@ function generate(){
     }
   };
 
-  const vectors = { heroIcons: [], itemIcons: [], foes: [] };
+  const vectors = { heroIcons: [], itemIcons: [], foes: [], itemDigest: null, foeDigest: null };
 
   // ---- F1a HERO PORTRAITS (Arena-critical) — all 12, the mirrored creature-blob ----
   for(const h of H.HEROES){
@@ -72,22 +78,35 @@ function generate(){
 
   // ---- F1b ITEM ICONS (inventory follow-up) — one real item per distinct category ----
   // (every category → exercises every archetype + its presets/levers; role grid + resolved palette)
-  const seenCat = {};
-  for(const it of C.CATALOG){
-    const cat = C.categoryOf(it.id);
-    if(seenCat[cat]) continue; seenCat[cat] = true;
-    const base = C.paletteFor(it.rarity || "common");
-    vectors.itemIcons.push({ id: it.id, category: cat, rarity: it.rarity || "common", catId: cat,
+  // NB: Collectibles.CATALOG order is NOT guaranteed stable run-to-run (a few solve/spark ids tie in
+  // the build sort), so pick the lexicographically-smallest id per category — order-independent + stable.
+  const byCat = {};
+  for(const it of C.CATALOG){ const cat = C.categoryOf(it.id); if(!byCat[cat] || it.id < byCat[cat].id) byCat[cat] = { id: it.id, rarity: it.rarity || "common" }; }
+  for(const cat of Object.keys(byCat).sort()){
+    const it = byCat[cat], base = C.paletteFor(it.rarity);
+    vectors.itemIcons.push({ id: it.id, category: cat, rarity: it.rarity, catId: cat,
       basePal: base, roleGrid: rows(C.iconRoleGrid(it.id, cat)), pal: C.iconPalette(it.id, base, cat) });
   }
 
-  // ---- F2 FOE PORTRAITS (Arena-critical) — types × regions × normal/boss + the final boss ----
-  const FOE_TIERS = [1, 2, 3, 11, 12, 24, 30, 36, 48, 60, 84, 96, 108, 119, 120];
+  // ---- F2 FOE PORTRAITS (Arena-critical) — types × ALL 10 regions × normal/boss + the final boss ----
+  const FOE_TIERS = [1, 2, 3, 11, 12, 24, 30, 36, 48, 60, 66, 84, 96, 108, 119, 120];   // 66 = region 5 (was a gap)
   for(const n of FOE_TIERS){
     const t = E.byTier(n), gr = M.buildGrid(t);
     vectors.foes.push({ tier: { n, name: t.name, type: t.type }, boss: gr.boss, region: gr.region,
       roleGrid: rows(gr.role), pal: gr.pal });
   }
+
+  // ---- FULL-SPACE DIGESTS — close the sampling hole: every item icon is unique (per-id seed +
+  // applyLevers), and every one of the 120 foes is unique, so a few samples can't prove the rest.
+  // A rolled FNV-1a over EVERY element's canonical {id/n + roleGrid + palette}, in catalogue/tier
+  // order, lets B prove its ported generator reproduces ALL of them (recompute the same hash → match).
+  const itemLines = C.CATALOG.map(it => { const cat = C.categoryOf(it.id);
+    return iconCanon(it.id, rows(C.iconRoleGrid(it.id, cat)), C.iconPalette(it.id, C.paletteFor(it.rarity || "common"), cat)); });
+  itemLines.sort();   // sort by canonical string (id-prefixed, unique) → independent of CATALOG iteration order
+  vectors.itemDigest = { count: C.CATALOG.length, order: "sorted by item canonical string (CATALOG order is not guaranteed stable)", fnv: fnv1a(itemLines.join("\n") + "\n") };
+  let foeAcc = "";
+  for(let n = 1; n <= TC; n++){ const gr = M.buildGrid(E.byTier(n)); foeAcc += foeCanon(n, rows(gr.role), gr.pal) + "\n"; }
+  vectors.foeDigest = { count: TC, order: "tier 1..TIER_COUNT", fnv: fnv1a(foeAcc) };
 
   return { art, vectors };
 }
@@ -97,6 +116,7 @@ if(require.main === module){
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "art.json"), JSON.stringify(art, null, 1) + "\n");
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "art-vectors.json"), JSON.stringify(vectors) + "\n");
   console.log("wrote content/gg1/art.json + art-vectors.json — heroIcons", vectors.heroIcons.length,
-    "itemIcons", vectors.itemIcons.length, "foes", vectors.foes.length);
+    "itemIcons", vectors.itemIcons.length, "(+digest all", vectors.itemDigest.count + ")",
+    "foes", vectors.foes.length, "(+digest all", vectors.foeDigest.count + ")");
 }
 module.exports = { generate };

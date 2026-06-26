@@ -127,12 +127,19 @@ function generate(){
       vectors.teamBattle.push({ party, tier: n, own: kw, win: r.win, heroesAlive: r.heroesAlive, foesAlive: r.foesAlive, rounds: r.rounds });
     }
   }
-  // one full turn-by-turn log so B can prove simulateTeams step-by-step
-  vectors.teamBattleLog = (function(){
-    const r = E.teamBattleLog(["bram","greta","mo"], 30, colFor("drillAll"));
-    return { party: ["bram","greta","mo"], tier: 30, own: "drillAll",
-      units: r.units, log: r.log, win: r.win, heroesAlive: r.heroesAlive, foesAlive: r.foesAlive, rounds: r.rounds };
-  })();
+  // full turn-by-turn logs so B can prove simulateTeams STEP-BY-STEP (not just the headline) across
+  // diverse shapes — opening strikes, a boss, a loss, region 5, single-hero, all-types — so a per-strike
+  // bug (targeting / order / mitigation rounding) that leaves the headline unchanged can't slip through.
+  const logCase = (party, tier, kw) => { const r = E.teamBattleLog(party, tier, colFor(kw));
+    return { party, tier, own: kw, units: r.units, log: r.log, win: r.win, heroesAlive: r.heroesAlive, foesAlive: r.foesAlive, rounds: r.rounds }; };
+  vectors.teamBattleLogs = [
+    logCase(["bram","greta","mo"], 30, "drillAll"),     // baseline mixed mid-tier
+    logCase(["pip","vex","roon"], 12, "full"),          // fast Cunning party → opening strikes fire
+    logCase(["bram","wisp","pip"], 66, "drillAll"),      // region 5, all three types
+    logCase(["bram"], 60, "empty"),                      // single weak hero deep → a LOSS log
+    logCase(["wisp","mira","zeph"], 120, "full"),        // full party vs the final boss
+  ];
+  vectors.teamBattleLog = vectors.teamBattleLogs[0];     // back-compat: the original single fixture
 
   return { combat, vectors };
 }
@@ -141,7 +148,7 @@ if(require.main === module){
   const { combat, vectors } = generate();
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "combat.json"), JSON.stringify(combat, null, 1) + "\n");
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "combat-vectors.json"), JSON.stringify(vectors) + "\n");
-  const n = vectors.heroCombatant.length + vectors.effectiveStats.length + vectors.heroUnlock.length + vectors.teamBattle.length + 1;
+  const n = vectors.heroCombatant.length + vectors.effectiveStats.length + vectors.heroUnlock.length + vectors.teamBattle.length + vectors.teamBattleLogs.length;
   console.log("wrote content/gg1/combat.json + combat-vectors.json — tiers", combat.tiers.length,
     "lootBoosts", combat.lootBoosts.length, "heroUnlock", vectors.heroUnlock.length, "vectors", n);
 }
