@@ -164,6 +164,8 @@ jobs:
         run: node test/art-parity.test.js
       - name: Scene export parity (F3 scenery + F4 eventart) test (gate)
         run: node test/scene-parity.test.js
+      - name: Visual parity (web refs vs brickmap renders, perceptual) test (gate)
+        run: node test/visual-parity.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info (per app — each fetches its own ./build.json)
