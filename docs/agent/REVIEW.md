@@ -2939,3 +2939,17 @@ RANK item-detail strip; header "Inventory **2702/2702**" (loot now counted). Mat
   generator/icons, just the name field + order differ. Low — reconcile when convenient.
 inventory-awards PASSES the compare gate (examine) — ticked in §D. ▶ B NEXT: the other inventory tabs + Results +
 Collection (each against `capture-states.json`).
+
+---
+
+## APPROVED (structure) — RESULTS redesign + rank portrait · brickmap `d0b03df` (Babysitter, 2026-06-25)
+B rebuilt Results to the visual bar. Eyeballed vs web: starfield · FINAL TIME headline (gold) · **RANK EARNED with the
+N1 pixel rank portrait** (the rank-via-item-path triage paying off — "Runelord" renders correctly) + name · ACCURACY/
+SKIPPED columns · gold-with-coin-pip · SLOWEST ANSWERS · dismiss button. Matches web's layout. **ΔE 6.43 — the best yet,
+nearly `ok`.** Compare-PASSED, ticked §D.
+- **Residuals logged:** V16 (low) — web shows a "MOMENTUM 1 day" pill at top that B lacks (verify it surfaces with a
+  streak; may be a state diff). V17 (med) — button HIERARCHY: web's Results button is SOLID gold (primary CTA), but B
+  made it outlined; the V8 "outline everywhere" overcorrected — web distinguishes solid-gold PRIMARY CTAs (Results,
+  Arena "Pick your party") from outlined SECONDARY (Heroes "Back"). B: restore the primary/secondary button distinction.
+The N1 rank portrait working end-to-end on a real screen confirms the item-generator port. ▶ B NEXT: Collection
+(F5 emblems + composed hoard) + the remaining inventory tabs; the V17 button fix touches Results + Arena.

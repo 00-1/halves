@@ -14,6 +14,8 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 | ID | Screen | Issue | Sev | Owner | Status | Sign-off |
 |----|--------|-------|-----|-------|--------|----------|
+| V16 | results | Web shows a MOMENTUM pill ("MOMENTUM · 1 day") at the top; B's render lacks it. Verify B surfaces the momentum-streak pill when a streak exists (may be a capture-state difference, not a missing feature). | low | B | OPEN | |
+| V17 | buttons (Results/Arena) | Button HIERARCHY: web uses SOLID-GOLD primary CTAs (Results dismiss, Arena "Pick your party") vs OUTLINED secondary (Heroes "Back"). The V8 "outline everywhere" fix overcorrected — primary CTAs should be solid gold. Distinguish primary vs secondary. | med | B | OPEN | |
 | V15 | inventory-awards | RANK detail-strip shows different item NAMES + ORDER than web — B: rank titles "Adept/Apprentice/Archmage…" alphabetical; web: item flavour names "Cinder-flecked Cabochon…" in catalogue order. Match web's name field + order. | low | B | OPEN | |
 | ~~V13~~ | inventory-awards | ~~AWARDS tab flat grid~~ → **RESOLVED** (`12d2d9c`: rebuilt to web's structure — 9 category progress-bar rows + per-category item-detail strip; ΔE 11.72→8.73). _orig:_ STRUCTURE wrong: web = per-category PROGRESS BARS (Rank/Initiation/Flawless/Speed/Mastery/Solved/Spark/Milestone/Collector — green bar + count + ✓) + per-category item-detail strips; B built a flat 4-col ICON GRID, no progress bars / no category overview. Rebuild to web's layout. (ΔE 11.72 under-flagged it — a same-palette reorg; caught by eyeball.) | must | B | OPEN | |
 | ~~V14~~ | inventory-awards | ~~count 2352 vs 2702~~ → **RESOLVED** (`12d2d9c`: header now 2702/2702, loot included). _orig:_ TOTAL count: B "2352/2352" vs web "2702/2702" — B excludes the 350 loot from the inventory total (loot IS in the inventory, on the Loot tab). Count all 2702. | med | B | OPEN | |
@@ -54,7 +56,7 @@ The screenshot-compare gate has only run on 2 of 26 screens. Every screen below 
 commit a `<screen>-brickmap.png` and pass the compare (verdict `ok`/`examine`-accepted, never `DIVERGENT`):
 `arena-prefight`† , `event-play`† (†compare-PASSED `examine` after V1–V7; residual D1/D2 (theme) only — V8–V10 RESOLVED), `arena-map`, `arena-cleared`, `heroes`† (compare-PASSED `examine` ΔE10.35; residual V11 (locked rows) only — V12/N5 RESOLVED), `heroes-partial`† (compare-PASSED `examine` ΔE7.72; V11 locked rows correct; residual N6 partial-seed only),
 `hero-detail-{brawn,arcane,cunning}`, `inventory-awards`† (compare-PASSED examine ΔE8.73; V13/V14 fixed; residual V15 names low) · `inventory-{loot,topics,events,codex}`, `home`, `home-fresh`,
-`home-midprogress`, `practice`, `drill`, `results`, `summary`, `settings`, `audio`, `graphics`, `guide`, `splash`.
+`home-midprogress`, `practice`, `drill`, `results`† (compare-PASSED examine ΔE6.43 — best yet; N1 rank portrait works; residual V16/V17), `summary`, `settings`, `audio`, `graphics`, `guide`, `splash`.
 (No blanket back-fill — each flows through as its visual pass completes, per VISUAL-PARITY.md.)
 
 ---
