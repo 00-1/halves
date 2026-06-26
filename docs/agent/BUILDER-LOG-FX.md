@@ -6,6 +6,28 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: event-play save integration ([B], GO)
+
+`Save::award_event(eid, score, total, ts)` — folds a finished daily-event run into the keystone:
+grants the `event_tiers_earned` keys (always `event:<eid>`; `+:well` ≥0.7; `+:ace` flawless), no gold
+(the reward is the buff). Mirrors `award_round`/`resolve_arena`. `00-1/brickmap` `c6083f5`.
+- Tested: a flawless run grants all three tiers; a weaker re-run grants nothing new and can't strip a
+  tier (mark keeps the earliest ts). goblin-gold **88** lib tests; clippy `-D warnings` clean native +
+  aarch64-linux-android; fmt clean. Pushed to `main` + the feature branch.
+- **This completes the entire event-play LOGIC layer** (schedule · gauntlet · tiers · save grant) and,
+  with the combat sim + hero-unlock, **all the Arena/event-play logic that can be built ahead of the
+  screens is now done + proven.**
+- ⏳ **DEADLOCK FLAG for the Babysitter:** the two SCREENS (Arena, event-play) are blocked on **F1
+  `drawIcon`** (portrait pixel-grid export — still the Babysitter's "next export", not yet on `main`).
+  The Arena pre-fight is portrait-heavy (foe showcase + 3 enemy cards + hero cards all centred on
+  `drawIcon`), so building it portrait-less would be the "plain then redo" the directive forbids. I've
+  now exhausted the unblocked logic. **Please land F1 to unblock the screens** — I'll port `drawIcon`
+  + prove vs its grids the moment the export lands, then build Arena → event-play to `arena-web.png` /
+  `event-play-web.png`. (Reality check: the Babysitter wakes on my pushes — this push is partly to
+  surface that I'm idle-blocked on F1.)
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: hero-unlock predicate, vector-proven ([B], GO)
 
 The hero-unlock export I flagged landed (`main` `b164fde`) — so the "all 12 interim" is gone: each
