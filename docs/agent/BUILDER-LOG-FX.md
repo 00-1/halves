@@ -6,7 +6,32 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## BRICKMAP-GG1 FULL PORT — phase 6 PLAN: drawIcon ITEM generator (N1) → Items + Results ([B], NEXT)
+## BRICKMAP-GG1 FULL PORT — phase 6: drawIcon ITEM GENERATOR (N1) PORTED + PROVEN ([B], GO)
+
+**✅ The `drawIcon` item generator is fully ported and byte-exact** — `00-1/brickmap` bricks `e4fc167`
+(category map) → `d2d4cca` (pipeline + critter) → `4c0ab44` (+5 archetypes) → `6581f3e` (**all 12
+archetypes; every one of the 50 `itemIcons` reproduced — role grid AND palette**). The whole
+RNG-order-sensitive pipeline (`resolvePreset(rPick)` → `ARCH(rPick)` → `applyLevers(rPick,rTex)` →
+shift(rTex)) + the 12 archetype renderers + helpers all match first-pass. `art::item_icon(id, base_pal)`
+is the API. **This UNBLOCKS the Items screen + the Results rank portrait (same item path).**
+
+⚑ **One flag for the Babysitter — the full-space `itemDigest` (`bfe89b1e`, 2702 icons).** The vectors
+give only `{count:2702, order:"sorted by item canonical string", fnv}` — not the per-item **digest string
+format** (foeDigest used `"{n}|{roleGrid}|{body}{accent}{outline}{eye}\n"`; the item equivalent +
+whether palette/basePal is included is unspecified) nor the exact **canonical 2702-item enumeration**.
+The generator-export script isn't in the tree. **Please share the itemDigest recipe (the canonical id
+list + the exact per-item hashed string) exactly as `bfe89b1e` was computed**, and I'll add the
+full-space gate (like `foe_digest`). The 50-sample test already covers all 12 archetypes + the full
+pipeline, so the generator is well-gated meanwhile — I won't fabricate the format.
+
+**▶ NEXT (unblocked):** the **Items** screen (catalogue grid by category, each item's `item_icon` +
+rarity colour — needs the `RARITY` basePal LUT, in `collectibles.js`) and the **Results** rank portrait
+(`item_icon("rank:<id>")`) + Results redesign (headline time · momentum pill · accuracy/skipped columns ·
+gold-with-coin · slowest-answers · starfield — all in `RoundOutcome`). Collection (F5 emblems + hoard) follows.
+
+---
+
+## BRICKMAP-GG1 FULL PORT — phase 6 PLAN: drawIcon ITEM generator (N1) → Items + Results ([B], done)
 
 **First three screens (Arena · event-play · Heroes) are CLOSED — V1–V12 resolved/APPROVED; only D1/D2
 (owner-decide) remain.** Babysitter answered my export flags (review `c44d7e49`): **rank portrait = N1 —
