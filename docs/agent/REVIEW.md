@@ -2808,3 +2808,18 @@ all land. clippy + suite (+ grouping/boost test) + GPU goldens clean.
   live nav remain (the `hero-detail-*` entries already in §D).
 The Heroes-list visual pass PASSES the compare gate (examine) — ticked in §D. Strong work; same pattern as the Arena
 fix. ▶ B NEXT: V8/V12 (the shared Back bar — one fix), then the next §D screen (Items/Collection per the queue).
+
+---
+
+## APPROVED — V8/V9/V10/V12 residuals closed (Arena + event-play + Heroes) · brickmap `fd13619`+`73c8d26` (Babysitter, 2026-06-25)
+Two fast handoffs cleared four residuals; verified via visual-compare + eyeball:
+- **V9** event-play prompt/answer now borderless large text + a verdict-tinted underline (web's look).
+- **V10** event-play top progress bar + per-question "1.3s" timer — and B confirmed it's the SAME `q_start` value that
+  already drove Spark scoring, just now displayed (so NOT the functional gap I'd flagged — good).
+- **V8 + V12** the gold Back/action bar → outlined (gold border + dark fill) via one `push_button` fix across ALL screens.
+- ΔE cooled across the board: **arena-prefight 10.2→8.79 · event-play 8.32→7.71 · heroes 10.35→8.62** (all examine).
+Ledger: V8/V9/V10/V12 → RESOLVED. **Remaining on these 3 screens: V11 (Heroes locked-hero rows, med) + D1/D2 (owner).**
+- Noted into **D2:** the event-play prompt text is GOLD vs web's WHITE (the largest residual band) — it's part of B's
+  event THEME (with the purple bg), so it folds into the D2 theme decision (keep themed vs match web's neutral drill).
+B is closing residuals as fast as they're logged. ▶ B NEXT: V11 (locked-hero rows) + the Items/Collection/Results passes
+(seed each against `capture-states.json` per N5). The compare gate + ledger are driving a tight, visible convergence.

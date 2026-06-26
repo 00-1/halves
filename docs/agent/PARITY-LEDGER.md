@@ -14,11 +14,11 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 | ID | Screen | Issue | Sev | Owner | Status | Sign-off |
 |----|--------|-------|-----|-------|--------|----------|
-| V8 | arena-prefight | Bottom action buttons render solid-yellow (bright) vs web's subtler Back + "Pick your party" treatment — the residual hot band after V1–V7 (compare ΔE 10.2) | polish | B | OPEN | |
-| V9 | event-play | Prompt + answer drawn in bordered boxes; web shows them as borderless large text (the residual hot band, ΔE 8.3) | polish | B | OPEN | |
-| V10 | event-play | Missing the per-question TIMER (web shows "1.3s") + the top progress bar; B shows event title + counter only. Verify the event drill still surfaces the speed timer (it drives Spark scoring). | med | B | OPEN | |
 | V11 | heroes | Roster renders only UNLOCKED heroes; web shows LOCKED-hero rows too (? portrait + name + unlockHint). Add locked rows. | med | B | OPEN | |
-| V12 | heroes | "Back" bar renders solid-yellow (same as V8 — shared gold action bar across screens). Fix once, everywhere. | polish | B | OPEN | |
+| ~~V8~~ | all | ~~Solid-yellow Back/action bar~~ → **RESOLVED** (`73c8d26`: `push_button` = gold border + dark fill + gold label, one fix everywhere; arena 10.2→8.79) | polish | B | RESOLVED | verified 06-25 |
+| ~~V9~~ | event-play | ~~Boxed prompt/answer~~ → **RESOLVED** (`fd13619`: borderless large text + a verdict-tinted underline input slot) | polish | B | RESOLVED | verified 06-25 |
+| ~~V10~~ | event-play | ~~Missing timer + progress bar~~ → **RESOLVED** (`fd13619`: top progress bar + per-question "1.3s" timer from `q_start` — the SAME value that already drove Spark scoring, now shown; not a functional gap) | med | B | RESOLVED | verified 06-25 |
+| ~~V12~~ | heroes | ~~Solid Back bar~~ → **RESOLVED** (same `push_button` fix as V8; heroes 10.35→8.62) | polish | B | RESOLVED | verified 06-25 |
 | ~~V1~~ | arena-prefight | ~~Only one foe — needs the 3-foe enemy team~~ → **RESOLVED** (brickmap `8373a20`: lead + 2 typed supports as cards) | must | B | RESOLVED | verified 06-25 |
 | ~~V2~~ | arena-prefight | ~~No per-hero matchup badge~~ → **RESOLVED** (`combat::matchup_mult`: ADV ×1.5 / WEAK / EVEN per hero) | must | B | RESOLVED | verified 06-25 |
 | ~~V3~~ | arena-prefight | ~~Missing primer + Journey map~~ → **RESOLVED** ("How battles work" box + Journey map button) | must | B | RESOLVED | verified 06-25 |
@@ -32,7 +32,7 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 | ID | Screen | Question | Status | Sign-off |
 |----|--------|----------|--------|----------|
 | D1 | event-play | Render shows the event title during the question; web shows the progress counter. Keep B's, or match web? | DECIDE | |
-| D2 | event-play | Render tints the bg purple (event theme); web is near-black neutral. Theme it, or match web? | DECIDE | |
+| D2 | event-play | Render applies an event THEME — purple bg tint + gold question text (web is near-black bg + white question text; the gold prompt is the largest residual ΔE band). Keep B's themed look, or match web's neutral drill? (One decision covers both bg + prompt colour.) | DECIDE | |
 
 ## C. Open NON-VISUAL parity issues
 
@@ -48,7 +48,7 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 The screenshot-compare gate has only run on 2 of 26 screens. Every screen below must, once B declares it complete,
 commit a `<screen>-brickmap.png` and pass the compare (verdict `ok`/`examine`-accepted, never `DIVERGENT`):
-`arena-prefight`† , `event-play`† (†compare-PASSED `examine` after V1–V7; residual V8–V10 + D1/D2 still open before full accept), `arena-map`, `arena-cleared`, `heroes`† (compare-PASSED `examine` ΔE10.35; residual V11/V12/N5 open), `heroes-partial`,
+`arena-prefight`† , `event-play`† (†compare-PASSED `examine` after V1–V7; residual D1/D2 (theme) only — V8–V10 RESOLVED), `arena-map`, `arena-cleared`, `heroes`† (compare-PASSED `examine` ΔE10.35; residual V11 (locked rows) only — V12/N5 RESOLVED), `heroes-partial`,
 `hero-detail-{brawn,arcane,cunning}`, `inventory-{loot,topics,events,awards,codex}`, `home`, `home-fresh`,
 `home-midprogress`, `practice`, `drill`, `results`, `summary`, `settings`, `audio`, `graphics`, `guide`, `splash`.
 (No blanket back-fill — each flows through as its visual pass completes, per VISUAL-PARITY.md.)
