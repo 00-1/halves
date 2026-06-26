@@ -14,13 +14,16 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 | ID | Screen | Issue | Sev | Owner | Status | Sign-off |
 |----|--------|-------|-----|-------|--------|----------|
-| V1 | arena-prefight | Only ONE foe shown — web shows the full 3-foe enemy team (tier foe + 2 typed supports) | must | B | OPEN | |
-| V2 | arena-prefight | No per-hero MATCHUP BADGE (▲ Advantage ×1.5 / ▲–▼) on party cards | must | B | OPEN | |
-| V3 | arena-prefight | Missing the "How battles work" primer + the "Journey map" button | must | B | OPEN | |
-| V4 | arena-prefight | Render shows a post-battle "Victory! Cleared tier 3" bleed; show the clean pre-fight; button label "Pick your party"; soften the heavy green selected-card fill to web's amber border | polish | B | OPEN | |
-| V5 | event-play | Numpad order INVERTED — web 7/8/9 top (calculator), render 1/2/3 top (phone) | must | B | OPEN | |
-| V6 | event-play | Missing the "How to approach this" hint button above the numpad | must | B | OPEN | |
-| V7 | event-play | Backspace is "<" vs web's pixel ⌫ icon; Skip is a solid-yellow bar vs web's subtle outline | polish | B | OPEN | |
+| V8 | arena-prefight | Bottom action buttons render solid-yellow (bright) vs web's subtler Back + "Pick your party" treatment — the residual hot band after V1–V7 (compare ΔE 10.2) | polish | B | OPEN | |
+| V9 | event-play | Prompt + answer drawn in bordered boxes; web shows them as borderless large text (the residual hot band, ΔE 8.3) | polish | B | OPEN | |
+| V10 | event-play | Missing the per-question TIMER (web shows "1.3s") + the top progress bar; B shows event title + counter only. Verify the event drill still surfaces the speed timer (it drives Spark scoring). | med | B | OPEN | |
+| ~~V1~~ | arena-prefight | ~~Only one foe — needs the 3-foe enemy team~~ → **RESOLVED** (brickmap `8373a20`: lead + 2 typed supports as cards) | must | B | RESOLVED | verified 06-25 |
+| ~~V2~~ | arena-prefight | ~~No per-hero matchup badge~~ → **RESOLVED** (`combat::matchup_mult`: ADV ×1.5 / WEAK / EVEN per hero) | must | B | RESOLVED | verified 06-25 |
+| ~~V3~~ | arena-prefight | ~~Missing primer + Journey map~~ → **RESOLVED** ("How battles work" box + Journey map button) | must | B | RESOLVED | verified 06-25 |
+| ~~V4~~ | arena-prefight | ~~Post-battle bleed / heavy green fill~~ → **RESOLVED** (clean pre-fight, amber selected-card border) | polish | B | RESOLVED | verified 06-25 |
+| ~~V5~~ | event-play | ~~Numpad inverted~~ → **RESOLVED** (calculator 7/8/9-top in `bm-render::ui2d::keypad`) | must | B | RESOLVED | verified 06-25 |
+| ~~V6~~ | event-play | ~~Missing hint button~~ → **RESOLVED** ("How to approach this" above the numpad) | must | B | RESOLVED | verified 06-25 |
+| ~~V7~~ | event-play | ~~Backspace "<" / solid Skip~~ → **RESOLVED** (pixel backspace arrow + outlined Skip bar) | polish | B | RESOLVED | verified 06-25 |
 
 ## B. Owner DECISIONS pending (parity deviations that may be intentional)
 
@@ -42,7 +45,7 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 The screenshot-compare gate has only run on 2 of 26 screens. Every screen below must, once B declares it complete,
 commit a `<screen>-brickmap.png` and pass the compare (verdict `ok`/`examine`-accepted, never `DIVERGENT`):
-`arena-prefight`*, `event-play`* (*first cut — see §A), `arena-map`, `arena-cleared`, `heroes`, `heroes-partial`,
+`arena-prefight`† , `event-play`† (†compare-PASSED `examine` after V1–V7; residual V8–V10 + D1/D2 still open before full accept), `arena-map`, `arena-cleared`, `heroes`, `heroes-partial`,
 `hero-detail-{brawn,arcane,cunning}`, `inventory-{loot,topics,events,awards,codex}`, `home`, `home-fresh`,
 `home-midprogress`, `practice`, `drill`, `results`, `summary`, `settings`, `audio`, `graphics`, `guide`, `splash`.
 (No blanket back-fill — each flows through as its visual pass completes, per VISUAL-PARITY.md.)

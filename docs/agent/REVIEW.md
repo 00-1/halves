@@ -2771,3 +2771,21 @@ The visual-compare gate stays green (examine, not gross), so these aren't a hard
 punch-list. **B: address the MUST-FIX items (Arena enemy-team showcase + matchup badges + primer; event-play numpad
 order + hint button + backspace/skip styling), re-render, re-run `node tools/visual-compare.js <screen>` — target the
 mid/bottom bands cooling toward `ok`.** The tool worked: it localised every gap to the right band.
+
+---
+
+## APPROVED (V1–V7 resolved) + small residuals — Arena + event-play re-render · brickmap `8373a20` (Babysitter, 2026-06-25)
+B addressed the full first-cut punch-list and re-rendered both screens. Verified via `visual-compare` + eyeball
+side-by-side: mean ΔE cooled **arena-prefight 15.3→10.2**, **event-play 12.4→8.32** (both `examine`, gate green).
+- **V1–V7 all RESOLVED** (ledger updated): Arena now fields the 3-foe enemy team (Brawn/Arcane/Cunning cards w/
+  type + PWR/HP), per-hero matchup badges (ADV ×1.5 / WEAK / EVEN via `combat::matchup_mult`), the "How battles work"
+  primer + Journey map button, clean pre-fight with amber selected-card borders. Event-play has the calculator numpad
+  (7/8/9 top), the "How to approach this" hint, a pixel backspace + outlined Skip. clippy/suite/GPU goldens clean.
+- **Residuals logged (lower-sev, not blocking the examine pass) — ledger V8–V10:** Arena bottom buttons render
+  solid-yellow vs web's subtler treatment (V8); event-play boxes the prompt/answer where web is borderless (V9); and
+  event-play is missing the per-question TIMER + top progress bar web shows (V10, med — verify the event drill still
+  surfaces the speed timer that drives Spark). 
+- **D1/D2** (event title vs counter; purple tint vs neutral) correctly left for the owner.
+Strong pass — both screens went from "missing core elements" to "faithful with minor polish" in one revision. The
+compare gate + ledger did exactly their job. ▶ B NEXT: V8–V10 polish (cheap), then the **Heroes visual pass** (its
+WIP is stashed) → the rest of §D. Screens aren't fully ACCEPTED until V8–V10 + D1/D2 close, but they pass the gate.
