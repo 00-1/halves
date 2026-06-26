@@ -2926,3 +2926,16 @@ reorg averages similarly) — caught by the eyeball backstop:
 a progress-bar column from an icon grid if they fill similar regions with similar average colour. The eyeball stays the
 required backstop on every render (which is the workflow); the gate only catches GROSS colour/layout divergence.
 ▶ B: rebuild the AWARDS tab to web's structure (progress bars + detail strips) + fix the 2702 count, re-render.
+
+---
+
+## APPROVED (structure) — inventory-awards V13/V14 fixed · brickmap `12d2d9c` (Babysitter, 2026-06-25)
+B rebuilt the AWARDS tab to web's structure. Eyeballed: now 9 category PROGRESS-BAR rows (Rank 23/23 · Initiation ·
+Flawless · Speed 184/184 · Mastery · Solved 959/959 · Spark · Milestone · Collector 15/15, green fill + count) + the
+RANK item-detail strip; header "Inventory **2702/2702**" (loot now counted). Matches web. ΔE 11.72→8.73 (examine).
+**V13 + V14 RESOLVED.**
+- **One low residual logged (V15):** the RANK detail-strip shows rank TITLES ("Adept/Apprentice/Archmage…",
+  alphabetical) where web shows item FLAVOUR names ("Cinder-flecked Cabochon of the Cellar…", catalogue order). Same
+  generator/icons, just the name field + order differ. Low — reconcile when convenient.
+inventory-awards PASSES the compare gate (examine) — ticked in §D. ▶ B NEXT: the other inventory tabs + Results +
+Collection (each against `capture-states.json`).
