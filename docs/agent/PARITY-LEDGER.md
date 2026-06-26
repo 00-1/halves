@@ -14,7 +14,7 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 | ID | Screen | Issue | Sev | Owner | Status | Sign-off |
 |----|--------|-------|-----|-------|--------|----------|
-| V11 | heroes | Roster renders only UNLOCKED heroes; web shows LOCKED-hero rows too (? portrait + name + unlockHint). Add locked rows. | med | B | OPEN | |
+| ~~V11~~ | heroes | ~~Missing locked-hero rows~~ → **RESOLVED** (brickmap `4c60023`: `heroes_frame` branches on `is_hero_unlocked` — locked = "?" portrait + dim name + `unlock_hint`; header counts unlocked/total). Verified vs web's pattern. | med | B | RESOLVED | verified 06-25 |
 | ~~V8~~ | all | ~~Solid-yellow Back/action bar~~ → **RESOLVED** (`73c8d26`: `push_button` = gold border + dark fill + gold label, one fix everywhere; arena 10.2→8.79) | polish | B | RESOLVED | verified 06-25 |
 | ~~V9~~ | event-play | ~~Boxed prompt/answer~~ → **RESOLVED** (`fd13619`: borderless large text + a verdict-tinted underline input slot) | polish | B | RESOLVED | verified 06-25 |
 | ~~V10~~ | event-play | ~~Missing timer + progress bar~~ → **RESOLVED** (`fd13619`: top progress bar + per-question "1.3s" timer from `q_start` — the SAME value that already drove Spark scoring, now shown; not a functional gap) | med | B | RESOLVED | verified 06-25 |
@@ -43,12 +43,13 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 | N3 | audio | Music score is golden-proven (12 goldens); SFX synthesis is only partially verified (not byte-golden vs web). Confirm SFX parity or accept as by-ear. | med | B / Owner-ear | OPEN | |
 | N4 | animation / FX | Battle-playout pace + callouts, particle bursts, screen transitions are not cross-repo frame-verified (inherent: two render engines). Likely an ACCEPT once eyeballed on-device. | low | Owner-ear | OPEN | |
 | ~~N5~~ | compare methodology | ~~web ref and B's render must use the SAME `collected` state for data-dependent screens~~ → **RESOLVED** (`main` `9bbb3c2`): the exact capture states are committed at `content/gg1/visual-ref/capture-states.json` (full/empty/sample/partial) + `manifest.json` gives each screen's state name. **B: seed the matching state before rendering any data-dependent screen** so the compare reflects visual diffs only. | med | Babysitter | RESOLVED | 06-25 |
+| N6 | compare methodology | The ORDER-DEPENDENT states (`sample`/`partial`) may not reproduce the web ref's exact unlock set, because those refs were captured before `capture-states.json` existed AND the CATALOG order they sliced is non-deterministic (N2) — seen on heroes-partial (B's render 3/12 vs web 7/12 unlocked; V11 feature is correct, only the data-seed differs). Fix: B renders `sample`/`partial` screens against `capture-states.json`, and if the web ref still differs, the Babysitter RE-CAPTURES those refs against the committed states. (`full`/`empty` already align.) | low | Babysitter+B | OPEN | |
 
 ## D. Screens PENDING acceptance comparison (must all be compared + ok/accepted before complete)
 
 The screenshot-compare gate has only run on 2 of 26 screens. Every screen below must, once B declares it complete,
 commit a `<screen>-brickmap.png` and pass the compare (verdict `ok`/`examine`-accepted, never `DIVERGENT`):
-`arena-prefight`† , `event-play`† (†compare-PASSED `examine` after V1–V7; residual D1/D2 (theme) only — V8–V10 RESOLVED), `arena-map`, `arena-cleared`, `heroes`† (compare-PASSED `examine` ΔE10.35; residual V11 (locked rows) only — V12/N5 RESOLVED), `heroes-partial`,
+`arena-prefight`† , `event-play`† (†compare-PASSED `examine` after V1–V7; residual D1/D2 (theme) only — V8–V10 RESOLVED), `arena-map`, `arena-cleared`, `heroes`† (compare-PASSED `examine` ΔE10.35; residual V11 (locked rows) only — V12/N5 RESOLVED), `heroes-partial`† (compare-PASSED `examine` ΔE7.72; V11 locked rows correct; residual N6 partial-seed only),
 `hero-detail-{brawn,arcane,cunning}`, `inventory-{loot,topics,events,awards,codex}`, `home`, `home-fresh`,
 `home-midprogress`, `practice`, `drill`, `results`, `summary`, `settings`, `audio`, `graphics`, `guide`, `splash`.
 (No blanket back-fill — each flows through as its visual pass completes, per VISUAL-PARITY.md.)

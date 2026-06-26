@@ -2823,3 +2823,20 @@ Ledger: V8/V9/V10/V12 → RESOLVED. **Remaining on these 3 screens: V11 (Heroes 
   event THEME (with the purple bg), so it folds into the D2 theme decision (keep themed vs match web's neutral drill).
 B is closing residuals as fast as they're logged. ▶ B NEXT: V11 (locked-hero rows) + the Items/Collection/Results passes
 (seed each against `capture-states.json` per N5). The compare gate + ledger are driving a tight, visible convergence.
+
+---
+
+## APPROVED — V11 Heroes locked-hero rows · brickmap `4c60023` (Babysitter, 2026-06-25) — §A VISUAL ISSUES NOW CLEAR
+B closed the last §A item. `heroes_frame` branches on `is_hero_unlocked`: locked heroes render as a "?" portrait +
+dim name + unlock hint, unlocked render the full card; header counts unlocked/total. Eyeballed `heroes-partial` vs web
+— the locked-row pattern matches exactly (e.g. web "? Wisp · Collect 25 items"; render "? Valeska · Finish 3 topics").
+ΔE 7.72 (examine). +partial/full unlock test, GPU goldens clean.
+- **Caveat → logged N6 (low):** B rendered against its OWN partial save (3/12 unlocked) vs web's ref (7/12), so the
+  locked/unlocked SETS differ — a data-seed mismatch on the order-dependent `sample` state (V11 feature is correct;
+  only the compare's data alignment is off). N5 fixed `full`/`empty`; the order-dependent `sample`/`partial` need B to
+  render against `capture-states.json` and, if the web ref still differs (those refs predate the committed states +
+  N2's CATALOG-order flake), the Babysitter re-captures them. Not blocking — the feature is right.
+
+**MILESTONE: §A is empty — every original visual issue (V1–V12) on the first 3 screens is RESOLVED.** Remaining on
+those screens: only **D1/D2 (owner-decide)**. Open elsewhere: N1–N4, N6 (low), and 22 un-started §D screens.
+▶ B NEXT: Items / Collection / Results passes (seed each against `capture-states.json` per N5/N6).
