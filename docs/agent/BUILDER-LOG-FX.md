@@ -6,6 +6,28 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: scenery+banner generators F3+F4, byte-proven ([B], GO)
+
+Completing the art foundation: the Babysitter also exported F3+F4 (`scenes.json`/`scenes-vectors.json`,
+`main` `4e72bd7`). Ported both full-colour generators (`crates/goblin-gold/src/scenes.rs`), proven
+**byte-identical**. `00-1/brickmap` `39f8c58`.
+- **F3 scenery** (`scenery_grid`, from `scenery.js buildGrid`) — a 28×11 pre-scrim Arena backdrop per
+  region: per-row sky `lerp` + a themed silhouette (`topRow` shapes: bumps/posts/trees/reeds/peaks/
+  crags/spires) + seeded accents (stars/embers/snow), seeded `mulberry32((region+1)·…)`. Proven vs all
+  **10** region vectors.
+- **F4 eventart** (`eventart_grid`, from `eventart.js buildGrid`) — a 24×16 emblem per event seeded by
+  `artSeed`: a hue-seeded HSL sky gradient (the s/l-0..100 "k-formula") + a centred edge-lit diamond
+  crest + a seeded mirror-symmetric rune + sparks. Proven vs all **14** event vectors (incl. the exact
+  `rnd()` short-circuit order in the rune loop).
+- Palette-packed vectors (`pal` + base-36 index rows) reconstructed + compared cell-by-cell. goblin-gold
+  **94** lib tests (91 + 3 scenes); clippy `-D warnings` clean native + aarch64-linux-android; fmt clean.
+  Pushed to `main` + the feature branch.
+- **▶ ALL FOUR art generators now ported + proven** (F1 heroes · F2 foes · F3 scenery · F4 crests) — so
+  the screens have portraits, foes, backdrops AND banners. **NEXT: build the Arena + event-play screens
+  to the visual bar** (against `arena-web.png` / `event-play-web.png`), painting these grids.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: portrait generators F1+F2, byte-proven ([B], GO)
 
 The Babysitter landed the F1+F2 art export (`main` `8397e8b`) — deadlock cleared. Ported **both
