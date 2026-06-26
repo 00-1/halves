@@ -6,7 +6,23 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## BRICKMAP-GG1 FULL PORT — phase 6: the INVENTORY (Items) screen — N1 payoff ([B], GO)
+## BRICKMAP-GG1 FULL PORT — phase 6: Inventory AWARDS structure fix V13/V14 ([B], GO)
+
+Addressed the CHANGES (the eyeball caught what ΔE 11.72 under-flagged). `00-1/brickmap` `12d2d9c`.
+**Refreshed `inventory-awards-brickmap.png`.** visual-compare **11.72 → 8.73 (examine)**.
+- **V13:** rebuilt the AWARDS tab to web's structure — the **9 non-event categories as PROGRESS-BAR
+  rows** (name + owned/total + ✓ + green fill) + a per-category **item-detail strip** (the RANK icon
+  tiles), not a flat icon grid. (Lesson noted: the area-average ΔE can't distinguish a progress-bar
+  column from an icon grid when they fill similar regions — the eyeball stays the backstop.)
+- **V14:** the header now counts the **grand total 2702** (catalogue 2352 + the 350 loot ids via
+  `all_loot_ids` over combat `loot_for`); the AWARDS section shows 2310.
+- `Category` gained `Ord/Hash` for the per-category tally; `full_collection_sample` owns the loot ids
+  too; `✓` baked into the glyph set. **Gates:** clippy clean (native + `aarch64-android`), full suite,
+  GPU goldens (`items` re-blessed).
+
+---
+
+## BRICKMAP-GG1 FULL PORT — phase 6: the INVENTORY (Items) screen — N1 payoff ([B], superseded by V13/V14)
 
 First screen built on the proven N1 generator. The Items screen (was a flat text count-list) rebuilt to
 the visual bar against `inventory-*-web.png`. `00-1/brickmap` `2839cbd`. **Render committed:
