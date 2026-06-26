@@ -2789,3 +2789,22 @@ side-by-side: mean ΔE cooled **arena-prefight 15.3→10.2**, **event-play 12.4�
 Strong pass — both screens went from "missing core elements" to "faithful with minor polish" in one revision. The
 compare gate + ledger did exactly their job. ▶ B NEXT: V8–V10 polish (cheap), then the **Heroes visual pass** (its
 WIP is stashed) → the rest of §D. Screens aren't fully ACCEPTED until V8–V10 + D1/D2 close, but they pass the gate.
+
+---
+
+## APPROVED (visual pass) — HEROES screen · brickmap `0310de8` (Babysitter, 2026-06-25)
+B rebuilt Heroes from a flat text list to the full visual bar against `heroes-web.png`. `visual-compare` → ΔE 10.35
+(`examine`); eyeball confirms an excellent STRUCTURAL match: BRAWN/ARCANE/CUNNING section headers, per-hero F1 pixel
+portrait, type dot + name, ★ rating, the four **EFFECTIVE** stat chips (`combat::effective_stats` = base + owned
+boosts — the base-stat display bug is fixed), and the "Boosted by N · tap for details" line. Grouping/layout/portraits
+all land. clippy + suite (+ grouping/boost test) + GPU goldens clean.
+- **One data caveat (logged N5, NOT a port bug):** the stat NUMBERS differ (web Brannon 561 GRD/★190 vs render 427
+  GRD/★150) — but PWR/SPD/FOC match exactly, so it's a different `collected` SEED between the two renders, not a logic
+  divergence (effective_stats is vector-proven byte-identical). For a clean compare on data-dependent screens, the
+  render must use the SAME state as the web ref — **I (Babysitter) will export the capture seeds** from
+  `tools/visual-ref-capture.js` so B renders the identical state. Tracked as N5.
+- **Residuals logged:** V11 (locked-hero rows: web shows `?` + unlockHint for locked heroes; render shows unlocked
+  only — med), V12 (the shared gold Back bar, same as V8 — fix once across screens). Hero-DETAIL screen + scroll +
+  live nav remain (the `hero-detail-*` entries already in §D).
+The Heroes-list visual pass PASSES the compare gate (examine) — ticked in §D. Strong work; same pattern as the Arena
+fix. ▶ B NEXT: V8/V12 (the shared Back bar — one fix), then the next §D screen (Items/Collection per the queue).
