@@ -6,6 +6,26 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: art renders on the GPU (paint helpers + contact sheet) ([B], GO)
+
+Bridged the proven art *logic* (F1–F4 grids) to the engine *render* path before building the screens.
+`00-1/brickmap` `9946362`.
+- **Paint helpers** (reused by every screen): `art::hex_rgba` + `Palette::role_hex`; `app::paint_role`
+  (a 16×16 role grid → engine rects, coloured per role) + `app::paint_colors` (a full colour grid →
+  rects, for scenery/crests).
+- **`render_art_sheet`** — a contact sheet painting **all four generators** through the real engine
+  rect path: 12 hero portraits (F1), 15 foes (F2), 10 region backdrops (F3), 8 event crests (F4).
+  Eyeballed: type-coloured mirrored hero blobs, horned monster foes, sky-gradient silhouette
+  backdrops, diamond rune crests — all render correctly.
+- **Golden-gated:** new `art-sheet` golden, self-consistent + GPU-matched under lavapipe (proves the
+  art paints right on the GPU, not just in logic). goblin-gold **94** lib tests; **9** GPU goldens;
+  clippy `-D warnings` clean native + aarch64-linux-android; fmt clean. Pushed to `main` + feature.
+- **▶ NEXT:** the Arena + event-play screens proper — assemble these painted portraits/foes/backdrops
+  /crests into the screen layouts against `arena-web.png` / `event-play-web.png` (party-pick → battle →
+  grant; today's event → gauntlet → drill → tiers), then the render→compare→golden→commit-render loop.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: scenery+banner generators F3+F4, byte-proven ([B], GO)
 
 Completing the art foundation: the Babysitter also exported F3+F4 (`scenes.json`/`scenes-vectors.json`,
