@@ -160,6 +160,8 @@ jobs:
         run: node test/combat-parity.test.js
       - name: Events export parity (T233c) test (gate)
         run: node test/events-parity.test.js
+      - name: Art export parity (F1 icons + F2 foes) test (gate)
+        run: node test/art-parity.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info (per app — each fetches its own ./build.json)

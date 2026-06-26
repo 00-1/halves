@@ -715,6 +715,10 @@
     }
     return r;
   }
+  // Resolved (per-id hue/lum-shifted) palette an icon actually paints with — the
+  // colour LUT for its role grid (1→outline, 2→body, 3→accent). Pairs with
+  // iconRoleGrid for the parity export (shape grid + resolved palette = the icon).
+  function iconPalette(id, basePal, catId){ const { shift } = buildIcon(id, catId); return shiftPalette(basePal || RARITY.common, shift); }
   function lockedCells(catId){
     const cat = CAT_BY_ID[catId]; if(!cat) return [];
     const g = grid0(), a = grid0(), locked = grid0();
@@ -1099,7 +1103,7 @@
     // item layer (T20)
     HERO_IDS, HERO_NAMES, STAT_NAMES, boostLabel,
     // icon system (T36): ~50 categories over 12 archetypes + variation
-    CATEGORIES, categoryOf, familyOf, iconRoleGrid, iconColorGrid, lockedCells, shiftPalette,
+    CATEGORIES, categoryOf, familyOf, iconRoleGrid, iconColorGrid, iconPalette, lockedCells, shiftPalette,
     // post-build registration (T23 loot)
     registerItem,
     SPARK, SPEED
