@@ -72,7 +72,7 @@ function generate(){
     }
   };
 
-  const vectors = { heroIcons: [], itemIcons: [], foes: [], emblems: [], itemDigest: null, foeDigest: null };
+  const vectors = { heroIcons: [], itemIcons: [], foes: [], emblems: [], lootItems: [], itemDigest: null, lootDigest: null, foeDigest: null };
 
   // ---- F5 EMBLEMS (Collection/Codex collector awards) — emblems.js, 24×24 role grid (0..6) + RGB palette ----
   // A separate deterministic generator from drawIcon: Em.cells(id) → {size, cells}; values index Em.PALETTE.
@@ -92,8 +92,14 @@ function generate(){
   // (every category → exercises every archetype + its presets/levers; role grid + resolved palette)
   // NB: Collectibles.CATALOG order is NOT guaranteed stable run-to-run (a few solve/spark ids tie in
   // the build sort), so pick the lexicographically-smallest id per category — order-independent + stable.
+  // NB: the digest/sample cover the NON-LOOT catalogue = exactly content/gg1/collectibles.json (2352 items).
+  // LOOT (350, granted by the Arena → it lives in combat.json's lootBoosts, NOT collectibles.json) is exported
+  // separately below (it needs its own rarity, which lootBoosts omits) so each digest maps to ONE source file.
+  const isLoot = it => /^loot:/.test(it.id);
+  const catItems = C.CATALOG.filter(it => !isLoot(it));   // 2352 — the collectibles.json catalogue
+  const lootItems = C.CATALOG.filter(isLoot);             // 350  — Arena loot (combat.json lootBoosts)
   const byCat = {};
-  for(const it of C.CATALOG){ const cat = C.categoryOf(it.id); if(!byCat[cat] || it.id < byCat[cat].id) byCat[cat] = { id: it.id, rarity: it.rarity || "common" }; }
+  for(const it of catItems){ const cat = C.categoryOf(it.id); if(!byCat[cat] || it.id < byCat[cat].id) byCat[cat] = { id: it.id, rarity: it.rarity || "common" }; }
   for(const cat of Object.keys(byCat).sort()){
     const it = byCat[cat], base = C.paletteFor(it.rarity);
     vectors.itemIcons.push({ id: it.id, category: cat, rarity: it.rarity, catId: cat,
@@ -112,15 +118,22 @@ function generate(){
   // applyLevers), and every one of the 120 foes is unique, so a few samples can't prove the rest.
   // A rolled FNV-1a over EVERY element's canonical {id/n + roleGrid + palette}, in catalogue/tier
   // order, lets B prove its ported generator reproduces ALL of them (recompute the same hash → match).
-  const itemLines = C.CATALOG.map(it => { const cat = C.categoryOf(it.id);
-    return iconCanon(it.id, rows(C.iconRoleGrid(it.id, cat)), C.iconPalette(it.id, C.paletteFor(it.rarity || "common"), cat)); });
-  itemLines.sort();   // sort by canonical string (id-prefixed, unique) → independent of CATALOG iteration order
-  vectors.itemDigest = { count: C.CATALOG.length, order: "sorted by item canonical string (CATALOG order is not guaranteed stable)",
+  const digestOf = items => { const lines = items.map(it => { const cat = C.categoryOf(it.id);
+      return iconCanon(it.id, rows(C.iconRoleGrid(it.id, cat)), C.iconPalette(it.id, C.paletteFor(it.rarity || "common"), cat)); });
+    lines.sort(); return fnv1a(lines.join("\n") + "\n"); };
+  vectors.itemDigest = { count: catItems.length, scope: "content/gg1/collectibles.json catalogue (NON-loot); loot is lootDigest below",
+    order: "sorted by item canonical string (order-independent)",
     canon: "per item: `${id}|${roleGrid}|${pal.body}${pal.accent}${pal.outline}` where roleGrid = the 16 iconRoleGrid(id, categoryOf(id)) " +
       "rows EACH joined ('') then ALL concatenated (256 chars of 0..3), and pal = iconPalette(id, paletteFor(rarity), categoryOf(id)). " +
       "Build a line per catalogue id, SORT the lines ascending, join with '\\n', append a trailing '\\n', then FNV-1a-32 " +
-      "(offset 0x811c9dc5, prime 0x01000193) → 8 lowercase hex. Order-independent (the sort), so CATALOG order doesn't matter.",
-    fnv: fnv1a(itemLines.join("\n") + "\n") };
+      "(offset 0x811c9dc5, prime 0x01000193) → 8 lowercase hex. Order-independent (the sort).",
+    fnv: digestOf(catItems) };
+  // F1c LOOT icons (inventory-loot screen) — 350 Arena-loot items. Same drawIcon item generator, but their
+  // RARITY isn't in combat.json's lootBoosts, so export {id,rarity} here + a matching digest. B paints these
+  // from id + rarity (rarity → paletteFor → basePal; catId = categoryOf(id)), same as catalogue items.
+  vectors.lootItems = lootItems.map(it => ({ id: it.id, rarity: it.rarity || "common" }));
+  vectors.lootDigest = { count: lootItems.length, scope: "the 350 loot ids (combat.json lootBoosts) + rarity from lootItems above",
+    order: "sorted by item canonical string", canon: "same recipe as itemDigest.canon, over the loot ids", fnv: digestOf(lootItems) };
   let foeAcc = "";
   for(let n = 1; n <= TC; n++){ const gr = M.buildGrid(E.byTier(n)); foeAcc += foeCanon(n, rows(gr.role), gr.pal) + "\n"; }
   vectors.foeDigest = { count: TC, order: "tier 1..TIER_COUNT",
@@ -137,6 +150,7 @@ if(require.main === module){
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "art-vectors.json"), JSON.stringify(vectors) + "\n");
   console.log("wrote content/gg1/art.json + art-vectors.json — heroIcons", vectors.heroIcons.length,
     "itemIcons", vectors.itemIcons.length, "(+digest all", vectors.itemDigest.count + ")",
-    "foes", vectors.foes.length, "(+digest all", vectors.foeDigest.count + ")", "emblems", vectors.emblems.length);
+    "foes", vectors.foes.length, "(+digest all", vectors.foeDigest.count + ")", "emblems", vectors.emblems.length,
+    "loot", vectors.lootItems.length, "(itemDigest scope", vectors.itemDigest.count + " = collectibles.json)");
 }
 module.exports = { generate };

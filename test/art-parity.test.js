@@ -87,23 +87,28 @@ ok(vectors.foes.some(f => f.region === 5), "F2: region 5 is sampled (was a gap)"
 // (4) FULL-SPACE DIGESTS — re-derive over EVERY item + EVERY foe from the live generators and
 // assert the committed rolled hash matches (proves the port must reproduce ALL of them, not the sample).
 const C = W.Collectibles, E = W.Enemies, M = W.Monsters;
-ok(/^[0-9a-f]{8}$/.test(vectors.itemDigest.fnv) && /^[0-9a-f]{8}$/.test(vectors.foeDigest.fnv), "digests are 8-hex FNV-1a");
-ok(vectors.itemDigest.count === C.CATALOG.length && vectors.itemDigest.count > 2000, "itemDigest covers the FULL catalogue (" + vectors.itemDigest.count + " items)");
+ok(/^[0-9a-f]{8}$/.test(vectors.itemDigest.fnv) && /^[0-9a-f]{8}$/.test(vectors.foeDigest.fnv) && /^[0-9a-f]{8}$/.test(vectors.lootDigest.fnv), "digests are 8-hex FNV-1a");
+const catItems = C.CATALOG.filter(it => !/^loot:/.test(it.id)), lootItems = C.CATALOG.filter(it => /^loot:/.test(it.id));
+const cjCount = JSON.parse(read("content/gg1/collectibles.json")).catalog.length;
+ok(vectors.itemDigest.count === catItems.length && vectors.itemDigest.count === cjCount,
+   "itemDigest scope === the NON-loot catalogue === collectibles.json (" + vectors.itemDigest.count + " items, not the loot-inflated CATALOG)");
+ok(vectors.lootDigest.count === lootItems.length && vectors.lootItems.length === lootItems.length,
+   "lootDigest + lootItems cover all " + lootItems.length + " loot icons (with their exported rarity)");
 ok(vectors.foeDigest.count === E.TIER_COUNT && vectors.foeDigest.count === 120, "foeDigest covers ALL 120 foe tiers");
 (function(){
-  const itemLines = C.CATALOG.map(it => { const cat = C.categoryOf(it.id);
+  const canon = items => { const lines = items.map(it => { const cat = C.categoryOf(it.id);
     return it.id + "|" + gridRows(C.iconRoleGrid(it.id, cat)).join("") + "|" +
       (p => p.body + p.accent + p.outline)(C.iconPalette(it.id, C.paletteFor(it.rarity || "common"), cat)); });
-  itemLines.sort();   // order-independent (CATALOG order is not guaranteed stable)
-  const itemAcc = itemLines.join("\n") + "\n";
-  ok(fnv1a(itemAcc) === vectors.itemDigest.fnv, "itemDigest re-derives from live over every item (sorted, order-independent)");
+    lines.sort(); return fnv1a(lines.join("\n") + "\n"); };
+  ok(canon(catItems) === vectors.itemDigest.fnv, "itemDigest re-derives from live over the non-loot catalogue (order-independent)");
+  ok(canon(lootItems) === vectors.lootDigest.fnv, "lootDigest re-derives from live over the 350 loot items");
   let foeAcc = "";
   for(let n = 1; n <= E.TIER_COUNT; n++){ const gr = M.buildGrid(E.byTier(n));
     foeAcc += n + "|" + gridRows(gr.role).join("") + "|" + gr.pal.body + gr.pal.accent + gr.pal.outline + gr.pal.eye + "\n"; }
   ok(fnv1a(foeAcc) === vectors.foeDigest.fnv, "foeDigest re-derives from live over all 120 foes (tier order, deterministic)");
   // sensitivity: a one-cell perturbation flips the digest (the hash actually guards the grids)
-  ok(fnv1a(itemAcc + " ") !== vectors.itemDigest.fnv && fnv1a(foeAcc.replace(/0/, "1")) !== vectors.foeDigest.fnv,
-     "digest is change-sensitive (any grid divergence flips it)");
+  ok(canon(catItems.slice(0, -1)) !== vectors.itemDigest.fnv && fnv1a(foeAcc.replace(/0/, "1")) !== vectors.foeDigest.fnv,
+     "digest is change-sensitive (dropping one item / flipping one foe cell flips it)");
 })();
 
 // (5) F5 EMBLEMS — all 3 present, 24×24, re-derive byte-identical from live Em.cells, palette carried
