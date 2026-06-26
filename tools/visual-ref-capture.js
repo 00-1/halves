@@ -172,5 +172,10 @@ async function capture(browser, base, s){                                       
   const ok = results.filter(r => r.ok).length;
   fs.writeFileSync(mf, JSON.stringify({ _note: "web-GG1 visual-parity reference map (see README.md)", viewport: VIEWPORT,
     captured: ok, total: results.length, screens }, null, 1) + "\n");
-  console.log(`\n${ok}/${results.length} captured -> ${OUT}`);
+  // emit the EXACT collected states the refs were captured with, so B renders byte-identical data
+  // (a data-dependent compare then reflects visual diffs only, not different collections — ledger N5).
+  fs.writeFileSync(path.join(OUT, "capture-states.json"), JSON.stringify(Object.assign(
+    { _note: "Exact `halves.collected` states these refs were captured with; B seeds the SAME state per screen (manifest gives each screen's state name)." },
+    Object.fromEntries(Object.keys(STATES).map(k => [k, STATES[k]()])))) + "\n");
+  console.log(`\n${ok}/${results.length} captured -> ${OUT}  (+ capture-states.json)`);
 })();
