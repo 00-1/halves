@@ -24,11 +24,11 @@ const HERO_PAL = {
 
 function build(){
   const window = {};
-  window.Emblems = { draw(){}, has: () => false, list: () => [] };
   window.performance = { now: () => 0 };
   const load = n => new Function("window", fs.readFileSync(path.join(DEV, n + ".js"), "utf8"))(window);
+  load("emblems");   // the REAL emblem generator (F5) — must load before collectibles (which refs window.Emblems)
   load("modes"); load("heroes"); load("events"); load("collectibles"); load("enemies"); load("monsters");
-  return { C: window.Collectibles, H: window.Heroes, E: window.Enemies, M: window.Monsters };
+  return { C: window.Collectibles, H: window.Heroes, E: window.Enemies, M: window.Monsters, Em: window.Emblems };
 }
 
 // a 16×16 int grid → 16 row strings of single digits (compact + diff-friendly)
@@ -41,7 +41,7 @@ const iconCanon = (id, roleGrid, pal) => id + "|" + roleGrid.join("") + "|" + pa
 const foeCanon = (n, roleGrid, pal) => n + "|" + roleGrid.join("") + "|" + pal.body + pal.accent + pal.outline + pal.eye;
 
 function generate(){
-  const { C, H, E, M } = build();
+  const { C, H, E, M, Em } = build();
   const G = 16, TC = E.TIER_COUNT;
 
   const art = {
@@ -56,18 +56,30 @@ function generate(){
     _f2: "FOES (monsters.js): buildGrid({n,name,type}) seeds mulberry32(hashStr(name)^imul(n,2654435761)); a lumpy " +
       "vertically-symmetric blob + region-biased horns/eyes/mouth/feet, bosses (n%12===0) larger + crowned. role grid → " +
       "0 empty·1 outline·2 body·3 accent·4 eye; pal {body,accent,outline,eye} is per TYPE (no per-id shift).",
+    _f5: "EMBLEMS (emblems.js): the 3 collector-award emblems (Collection/Codex). Em.cells(id) → a 24×24 grid whose " +
+      "cells are indices into Em.PALETTE (RGB triples; 0 = empty/transparent). A SEPARATE generator from drawIcon — " +
+      "deterministic, no per-id RNG. NB rank/emblem icons elsewhere: the Results 'rank:<id>' portrait is NOT this — it's " +
+      "the drawIcon ARCH ITEM path (rank ids are catalogue items, covered by itemDigest/N1).",
     constants: {
       gridSize: G,
       heroPal: HERO_PAL,                                   // F1 hero base palette per type (pre-shift)
       roleLegendIcon: { 0:"empty", 1:"outline", 2:"body", 3:"accent" },
       roleLegendFoe:  { 0:"empty", 1:"outline", 2:"body", 3:"accent", 4:"eye" },
+      emblemSize: 24, emblemPalette: Em.PALETTE,           // F5 — cells index this RGB palette (0 = empty)
       regionSize: M.G ? 12 : 12,                           // bosses on every 12th tier (matches Enemies)
       source: { icons: "gg1/dev/collectibles.js (drawIcon/buildIcon/heroSprite/iconRoleGrid/iconPalette)",
-                foes:  "gg1/dev/monsters.js (buildGrid)" }
+                foes:  "gg1/dev/monsters.js (buildGrid)", emblems: "gg1/dev/emblems.js (cells/PALETTE)" }
     }
   };
 
-  const vectors = { heroIcons: [], itemIcons: [], foes: [], itemDigest: null, foeDigest: null };
+  const vectors = { heroIcons: [], itemIcons: [], foes: [], emblems: [], itemDigest: null, foeDigest: null };
+
+  // ---- F5 EMBLEMS (Collection/Codex collector awards) — emblems.js, 24×24 role grid (0..6) + RGB palette ----
+  // A separate deterministic generator from drawIcon: Em.cells(id) → {size, cells}; values index Em.PALETTE.
+  for(const id of Em.IDS){
+    const c = Em.cells(id);
+    vectors.emblems.push({ id, size: c.size, rows: c.cells.map(r => r.join("")), palette: Em.PALETTE });
+  }
 
   // ---- F1a HERO PORTRAITS (Arena-critical) — all 12, the mirrored creature-blob ----
   for(const h of H.HEROES){
@@ -117,6 +129,6 @@ if(require.main === module){
   fs.writeFileSync(path.join(__dirname, "..", "content", "gg1", "art-vectors.json"), JSON.stringify(vectors) + "\n");
   console.log("wrote content/gg1/art.json + art-vectors.json — heroIcons", vectors.heroIcons.length,
     "itemIcons", vectors.itemIcons.length, "(+digest all", vectors.itemDigest.count + ")",
-    "foes", vectors.foes.length, "(+digest all", vectors.foeDigest.count + ")");
+    "foes", vectors.foes.length, "(+digest all", vectors.foeDigest.count + ")", "emblems", vectors.emblems.length);
 }
 module.exports = { generate };

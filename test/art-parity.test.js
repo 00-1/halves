@@ -26,6 +26,8 @@ function live(){
 const W = live();
 function fnv1a(s){ let h = 0x811c9dc5; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16).padStart(8, "0"); }
 const gridRows = g => g.map(r => r.join(""));
+// F5 emblems live (loaded standalone — emblems.js needs no other module)
+const EmW = {}; new Function("window", read("gg1/dev/emblems.js"))(EmW); const Em = EmW.Emblems;
 
 // (1) drift
 ok(read("content/gg1/art.json") === JSON.stringify(art, null, 1) + "\n", "art.json matches regenerate");
@@ -103,6 +105,17 @@ ok(vectors.foeDigest.count === E.TIER_COUNT && vectors.foeDigest.count === 120, 
   ok(fnv1a(itemAcc + " ") !== vectors.itemDigest.fnv && fnv1a(foeAcc.replace(/0/, "1")) !== vectors.foeDigest.fnv,
      "digest is change-sensitive (any grid divergence flips it)");
 })();
+
+// (5) F5 EMBLEMS — all 3 present, 24×24, re-derive byte-identical from live Em.cells, palette carried
+ok(vectors.emblems.length === Em.IDS.length && Em.IDS.every(id => vectors.emblems.some(e => e.id === id)),
+   "F5: all " + Em.IDS.length + " emblems present (" + Em.IDS.join(", ") + ")");
+ok(vectors.emblems.every(e => e.size === 24 && e.rows.length === 24 && e.rows.every(r => r.length === 24 && /^[0-6]+$/.test(r))),
+   "F5: emblems are 24×24 grids of palette indices (0..6)");
+ok(vectors.emblems.every(e => {
+  const c = Em.cells(e.id);
+  return c.cells.every((row, y) => row.join("") === e.rows[y]);
+}), "F5: emblem grids re-derive byte-identical from live Em.cells (determinism)");
+ok(vectors.emblems.every(e => e.palette && art.constants.emblemPalette), "F5: emblems carry the RGB palette (the cells index it)");
 
 console.log(fails ? `\n${fails} FAIL` : "\nALL ART PARITY CHECKS PASS");
 process.exit(fails ? 1 : 0);

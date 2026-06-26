@@ -2,6 +2,7 @@
  "_note": "GG1 procedural portraits/icons (NO art assets). Two deterministic generators over a 16×16 grid: collectibles.js drawIcon (hero portraits + item icons) and monsters.js buildGrid (Arena foes). The port reproduces the GENERATORS (read them from gg1/dev) and proves byte-identical vs art-vectors.json.",
  "_f1": "ICONS (collectibles.js): buildIcon(id,catId) seeds mulberry32(hashStr(id)); a 'hero:'<id> routes to heroSprite (mirrored centre-weighted creature-blob, ~30% accent), else ARCH[cat.arch] + applyLevers. iconRoleGrid → 0 empty·1 outline·2 body·3 accent (shape, palette-independent); iconPalette(id,basePal,catId) → the per-id hue/lum-shifted {body,accent,outline} LUT. Paint a cell by its role through that LUT. catId 'familiar' is the hero archetype (ignored for 'hero:' ids — the hero branch wins).",
  "_f2": "FOES (monsters.js): buildGrid({n,name,type}) seeds mulberry32(hashStr(name)^imul(n,2654435761)); a lumpy vertically-symmetric blob + region-biased horns/eyes/mouth/feet, bosses (n%12===0) larger + crowned. role grid → 0 empty·1 outline·2 body·3 accent·4 eye; pal {body,accent,outline,eye} is per TYPE (no per-id shift).",
+ "_f5": "EMBLEMS (emblems.js): the 3 collector-award emblems (Collection/Codex). Em.cells(id) → a 24×24 grid whose cells are indices into Em.PALETTE (RGB triples; 0 = empty/transparent). A SEPARATE generator from drawIcon — deterministic, no per-id RNG. NB rank/emblem icons elsewhere: the Results 'rank:<id>' portrait is NOT this — it's the drawIcon ARCH ITEM path (rank ids are catalogue items, covered by itemDigest/N1).",
  "constants": {
   "gridSize": 16,
   "heroPal": {
@@ -34,10 +35,44 @@
    "3": "accent",
    "4": "eye"
   },
+  "emblemSize": 24,
+  "emblemPalette": {
+   "1": [
+    14,
+    9,
+    22
+   ],
+   "2": [
+    122,
+    84,
+    24
+   ],
+   "3": [
+    212,
+    158,
+    46
+   ],
+   "4": [
+    255,
+    214,
+    110
+   ],
+   "5": [
+    255,
+    255,
+    255
+   ],
+   "6": [
+    156,
+    94,
+    246
+   ]
+  },
   "regionSize": 12,
   "source": {
    "icons": "gg1/dev/collectibles.js (drawIcon/buildIcon/heroSprite/iconRoleGrid/iconPalette)",
-   "foes": "gg1/dev/monsters.js (buildGrid)"
+   "foes": "gg1/dev/monsters.js (buildGrid)",
+   "emblems": "gg1/dev/emblems.js (cells/PALETTE)"
   }
  }
 }
