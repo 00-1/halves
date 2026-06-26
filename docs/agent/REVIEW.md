@@ -2676,3 +2676,21 @@ re-sync churn. **Recommended follow-up (deliberate, coordinated):** add a final 
 collectibles.js, regenerate all exports, have B re-sync — a small change but it rewrites committed data B is actively
 consuming, so do it as one clean coordinated step, not mid-port. Display is unaffected (the inventory re-sorts by
 rarity/name already). **Full suite 70/70, stable across repeated runs.**
+
+---
+
+## VERIFICATION BOUNDARY — what's byte-proven vs perceptual (Babysitter, 2026-06-25)
+Honest map of how far our parity actually reaches, so nobody over-trusts the gates:
+- **BYTE-IDENTICAL (vectors; B reproduces exactly):** (1) all game RULES/LOGIC — question generation, scoring,
+  gold/earning, the combat sim (per-strike), events schedule/gauntlet/tiers, hero unlock, milestones; (2) all generated
+  ART CONTENT — the exact pixel grids + palettes for every hero/item icon (digest over all 2702), every foe (all 120),
+  every backdrop INCLUDING the displayed post-scrim pixels (`litRows`), every event banner. The game PLAYS the same and
+  the generated art CONTENT is the same.
+- **NOT byte-checked (verified only by the perceptual screenshot-compare loop + eyeball — the realistic ceiling for two
+  different render engines, and where visual divergence can hide):** screen LAYOUT / CSS / typography / chrome
+  (positions, spacing, fonts, text colours, buttons, nav, the info-box + party-card composition); grid SCALING/placement
+  on the canvas; ANIMATIONS / transitions / FX timing (battle playout pace + callouts, bursts); AUDIO SFX synthesis
+  (music is golden-checked, SFX only partial); interaction/UI state (locked/empty states, scroll, tap targets);
+  device/GPU upscaling. These ride on B committing `<screen>-brickmap.png` renders → side-by-side review vs the
+  `*-web.png` refs → golden. **That loop is structural, not pixel-exact, and is the right place to concentrate review
+  as B builds the Arena + event-play screens.** Closed the one concrete compositing gap (scenery scrim) in `main ab020c5`.
