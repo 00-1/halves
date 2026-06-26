@@ -2694,3 +2694,20 @@ Honest map of how far our parity actually reaches, so nobody over-trusts the gat
   device/GPU upscaling. These ride on B committing `<screen>-brickmap.png` renders → side-by-side review vs the
   `*-web.png` refs → golden. **That loop is structural, not pixel-exact, and is the right place to concentrate review
   as B builds the Arena + event-play screens.** Closed the one concrete compositing gap (scenery scrim) in `main ab020c5`.
+
+---
+
+## DONE (Babysitter) — visual-parity compare harness · `main` `66139ac` (2026-06-25)
+Owner: "verify everything we can — compare the captured web screenshots against B's renders; not necessarily
+pixel-perfect, but where there's deviation examine if we can improve parity." Built it:
+- `tools/visual-compare.js` — self-contained PNG decoder (Node zlib, no deps) + area-average downsample to a 24×48
+  cell grid (washes out font AA / sub-pixel / resolution diffs, keeps layout + colour blocks) → per-cell ΔE heat-map,
+  per-row layout-deviation profile, hottest cells, 3-tier verdict (ok <6 / examine 6–18 / DIVERGENT >18). Pairs
+  `<screen>-web.png` ↔ `<screen>-brickmap.png`; writes `compare-report.json`.
+- `test/visual-parity.test.js` — decoder self-check + test-the-test (identical→0, tint detected, blanked band
+  localises) + gates committed pairs on GROSS divergence only, surfaces EXAMINE, dormant for un-rendered screens.
+  Wired into pages.yml. Verified end-to-end (identical→ΔE0 ok; wrong screen→ΔE23.5 DIVERGENT w/ heat-map). 71/71.
+- B's render→compare workflow documented in VISUAL-PARITY.md (render 430×880 → commit `<screen>-brickmap.png` →
+  `node tools/visual-compare.js <screen>` → iterate to ok). The gate activates per-screen as B commits renders; the
+  Babysitter reviews each heat-map side-by-side and triages EXAMINE deviations (improve where we can, accept inherent
+  engine diffs). This is the mechanism for the one area that ISN'T byte-provable (layout/appearance).

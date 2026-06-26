@@ -101,3 +101,27 @@ Port today: a flat list "Brannon (Brawn) P14 G12 S6 F6". Web target (`heroCard`)
    the match (`OWNER-EYEBALL.md`).
 
 *Maintained by the Babysitter. Gate render on goldens; the web-match is the owner's eye (queue confirms in OWNER-EYEBALL).*
+
+---
+
+## THE COMPARE HARNESS — web refs vs B's renders (Babysitter-built, `main` `66139ac`)
+The render→compare loop is now MECHANISED + gated (owner ask 2026-06-25). It's perceptual, not pixel-exact
+(two render engines never match per-pixel), and it flags WHERE to improve parity rather than demanding identity.
+
+**Builder B workflow (per screen):**
+1. Build the screen. Render it headlessly at the web aspect (**430×880**) and commit the PNG to halves as
+   `content/gg1/visual-ref/<screen>-brickmap.png` (overwrite the same filename each iteration; you have write access).
+   Use the EXACT `<screen>` stem of the matching `<screen>-web.png` (e.g. `arena-prefight`, `heroes`, `event-play`).
+   Export as 8-bit PNG (RGB or RGBA), non-interlaced.
+2. Run `node tools/visual-compare.js <screen>` — it prints a ΔE heat-map (a 24×48 grid: ` .:-=+*#%@`), a per-row
+   layout-deviation profile (rows marked `◄` deviate), the hottest cells to examine, and a verdict:
+   **ok** (mean ΔE < 6) · **examine** (6–18, parity could improve — look at the hot cells) · **DIVERGENT** (>18,
+   a missing element / wrong layout / wrong colour — fix before handoff). Iterate until at least not DIVERGENT,
+   ideally `ok`; treat `examine` regions as a punch-list (what's slightly off — spacing, a colour, a missing chip).
+3. `test/visual-parity.test.js` is a CI gate: it fails on any committed pair that is DIVERGENT (so a regressed or
+   half-built screen can't land), passes `examine`/`ok`, and is dormant for screens without a brickmap render yet.
+
+**Babysitter (this session):** on each B render push, run `visual-compare`, review the heat-map side-by-side vs the
+web ref, and either APPROVE or route the deviation back with the specific regions (hot cells / bands) to fix. The
+goal is `ok`; `examine` deviations get triaged — improve parity where we can, accept where it's an inherent
+engine difference (AA, font hinting). Thresholds (EXAMINE 6 / GROSS 18) are tunable in `tools/visual-compare.js`.
