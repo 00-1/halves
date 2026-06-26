@@ -6,7 +6,32 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## BRICKMAP-GG1 FULL PORT — phase 6: ⚑ remaining-screens scope + a save-data gap ([B])
+## BRICKMAP-GG1 FULL PORT — phase 6: ⚑ home is DIVERGENT — needs tree-graph + hoard coin-pile ([B])
+
+Built a `home_frame` first cut (gold-bar header · daily-event banner + "Again" · topic grid · bottom
+nav Best/Items/Heroes/Arena/Setup · a gold-scatter). **But `visual-compare home` = ΔE 21.59 → 22.37
+DIVERGENT** (over the gross-18 gate, even after boosting the hoard scatter). A DIVERGENT render must not
+ship for review, so I **reverted the WIP** rather than push a failing screen — and am flagging the three
+structural reasons it can't reach `examine` as a grid-over-scatter:
+1. **The topic TREE GRAPH.** Web `home` is a connected node-graph (nodes + arrows + the progression
+   edges), NOT my flat grid — the tree IS the dominant visual. Reproducing the graph layout (node
+   positions + the parent→child arrows from the progression DAG) is a real build.
+2. **The gold-HOARD coin-pile.** Web's bottom ~40% is a big bright gold mound (the `fxgl.js` coin field
+   + `hoardLevel(gold)`). brickmap has the FX **spark burst** (`fx::celebrate`) but **no coin-pile
+   generator** — my scatter doesn't come close. **Ask: spec/export the coin-pile recipe (mound profile,
+   per-coin splat/size/level curve, cap) like the F-series, so I can reproduce it byte-faithfully** — or
+   confirm it's an accept-by-eye/owner aesthetic (the design doc §11 low-fi pile; `docs/research-coin-hoard.md`
+   exists web-side — is its recipe portable?).
+3. **The purple theme.** Web `home` is saturated purple (the void/arena gradient); brickmap's BG is a
+   darker near-neutral — a big chunk of the ΔE is this colour field.
+**Recommendation:** treat `home` as a larger task gated on the coin-pile recipe + a tree-graph layout
+pass, and/or owner aesthetic review — vs the other screens which reached `examine` cleanly. Meanwhile the
+other §D screens (e.g. the metagame **Collection** drill-down, the **Ladder** with the new F5 emblems) are
+more tractable next steps. **Not shipping a DIVERGENT home.**
+
+---
+
+## BRICKMAP-GG1 FULL PORT — phase 6: remaining-screens scope + a save-data gap ([B])
 
 Five screens shipped this run (Arena · event-play · Heroes · Inventory · Results) + V13–V17, all gated +
 approved; N1 generator full-space proven. Scoped the rest of the §D queue against the web refs:
