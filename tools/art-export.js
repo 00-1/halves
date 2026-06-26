@@ -115,10 +115,18 @@ function generate(){
   const itemLines = C.CATALOG.map(it => { const cat = C.categoryOf(it.id);
     return iconCanon(it.id, rows(C.iconRoleGrid(it.id, cat)), C.iconPalette(it.id, C.paletteFor(it.rarity || "common"), cat)); });
   itemLines.sort();   // sort by canonical string (id-prefixed, unique) → independent of CATALOG iteration order
-  vectors.itemDigest = { count: C.CATALOG.length, order: "sorted by item canonical string (CATALOG order is not guaranteed stable)", fnv: fnv1a(itemLines.join("\n") + "\n") };
+  vectors.itemDigest = { count: C.CATALOG.length, order: "sorted by item canonical string (CATALOG order is not guaranteed stable)",
+    canon: "per item: `${id}|${roleGrid}|${pal.body}${pal.accent}${pal.outline}` where roleGrid = the 16 iconRoleGrid(id, categoryOf(id)) " +
+      "rows EACH joined ('') then ALL concatenated (256 chars of 0..3), and pal = iconPalette(id, paletteFor(rarity), categoryOf(id)). " +
+      "Build a line per catalogue id, SORT the lines ascending, join with '\\n', append a trailing '\\n', then FNV-1a-32 " +
+      "(offset 0x811c9dc5, prime 0x01000193) → 8 lowercase hex. Order-independent (the sort), so CATALOG order doesn't matter.",
+    fnv: fnv1a(itemLines.join("\n") + "\n") };
   let foeAcc = "";
   for(let n = 1; n <= TC; n++){ const gr = M.buildGrid(E.byTier(n)); foeAcc += foeCanon(n, rows(gr.role), gr.pal) + "\n"; }
-  vectors.foeDigest = { count: TC, order: "tier 1..TIER_COUNT", fnv: fnv1a(foeAcc) };
+  vectors.foeDigest = { count: TC, order: "tier 1..TIER_COUNT",
+    canon: "per tier n: `${n}|${roleGrid}|${pal.body}${pal.accent}${pal.outline}${pal.eye}` (roleGrid = 16 Monsters.buildGrid(byTier(n)).role " +
+      "rows joined+concatenated, 256 chars of 0..4). Lines in tier order 1..120, join '\\n', trailing '\\n', FNV-1a-32 → 8 hex.",
+    fnv: fnv1a(foeAcc) };
 
   return { art, vectors };
 }
