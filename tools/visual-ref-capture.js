@@ -175,7 +175,8 @@ async function capture(browser, base, s){                                       
   // emit the EXACT collected states the refs were captured with, so B renders byte-identical data
   // (a data-dependent compare then reflects visual diffs only, not different collections — ledger N5).
   fs.writeFileSync(path.join(OUT, "capture-states.json"), JSON.stringify(Object.assign(
-    { _note: "Exact `halves.collected` states these refs were captured with; B seeds the SAME state per screen (manifest gives each screen's state name)." },
+    { _note: "Exact `halves.collected` states these refs were captured with; B seeds the SAME state per screen (manifest gives each screen's state name). `gold` = the fixed `halves.gold` ALL captures used — seed it too for data-dependent screens (home header + hoard pile, results gold).",
+      gold: "987654321" },
     Object.fromEntries(Object.keys(STATES).map(k => [k, STATES[k]()])))) + "\n");
   console.log(`\n${ok}/${results.length} captured -> ${OUT}  (+ capture-states.json)`);
 })();
