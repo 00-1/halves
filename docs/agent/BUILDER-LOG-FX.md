@@ -6,6 +6,24 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 6: the RESULTS screen redesign + rank portrait ([B], GO)
+
+Rebuilt the end-of-round Results to the visual bar against `results-web.png` (was a plain stat-list).
+`00-1/brickmap` `d0b03df`. **Render committed: `content/gg1/visual-ref/results-brickmap.png`.**
+visual-compare **ΔE 6.43 (examine, nearly `ok`)** — the best yet.
+- A **starfield** backdrop · the headline **FINAL TIME** (gold, large) · **RANK EARNED** with its pixel
+  **portrait** (the N1 `item_icon` over the `rank:<key>` id — same proven path) + name · **ACCURACY /
+  SKIPPED** as two stat columns · **"N Goblin Gold"** with a coin pip · a Continue button. `rank_item`
+  looks up the Rank catalogue item for the portrait.
+- **Follow-ups (logged, need data not in `RoundOutcome`):** the **MOMENTUM** streak pill and the
+  **SLOWEST ANSWERS** per-question list (the round-step times aren't carried into `RoundOutcome` yet —
+  header shown, list pending). **Gates:** clippy clean (native + `aarch64-android`), full suite, GPU
+  goldens (`results` re-blessed).
+- **▶ NEXT:** Collection (F5 `emblems` + composed hoard), then Inventory polish (tab tap-routing,
+  Loot/Codex tabs, V15 rank-strip names) + the Results momentum/slowest-answers data plumbing.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 6: Inventory AWARDS structure fix V13/V14 ([B], GO)
 
 Addressed the CHANGES (the eyeball caught what ΔE 11.72 under-flagged). `00-1/brickmap` `12d2d9c`.
