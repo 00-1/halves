@@ -2874,3 +2874,22 @@ shift(rTex)`). This unblocks the Items screen + the Results rank portrait (same 
   CATALOG order is irrelevant. Also: `tools/art-export.js` IS in the halves tree (`9f28932`) — the full source if needed.
   Digests byte-UNCHANGED; I only added the doc fields. **B: roll the digest over all catalogue ids → expect bfe89b1e.**
 ▶ B NEXT: the Items + Results screens (render against `capture-states.json`), then Collection (F5 emblems + composed hoard).
+
+---
+
+## ⚑ FIXED — B's itemDigest count mismatch (2702 vs 2352) · `main` `b7d1b01` (Babysitter, 2026-06-25)
+B caught a REAL inconsistency between my own exports — good catch. **Root cause (not what B guessed):** the Δ is NOT
+solve/spark (those are 959 each, stable + matching collectibles.json). It's the **350 Arena-LOOT items** — the live
+`CATALOG` = 2352 catalogue + 350 loot = 2702, and the itemDigest rolled over all of it. Loot lives in `combat.json`'s
+`lootBoosts` (NOT `collectibles.json`), and its **rarity isn't exported at all** (lootBoosts is just {id,hero,stat,
+amount}) — so B, faithfully porting the 2352-item `collectibles.json`, could never reproduce a digest that includes
+350 loot icons it doesn't have. My bug, B's faithful port.
+**Fix:**
+- `itemDigest` now scopes to the **NON-loot catalogue = exactly `collectibles.json` (2352)**. NEW fnv **`934075ca`**
+  (was the loot-inflated `bfe89b1e`). `itemDigest.scope`/`canon` now say so in the vector. **B: re-roll over
+  `collectibles.json`'s 2352 catalogue ids → expect `934075ca`.** (foeDigest unchanged `23f2c27b`.)
+- LOOT exported separately for the future inventory-loot screen: `vectors.lootItems` = [{id,rarity}] (350 — the rarity
+  lootBoosts omits, so you can paint loot icons) + `vectors.lootDigest` = **`8143c303`** over them.
+- art-parity now asserts `itemDigest.count === collectibles.json.catalog.length`, so this can't drift again.
+This is consistent with N2's spirit (export/catalogue alignment) but was a scoping bug, not the order-nondeterminism.
+▶ B: itemDigest → 934075ca unblocks Items+Results; lootDigest → 8143c303 is there when you reach inventory-loot.
