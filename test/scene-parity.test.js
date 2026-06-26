@@ -38,6 +38,14 @@ const sc = read("gg1/dev/scenery.js"), ea = read("gg1/dev/eventart.js");
   ["eventart.js seed", ea, "const rnd = mulberry32((seed >>> 0) || 1);"],
   ["eventart.js crest", ea, "const man = Math.abs(c - cx) + Math.abs(r - cy) * 1.35;"],
 ].forEach(([label, src, s]) => ok(src.includes(s), "source fidelity: " + label));
+// the exported backdrop palettes match main.js's HOME_PALETTE/ENTRY_PALETTE + fxgl hoard constants
+const mn = read("gg1/dev/main.js"), fx = read("gg1/dev/fxgl.js");
+ok(mn.includes('const HOME_PALETTE = ["#0E1116", "#9a5cf6", "#cda9ff"]') &&
+   scenes.constants.backdrops.homePalette.join(",") === "#0E1116,#9a5cf6,#cda9ff", "backdrops: homePalette matches main.js HOME_PALETTE");
+ok(mn.includes('const ENTRY_PALETTE = ["#08080d", "#3a2a5c", "#5a4488"]') &&
+   scenes.constants.backdrops.entryPalette.join(",") === "#08080d,#3a2a5c,#5a4488", "backdrops: entryPalette matches main.js ENTRY_PALETTE");
+ok(fx.includes("const HOARD_CAP = 480;") && fx.includes("const HOARD_K = 600;") && fx.includes("const GOLD_TONES = [[255, 214, 110], [212, 158, 46], [120, 84, 22]];"),
+   "backdrops: fxgl hoard constants (CAP 480, K 600, GOLD_TONES) pinned for B's seedHoard port");
 
 // (3a) scenery — 10 regions, 28×11, lossless pack round-trips to live buildGrid
 const SC = scenes.constants.scenery, EA = scenes.constants.eventart;

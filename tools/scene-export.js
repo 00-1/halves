@@ -58,6 +58,13 @@ function generate(){
       "gradient + a centred edge-lit diamond crest (Manhattan |c-cx|+|r-cy|*1.35 ≤ R, R=6+floor(rnd*2)) + a seeded " +
       "mirror-symmetric rune (accent) + 5+floor(rnd*5) sparks above. Seed = each event's `artSeed`.",
     constants: {
+      // F3-adjacent: the FIXED backdrop palettes the FXGL home/entry scenes use (main.js homeFxState/entryFxState).
+      // The home backdrop = the engine's purple gradient (homePalette) + the gold-hoard coin mound (fxgl.js seedHoard,
+      // sized by gold.json hoardLevel). source-fidelity-pinned in scene-parity.
+      backdrops: { homePalette: ["#0E1116", "#9a5cf6", "#cda9ff"], entryPalette: ["#08080d", "#3a2a5c", "#5a4488"],
+        hoard: "fxgl.js seedHoard (DETERMINISTIC, seeded) — CAP 480, K 600 (hoardLevel=gold/(gold+600)), GOLD_TONES " +
+          "[[255,214,110],[212,158,46],[120,84,22]], moundProfile(x,q,seed); a coin's fill-rank q is level-independent " +
+          "so the pile is a byte-identical prefix as gold grows. B ports it from fxgl.js (its own FX module)." },
       scenery:  { cols: S.COLS, rows: S.ROWS, regionCount: REGIONS, source: "gg1/dev/scenery.js (buildGrid + draw)",
         scrim: "rgba(8,10,14,0.64)", scrimNote: "Arena backdrop is buildGrid composited UNDER this scrim (source-over). " +
           "Each vector carries `rows` (PRE-scrim, what buildGrid returns) AND `litRows` (POST-scrim, what the screen shows)." },
