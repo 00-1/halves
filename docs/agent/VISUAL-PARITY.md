@@ -125,3 +125,21 @@ The render→compare loop is now MECHANISED + gated (owner ask 2026-06-25). It's
 web ref, and either APPROVE or route the deviation back with the specific regions (hot cells / bands) to fix. The
 goal is `ok`; `examine` deviations get triaged — improve parity where we can, accept where it's an inherent
 engine difference (AA, font hinting). Thresholds (EXAMINE 6 / GROSS 18) are tunable in `tools/visual-compare.js`.
+
+---
+
+## WHEN to run the compare test — it's a COMPLETION gate, not a build tool (owner policy, 2026-06-25)
+Run `tools/visual-compare.js` on a screen **only when B considers that screen COMPLETE.** Before that — while there's
+KNOWN parity work still to do — it's too early: it just re-reports deviations we already know about (noise).
+- **B:** finish a screen using your own loop (goldens + your own render checks). When you believe it's at parity,
+  THEN commit `content/gg1/visual-ref/<screen>-brickmap.png` — that commit is your "ready for acceptance" signal and
+  triggers the compare. Don't commit a render (or expect a compare verdict) for a screen you know is still missing
+  elements. Iterate to `ok` ideally, `examine` acceptable; `DIVERGENT` never lands.
+- **Babysitter:** treat a committed `<screen>-brickmap.png` as "B declares complete" → run the compare as the
+  acceptance review (heat-map side-by-side) → APPROVE or send a precise punch-list. Do NOT push screens with an open
+  visual-pass TODO through the compare just to fill the grid.
+- **No blanket back-fill of the 24 earlier screens.** Each flows through the compare as it gets its visual pass and is
+  declared complete (the queued Heroes→Items→Collection→Events→Results→Ladder order), not all at once now.
+- **The current Arena + event-play renders are a FIRST CUT with a known punch-list** (`REVIEW.md` `ea79ad1`) — so they're
+  still in the "known parity work" phase. B addresses the punch-list, then RE-renders, and that re-render is the real
+  acceptance run. (`examine` here = the to-do list, not acceptance.)
