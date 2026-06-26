@@ -13,18 +13,41 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 it uses the SAME `drawIcon` ITEM path (no new export); N1 unblocks Items AND Results both.** `emblems`
 = **F5 DONE** (`main f2b8215`) for Collection; `hoard` = **compose F3 + FXGL + hoardLevel** (no export).
 
-**▶ NEXT TASK — port N1 (the `drawIcon` item/ARCH generator).** Same data-seam method as F1/F2: read
-`gg1/dev/collectibles.js` (the `buildIcon` ELSE branch — `ARCH[cat.arch]` archetype grids + `applyLevers`
-+ `iconPalette` for items), re-implement in `art.rs`, and prove **byte-identical** vs `art-vectors.json`:
-the **50 `itemIcons`** samples + the full-space **`itemDigest` (2702 icons → fnv `bfe89b1e`)** — already
-synced in brickmap, just not yet consumed. `_f1` documents the path (`else ARCH[cat.arch] + applyLevers`);
-the archetypes/levers come from the source. Then: the **Items** screen (catalogue grid by category, each
-item's icon + rarity colour) and the **Results** rank portrait (`drawIcon("rank:<id>")` via the same item
-path) + Results redesign (headline time, momentum pill, accuracy/skipped columns, gold-with-coin,
-slowest-answers, starfield — all in `RoundOutcome`). Collection (F5 emblems + composed hoard) follows.
+**✅ N1 brick 1 DONE (brickmap `e4fc167`):** `categoryOf`/`familyOf` + the 50-entry `CATEGORIES` table,
+proven vs all 50 `itemIcons` (`category_of(id) == category`). **Remaining = the generator itself.**
+
+**▶ NEXT — port the `buildIcon` item branch (`collectibles.js` 403–735), prove vs the 50 `itemIcons`
+`roleGrid`/`pal` then the 2702-icon `itemDigest` `bfe89b1e`.** TRANSCRIPTION GUIDE (already read in full):
+- **RNG (exact order — the byte-exactness hinges on this):** `seed = hashStr(id)`; `rPick =
+  mulberry32(seed)`, `rTex = mulberry32((seed ^ 0x9e3779b9) >>> 0)`. Items: `(1) resolvePreset(cat, rPick)`
+  consumes rPick (the `j(v,d)=v+floor(rPick*(2d+1))-d` jitters + per-arch extras: bottle `liquid=0.35+rPick*0.5`,
+  gem `facetTwist=floor(rPick*2)`, sigil `strokeSet=floor(rPick*128)`, provision `spots=floor(rPick*4)`),
+  `(2) ARCH[cat.arch](g,a,P,rPick,lock)` (archetypes are deterministic from P — they take rPick but don't
+  draw from it), `(3) applyLevers(g,a,locked,P,rPick,rTex)`, `(4) shift = {hue:(rTex*2-1)*20,
+  lum:(rTex*2-1)*0.08}`. (My `hero_icon` already matches the hero branch's order.)
+- **Grids:** `g` (silhouette 0/1), `a` (accent 0/1), `locked` (identity 0/1). Helpers to port: `box(t,x0,y0,x1,y1,v=1)`
+  fills the rect, `hline`/`vline`, `dot`, `disc(t,cx,cy,r,v)` (`x²+y²<=r²+r`), `carve(g,x,y)=g[y][x]=0`,
+  `inB`, `MIR(x)=15-x`, `mirror(g,a)` copies x<8 → 15-x (BOTH g and a), `cl(v,lo,hi)`.
+- **applyLevers:** `isInner(x,y)` = all 4 orth neighbours set; collect `filled` + `body`=unlocked-filled;
+  Fisher–Yates shuffle `body` with **rTex** (i from len-1..1, `k=floor(rTex*(i+1))`); `budget=min(body.len,
+  max(5, round(filled*0.45)))`; for i in 0..budget: `if rTex<0.7 || !isInner → a[y][x]=1 else g[y][x]=0`;
+  then up to 6 **rPick** draws for one off-centre accent (`x=2+floor(rPick*5), y=2+floor(rPick*12)`, break on
+  first unlocked filled non-accent).
+- **role grid (== my `role_from`):** `g→ a?3:2`; empty with an orth-filled neighbour `→1`. **pal** =
+  `shiftPalette(basePal, shift)` = `{body:nudge(basePal.body,hue,lum), accent:nudge(accent,…), outline}` —
+  my `nudge` already matches. The 50 `itemIcons` carry `basePal` (use it; rarity→basePal `RARITY` LUT only
+  needed for the live Items screen). **Archetypes (12, lines 425–608): critter · bottle · sheet · blade ·
+  tool · gem · ring · shield · garment · sigil · orb · provision** + `BASE`/`CATEGORIES.p` presets +
+  `resolvePreset` (lines 559–633) — transcribe each pixel op exactly; `disc`'s `<=r²+r` and the `cl` clamps
+  are the easy-to-miss bits. Then `item_icon(id, base_pal) → (RoleGrid, Palette)`; digest over all 2702
+  (sorted by canonical string) → fnv must equal `bfe89b1e`.
+- **Then:** Items screen (catalogue grid by category + rarity colour); Results rank portrait
+  (`drawIcon("rank:<id>")` — same item path) + Results redesign (headline time · momentum pill ·
+  accuracy/skipped columns · gold-with-coin · slowest-answers · starfield, all in `RoundOutcome`);
+  Collection (F5 emblems + composed hoard).
 
 *(Phase-5 shipped this run: event-play · Arena+event-play V1–V7 · Heroes · V8/V9/V10/V11/V12 — all gated
-+ pushed to both repos' main+feature; renders committed to `visual-ref/`.)*
++ pushed to both repos' main+feature; renders in `visual-ref/`. N1 brick 1 (category map) shipped too.)*
 
 ---
 
