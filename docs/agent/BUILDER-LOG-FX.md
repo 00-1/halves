@@ -6,6 +6,19 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: shared bottom-bar restyle V8 / V12 ([B], GO)
+
+The gold Back/Collection bar was a bright solid-yellow slab on every screen; web uses a subtle
+**outlined** bar. `push_button` now draws a gold border + dark fill + gold label — **one fix,
+everywhere** (V8 Arena, V12 Heroes, + all screens). `00-1/brickmap` `73c8d26` (main + feature).
+**Refreshed `arena-prefight-brickmap.png` + `heroes-brickmap.png`.** visual-compare cooled
+**arena-prefight 10.2 → 8.79** and **heroes 10.35 → 8.62** (both examine; event-play already used the
+outlined Skip). Gates: clippy clean (native + `aarch64-android`), full suite, GPU goldens (all
+Back-bearing screens re-blessed). **Remaining:** V11 (Heroes locked-hero rows, med) · D1/D2 (owner) ·
+align the full-collection sample to `capture-states.json` (N5 follow-up) · Items/Collection/Results passes.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: event-play residuals V9 + V10 ([B], GO)
 
 Closed the post-V1–V7 residuals on the shared drill UI. `00-1/brickmap` `fd13619` (main + feature).
