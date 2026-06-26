@@ -2628,3 +2628,24 @@ buildGrid; prove vs `art-vectors.json`), then build the **Arena screen** (party-
 SPD/FOC + matchup badges + the "How battles work" primer + foe showcase + the battle playout w/ {open,adv,blocked}
 callouts) and **event-play screen** to the visual bar (`arena-web.png` / `event-play-web.png`, render→compare→golden).
 No open [A] export gaps remain.
+
+---
+
+## DONE (Babysitter take-over) — parity-gap audit + F3/F4 scene export · `main` `4e72bd7` (2026-06-25)
+Owner asked (while B builds the screens) whether other export gaps "like F1/F2" remain and whether B has
+everything queued for FULL parity. Ran a comprehensive audit (every web screen/system × content/gg1 exports ×
+B's ported state). Result: **only two more unexported procedural generators**, both screen-blocking — now landed:
+- **F3 scenery** (`scenery.js buildGrid(region)`, 28×11) — the Arena `at-scene` backdrop per region + codex + home.
+- **F4 eventart** (`eventart.js buildGrid(artSeed)`, 24×16) — the daily-event banner crest.
+Exported the F1/F2 way: `content/gg1/scenes.json` (dims + recipes + source refs) + `scenes-vectors.json` (all 10
+regions + all 14 event banners, palette-packed: per-grid hex LUT + base36 index rows, lossless). `test/scene-parity.test.js`
+gates drift + source fidelity + invariants AND re-proves each packed grid round-trips byte-identical to the live
+buildGrid. Wired into pages.yml. **70/70 green.**
+
+**Audit verdict — NO open [A] export gaps remain.** Everything the port needs for full parity is exported + proven:
+content/transforms · earning · gold · combat (redesign) · events · hero-unlock · F1+F2 art (icons+foes) · F3+F4 scenes.
+Progression/milestone LOGIC (the evaluate* family + collector ladder) is already PORTED by B and its thresholds live in
+structured data (earning.json rank/speed brackets, collectibles.json collector/momentum tiers) — not prose, no seam gap.
+Emblems already ported (`emblems.rs`). **The remaining work is purely B BUILDING the two screens** (Arena, event-play)
+to the visual bar — both have their logic proven and now all portraits/backdrops/banners exported. If a NEW screen
+surfaces a missing datum, the Babysitter exports it on the spot; none is known.
