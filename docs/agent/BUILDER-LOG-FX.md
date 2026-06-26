@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 6: ⚑ remaining-screens scope + a save-data gap ([B])
+
+Five screens shipped this run (Arena · event-play · Heroes · Inventory · Results) + V13–V17, all gated +
+approved; N1 generator full-space proven. Scoped the rest of the §D queue against the web refs:
+- **⚑ `summary` (Best Times) — BLOCKED on save data (flag).** Web's `renderSummary` is a **per-topic
+  best-time** list (each topic: best time + best score + "No best yet" + a play arrow). **brickmap's
+  `Save` tracks no per-topic best time** (only `collected` / `gold` / `last_mode` / `games`). To port it,
+  the save needs a per-topic best-time/score map (and `finish_round` to record it). That's a save-schema
+  + earning change in your domain — **decision needed: add best-time tracking, or scope `summary` out?**
+  (The same datum would feed the home screen's "<topic> · best …" detail line + V16-adjacent chips.)
+- **`home` — the central hub, large.** Topic TREE (≈ my `topic-select`) + a gold-bar header + the
+  daily-event banner ("…New event in HH:MM" + Again) + bottom nav (Best/Items/Heroes/Arena/Setup) + the
+  **gold-hoard backdrop** (compose F3 scenery + FX + `hoardLevel(gold)`). Buildable from existing data +
+  the new F5 `emblems`; a substantial screen — the next big build.
+- **`Collection`** (my metagame stat list) folds into `home`/the nav, or stays a stats drill-down — will
+  confirm against `home` as I build it.
+- **Low/data:** V15 (rank-strip names) · V16 (momentum pill — needs streak data) · Inventory tab
+  tap-routing + Loot/Codex tabs · the Results momentum/slowest-answers plumbing (also save/round-step data).
+
+**▶ Proceeding with `home` next** (no data gap — topic tree + hoard + nav + event banner). Flagging the
+`summary` best-time save gap for your call so I don't fabricate a best-time the save can't carry.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 6: button hierarchy V17 — solid-gold primary CTAs ([B], GO)
 
 The V8 "outline everywhere" overcorrected. Added `push_cta` (SOLID gold + ink label) for primary forward
