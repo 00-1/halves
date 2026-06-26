@@ -2963,3 +2963,20 @@ solid gold, secondary "Back" stays outlined. Eyeballed Results: the button is no
 6.43→7.75 is just the solid fill + centred-vs-left position, not a regression. (Minor: B labels it "Continue" vs web
 "Back" — a reasonable forward-action label, not flagging.) Results remaining: V16 (momentum pill, low). ▶ B NEXT:
 Collection + the remaining inventory tabs.
+
+---
+
+## ⚑ SCOPE — B's remaining-screens flag + the Best-Times save-data gap (Babysitter, 2026-06-25)
+Five screens shipped + V13–V17 approved; N1 full-space proven. B scoped the rest:
+- **`summary` (Best Times) — genuinely blocked → owner DECISION D3.** VERIFIED web ships it: `renderSummary` (main.js
+  1218) is nav-wired (`statsBtn → #/best-times`, 2698/2623) and backed by **per-mode best-time boards** (`loadBoard(m.id)`,
+  `boardKey` "per-mode best-time boards" 3179) in localStorage. brickmap's Save has no per-topic best time → porting it
+  needs a save-schema + `finish_round` recording change (B's domain). The datum ALSO feeds the home "<topic> · best…"
+  line + Practice qbest. **Logged D3 (DECIDE): add best-time tracking, or scope `summary` out.** Recommend ADD (woven in).
+  B: HOLD `summary` until the owner calls D3 — don't fabricate a best-time the save can't carry. **Correct flag.**
+- **`home` — B proceeding (no data gap).** The hub: topic tree + gold header + event banner + bottom nav + the gold-hoard
+  backdrop (compose F3 scenery + FX + `hoardLevel`). Buildable from existing data + F5 emblems. Sound — the next big build.
+- **`Collection`** folds into home/nav or stays a stats drill-down — B confirms against home as built.
+- Low/data residuals (already tracked or minor): V15, V16, inventory tab-routing + Loot/Codex tabs, Results momentum/
+  slowest-answers plumbing (save/round-step data).
+B's plan is sound; only `summary` is gated (on D3). ▶ B building `home` next.

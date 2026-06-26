@@ -37,6 +37,7 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 | ID | Screen | Question | Status | Sign-off |
 |----|--------|----------|--------|----------|
 | D1 | event-play | Render shows the event title during the question; web shows the progress counter. Keep B's, or match web? | DECIDE | |
+| D3 | summary (Best Times) | Web ships a Best Times screen (`renderSummary`, nav-wired `#/best-times`) backed by PER-MODE best-time boards in localStorage — brickmap's `Save` tracks no per-topic best time. **Decision: ADD best-time tracking** (save-schema + `finish_round` records per-topic best time/score; B's domain) **— or SCOPE `summary` OUT of v1** (an accepted parity gap). NB the same datum feeds the home '<topic> · best…' detail line + Practice qbest, so scoping out leaves those gaps too. Babysitter recommends ADD (it's woven in). | DECIDE | |
 | D2 | event-play | Render applies an event THEME — purple bg tint + gold question text (web is near-black bg + white question text; the gold prompt is the largest residual ΔE band). Keep B's themed look, or match web's neutral drill? (One decision covers both bg + prompt colour.) | DECIDE | |
 
 ## C. Open NON-VISUAL parity issues
