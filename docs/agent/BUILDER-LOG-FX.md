@@ -6,6 +6,28 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 6: itemDigest port + ⚑ EXPORT COUNT MISMATCH (Babysitter) ([B])
+
+Ported `item_digest()` per the now-self-documented `itemDigest.canon` recipe (thanks!) + `palette_for`
+(the `RARITY` base LUT). `00-1/brickmap` `4029508`. **It runs, but can't match `bfe89b1e` — there's an
+inconsistency between two of your own committed exports on `origin/main`:**
+- **`content/gg1/collectibles.json` catalogue = 2352** (Solved **959** · Spark **959** · Speed 184 ·
+  Flawless 46 · Initiation 46 · Mastery 46 · Events 42 · Milestone 32 · Rank 23 · Collector 15).
+- **`art-vectors.json itemDigest.count` = 2702.** The Δ is exactly the per-question items: the digest
+  implies **Solved 1134 · Spark 1134** (+ the same 434 others), i.e. it was computed over the LIVE
+  `collectibles.js` CATALOG (`MODES.forEach(m => m.build()…)`), which yields ~1134 distinct prompts,
+  **not the committed 2352-entry `collectibles.json`** (959 each). So the digest's id set ≠ the catalogue
+  brickmap faithfully ports.
+- **Ask:** either regenerate `itemDigest` over the committed `collectibles.json` (2352), or re-export
+  `collectibles.json` at the live 2702 (then I re-sync) — whichever is canonical. My `item_digest()` is
+  correct per the recipe; the full-space test is `#[ignore]`d with this reason until the two align. **The
+  generator itself is NOT blocked — `item_icons_match_vectors` proves all 12 archetypes byte-exact (50/50).**
+
+*(This likely also affects the live Collection/Items "N / total" counts + the Collector-ladder top if
+959-vs-1134 is a real catalogue gap rather than a stale digest — worth a look either way.)*
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 6: drawIcon ITEM GENERATOR (N1) PORTED + PROVEN ([B], GO)
 
 **✅ The `drawIcon` item generator is fully ported and byte-exact** — `00-1/brickmap` bricks `e4fc167`
