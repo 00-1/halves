@@ -2909,3 +2909,20 @@ exports byte-for-byte → every one of the 2702 item icons reproduces. N1 → RE
   reasoning: gauntlet seeds on ASCII event ids; foe on ASCII tier names). No regression to the prior approvals.
 A textbook parity win: a faithful port + a full-space gate together surfaced a real correctness bug pre-ship.
 ▶ B NEXT: the Items + Results screens (all generators now proven), then Collection. §C N1 closed; remaining: N2/N3/N4/N6 + D1/D2.
+
+---
+
+## CHANGES REQUESTED — inventory-awards (Items, first cut) · brickmap `2839cbd` (Babysitter, 2026-06-25)
+First screen on the proven N1 generator — the icons paint correctly (rarity-tiled pixel item icons, tab row). But the
+**AWARDS tab layout diverges structurally** from web, and the ΔE (11.72 examine) UNDER-flagged it (a same-palette
+reorg averages similarly) — caught by the eyeball backstop:
+- **V13 (must):** web's AWARDS = per-category PROGRESS BARS (Rank 23/23 · Initiation 46/46 · Flawless · Speed 184/184 ·
+  Mastery · Solved 959/959 · Spark 959/959 · Milestone · Collector — each a green bar + count + ✓) THEN per-category
+  item-detail strips (e.g. the "RANK 23/23" row of item cards). B built a flat 4-column icon grid with NO progress bars
+  and no category overview. Rebuild to the progress-bar + detail-strip structure.
+- **V14 (med):** header count — B "2352/2352" vs web "2702/2702". B drops the 350 loot from the inventory TOTAL; web
+  counts all 2702 (loot included, shown on the Loot tab). Count all 2702.
+**Note for the method:** this is the first time the metric and the eyeball disagreed — the area-average ΔE can't tell
+a progress-bar column from an icon grid if they fill similar regions with similar average colour. The eyeball stays the
+required backstop on every render (which is the workflow); the gate only catches GROSS colour/layout divergence.
+▶ B: rebuild the AWARDS tab to web's structure (progress bars + detail strips) + fix the 2702 count, re-render.
