@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: match the HARDENED parity gates (full foe space + per-strike) ([B], GO)
+
+The Babysitter hardened the parity batteries (`main` `40e9165`): full-space FNV digests over all foes/
+items + 5 per-strike combat logs (closing the art under-sampling + combat headline-only holes). Re-synced
++ strengthened the port's own gates to match. `00-1/brickmap` `6cd8dbc`.
+- **Full foe space:** `art::foe_digest` rolls FNV-1a over **all 120 foes** (canonical `n|roleGrid|
+  body+accent+outline+eye`, tier order) → matches the export's `foeDigest 23f2c27b`. So `foe_grid` is
+  proven byte-identical across **every** tier, not the 16 sampled — and it passed first try (no bug in
+  the 104 unsampled foes).
+- **Per-strike combat replay:** refactored `simulate` to emit the playout log (one code path), and
+  replay **all 5 diverse `teamBattleLogs`** (opening strikes · a loss · single-hero · region 5 · the
+  boss) strike-by-strike — round/sides/ords/dmg/tHp/ko/adv/blocked all match. Pinned `blocked` =
+  mitigation ≥ raw/2 and the tHp-at-0 clamp. A targeting/order/rounding bug can no longer hide behind a
+  correct headline.
+- goblin-gold **96** lib tests; **9** GPU goldens; clippy `-D warnings` clean native + aarch64-linux-
+  android; fmt clean. Pushed to `main` + the feature branch.
+- *(Deferred, flagged: the `itemDigest` (2702 item icons) needs the `ARCH` item-icon path — that's the
+  Items-screen visual pass, not the Arena/event-play screens. Noted for when I port `drawIcon`'s item
+  branch.)*
+- **▶ NEXT (unchanged):** assemble the Arena + event-play screens against `arena-web.png` /
+  `event-play-web.png`.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: art renders on the GPU (paint helpers + contact sheet) ([B], GO)
 
 Bridged the proven art *logic* (F1–F4 grids) to the engine *render* path before building the screens.
