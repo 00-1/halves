@@ -143,3 +143,14 @@ KNOWN parity work still to do — it's too early: it just re-reports deviations 
 - **The current Arena + event-play renders are a FIRST CUT with a known punch-list** (`REVIEW.md` `ea79ad1`) — so they're
   still in the "known parity work" phase. B addresses the punch-list, then RE-renders, and that re-render is the real
   acceptance run. (`examine` here = the to-do list, not acceptance.)
+
+---
+
+## RENDER THE SAME DATA STATE (resolves N5, `main` `9bbb3c2`)
+Data-dependent screens (Heroes stats/ratings, inventory counts, gold, home progress) only compare cleanly if B's
+render uses the SAME `collected` state as the web ref — else the ΔE conflates data differences with visual ones.
+**The exact states are committed: `content/gg1/visual-ref/capture-states.json`** (keys `full`/`empty`/`sample`/`partial`,
+each a `{<id>:{ts:1}}` map). `manifest.json` → each screen's `state` name. **B: before rendering `<screen>-brickmap.png`,
+seed your save with `capture-states.json[<that screen's state>]`** (e.g. Heroes uses `full`). Then the stat numbers /
+counts match exactly and the compare measures appearance alone. (`tools/visual-ref-capture.js` re-emits this file on
+every capture, so it stays canonical.)
