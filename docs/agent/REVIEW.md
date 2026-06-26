@@ -2980,3 +2980,26 @@ Five screens shipped + V13–V17 approved; N1 full-space proven. B scoped the re
 - Low/data residuals (already tracked or minor): V15, V16, inventory tab-routing + Loot/Codex tabs, Results momentum/
   slowest-answers plumbing (save/round-step data).
 B's plan is sound; only `summary` is gated (on D3). ▶ B building `home` next.
+
+---
+
+## ⚑ HOME triage — DIVERGENT (correct revert) + the 3 structural pieces answered (Babysitter, 2026-06-25)
+B built a `home` first cut, `visual-compare` = ΔE 22.4 **DIVERGENT**, and **correctly reverted rather than ship a
+failing render** — exactly the gate's purpose. Confirmed vs `home-web.png`: home IS a branching node-graph tree + a
+big gold coin-pile + a saturated purple bg. Triaged all 3 (home is tractable, not accept-by-eye):
+1. **Topic TREE node-graph — NOT an export gap.** The unlock chain is already in `modes.json` (`unlock:{by}` =
+   `unlockedBy`, `unlock:{mastery}` = `requires`). Port the `renderTree` row-layout (main.js `techGraph` 793 +
+   `renderTree` 843 + the T106 layout: each topic a ROW, parts left→right via `unlock.mastery`, a vertical amber
+   CHAIN arrow between topics (`unlock.by`) + a horizontal purple MASTERY arrow between parts). It's a structured row
+   layout, not force-directed — deterministic from data you have.
+2. **PURPLE theme — EXPORTED (`main` `da3dda5`).** `scenes.json` `constants.backdrops.homePalette` =
+   `["#0E1116","#9a5cf6","#cda9ff"]` (+ `entryPalette` for splash). The home backdrop = the engine's purple gradient
+   from this palette + the hoard.
+3. **gold-HOARD coin-pile — NOT accept-by-eye; it's DETERMINISTIC + it's YOUR module.** `seedHoard` lives in `fxgl.js`
+   (Builder-B-owned FX engine). It's seeded (default `0x601d`), fixed rng draw order, "byte-identical prefix" as gold
+   grows. Constants exported/pinned in `scenes.json` + scene-parity: `HOARD_CAP 480`, `HOARD_K 600`,
+   `GOLD_TONES [[255,214,110],[212,158,46],[120,84,22]]`, `moundProfile(x,q,seed)`, `hoardLevel` (gold.json). Port it
+   from `fxgl.js` like your other fxgl recipes; prove with your FX headless test + the home compare. (Happy to add a
+   cross-repo seedHoard coin-array vector if you want a byte-target — say the word.)
+**Net: home is the big build but fully de-risked — no accept-by-eye, no blocking export.** Logged V18. ▶ B: tackle
+home now (everything's available), OR knock out the more tractable Collection/Ladder first — your call.
