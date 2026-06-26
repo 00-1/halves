@@ -2591,3 +2591,40 @@ of truth, zero drift, `isHeroUnlocked` behaviour-identical (full suite + every u
   the `heroUnlock` battery. **68/68 green.**
 
 **No open [A] export gaps known.** Next Babysitter focus: review B's port pushes (Arena screen → event-play) as they land.
+
+---
+
+## APPROVED — B's 4 logic handoffs · + F1/F2 art export landed (Babysitter, 2026-06-25, owner away)
+Woke on B's pushes. Reviewed all 4 (brickmap `main`), independently verified, **APPROVED**:
+1. **Combat re-sync to the redesign (`75051b8`).** Spot-checked `crates/goblin-gold/src/combat.rs` via raw
+   WebFetch: per-hit dmg `= max(1, round(pow·mu)+round(foc·foc_flat)−round(grd·mit))` ✓; opening strike
+   `round(spd·spd_alpha·mu)` mitigated, before the rounds, heroes-only ✓; `hero_combatant` = {pow,grd,spd,foc, hp:HP_FLAT} ✓;
+   constants deserialised from `combat.json` (data-driven — can't drift). Proven vs all regenerated vectors
+   (240 teamBattle + log + 36 effectiveStats + 5 heroCombatant + ladder). Exactly the new model, not the old.
+2. **Event-play logic core T233c (`8dc2077`).** schedule (epochDay mod 14, incl. negative days) · reward tiers
+   (well ≥0.7 / ace flawless / no gold) · gauntlet build — **byte-exact vs all 14 gauntlets**, incl. the sharp catch
+   that the total-order sort is JS `localeCompare({numeric:true})` (ICU, not codepoint): wrote a dedicated
+   `gauntlet_cmp` with the exact ICU rank for the GG1 prompt alphabet. Proven vs all 15 schedule + 18 tier vectors.
+3. **Hero-unlock predicate (`038d0ce`).** Ported `compileUnlock` (hasKey/countPrefix/keyMatch) + `unlocked_roster`,
+   proven vs the full 18-state `heroUnlock` battery (count boundaries + keyMatch rejects). The "all 12 interim" is gone.
+4. **Event save integration (`c6083f5`).** `Save::award_event` grants the tier keys, no gold, monotone (can't strip a
+   tier). 88 goblin-gold lib tests, clippy `-D warnings` clean native + aarch64-android, fmt clean across all 4.
+**The entire Arena + event-play LOGIC layer is now done + proven.** Quality is high — independent vector reproduction,
+real edge cases (collation, count boundaries, monotone grants), no stubs/deferrals.
+
+**DEADLOCK CLEARED — F1+F2 art export landed (`main` `8397e8b`).** B was correctly idle-blocked: the Arena/event-play
+SCREENS are portrait-heavy (foe showcase + enemy cards + hero cards on `drawIcon`) and building them portrait-less is
+the "plain then redo" the directive forbids. I took over the export:
+- **F1** — exposed `iconPalette` (the per-id shifted {body,accent,outline} LUT) + exported `iconRoleGrid` + that LUT
+  over all 12 hero portraits (the mirrored creature-blob) + one item per distinct category (50; inventory follow-up).
+- **F2** — exported `monsters.js buildGrid` role grids (0..4 incl. eyes) + typed palette over 15 tiers (types ×
+  regions × normal/boss + the final boss).
+- `content/gg1/art.json` (grid size, hero base palette, role legends, F1/F2 recipes + source refs) +
+  `art-vectors.json` (the grids). `test/art-parity.test.js` gates drift + source fidelity + invariants (16×16,
+  vertical symmetry, boss flag == n%12, all 12 heroes, resolved palette per icon). Wired into pages.yml. **69/69 green.**
+
+**→ B next (unblocked):** port the two generators (read `collectibles.js` drawIcon/heroSprite + `monsters.js`
+buildGrid; prove vs `art-vectors.json`), then build the **Arena screen** (party-pick on `unlocked_roster` with PWR/GRD/
+SPD/FOC + matchup badges + the "How battles work" primer + foe showcase + the battle playout w/ {open,adv,blocked}
+callouts) and **event-play screen** to the visual bar (`arena-web.png` / `event-play-web.png`, render→compare→golden).
+No open [A] export gaps remain.

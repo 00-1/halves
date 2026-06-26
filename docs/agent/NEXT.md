@@ -101,8 +101,10 @@ earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-com
 (`06a5d9d`) — all Babysitter take-overs, A stalled throughout. **No export gaps remain.** A's other work is owner-gated
 (TWA `T228`, store, Capacitor on-device test).
 
-**Builder B → ALL 4 OWNER-FOUND GAPS CLOSED & APPROVED (`9143b35`, brickmap `main`). Core port is functionally
-COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
+**Builder B → phase 5 PARITY. The entire Arena + event-play LOGIC layer is DONE + APPROVED (brickmap `main`
+`c6083f5`): combat re-sync to the redesign (`75051b8`, combat.rs spot-verified) · event-play core T233c (`8dc2077`,
+gauntlets byte-exact incl. the ICU-collation catch) · hero-unlock port (`038d0ce`, vs the 18-state battery) · event
+save grant (`c6083f5`). NOW: the two SCREENS — UNBLOCKED by the F1+F2 art export below.**
 - ✅ **P0 results screen** (`161f5fe`) · ✅ **P0 build-SHA watermark** (`161f5fe`) · ✅ **P0a round-gold parity fix**
   (`9143b35` — live `accrue_round` over `Play::Solve/Skip`, proven vs the `roundGold` vectors) · ✅ **P1 immersive**
   (UI-thread `run_on_java_main_thread` + cutout; built-blind → owner device-confirms) · ✅ **P1 drill-downs**
@@ -110,8 +112,15 @@ COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
 - ✅ **phase 4 — AUDIO COMPLETE** (`9ada429`→`f838fa9`): SFX + music score (vector-proven vs 12 goldens) + renderer
   with GG1's real patches + cpal playback wiring, all approved. On-device feel + WAV A/B → `OWNER-EYEBALL.md`.
 - ✅ **phase 5 polish — topic grid fits 46** (`80a696c`) + screen audit (only topic-select was broken). APPROVED.
-- **▶ NOW: BUILD FOR PARITY — the Arena + event-play (owner overruled the defer, 2026-06-24).** Web GG1 ships both;
-  brickmap-v1 must too. Both exports are DONE + on `main`:
+- ✅ **DEADLOCK CLEARED — F1+F2 art export DONE (`main` `8397e8b`).** The screens were blocked on portraits; landed
+  the export. **F1** (`content/gg1/art.json` + `art-vectors.json`): exposed `iconPalette` + exported `iconRoleGrid` +
+  the resolved {body,accent,outline} LUT over all 12 hero portraits (the mirrored creature-blob) + one item per
+  distinct category (50). **F2**: `monsters.js buildGrid` role grids (0..4 incl. eyes) + typed palette over 15 tiers
+  (types × regions × normal/boss + final boss). Recipe + source refs in `art.json`; `test/art-parity.test.js` gates it
+  (16×16, vertical symmetry, boss flag == n%12, all 12 heroes). **B: port both generators (read `collectibles.js`
+  drawIcon/heroSprite + `monsters.js` buildGrid; prove vs `art-vectors.json`), then portraits are available everywhere.**
+- **▶ NOW: BUILD THE TWO SCREENS to the VISUAL-PARITY bar (logic + portraits both ready).** Web GG1 ships both;
+  brickmap-v1 must too. All exports DONE + on `main` (combat/events/gold/hero-unlock/art):
   - **Arena (T233b-combat, `cdedb6c`)** — `content/gg1/combat.json` (120-tier ladder + per-tier enemy combatants
     [full f64] + loot + loot-boosts; the resolution recipe) + `combat-vectors.json` (heroCombatant, effectiveStats,
     the headline `teamBattle` {win,heroesAlive,foesAlive,rounds}, + one full turn-by-turn log). **Build the 3v3 Arena
@@ -128,10 +137,10 @@ COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
 - **▶ NEW WORKSTREAM: VISUAL PARITY (owner-requested 2026-06-24) — see `VISUAL-PARITY.md`.** The data parity is good;
   the screens are visually bare vs web GG1 (Heroes is the worked example: web has type section headers, pixel
   portraits, type colours, `★rating`, effective-stat chips, `Boosted by N · tap for details ›` + a hero-detail
-  screen — the port shows a flat text list, and shows BASE stats where web shows EFFECTIVE = a real bug). **FOUNDATION
-  first: the procedural icon generator `drawIcon` (`collectibles.js:729`)** — deterministic ⇒ vector-provable;
-  **Babysitter is taking it over as the next export** (pixel-grid vectors), which unblocks portraits on every screen.
-  Then B: Heroes visual pass (per the spec) → Items → Collection → Events → Results. **THE LOOP (owner's idea):
+  screen — the port shows a flat text list, and shows BASE stats where web shows EFFECTIVE = a real bug). ✅ **FOUNDATION
+  DONE: the procedural icon/foe generators are exported (F1+F2, `main` `8397e8b` — `art.json`/`art-vectors.json`),
+  unblocking portraits on every screen.** Then B: Heroes visual pass (per the spec) → Items → Collection → Events → Results.
+  **THE LOOP (owner's idea):
   render your screen headlessly → compare against the committed web reference `content/gg1/visual-ref/<screen>-web.png`
   → iterate until it reads like it → golden it. THEN commit your render to halves as
   `content/gg1/visual-ref/<screen>-brickmap.png`** (you have write access; overwrite same filename; render at the
@@ -139,9 +148,10 @@ COMPLETE. Next: phase 4 AUDIO → phase 5 POLISH.**
   not a pixel diff). Build the NEW Arena/event-play screens against `arena-web.png` from the start. *(Parity, not polish.)*
 - ⚠️ **ARENA COMBAT REDESIGN landed (`main` `b49e62b`, supersedes the `11ef041` rebalance) — RE-SYNC before/with the Arena screen.** First the owner found the arena far too easy (1 topic cleared ~57/120 → rebalanced to ~9); then we reworked the whole combat model so all 4 stats matter and removed the dead 1v1 path. **The combatant shape, stat roles, constants, and the export schema ALL changed — see the 🔧 COMBAT MODEL REDESIGNED block at the top of this file for the full new spec.** Re-sync `content/gg1/combat.json` + `combat-vectors.json` into brickmap, update `combat.rs` to the new `{pow,grd,spd,foc,hp}` sim, re-run (on the OLD data/model you'd ship the OLD arena). Analysis/retune tool: `tools/analyze-arena.js`.
 - ✅ **Hero-unlock export = Babysitter take-over DONE (`main` `b164fde`).** heroes' `unlock` is now a serialisable spec on `combat.json` `heroes[].unlock` + an 18-state `heroUnlock` parity battery — the Arena roster fields only UNLOCKED heroes (drop the 'all 12 interim'). Spec kinds + porting note: see the 🔧 block at the top.
-**Export status — Babysitter-owned, flag if a feature needs them:** ✅ **T233b-gold DONE** (`4ae14b3`+`7c74439`).
-Open: **T233b-combat** (enemies.js battle resolve — when you port the Arena), **T233c** events content/thresholds/
-schedule (events.js — for richer Events content). APK feel + audio-by-ear + immersive device-confirm → `OWNER-EYEBALL.md`.
+**Export status — Babysitter-owned: ALL DONE, no open [A] export gaps.** ✅ content/transforms · ✅ earning · ✅
+gold · ✅ combat (redesigned model `b164fde`) · ✅ events (T233c) · ✅ hero-unlock (`b164fde`) · ✅ F1+F2 art
+(`8397e8b`). If a NEW screen surfaces a missing datum, flag it and the Babysitter exports it. APK feel + audio-by-ear
++ immersive device-confirm → `OWNER-EYEBALL.md`.
 *(Prior B: `T103`/`T211`/`T207` APPROVED, live `951e532`.)*
 **Re-read this line fresh before each task + push.**
 
