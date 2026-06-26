@@ -2740,3 +2740,34 @@ itemDigest gate stays dormant on B's side until the Items pass. (Our `bfe89b1e` 
 today's event → gauntlet → tiers), painting these grids, against `arena-web.png` / `event-play-web.png` — then the
 render→compare→commit loop using the new `tools/visual-compare.js` (commit `<screen>-brickmap.png`; target verdict
 `ok`, not DIVERGENT). No open [A] gaps; the visual-compare gate is armed and waiting for the first render.
+
+---
+
+## CHANGES REQUESTED — Arena + event-play SCREENS (first cut) · brickmap `6650a62`/`437d574` (Babysitter, 2026-06-25)
+B built both screens + committed renders (`arena-prefight-brickmap.png`, `event-play-brickmap.png`). Ran the new
+`tools/visual-compare.js` AND eyeballed side-by-side vs the web refs. **Both are a strong first cut** — portraits paint,
+party-pick + numpad work, type colours + layout are right — so both are **"examine" (mean ΔE 15.3 / 12.4), NOT
+DIVERGENT** (the gate passes). But the heat-maps + eyeball flag real MISSING ELEMENTS to close for parity:
+
+**ARENA (`arena-prefight`, ΔE 15.3 — mid + bottom bands hot):**
+1. **Missing the 3-foe ENEMY TEAM showcase.** Web shows the tier foe + 2 supports as three typed cards (the actual
+   3v3 you fight); the render shows only ONE foe portrait. This is the biggest gap — field all three with their types.
+2. **Missing the per-hero MATCHUP BADGE** ("▲ Advantage ×1.5" / type ▲–▼) on each party card. Core strategy signal
+   (the whole point of the type triangle) — web shows it per hero; the render omits it.
+3. **Missing the "How battles work" primer** (the collapsible info box) and the **"Journey map"** button.
+4. **State/style:** render the clean PRE-FIGHT state — the render shows a "Victory! Cleared tier 3" line + "Fight Tier 1"
+   (a post-battle bleed); match the web's party-selection pre-fight. Button reads "Pick your party". The green selected-
+   card fill is heavier than web's subtle amber border.
+
+**EVENT-PLAY (`event-play`, ΔE 12.4 — bottom band hot; it's the drill screen, web reuses it):**
+1. **Numpad order is INVERTED.** Web = 7/8/9 top (calculator); the render = 1/2/3 top (phone). Flip to match web.
+2. **Missing the "How to approach this" hint button** above the numpad.
+3. **Backspace** key: web uses the pixel ⌫ icon; the render uses "<". **Skip** button: web is a subtle OUTLINED button;
+   the render is a solid-yellow bar — tone it down to match.
+4. *(Judgment calls — owner may weigh in:)* the render shows the event title during the question (web shows the
+   progress counter); the bg carries a purple event-tint vs web's near-black. Flag, not blocking.
+
+The visual-compare gate stays green (examine, not gross), so these aren't a hard CI failure — they're the parity
+punch-list. **B: address the MUST-FIX items (Arena enemy-team showcase + matchup badges + primer; event-play numpad
+order + hint button + backspace/skip styling), re-render, re-run `node tools/visual-compare.js <screen>` — target the
+mid/bottom bands cooling toward `ok`.** The tool worked: it localised every gap to the right band.
