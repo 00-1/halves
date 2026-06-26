@@ -6,6 +6,26 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: the HEROES visual pass ([B], GO)
+
+Heroes roster rebuilt to the visual bar against `heroes-web.png` (was a flat text list). `00-1/brickmap`
+`0310de8` (main + feature). **Render committed: `content/gg1/visual-ref/heroes-brickmap.png`.**
+`node tools/visual-compare.js heroes` → **ΔE 10.35 (`examine`)**.
+- Grouped by type — **BRAWN / ARCANE / CUNNING** section headers.
+- Per hero: **F1 pixel portrait** on a tile · **type dot + name** · **★ rating** · the four
+  **EFFECTIVE** stat chips (`combat::effective_stats` = base + owned boosts, fixing the base-stat bug) ·
+  a **"Boosted by N · tap for details"** line (`boost_count` over the catalogue).
+- Rendered against a **full-collection sample** (every catalogue item + a broad progression spread) so
+  the roster is fully unlocked + boosted — the web ref's seeded-everything state. `render_heroes_ref`
+  emits the 430×880 visual-ref.
+- **Gates:** clippy clean (native + `aarch64-android`), full suite (+ a grouping/boost test), GPU
+  goldens (`heroes` re-blessed).
+- **Follow-ups (logged):** hero-DETAIL screen + locked-hero rows + real scroll + live nav (Arena
+  currently subsumes the roster live); the residual bottom hot-band is the shared gold **Back bar** (V8,
+  shared with Arena); exact full-collection effective-stat match (web's seed differs from my superset).
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: Arena + event-play CHANGES punch-list (V1–V7) ([B], GO)
 
 Addressed the Babysitter's first-cut CHANGES (REVIEW.md + PARITY-LEDGER V1–V7). `00-1/brickmap`
