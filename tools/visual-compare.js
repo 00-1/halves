@@ -129,7 +129,9 @@ if(require.main === module){
   fs.writeFileSync(path.join(DIR, "compare-report.json"), JSON.stringify(report, null, 1) + "\n");
   console.log("\nwrote content/gg1/visual-ref/compare-report.json — compared " + res.compared.length +
     ", awaiting " + res.awaiting.length);
-  const divergent = res.compared.filter(r => r.verdict !== "ok");
-  if(divergent.length) console.log("DIVERGENT: " + divergent.map(r => r.screen + "(" + r.meanDE + ")").join(", "));
+  const divergent = res.compared.filter(r => r.verdict === "DIVERGENT");
+  const examine = res.compared.filter(r => r.verdict === "examine");
+  if(examine.length) console.log("EXAMINE (parity could improve): " + examine.map(r => r.screen + "(" + r.meanDE + ")").join(", "));
+  if(divergent.length) console.log("DIVERGENT (gate fails): " + divergent.map(r => r.screen + "(" + r.meanDE + ")").join(", "));
 }
 module.exports = { decodePng, downsample, compareImages, heatmap, run, verdictOf, EXAMINE_DE, GROSS_DE, GX, GY };
