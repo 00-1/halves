@@ -6,6 +6,18 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 6: button hierarchy V17 — solid-gold primary CTAs ([B], GO)
+
+The V8 "outline everywhere" overcorrected. Added `push_cta` (SOLID gold + ink label) for primary forward
+actions; **Results "Continue" + the Arena fight bar ("Pick your party"/"Fight Tier N") are now solid
+gold**, while secondary **Back** stays outlined (`push_button`). `00-1/brickmap` `951943e`. Refreshed
+`results-brickmap.png`. *(ΔE ticks 6.43→7.75 where the wider solid-gold bar adds gold vs web's smaller
+button — but V17 is the explicit eyeball hierarchy, which the area-average metric can't weigh; same
+metric-vs-eyeball note as V13.)* Gates: clippy clean (native + `aarch64-android`), full suite, GPU
+goldens (`results`/`arena` re-blessed).
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 6: the RESULTS screen redesign + rank portrait ([B], GO)
 
 Rebuilt the end-of-round Results to the visual bar against `results-web.png` (was a plain stat-list).
