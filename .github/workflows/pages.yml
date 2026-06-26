@@ -162,6 +162,8 @@ jobs:
         run: node test/events-parity.test.js
       - name: Art export parity (F1 icons + F2 foes) test (gate)
         run: node test/art-parity.test.js
+      - name: Scene export parity (F3 scenery + F4 eventart) test (gate)
+        run: node test/scene-parity.test.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Write build info (per app — each fetches its own ./build.json)

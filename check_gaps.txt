@@ -1,0 +1,61 @@
+## CHECKLIST OF GENERATORS & EXPORTS
+
+### PROCEDURAL GENERATORS (in gg1/dev/*.js):
+1. glyphs.js buildGrid() - topic glyphs (NO EXPORT NEEDED - uses tokens, not seeded)
+2. emblems.js cells() / draw() - creature emblems (beast, goblinking, voidbeast)
+3. icons.js - pixel chrome icons (NO EXPORT NEEDED - hard-coded)
+4. collectibles.js buildIcon() / iconRoleGrid() / iconPalette() - item/hero icons (F1+F2)
+5. monsters.js buildGrid() - Arena foe sprites (F2)
+6. scenery.js buildGrid() - Arena region backdrops (T10 regions × seeded)
+7. eventart.js buildGrid() - event banners (14 events × seeded)
+8. sound.js - SFX (no pixel export, audio)
+9. synth.js - music (no pixel export, audio)
+10. fx.js / fxgl.js - FX and particle systems (on brickmap engine side)
+
+### EXPORTS PRESENT:
+- art.json / art-vectors.json (heroIcons, itemIcons, foes) - F1+F2 (Jun 26 06:30)
+- modes.json / parity-vectors.json - transforms
+- earning.json / earning-vectors.json - evaluation logic
+- gold.json / gold-vectors.json - gold payout formulas
+- combat.json / combat-vectors.json - Arena combat model
+- events.json / events-vectors.json - daily events schedule/tiers
+- collectibles.json - catalogue
+- balance.json - enemies + heroes stats
+- guides.json - per-mode guides
+
+### MISSING EXPORTS:
+- scenery-vectors.json / scenery.json - Arena backdrop grids (10 regions)
+- eventart-vectors.json / eventart.json - event banner grids (14 events)
+
+### SCREENS IN WEB GG1:
+entry, start (brand+topic picker), game (drill), results (rank+gold), 
+summary (collection overview), inventory (items), heroes (roster+detail), 
+arena (tier selector + pre-fight + battle playout + post-fight),
+practice (topic-specific mode), settings, audio, graphics
+
+### SCREENS B HAS BUILT (brickmap):
+- Topic select (with adaptive grid)
+- Drill (with results screen)
+- Collection (overview + collector ladder drill-down)
+- Heroes (roster + detail)
+- Events (list + unlock status)
+- Items (by category)
+
+### SCREENS B HAS NOT BUILT / BLOCKED:
+- Arena (pre-fight party picker + monster portraits, blocked on F1 - NOW UNBLOCKED)
+- Event-play (gauntlet run + event art/schedule, blocked on F1 - NOW UNBLOCKED)
+
+### PROGRESSION/AWARD LOGIC:
+- evaluate() - per-round awards (rank, init, flawless, speed, solve/spark)
+- evaluateCollector() - collector ladder
+- evaluateTopics() - topic-completion milestones
+- evaluateMeta() - hero/arena milestones
+- evaluateGold() - wealth milestones
+- evaluateMomentum() - momentum milestones
+ALL THESE ARE EXPORTED IN earning.json + collectibles.json
+
+### THRESHOLDS:
+- Speed tiers (Quick/Swift/Blazing/Lightning avg seconds): in SPEED[] array
+- Rank thresholds: in rankIndex() function (hardcoded by score/time brackets)
+- Collector tiers: in collectibles.json (numeric counts)
+- Momentum: in collectibles.json (numeric counts)
