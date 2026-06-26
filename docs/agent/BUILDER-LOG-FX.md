@@ -6,6 +6,20 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: event-play residuals V9 + V10 ([B], GO)
+
+Closed the post-V1–V7 residuals on the shared drill UI. `00-1/brickmap` `fd13619` (main + feature).
+**Re-rendered `content/gg1/visual-ref/event-play-brickmap.png`.** visual-compare **8.32 → 7.71** (examine).
+- **V9:** prompt + answer are now **borderless large text** (web's look) — dropped the gold question
+  card + answer box; a thin verdict-tinted **underline** marks the input slot.
+- **V10:** a top **progress bar** (solved/len) under the heading + a per-question **timer** ("1.3s")
+  under the counter — `drill_frame` takes an `Option<f32>` the live loop feeds from `q_start` (it
+  already drove Spark scoring; now it's shown). Applies to topic drills too.
+- **Gates:** clippy clean (native + `aarch64-android`), full suite, GPU goldens (`drill-initial`
+  re-blessed). **Remaining on Arena/event-play:** V8 (shared gold Back-bar style) + D1/D2 (owner-decide).
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: the HEROES visual pass ([B], GO)
 
 Heroes roster rebuilt to the visual bar against `heroes-web.png` (was a flat text list). `00-1/brickmap`
