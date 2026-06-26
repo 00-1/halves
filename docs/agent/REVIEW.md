@@ -2858,3 +2858,19 @@ B flagged 3 potential art-export gaps for Results/Collection/Items (good — fla
 
 **Net: ALL next-screen art is now available — port N1 (rank+items) + F5 (emblems); Results/Collection need no further
 export.** Proceed in whatever order unblocks fastest. No open [A] export gaps beyond N1's port being B's to do.
+
+---
+
+## N1 item generator PORTED + PROVEN (50/50) + itemDigest recipe answered · brickmap `6581f3e` (Babysitter, 2026-06-25)
+B fully ported the `drawIcon` ITEM generator — the hardest, RNG-order-sensitive one — in bricks (`e4fc167` category
+map → `d2d4cca` pipeline+critter → `4c0ab44` +5 arch → `6581f3e` all 12 archetypes). **Byte-exact vs all 50 `itemIcons`
+(role grid AND palette), first-pass through every archetype** (`resolvePreset(rPick)→ARCH(rPick)→applyLevers(rPick,rTex)→
+shift(rTex)`). This unblocks the Items screen + the Results rank portrait (same item path). Strong, careful work.
+- **B's flag answered — itemDigest format.** Valid: the committed vector gave only `{count,order,fnv}`. Fixed at `main`
+  `bd20937` — `itemDigest.canon` + `foeDigest.canon` now spell out the exact recipe IN the vectors: per item
+  `${id}|${roleGrid 256ch}|${pal.body}${pal.accent}${pal.outline}` (roleGrid = the 16 `iconRoleGrid(id,categoryOf(id))`
+  rows joined+concatenated; pal = `iconPalette(id, paletteFor(rarity), categoryOf(id))`), **sort all 2702 lines asc**,
+  join `\n` + trailing `\n`, FNV-1a-32 (0x811c9dc5/0x01000193) → 8 hex = **bfe89b1e**. Order-independent (the sort), so
+  CATALOG order is irrelevant. Also: `tools/art-export.js` IS in the halves tree (`9f28932`) — the full source if needed.
+  Digests byte-UNCHANGED; I only added the doc fields. **B: roll the digest over all catalogue ids → expect bfe89b1e.**
+▶ B NEXT: the Items + Results screens (render against `capture-states.json`), then Collection (F5 emblems + composed hoard).
