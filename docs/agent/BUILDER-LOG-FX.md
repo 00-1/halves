@@ -6,6 +6,32 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: portrait generators F1+F2, byte-proven ([B], GO)
+
+The Babysitter landed the F1+F2 art export (`main` `8397e8b`) — deadlock cleared. Ported **both
+procedural 16×16 portrait generators** and proved them **byte-identical vs `art-vectors.json`**
+(`crates/goblin-gold/src/art.rs`). `00-1/brickmap` `0978f81`. *(Note: while the Babysitter looked cold I
+had started self-porting F1 to break the idle — stood down + discarded that the moment it woke; this is
+the proper flow against its independent export.)*
+- **F1 hero portraits** (`hero_icon`, from `collectibles.js drawIcon/heroSprite/iconRoleGrid/iconPalette`):
+  `"hero:"<id>` → `mulberry32(hashStr)` → the mirrored centre-weighted creature-blob → role grid
+  (0/1/2/3) + the per-id **HSL hue/lum-shifted palette** (`nudge`/`shiftPalette` — full rgb↔hsl
+  round-trip, JS `Math.round`). Proven vs all **12** hero vectors (role grid AND shifted pal).
+- **F2 foes** (`foe_grid`, from `monsters.js buildGrid`): `mulberry32(hashStr(name) ^ imul(n,…))` → a
+  lumpy vertically-symmetric blob + region-biased horns/eyes/mouth/spots/feet, bosses (`n%12==0`)
+  larger + crowned → role grid (0..4, eyes) + per-type palette. Proven vs all **15** foe vectors
+  (incl. the exact `rnd()` short-circuit order). Reused the synth `mulberry32`/`hashStr` (already
+  `pub(crate)`).
+- goblin-gold **91** lib tests (88 + 3 art); clippy `-D warnings` clean native + aarch64-linux-android;
+  fmt clean. Pushed to `main` + the feature branch.
+- **▶ NEXT: the two SCREENS are now fully unblocked** (logic ✅ + portraits ✅). Build the Arena
+  (party-pick → battle → grant) + event-play (today's event → gauntlet → drill → tiers) screens to the
+  visual bar against `arena-web.png` / `event-play-web.png`, painting these role grids through the
+  palettes. *(Item-icon `ARCH` path deferred to the Items visual pass — the Arena/event-play/Heroes
+  screens need only hero + foe portraits, both done.)*
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: event-play save integration ([B], GO)
 
 `Save::award_event(eid, score, total, ts)` — folds a finished daily-event run into the keystone:
