@@ -50,6 +50,17 @@ ok(vectors.scenery.every(v => {
   const g = W.Scenery.buildGrid(v.region), u = unpack(v);
   return g.length === u.length && g.every((row, r) => row.every((hex, c) => hex === u[r][c]));
 }), "F3: scenery pack round-trips byte-identical to live buildGrid (determinism)");
+// the POST-scrim (displayed) grid = source-over blend of the scrim onto the pre-scrim grid
+const unpackLit = v => v.litRows.map(r => r.split("").map(ch => v.litPal[parseInt(ch, 36)]));
+const SCRIM = { r: 8, g: 10, b: 14, a: 0.64 };
+const blend = hex => { const s = [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)], k = 1 - SCRIM.a;
+  const ch = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+  return "#" + ch(s[0]*k + SCRIM.r*SCRIM.a) + ch(s[1]*k + SCRIM.g*SCRIM.a) + ch(s[2]*k + SCRIM.b*SCRIM.a); };
+ok(vectors.scenery.every(v => v.litRows && v.litRows.length === SC.rows && v.litRows.every(r => r.length === SC.cols)), "F3: every region carries a POST-scrim litGrid (28×11)");
+ok(vectors.scenery.every(v => {
+  const lit = unpackLit(v), pre = W.Scenery.buildGrid(v.region);
+  return pre.every((row, r) => row.every((hex, c) => lit[r][c] === blend(hex)));
+}), "F3: litGrid == scrim(0.64) composited over buildGrid — the displayed backdrop pixels are verified, not just pre-scrim");
 
 // (3b) eventart — one per event, 24×16, keyed by the live roster's artSeed, lossless round-trip
 const ROSTER = W.Events.ROSTER;

@@ -7,12 +7,14 @@
    "cols": 28,
    "rows": 11,
    "regionCount": 10,
-   "source": "gg1/dev/scenery.js (buildGrid)"
+   "source": "gg1/dev/scenery.js (buildGrid + draw)",
+   "scrim": "rgba(8,10,14,0.64)",
+   "scrimNote": "Arena backdrop is buildGrid composited UNDER this scrim (source-over). Each vector carries `rows` (PRE-scrim, what buildGrid returns) AND `litRows` (POST-scrim, what the screen shows)."
   },
   "eventart": {
    "cols": 24,
    "rows": 16,
-   "source": "gg1/dev/eventart.js (buildGrid)"
+   "source": "gg1/dev/eventart.js (buildGrid; drawn 1:1, no scrim)"
   }
  }
 }

@@ -13,6 +13,15 @@ const fs = require("fs"), path = require("path");
 const DEV = path.join(__dirname, "..", "gg1", "dev");
 
 const B36 = "0123456789abcdefghijklmnopqrstuvwxyz";
+// the Arena backdrop is composited UNDER a legibility scrim at draw time (scenery.js draw):
+// rgba(8,10,14,0.64) over the whole grid. buildGrid is PRE-scrim, so we also emit the POST-scrim
+// pixels the screen actually shows — else a port could skip/mis-blend the scrim and still pass.
+const SCRIM = { r: 8, g: 10, b: 14, a: 0.64 };
+const hx2 = c => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
+const ch2 = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+// source-over alpha blend of SCRIM onto a hex cell → the displayed hex
+function applyScrim(hex){ const s = hx2(hex), a = SCRIM.a, k = 1 - a;
+  return "#" + ch2(s[0] * k + SCRIM.r * a) + ch2(s[1] * k + SCRIM.g * a) + ch2(s[2] * k + SCRIM.b * a); }
 // colour grid → { pal:[hex…first-appearance order], rows:[base36 index strings] }. Lossless.
 function packGrid(g){
   const pal = [], idx = {};
@@ -49,16 +58,23 @@ function generate(){
       "gradient + a centred edge-lit diamond crest (Manhattan |c-cx|+|r-cy|*1.35 ≤ R, R=6+floor(rnd*2)) + a seeded " +
       "mirror-symmetric rune (accent) + 5+floor(rnd*5) sparks above. Seed = each event's `artSeed`.",
     constants: {
-      scenery:  { cols: S.COLS, rows: S.ROWS, regionCount: REGIONS, source: "gg1/dev/scenery.js (buildGrid)" },
-      eventart: { cols: A.COLS, rows: A.ROWS, source: "gg1/dev/eventart.js (buildGrid)" }
+      scenery:  { cols: S.COLS, rows: S.ROWS, regionCount: REGIONS, source: "gg1/dev/scenery.js (buildGrid + draw)",
+        scrim: "rgba(8,10,14,0.64)", scrimNote: "Arena backdrop is buildGrid composited UNDER this scrim (source-over). " +
+          "Each vector carries `rows` (PRE-scrim, what buildGrid returns) AND `litRows` (POST-scrim, what the screen shows)." },
+      eventart: { cols: A.COLS, rows: A.ROWS, source: "gg1/dev/eventart.js (buildGrid; drawn 1:1, no scrim)" }
     }
   };
 
   const vectors = { scenery: [], eventArt: [] };
 
-  // F3 — every region's backdrop (each themed; all 10 matter for parity)
-  for(let region = 0; region < REGIONS; region++)
-    vectors.scenery.push(Object.assign({ region: region, label: E.regionLabel ? E.regionLabel(region) : null }, packGrid(S.buildGrid(region))));
+  // F3 — every region's backdrop: PRE-scrim grid (`rows`, what buildGrid returns) + POST-scrim
+  // grid (`litRows`, what the Arena actually displays after the legibility scrim).
+  for(let region = 0; region < REGIONS; region++){
+    const g = S.buildGrid(region);
+    const pre = packGrid(g), lit = packGrid(g.map(row => row.map(applyScrim)));
+    vectors.scenery.push({ region: region, label: E.regionLabel ? E.regionLabel(region) : null,
+      pal: pre.pal, rows: pre.rows, litPal: lit.pal, litRows: lit.rows });
+  }
 
   // F4 — every daily event's banner crest (keyed by its artSeed)
   for(const ev of Ev.ROSTER)
