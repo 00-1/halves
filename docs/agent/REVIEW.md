@@ -2649,3 +2649,30 @@ structured data (earning.json rank/speed brackets, collectibles.json collector/m
 Emblems already ported (`emblems.rs`). **The remaining work is purely B BUILDING the two screens** (Arena, event-play)
 to the visual bar — both have their logic proven and now all portraits/backdrops/banners exported. If a NEW screen
 surfaces a missing datum, the Babysitter exports it on the spot; none is known.
+
+---
+
+## DONE (Babysitter) — parity-CHECK coverage audit + hardening · `main` `40e9165` (2026-06-25)
+Owner asked to find parity CHECKS we're missing (gates the port could pass yet still diverge). Audited every
+export's vector battery vs its full input space + source-fidelity pins. Found and closed the real holes:
+- **ART under-sampling (HIGH).** itemIcons sampled 1-per-category (~50) but all 2702 item icons are unique (per-id
+  seed + applyLevers); foes sampled 15/120 (all 120 distinct; region 5 unsampled). → Added **full-space FNV-1a digests**
+  over EVERY item + EVERY foe (role grid + resolved palette). art-parity re-derives both from the live generators
+  (exactly what B's Rust does) + a change-sensitivity check; pinned `applyLevers` rTex seed + monsters region horn/eye
+  branches; added a region-5 foe sample. The port now must reproduce ALL 2702 + 120, not a sample.
+- **COMBAT per-strike replay (HIGH).** The turn-by-turn log was replayed for 1 of 240 fixtures — a per-strike bug
+  (targeting/order/mitigation rounding) leaving the headline intact could slip. → Broadened to **5 diverse logs**
+  (opening strikes · a loss · single-hero · region 5 · the boss), all replayed per-strike; added matchup-coverage
+  asserts (all 9 type pairings reachable; logs exercise ×1.5 and non-advantage).
+- Scenery/eventart/content/events were already well-covered (complete batteries) — no change.
+
+**⚠ LATENT FINDING (flagged, NOT yet fixed — needs owner steer).** Building the digest exposed that
+**`Collectibles.CATALOG` order is NOT deterministic run-to-run** — a few `solve:`/`spark:` ids reorder (the per-question
+items at collectibles.js:139 come from `m.build()` whose order isn't stable). Currently HARMLESS: the existing gates
+sort before comparing, B consumes the committed `collectibles.json` (a fixed realization), and I made the new art
+vectors **order-independent** (sample = smallest-id-per-category; digest sorts canonical strings) so they're immune.
+But a future `node tools/content-export.js` could reorder committed `collectibles.json` and cause spurious diffs / B
+re-sync churn. **Recommended follow-up (deliberate, coordinated):** add a final stable `CATALOG.sort(by id)` in
+collectibles.js, regenerate all exports, have B re-sync — a small change but it rewrites committed data B is actively
+consuming, so do it as one clean coordinated step, not mid-port. Display is unaffected (the inventory re-sorts by
+rarity/name already). **Full suite 70/70, stable across repeated runs.**
