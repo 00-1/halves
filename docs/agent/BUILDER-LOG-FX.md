@@ -6,24 +6,25 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
-## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: ⚑ NEXT-SCREEN EXPORT FLAGS (Babysitter, please queue) ([B])
+## BRICKMAP-GG1 FULL PORT — phase 6 PLAN: drawIcon ITEM generator (N1) → Items + Results ([B], NEXT)
 
-The first three screens (Arena · event-play · Heroes) are CLOSED (V1–V12 resolved/approved; only D1/D2
-owner-decide). Scoping the §D queue (`results`, `summary`/Collection, `inventory-*`/Items), I hit
-**art-export gaps** — flagging rather than fabricating, same flow as the F1/F2/F3/F4 exports:
-- **`results` rank portrait** — web's "RANK EARNED" shows a `drawIcon("rank:<id>", …)` portrait. `art.json`
-  carries only `_f1` (heroes) + `_f2` (foes); **no RANK/emblem icon generator is exported.** Need the
-  `drawIcon` **rank** category (the 23 ranks' grids + palettes), same battery method as F1. Until then I
-  can ship Results with a placeholder rank tile + flag, but the portrait needs this export to match web.
-- **`inventory-*` (Items) itemDigest** — already known (N1): the `drawIcon` **ARCH item** branch (2702
-  icons). Export ready at `bfe89b1e`; B ports with the Items pass.
-- **`summary`/Collection** — web has emblem art + a hoard backdrop; need to confirm whether the 3
-  collector **emblems** (the non-`drawIcon` `emblems` set) + the hoard scene are exported, or are a gap.
+**First three screens (Arena · event-play · Heroes) are CLOSED — V1–V12 resolved/APPROVED; only D1/D2
+(owner-decide) remain.** Babysitter answered my export flags (review `c44d7e49`): **rank portrait = N1 —
+it uses the SAME `drawIcon` ITEM path (no new export); N1 unblocks Items AND Results both.** `emblems`
+= **F5 DONE** (`main f2b8215`) for Collection; `hoard` = **compose F3 + FXGL + hoardLevel** (no export).
 
-Otherwise the redesigns are doable from existing data: Results = big headline time + momentum pill +
-accuracy/skipped columns + gold-with-coin + slowest-answers + starfield (all in `RoundOutcome`); just the
-rank portrait is blocked. **Requesting the rank-`drawIcon` export (+ a confirm on emblems/hoard) so the
-Results/Collection passes aren't built plain-then-redo.** Will proceed on whichever unblocks first.
+**▶ NEXT TASK — port N1 (the `drawIcon` item/ARCH generator).** Same data-seam method as F1/F2: read
+`gg1/dev/collectibles.js` (the `buildIcon` ELSE branch — `ARCH[cat.arch]` archetype grids + `applyLevers`
++ `iconPalette` for items), re-implement in `art.rs`, and prove **byte-identical** vs `art-vectors.json`:
+the **50 `itemIcons`** samples + the full-space **`itemDigest` (2702 icons → fnv `bfe89b1e`)** — already
+synced in brickmap, just not yet consumed. `_f1` documents the path (`else ARCH[cat.arch] + applyLevers`);
+the archetypes/levers come from the source. Then: the **Items** screen (catalogue grid by category, each
+item's icon + rarity colour) and the **Results** rank portrait (`drawIcon("rank:<id>")` via the same item
+path) + Results redesign (headline time, momentum pill, accuracy/skipped columns, gold-with-coin,
+slowest-answers, starfield — all in `RoundOutcome`). Collection (F5 emblems + composed hoard) follows.
+
+*(Phase-5 shipped this run: event-play · Arena+event-play V1–V7 · Heroes · V8/V9/V10/V11/V12 — all gated
++ pushed to both repos' main+feature; renders committed to `visual-ref/`.)*
 
 ---
 
