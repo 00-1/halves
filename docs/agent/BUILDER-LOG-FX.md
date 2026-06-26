@@ -6,6 +6,30 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: Arena + event-play CHANGES punch-list (V1–V7) ([B], GO)
+
+Addressed the Babysitter's first-cut CHANGES (REVIEW.md + PARITY-LEDGER V1–V7). `00-1/brickmap`
+`8373a20` (main + feature). **Re-rendered both visual-refs** (`arena-prefight-brickmap.png`,
+`event-play-brickmap.png`). `node tools/visual-compare.js` cooled **arena-prefight 15.3 → 10.2** and
+**event-play 12.4 → 8.32** mean ΔE (both `examine`, comfortably under the gross-18 gate).
+- **V1** Arena now fields the full **3-foe enemy team** (lead + 2 typed supports) as cards over the
+  backdrop — mini portrait + type + PWR/HP each — not a single foe.
+- **V2** Per-hero **matchup badge** vs the lead foe (`ADV ×1.5` / `WEAK` / `EVEN`) via the new
+  `combat::matchup_mult` — the type-triangle strategy signal.
+- **V3** "How battles work" **primer** box + a **Journey map** button.
+- **V4** Render the clean **pre-fight** state (no post-battle banner), button "Pick your party",
+  selected cards = a subtle **amber border** (not the heavy green fill).
+- **V5** **Calculator numpad** order (7/8/9 top), flipped in `bm-render::ui2d::keypad`.
+- **V6** "How to approach this" **hint button** above the numpad.
+- **V7** Pixel **backspace arrow** (the face lacks ⌫) + an **outlined Skip** bar (web's subtle action
+  bar). Keypad height trimmed to fit the hint button.
+- **D1/D2** (event title vs progress counter; purple event-tint vs near-black) left as the owner's
+  call per the parity ledger — not changed.
+- **Gates:** clippy clean (native + `aarch64-android`), full suite, GPU goldens on lavapipe
+  (`arena`/`drill-initial` re-blessed). *(Heroes visual pass is staged WIP, stashed — resumes next.)*
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: the EVENT-PLAY SCREEN (today's event → gauntlet → tiers) ([B], GO)
 
 Second of the two screens — daily **event-play**, against `event-play-web.png` (which captures the
