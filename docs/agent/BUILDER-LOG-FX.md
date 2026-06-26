@@ -6,6 +6,29 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: the EVENT-PLAY SCREEN (today's event → gauntlet → tiers) ([B], GO)
+
+Second of the two screens — daily **event-play**, against `event-play-web.png` (which captures the
+*drill in gauntlet mode*, not a menu). `00-1/brickmap` `437d574` (main + feature). **Render committed to
+halves `content/gg1/visual-ref/event-play-brickmap.png` (430×880) for the side-by-side review.**
+- **Daily-Event entry:** today's **live** event (`event_play::live_event(now_ms)`) — its **F4 crest**
+  banner, theme · rarity, blurb, gauntlet size, the **three reward tiers** (Play / 70%+ / Flawless, each
+  with its reward item name, **green once earned**), and a **countdown** to the next UTC rotation. A
+  **Play today's event** CTA launches the gauntlet; shares `event_play_cta` with the hit-test.
+- **Gauntlet drill:** `Drill::from_gauntlet(eid)` runs the deterministic, vector-proven gauntlet
+  (`build_gauntlet`) through the **shared drill UI** (heading = event name, progress = size, auto-accept,
+  Skip) — so the proven drill renderer IS the event-play visual (matches `event-play-web.png`).
+- **Award:** finishing folds `eventTiersEarned` (participation / well ≥0.7 / ace=flawless) into the save
+  via `Save::award_event` — **no gold** (the reward IS the buff) — then shows the outcome banner.
+- **Glyph fix (app-wide):** baked the math operators (`− × ÷ ²`), the `·` middot, and the `— –` dashes
+  into the text faces — the default atlas was ASCII-only, so prompts like `91 − 37`, labels like
+  `fire · epic`, and existing strings like `Tap the digits — it checks itself` were silently dropping
+  their symbols. Now every drill operator / inline separator renders. (Re-blessed the affected goldens.)
+- **Gates:** clippy clean (native + `aarch64-linux-android`), full suite (new `from_gauntlet` +
+  event-flow + frame tests), GPU goldens on lavapipe. `events.png` golden now IS the Daily-Event screen.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: the ARENA SCREEN (party-pick → battle → grant) ([B], GO)
 
 First of the two screens — the 3v3 **Arena**, built to the visual bar against `arena-prefight-web.png`.
