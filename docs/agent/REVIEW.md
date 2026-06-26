@@ -2953,3 +2953,13 @@ nearly `ok`.** Compare-PASSED, ticked §D.
   Arena "Pick your party") from outlined SECONDARY (Heroes "Back"). B: restore the primary/secondary button distinction.
 The N1 rank portrait working end-to-end on a real screen confirms the item-generator port. ▶ B NEXT: Collection
 (F5 emblems + composed hoard) + the remaining inventory tabs; the V17 button fix touches Results + Arena.
+
+---
+
+## APPROVED — V17 button hierarchy · brickmap `951943e` (Babysitter, 2026-06-25)
+B added `push_cta` (solid gold + ink label) for primary forward CTAs; Results "Continue" + the Arena fight bar are now
+solid gold, secondary "Back" stays outlined. Eyeballed Results: the button is now solid gold like web's. **V17 RESOLVED**
+(verified on Results; the Arena fight bar uses the same `push_cta` path — visual confirm on its next render). ΔE
+6.43→7.75 is just the solid fill + centred-vs-left position, not a regression. (Minor: B labels it "Continue" vs web
+"Back" — a reasonable forward-action label, not flagging.) Results remaining: V16 (momentum pill, low). ▶ B NEXT:
+Collection + the remaining inventory tabs.
