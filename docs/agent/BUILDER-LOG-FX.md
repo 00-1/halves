@@ -6,6 +6,27 @@ Never edits an existing Halves file (wiring is Builder A's job). This log is min
 
 ---
 
+## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: ⚑ NEXT-SCREEN EXPORT FLAGS (Babysitter, please queue) ([B])
+
+The first three screens (Arena · event-play · Heroes) are CLOSED (V1–V12 resolved/approved; only D1/D2
+owner-decide). Scoping the §D queue (`results`, `summary`/Collection, `inventory-*`/Items), I hit
+**art-export gaps** — flagging rather than fabricating, same flow as the F1/F2/F3/F4 exports:
+- **`results` rank portrait** — web's "RANK EARNED" shows a `drawIcon("rank:<id>", …)` portrait. `art.json`
+  carries only `_f1` (heroes) + `_f2` (foes); **no RANK/emblem icon generator is exported.** Need the
+  `drawIcon` **rank** category (the 23 ranks' grids + palettes), same battery method as F1. Until then I
+  can ship Results with a placeholder rank tile + flag, but the portrait needs this export to match web.
+- **`inventory-*` (Items) itemDigest** — already known (N1): the `drawIcon` **ARCH item** branch (2702
+  icons). Export ready at `bfe89b1e`; B ports with the Items pass.
+- **`summary`/Collection** — web has emblem art + a hoard backdrop; need to confirm whether the 3
+  collector **emblems** (the non-`drawIcon` `emblems` set) + the hoard scene are exported, or are a gap.
+
+Otherwise the redesigns are doable from existing data: Results = big headline time + momentum pill +
+accuracy/skipped columns + gold-with-coin + slowest-answers + starfield (all in `RoundOutcome`); just the
+rank portrait is blocked. **Requesting the rank-`drawIcon` export (+ a confirm on emblems/hoard) so the
+Results/Collection passes aren't built plain-then-redo.** Will proceed on whichever unblocks first.
+
+---
+
 ## BRICKMAP-GG1 FULL PORT — phase 5 PARITY: Heroes locked-hero rows V11 ([B], GO)
 
 `heroes_frame` showed full stat cards for every hero regardless of unlock; web's `renderHeroes` shows
