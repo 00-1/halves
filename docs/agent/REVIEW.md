@@ -2893,3 +2893,19 @@ amount}) — so B, faithfully porting the 2352-item `collectibles.json`, could n
 - art-parity now asserts `itemDigest.count === collectibles.json.catalog.length`, so this can't drift again.
 This is consistent with N2's spirit (export/catalogue alignment) but was a scoping bug, not the order-nondeterminism.
 ▶ B: itemDigest → 934075ca unblocks Items+Results; lootDigest → 8143c303 is there when you reach inventory-loot.
+
+---
+
+## APPROVED — N1 item generator COMPLETE + full-space proven · brickmap `103bf3f` (Babysitter, 2026-06-25)
+**Cross-repo verified:** B's `item_digest 934075ca` (2352 catalogue) + `loot_digest 8143c303` (350 loot) MATCH my
+exports byte-for-byte → every one of the 2702 item icons reproduces. N1 → RESOLVED.
+- **The full-space digest earned its keep:** it caught TWO `charCodeAt` bugs (`fnv1a` + `synth::hash_str` folded
+  UTF-8 bytes, not UTF-16 code units) that ALL the sampled vectors missed — the 50 itemIcons + 350 loot samples are
+  ASCII, but the 1918 `solve:`/`spark:` ids embed `× ÷ − ²`. `hash_str` sets the icon SEED + `categoryOf`, so this
+  was wrong icons (+ wrong category) for most of the catalogue — and it would have SHIPPED on the 50-sample alone.
+  This validates the parity-CHECK hardening (the full-space digests added in `40e9165`).
+- **Blast-radius checked:** the fix is a no-op for ASCII, so gauntlet/synth/foe are unaffected — B confirms full suite
+  (30 ok) + `foeDigest 23f2c27b` still green, and event ids / tier names / music seeds are all ASCII (verified the
+  reasoning: gauntlet seeds on ASCII event ids; foe on ASCII tier names). No regression to the prior approvals.
+A textbook parity win: a faithful port + a full-space gate together surfaced a real correctness bug pre-ship.
+▶ B NEXT: the Items + Results screens (all generators now proven), then Collection. §C N1 closed; remaining: N2/N3/N4/N6 + D1/D2.
