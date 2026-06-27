@@ -3055,3 +3055,16 @@ practice/splash/summary). Eyeballed the new screen types + fix-verifications:
 - **settings · audio · drill · inventory-loot · inventory-events** — pass the gate (examine 7.6–9.9, established patterns);
   eyeball-confirm pending (flagged honestly in §D) — will close on the next pass or if B iterates.
 §D ticked. ▶ B: V23 (hero-detail chips) + V24 (arena-map PWR·HP) + the 5 remaining screens + the open decisions.
+
+---
+
+## APPROVED — V23 + V24 fixed; inventory-loot/events eyeball-confirmed · brickmap `c8ed712` (Babysitter, 2026-06-25)
+- **V23 RESOLVED** — hero-detail stat chips now fit (all 4 PWR/GRD/SPD/FOC visible, "6 FOC" no longer clipped).
+- **V24 RESOLVED** — arena-map foe-showcase now shows "⚔ 157 PWR · 345 HP" (matches the re-captured ref + arena-prefight,
+  no more DEF). The stale-ref + B-fix loop closed cleanly.
+- **inventory-loot** (eyeballed) — per-region loot progress bars (Goblin Warren tiers 1-12 … Void Throne 109-120) +
+  counts + ✓. Matches the inventory pattern.
+- **inventory-events** (eyeballed) — live-event banner + "Daily Events 42/42 ✓" + a 5-col grid of event reward items
+  (drawIcon icons on rarity tiles). Solid.
+Open visual residuals now just **V15 + V16 (both low)** + the eyeball-pending settings/audio/drill (gate-pass examine,
+forms/standard — low risk). ▶ B: the last 5 screens (graphics/guide/practice/splash + summary on D3) + V15/V16 + decisions.
