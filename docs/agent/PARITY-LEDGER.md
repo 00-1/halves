@@ -12,20 +12,32 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 ## A. Open VISUAL issues (from the screenshot-compare acceptance gate)
 
-> **BAR TIGHTENED (owner side-by-side review, 2026-06-28):** a `examine` ΔE (6–18) is **NOT** a pass on its
-> own. The downsample-to-24×48 ΔE smooths over **systemic** appearance gaps (font, background cast, type scale)
-> that the eye catches instantly — the owner reviewed the six "best" passes and they "look almost nothing alike."
-> **A screen passes only when (a) ΔE ok/examine AND (b) a side-by-side eyeball confirms NO systemic typography /
-> background / scale / structure gap AND (c) its capture-state matches the web ref** (else it's apples-to-oranges,
-> e.g. heroes-partial 7/12 vs 3/12 — N6). The systemic drivers below (V25–V28) affect EVERY rendered screen and
-> must be closed before any §D screen is re-confirmed.
+> **BAR TIGHTENED (owner, 2026-06-28):** ΔE is **TRIAGE, NOT THE GATE.** The downsample-to-24×48 ΔE smooths over
+> systemic AND structural gaps the eye catches instantly — proven hard: `summary` scored the BEST ΔE of all (3.72,
+> "ok") yet an independent agent review found it a structural **FAIL** (missing play buttons, score column, subtitle,
+> Back button); `hero-detail` (5.06 "ok") and `heroes-partial` (6.12 "examine") were also agent-FAILs. **THE GATE IS
+> AN INDEPENDENT AGENT VISUAL REVIEW** (see VISUAL-PARITY.md "agent-review gate"): each screen's web ref + brickmap
+> render go to a fresh review agent that returns PASS / EXAMINE / FAIL + tagged deltas, blind to B's claims and the
+> ΔE. **A screen passes ONLY on agent-PASS** (or an owner-ACCEPTED EXAMINE) **AND a matching capture-state.** ΔE just
+> prioritises which to look at. The first agent-review wave (V25–V39) is logged below.
 
 | ID | Screen | Issue | Sev | Owner | Status | Sign-off |
 |----|--------|-------|-----|-------|--------|----------|
 | V25 | ALL screens | **TYPOGRAPHY** — web GG1 renders in a PIXEL/BITMAP monospace font (the blocky `144`, `988M Goblin Gold`, stat chips); B renders in a smooth rounded vector sans. Single biggest "look nothing alike" driver, on every screen. B: render GG1's actual pixel font (or a matching bitmap font) in the bm-render text path. **If brickmap's text path genuinely can't do a bitmap font, FLAG IT** → becomes an owner ACCEPT decision rather than a silent gap. | high | B | OPEN | |
 | V26 | ALL screens | **BACKGROUND CAST** — web bg is near-black (`#0E1116`); B's render carries a purple/violet cast on screens that are NOT event-themed (results, heroes, hero-detail, inventory). Use the neutral near-black bg everywhere; reserve purple for the home backdrop (HOME_PALETTE) only. (On event-play specifically the purple was the intentional theme — now also dropped per D2.) | high | B | OPEN | |
 | V27 | ALL screens | **TYPE SCALE / HIERARCHY** — web uses a much taller headline ramp (the results `22.7s` timer and drill `144` DOMINATE the screen) and denser body rows (more list rows per screen); B's headline numbers are modest and rows more spaced. Match web's headline sizes + row density per screen. | med | B | OPEN | |
-| V28 | heroes / hero-detail | **RANK GLYPH** — web shows a filled ★ star before the rank number (`★ 29`); B shows a plain asterisk (`* 29`). Use the ★ glyph. | low | B | OPEN | |
+| V28 | heroes / hero-detail | **RANK GLYPH** — web shows a filled ★ star before the rank number (`★ 29`). B's font pass changed the old `*` into a pixel "space-invader"/blob SPRITE — still not a ★, reads as a different icon entirely. Use a filled ★. | med | B | OPEN | |
+| V29 | hero-detail / ALL ordered lists | **ITEM-LIST ORDER = N2 biting.** Exported `collectibles.json` catalog order ≠ the LIVE web `CATALOG` order the refs were captured from (web hero-detail leads "Springy Gobbler +1"; B leads "+8" — same set, web filters CATALOG in source order, B faithfully renders the export's different order). Affects every order-dependent list (hero-detail boosts, inventory, results "slowest"). **Coordinated fix (N2):** impose a stable `CATALOG.sort(by id)` in collectibles.js → regenerate all content → re-capture order-dependent web refs → B re-syncs. | high | Babysitter+B | OPEN | |
+| V30 | heroes / heroes-partial / hero-detail | **STAT CHIPS** — web renders each stat as a rounded PILL with its own dark bg (`14 PWR`); B renders plain inline text, no chip bg/contrast. Restore the chip styling. | med | B | OPEN | |
+| V31 | heroes | **"tap for details ›" affordance** — web shows `Boosted by N · tap for details ›` (gold + chevron) on boosted heroes; B omits it. Add it. | med | B | OPEN | |
+| V32 | summary | **STRUCTURE INCOMPLETE (agent FAIL).** B's Best Times screen is missing: the subtitle ("Your best in each topic — tap one to play it"), the per-row **play ▶** button, the best-**SCORE** column, the "Not played" status line, and the **Back** button; and renders a dense list where web uses padded cards + a larger letter-spaced title. Rebuild to web's structure. | high | B | OPEN | |
+| V33 | summary (methodology) | **CAPTURE-STATE** — web ref is the EMPTY "Not played" state; B renders populated best-times → unfair compare. Re-capture `summary-web.png` against a best-times-seeded profile so both are populated (Babysitter owns web refs); then B re-renders to match. | med | Babysitter | OPEN | |
+| V34 | drill | **QUESTION CUE** — web shows the prompt label `half of ↓` with a gold down-arrow ABOVE the big number + a `– –` answer-slot placeholder; B drops the prompt label and uses a single underline. Restore the prompt cue + matching answer slot. | med | B | OPEN | |
+| V35 | drill | **over-GOLD + small headline** — B applies gold outline+text to the "How to approach this" and "Skip" button FRAMES; web keeps them neutral grey (gold = tiny accents only). Also the drill question number is still smaller than web's dominant size (V27 not fully applied here). | med | B | OPEN | |
+| V36 | home | **COIN-HOARD** — B's gold hoard is a sparse fleck-band; web's is a dense pixel coin-pile filling ~bottom 45% with side "wings". Match seedHoard density/extent. | med | B | OPEN | |
+| V37 | home | **TREE EDGES** — web draws rich directional gold arrows (down + horizontal) + purple branch connectors + wide split-row spacing + corner-badge checkmarks + size-varied nodes; B shows a thin central spine, inline checks, uniform nodes. Restore the edge/arrow rendering + node layout. | med | B | OPEN | |
+| V38 | home | **NAV + banner glyphs** — bottom-nav icons render faint/near-absent vs web's coloured glyphs; event-banner thumbnail art is missing; the gold-coin header glyph is a plain square not the coin. | low | B | OPEN | |
+| V39 | results | **minor glyphs** — momentum pill uses a plain green square not the calendar glyph; gold-coin amount uses a square not the coin glyph; headline `s` suffix not subscripted. | low | B | OPEN | |
 | ~~V23~~ | hero-detail | ~~4th chip clipped~~ → **RESOLVED** (`c8ed712`: chips fit; verified all 4 PWR/GRD/SPD/FOC visible). _orig:_ The 4 stat chips (PWR/GRD/SPD/FOC) overflow the hero card — the 4th ("6 FOC") is CLIPPED at the right edge. Fit/wrap the chips. | med | B | OPEN | |
 | ~~V24~~ | arena-map | ~~showed old DEF~~ → **RESOLVED** (`c8ed712`: now ⚔ PWR · HP, matching the re-captured ref + arena-prefight; verified). _orig:_ Foe-showcase shows the OLD "DEF 47" (the removed 1v1 stat). B reproduced a STALE web ref (arena-map-web predated the combat redesign). Ref now re-captured → shows "⚔ PWR · HP" (`main` `c0b453c`). B: update the arena-map foe-showcase to the PWR·HP threat (same as arena-prefight), re-render. | med | B | OPEN | |
 | ~~V21~~ | home | ~~locked-node styling~~ → **RESOLVED** (`200d581`: tree dims locked nodes; verified on home-fresh — head bright, rest greyed). _orig:_ LOCKED-node styling: web DIMS locked topic-nodes (only the unlocked head is bright; the rest greyed); B renders all nodes the same brightness. Add the locked/unlocked/done node states (the `nodeState` distinction) to the tree. | med | B | OPEN | |
@@ -92,9 +104,11 @@ commit a `<screen>-brickmap.png` and pass the compare (verdict `ok`/`examine`-ac
 `home-midprogress`, `practice`, `drill`† (examine 7.65) · `results`† (compare-PASSED examine ΔE6.43 — best yet; N1 rank portrait works; residual V16/V17), `summary`, `settings`† · `audio`† (examine ~9; eyeball-confirm pending) · `graphics`, `guide`, `splash`.
 (No blanket back-fill — each flows through as its visual pass completes, per VISUAL-PARITY.md.)
 
-> ⚠️ **PROVISIONAL (2026-06-28):** every `examine-PASSED` mark above is now PROVISIONAL. The systemic gaps
-> V25–V28 affect all of them; once B closes those, each rendered screen must be **re-compared + side-by-side
-> eyeballed** (and capture-state-matched) before it counts as accepted. Until then no §D screen is signed.
+> ⚠️ **PROVISIONAL + agent-review wave 1 (2026-06-28):** every `examine-PASSED` mark above is VOID — none signed.
+> The font/bg/scale pass (V25–V27) genuinely landed, but the agent-review gate then found a SECOND layer of gaps:
+> **summary, hero-detail, heroes-partial = agent-FAIL**; drill, home = agent-EXAMINE (systemic deltas); results =
+> agent-EXAMINE (clean, glyph-level only). All logged V28–V39. Each screen re-enters the gate after B's wave-2 fix;
+> the remaining ~15 rendered screens still need their first agent review.
 
 ---
 

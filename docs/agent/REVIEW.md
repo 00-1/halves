@@ -1,5 +1,29 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-28 (pm) — CHANGES REQUESTED — wave-2, NEW agent-review gate
+
+**Process upgrade (owner): ΔE is triage, an independent AGENT visual review is the gate.** Ran 6 review agents
+(blind to B's claims + the ΔE) over results/drill/summary/hero-detail/home/heroes-partial. The math and the eyes
+disagreed sharply — proving the upgrade:
+- **WAVE 1 (`1eebcf4`+`fdb18ea`) genuinely landed:** V25 (pixel font), V26 (near-black bg, purple→home-only), V27
+  (headline scale), D1/D2 (event-play match web), D3 (summary screen + best-time datum). Verified by eye. Good work.
+- **But the agent gate found a SECOND layer ΔE was blind to.** Three screens ΔE rated as top passes are FAILs:
+  - `summary` — **ΔE 3.72 (the BEST score of all) but a structural FAIL:** missing per-row play ▶, best-score
+    column, "Not played" status line, the subtitle, and the Back button; dense list where web uses padded cards.
+  - `hero-detail` (ΔE 5.06 "ok") — **FAIL:** the boost item-list is in a different ORDER than web (V29 = N2 —
+    exported catalog order ≠ live web `CATALOG` order; B renders the export faithfully). Shell is otherwise faithful.
+  - `heroes-partial` (ΔE 6.12) — **FAIL:** rank glyph is a pixel sprite not ★ (V28); stat chips are plain text not
+    pills (V30); `tap for details ›` affordance missing (V31). Plus capture-state 7/12 vs 3/12 (N6).
+  - `drill` EXAMINE — missing `half of ↓` prompt cue (V34); gold over-applied to button frames + headline still
+    small (V35). `home` EXAMINE — coin-hoard too sparse (V36); tree edges/arrows missing (V37). `results` clean
+    EXAMINE — glyph-level only (V39).
+
+**Logged V28–V39 in PARITY-LEDGER §A; gate documented in VISUAL-PARITY.md.** Babysitter owns V29 (stable
+`CATALOG.sort` + regen + re-capture order-dependent refs) and V33 (re-capture summary-web seeded). Rest → B wave-2.
+**No §D screen is signed** — every prior `examine-PASSED` mark is void pending an agent-PASS.
+
+---
+
 ## 2026-06-28 — CHANGES REQUESTED (brickmap visual parity) — owner side-by-side review
 
 The owner reviewed the six best `examine`-passing screens side-by-side (results, drill, heroes-partial,

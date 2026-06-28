@@ -128,6 +128,33 @@ engine difference (AA, font hinting). Thresholds (EXAMINE 6 / GROSS 18) are tuna
 
 ---
 
+## THE AGENT-REVIEW GATE — ΔE is triage, an agent's eyes are the gate (owner, 2026-06-28)
+**The mathematical compare is necessary but NOT sufficient.** ΔE downsamples to a 24×48 grid, so it averages away
+gaps the eye catches at a glance — wrong FONT, structural omissions (a missing button/column), wrong glyphs, list
+ORDER. Proven the hard way: `summary` scored the BEST ΔE of every screen (**3.72, "ok"**) yet was a structural
+**FAIL** — missing play buttons, score column, subtitle and Back button. `hero-detail` (5.06) and `heroes-partial`
+(6.12) were also FAILs the math rated as passes. So:
+
+**A screen is accepted ONLY after an independent AGENT VISUAL REVIEW returns PASS** (or owner-ACCEPTED EXAMINE).
+ΔE only decides *what to look at first*.
+
+**How the Babysitter runs it (per screen, on each B render):**
+1. ΔE compare first (triage / heat-map / capture-state sanity).
+2. Spawn a FRESH review agent (Agent tool) given ONLY: the screen name, the `…-web.png` (ground truth) and
+   `…-brickmap.png` paths, and the rubric below. **Blind to B's claims and to the ΔE score** — an honest second eye.
+3. Rubric the agent scores: (1) typography/font family, (2) background colour, (3) layout & structure — *anything
+   present in one but missing in the other*, (4) sizing & hierarchy, (5) colour & accents (solid vs outlined, gold
+   over-use), (6) iconography/glyphs (★ vs sprite, coin vs square), (7) **DATA / CAPTURE-STATE & ORDER** — are the
+   two even in the same state? is the list order the same? Output: **VERDICT PASS/EXAMINE/FAIL + a numbered delta
+   list, each tagged [systemic]/[minor]/[data].**
+4. FAIL or systemic-EXAMINE → log to PARITY-LEDGER §A + route back to B. Clean EXAMINE / PASS → eligible to sign
+   (capture-state must match first). Run several screens in parallel (one agent each) — cheap and fast.
+
+This gate found the entire V28–V39 second layer that the font/bg/scale pass (V25–V27) left behind. Use it as the
+standing acceptance step for every §D screen; never sign a screen off the ΔE number alone.
+
+---
+
 ## WHEN to run the compare test — it's a COMPLETION gate, not a build tool (owner policy, 2026-06-25)
 Run `tools/visual-compare.js` on a screen **only when B considers that screen COMPLETE.** Before that — while there's
 KNOWN parity work still to do — it's too early: it just re-reports deviations we already know about (noise).

@@ -117,8 +117,20 @@ earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-com
 > datum into the home `<topic> · best…` line and Practice qbest (one datum, three surfaces). **PROCESS:** after
 > fixing, re-render → re-compare → and the change
 > only counts once the side-by-side reads alike (ΔE alone is not the bar). Capture-state must match the web ref
-> (heroes-partial was 7/12 vs 3/12 — N6; seed `capture-states.json` first). Also still open: **V15** (hero-detail
-> item NAMES + order wrong) · **V16** (results momentum pill — appears added in `3dbbefd`, pending Babysitter verify).
+> (heroes-partial was 7/12 vs 3/12 — N6; seed `capture-states.json` first).
+>
+> ✅ **WAVE 1 LANDED (`1eebcf4`+`fdb18ea`): V25/V26/V27 (font/bg/scale) + D1/D2/D3 genuinely fixed — verified.**
+> 🔴 **WAVE 2 — the agent-review gate then found a SECOND layer the ΔE missed (PARITY-LEDGER §A V28–V39, gate doc in
+> VISUAL-PARITY.md). FAILs: summary, hero-detail, heroes-partial. EXAMINE-systemic: drill, home.** B's punch-list:
+> **V29/N2** hero-detail + all ordered lists show the EXPORT's catalog order, not web's live `CATALOG` order →
+> coordinated N2 fix (Babysitter imposes a stable `CATALOG.sort(by id)` + regens + re-captures order-dependent refs;
+> B re-syncs). **V28** rank glyph is a pixel sprite, not ★ — use a filled ★. **V30** stat chips = pills w/ bg, not
+> plain text. **V31** add `Boosted by N · tap for details ›`. **V32** rebuild summary: subtitle + per-row play ▶ +
+> score column + "Not played" line + Back button + padded cards. **V33** (Babysitter) re-capture summary-web in a
+> best-times-seeded state. **V34** drill: restore `half of ↓` prompt cue + gold arrow + `– –` answer slot. **V35**
+> drill: drop gold from How-to/Skip button frames (neutral) + bigger headline number. **V36** home coin-hoard denser.
+> **V37** home tree directional arrows + branch connectors + corner-badge checks. **V38/V39** minor glyphs (nav
+> icons, banner thumbnail, coin/calendar/subscript). **Babysitter owns V29(stable-sort+regen+recapture) + V33.**
 
 **Builder B → phase 5 PARITY. The entire Arena + event-play LOGIC layer is DONE + APPROVED (brickmap `main`
 `c6083f5`): combat re-sync to the redesign (`75051b8`, combat.rs spot-verified) · event-play core T233c (`8dc2077`,
