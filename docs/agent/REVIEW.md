@@ -1,5 +1,25 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-28 (pm-2) — PARTIAL APPROVE — wave-2 re-renders (`a7c1a8d`) through the agent gate
+
+Ran the agent-review gate on the 4 re-rendered screens B claimed.
+- 🟢 **`summary` — agent-PASS → SIGNED (V32+V33 RESOLVED).** Rebuilt with padded cards + subtitle + per-row play ▶ +
+  best-score column + "Not played" status + Back; B rendered it in the empty state to match the web ref. ΔE 2.91.
+  Residual: gold accent on title/play/Back (web grey) → V40 (low).
+- 🟢 **`drill` — agent-PASS → SIGNED (V34+V35 RESOLVED).** `half of ↓` eyebrow restored; hint/Skip back to neutral
+  grey (gold no longer over-applied); big number dominant. Residual: underline vs `– –`, extra helper line, Skip
+  casing → V41 (low). **First two screens to clear the gate.**
+- 🔴 **`home` — still agent-FAIL.** V36 coin-hoard "denser band" did NOT land (still a sparse fleck-band, no wings);
+  V37 tree arrows/edges still missing; V38 nav-glyphs + banner thumbnail still absent. Re-route.
+- 🔴 **`heroes-partial` — still agent-FAIL.** V28 "v2 star" is a lumpy blob, still not a ★ — and now **overlaps the
+  FOC stat (NEW collision)**; V30 stat-chips still plain text; V31 "tap for details" still absent.
+
+Net: 2 genuine passes, 2 not-as-claimed (V28/V36 re-opened with specifics). V29 (N2 catalog-order, mine) +
+V30/V31/V37/V38 remain. **Don't claim a fix the gate can't confirm** — V28/V36 were marked done in the commit msg
+but the agent caught both. ~13 rendered screens still await their first agent review.
+
+---
+
 ## 2026-06-28 (pm) — CHANGES REQUESTED — wave-2, NEW agent-review gate
 
 **Process upgrade (owner): ΔE is triage, an independent AGENT visual review is the gate.** Ran 6 review agents
