@@ -12,8 +12,20 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 ## A. Open VISUAL issues (from the screenshot-compare acceptance gate)
 
+> **BAR TIGHTENED (owner side-by-side review, 2026-06-28):** a `examine` ΔE (6–18) is **NOT** a pass on its
+> own. The downsample-to-24×48 ΔE smooths over **systemic** appearance gaps (font, background cast, type scale)
+> that the eye catches instantly — the owner reviewed the six "best" passes and they "look almost nothing alike."
+> **A screen passes only when (a) ΔE ok/examine AND (b) a side-by-side eyeball confirms NO systemic typography /
+> background / scale / structure gap AND (c) its capture-state matches the web ref** (else it's apples-to-oranges,
+> e.g. heroes-partial 7/12 vs 3/12 — N6). The systemic drivers below (V25–V28) affect EVERY rendered screen and
+> must be closed before any §D screen is re-confirmed.
+
 | ID | Screen | Issue | Sev | Owner | Status | Sign-off |
 |----|--------|-------|-----|-------|--------|----------|
+| V25 | ALL screens | **TYPOGRAPHY** — web GG1 renders in a PIXEL/BITMAP monospace font (the blocky `144`, `988M Goblin Gold`, stat chips); B renders in a smooth rounded vector sans. Single biggest "look nothing alike" driver, on every screen. B: render GG1's actual pixel font (or a matching bitmap font) in the bm-render text path. **If brickmap's text path genuinely can't do a bitmap font, FLAG IT** → becomes an owner ACCEPT decision rather than a silent gap. | high | B | OPEN | |
+| V26 | ALL screens | **BACKGROUND CAST** — web bg is near-black (`#0E1116`); B's render carries a purple/violet cast on screens that are NOT event-themed (results, heroes, hero-detail, inventory). Use the neutral near-black bg everywhere; reserve purple for the home backdrop (HOME_PALETTE) only. (On event-play specifically the purple was the intentional theme — now also dropped per D2.) | high | B | OPEN | |
+| V27 | ALL screens | **TYPE SCALE / HIERARCHY** — web uses a much taller headline ramp (the results `22.7s` timer and drill `144` DOMINATE the screen) and denser body rows (more list rows per screen); B's headline numbers are modest and rows more spaced. Match web's headline sizes + row density per screen. | med | B | OPEN | |
+| V28 | heroes / hero-detail | **RANK GLYPH** — web shows a filled ★ star before the rank number (`★ 29`); B shows a plain asterisk (`* 29`). Use the ★ glyph. | low | B | OPEN | |
 | ~~V23~~ | hero-detail | ~~4th chip clipped~~ → **RESOLVED** (`c8ed712`: chips fit; verified all 4 PWR/GRD/SPD/FOC visible). _orig:_ The 4 stat chips (PWR/GRD/SPD/FOC) overflow the hero card — the 4th ("6 FOC") is CLIPPED at the right edge. Fit/wrap the chips. | med | B | OPEN | |
 | ~~V24~~ | arena-map | ~~showed old DEF~~ → **RESOLVED** (`c8ed712`: now ⚔ PWR · HP, matching the re-captured ref + arena-prefight; verified). _orig:_ Foe-showcase shows the OLD "DEF 47" (the removed 1v1 stat). B reproduced a STALE web ref (arena-map-web predated the combat redesign). Ref now re-captured → shows "⚔ PWR · HP" (`main` `c0b453c`). B: update the arena-map foe-showcase to the PWR·HP threat (same as arena-prefight), re-render. | med | B | OPEN | |
 | ~~V21~~ | home | ~~locked-node styling~~ → **RESOLVED** (`200d581`: tree dims locked nodes; verified on home-fresh — head bright, rest greyed). _orig:_ LOCKED-node styling: web DIMS locked topic-nodes (only the unlocked head is bright; the rest greyed); B renders all nodes the same brightness. Add the locked/unlocked/done node states (the `nodeState` distinction) to the tree. | med | B | OPEN | |
@@ -43,9 +55,9 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 | ID | Screen | Question | Status | Sign-off |
 |----|--------|----------|--------|----------|
-| D1 | event-play | Render shows the event title during the question; web shows the progress counter. Keep B's, or match web? | DECIDE | |
+| ~~D1~~ | event-play | ~~event title vs progress counter during the question~~ → **DECIDED: MATCH WEB** (owner, 2026-06-28). Show the web progress counter during the question; drop the persistent event title. Becomes a B fix. | DECIDED | match web |
 | D3 | summary (Best Times) | Web ships a Best Times screen (`renderSummary`, nav-wired `#/best-times`) backed by PER-MODE best-time boards in localStorage — brickmap's `Save` tracks no per-topic best time. **Decision: ADD best-time tracking** (save-schema + `finish_round` records per-topic best time/score; B's domain) **— or SCOPE `summary` OUT of v1** (an accepted parity gap). NB the same datum feeds the home '<topic> · best…' detail line + Practice qbest, so scoping out leaves those gaps too. Babysitter recommends ADD (it's woven in). | DECIDE | |
-| D2 | event-play | Render applies an event THEME — purple bg tint + gold question text (web is near-black bg + white question text; the gold prompt is the largest residual ΔE band). Keep B's themed look, or match web's neutral drill? (One decision covers both bg + prompt colour.) | DECIDE | |
+| ~~D2~~ | event-play | ~~themed purple bg + gold question text vs web's neutral drill~~ → **DECIDED: MATCH WEB** (owner, 2026-06-28). Near-black bg + white question text; drop the purple tint + gold prompt. Closes the largest residual ΔE band. Becomes a B fix (and aligns with V26 — neutral bg app-wide). | DECIDED | match web |
 
 ## C. Open NON-VISUAL parity issues
 
@@ -66,6 +78,10 @@ commit a `<screen>-brickmap.png` and pass the compare (verdict `ok`/`examine`-ac
 `hero-detail-{brawn,arcane,cunning}`† (examine ~7.5; residual V23 chip-clip) · `inventory-awards`† · `inventory-topics`† (PASSED examine ΔE10.96; residual V22 ✓ low) · `inventory-loot`† (eyeballed: per-region bars+✓) · `inventory-events`† (eyeballed: banner+reward grid) · `inventory-codex`† (examine ~10; F2 portraits + ✓), `home`† (PASSED examine ΔE15.15; V19/V20 fixed) · `home-fresh`† · `home-midprogress`† (PASSED examine ~15.7; residual V21 locked-nodes),
 `home-midprogress`, `practice`, `drill`† (examine 7.65) · `results`† (compare-PASSED examine ΔE6.43 — best yet; N1 rank portrait works; residual V16/V17), `summary`, `settings`† · `audio`† (examine ~9; eyeball-confirm pending) · `graphics`, `guide`, `splash`.
 (No blanket back-fill — each flows through as its visual pass completes, per VISUAL-PARITY.md.)
+
+> ⚠️ **PROVISIONAL (2026-06-28):** every `examine-PASSED` mark above is now PROVISIONAL. The systemic gaps
+> V25–V28 affect all of them; once B closes those, each rendered screen must be **re-compared + side-by-side
+> eyeballed** (and capture-state-matched) before it counts as accepted. Until then no §D screen is signed.
 
 ---
 

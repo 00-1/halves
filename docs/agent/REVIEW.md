@@ -1,5 +1,31 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-28 — CHANGES REQUESTED (brickmap visual parity) — owner side-by-side review
+
+The owner reviewed the six best `examine`-passing screens side-by-side (results, drill, heroes-partial,
+hero-detail-brawn, arena-map, home) and the verdict is that they "look almost nothing alike." **The ΔE compare gate
+was too lenient** — downsampling to a 24×48 grid smooths over systemic appearance gaps the eye catches instantly.
+This is a process miss on my side: I treated `examine` (ΔE 6–18) as an acceptable pass when it was not. **Bar
+tightened** (PARITY-LEDGER §A): a screen passes only with ΔE ok/examine **AND** a side-by-side eyeball confirming no
+systemic typography/background/scale/structure gap **AND** a matching capture-state.
+
+**New systemic issues logged → B remediation pass (PARITY-LEDGER §A V25–V28):**
+- **V25 TYPOGRAPHY (high):** web = pixel/bitmap monospace; B = smooth vector sans. The #1 "look nothing alike"
+  driver, on every screen. Match GG1's font in bm-render, or FLAG if the text path can't (→ owner ACCEPT).
+- **V26 BACKGROUND CAST (high):** B carries a purple/violet cast on non-home screens; web is near-black `#0E1116`.
+  Neutral bg everywhere; purple = HOME_PALETTE only.
+- **V27 TYPE SCALE (med):** web's headline ramp is far taller (results timer / drill number dominate) + denser rows.
+- **V28 RANK GLYPH (low):** filled ★, not `*`.
+
+**Owner decisions landed:** event-play **D1 + D2 → MATCH WEB** — show the progress counter (not the event title)
+during the question; neutral near-black bg + white question text (drop the purple theme + gold prompt). Both → B fixes.
+
+**Still open from before:** V15 (hero-detail item NAMES + order wrong — confirmed in the side-by-side), V16 (results
+momentum pill — appears added in `3dbbefd`, pending my formal verify). Every prior `examine-PASSED` §D mark is now
+PROVISIONAL pending the V25–V28 fix + re-eyeball. Capture-state mismatch on heroes-partial (7/12 vs 3/12) = N6.
+
+---
+
 **Current verdict:** `APPROVED — T224 (audio) + T219 topics (batches 4–7, ALL ~10)` · `⚠ T219 Collector-ladder
 rebalance OUTSTANDING (the last T219 step)` — live `d1f2e27`; **63/63 + `node -c` clean** (verified @ worktree, in
 `gg1/dev/`). A pushed a big run; verified independently:

@@ -103,6 +103,20 @@ earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-com
 (`06a5d9d`) — all Babysitter take-overs, A stalled throughout. **No export gaps remain.** A's other work is owner-gated
 (TWA `T228`, store, Capacitor on-device test).
 
+> 🎯 **▶ NOW — BUILDER B: VISUAL-PARITY REMEDIATION PASS (owner side-by-side review, 2026-06-28).** The owner
+> reviewed the six best `examine`-passing screens side-by-side and they "look almost nothing alike" — the ΔE gate
+> was too lenient. **Systemic gaps to close across ALL rendered screens (see `PARITY-LEDGER.md` §A V25–V28):**
+> **(V25) TYPOGRAPHY** — match GG1's PIXEL/BITMAP monospace font; B currently uses a smooth vector sans (the #1
+> driver). *If bm-render's text path can't do a bitmap font, FLAG IT — don't fake it.* **(V26) BACKGROUND** — drop
+> the purple/violet cast on non-home screens; use near-black `#0E1116` (purple is HOME_PALETTE only). **(V27) TYPE
+> SCALE** — match web's tall headline ramp (results timer / drill number DOMINATE) + denser body rows. **(V28)**
+> use the filled ★ rank glyph, not `*`. **OWNER DECISIONS LANDED:** event-play **D1+D2 → MATCH WEB** — show the
+> progress counter (not the event title) during the question, and use the neutral near-black bg + white question
+> text (drop the purple theme + gold prompt). **PROCESS:** after fixing, re-render → re-compare → and the change
+> only counts once the side-by-side reads alike (ΔE alone is not the bar). Capture-state must match the web ref
+> (heroes-partial was 7/12 vs 3/12 — N6; seed `capture-states.json` first). Also still open: **V15** (hero-detail
+> item NAMES + order wrong) · **V16** (results momentum pill — appears added in `3dbbefd`, pending Babysitter verify).
+
 **Builder B → phase 5 PARITY. The entire Arena + event-play LOGIC layer is DONE + APPROVED (brickmap `main`
 `c6083f5`): combat re-sync to the redesign (`75051b8`, combat.rs spot-verified) · event-play core T233c (`8dc2077`,
 gauntlets byte-exact incl. the ICU-collation catch) · hero-unlock port (`038d0ce`, vs the 18-state battery) · event
