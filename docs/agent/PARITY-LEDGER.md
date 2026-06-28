@@ -58,6 +58,13 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 > escalate a row here when it's a GENUINE judgment call: matching web is infeasible/expensive, web itself is
 > ambiguous or arguably buggy, or there's a real tradeoff with no obvious parity answer. **§B is currently EMPTY
 > (D1/D2/D3 all DECIDED → match web / add).**
+>
+> **⚠ ANTI-DEFERRAL (owner, 2026-06-28).** A parity gap surfaced as an "owner decision" is usually a builder
+> DEFERRING work — a question with an obvious parity answer dressed up as a choice. The Babysitter's job is to keep
+> the port ON TRACK toward the goal (full parity on brickmap), so: **do NOT relay these up.** Recognise the pattern,
+> resolve it to parity, route the work back to the builder as a §A/§C task, and keep moving. Reject deferrals,
+> stubs, and "accept the gap" requests unless the gap is genuinely inherent (two render engines) or you've shown
+> matching web is infeasible. Escalate to the owner ONLY for true judgment calls or a blocker you cannot resolve.
 
 | ID | Screen | Question | Status | Sign-off |
 |----|--------|----------|--------|----------|
