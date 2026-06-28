@@ -53,10 +53,16 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 
 ## B. Owner DECISIONS pending (parity deviations that may be intentional)
 
+> **DEFAULT = PARITY (owner, 2026-06-28).** We are going for parity from the start, so "match web or keep B's
+> variant?" is NOT a decision — the answer is always **match web**. Drive those to parity without asking. Only
+> escalate a row here when it's a GENUINE judgment call: matching web is infeasible/expensive, web itself is
+> ambiguous or arguably buggy, or there's a real tradeoff with no obvious parity answer. **§B is currently EMPTY
+> (D1/D2/D3 all DECIDED → match web / add).**
+
 | ID | Screen | Question | Status | Sign-off |
 |----|--------|----------|--------|----------|
 | ~~D1~~ | event-play | ~~event title vs progress counter during the question~~ → **DECIDED: MATCH WEB** (owner, 2026-06-28). Show the web progress counter during the question; drop the persistent event title. Becomes a B fix. | DECIDED | match web |
-| D3 | summary (Best Times) | Web ships a Best Times screen (`renderSummary`, nav-wired `#/best-times`) backed by PER-MODE best-time boards in localStorage — brickmap's `Save` tracks no per-topic best time. **Decision: ADD best-time tracking** (save-schema + `finish_round` records per-topic best time/score; B's domain) **— or SCOPE `summary` OUT of v1** (an accepted parity gap). NB the same datum feeds the home '<topic> · best…' detail line + Practice qbest, so scoping out leaves those gaps too. Babysitter recommends ADD (it's woven in). | DECIDE | |
+| ~~D3~~ | summary (Best Times) | ~~add best-time tracking vs scope summary out~~ → **DECIDED: ADD** (owner, 2026-06-28). B extends the save schema so `finish_round` records per-topic best time/score, then builds the Best Times screen (`renderSummary` / `#/best-times`) against it. Closes 3 gaps at once — the screen + the home `<topic> · best…` detail line + Practice qbest. Becomes a B task. | DECIDED | add |
 | ~~D2~~ | event-play | ~~themed purple bg + gold question text vs web's neutral drill~~ → **DECIDED: MATCH WEB** (owner, 2026-06-28). Near-black bg + white question text; drop the purple tint + gold prompt. Closes the largest residual ΔE band. Becomes a B fix (and aligns with V26 — neutral bg app-wide). | DECIDED | match web |
 
 ## C. Open NON-VISUAL parity issues

@@ -112,7 +112,10 @@ earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-com
 > SCALE** — match web's tall headline ramp (results timer / drill number DOMINATE) + denser body rows. **(V28)**
 > use the filled ★ rank glyph, not `*`. **OWNER DECISIONS LANDED:** event-play **D1+D2 → MATCH WEB** — show the
 > progress counter (not the event title) during the question, and use the neutral near-black bg + white question
-> text (drop the purple theme + gold prompt). **PROCESS:** after fixing, re-render → re-compare → and the change
+> text (drop the purple theme + gold prompt). **D3 → ADD best-time tracking:** extend the save schema so
+> `finish_round` records a per-topic best time/score, then build the Best Times screen (`#/best-times`) + wire the
+> datum into the home `<topic> · best…` line and Practice qbest (one datum, three surfaces). **PROCESS:** after
+> fixing, re-render → re-compare → and the change
 > only counts once the side-by-side reads alike (ΔE alone is not the bar). Capture-state must match the web ref
 > (heroes-partial was 7/12 vs 3/12 — N6; seed `capture-states.json` first). Also still open: **V15** (hero-detail
 > item NAMES + order wrong) · **V16** (results momentum pill — appears added in `3dbbefd`, pending Babysitter verify).
