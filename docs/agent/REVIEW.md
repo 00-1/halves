@@ -1,5 +1,31 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-28 (pm-3) — FIRST-PASS agent sweep over the 11 un-reviewed screens
+
+Ran the agent gate on every rendered screen that hadn't been reviewed. Result: **PASS 4** (arena-cleared,
+event-play, settings, audio — now signed) · **EXAMINE 3** (inventory-topics/loot/codex — data+order match, just need
+the systemic chrome fixes) · **FAIL 4** (arena-prefight, arena-map, inventory-awards, inventory-events).
+
+**5 RECURRING systemic patterns (highest leverage — each hits many screens), logged V42–V46:**
+- **V42** header/tab CASING: web ALL-CAPS letter-spaced, B title-case.
+- **V43** "Back"/secondary buttons are gold in B, neutral grey in web (gold = primary CTAs only).
+- **V44** type system is MIXED in web (proportional bold for content NAMES, mono for numbers/chrome) — B's V25 fix
+  over-corrected to all-mono, so names are now mono where web is proportional.
+- **V45** inventory rows are bordered padded CARDS in web, flat dense strips in B.
+- **V46** B truncates long labels to a clipped line; web wraps (and keeps the `· Brawn/Cunning/Arcane` suffix).
+
+**Per-screen FAIL structure: V47** arena-prefight (no ENEMY TEAM cards / no region panel / Journey button moved /
+"how battles work" not a box). **V48** arena-map (CTA overflows+truncated, foe scenery backdrop missing, ⚔ falls
+back to ASCII `x`, progress dots + `/10` missing). **V49** inventory-loot missing the bottom loot-item carousel.
+**V50** codex minor.
+
+**Caveat — some FAILs are PARTLY capture-state/data, not pure render bugs:** arena-prefight (party 2/3 vs 0/3,
+different tier/foes), inventory-events (different featured event — time-dependent), inventory-awards detail strip
+(different item roster/order = V29/N6). Re-judge those after capture-state alignment + V29. The systemic + structural
+rows above are the real render work.
+
+---
+
 ## 2026-06-28 (pm-2) — PARTIAL APPROVE — wave-2 re-renders (`a7c1a8d`) through the agent gate
 
 Ran the agent-review gate on the 4 re-rendered screens B claimed.

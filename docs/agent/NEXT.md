@@ -131,6 +131,16 @@ earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-com
 > drill: drop gold from How-to/Skip button frames (neutral) + bigger headline number. **V36** home coin-hoard denser.
 > **V37** home tree directional arrows + branch connectors + corner-badge checks. **V38/V39** minor glyphs (nav
 > icons, banner thumbnail, coin/calendar/subscript). **Babysitter owns V29(stable-sort+regen+recapture) + V33.**
+>
+> 🟢 **WAVE-2 SIGNED: summary + drill PASS.** 🔵 **FIRST-PASS SWEEP DONE (11 screens) → also SIGNED arena-cleared,
+> event-play, settings, audio (6 total).** **WAVE 3 for B — the 5 SYSTEMIC fixes clear the most screens at once
+> (PARITY-LEDGER V42–V46):** V42 ALL-CAPS letter-spaced headers/tabs (not title-case) · V43 secondary/**Back** buttons
+> NEUTRAL grey not gold (gold = primary CTA only) · V44 MIXED type (proportional-bold for content NAMES, mono for
+> numbers/chrome — V25 over-corrected to all-mono) · V45 inventory rows = bordered padded CARDS, bar on its own line ·
+> V46 WRAP long labels (don't clip) + keep `· Brawn/Cunning/Arcane` suffixes. **Then per-screen:** V47 arena-prefight
+> (ENEMY TEAM cards + region panel + top Journey btn + boxed "how battles work") · V48 arena-map (CTA overflow, foe
+> scenery backdrop, ⚔ ASCII fallback, progress dots, `/10`) · V49 inventory-loot bottom carousel · V36/37/38 home ·
+> V28 clean ★ no-collision · V30 chip pills · V31 "tap for details ›". **Babysitter is doing V29 (N2 fix).**
 
 **Builder B → phase 5 PARITY. The entire Arena + event-play LOGIC layer is DONE + APPROVED (brickmap `main`
 `c6083f5`): combat re-sync to the redesign (`75051b8`, combat.rs spot-verified) · event-play core T233c (`8dc2077`,

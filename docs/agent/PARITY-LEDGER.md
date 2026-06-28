@@ -40,6 +40,15 @@ known/inherent difference) · **RESOLVED** (fixed + re-verified). A row leaves "
 | V39 | results | **minor glyphs** — momentum pill uses a plain green square not the calendar glyph; gold-coin amount uses a square not the coin glyph; headline `s` suffix not subscripted. | low | B | OPEN | |
 | V40 | summary | **gold accent** (surfaced once V32 passed) — title/subtitle/play ▶/Back render in gold; web uses muted grey/white. Use neutral. | low | B | OPEN | |
 | V41 | drill | **minor** — answer-slot placeholder is a single underline vs web's `– –` two-dash; an extra helper line "Tap the digits — it checks itself" not in web; Skip label "Skip" vs web "SKIP". | low | B | OPEN | |
+| V42 | ALL chrome (inventory/heroes/headers/tabs) | **HEADER + TAB CASING** — web headers/tabs are ALL-CAPS letter-spaced (`INVENTORY`, `TOPICS`, `AWARDS`, `CODEX`, `SETTINGS`); B renders title-case (`Inventory`, `Topics`…). Match the caps + tracking. (Recurs on every inventory tab + settings.) | med | B | OPEN | |
+| V43 | ALL screens | **"BACK" BUTTON over-gold** — B renders the secondary `Back` with gold text+border; web `Back` is neutral grey/white (gold = PRIMARY CTAs only, per V17). Make every secondary/Back button neutral. (Recurs on settings, audio, inventory-*, arena, heroes.) | med | B | OPEN | |
+| V44 | inventory / heroes / arena | **MIXED TYPE SYSTEM** — web is NOT all-mono: it uses a **proportional bold sans for CONTENT NAMES** (topic / region / hero / item names) and the pixel/mono face only for NUMBERS + chrome. B's wave-1 font fix (V25) over-corrected to all-mono, so content names now render mono where web is proportional. Match per-element (mono numbers/chrome, proportional bold names). | med | B | OPEN | |
+| V45 | inventory lists (awards/topics/loot) | **ROW CARDS** — web list rows are discrete bordered, padded cards with the progress bar on its OWN line below the label; B renders flat dense strips with the bar overlapping/under the text and no card border. Restore card framing + per-row padding (lower density). | med | B | OPEN | |
+| V46 | inventory-codex/events/loot, arena-map | **LABEL TRUNCATION** — B clips long names to one cut line (`Shortswor`, `Goblin Warr`, `Crocheted Door…`→`Crocheted`); web WRAPS them. Let labels wrap; restore the dropped variant suffixes (`· Brawn/Cunning/Arcane`). | med | B | OPEN | |
+| V47 | arena-prefight | **STRUCTURE (FAIL)** — missing the `ENEMY TEAM` header + 3 framed foe CARDS (B collapses them to a single unlabelled strip); missing the region-campaign panel (the "Gloamwood Champion · REGION 3/10 · TIER 6/12" banner + progress pips + threat); Journey-map button moved to the BOTTOM (web: top, under the tier header); "How battles work" is inline grey text not web's bordered ⚔ icon-box; matchup badge is a crossed-swords+number vs web's green `▲ Advantage ×1.5`. Rebuild to web's layout. | high | B | OPEN | |
+| V48 | arena-map | **LAYOUT BROKEN (FAIL)** — the `Pick your party` CTA OVERFLOWS the right edge + label truncated (`ick your part`) + too-saturated yellow; foe portrait crammed into a small thumbnail with the region scenery backdrop MISSING; the `⚔` crossed-swords glyph renders as an ASCII `x`/`X` fallback; the progress-dot row is omitted; region `/10` denominator missing (`REGION 3` vs `3/10`); `YOU ARE HERE` overlaps the region label. | high | B | OPEN | |
+| V49 | inventory-loot | **missing the bottom LOOT-ITEM CAROUSEL** — web shows a `GOBLIN WARREN · TIERS 1–12  12/12` sub-header + a horizontal strip of loot item tiles; B ends at the region-bar list. Add the per-region item carousel. | med | B | OPEN | |
+| V50 | inventory-codex | **minor** — missing the per-section right-side count (`BEASTS 30/30`); portrait cells use an amber/tan outline vs web's dark border. (Portraits + grid order/state MATCH — good.) | low | B | OPEN | |
 | ~~V23~~ | hero-detail | ~~4th chip clipped~~ → **RESOLVED** (`c8ed712`: chips fit; verified all 4 PWR/GRD/SPD/FOC visible). _orig:_ The 4 stat chips (PWR/GRD/SPD/FOC) overflow the hero card — the 4th ("6 FOC") is CLIPPED at the right edge. Fit/wrap the chips. | med | B | OPEN | |
 | ~~V24~~ | arena-map | ~~showed old DEF~~ → **RESOLVED** (`c8ed712`: now ⚔ PWR · HP, matching the re-captured ref + arena-prefight; verified). _orig:_ Foe-showcase shows the OLD "DEF 47" (the removed 1v1 stat). B reproduced a STALE web ref (arena-map-web predated the combat redesign). Ref now re-captured → shows "⚔ PWR · HP" (`main` `c0b453c`). B: update the arena-map foe-showcase to the PWR·HP threat (same as arena-prefight), re-render. | med | B | OPEN | |
 | ~~V21~~ | home | ~~locked-node styling~~ → **RESOLVED** (`200d581`: tree dims locked nodes; verified on home-fresh — head bright, rest greyed). _orig:_ LOCKED-node styling: web DIMS locked topic-nodes (only the unlocked head is bright; the rest greyed); B renders all nodes the same brightness. Add the locked/unlocked/done node states (the `nodeState` distinction) to the tree. | med | B | OPEN | |
@@ -106,12 +115,17 @@ commit a `<screen>-brickmap.png` and pass the compare (verdict `ok`/`examine`-ac
 `home-midprogress`, `practice`, `drill`† (examine 7.65) · `results`† (compare-PASSED examine ΔE6.43 — best yet; N1 rank portrait works; residual V16/V17), `summary`, `settings`† · `audio`† (examine ~9; eyeball-confirm pending) · `graphics`, `guide`, `splash`.
 (No blanket back-fill — each flows through as its visual pass completes, per VISUAL-PARITY.md.)
 
-> ⚠️ **agent-review gate progress (2026-06-28):** every old `examine-PASSED` mark is VOID — a screen is signed only
-> on an agent-PASS. **SIGNED so far (agent-PASS): `summary` ✓, `drill` ✓** (wave-2 `a7c1a8d`; minor residuals V40/V41
-> only). **Still agent-FAIL:** `home` (V36 hoard / V37 edges / V38 nav-glyphs), `heroes-partial` (V28 star+collision /
-> V30 chips / V31 tap-for-details), `hero-detail` (V29 list-order = N2, mine). `results`/`heroes` = clean-ish EXAMINE
-> pending a re-pass. **The remaining ~13 rendered screens still need their FIRST agent review** (event-play, arena-*,
-> inventory-*, hero-detail-{arcane,cunning}, home-{fresh,midprogress}, settings, audio).
+> ⚠️ **agent-review gate progress (2026-06-28, after first-pass sweep):** a screen is signed only on an agent-PASS.
+> **SIGNED (agent-PASS, 6): `summary` ✓ · `drill` ✓ · `arena-cleared` ✓ · `event-play` ✓ (D1/D2 confirmed) ·
+> `settings` ✓ · `audio` ✓** — all with only low residuals (mostly V43 Back-gold).
+> **EXAMINE / close (3): `inventory-topics` · `inventory-loot` · `inventory-codex`** — data/order MATCH; gated on the
+> systemic chrome fixes (V42 caps / V43 Back / V44 type / V45 cards / V46 truncation) + V49 (loot carousel).
+> **agent-FAIL (7): `home` (V36/V37/V38) · `heroes-partial` (V28/V30/V31) · `hero-detail` (V29=N2, mine) ·
+> `arena-prefight` (V47) · `arena-map` (V48) · `inventory-awards` (V45/V42/V43 + detail-strip data) ·
+> `inventory-events` (V44/V46 + time-event data).**
+> **High-leverage:** the 5 systemic rows V42–V46 recur across most EXAMINE/FAIL inventory+chrome screens — fixing them
+> clears several at once. Still un-reviewed: `home-{fresh,midprogress}` (track `home`), `hero-detail-{arcane,cunning}`
+> (track `hero-detail`/V29), `results`/`heroes` (re-pass after wave-2).
 
 ---
 
