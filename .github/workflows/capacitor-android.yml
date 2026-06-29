@@ -55,7 +55,7 @@ jobs:
         working-directory: capacitor/android
         run: ./gradlew bundleRelease assembleRelease --no-daemon --stacktrace
 
-      - name: Sign artifacts (if the experiment keystore secret is present)
+      - name: Sign artifacts (throwaway key if no production secret — sideload APK is always installable)
         env:
           KS_B64: ${{ secrets.CAP_EXP_KEYSTORE_B64 }}
           KS_PASS: ${{ secrets.CAP_EXP_KEYSTORE_PASSWORD }}
@@ -63,19 +63,25 @@ jobs:
           KEY_PASS: ${{ secrets.CAP_EXP_KEY_PASSWORD }}
         run: |
           set -e
-          if [ -z "$KS_B64" ]; then
-            echo "::warning::No CAP_EXP_KEYSTORE_B64 secret set — uploading UNSIGNED artifacts (Play upload needs a signed .aab; see capacitor/README.md)."
-            exit 0
-          fi
-          echo "$KS_B64" | base64 -d > exp.jks
-          AAB=$(find android -path '*/bundle/release/*.aab' | head -n1)
-          echo "signing bundle: $AAB"
-          jarsigner -keystore exp.jks -storepass "$KS_PASS" -keypass "$KEY_PASS" \
-            -sigalg SHA256withRSA -digestalg SHA-256 "$AAB" "$KEY_ALIAS"
-          jarsigner -verify "$AAB" && echo "AAB signature verified"
-          # Sideload APK: zipalign + apksigner (v2/v3) for direct on-device install.
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n1)
           APK_IN=$(find android -path '*/apk/release/*.apk' | head -n1)
+          if [ -z "$KS_B64" ]; then
+            # No production keystore → generate a THROWAWAY key so the sideload APK still installs
+            # on-device (Android only refuses TRULY unsigned APKs; any signature, incl. a self-gen
+            # debug key, is fine for sideload — only Play UPLOAD needs the real upload keystore).
+            echo "::notice::No production keystore secret — signing the sideload APK with a throwaway key (installable on-device; the .aab is left unsigned, which is fine since Play upload isn't the goal of this experiment build)."
+            keytool -genkeypair -keystore exp.jks -storepass android -keypass android -alias exp \
+              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=GG Cap Experiment, O=throwaway"
+            KS_PASS=android; KEY_PASS=android; KEY_ALIAS=exp
+          else
+            echo "$KS_B64" | base64 -d > exp.jks
+            AAB=$(find android -path '*/bundle/release/*.aab' | head -n1)
+            echo "signing bundle: $AAB"
+            jarsigner -keystore exp.jks -storepass "$KS_PASS" -keypass "$KEY_PASS" \
+              -sigalg SHA256withRSA -digestalg SHA-256 "$AAB" "$KEY_ALIAS"
+            jarsigner -verify "$AAB" && echo "AAB signature verified"
+          fi
+          # Sideload APK: zipalign + apksigner (v2/v3) for direct on-device install — throwaway OR real key.
           "$BT/zipalign" -f 4 "$APK_IN" app-release-aligned.apk
           "$BT/apksigner" sign --ks exp.jks --ks-pass "pass:$KS_PASS" --key-pass "pass:$KEY_PASS" \
             --ks-key-alias "$KEY_ALIAS" --out app-release-signed.apk app-release-aligned.apk
