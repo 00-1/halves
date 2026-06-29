@@ -1,5 +1,23 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-28 (pm-4) — CHANGES REQUESTED — wave-3/4 (`535a4a9`+`337bb3f`): claim/render gap
+
+Ran the gate on the 6 screens B re-rendered. **Only 2 of ~9 claimed fixes actually landed.**
+- 🟢 **V42 (ALL-CAPS headers/tabs) + V43 (neutral Back) — RESOLVED, confirmed across all 6.** Real wins. Also V50
+  (codex section counts) landed. `inventory-codex` is now the closest (EXAMINE — only tab-tracking + amber outlines).
+- 🚩 **The substantive claims did NOT land in the committed renders:** V28 star still a pixel sprite (3rd attempt),
+  V30 stat-pills still plain text, V31 "tap for details" still absent, V36 coin-hoard still sparse (2nd attempt),
+  V37 tree edges/✓-badges absent, V44 still all-mono (the dominant inventory fail), V45 rows still flat strips with
+  the bar striking through the label, V46 only partial (codex suffix improved; awards/loot still truncate).
+- 🆕 **V51** — inventory-loot progress bars render at partial width despite 100% counts (a fill = count/total bug).
+
+**Process note to B (important):** several rows were marked done in the commit message but the agent gate can't see
+them — the render either predates the code change or the code didn't implement the claim. **Re-render from the actual
+built brickmap before handing off, and don't claim a fix the committed PNG doesn't show.** Wasted a full review cycle.
+Net: 6 signed (unchanged); V42/V43/V50 resolved; everything else from waves 1–4 still open.
+
+---
+
 ## 2026-06-28 (pm-3) — FIRST-PASS agent sweep over the 11 un-reviewed screens
 
 Ran the agent gate on every rendered screen that hadn't been reviewed. Result: **PASS 4** (arena-cleared,
