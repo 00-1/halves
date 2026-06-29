@@ -57,7 +57,29 @@ function checkButton(b, NICEc = NICE) {
   return v;
 }
 
-// ── tests ────────────────────────────────────────────────────────────────────
+// A BUTTON ROW (equal-width siblings, e.g. home Start/Practice/Guide = CSS `flex:1 1 0`): the
+// per-button h:v ratio rule does NOT apply (a short label in a wide equal-width cell is fine).
+// The invariants instead: all the same width, each label CENTRED + symmetric, a MIN horizontal
+// padding floor, and the shared height/touch/vpad rules. (Validated against web's real layout below.)
+function checkButtonRow(buttons, minHpad = 6, NICEc = NICE) {
+  const v = [];
+  const w0 = buttons[0].rect.w;
+  // equal-width within real flex sub-pixel rounding (validated vs web: 112/114/114 → ~2px spread).
+  const wTol = Math.max(2, w0 * 0.02);
+  buttons.forEach((b, i) => {
+    if (Math.abs(b.rect.w - w0) > wTol) v.push(`button ${i} width ${b.rect.w} ≠ row width ${w0} (not equal-width, >${wTol.toFixed(1)}px)`);
+    // reuse checkButton but drop the upper ratio bound (rows are intentionally wide)
+    checkButton(b, { ...NICEc, HV_RATIO_MAX: Infinity, HV_RATIO_MIN: 0 }).forEach(s => v.push(`button ${i}: ${s}`));
+    const left = b.text.x - b.rect.x, right = (b.rect.x + b.rect.w) - (b.text.x + b.text.w);
+    if (Math.min(left, right) < minHpad) v.push(`button ${i}: horizontal padding ${Math.min(left, right).toFixed(1)} < min ${minHpad}px`);
+  });
+  return v;
+}
+
+module.exports = { checkButton, checkButtonRow, NICE };
+
+// ── tests (only when run directly; `require` gets the functions without exiting) ──────────────────
+if (require.main !== module) return;
 let fails = 0;
 const ok = (c, m) => { if (!c) { console.error("FAIL:", m); fails++; } else console.log("ok:", m); };
 
@@ -86,5 +108,4 @@ const overflow = { rect: { x: 0, y: 0, w: 100, h: 56 }, text: { x: 10, y: 18, w:
 ok(checkButton(overflow).some(s => /overflows/.test(s)), "text overflowing the button is flagged");
 
 console.log(fails ? `\n${fails} FAIL` : "\nALL BUTTON-GEOMETRY CHECKS PASS");
-module.exports = { checkButton, NICE };
 process.exit(fails ? 1 : 0);
