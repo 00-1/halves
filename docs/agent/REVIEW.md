@@ -1,5 +1,25 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-28 (pm-6) — wave-6 (`2074b86`): B's self-gate WORKED; star+pills+title landed
+
+B adopted the self-review gate (commit tagged "own agent-gate PASSed") and **for the first time the judgment-heavy
+fixes actually landed** — confirming the blind-iteration diagnosis + the fix.
+- ✅ **V28 RESOLVED** — clean small filled ★ at the rank-number height (after 6 attempts). Minor: sits tight to the number.
+- ✅ **V30 RESOLVED** — stat PILLS now present. ⚠️ **My verification agent FALSE-FLAGGED this as "plain text" → FAIL.**
+  I overturned it by inspecting the RAW 430×880 render, which clearly shows 4 distinct dark chips. **Lesson: the
+  agent gate is not infallible either — the Babysitter adjudicates a surprising/again-failing verdict against the raw
+  render before recording it.** (Same discipline we apply to B's claims and to ΔE.)
+- ✅ **V42 RESOLVED** — title back to small tracked caps (the wave-5 oversize regression fixed).
+- 🟡 **heroes-partial render is now at parity** — the ONLY blocker is **N6 capture-state**: B rendered the 3/12 state
+  but the web ref is 7/12, so V31 "tap for details" can't be verified. B: re-render against `capture-states.json`
+  (partial → 7/12), or I re-capture the web ref to B's state. Then it signs.
+- 🔴 **home still FAIL** — V36 hoard now textured (good) but too low (~30% vs 45%) + weak side wings; V37 tree has no
+  inter-node connectors; V38 nav icons + banner thumbnail still missing.
+
+Net: still 6 signed, but heroes-partial is one capture-state re-render away, and B's loop is now self-correcting.
+
+---
+
 ## 2026-06-28 (pm-5) — ROOT CAUSE: B is iterating BLIND (wave-5 `eefa5b7`)
 
 Investigated why waves 3–5 keep "fixing" rows the render doesn't show. **Checked the brickmap source: the screen
