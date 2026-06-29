@@ -104,6 +104,18 @@ earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-com
 (TWA `T228`, store, Capacitor on-device test).
 
 > ════════════════════════════════════════════════════════════════════════════════════════════════════
+> 🏁 **FINAL AUTOMATED BATCH (owner, 2026-06-29: "push forward with a few last things, then break from this approach
+> — we're reaching the limits of the automated process; I'll step in with advice").** Drain this, self-gate, push;
+> the owner then steps in. **Priority:**
+> 1. **home placement→connectors:** V37a (lay topic-box parts to FILL the row — measured: 4-up = 60px nodes + ~38px
+>    gaps; 2-up = 96px + 116px; see ledger) → THEN V37 connectors into those gaps. *(Owner: do placement first.)*
+> 2. **padding/buttons/ticks:** V52 (global safe-margin) · V53 (mirror `test/button-geometry.test.js` on brickmap's
+>    REAL button layout — web PASSES it; brickmap Continue was 25px tall) · V55 (inventory ✓ even padding).
+> 3. **home glyphs:** V38 (nav icons + banner thumbnail).
+> 4. **content:** V49 (real loot items, not `Tier N`) · V47 (arena-prefight rebuild) · V46 · V54 polish.
+> 5. **then VERIFY for sign-off:** inventory-loot/awards/codex/events (got V44 — likely close).
+> **Anything you genuinely can't do (e.g. V37 mesh even after placement) → FLAG for owner ACCEPT, don't grind.**
+> ────────────────────────────────────────────────────────────────────────────────────────────────────
 > 🚀 **▶▶ CURRENT WORK ORDER — BATCH MODE (owner, 2026-06-28: "give B more work, let it run longer, stop losing
 > time on back-and-forth"). THIS SUPERSEDES the wave-by-wave notes below.** Don't push-one-then-idle. **Drain the
 > WHOLE open punch-list in one long run, then hand back once** — see the TIGHTENED LOOP in `VISUAL-PARITY.md`.

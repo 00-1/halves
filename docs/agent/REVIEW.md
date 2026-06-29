@@ -1,5 +1,33 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 🏁 HANDOFF — state for owner step-in (2026-06-29)
+The automated parity loop has run ~11 B waves. **Signed: 9/26** (summary, drill, arena-cleared, event-play, settings,
+audio, heroes-partial, inventory-topics, heroes). **Nothing DIVERGENT remains.**
+
+**Big wins (RESOLVED):** the whole typography/colour/scale foundation (V25–V27), ALL-CAPS chrome + neutral Back
+(V42/V43), stat-pills + ★ (V28/V30), the mixed-type **white proportional names** keystone (V44), event-play match-web
+(D1/D2), Best-Times screen (D3), summary/drill rebuilds, arena-map ⚔/CTA (V48), inventory row-cards (V45), the item
+generator byte-parity (N1), capture-state alignment (N5/N6). ~35 issues closed.
+
+**Still open & TRACTABLE for B (queued, final batch):** inventory family sign-offs (loot/awards/codex/events — close
+after V44), padding/buttons (V52/V53/V55 — button standard is web-validated + unit-tested), home nav/banner glyphs
+(V38), real loot items (V49), arena-prefight rebuild (V47), low polish (V54).
+
+**WHERE THE AUTOMATED PROCESS HIT ITS LIMIT (your advice would help most):**
+- **V37 home tree connectors — 5 attempts, still partial.** Root cause finally isolated: B packs the topic-boxes
+  edge-to-edge so there's no gap for connectors. Owner's call: fix PLACEMENT first (web measured: 60px nodes + ~38px
+  gaps), then connectors — re-spec'd as V37a→V37. This is the canonical "needs a human eye on the layout" item.
+- **Font fidelity at small sizes:** B's InstrumentSans reads slightly blocky; verify-agents repeatedly misread it as
+  "mono." The Babysitter now adjudicates font calls on the raw render (agents are reliable on STRUCTURE, not type).
+- **Verify-agent false-positives:** the agent gate is strong but not infallible (false-flagged pills as "plain text",
+  fonts as "mono"); every surprising verdict is adjudicated against the raw render before acting.
+
+**Tooling built (reusable):** the agent-review gate (VISUAL-PARITY.md), `test/button-geometry.test.js` +
+`button-geometry-web.test.js` (DOM-validated nice-button math), the perceptual ΔE comparator (triage only), the
+capture-state harness, and the batch+drain / no-defer / partial-credit-is-zero process (VISUAL-PARITY.md).
+
+---
+
 ## 2026-06-29 — wave-11 (`df9aeee`): V37 still PARTIAL (5th attempt) — root cause found
 
 Home-only. B claimed "real horizontal purple mastery branches"; independent structural agent says PARTIAL — only ~1
