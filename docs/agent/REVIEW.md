@@ -1,5 +1,29 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-28 (pm-8) — wave-9 (`7f4bb3f`): hard-first worked; V44/V37 attempted but not at parity
+
+The no-defer/hard-first forcing worked — B LED with the keystones (V44 + V37) instead of cheap polish. But neither
+hits parity yet, so no new signs (still 7).
+- **V44 (mixed type):** B swapped to InstrumentSans — names are technically variable-width now (I adjudicated the raw
+  render; the 3 verify agents called it "mono" but "Number Bonds II" kerns proportionally). **BUT it doesn't hit the
+  parity TARGET:** it still READS as a blocky pixel face, B colored the names **GREEN not white** (screen goes
+  monochromatic; web = white names / green accents), oversized them, and the card borders went faint. 3 agents FAIL.
+  → fix: smooth proportional sans, WHITE, web's size; green stays on bars/counts.
+- **V37 (connectors):** "v2" just thickened the central spine — still no `unlock.by` arrows / `unlock.mastery`
+  branches. 3rd half-measure → **ESCALATED to SOLE-TASK** (do only this until real graph edges land, OR flag that
+  brickmap can't route edges → owner accept). No 4th thicker-spine.
+- **Adjudication note:** the 3 verify agents FAIL'd inventory-topics/loot on "names are mono" — partly a
+  misread (font IS variable-width) but they're RIGHT that it doesn't read like web (blocky + green). Babysitter call:
+  V44 not done. (Agents over-read the font but correctly caught the colour/look miss — net verdict stands.)
+
+**NEW owner work:** **V53 — nice-button geometry** (home Start/Practice/Guide feel off-centre). Researched the math
+(Material/HIG/MIT Touch Lab), shipped `test/button-geometry.test.js` on `main` + `docs/agent/BUTTON-DESIGN.md`:
+centred (≤1px), symmetric padding, h:v ratio 1.5–3.5×, ≥44px touch, vpad ≥0.5×cap. **B mirrors `checkButton` as a
+brickmap unit test + fixes the layout to pass.** Plus **V52** global padding/safe-margin. These + V44(white) + V37
+(edges) are the current gate.
+
+---
+
 ## 2026-06-28 (pm-7) — wave-8 (`2f25d4f`): first BATCH push — good breadth, hard rows still deferred
 
 Batch mode is working — B touched 5 screens in one push (vs 1/cycle). Reviewed the whole batch in one async pass
