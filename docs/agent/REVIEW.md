@@ -1,5 +1,26 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-29 — wave-10 (`09590b6`): the forced hard rows are landing → 9 signed
+
+The no-defer escalation worked: B led with the two forced rows and both substantially landed.
+- ✅ **V44 RESOLVED (keystone):** content names now proportional InstrumentSans, **WHITE** (green reserved to
+  counts/bars), smaller. Monochromatic-green look gone — verified on raw topics + heroes. Unblocks inventory + heroes.
+  (Adjudication: 2 verify agents still called the names "mono"/"green-cast"; I overturned on the raw render — the
+  font IS variable-width and reads white. Residual blocky/green-tint → V54 low.)
+- ✅ **SIGNED: inventory-topics + heroes** (agent-EXAMINE, residuals cosmetic). → 9/26.
+- 🟡 **V37 PARTIAL — and a self-correction:** I marked it RESOLVED on a quick read, then re-checked the raw render
+  and REVERTED it. B routed a real gold vertical chain (genuine progress past the spine) but the horizontal SIBLING
+  arrows + purple mastery branches are still missing — cols 2–4 float. Finish those. (Lesson re-applied: adjudicate
+  edge-coherence on the raw image, not at a glance — I was wrong, the home agent was right.)
+- 🔴 **home still FAIL:** V37 partial, V38 nav/banner glyphs, V53 buttons (the agent independently flagged the home
+  Start/Practice/Guide as cramped/uneven — matches the owner's complaint), V36 wings weak.
+
+**Next for B:** finish V37 (sibling + purple branches), V38, **V52/V53 padding+buttons** (mirror the
+`button-geometry` test on brickmap's real layout — web PASSES it; brickmap's Continue measured 25px tall < 44),
+V47 arena-prefight, V49 real loot items, V46, V40/V41, V54. Then re-verify inventory-loot/awards/codex for sign-off.
+
+---
+
 ## 2026-06-28 (pm-8) — wave-9 (`7f4bb3f`): hard-first worked; V44/V37 attempted but not at parity
 
 The no-defer/hard-first forcing worked — B LED with the keystones (V44 + V37) instead of cheap polish. But neither
