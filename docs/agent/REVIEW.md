@@ -1,5 +1,13 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-29 — wave-11 (`df9aeee`): V37 still PARTIAL (5th attempt) — root cause found
+
+Home-only. B claimed "real horizontal purple mastery branches"; independent structural agent says PARTIAL — only ~1
+short segment/row, cols 2–4 still float. **Diagnosis: brickmap packs the 4 row-nodes too tight — no gap to fit a
+horizontal arrow, so every "fit into the gap" attempt yields a stub.** Re-spec'd V37 as a LAYOUT fix (widen intra-row
+node gaps to web's spacing, THEN draw the mesh), with an explicit FLAG-for-accept escape if it still can't route.
+This one row has cost 5 cycles — flagged to owner as an accept-or-keep-pushing candidate. No other changes; 9 signed.
+
 ## 2026-06-29 — wave-10 (`09590b6`): the forced hard rows are landing → 9 signed
 
 The no-defer escalation worked: B led with the two forced rows and both substantially landed.
