@@ -190,6 +190,20 @@ The lockstep was the waste: B fixed one thing → pushed → idled → waited fo
 - **State per row:** `OPEN` → (B works + self-gates) → B commits → (Babysitter audits) → `RESOLVED`(signed) or back to
   `OPEN` with a correction. B's "do I have work?" = "any OPEN rows I own?" — no pointer-watching, no idling.
 
+### NO-DEFER — the Babysitter forces the hard work (owner, 2026-06-28: "builders are lazy, they'll always try to defer")
+Builders gravitate to cheap, visible wins and defer the expensive structural rows (B's pattern: 6 home waves on the
+hoard, never the connectors; then badges-without-connectors; ⚔-without-scenery; placeholder-carousel). The
+Babysitter's JOB is to stop that:
+- **Partial credit = ZERO.** A row is DONE only when its HARD/load-bearing part is done. The easy half alone does not
+  advance the row — re-open it, every time, with the hard part called out specifically.
+- **"It's hard" is not a blocker.** The only valid skip is a missing export or a genuinely unclear spec, Babysitter-
+  confirmed. A row skipped as "hard" bounces straight back. A row that genuinely can't be done (e.g. an engine can't
+  do X) must be FLAGGED for an owner ACCEPT — never silently shipped half-done.
+- **Sequence hard-first.** Babysitter orders the batch keystones-and-structure first, polish last, so B can't fill a
+  run with cheap rows and call the batch drained while the load-bearing rows sit open.
+- **Escalate the repeat-skip.** A load-bearing row skipped ≥2 batches becomes the SOLE next task (B does nothing else
+  until it lands) + gets a pixel/data spec so "I couldn't see it" / "it was vague" is off the table.
+
 ---
 
 ## WHEN to run the compare test — it's a COMPLETION gate, not a build tool (owner policy, 2026-06-25)

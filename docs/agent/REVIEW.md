@@ -1,5 +1,27 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-28 (pm-7) — wave-8 (`2f25d4f`): first BATCH push — good breadth, hard rows still deferred
+
+Batch mode is working — B touched 5 screens in one push (vs 1/cycle). Reviewed the whole batch in one async pass
+(eyeballed loot/arena-map/home raw renders).
+- ✅ **RESOLVED:** V39 (calendar+coin glyphs, results+home), V45 (inventory row CARDS across all tabs — real
+  structural win), V51 (loot bar fill bug).
+- 🟡 **PARTIAL — B did the EASY half and skipped the HARD half (the persistent cherry-pick):** V37 home (✓ badges
+  done; the CONNECTORS skipped a 3rd time despite a concrete `modes.json` spec) · V48 arena-map (⚔ glyph + CTA sizing
+  + `REGION 3/10` done; scenery backdrop + progress-dots skipped) · V49 loot (carousel structure done; tiles are
+  generic `Tier N` placeholders, not the real loot icons/names).
+- ⭐ **KEYSTONE = V44 (proportional content-name font), still NOT attempted.** The whole inventory family is now
+  structurally close (ΔE 5.5–8.6) but every screen stays EXAMINE until V44 lands — it's the highest-leverage row.
+- 🆕 **V52 (owner) — global PADDING / SAFE-MARGIN standard.** brickmap text is off-centre and clips/touches edges
+  (codex header clipped left, arena-map CTA bled right, names butting edges); web keeps consistent gutters. Fix once
+  in the shared layout primitives.
+
+**To B:** the batch breadth is right — now stop deferring the hard rows. **Next batch MUST lead with V44 + V52**
+(they gate the most sign-offs) and the V37 connectors (FLAG it if you truly can't route graph edges — don't ship
+badges-only a 4th time). When the easy half of a row is done but the hard half isn't, the ROW isn't done.
+
+---
+
 ## 2026-06-28 (pm-6) — wave-6 (`2074b86`): B's self-gate WORKED; star+pills+title landed
 
 B adopted the self-review gate (commit tagged "own agent-gate PASSed") and **for the first time the judgment-heavy

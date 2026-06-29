@@ -116,21 +116,29 @@ earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-com
 >    you spent 6 waves on V36 and never started V37/V38).
 > 3. **SELF-GATE each screen** before committing: spawn your own review agent (your render + `…-web.png` + the
 >    VISUAL-PARITY rubric); only move on at agent-PASS. Adjudicate a surprising agent verdict against your raw render.
-> 4. Hit a genuine blocker (missing export / unclear spec)? **Log it, SKIP it, keep draining the rest** — don't stop
->    the whole run. The Babysitter reviews the full batch in ONE pass and signs/re-opens.
+> 4. **NO DEFER (owner, 2026-06-28: "builders are lazy, they'll always try to defer — the Babysitter's job is to make
+>    them actually do the work").** "It's hard" is NOT a blocker. The ONLY valid skip is a missing export or a
+>    genuinely unclear spec, and the Babysitter must CONFIRM it — otherwise it bounces straight back. **A row is DONE
+>    only when its HARD/load-bearing part is done; the easy half alone counts as ZERO** (badges without connectors =
+>    not done; ⚔ without the scenery backdrop = not done; carousel with placeholder tiles = not done). The Babysitter
+>    will re-open any row where the load-bearing part was skipped, every time.
+> 5. **DO THE HARD ROWS FIRST.** Work the batch in the priority order below — top group before bottom. You do NOT get
+>    to fill a run with cheap polish and call the batch drained while the keystones sit open.
 >
-> **THE BATCH (all your open rows, grouped by screen — drain each screen fully):**
-> - **home:** V37 (tree CONNECTORS — spec'd in the ledger: gold `unlock.by` arrows + purple `unlock.mastery` branches
->   from `modes.json`; corner ✓ badges) · V38 (nav icons + banner thumbnail + coin glyph). *(You've never touched
->   these — start here.)*
-> - **inventory (all tabs):** V44 (MIXED type — proportional-bold content NAMES, mono numbers; not all-mono) · V45
->   (row CARDS — bordered/padded, bar on its own line) · V46 (WRAP long labels on awards/loot) · V49 (loot bottom
->   item CAROUSEL) · V51 (loot bar fill = count/total bug).
-> - **arena-prefight:** V47 (ENEMY TEAM cards + region panel + top Journey btn + boxed "how battles work").
-> - **arena-map:** V48 (CTA overflow/truncation · foe scenery backdrop · ⚔ ASCII fallback · progress dots · `/10`).
-> - **results:** V39 (momentum-pill calendar glyph · coin glyph · subscript `s`). **summary:** V40 (gold→neutral
->   accents). **drill:** V41 (`– –` answer slot · drop the extra helper line · `SKIP` caps).
+> **THE BATCH — in PRIORITY ORDER (hard/high-leverage first; finish a group before the next):**
+> - **① KEYSTONES (gate the most sign-offs — DO THESE FIRST):** **V44** (MIXED type: proportional-bold content NAMES +
+>   mono numbers — gates ALL inventory + arena) · **V52** (global PADDING/safe-margin: no text touching/clipping
+>   edges, centred actually centred — fix in the shared layout primitives, all screens at once).
+> - **② HARD STRUCTURE (the parts you keep skipping — no badges-only):** **V37** home tree CONNECTORS (gold
+>   `unlock.by` arrows + purple `unlock.mastery` branches from `modes.json`; badges already done — do the EDGES, or
+>   FLAG that you can't route graph edges) · **V47** arena-prefight rebuild (ENEMY TEAM cards + region panel + top
+>   Journey btn + boxed "how battles work") · **V48** arena-map remainder (foe **scenery backdrop** + tier
+>   **progress-dots**) · **V49** loot carousel REAL items (real loot icons+names, not `Tier N` placeholders) · **V38**
+>   home nav icons + banner thumbnail.
+> - **③ POLISH (only after ①+②):** V46 (wrap long labels) · V40 (summary gold→neutral) · V41 (drill `– –` slot /
+>   helper line / `SKIP` caps).
 > - **(Babysitter owns V29 = N2 catalog order → hero-detail + ordered lists; don't touch.)**
+> **DONE (do not reopen):** V25/V26/V27/V28/V30/V31/V32/V33/V34/V35/V36/V39/V42/V43/V45/V50/V51/N6.
 > ════════════════════════════════════════════════════════════════════════════════════════════════════
 >
 > 🎯 **▶ NOW — BUILDER B: VISUAL-PARITY REMEDIATION PASS (owner side-by-side review, 2026-06-28).** The owner
