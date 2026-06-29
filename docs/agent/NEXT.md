@@ -103,6 +103,36 @@ earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-com
 (`06a5d9d`) — all Babysitter take-overs, A stalled throughout. **No export gaps remain.** A's other work is owner-gated
 (TWA `T228`, store, Capacitor on-device test).
 
+> ════════════════════════════════════════════════════════════════════════════════════════════════════
+> 🚀 **▶▶ CURRENT WORK ORDER — BATCH MODE (owner, 2026-06-28: "give B more work, let it run longer, stop losing
+> time on back-and-forth"). THIS SUPERSEDES the wave-by-wave notes below.** Don't push-one-then-idle. **Drain the
+> WHOLE open punch-list in one long run, then hand back once** — see the TIGHTENED LOOP in `VISUAL-PARITY.md`.
+>
+> **THE LOOP (read once, then run):**
+> 1. The PARITY-LEDGER §A `OPEN` rows you own ARE your queue. Work them all; don't wait for a Babysitter sign-off
+>    between items — **you never idle while any OPEN row you own remains.**
+> 2. **DRAIN PER SCREEN:** finish EVERY open row for a screen before leaving it (name the `V##`s in the commit).
+>    Do NOT re-iterate one delta 6× while other rows on the same screen sit untouched (that's the home/hoard trap —
+>    you spent 6 waves on V36 and never started V37/V38).
+> 3. **SELF-GATE each screen** before committing: spawn your own review agent (your render + `…-web.png` + the
+>    VISUAL-PARITY rubric); only move on at agent-PASS. Adjudicate a surprising agent verdict against your raw render.
+> 4. Hit a genuine blocker (missing export / unclear spec)? **Log it, SKIP it, keep draining the rest** — don't stop
+>    the whole run. The Babysitter reviews the full batch in ONE pass and signs/re-opens.
+>
+> **THE BATCH (all your open rows, grouped by screen — drain each screen fully):**
+> - **home:** V37 (tree CONNECTORS — spec'd in the ledger: gold `unlock.by` arrows + purple `unlock.mastery` branches
+>   from `modes.json`; corner ✓ badges) · V38 (nav icons + banner thumbnail + coin glyph). *(You've never touched
+>   these — start here.)*
+> - **inventory (all tabs):** V44 (MIXED type — proportional-bold content NAMES, mono numbers; not all-mono) · V45
+>   (row CARDS — bordered/padded, bar on its own line) · V46 (WRAP long labels on awards/loot) · V49 (loot bottom
+>   item CAROUSEL) · V51 (loot bar fill = count/total bug).
+> - **arena-prefight:** V47 (ENEMY TEAM cards + region panel + top Journey btn + boxed "how battles work").
+> - **arena-map:** V48 (CTA overflow/truncation · foe scenery backdrop · ⚔ ASCII fallback · progress dots · `/10`).
+> - **results:** V39 (momentum-pill calendar glyph · coin glyph · subscript `s`). **summary:** V40 (gold→neutral
+>   accents). **drill:** V41 (`– –` answer slot · drop the extra helper line · `SKIP` caps).
+> - **(Babysitter owns V29 = N2 catalog order → hero-detail + ordered lists; don't touch.)**
+> ════════════════════════════════════════════════════════════════════════════════════════════════════
+>
 > 🎯 **▶ NOW — BUILDER B: VISUAL-PARITY REMEDIATION PASS (owner side-by-side review, 2026-06-28).** The owner
 > reviewed the six best `examine`-passing screens side-by-side and they "look almost nothing alike" — the ΔE gate
 > was too lenient. **Systemic gaps to close across ALL rendered screens (see `PARITY-LEDGER.md` §A V25–V28):**

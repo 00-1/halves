@@ -174,6 +174,22 @@ intent. So the work splits cleanly:
    text ON TOP (a no-op pill is usually rect-after-text or rect-in-bg-colour). Convert "make it look like web" into
    "draw rect x,y,w,h colour #…".
 
+### TIGHTENED LOOP — batch + drain, async review (owner, 2026-06-28: "give B more work, run longer, stop the back-and-forth")
+The lockstep was the waste: B fixed one thing → pushed → idled → waited for a Babysitter verdict → repeat. New loop:
+- **Babysitter hands B the WHOLE open punch-list as one batch** (the §A `OPEN` rows it owns, grouped by screen).
+- **B drains it in one long run, never idling** while any owned OPEN row remains. **DRAIN PER SCREEN** — finish every
+  open row for a screen before leaving it (name the `V##`s in the commit); never re-iterate one delta while sibling
+  rows on the same screen sit untouched (the home/hoard trap: 6 waves on V36, V37/V38 never started).
+- **B self-gates each screen** (its own review agent → PASS) before committing, and adjudicates a surprising agent
+  verdict against its raw render. On a genuine blocker: log + skip + keep draining (don't halt the run).
+- **Babysitter reviews the whole batch in ONE async pass** — runs the gate per screen, ADJUDICATES verdicts vs the
+  raw render (agents false-flag too — e.g. V30 "plain text" overturned on the raw image), signs PASSes, re-opens
+  misses with sharper specs. No per-item round-trip.
+- **Escalation:** a row OPEN ≥2 review cycles with no ATTEMPT (B skipping it) → Babysitter forces it + pixel-specs it
+  (e.g. V37 connectors). A row with N failed self-gated attempts → Babysitter specs to the pixel or owner-escalates.
+- **State per row:** `OPEN` → (B works + self-gates) → B commits → (Babysitter audits) → `RESOLVED`(signed) or back to
+  `OPEN` with a correction. B's "do I have work?" = "any OPEN rows I own?" — no pointer-watching, no idling.
+
 ---
 
 ## WHEN to run the compare test — it's a COMPLETION gate, not a build tool (owner policy, 2026-06-25)
