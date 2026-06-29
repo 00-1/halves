@@ -22,6 +22,7 @@ on:
       - 'gg1/prod/**'
       - 'gg1/dev/**'
       - 'capacitor/**'
+      - '.github/workflows/capacitor-android.yml'
 
 # newest qualifying commit supersedes an in-flight build (saves CI minutes)
 concurrency:
@@ -29,7 +30,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write   # publish the .apk/.aab to a rolling prerelease (like brickmap)
 
 jobs:
   build:
@@ -115,9 +116,25 @@ jobs:
             find android -path '*/apk/release/*.apk' -exec cp {} out/ \; || true
           ls -la out
 
-      - name: Upload .aab + .apk
+      - name: Upload .aab + .apk (workflow artifact — backup)
         uses: actions/upload-artifact@v4
         with:
           name: goblin-gold-cap-android
           path: capacitor/out/*
           if-no-files-found: error
+
+      - name: Publish to a rolling Release (persistent + easy to find — like brickmap)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          TAG=cap-experiment
+          # rolling tag: replace the prior release so there's always ONE "latest" to grab
+          gh release delete "$TAG" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" out/*.apk out/*.aab \
+            --title "Goblin Gold (Cap) — latest experiment build" \
+            --prerelease --target "$GITHUB_SHA" \
+            --notes "In-process WebView wrapper of \`gg1/prod\` (Capacitor experiment — **NOT** the Play listing).
+          Auto-built from \`$GITHUB_SHA\`. **Sideload \`app-release-signed.apk\`** (throwaway-signed — tap past 'unknown sources'). The \`.aab\` is for Play upload only.
+          Rolling tag: this release is replaced on each web-app build, so it's always the latest."
+          echo "Published → https://github.com/${GITHUB_REPOSITORY}/releases/tag/$TAG"
