@@ -1,13 +1,32 @@
 name: Capacitor Android (experiment)
 
 # T231 — builds the Capacitor (in-process WebView) Android wrapper experiment.
-# MANUAL ONLY (workflow_dispatch) — this is NOT the shipping path and is kept
-# entirely OUT of the Pages deploy (pages.yml is untouched). It bundles gg1/prod
-# offline, scaffolds the Android platform, builds + signs a release .aab (+ a
-# sideload .apk), and uploads them as artifacts for the owner to test on-device
-# under the SEPARATE experiment package app.goblingold.voidthrone.exp.
+# This is NOT the shipping path and is kept entirely OUT of the Pages deploy
+# (pages.yml is untouched). It bundles gg1/prod offline, scaffolds the Android
+# platform, builds + signs a release .aab (+ a sideload .apk), and uploads them
+# as artifacts to test on-device under the SEPARATE experiment package
+# app.goblingold.voidthrone.exp.
+#
+# TRIGGERS (owner, 2026-06-29 — "set it up to run on commits where the builder is
+# ready to show something" — manual was too much friction):
+#   • workflow_dispatch — manual, any time.
+#   • push to main that touches the WEB APP (gg1/dev, gg1/prod, capacitor/**) — i.e.
+#     the commits that actually change what the APK shows. Doc/render-only commits
+#     (which never affect this WebView wrapper) do NOT rebuild. The .apk lands as a
+#     run artifact each time; download + sideload.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'gg1/prod/**'
+      - 'gg1/dev/**'
+      - 'capacitor/**'
+
+# newest qualifying commit supersedes an in-flight build (saves CI minutes)
+concurrency:
+  group: capacitor-apk
+  cancel-in-progress: true
 
 permissions:
   contents: read
