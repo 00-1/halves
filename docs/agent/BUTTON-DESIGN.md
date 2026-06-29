@@ -18,9 +18,21 @@ For a text button with `rect{x,y,w,h}`, label tight-box `text{x,y,w,h}`, font `c
 5. **Touch target** — button height **≥ 44px** (Apple HIG 44pt / Material 48dp; MIT Touch Lab ~9mm fingertip).
 6. **Vertical padding vs type** — `vpad ≥ 0.5 × cap-height`, so the label never crowds the top/bottom edge.
 
-Constants live ONCE in `NICE = {CENTER_TOL, PAD_SYM_TOL, HV_RATIO_MIN/MAX, MIN_TOUCH, MIN_VPAD_OVER_CAP}` — tune in
-one place. This is the button-specific instance of the global padding/safe-margin rule (V52); apply both in the
+Two patterns: **`checkButton`** for a standalone CTA (full standard incl. the h:v ratio band), **`checkButtonRow`**
+for an equal-width flex row like home Start/Practice/Guide (drops the upper ratio bound — a short label in a wide
+equal-width cell is fine — and instead asserts equal width + a min h-padding floor). Constants live ONCE in
+`NICE = {...}`. This is the button-specific instance of the global padding/safe-margin rule (V52); apply both in the
 shared layout primitives so every button + text run inherits them, not per-screen.
+
+## Validated against web — and why it MUST be a DOM test, not CSS
+CSS values alone are NOT sufficient: the home buttons are `flex:1 1 0`, so their real width (and effective padding)
+is unknown until layout; and centring/fit depend on rendered font metrics. So `test/button-geometry-web.test.js`
+renders gg-web headlessly and measures each button's REAL box via `getBoundingClientRect` (+ a `Range` for the text
+box), then runs the standard. Result: **web PASSES** — home row Start/Practice/Guide come out 112/114/114×55, each
+centred (Δ<0.02px), symmetric padding, ≥44px; the standalone `.btn` (268×59) passes too. This both validates the
+standard AND exposed an over-strict equal-width tolerance (real flex rounds to ~2px spread; loosened to `max(2px,2%)`).
+**brickmap must mirror this on its OWN laid-out geometry** (measured button rect + text box + cap-height from its
+text renderer), NOT declared constants — a unit test over layout output, same as the web DOM test.
 
 ## Sources
 - [Material Design 3 — accessibility & layout](https://m3.material.io/foundations/designing/structure)
