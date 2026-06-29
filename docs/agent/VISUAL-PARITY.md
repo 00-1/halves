@@ -153,6 +153,27 @@ ORDER. Proven the hard way: `summary` scored the BEST ΔE of every screen (**3.7
 This gate found the entire V28–V39 second layer that the font/bg/scale pass (V25–V27) left behind. Use it as the
 standing acceptance step for every §D screen; never sign a screen off the ΔE number alone.
 
+### ROOT CAUSE — B is iterating BLIND; the eyes must be in B's OWN loop (2026-06-28)
+Diagnosed after waves 3–5 kept "fixing" the same rows without the render changing. **It is NOT a stale-build or a
+headless≠device problem** — the screen `*_frame` functions are SHARED by the live app and the headless PNG, and the
+PNGs do re-render each wave. The cause: **B has no way to SEE its output** — only the ΔE (which sits ~ok) and its own
+intent. So the work splits cleanly:
+- **Mechanical changes that can't be gotten wrong LAND first try** — V42 (uppercase a header string), V43 (button
+  colour constant).
+- **Anything needing VISUAL JUDGMENT fails repeatedly** — the ★ took 4 attempts to look star-ish; the coin-hoard went
+  sparse→sparse→solid-overshoot over 3; stat-pills are still a no-op after 2 (B believes its code draws pills; the
+  PNG shows plain text; B can't see the miss). The `v2/v3/v4` suffixes are the fingerprint of blind iteration.
+
+**Fix — two parts:**
+1. **B runs the agent-review gate in its OWN loop before pushing.** B is an agent and can spawn a sub-agent: render
+   the screen → hand the `…-web.png` + its render to a review agent with the rubric above → only commit/declare done
+   on an agent-PASS. Don't push a screen for the Babysitter to review until B's own agent passed it. This kills the
+   blind round-trip (today the Babysitter is B's only eyes, one full cycle late).
+2. **For judgment-heavy items the Babysitter specs to the PIXEL** (B can't eyeball, so give geometry not adjectives):
+   e.g. a stat "pill" = a filled rounded-rect `#1a1d24` sized to the chip bounds drawn FIRST, then the value+label
+   text ON TOP (a no-op pill is usually rect-after-text or rect-in-bg-colour). Convert "make it look like web" into
+   "draw rect x,y,w,h colour #…".
+
 ---
 
 ## WHEN to run the compare test — it's a COMPLETION gate, not a build tool (owner policy, 2026-06-25)

@@ -141,6 +141,13 @@ earning (`fde819a`) + ✅ `T233b`-gold (`4ae14b3`/`7c74439`) + ✅ **`T233b`-com
 > (ENEMY TEAM cards + region panel + top Journey btn + boxed "how battles work") · V48 arena-map (CTA overflow, foe
 > scenery backdrop, ⚔ ASCII fallback, progress dots, `/10`) · V49 inventory-loot bottom carousel · V36/37/38 home ·
 > V28 clean ★ no-collision · V30 chip pills · V31 "tap for details ›". **Babysitter is doing V29 (N2 fix).**
+>
+> 🩺 **ROOT CAUSE (waves 3–5) — B IS ITERATING BLIND. Two required changes (see REVIEW.md pm-5 + VISUAL-PARITY):**
+> **(1) Run the agent-review gate in your OWN loop before pushing** — you're an agent; spawn a sub-agent with your
+> render + the `…-web.png` + the VISUAL-PARITY rubric, and only declare a screen done on an agent-PASS. The render
+> path is SHARED + re-renders fine; the misses are because you can't SEE the output (★ took 4 tries, hoard 3,
+> pills still a no-op). Stop pushing blind. **(2) Implement the Babysitter's PIXEL specs** for V30 pill / V28 ★ /
+> V36 hoard / V42 title size (geometry, not adjectives — in REVIEW.md pm-5). V42/V43/V50 are confirmed DONE.
 
 **Builder B → phase 5 PARITY. The entire Arena + event-play LOGIC layer is DONE + APPROVED (brickmap `main`
 `c6083f5`): combat re-sync to the redesign (`75051b8`, combat.rs spot-verified) · event-play core T233c (`8dc2077`,

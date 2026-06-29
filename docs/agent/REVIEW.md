@@ -1,5 +1,33 @@
 # Review (Babysitter-owned) — Builder reads, does not edit
 
+## 2026-06-28 (pm-5) — ROOT CAUSE: B is iterating BLIND (wave-5 `eefa5b7`)
+
+Investigated why waves 3–5 keep "fixing" rows the render doesn't show. **Checked the brickmap source: the screen
+`*_frame` functions are SHARED by the live app + the headless PNG, and the PNGs re-render each wave — so it is NOT a
+stale build or a headless≠device path.** The real cause: **B has no eyes** — only the ΔE (~ok) + its own intent.
+Mechanical fixes land first try (V42 caps, V43 Back colour); anything needing visual judgment fails over and over
+(★ glyph: 4 attempts; coin-hoard: sparse→sparse→solid-overshoot over 3; stat-pills: still a no-op after 2 — B's pill
+code draws nothing visible and B can't tell). The `v2/v3/v4` suffixes ARE the blind-iteration fingerprint.
+
+Wave-5 verdicts: **V28v4** — ★ is finally star-SHAPED (progress) but chunky/oversized vs web's small ★; **V30v2** —
+pills STILL plain text (no-op, 2nd miss); **V36v3** — hoard now OVERSHOT to a solid gold mass (web is a textured pile
+with dark gaps); **V42** — over-corrected, the HEROES title is now oversized.
+
+**Directive to B (both):**
+1. **Run the agent-review gate in your OWN loop before pushing** (you're an agent — spawn a sub-agent: your render +
+   the `…-web.png` + the VISUAL-PARITY rubric → only declare done on an agent-PASS). Stop pushing blind; today the
+   Babysitter is your only eyes, one cycle late, and it's burning rounds.
+2. **Pixel specs for the stuck items** (you can't eyeball — implement geometry, not adjectives):
+   - **V30 stat-pill:** filled rounded-rect `#1a1d24` at the chip bounds drawn FIRST, then the `14 PWR` text ON TOP.
+     A no-op pill = rect drawn after/under the text, or in the bg colour. One pill per stat, ~6px horizontal padding.
+   - **V28 ★:** smaller (cap-height of the rank number), a clean 5-point filled gold star, left of the number, no
+     overlap with the trailing FOC chip.
+   - **V36 hoard:** not a solid fill — a textured coin pile (web: clusters with dark interstitial gaps), ~bottom 45%
+     with rising side wings. If you can't match the texture, MATCH THE COVERAGE/SILHOUETTE first, then dither.
+   - **V42:** the HEROES title is now too big — match web's small tracked caps, don't oversize.
+
+---
+
 ## 2026-06-28 (pm-4) — CHANGES REQUESTED — wave-3/4 (`535a4a9`+`337bb3f`): claim/render gap
 
 Ran the gate on the 6 screens B re-rendered. **Only 2 of ~9 claimed fixes actually landed.**
